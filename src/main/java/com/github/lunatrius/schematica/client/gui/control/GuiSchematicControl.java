@@ -54,6 +54,7 @@ public class GuiSchematicControl extends GuiScreenBase {
     private static int lastCheckedRotation = 0;
     private GuiOrCheckBoxHandler rotationBoxes;
     private GuiButton btnMaterials = null;
+    private GuiButton btnInstances = null;
     private GuiButton btnPrint = null;
 
     private GuiButton btnSaveCoordinates = null;
@@ -68,6 +69,7 @@ public class GuiSchematicControl extends GuiScreenBase {
     private final String strAll = I18n.format(Names.Gui.Control.MODE_ALL);
     private final String strLayers = I18n.format(Names.Gui.Control.MODE_LAYERS);
     private final String strMaterials = I18n.format(Names.Gui.Control.MATERIALS);
+    private final String strInstances = I18n.format(Names.Gui.Instances.INSTANCES);
     private final String strPrinter = I18n.format(Names.Gui.Control.PRINTER);
     private final String strHide = I18n.format(Names.Gui.Control.HIDE);
     private final String strShow = I18n.format(Names.Gui.Control.SHOW);
@@ -168,8 +170,11 @@ public class GuiSchematicControl extends GuiScreenBase {
         this.buttonList.add(this.btnRotateZ);
         rotationBoxes = new GuiOrCheckBoxHandler(btnRotateX, btnRotateY, btnRotateZ);
 
-        this.btnMaterials = new GuiButton(id++, 10, this.height - 70, 80, 20, this.strMaterials);
+        this.btnMaterials = new GuiButton(id++, 10, this.height - 90, 80, 20, this.strMaterials);
         this.buttonList.add(this.btnMaterials);
+
+        this.btnInstances = new GuiButton(id++, 10, this.height - 50, 80, 20, this.strInstances);
+        this.buttonList.add(this.btnInstances);
 
         this.btnPrint = new GuiButton(
             id++,
@@ -209,6 +214,7 @@ public class GuiSchematicControl extends GuiScreenBase {
         this.btnRotateY.enabled = this.schematic != null;
         this.btnRotateZ.enabled = this.schematic != null;
         this.btnMaterials.enabled = this.schematic != null;
+        this.btnInstances.enabled = !ClientProxy.loadedSchematics.isEmpty();
         this.btnPrint.enabled = this.schematic != null && this.printer.isEnabled();
 
         this.btnSaveCoordinates.enabled = this.schematic != null;
@@ -320,6 +326,8 @@ public class GuiSchematicControl extends GuiScreenBase {
                 lastCheckedRotation = 2;
             } else if (guiButton.id == this.btnMaterials.id) {
                 this.mc.displayGuiScreen(new GuiSchematicMaterials(this));
+            } else if (guiButton.id == this.btnInstances.id) {
+                this.mc.displayGuiScreen(new GuiSchematicInstances(this));
             } else if (guiButton.id == this.btnPrint.id && this.printer.isEnabled()) {
                 boolean isPrinting = this.printer.togglePrinting();
                 this.btnPrint.displayString = isPrinting ? this.strOn : this.strOff;
@@ -351,7 +359,8 @@ public class GuiSchematicControl extends GuiScreenBase {
     @Override
     public void drawScreen(int par1, int par2, float par3) {
         drawCenteredString(this.fontRendererObj, this.strMoveSchematic, this.centerX, this.centerY - 45, 0xFFFFFF);
-        drawCenteredString(this.fontRendererObj, this.strMaterials, 50, this.height - 85, 0xFFFFFF);
+        drawCenteredString(this.fontRendererObj, this.strMaterials, 50, this.height - 105, 0xFFFFFF);
+        drawCenteredString(this.fontRendererObj, this.strInstances, 50, this.height - 65, 0xFFFFFF);
         drawCenteredString(this.fontRendererObj, this.strPrinter, 50, this.height - 45, 0xFFFFFF);
         drawCenteredString(this.fontRendererObj, this.strLayers, this.width - 50, this.height - 165, 0xFFFFFF);
         drawCenteredString(this.fontRendererObj, this.strOperations, this.width - 50, this.height - 120, 0xFFFFFF);

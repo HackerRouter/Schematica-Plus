@@ -22,6 +22,8 @@ schematica.gui.unload=Unload
 schematica.gui.point.red=Red point
 schematica.gui.point.blue=Blue point
 schematica.gui.saveselection=Save the selection as a schematic
+schematica.gui.savenbt=Save NBT
+schematica.gui.saveentities=Save Entities
 schematica.gui.on=ON
 schematica.gui.off=OFF
 schematica.gui.x=X:
@@ -34,6 +36,14 @@ schematica.gui.materialrequired=Required
 schematica.gui.materialavailable=Available
 schematica.gui.materialdump=Save to file
 schematica.gui.printer=Printer
+
+# gui - instances
+schematica.gui.instances.title=Loaded Schematics
+schematica.gui.instances.switch=Switch
+schematica.gui.instances.toggleVisible=Toggle Visible
+schematica.gui.instances.toggleEntities=Entities
+schematica.gui.instances.loaded=loaded
+schematica.gui.instances=Instances
 
 # gui - config - categories
 schematica.config.category.debug=Debug
@@ -128,6 +138,18 @@ schematica.key.save=Save schematic
 schematica.key.control=Manipulate schematic
 schematica.key.layerInc=Next Layer
 schematica.key.layerDec=Previous layer
+schematica.key.toolMode=Cycle Tool Mode
+schematica.key.toolUse=Use Tool
+schematica.key.toolAttack=Attack Tool (Point A)
+
+# tool modes
+schematica.tool_mode.area_selection=Area Selection
+schematica.tool_mode.schematic_placement=Schematic Placement
+schematica.tool_mode.paste_schematic=Paste Schematic
+schematica.tool_mode.move=Move
+schematica.tool_mode.delete=Delete
+schematica.tool_mode.fill=Fill
+schematica.tool_mode.replace_block=Replace Block
 
 # commands - save
 schematica.command.save.usage=/schematicaSave <startX> <startY> <startZ> <endX> <endY> <endZ> <name>

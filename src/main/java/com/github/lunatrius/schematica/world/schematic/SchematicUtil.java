@@ -77,6 +77,14 @@ public final class SchematicUtil {
 
     public static ItemStack getIconFromFile(File file) {
         try {
+            final String name = file.getName().toLowerCase();
+            if (name.endsWith(".litematic")) {
+                // .litematic files contain TAG_Long_Array which vanilla NBT reader
+                // can't handle — use our custom reader, then clean up
+                NBTTagCompound tag = LitematicaNBTReader.readFromFile(file);
+                LitematicaNBTReader.clearLongArrayStore();
+                return getIconFromNBT(tag);
+            }
             return getIconFromNBT(readTagCompoundFromFile(file));
         } catch (Exception e) {
             Reference.logger.error("Failed to read schematic icon!", e);

@@ -1,5 +1,6 @@
 package com.github.lunatrius.schematica.client.world;
 
+import java.io.File;
 import java.util.List;
 
 import net.minecraft.block.Block;
@@ -48,6 +49,7 @@ public class SchematicWorld extends World {
     public boolean isRendering;
     public boolean isRenderingLayer;
     public int renderingLayer;
+    public boolean isRenderingEntities = false;
     public int rotationState;
     public int rotationStateX;
     public int rotationStateY;
@@ -55,6 +57,11 @@ public class SchematicWorld extends World {
     public int flipStateX;
     public int flipStateY;
     public int flipStateZ;
+
+    /** The directory this schematic was loaded from (for persistence). */
+    public File sourceDirectory;
+    /** The filename this schematic was loaded from (for persistence). */
+    public String sourceFilename;
 
     public SchematicWorld(ISchematic schematic) {
         super(new SaveHandlerSchematic(), "Schematica", WORLD_SETTINGS, null, new Profiler());
@@ -71,11 +78,8 @@ public class SchematicWorld extends World {
 
     public SchematicWorld(ISchematic schematic, String filename) {
         this(schematic);
-        if (ConfigurationHandler.useSchematicplusFormat) {
-            this.name = filename.replace(".schemplus", "");
-        } else {
-            this.name = filename.replace(".schematic", "");
-        }
+        // Strip any known schematic extension from the display name
+        this.name = filename.replaceAll("(?i)\\.(schematic|litematic|schemplus)$", "");
     }
 
     @Override
@@ -215,6 +219,10 @@ public class SchematicWorld extends World {
         return this.schematic.getTileEntities();
     }
 
+    public List<Entity> getEntities() {
+        return this.schematic.getEntities();
+    }
+
     public boolean toggleRendering() {
         this.isRendering = !this.isRendering;
         return this.isRendering;
@@ -222,9 +230,9 @@ public class SchematicWorld extends World {
 
     public void refreshChests() {
         for (TileEntity tileEntity : this.schematic.getTileEntities()) {
-            if (tileEntity instanceof TileEntityChest tileEntityChest) {
-                tileEntityChest.adjacentChestChecked = false;
-                tileEntityChest.checkForAdjacentChests();
+            if (tileEntity instanceof TileEntityChest) {
+                ((TileEntityChest) tileEntity).adjacentChestChecked = false;
+                ((TileEntityChest) tileEntity).checkForAdjacentChests();
             }
         }
     }
@@ -385,8 +393,8 @@ public class SchematicWorld extends World {
                     tileEntity.blockMetadata = schematicRotated
                         .getBlockMetadata(tileEntity.xCoord, tileEntity.yCoord, tileEntity.zCoord);
 
-                    if (tileEntity instanceof TileEntitySkull skullTileEntity && tileEntity.blockMetadata == 0x1) {
-                        skullTileEntity.func_145903_a((skullTileEntity.func_145906_b() + 12) & 15);
+                    if (tileEntity instanceof TileEntitySkull && tileEntity.blockMetadata == 0x1) {
+                        ((TileEntitySkull) tileEntity).func_145903_a((((TileEntitySkull) tileEntity).func_145906_b() + 12) & 15);
                     }
 
                     schematicRotated.setTileEntity(tileEntity.xCoord, tileEntity.yCoord, tileEntity.zCoord, tileEntity);

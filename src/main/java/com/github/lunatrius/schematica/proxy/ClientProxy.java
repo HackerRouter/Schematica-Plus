@@ -9,7 +9,10 @@ import java.lang.reflect.Type;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import net.minecraft.client.Minecraft;
@@ -62,15 +65,22 @@ public class ClientProxy extends CommonProxy {
     private static final Minecraft MINECRAFT = Minecraft.getMinecraft();
     public static boolean isRenderingGuide = false;
     public static boolean isPendingReset = false;
+    /** Set to true after resetSettings clears schematics; WorldHandler.onLoad will restore them. */
+    public static boolean isPendingRestore = false;
     public static ForgeDirection orientation = ForgeDirection.UNKNOWN;
     public static int rotationRender = 0;
+    /** The currently active/selected schematic (for tools, printer, control GUI). */
     public static SchematicWorld schematic = null;
+    /** All loaded schematics. The active schematic is always in this list. */
+    public static final List<SchematicWorld> loadedSchematics = new ArrayList<>();
     public static MovingObjectPosition movingObjectPosition = null;
-    private final SchematicWorld schematicWorld = null;
     public static ILOTRPresent lotrProxy = null;
+    /** Tracks the last known world/server name for reliable save on disconnect. */
+    public static String lastWorldServerName = null;
     private static final Gson gson = new GsonBuilder().setPrettyPrinting()
         .create();
     private static final Type schematicDataType = new TypeToken<Map<String, Map<String, SchematicData>>>() {}.getType();
+    private static final Type loadedSchematicsDataType = new TypeToken<Map<String, List<LoadedSchematicEntry>>>() {}.getType();
 
     public static void setPlayerData(EntityPlayer player, float partialTicks) {
         playerPosition.x = player.lastTickPosX + (player.posX - player.lastTickPosX) * partialTicks;
@@ -189,6 +199,18 @@ public class ClientProxy extends CommonProxy {
         public int FlipZ;
 
         SchematicData() {}
+    }
+
+    /** Persistence entry for saving/restoring loaded schematics across sessions. */
+    private static class LoadedSchematicEntry {
+        public String filename;
+        public String directory;
+        public int X, Y, Z;
+        public int RotationX, RotationY, RotationZ;
+        public int FlipX, FlipY, FlipZ;
+        public boolean isActive;
+
+        LoadedSchematicEntry() {}
     }
 
     private static Map<String, Map<String, SchematicData>> openCoordinatesFile()
@@ -375,8 +397,18 @@ public class ClientProxy extends CommonProxy {
 
         ChatEventHandler.INSTANCE.chatLines = 0;
 
-        SchematicPrinter.INSTANCE.setEnabled(true);
-        unloadSchematic();
+        // Printer defaults to off — it's not balanced for normal gameplay.
+        // Players should explicitly enable it when needed.
+        SchematicPrinter.INSTANCE.setEnabled(false);
+
+        // Save schematics before clearing so they can be restored on next world load.
+        // Use lastWorldServerName since the server may already be gone at this point.
+        if (!loadedSchematics.isEmpty() && lastWorldServerName != null && !lastWorldServerName.isEmpty()) {
+            saveLoadedSchematics(lastWorldServerName);
+            Reference.logger.info("Saved schematics during reset for '{}'", lastWorldServerName);
+        }
+        unloadAllSchematics();
+        isPendingRestore = true;
 
         playerPosition.set(0, 0, 0);
         orientation = ForgeDirection.UNKNOWN;
@@ -389,29 +421,195 @@ public class ClientProxy extends CommonProxy {
 
     @Override
     public void unloadSchematic() {
+        if (schematic != null) {
+            loadedSchematics.remove(schematic);
+        }
         schematic = null;
+        RendererSchematicGlobal.INSTANCE.destroyRendererSchematicChunks();
+        SchematicPrinter.INSTANCE.setSchematic(null);
+        // If there are still loaded schematics, select the first one
+        if (!loadedSchematics.isEmpty()) {
+            selectSchematic(loadedSchematics.get(0));
+        }
+    }
+
+    /** Unloads all schematics. */
+    public static void unloadAllSchematics() {
+        schematic = null;
+        loadedSchematics.clear();
         RendererSchematicGlobal.INSTANCE.destroyRendererSchematicChunks();
         SchematicPrinter.INSTANCE.setSchematic(null);
     }
 
     @Override
     public boolean loadSchematic(EntityPlayer player, File directory, String filename) {
-        ISchematic schematic = SchematicFormat.readFromFile(directory, filename);
-        if (schematic == null) {
+        ISchematic schematicData = SchematicFormat.readFromFile(directory, filename);
+        if (schematicData == null) {
             return false;
         }
 
-        SchematicWorld world = new SchematicWorld(schematic, filename);
+        SchematicWorld world = new SchematicWorld(schematicData, filename);
+        world.sourceDirectory = directory;
+        world.sourceFilename = filename;
 
         Reference.logger
             .debug("Loaded {} [w:{},h:{},l:{}]", filename, world.getWidth(), world.getHeight(), world.getLength());
 
-        ClientProxy.schematic = world;
-        RendererSchematicGlobal.INSTANCE.createRendererSchematicChunks(world);
-        SchematicPrinter.INSTANCE.setSchematic(world);
+        // Add to loaded list (don't add duplicates by name)
+        Iterator<SchematicWorld> it = loadedSchematics.iterator();
+        while (it.hasNext()) {
+            SchematicWorld existing = it.next();
+            if (existing.name.equals(world.name)) {
+                it.remove();
+                break;
+            }
+        }
+        loadedSchematics.add(world);
+
+        // Set as active
+        selectSchematic(world);
         world.isRendering = true;
 
         return true;
+    }
+
+    /** Selects a schematic as the active one for tools/printer/control. */
+    public static void selectSchematic(SchematicWorld world) {
+        ClientProxy.schematic = world;
+        if (world != null) {
+            RendererSchematicGlobal.INSTANCE.createRendererSchematicChunks(world);
+            SchematicPrinter.INSTANCE.setSchematic(world);
+        }
+    }
+
+    /** Cycles to the next loaded schematic. */
+    public static void cycleSchematic() {
+        if (loadedSchematics.isEmpty()) {
+            return;
+        }
+        if (schematic == null) {
+            selectSchematic(loadedSchematics.get(0));
+            return;
+        }
+        int idx = loadedSchematics.indexOf(schematic);
+        int next = (idx + 1) % loadedSchematics.size();
+        selectSchematic(loadedSchematics.get(next));
+    }
+
+    // --- Persistence: save/restore loaded schematics across sessions ---
+
+    /** Saves the list of currently loaded schematics for the given world/server. */
+    public static void saveLoadedSchematics(String worldServerName) {
+        if (worldServerName == null || worldServerName.isEmpty()) return;
+        try {
+            File file = new File(ConfigurationHandler.schematicDirectory, "LoadedSchematics.json");
+            Map<String, List<LoadedSchematicEntry>> allData;
+            if (file.exists()) {
+                try (Reader reader = Files.newBufferedReader(file.toPath(), StandardCharsets.UTF_8)) {
+                    allData = gson.fromJson(reader, loadedSchematicsDataType);
+                } catch (Exception e) {
+                    allData = new HashMap<>();
+                }
+            } else {
+                allData = new HashMap<>();
+            }
+            if (allData == null) allData = new HashMap<>();
+
+            List<LoadedSchematicEntry> entries = new ArrayList<>();
+            for (SchematicWorld sw : loadedSchematics) {
+                LoadedSchematicEntry entry = new LoadedSchematicEntry();
+                entry.filename = sw.sourceFilename;
+                entry.directory = sw.sourceDirectory != null ? sw.sourceDirectory.getAbsolutePath() : "";
+                entry.X = sw.position.x;
+                entry.Y = sw.position.y;
+                entry.Z = sw.position.z;
+                entry.RotationX = sw.rotationStateX;
+                entry.RotationY = sw.rotationStateY;
+                entry.RotationZ = sw.rotationStateZ;
+                entry.FlipX = sw.flipStateX;
+                entry.FlipY = sw.flipStateY;
+                entry.FlipZ = sw.flipStateZ;
+                entry.isActive = (sw == schematic);
+                entries.add(entry);
+            }
+            allData.put(worldServerName, entries);
+
+            try (OutputStreamWriter writer = new OutputStreamWriter(
+                new FileOutputStream(file), StandardCharsets.UTF_8)) {
+                gson.toJson(allData, loadedSchematicsDataType, writer);
+                writer.flush();
+            }
+            Reference.logger.info("Saved {} loaded schematics for '{}'", entries.size(), worldServerName);
+        } catch (Exception e) {
+            Reference.logger.error("Failed to save loaded schematics", e);
+        }
+    }
+
+    /** Restores previously loaded schematics for the given world/server. */
+    public static void restoreLoadedSchematics(String worldServerName) {
+        if (worldServerName == null || worldServerName.isEmpty()) return;
+        try {
+            File file = new File(ConfigurationHandler.schematicDirectory, "LoadedSchematics.json");
+            if (!file.exists()) return;
+
+            Map<String, List<LoadedSchematicEntry>> allData;
+            try (Reader reader = Files.newBufferedReader(file.toPath(), StandardCharsets.UTF_8)) {
+                allData = gson.fromJson(reader, loadedSchematicsDataType);
+            }
+            if (allData == null || !allData.containsKey(worldServerName)) return;
+
+            List<LoadedSchematicEntry> entries = allData.get(worldServerName);
+            if (entries == null || entries.isEmpty()) return;
+
+            SchematicWorld activeWorld = null;
+            for (LoadedSchematicEntry entry : entries) {
+                if (entry.filename == null || entry.filename.isEmpty()) continue;
+                File dir = (entry.directory != null && !entry.directory.isEmpty())
+                    ? new File(entry.directory)
+                    : ConfigurationHandler.schematicDirectory;
+
+                ISchematic schematicData = SchematicFormat.readFromFile(dir, entry.filename);
+                if (schematicData == null) {
+                    Reference.logger.warn("Failed to restore schematic: {}", entry.filename);
+                    continue;
+                }
+
+                SchematicWorld world = new SchematicWorld(schematicData, entry.filename);
+                world.sourceDirectory = dir;
+                world.sourceFilename = entry.filename;
+                world.isRendering = true;
+
+                // Restore position
+                world.position.set(entry.X, entry.Y, entry.Z);
+
+                // Restore rotations
+                for (int i = 0; i < entry.RotationX; i++) world.rotate(ForgeDirection.EAST);
+                for (int i = 0; i < entry.RotationY; i++) world.rotate(ForgeDirection.UP);
+                for (int i = 0; i < entry.RotationZ; i++) world.rotate(ForgeDirection.SOUTH);
+
+                // Restore flips
+                for (int i = 0; i < entry.FlipX; i++) world.flip(ForgeDirection.EAST);
+                for (int i = 0; i < entry.FlipY; i++) world.flip(ForgeDirection.UP);
+                for (int i = 0; i < entry.FlipZ; i++) world.flip(ForgeDirection.SOUTH);
+
+                loadedSchematics.add(world);
+                // Create render data for EVERY restored schematic so it's visible
+                RendererSchematicGlobal.INSTANCE.createRendererSchematicChunks(world);
+                if (entry.isActive) {
+                    activeWorld = world;
+                }
+            }
+
+            if (activeWorld != null) {
+                selectSchematic(activeWorld);
+            } else if (!loadedSchematics.isEmpty()) {
+                selectSchematic(loadedSchematics.get(0));
+            }
+
+            Reference.logger.info("Restored {} schematics for '{}'", loadedSchematics.size(), worldServerName);
+        } catch (Exception e) {
+            Reference.logger.error("Failed to restore loaded schematics", e);
+        }
     }
 
     @Override

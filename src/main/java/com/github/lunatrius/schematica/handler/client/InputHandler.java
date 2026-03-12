@@ -21,6 +21,7 @@ import com.github.lunatrius.schematica.client.world.SchematicWorld;
 import com.github.lunatrius.schematica.proxy.ClientProxy;
 import com.github.lunatrius.schematica.reference.Names;
 import com.github.lunatrius.schematica.reference.Reference;
+import com.github.lunatrius.schematica.tool.ToolManager;
 
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.gameevent.InputEvent;
@@ -49,9 +50,22 @@ public class InputHandler {
         Names.Keys.LAYER_DEC,
         Keyboard.KEY_NONE,
         Names.Keys.CATEGORY);
+    private static final KeyBinding KEY_BINDING_TOOL_MODE = new KeyBinding(
+        Names.Keys.TOOL_MODE,
+        Keyboard.KEY_ADD,
+        Names.Keys.CATEGORY);
+    private static final KeyBinding KEY_BINDING_TOOL_USE = new KeyBinding(
+        Names.Keys.TOOL_USE,
+        Keyboard.KEY_NUMPAD1,
+        Names.Keys.CATEGORY);
+    private static final KeyBinding KEY_BINDING_TOOL_ATTACK = new KeyBinding(
+        Names.Keys.TOOL_ATTACK,
+        Keyboard.KEY_NUMPAD2,
+        Names.Keys.CATEGORY);
 
     public static final KeyBinding[] KEY_BINDINGS = new KeyBinding[] { KEY_BINDING_LOAD, KEY_BINDING_SAVE,
-        KEY_BINDING_CONTROL, KEY_BINDING_LAYER_INC, KEY_BINDING_LAYER_DEC };
+        KEY_BINDING_CONTROL, KEY_BINDING_LAYER_INC, KEY_BINDING_LAYER_DEC,
+        KEY_BINDING_TOOL_MODE, KEY_BINDING_TOOL_USE, KEY_BINDING_TOOL_ATTACK };
 
     private final Minecraft minecraft = Minecraft.getMinecraft();
 
@@ -88,6 +102,18 @@ public class InputHandler {
                         .clamp_int(schematic.renderingLayer - 1, 0, schematic.getHeight() - 1);
                     RendererSchematicGlobal.INSTANCE.refresh();
                 }
+            }
+
+            if (KEY_BINDING_TOOL_MODE.isPressed()) {
+                ToolManager.INSTANCE.cycleMode();
+            }
+
+            if (KEY_BINDING_TOOL_USE.isPressed()) {
+                ToolManager.INSTANCE.onToolUse(this.minecraft.thePlayer, ClientProxy.schematic);
+            }
+
+            if (KEY_BINDING_TOOL_ATTACK.isPressed()) {
+                ToolManager.INSTANCE.onToolAttack(this.minecraft.thePlayer, ClientProxy.schematic);
             }
 
             handlePickBlock();

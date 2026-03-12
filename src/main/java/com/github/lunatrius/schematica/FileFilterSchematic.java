@@ -18,14 +18,15 @@ public class FileFilterSchematic implements FileFilter {
         if (this.directory) {
             return file.isDirectory();
         }
+        final String name = file.getName().toLowerCase();
+        // Always accept .litematic files regardless of format setting
+        if (name.endsWith(".litematic")) {
+            return true;
+        }
         if (ConfigurationHandler.useSchematicplusFormat) {
-            return file.getName()
-                .toLowerCase()
-                .endsWith(".schemplus");
+            return name.endsWith(".schemplus");
         } else {
-            return file.getName()
-                .toLowerCase()
-                .endsWith(".schematic");
+            return name.endsWith(".schematic");
         }
     }
 }

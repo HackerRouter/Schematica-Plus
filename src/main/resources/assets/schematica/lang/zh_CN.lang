@@ -20,8 +20,10 @@ schematica.gui.layers=层
 schematica.gui.operations=操作
 schematica.gui.unload=卸载
 schematica.gui.point.red=红点
-schematica.gui.point.blue=蓝点
+schematica.gui.point.blue=蓝点   
 schematica.gui.saveselection=将选区保存为Schematic文件
+schematica.gui.savenbt=保存NBT
+schematica.gui.saveentities=保存实体
 schematica.gui.on=开
 schematica.gui.off=关
 schematica.gui.x=X:
@@ -34,6 +36,14 @@ schematica.gui.materialrequired=要求
 schematica.gui.materialavailable=可用
 schematica.gui.materialdump=保存到文件
 schematica.gui.printer=打印
+
+# gui - instances
+schematica.gui.instances.title=已加载的投影
+schematica.gui.instances.switch=切换
+schematica.gui.instances.toggleVisible=切换可见
+schematica.gui.instances.toggleEntities=实体渲染
+schematica.gui.instances.loaded=已加载
+schematica.gui.instances=实例管理
 
 # gui - config - categories
 schematica.config.category.debug=Debug
@@ -128,6 +138,18 @@ schematica.key.save=保存Schematic文件
 schematica.key.control=调整Schematic文件
 schematica.key.layerInc=下一层
 schematica.key.layerDec=上一层
+schematica.key.toolMode=切换工具模式
+schematica.key.toolUse=使用工具
+schematica.key.toolAttack=攻击工具 (点A)
+
+# tool modes
+schematica.tool_mode.area_selection=区域选择
+schematica.tool_mode.schematic_placement=投影放置
+schematica.tool_mode.paste_schematic=粘贴投影
+schematica.tool_mode.move=移动
+schematica.tool_mode.delete=删除
+schematica.tool_mode.fill=填充
+schematica.tool_mode.replace_block=替换方块
 
 # commands - save
 schematica.command.save.usage=/schematicaSave <startX> <startY> <startZ> <endX> <endY> <endZ> <name>

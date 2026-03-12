@@ -1,12 +1,11 @@
 package com.github.lunatrius.schematica.world.schematic;
 
-import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.zip.GZIPOutputStream;
 
+import net.minecraft.nbt.CompressedStreamTools;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.world.World;
 import net.minecraftforge.common.MinecraftForge;
@@ -21,12 +20,38 @@ public abstract class SchematicFormat {
     public static final Map<String, SchematicFormat> FORMATS = new HashMap<>();
     public static String FORMAT_DEFAULT;
 
+    /** When true, tile entity NBT data will be included in saved schematics. Off by default. */
+    public static boolean saveNBT = false;
+    /** When true, entities will be included in saved schematics. Off by default. */
+    public static boolean saveEntities = false;
+
     public abstract ISchematic readFromNBT(NBTTagCompound tagCompound);
 
     public abstract boolean writeToNBT(NBTTagCompound tagCompound, ISchematic schematic, World backupWorld);
 
     public static ISchematic readFromFile(File file) {
         try {
+            // Check for .litematic format first — needs custom NBT reader for TAG_Long_Array
+            final String fileName = file.getName().toLowerCase();
+            if (fileName.endsWith(".litematic")) {
+                Reference.logger.info("Detected .litematic file: {}", file.getName());
+                final NBTTagCompound tagCompound = LitematicaNBTReader.readFromFile(file);
+                final SchematicFormat litematicFormat = FORMATS.get("Litematica");
+                if (litematicFormat != null) {
+                    try {
+                        return litematicFormat.readFromNBT(tagCompound);
+                    } finally {
+                        // Free side-channel long array storage after reading is complete
+                        LitematicaNBTReader.clearLongArrayStore();
+                    }
+                } else {
+                    LitematicaNBTReader.clearLongArrayStore();
+                    Reference.logger.error("Litematica format handler not registered!");
+                    return null;
+                }
+            }
+
+            // Standard .schematic format path
             final NBTTagCompound tagCompound = SchematicUtil.readTagCompoundFromFile(file);
             final String format = tagCompound.getString(Names.NBT.MATERIALS);
             final SchematicFormat schematicFormat = FORMATS.get(format);
@@ -57,10 +82,11 @@ public abstract class SchematicFormat {
             FORMATS.get(FORMAT_DEFAULT)
                 .writeToNBT(tagCompound, schematic, backupWorld);
 
-            try (DataOutputStream dataOutputStream = new DataOutputStream(
-                new GZIPOutputStream(new FileOutputStream(file)))) {
-                NBTTagCompound.func_150298_a(Names.NBT.ROOT, tagCompound, dataOutputStream);
-            }
+            // Use CompressedStreamTools.writeCompressed which writes using the new NBT
+            // format (func_152446_a). This matches what readCompressed (func_152456_a)
+            // expects on the read side. The old func_150298_a wrote using the legacy
+            // format which is incompatible with readCompressed, causing NPE.
+            CompressedStreamTools.writeCompressed(tagCompound, new FileOutputStream(file));
 
             return true;
         } catch (Exception ex) {
@@ -76,6 +102,7 @@ public abstract class SchematicFormat {
 
     static {
         FORMATS.put(Names.NBT.FORMAT_ALPHA, new SchematicAlpha());
+        FORMATS.put("Litematica", new SchematicLitematica());
 
         FORMAT_DEFAULT = Names.NBT.FORMAT_ALPHA;
     }

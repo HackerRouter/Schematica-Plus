@@ -13,6 +13,7 @@ import com.github.lunatrius.schematica.handler.ConfigurationHandler;
 import com.github.lunatrius.schematica.proxy.ClientProxy;
 import com.github.lunatrius.schematica.reference.Constants;
 import com.github.lunatrius.schematica.reference.Names;
+import com.github.lunatrius.schematica.world.schematic.SchematicFormat;
 
 public class GuiSchematicSave extends GuiScreenBase {
 
@@ -33,6 +34,8 @@ public class GuiSchematicSave extends GuiScreenBase {
 
     private GuiButton btnEnable = null;
     private GuiButton btnSave = null;
+    private GuiButton btnSaveNBT = null;
+    private GuiButton btnSaveEntities = null;
     private GuiTextField tfFilename = null;
 
     private String filename = "";
@@ -92,6 +95,24 @@ public class GuiSchematicSave extends GuiScreenBase {
 
         this.numericBZ = new GuiNumericField(this.fontRendererObj, id++, this.centerX + 30, this.centerY + 20);
         this.buttonList.add(this.numericBZ);
+
+        this.btnSaveNBT = new GuiButton(
+            id++,
+            this.width - 210,
+            this.height - 55,
+            100,
+            20,
+            I18n.format(Names.Gui.Save.SAVE_NBT) + ": " + (SchematicFormat.saveNBT ? this.strOn : this.strOff));
+        this.buttonList.add(this.btnSaveNBT);
+
+        this.btnSaveEntities = new GuiButton(
+            id++,
+            this.width - 105,
+            this.height - 55,
+            100,
+            20,
+            I18n.format(Names.Gui.Save.SAVE_ENTITIES) + ": " + (SchematicFormat.saveEntities ? this.strOn : this.strOff));
+        this.buttonList.add(this.btnSaveEntities);
 
         this.btnEnable = new GuiButton(
             id++,
@@ -163,6 +184,12 @@ public class GuiSchematicSave extends GuiScreenBase {
             } else if (guiButton.id == this.numericBZ.id) {
                 ClientProxy.pointB.z = this.numericBZ.getValue();
                 ClientProxy.updatePoints();
+            } else if (guiButton.id == this.btnSaveNBT.id) {
+                SchematicFormat.saveNBT = !SchematicFormat.saveNBT;
+                this.btnSaveNBT.displayString = I18n.format(Names.Gui.Save.SAVE_NBT) + ": " + (SchematicFormat.saveNBT ? this.strOn : this.strOff);
+            } else if (guiButton.id == this.btnSaveEntities.id) {
+                SchematicFormat.saveEntities = !SchematicFormat.saveEntities;
+                this.btnSaveEntities.displayString = I18n.format(Names.Gui.Save.SAVE_ENTITIES) + ": " + (SchematicFormat.saveEntities ? this.strOn : this.strOff);
             } else if (guiButton.id == this.btnEnable.id) {
                 ClientProxy.isRenderingGuide = !ClientProxy.isRenderingGuide && Schematica.proxy.isSaveEnabled;
                 this.btnEnable.displayString = ClientProxy.isRenderingGuide ? this.strOn : this.strOff;
@@ -196,7 +223,7 @@ public class GuiSchematicSave extends GuiScreenBase {
 
     @Override
     public void drawScreen(int par1, int par2, float par3) {
-        drawString(this.fontRendererObj, this.strSaveSelection, this.width - 205, this.height - 45, 0xFFFFFF);
+        drawString(this.fontRendererObj, this.strSaveSelection, this.width - 205, this.height - 70, 0xFFFFFF);
 
         drawString(this.fontRendererObj, this.strX, this.centerX - 145, this.centerY - 24, 0xFFFFFF);
         drawString(

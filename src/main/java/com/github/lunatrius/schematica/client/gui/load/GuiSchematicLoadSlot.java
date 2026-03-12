@@ -64,7 +64,7 @@ public class GuiSchematicLoadSlot extends GuiSlot {
         if (schematic.isDirectory()) {
             schematicName += "/";
         } else {
-            schematicName = schematicName.replaceAll("(?i)\\.schematic$", "");
+            schematicName = schematicName.replaceAll("(?i)\\.(schematic|litematic|schemplus)$", "");
         }
 
         GuiHelper

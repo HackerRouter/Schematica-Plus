@@ -87,6 +87,10 @@ public class SchematicPrinter {
         }
     }
 
+    /**
+     * Attempts to place one block from the schematic near the player.
+     * @return true if a block was placed or there are still blocks to place, false if printing is complete.
+     */
     public boolean print() {
         final EntityClientPlayerMP player = this.minecraft.thePlayer;
         final World world = this.minecraft.theWorld;
@@ -133,6 +137,51 @@ public class SchematicPrinter {
 
         player.inventory.currentItem = slot;
         syncSneaking(player, isSneaking);
+        // No block was placed in this pass — could be complete or just out of range
+        return true;
+    }
+
+    /**
+     * Checks whether all non-air blocks in the schematic match the real world,
+     * meaning the print job is complete.
+     */
+    public boolean isComplete() {
+        if (this.schematic == null) {
+            return true;
+        }
+
+        final World world = this.minecraft.theWorld;
+        if (world == null) {
+            return false;
+        }
+
+        final int width = this.schematic.getWidth();
+        final int height = this.schematic.getHeight();
+        final int length = this.schematic.getLength();
+
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                for (int z = 0; z < length; z++) {
+                    final Block block = this.schematic.getBlock(x, y, z);
+                    if (block == null || block.isAir(this.schematic, x, y, z)) {
+                        continue;
+                    }
+
+                    final int wx = this.schematic.position.x + x;
+                    final int wy = this.schematic.position.y + y;
+                    final int wz = this.schematic.position.z + z;
+
+                    final Block realBlock = world.getBlock(wx, wy, wz);
+                    final int metadata = this.schematic.getBlockMetadata(x, y, z);
+                    final int realMetadata = world.getBlockMetadata(wx, wy, wz);
+
+                    if (block != realBlock || metadata != realMetadata) {
+                        return false;
+                    }
+                }
+            }
+        }
+
         return true;
     }
 

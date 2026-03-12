@@ -1,0 +1,151 @@
+package com.github.lunatrius.schematica.client.gui.control;
+
+import net.minecraft.client.gui.GuiButton;
+import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.client.resources.I18n;
+
+import com.github.lunatrius.core.client.gui.GuiScreenBase;
+import com.github.lunatrius.schematica.Schematica;
+import com.github.lunatrius.schematica.client.renderer.RendererSchematicGlobal;
+import com.github.lunatrius.schematica.client.world.SchematicWorld;
+import com.github.lunatrius.schematica.proxy.ClientProxy;
+import com.github.lunatrius.schematica.reference.Names;
+
+public class GuiSchematicInstances extends GuiScreenBase {
+
+    private GuiSchematicInstancesSlot slotList;
+    private GuiButton btnSwitch;
+    private GuiButton btnToggleVisible;
+    private GuiButton btnToggleEntities;
+    private GuiButton btnRemove;
+    private GuiButton btnDone;
+
+    private final String strTitle = I18n.format(Names.Gui.Instances.TITLE);
+
+    public GuiSchematicInstances(GuiScreen parent) {
+        super(parent);
+    }
+
+    @Override
+    public void initGui() {
+        int id = 0;
+        int btnWidth = 70;
+        int btnY = this.height - 28;
+        int totalWidth = btnWidth * 5 + 16; // 5 buttons with 4px gaps
+        int startX = (this.width - totalWidth) / 2;
+
+        this.btnSwitch = new GuiButton(id++, startX, btnY, btnWidth, 20, I18n.format(Names.Gui.Instances.SWITCH));
+        this.buttonList.add(this.btnSwitch);
+
+        this.btnToggleVisible = new GuiButton(id++, startX + (btnWidth + 4), btnY, btnWidth, 20, I18n.format(Names.Gui.Instances.TOGGLE_VISIBLE));
+        this.buttonList.add(this.btnToggleVisible);
+
+        this.btnToggleEntities = new GuiButton(id++, startX + (btnWidth + 4) * 2, btnY, btnWidth, 20, I18n.format(Names.Gui.Instances.TOGGLE_ENTITIES));
+        this.buttonList.add(this.btnToggleEntities);
+
+        this.btnRemove = new GuiButton(id++, startX + (btnWidth + 4) * 3, btnY, btnWidth, 20, I18n.format(Names.Gui.Control.UNLOAD));
+        this.buttonList.add(this.btnRemove);
+
+        this.btnDone = new GuiButton(id++, startX + (btnWidth + 4) * 4, btnY, btnWidth, 20, I18n.format(Names.Gui.DONE));
+        this.buttonList.add(this.btnDone);
+
+        this.slotList = new GuiSchematicInstancesSlot(this);
+
+        updateButtonStates();
+    }
+
+    @Override
+    protected void actionPerformed(GuiButton button) {
+        if (!button.enabled) return;
+
+        if (button.id == this.btnSwitch.id) {
+            switchToSelected();
+        } else if (button.id == this.btnToggleVisible.id) {
+            toggleVisibility();
+        } else if (button.id == this.btnToggleEntities.id) {
+            toggleEntities();
+        } else if (button.id == this.btnRemove.id) {
+            removeSelected();
+        } else if (button.id == this.btnDone.id) {
+            this.mc.displayGuiScreen(this.parentScreen);
+        }
+    }
+
+    /** Called by the slot on double-click. */
+    public void switchToSelected() {
+        int idx = this.slotList.selectedIndex;
+        if (idx < 0 || idx >= ClientProxy.loadedSchematics.size()) return;
+
+        SchematicWorld sw = ClientProxy.loadedSchematics.get(idx);
+        ClientProxy.selectSchematic(sw);
+        updateButtonStates();
+    }
+
+    private void toggleVisibility() {
+        int idx = this.slotList.selectedIndex;
+        if (idx < 0 || idx >= ClientProxy.loadedSchematics.size()) return;
+
+        SchematicWorld sw = ClientProxy.loadedSchematics.get(idx);
+        sw.toggleRendering();
+        updateButtonStates();
+    }
+
+    private void toggleEntities() {
+        int idx = this.slotList.selectedIndex;
+        if (idx < 0 || idx >= ClientProxy.loadedSchematics.size()) return;
+
+        SchematicWorld sw = ClientProxy.loadedSchematics.get(idx);
+        sw.isRenderingEntities = !sw.isRenderingEntities;
+        updateButtonStates();
+    }
+
+    private void removeSelected() {
+        int idx = this.slotList.selectedIndex;
+        if (idx < 0 || idx >= ClientProxy.loadedSchematics.size()) return;
+
+        SchematicWorld sw = ClientProxy.loadedSchematics.get(idx);
+        boolean wasActive = (sw == ClientProxy.schematic);
+
+        ClientProxy.loadedSchematics.remove(idx);
+        RendererSchematicGlobal.INSTANCE.removeRendererSchematicChunks(sw);
+
+        if (wasActive) {
+            if (!ClientProxy.loadedSchematics.isEmpty()) {
+                int newIdx = Math.min(idx, ClientProxy.loadedSchematics.size() - 1);
+                ClientProxy.selectSchematic(ClientProxy.loadedSchematics.get(newIdx));
+            } else {
+                Schematica.proxy.unloadSchematic();
+            }
+        }
+
+        // Adjust selection
+        if (this.slotList.selectedIndex >= ClientProxy.loadedSchematics.size()) {
+            this.slotList.selectedIndex = ClientProxy.loadedSchematics.size() - 1;
+        }
+        updateButtonStates();
+    }
+
+    private void updateButtonStates() {
+        boolean hasSelection = this.slotList != null
+            && this.slotList.selectedIndex >= 0
+            && this.slotList.selectedIndex < ClientProxy.loadedSchematics.size();
+
+        this.btnSwitch.enabled = hasSelection;
+        this.btnToggleVisible.enabled = hasSelection;
+        this.btnToggleEntities.enabled = hasSelection;
+        this.btnRemove.enabled = hasSelection;
+    }
+
+    @Override
+    public void drawScreen(int mouseX, int mouseY, float partialTicks) {
+        this.slotList.drawScreen(mouseX, mouseY, partialTicks);
+
+        drawCenteredString(this.fontRendererObj, this.strTitle, this.width / 2, 4, 0x00FFFFFF);
+
+        // Show count
+        String countStr = ClientProxy.loadedSchematics.size() + " " + I18n.format(Names.Gui.Instances.LOADED);
+        drawCenteredString(this.fontRendererObj, countStr, this.width / 2, this.height - 46, 0x00808080);
+
+        super.drawScreen(mouseX, mouseY, partialTicks);
+    }
+}

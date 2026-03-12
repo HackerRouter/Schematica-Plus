@@ -166,6 +166,8 @@ public final class Names {
             public static final String POINT_BLUE = "schematica.gui.point.blue";
             public static final String SAVE = "schematica.gui.save";
             public static final String SAVE_SELECTION = "schematica.gui.saveselection";
+            public static final String SAVE_NBT = "schematica.gui.savenbt";
+            public static final String SAVE_ENTITIES = "schematica.gui.saveentities";
         }
 
         public static final class Control {
@@ -197,6 +199,16 @@ public final class Names {
             public static final String DUMP = "schematica.gui.materialdump";
         }
 
+        public static final class Instances {
+
+            public static final String TITLE = "schematica.gui.instances.title";
+            public static final String SWITCH = "schematica.gui.instances.switch";
+            public static final String TOGGLE_VISIBLE = "schematica.gui.instances.toggleVisible";
+            public static final String TOGGLE_ENTITIES = "schematica.gui.instances.toggleEntities";
+            public static final String LOADED = "schematica.gui.instances.loaded";
+            public static final String INSTANCES = "schematica.gui.instances";
+        }
+
         public static final String X = "schematica.gui.x";
         public static final String Y = "schematica.gui.y";
         public static final String Z = "schematica.gui.z";
@@ -218,6 +230,9 @@ public final class Names {
         public static final String CONTROL = "schematica.key.control";
         public static final String LAYER_INC = "schematica.key.layerInc";
         public static final String LAYER_DEC = "schematica.key.layerDec";
+        public static final String TOOL_MODE = "schematica.key.toolMode";
+        public static final String TOOL_USE = "schematica.key.toolUse";
+        public static final String TOOL_ATTACK = "schematica.key.toolAttack";
     }
 
     public static final class NBT {

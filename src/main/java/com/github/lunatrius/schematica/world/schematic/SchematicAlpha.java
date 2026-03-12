@@ -199,42 +199,46 @@ public class SchematicAlpha extends SchematicFormat {
 
             int count = 20;
             NBTTagList tileEntitiesList = new NBTTagList();
-            for (TileEntity tileEntity : schematic.getTileEntities()) {
-                try {
-                    if (!tileEntity.hasWorldObj()) {
-                        tileEntity.setWorldObj(backupWorld);
+            if (SchematicFormat.saveNBT) {
+                for (TileEntity tileEntity : schematic.getTileEntities()) {
+                    try {
+                        if (!tileEntity.hasWorldObj()) {
+                            tileEntity.setWorldObj(backupWorld);
+                        }
+                        NBTTagCompound tileEntityTagCompound = NBTHelper.writeTileEntityToCompound(tileEntity);
+                        tileEntitiesList.appendTag(tileEntityTagCompound);
+                    } catch (Exception e) {
+                        int pos = tileEntity.xCoord
+                            + (tileEntity.yCoord * schematic.getLength() + tileEntity.zCoord) * schematic.getWidth();
+                        if (--count > 0) {
+                            Block block = schematic.getBlock(tileEntity.xCoord, tileEntity.yCoord, tileEntity.zCoord);
+                            Reference.logger.error(
+                                "Block {}[{}] with TileEntity %s failed to save! Replacing with bedrock...",
+                                block,
+                                block != null ? BLOCK_REGISTRY.getNameForObject(block) : "?",
+                                tileEntity.getClass()
+                                    .getName(),
+                                e);
+                        }
+                        localBlocks[pos] = (byte) BLOCK_REGISTRY.getId(Blocks.bedrock);
+                        localMetadata[pos] = 0;
+                        extraBlocks[pos] = 0;
                     }
-                    NBTTagCompound tileEntityTagCompound = NBTHelper.writeTileEntityToCompound(tileEntity);
-                    tileEntitiesList.appendTag(tileEntityTagCompound);
-                } catch (Exception e) {
-                    int pos = tileEntity.xCoord
-                        + (tileEntity.yCoord * schematic.getLength() + tileEntity.zCoord) * schematic.getWidth();
-                    if (--count > 0) {
-                        Block block = schematic.getBlock(tileEntity.xCoord, tileEntity.yCoord, tileEntity.zCoord);
-                        Reference.logger.error(
-                            "Block {}[{}] with TileEntity %s failed to save! Replacing with bedrock...",
-                            block,
-                            block != null ? BLOCK_REGISTRY.getNameForObject(block) : "?",
-                            tileEntity.getClass()
-                                .getName(),
-                            e);
-                    }
-                    localBlocks[pos] = (byte) BLOCK_REGISTRY.getId(Blocks.bedrock);
-                    localMetadata[pos] = 0;
-                    extraBlocks[pos] = 0;
                 }
             }
 
             final NBTTagList entityList = new NBTTagList();
-            final List<Entity> entities = schematic.getEntities();
-            for (Entity entity : entities) {
-                try {
-                    final NBTTagCompound entityCompound = NBTHelper.writeEntityToCompound(entity);
-                    if (entityCompound != null) {
-                        entityList.appendTag(entityCompound);
+            if (SchematicFormat.saveEntities) {
+                final List<Entity> entities = schematic.getEntities();
+                for (Entity entity : entities) {
+                    try {
+                        final NBTTagCompound entityCompound = NBTHelper.writeEntityToCompound(entity);
+                        if (entityCompound != null) {
+                            entityList.appendTag(entityCompound);
+                        }
+                    } catch (Throwable t) {
+                        Reference.logger.error("Entity {} failed to save, skipping!", entity, t);
                     }
-                } catch (Throwable t) {
-                    Reference.logger.error("Entity {} failed to save, skipping!", entity, t);
                 }
             }
 
@@ -299,29 +303,31 @@ public class SchematicAlpha extends SchematicFormat {
 
             int count = 20;
             NBTTagList tileEntitiesList = new NBTTagList();
-            for (TileEntity tileEntity : schematic.getTileEntities()) {
-                try {
-                    if (!tileEntity.hasWorldObj()) {
-                        tileEntity.setWorldObj(backupWorld);
+            if (SchematicFormat.saveNBT) {
+                for (TileEntity tileEntity : schematic.getTileEntities()) {
+                    try {
+                        if (!tileEntity.hasWorldObj()) {
+                            tileEntity.setWorldObj(backupWorld);
+                        }
+                        NBTTagCompound tileEntityTagCompound = NBTHelper.writeTileEntityToCompound(tileEntity);
+                        tileEntitiesList.appendTag(tileEntityTagCompound);
+                    } catch (Exception e) {
+                        int pos = tileEntity.xCoord
+                            + (tileEntity.yCoord * schematic.getLength() + tileEntity.zCoord) * schematic.getWidth();
+                        if (--count > 0) {
+                            Block block = schematic.getBlock(tileEntity.xCoord, tileEntity.yCoord, tileEntity.zCoord);
+                            Reference.logger.error(
+                                "Block {}[{}] with TileEntity %s failed to save! Replacing with bedrock...",
+                                block,
+                                block != null ? BLOCK_REGISTRY.getNameForObject(block) : "?",
+                                tileEntity.getClass()
+                                    .getName(),
+                                e);
+                        }
+                        localBlocks[pos] = (byte) BLOCK_REGISTRY.getId(Blocks.bedrock);
+                        localMetadata[pos] = 0;
+                        extraBlocks[pos] = 0;
                     }
-                    NBTTagCompound tileEntityTagCompound = NBTHelper.writeTileEntityToCompound(tileEntity);
-                    tileEntitiesList.appendTag(tileEntityTagCompound);
-                } catch (Exception e) {
-                    int pos = tileEntity.xCoord
-                        + (tileEntity.yCoord * schematic.getLength() + tileEntity.zCoord) * schematic.getWidth();
-                    if (--count > 0) {
-                        Block block = schematic.getBlock(tileEntity.xCoord, tileEntity.yCoord, tileEntity.zCoord);
-                        Reference.logger.error(
-                            "Block {}[{}] with TileEntity %s failed to save! Replacing with bedrock...",
-                            block,
-                            block != null ? BLOCK_REGISTRY.getNameForObject(block) : "?",
-                            tileEntity.getClass()
-                                .getName(),
-                            e);
-                    }
-                    localBlocks[pos] = (byte) BLOCK_REGISTRY.getId(Blocks.bedrock);
-                    localMetadata[pos] = 0;
-                    extraBlocks[pos] = 0;
                 }
             }
 
@@ -334,15 +340,17 @@ public class SchematicAlpha extends SchematicFormat {
             }
 
             final NBTTagList entityList = new NBTTagList();
-            final List<Entity> entities = schematic.getEntities();
-            for (Entity entity : entities) {
-                try {
-                    final NBTTagCompound entityCompound = NBTHelper.writeEntityToCompound(entity);
-                    if (entityCompound != null) {
-                        entityList.appendTag(entityCompound);
+            if (SchematicFormat.saveEntities) {
+                final List<Entity> entities = schematic.getEntities();
+                for (Entity entity : entities) {
+                    try {
+                        final NBTTagCompound entityCompound = NBTHelper.writeEntityToCompound(entity);
+                        if (entityCompound != null) {
+                            entityList.appendTag(entityCompound);
+                        }
+                    } catch (Throwable t) {
+                        Reference.logger.error("Entity {} failed to save, skipping!", entity, t);
                     }
-                } catch (Throwable t) {
-                    Reference.logger.error("Entity {} failed to save, skipping!", entity, t);
                 }
             }
 

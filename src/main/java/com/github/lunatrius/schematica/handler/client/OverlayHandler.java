@@ -8,6 +8,7 @@ import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import com.github.lunatrius.schematica.client.world.SchematicWorld;
 import com.github.lunatrius.schematica.handler.ConfigurationHandler;
 import com.github.lunatrius.schematica.proxy.ClientProxy;
+import com.github.lunatrius.schematica.tool.ToolManager;
 
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.registry.FMLControlledNamespacedRegistry;
@@ -25,6 +26,7 @@ public class OverlayHandler {
             if (schematic != null && schematic.isRendering) {
                 event.left.add("");
                 event.left.add("[§6Schematica§r] " + schematic.getDebugDimensions());
+                event.left.add("[§6Tool§r] " + ToolManager.getCurrentMode().getDisplayName());
 
                 final MovingObjectPosition mop = ClientProxy.movingObjectPosition;
                 if (mop != null && mop.typeOfHit == MovingObjectPosition.MovingObjectType.BLOCK) {
