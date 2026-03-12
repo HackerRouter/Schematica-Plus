@@ -8,9 +8,11 @@ import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.world.World;
+import net.minecraft.world.WorldServer;
 
 import com.github.lunatrius.core.util.vector.Vector3i;
 import com.github.lunatrius.schematica.api.ISchematic;
@@ -109,8 +111,33 @@ public abstract class CommonProxy {
 
     public void unloadSchematic() {}
 
+    /**
+     * Attempts to resolve the server-side world corresponding to the given (possibly client-side) world.
+     * Server-side worlds contain full tile entity NBT data (inventories, etc.) that client worlds lack.
+     * Falls back to the original world if no server world is available (e.g. on a dedicated server or
+     * if the integrated server is not running).
+     */
+    protected World getServerWorld(final World world) {
+        try {
+            final MinecraftServer server = MinecraftServer.getServer();
+            if (server != null) {
+                final WorldServer serverWorld = server.worldServerForDimension(world.provider.dimensionId);
+                if (serverWorld != null) {
+                    return serverWorld;
+                }
+            }
+        } catch (Exception e) {
+            Reference.logger.debug("Could not obtain server world, using client world for TE data", e);
+        }
+        return world;
+    }
+
     public void copyChunkToSchematic(final ISchematic schematic, final World world, final int chunkX, final int chunkZ,
         final int minX, final int maxX, final int minY, final int maxY, final int minZ, final int maxZ) {
+        // Try to use the server-side world for tile entity data, since client-side TEs
+        // often lack full NBT (e.g. inventories are not synced to the client).
+        final World serverWorld = getServerWorld(world);
+
         final int localMinX = minX < (chunkX << 4) ? 0 : (minX & 15);
         final int localMaxX = maxX > ((chunkX << 4) + 15) ? 15 : (maxX & 15);
         final int localMinZ = minZ < (chunkZ << 4) ? 0 : (minZ & 15);
@@ -132,7 +159,11 @@ public abstract class CommonProxy {
                         final boolean success = schematic.setBlock(localX, localY, localZ, block, metadata);
 
                         if (success && block.hasTileEntity(metadata)) {
-                            final TileEntity tileEntity = world.getTileEntity(x, y, z);
+                            // Prefer server-side TE for full NBT data (inventories, etc.)
+                            TileEntity tileEntity = serverWorld.getTileEntity(x, y, z);
+                            if (tileEntity == null) {
+                                tileEntity = world.getTileEntity(x, y, z);
+                            }
                             if (tileEntity != null) {
                                 try {
                                     final TileEntity reloadedTileEntity = NBTHelper

@@ -1,21 +1,33 @@
 package com.github.lunatrius.schematica.tool;
 
+import java.util.UUID;
+
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityClientPlayerMP;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityList;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagDouble;
+import net.minecraft.nbt.NBTTagList;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.world.World;
+import net.minecraft.world.WorldServer;
 
 import com.github.lunatrius.core.util.vector.Vector3i;
 import com.github.lunatrius.schematica.client.gui.load.GuiSchematicLoad;
 import com.github.lunatrius.schematica.client.renderer.RendererSchematicGlobal;
 import com.github.lunatrius.schematica.client.world.SchematicWorld;
+import com.github.lunatrius.schematica.nbt.NBTHelper;
 import com.github.lunatrius.schematica.proxy.ClientProxy;
+import com.github.lunatrius.schematica.reference.Reference;
 
 import cpw.mods.fml.common.registry.FMLControlledNamespacedRegistry;
 import cpw.mods.fml.common.registry.GameData;
@@ -169,7 +181,8 @@ public class ToolHandler {
 
     /**
      * Pastes the loaded schematic into the real world at its current position.
-     * Creative-only operation. Uses /setblock commands for instant placement.
+     * Creative-only operation. Uses direct server world access when available
+     * (singleplayer) for full NBT support, falls back to /setblock commands.
      */
     private static boolean handlePasteUse(EntityPlayer player) {
         if (!player.capabilities.isCreativeMode) {
@@ -183,17 +196,140 @@ public class ToolHandler {
             return false;
         }
 
-        // In creative mode, use /setblock commands for instant one-shot paste.
-        // This is more like the player placing blocks manually.
-        // If the player doesn't have command permission, the server will silently reject.
-        int count = pasteWithSetblock(player, schematic);
-        sendChat(player, "Pasted " + count + " blocks via setblock.");
+        // Try direct server world placement first (preserves tile entity NBT fully).
+        // Falls back to /setblock commands if no server world is available.
+        WorldServer serverWorld = getServerWorld(player);
+        int count;
+        if (serverWorld != null) {
+            count = pasteDirectly(serverWorld, schematic);
+            int entityCount = schematic.getEntities().size();
+            sendChat(player, "Pasted " + count + " blocks and " + entityCount + " entities directly.");
+        } else {
+            count = pasteWithSetblock(player, schematic);
+            sendChat(player, "Pasted " + count + " blocks via setblock.");
+        }
         return true;
     }
 
     /**
+     * Gets the server-side world for the player's dimension, if available.
+     * Returns null on dedicated servers (where client has no server access).
+     */
+    private static WorldServer getServerWorld(EntityPlayer player) {
+        try {
+            MinecraftServer server = MinecraftServer.getServer();
+            if (server != null) {
+                return server.worldServerForDimension(player.dimension);
+            }
+        } catch (Exception e) {
+            // Not available
+        }
+        return null;
+    }
+
+    /**
+     * Pastes the schematic directly into the server world, including full tile entity
+     * NBT data (inventories, sign text, etc.). This bypasses chat command length limits.
+     */
+    private static int pasteDirectly(WorldServer serverWorld, SchematicWorld schematic) {
+        int count = 0;
+        Vector3i pos = schematic.position;
+
+        // Pass 1: Place all blocks WITHOUT block updates (flag 2 = send to client only).
+        // This prevents onBlockAdded() from resetting directional metadata (e.g. dispensers,
+        // pistons, furnaces) based on surrounding context during placement.
+        for (int y = 0; y < schematic.getHeight(); y++) {
+            for (int x = 0; x < schematic.getWidth(); x++) {
+                for (int z = 0; z < schematic.getLength(); z++) {
+                    Block block = schematic.getBlock(x, y, z);
+                    if (block == Blocks.air || block == null) {
+                        continue;
+                    }
+                    int metadata = schematic.getBlockMetadata(x, y, z);
+                    int wx = pos.x + x;
+                    int wy = pos.y + y;
+                    int wz = pos.z + z;
+
+                    // Flag 2 = send to clients, no block update / no onBlockAdded
+                    serverWorld.setBlock(wx, wy, wz, block, metadata, 2);
+                    count++;
+
+                    // Copy tile entity NBT data if present
+                    TileEntity te = schematic.getTileEntity(x, y, z);
+                    if (te != null) {
+                        try {
+                            NBTTagCompound nbt = new NBTTagCompound();
+                            te.writeToNBT(nbt);
+                            // Update coordinates to world position
+                            nbt.setInteger("x", wx);
+                            nbt.setInteger("y", wy);
+                            nbt.setInteger("z", wz);
+                            // Load the TE from NBT into the server world
+                            TileEntity newTe = TileEntity.createAndLoadEntity(nbt);
+                            if (newTe != null) {
+                                serverWorld.setTileEntity(wx, wy, wz, newTe);
+                            }
+                        } catch (Exception e) {
+                            Reference.logger.debug("Failed to paste tile entity NBT at {},{},{}", wx, wy, wz, e);
+                        }
+                    }
+                }
+            }
+        }
+
+        // Spawn entities with offset
+        for (Entity entity : schematic.getEntities()) {
+            try {
+                NBTTagCompound nbt = new NBTTagCompound();
+                entity.writeToNBTOptional(nbt);
+
+                // Update the Pos tag list with world-offset coordinates
+                NBTTagList posList = new NBTTagList();
+                posList.appendTag(new NBTTagDouble(entity.posX + pos.x));
+                posList.appendTag(new NBTTagDouble(entity.posY + pos.y));
+                posList.appendTag(new NBTTagDouble(entity.posZ + pos.z));
+                nbt.setTag("Pos", posList);
+
+                // Remove old UUID so a new one is generated on creation
+                nbt.removeTag("UUIDMost");
+                nbt.removeTag("UUIDLeast");
+
+                Entity newEntity = EntityList.createEntityFromNBT(nbt, serverWorld);
+                if (newEntity != null) {
+                    serverWorld.spawnEntityInWorld(newEntity);
+                }
+            } catch (Exception e) {
+                Reference.logger.debug("Failed to paste entity at schematic offset", e);
+            }
+        }
+
+        // Pass 2: Re-apply metadata for all non-air blocks to ensure it wasn't
+        // corrupted, then notify neighbors so redstone etc. updates correctly.
+        for (int y = 0; y < schematic.getHeight(); y++) {
+            for (int x = 0; x < schematic.getWidth(); x++) {
+                for (int z = 0; z < schematic.getLength(); z++) {
+                    Block block = schematic.getBlock(x, y, z);
+                    if (block == Blocks.air || block == null) {
+                        continue;
+                    }
+                    int metadata = schematic.getBlockMetadata(x, y, z);
+                    int wx = pos.x + x;
+                    int wy = pos.y + y;
+                    int wz = pos.z + z;
+
+                    // Force-set the correct metadata and notify neighbors
+                    serverWorld.setBlockMetadataWithNotify(wx, wy, wz, metadata, 3);
+                }
+            }
+        }
+
+        return count;
+    }
+
+    /**
      * Pastes the schematic using /setblock commands for each non-air block.
-     * This is more like the player placing blocks manually — instant and balanced.
+     * Used as fallback when direct server world access is not available.
+     * Note: tile entity NBT data cannot be included via chat commands due to length limits.
      */
     private static int pasteWithSetblock(EntityPlayer player, SchematicWorld schematic) {
         EntityClientPlayerMP clientPlayer = Minecraft.getMinecraft().thePlayer;
@@ -223,6 +359,22 @@ public class ToolHandler {
                 }
             }
         }
+
+        // Spawn entities via /summon commands
+        for (Entity entity : schematic.getEntities()) {
+            try {
+                String entityName = EntityList.getEntityString(entity);
+                if (entityName == null) continue;
+                double wx = entity.posX + pos.x;
+                double wy = entity.posY + pos.y;
+                double wz = entity.posZ + pos.z;
+                String cmd = "/summon " + entityName + " " + wx + " " + wy + " " + wz;
+                clientPlayer.sendChatMessage(cmd);
+            } catch (Exception e) {
+                Reference.logger.debug("Failed to summon entity via command", e);
+            }
+        }
+
         return count;
     }
 

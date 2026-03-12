@@ -7,6 +7,7 @@ import java.util.Set;
 
 import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityList;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -22,6 +23,7 @@ import com.github.lunatrius.schematica.handler.ConfigurationHandler;
 import com.github.lunatrius.schematica.nbt.NBTHelper;
 import com.github.lunatrius.schematica.reference.Names;
 import com.github.lunatrius.schematica.reference.Reference;
+import com.github.lunatrius.schematica.world.WorldDummy;
 import com.github.lunatrius.schematica.world.storage.Schematic;
 
 import cpw.mods.fml.common.registry.FMLControlledNamespacedRegistry;
@@ -81,6 +83,19 @@ public class SchematicAlpha extends SchematicFormat {
                     }
                 } catch (Exception e) {
                     Reference.logger.error("TileEntity failed to load properly!", e);
+                }
+            }
+
+            NBTTagList entitiesList = tagCompound.getTagList(Names.NBT.ENTITIES, Constants.NBT.TAG_COMPOUND);
+            for (int i = 0; i < entitiesList.tagCount(); i++) {
+                try {
+                    NBTTagCompound entityCompound = entitiesList.getCompoundTagAt(i);
+                    Entity entity = EntityList.createEntityFromNBT(entityCompound, WorldDummy.instance());
+                    if (entity != null) {
+                        schematic.addEntity(entity);
+                    }
+                } catch (Exception e) {
+                    Reference.logger.error("Entity failed to load properly!", e);
                 }
             }
 
@@ -148,6 +163,19 @@ public class SchematicAlpha extends SchematicFormat {
                     }
                 } catch (Exception e) {
                     Reference.logger.error("TileEntity failed to load properly!", e);
+                }
+            }
+
+            NBTTagList entitiesList = tagCompound.getTagList(Names.NBT.ENTITIES, Constants.NBT.TAG_COMPOUND);
+            for (int i = 0; i < entitiesList.tagCount(); i++) {
+                try {
+                    NBTTagCompound entityCompound = entitiesList.getCompoundTagAt(i);
+                    Entity entity = EntityList.createEntityFromNBT(entityCompound, WorldDummy.instance());
+                    if (entity != null) {
+                        schematic.addEntity(entity);
+                    }
+                } catch (Exception e) {
+                    Reference.logger.error("Entity failed to load properly!", e);
                 }
             }
 

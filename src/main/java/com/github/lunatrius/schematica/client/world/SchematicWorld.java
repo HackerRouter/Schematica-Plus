@@ -74,6 +74,11 @@ public class SchematicWorld extends World {
         this.isRendering = false;
         this.isRenderingLayer = false;
         this.renderingLayer = 0;
+
+        // Auto-enable entity rendering if the schematic contains entities
+        if (!schematic.getEntities().isEmpty()) {
+            this.isRenderingEntities = true;
+        }
     }
 
     public SchematicWorld(ISchematic schematic, String filename) {

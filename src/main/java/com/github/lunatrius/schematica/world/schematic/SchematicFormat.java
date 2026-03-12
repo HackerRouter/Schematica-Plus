@@ -20,8 +20,8 @@ public abstract class SchematicFormat {
     public static final Map<String, SchematicFormat> FORMATS = new HashMap<>();
     public static String FORMAT_DEFAULT;
 
-    /** When true, tile entity NBT data will be included in saved schematics. Off by default. */
-    public static boolean saveNBT = false;
+    /** When true, tile entity NBT data will be included in saved schematics. On by default. */
+    public static boolean saveNBT = true;
     /** When true, entities will be included in saved schematics. Off by default. */
     public static boolean saveEntities = false;
 

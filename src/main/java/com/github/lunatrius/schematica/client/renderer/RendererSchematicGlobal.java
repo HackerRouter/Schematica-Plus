@@ -321,12 +321,61 @@ public class RendererSchematicGlobal {
 
     private void renderEntities(SchematicWorld schematic) {
         RenderManager renderManager = RenderManager.instance;
+
+        // The GL matrix is translated by (sw.position - playerPosition).
+        // renderEntitySimple renders at (entity.pos - renderManager.renderPos).
+        // Final screen position = GL_translate + render_offset
+        //   = (sw.position - playerPos) + (entity.pos - renderPosX/Y/Z)
+        // Since renderPosX/Y/Z == playerPos, this gives:
+        //   sw.position + entity.pos - 2*playerPos  (WRONG)
+        // We want: sw.position + entity.pos - playerPos
+        // Fix: temporarily offset entity.pos by +playerPos so the -renderPos cancels correctly.
+
         for (Entity entity : schematic.getEntities()) {
             try {
-                double x = entity.posX;
-                double y = entity.posY;
-                double z = entity.posZ;
+                // Save original position
+                double origX = entity.posX;
+                double origY = entity.posY;
+                double origZ = entity.posZ;
+                double origPrevX = entity.prevPosX;
+                double origPrevY = entity.prevPosY;
+                double origPrevZ = entity.prevPosZ;
+                double origLastX = entity.lastTickPosX;
+                double origLastY = entity.lastTickPosY;
+                double origLastZ = entity.lastTickPosZ;
+
+                // Offset entity position so renderEntitySimple places it correctly
+                // in the already-translated GL coordinate space
+                double offsetX = ClientProxy.playerPosition.x;
+                double offsetY = ClientProxy.playerPosition.y;
+                double offsetZ = ClientProxy.playerPosition.z;
+                entity.posX = origX + offsetX;
+                entity.posY = origY + offsetY;
+                entity.posZ = origZ + offsetZ;
+                entity.prevPosX = origX + offsetX;
+                entity.prevPosY = origY + offsetY;
+                entity.prevPosZ = origZ + offsetZ;
+                entity.lastTickPosX = origX + offsetX;
+                entity.lastTickPosY = origY + offsetY;
+                entity.lastTickPosZ = origZ + offsetZ;
+
+                // Temporarily set the entity's world to the client world so the renderer can access textures
+                net.minecraft.world.World originalWorld = entity.worldObj;
+                entity.worldObj = this.minecraft.theWorld;
+
                 renderManager.renderEntitySimple(entity, 0.0f);
+
+                // Restore original state
+                entity.worldObj = originalWorld;
+                entity.posX = origX;
+                entity.posY = origY;
+                entity.posZ = origZ;
+                entity.prevPosX = origPrevX;
+                entity.prevPosY = origPrevY;
+                entity.prevPosZ = origPrevZ;
+                entity.lastTickPosX = origLastX;
+                entity.lastTickPosY = origLastY;
+                entity.lastTickPosZ = origLastZ;
             } catch (Exception e) {
                 // Silently ignore rendering errors for unsupported entities
             }

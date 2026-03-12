@@ -455,14 +455,16 @@ public class ClientProxy extends CommonProxy {
         Reference.logger
             .debug("Loaded {} [w:{},h:{},l:{}]", filename, world.getWidth(), world.getHeight(), world.getLength());
 
-        // Add to loaded list (don't add duplicates by name)
-        Iterator<SchematicWorld> it = loadedSchematics.iterator();
-        while (it.hasNext()) {
-            SchematicWorld existing = it.next();
-            if (existing.name.equals(world.name)) {
-                it.remove();
-                break;
+        // Allow multiple instances of the same schematic — assign unique display name
+        String baseName = world.name;
+        int instanceNum = 1;
+        for (SchematicWorld existing : loadedSchematics) {
+            if (existing.name.equals(baseName) || existing.name.matches("\\Q" + baseName + "\\E #\\d+")) {
+                instanceNum++;
             }
+        }
+        if (instanceNum > 1) {
+            world.name = baseName + " #" + instanceNum;
         }
         loadedSchematics.add(world);
 
