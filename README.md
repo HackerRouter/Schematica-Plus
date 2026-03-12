@@ -2,7 +2,7 @@
 
 Changes from GTNH-ver:
 - Added most functions from [Litematica](https://github.com/maruohon/litematica/)
-- Supports `.litematic` (Still working on this)
+- Supports `.litematic` (Still working on this, it supports 1.12.2 `.litematic` now)
 - Modern GUI from [Litematica](https://github.com/maruohon/litematica/) (Still working on this)
   
 Changes from Original:
