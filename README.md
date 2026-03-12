@@ -1,8 +1,8 @@
 ## Welcome to Schematica Plus!
 
 Changes from GTNH-ver:
-- Added bunch of functions from [Litematica](https://github.com/maruohon/litematica/)
-- Supports Litematica (Still working on this)
+- Added most functions from [Litematica](https://github.com/maruohon/litematica/)
+- Supports `.litematic` (Still working on this)
 - Modern GUI from [Litematica](https://github.com/maruohon/litematica/) (Still working on this)
   
 Changes from Original:
