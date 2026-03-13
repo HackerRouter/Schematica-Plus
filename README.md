@@ -1,10 +1,12 @@
 ## Welcome to Schematica Plus!
 
 Changes from GTNH-ver:
-- Added most functions from [Litematica](https://github.com/maruohon/litematica/)
-- Supports `.litematic` (Still working on this, it supports 1.12.2 `.litematic` now)
+- Added most functions from [Litematica](https://github.com/maruohon/litematica/), made it more user-friendly.
+- For example, it supports loading multiple schematic instances now.
+- For example, it supports pasting schematic directly into the world when having permissions.
+- Supports `.litematic` (I have zero idea on why I decided to implement this, but it does work well)
 - Modern GUI from [Litematica](https://github.com/maruohon/litematica/) (Still working on this)
-  
+
 Changes from Original:
 - Store Coordinates & rotation of schematics per world/server. No more re-entering coordinates for large builds!
 - Fix heavy lag when having lotr armor stands/weapon racks in loaded schematic
