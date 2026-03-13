@@ -12,6 +12,7 @@ import net.minecraft.client.renderer.RenderBlocks;
 import net.minecraft.client.renderer.culling.Frustrum;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.profiler.Profiler;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
 
@@ -363,7 +364,9 @@ public class RendererSchematicGlobal {
                 net.minecraft.world.World originalWorld = entity.worldObj;
                 entity.worldObj = this.minecraft.theWorld;
 
-                renderManager.renderEntitySimple(entity, 0.0f);
+                // Use partialTicks=1.0 so the renderer uses current values (posX, rotationYaw)
+                // rather than interpolating with prev values (which may differ for non-ticking entities)
+                renderManager.renderEntitySimple(entity, 1.0f);
 
                 // Restore original state
                 entity.worldObj = originalWorld;

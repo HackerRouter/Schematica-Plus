@@ -3,11 +3,13 @@ package com.github.lunatrius.schematica.world.schematic;
 /**
  * Unpacks bit-packed long arrays used by the Litematica schematic format.
  * <p>
- * In .litematic files, block state palette indices are stored as tightly packed
- * integers within a long[] array. Each entry uses exactly {@code bitsPerEntry} bits,
- * and entries DO NOT cross long boundaries (tight packing, not spanning).
+ * In .litematic files (all format versions 1-7+), block state palette indices are stored
+ * as tightly packed integers within a long[] array. Each entry uses exactly {@code bitsPerEntry}
+ * bits, and entries CAN cross long boundaries (tight packing).
  * <p>
- * This is a direct port of Litematica's TightLongBackedIntArray logic.
+ * Array length formula: roundUp(totalEntries * bitsPerEntry, 64) / 64
+ * <p>
+ * This is a direct port of Litematica's LitematicaBitArray / TightLongBackedIntArray logic.
  *
  * @author HackerRouter
  */
@@ -31,21 +33,31 @@ public final class LitematicBitArray {
     }
 
     /**
-     * Retrieves the palette index at the given position.
+     * Retrieves the palette index at the given position using tight packing.
+     * Entries can span across two longs.
      *
      * @param index the linear block index (x + z * sizeX + y * sizeX * sizeZ)
      * @return the palette index stored at that position
      */
     public int getAt(long index) {
-        long entriesPerLong = 64L / bitsPerEntry;
-        long longIndex = index / entriesPerLong;
-        long bitOffset = (index % entriesPerLong) * bitsPerEntry;
+        long startOffset = index * (long) this.bitsPerEntry;
+        int startArrIndex = (int) (startOffset >> 6); // startOffset / 64
+        int endArrIndex = (int) (((index + 1L) * (long) this.bitsPerEntry - 1L) >> 6);
+        int startBitOffset = (int) (startOffset & 0x3F); // startOffset % 64
 
-        if (longIndex < 0 || longIndex >= data.length) {
+        if (startArrIndex < 0 || startArrIndex >= data.length) {
             return 0;
         }
 
-        return (int) ((data[(int) longIndex] >>> bitOffset) & maxEntryValue);
+        if (startArrIndex == endArrIndex) {
+            return (int) (this.data[startArrIndex] >>> startBitOffset & this.maxEntryValue);
+        } else {
+            if (endArrIndex >= data.length) {
+                return 0;
+            }
+            int endOffset = 64 - startBitOffset;
+            return (int) ((this.data[startArrIndex] >>> startBitOffset | this.data[endArrIndex] << endOffset) & this.maxEntryValue);
+        }
     }
 
     /**
@@ -62,12 +74,6 @@ public final class LitematicBitArray {
      * @return minimum bits per entry (at least 2)
      */
     public static int getRequiredBits(int paletteSize) {
-        int bits = 0;
-        int value = paletteSize - 1;
-        while (value > 0) {
-            value >>= 1;
-            bits++;
-        }
-        return Math.max(2, bits);
+        return Math.max(2, Integer.SIZE - Integer.numberOfLeadingZeros(paletteSize - 1));
     }
 }
