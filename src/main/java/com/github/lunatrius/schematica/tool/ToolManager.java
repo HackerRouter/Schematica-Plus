@@ -69,16 +69,14 @@ public class ToolManager {
     public void onToolUse(EntityPlayer player, SchematicWorld schematic) {
         MovingObjectPosition mop;
 
-        if (currentMode == ToolMode.SCHEMATIC_PLACEMENT) {
+        if (currentMode == ToolMode.SCHEMATIC_PLACEMENT || currentMode.getUsesAreaSelection()) {
             // Long-range raycast with no practical distance limit
             mop = longRangeRayTrace(player, PLACEMENT_RAYCAST_DISTANCE);
-        } else if (currentMode.getUsesAreaSelection()) {
-            mop = Minecraft.getMinecraft().objectMouseOver;
         } else {
             // For other schematic-based modes, prefer the schematic raycast, fall back to vanilla
             mop = ClientProxy.movingObjectPosition;
             if (mop == null) {
-                mop = Minecraft.getMinecraft().objectMouseOver;
+                mop = longRangeRayTrace(player, PLACEMENT_RAYCAST_DISTANCE);
             }
         }
 
@@ -112,11 +110,12 @@ public class ToolManager {
         MovingObjectPosition mop;
 
         if (currentMode.getUsesAreaSelection()) {
-            mop = Minecraft.getMinecraft().objectMouseOver;
+            // Long-range raycast with no practical distance limit
+            mop = longRangeRayTrace(player, PLACEMENT_RAYCAST_DISTANCE);
         } else {
             mop = ClientProxy.movingObjectPosition;
             if (mop == null) {
-                mop = Minecraft.getMinecraft().objectMouseOver;
+                mop = longRangeRayTrace(player, PLACEMENT_RAYCAST_DISTANCE);
             }
         }
 

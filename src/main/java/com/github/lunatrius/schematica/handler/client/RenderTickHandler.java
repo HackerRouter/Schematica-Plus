@@ -32,7 +32,9 @@ public class RenderTickHandler {
             return null;
         }
 
-        final double blockReachDistance = this.minecraft.playerController.getBlockReachDistance();
+        // Use a large fixed distance instead of blockReachDistance so the schematic
+        // overlay raycast is not limited by the player's reach (typically ~4.5 blocks).
+        final double rayTraceDistance = 256.0;
 
         final double posX = renderViewEntity.posX;
         final double posY = renderViewEntity.posY;
@@ -45,9 +47,9 @@ public class RenderTickHandler {
         final Vec3 vecPosition = renderViewEntity.getPosition(partialTicks);
         final Vec3 vecLook = renderViewEntity.getLook(partialTicks);
         final Vec3 vecExtendedLook = vecPosition.addVector(
-            vecLook.xCoord * blockReachDistance,
-            vecLook.yCoord * blockReachDistance,
-            vecLook.zCoord * blockReachDistance);
+            vecLook.xCoord * rayTraceDistance,
+            vecLook.yCoord * rayTraceDistance,
+            vecLook.zCoord * rayTraceDistance);
 
         renderViewEntity.posX = posX;
         renderViewEntity.posY = posY;

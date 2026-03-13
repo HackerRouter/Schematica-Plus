@@ -11,9 +11,12 @@ import java.util.List;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.resources.I18n;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
 import net.minecraft.item.Item;
+import net.minecraft.util.MovingObjectPosition;
+import net.minecraft.util.Vec3;
 import net.minecraftforge.common.util.ForgeDirection;
 
 import org.lwjgl.Sys;
@@ -162,6 +165,38 @@ public class GuiSchematicLoad extends GuiScreenBase {
         }
     }
 
+    /** Maximum raycast distance for placing schematics at the looked-at block. */
+    private static final double LOAD_RAYCAST_DISTANCE = 256.0;
+
+    /**
+     * Places the schematic at the block the player is looking at (no distance limit).
+     * Falls back to moveSchematicToPlayer if no block is hit or no player is available.
+     */
+    private void moveSchematicToLookTarget(SchematicWorld schematic) {
+        EntityPlayer player = this.mc.thePlayer;
+        if (player == null) {
+            ClientProxy.moveSchematicToPlayer(schematic);
+            return;
+        }
+
+        Vec3 eyePos = Vec3.createVectorHelper(
+            player.posX, player.posY + (double) player.getEyeHeight(), player.posZ);
+        Vec3 lookVec = player.getLookVec();
+        Vec3 endPos = Vec3.createVectorHelper(
+            eyePos.xCoord + lookVec.xCoord * LOAD_RAYCAST_DISTANCE,
+            eyePos.yCoord + lookVec.yCoord * LOAD_RAYCAST_DISTANCE,
+            eyePos.zCoord + lookVec.zCoord * LOAD_RAYCAST_DISTANCE);
+
+        MovingObjectPosition mop = player.worldObj.rayTraceBlocks(eyePos, endPos);
+        if (mop != null && mop.typeOfHit == MovingObjectPosition.MovingObjectType.BLOCK) {
+            // Place one block above the targeted block
+            schematic.position.set(mop.blockX, mop.blockY + 1, mop.blockZ);
+        } else {
+            // No block in sight — fall back to player position
+            ClientProxy.moveSchematicToPlayer(schematic);
+        }
+    }
+
     private void loadSchematic() {
         int selectedIndex = this.guiSchematicLoadSlot.selectedIndex;
 
@@ -195,7 +230,8 @@ public class GuiSchematicLoad extends GuiScreenBase {
                             RendererSchematicGlobal.INSTANCE.createRendererSchematicChunks(schematic);
                             SchematicPrinter.INSTANCE.refresh();
                         } else {
-                            ClientProxy.moveSchematicToPlayer(schematic);
+                            // Try to place at the block the player is looking at (no distance limit)
+                            moveSchematicToLookTarget(schematic);
                         }
                     }
                 }

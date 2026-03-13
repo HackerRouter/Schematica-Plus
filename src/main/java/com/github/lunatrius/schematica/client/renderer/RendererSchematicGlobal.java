@@ -142,7 +142,7 @@ public class RendererSchematicGlobal {
             int lineCount = RenderHelper.getLineCount();
             if (quadCount > 0 || lineCount > 0) {
                 GL11.glDisable(GL11.GL_TEXTURE_2D);
-                GL11.glLineWidth(1.5f);
+                GL11.glLineWidth(3.0f);
                 GL11.glEnableClientState(GL11.GL_VERTEX_ARRAY);
                 GL11.glEnableClientState(GL11.GL_COLOR_ARRAY);
                 if (quadCount > 0) {
@@ -167,6 +167,13 @@ public class RendererSchematicGlobal {
 
         // Render guide overlay (selection box)
         if (ClientProxy.isRenderingGuide) {
+            // Re-establish GL state after schematic chunk/entity rendering may have changed it
+            GL11.glEnable(GL11.GL_BLEND);
+            GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
+            GL11.glDepthMask(true);
+            GL11.glDisable(GL11.GL_LIGHTING);
+            GL11.glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+
             SchematicWorld activeSchematic = ClientProxy.schematic;
             Vector3d extra = new Vector3d();
             if (activeSchematic != null) {
@@ -206,13 +213,15 @@ public class RendererSchematicGlobal {
             int lineCount = RenderHelper.getLineCount();
             if (quadCount > 0 || lineCount > 0) {
                 GL11.glDisable(GL11.GL_TEXTURE_2D);
-                GL11.glLineWidth(1.5f);
+                GL11.glLineWidth(3.0f);
                 GL11.glEnableClientState(GL11.GL_VERTEX_ARRAY);
                 GL11.glEnableClientState(GL11.GL_COLOR_ARRAY);
                 if (quadCount > 0) {
+                    GL11.glDepthMask(false);
                     GL11.glVertexPointer(3, 0, RenderHelper.getQuadVertexBuffer());
                     GL11.glColorPointer(4, 0, RenderHelper.getQuadColorBuffer());
                     GL11.glDrawArrays(GL11.GL_QUADS, 0, quadCount);
+                    GL11.glDepthMask(true);
                 }
                 if (lineCount > 0) {
                     GL11.glVertexPointer(3, 0, RenderHelper.getLineVertexBuffer());

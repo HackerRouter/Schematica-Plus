@@ -155,7 +155,7 @@ public class RendererSchematicChunk {
                 if (quadCount > 0 || lineCount > 0) {
                     GL11.glDisable(GL11.GL_TEXTURE_2D);
 
-                    GL11.glLineWidth(1.5f);
+                    GL11.glLineWidth(3.0f);
 
                     GL11.glEnableClientState(GL11.GL_VERTEX_ARRAY);
                     GL11.glEnableClientState(GL11.GL_COLOR_ARRAY);
