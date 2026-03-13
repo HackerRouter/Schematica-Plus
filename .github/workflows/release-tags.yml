@@ -113,6 +113,8 @@ jobs:
 
             Build Time: ${{ steps.version.outputs.timestamp }} (UTC+8)
 
+            **LunatriusCore**(>= 1.2.1-GTNH) is **NEEDED**.
+
             ### Artifacts
             - `*.jar` (no suffix) - **Main mod file, put into your mods folder**
             - `*-api.jar` - API package for other mod developers
