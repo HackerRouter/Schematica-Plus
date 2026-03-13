@@ -1,3 +1,4 @@
+
 package com.github.lunatrius.schematica.tool;
 
 import java.util.UUID;
@@ -46,21 +47,31 @@ public class ToolHandler {
 
     /**
      * Called on right-click (use action) with the tool active.
-     * Behavior depends on the current ToolMode.
+     * PASTE/DELETE/FILL/REPLACE are NOT handled here — they use onExecute() via Enter key.
+     * FILL/REPLACE right-click picks secondaryBlock instead.
      */
     public static boolean onToolUse(EntityPlayer player, MovingObjectPosition mop) {
         ToolMode mode = ToolManager.getCurrentMode();
 
+        // Modes that pick secondaryBlock on right-click
+        if (mode == ToolMode.REPLACE_BLOCK) {
+            return pickBlockFromCrosshair(player, mop, false);
+        }
+
+        // Modes with no right-click action (Enter-key only)
+        if (mode == ToolMode.PASTE_SCHEMATIC || mode == ToolMode.DELETE || mode == ToolMode.FILL) {
+            return false;
+        }
+
         // Modes that don't require a block target
         switch (mode) {
-            case PASTE_SCHEMATIC:
-                return handlePasteUse(player);
-            case MOVE:
-                return handleMoveUse(player);
-            case FILL:
-                return handleFillUse(player);
             case SCHEMATIC_PLACEMENT:
+                // PLACEMENT: if a schematic is already selected, import a new one;
+                // otherwise do precise placement (target block or move to player)
                 return handlePlacementUse(player, mop);
+            case MOVE:
+                // MOVE: precise placement — move current schematic to targeted block or to player
+                return handleMoveUse(player, mop);
             default:
                 break;
         }
@@ -73,10 +84,6 @@ public class ToolHandler {
         switch (mode) {
             case AREA_SELECTION:
                 return handleAreaSelectionUse(player, mop);
-            case DELETE:
-                return handleDeleteUse(player, mop);
-            case REPLACE_BLOCK:
-                return handleReplaceUse(player, mop);
             default:
                 return false;
         }
@@ -84,19 +91,95 @@ public class ToolHandler {
 
     /**
      * Called on left-click (attack action) with the tool active.
+     * FILL/REPLACE left-click picks primaryBlock.
      */
     public static boolean onToolAttack(EntityPlayer player, MovingObjectPosition mop) {
+        ToolMode mode = ToolManager.getCurrentMode();
+
+        // Modes that pick primaryBlock on left-click
+        if (mode == ToolMode.FILL || mode == ToolMode.REPLACE_BLOCK) {
+            return pickBlockFromCrosshair(player, mop, true);
+        }
+
         if (mop == null || mop.typeOfHit != MovingObjectPosition.MovingObjectType.BLOCK) {
             return false;
         }
-
-        ToolMode mode = ToolManager.getCurrentMode();
 
         if (mode == ToolMode.AREA_SELECTION) {
             return handleAreaSelectionAttack(player, mop);
         }
 
         return false;
+    }
+
+    /**
+     * Called from the Execute keybinding (default: Enter).
+     * Dispatches to the appropriate handler based on current tool mode.
+     * Only works when holding the tool item.
+     */
+    public static void onExecute(EntityPlayer player) {
+        if (player == null) {
+            return;
+        }
+
+        ToolMode mode = ToolManager.getCurrentMode();
+
+        switch (mode) {
+            case PASTE_SCHEMATIC:
+                SchematicWorld schematic = ClientProxy.schematic;
+                if (schematic != null) {
+                    handlePasteUse(player);
+                } else {
+                    sendChat(player, EnumChatFormatting.RED + "No schematic loaded.");
+                }
+                break;
+            case DELETE:
+                handleDeleteExecute(player);
+                break;
+            case FILL:
+                handleFillExecute(player);
+                break;
+            case REPLACE_BLOCK:
+                handleReplaceExecute(player);
+                break;
+            default:
+                break;
+        }
+    }
+
+    // --- Block Picking (Litematica-style) ---
+
+    /**
+     * Picks the block at the crosshair and stores it as primaryBlock or secondaryBlock
+     * on the current ToolMode. Works with both real world and schematic world blocks.
+     *
+     * @param primary true = set primaryBlock, false = set secondaryBlock
+     */
+    public static boolean pickBlockFromCrosshair(EntityPlayer player, MovingObjectPosition mop, boolean primary) {
+        if (mop == null || mop.typeOfHit != MovingObjectPosition.MovingObjectType.BLOCK) {
+            sendChat(player, EnumChatFormatting.RED + "No block targeted.");
+            return false;
+        }
+
+        ToolMode mode = ToolManager.getCurrentMode();
+        World world = player.worldObj;
+        Block block = world.getBlock(mop.blockX, mop.blockY, mop.blockZ);
+        int meta = world.getBlockMetadata(mop.blockX, mop.blockY, mop.blockZ);
+
+        if (block == null || block == Blocks.air) {
+            sendChat(player, EnumChatFormatting.RED + "Cannot pick air.");
+            return false;
+        }
+
+        String blockName = GameData.getBlockRegistry().getNameForObject(block);
+
+        if (primary) {
+            mode.setPrimaryBlock(block, meta);
+        } else {
+            mode.setSecondaryBlock(block, meta);
+        }
+
+        return true;
     }
 
     // --- AREA_SELECTION ---
@@ -108,8 +191,6 @@ public class ToolHandler {
         ClientProxy.pointB.set(mop.blockX, mop.blockY, mop.blockZ);
         ClientProxy.updatePoints();
         ClientProxy.isRenderingGuide = true;
-
-        sendChat(player, "Point B set: " + mop.blockX + ", " + mop.blockY + ", " + mop.blockZ);
         return true;
     }
 
@@ -120,58 +201,48 @@ public class ToolHandler {
         ClientProxy.pointA.set(mop.blockX, mop.blockY, mop.blockZ);
         ClientProxy.updatePoints();
         ClientProxy.isRenderingGuide = true;
-
-        sendChat(player, "Point A set: " + mop.blockX + ", " + mop.blockY + ", " + mop.blockZ);
         return true;
     }
 
     // --- SCHEMATIC_PLACEMENT ---
 
     /**
-     * Right-click in placement mode moves the schematic origin to the targeted block.
-     * If no schematic is loaded, opens the load GUI instead.
+     * Right-click in placement mode:
+     * - If a schematic is already selected/loaded, open load GUI to import a new one.
+     * - If no schematic is loaded, do precise placement (target block or move to player).
      */
     private static boolean handlePlacementUse(EntityPlayer player, MovingObjectPosition mop) {
         SchematicWorld schematic = ClientProxy.schematic;
-        if (schematic == null) {
-            // No schematic loaded — open the load GUI so the player can pick one
+        if (schematic != null) {
+            // Already have a selected instance — import a new schematic
             Minecraft.getMinecraft().displayGuiScreen(new GuiSchematicLoad(Minecraft.getMinecraft().currentScreen));
             return true;
         }
-
-        // If no block is being looked at, fall back to MOVE behavior (move to player)
-        if (mop == null || mop.typeOfHit != MovingObjectPosition.MovingObjectType.BLOCK) {
-            ClientProxy.moveSchematicToPlayer(schematic);
-            RendererSchematicGlobal.INSTANCE.refresh();
-            Vector3i pos = schematic.position;
-            sendChat(player, "Schematic moved to player: " + pos.x + ", " + pos.y + ", " + pos.z);
-            return true;
-        }
-
-        // Place one block above the targeted block
-        int placeY = mop.blockY + 1;
-        schematic.position.set(mop.blockX, placeY, mop.blockZ);
-        RendererSchematicGlobal.INSTANCE.refresh();
-        sendChat(player, "Schematic placed at: " + mop.blockX + ", " + placeY + ", " + mop.blockZ);
+        // No schematic loaded — open load GUI to load the first one
+        Minecraft.getMinecraft().displayGuiScreen(new GuiSchematicLoad(Minecraft.getMinecraft().currentScreen));
         return true;
     }
 
     // --- MOVE ---
 
     /**
-     * Right-click in move mode moves the schematic to the player's position.
+     * Right-click in move mode: if targeting a block, place schematic origin on top of it;
+     * otherwise move schematic to player position.
      */
-    private static boolean handleMoveUse(EntityPlayer player) {
+    private static boolean handleMoveUse(EntityPlayer player, MovingObjectPosition mop) {
         SchematicWorld schematic = ClientProxy.schematic;
         if (schematic == null) {
             sendChat(player, EnumChatFormatting.RED + "No schematic loaded.");
             return false;
         }
 
-        ClientProxy.moveSchematicToPlayer(schematic);
+        if (mop != null && mop.typeOfHit == MovingObjectPosition.MovingObjectType.BLOCK) {
+            int placeY = mop.blockY + 1;
+            schematic.position.set(mop.blockX, placeY, mop.blockZ);
+        } else {
+            ClientProxy.moveSchematicToPlayer(schematic);
+        }
         RendererSchematicGlobal.INSTANCE.refresh();
-        Vector3i pos = schematic.position;
-        sendChat(player, "Schematic moved to player: " + pos.x + ", " + pos.y + ", " + pos.z);
         return true;
     }
 
@@ -179,11 +250,6 @@ public class ToolHandler {
 
     private static final FMLControlledNamespacedRegistry<Block> BLOCK_REGISTRY = GameData.getBlockRegistry();
 
-    /**
-     * Pastes the loaded schematic into the real world at its current position.
-     * Creative-only operation. Uses direct server world access when available
-     * (singleplayer) for full NBT support, falls back to /setblock commands.
-     */
     private static boolean handlePasteUse(EntityPlayer player) {
         if (!player.capabilities.isCreativeMode) {
             sendChat(player, EnumChatFormatting.RED + "Paste requires creative mode.");
@@ -196,25 +262,27 @@ public class ToolHandler {
             return false;
         }
 
-        // Try direct server world placement first (preserves tile entity NBT fully).
-        // Falls back to /setblock commands if no server world is available.
         WorldServer serverWorld = getServerWorld(player);
         int count;
         if (serverWorld != null) {
-            count = pasteDirectly(serverWorld, schematic);
-            int entityCount = schematic.getEntities().size();
-            sendChat(player, "Pasted " + count + " blocks and " + entityCount + " entities directly.");
+            int[] result = pasteDirectly(serverWorld, schematic);
+            count = result[0];
+            int entityCount = result[1];
+            String msg = "Pasted " + count + " blocks";
+            if (!schematic.isPastingBlockNBT) {
+                msg += " (no NBT)";
+            }
+            msg += " and " + entityCount + " entities directly.";
+            sendChat(player, msg);
         } else {
-            count = pasteWithSetblock(player, schematic);
-            sendChat(player, "Pasted " + count + " blocks via setblock.");
+            int[] result = pasteWithSetblock(player, schematic);
+            count = result[0];
+            int entityCount = result[1];
+            sendChat(player, "Pasted " + count + " blocks and " + entityCount + " entities via commands.");
         }
         return true;
     }
 
-    /**
-     * Gets the server-side world for the player's dimension, if available.
-     * Returns null on dedicated servers (where client has no server access).
-     */
     private static WorldServer getServerWorld(EntityPlayer player) {
         try {
             MinecraftServer server = MinecraftServer.getServer();
@@ -228,16 +296,13 @@ public class ToolHandler {
     }
 
     /**
-     * Pastes the schematic directly into the server world, including full tile entity
-     * NBT data (inventories, sign text, etc.). This bypasses chat command length limits.
+     * @return int[2]: [0] = block count, [1] = entity count
      */
-    private static int pasteDirectly(WorldServer serverWorld, SchematicWorld schematic) {
+    private static int[] pasteDirectly(WorldServer serverWorld, SchematicWorld schematic) {
         int count = 0;
+        int entityCount = 0;
         Vector3i pos = schematic.position;
 
-        // Pass 1: Place all blocks WITHOUT block updates (flag 2 = send to client only).
-        // This prevents onBlockAdded() from resetting directional metadata (e.g. dispensers,
-        // pistons, furnaces) based on surrounding context during placement.
         for (int y = 0; y < schematic.getHeight(); y++) {
             for (int x = 0; x < schematic.getWidth(); x++) {
                 for (int z = 0; z < schematic.getLength(); z++) {
@@ -250,61 +315,59 @@ public class ToolHandler {
                     int wy = pos.y + y;
                     int wz = pos.z + z;
 
-                    // Flag 2 = send to clients, no block update / no onBlockAdded
                     serverWorld.setBlock(wx, wy, wz, block, metadata, 2);
                     count++;
 
-                    // Copy tile entity NBT data if present
-                    TileEntity te = schematic.getTileEntity(x, y, z);
-                    if (te != null) {
-                        try {
-                            NBTTagCompound nbt = new NBTTagCompound();
-                            te.writeToNBT(nbt);
-                            // Update coordinates to world position
-                            nbt.setInteger("x", wx);
-                            nbt.setInteger("y", wy);
-                            nbt.setInteger("z", wz);
-                            // Load the TE from NBT into the server world
-                            TileEntity newTe = TileEntity.createAndLoadEntity(nbt);
-                            if (newTe != null) {
-                                serverWorld.setTileEntity(wx, wy, wz, newTe);
+                    // Only paste tile entity NBT if enabled
+                    if (schematic.isPastingBlockNBT) {
+                        TileEntity te = schematic.getTileEntity(x, y, z);
+                        if (te != null) {
+                            try {
+                                NBTTagCompound nbt = new NBTTagCompound();
+                                te.writeToNBT(nbt);
+                                nbt.setInteger("x", wx);
+                                nbt.setInteger("y", wy);
+                                nbt.setInteger("z", wz);
+                                TileEntity newTe = TileEntity.createAndLoadEntity(nbt);
+                                if (newTe != null) {
+                                    serverWorld.setTileEntity(wx, wy, wz, newTe);
+                                }
+                            } catch (Exception e) {
+                                Reference.logger.debug("Failed to paste tile entity NBT at {},{},{}", wx, wy, wz, e);
                             }
-                        } catch (Exception e) {
-                            Reference.logger.debug("Failed to paste tile entity NBT at {},{},{}", wx, wy, wz, e);
                         }
                     }
                 }
             }
         }
 
-        // Spawn entities with offset
-        for (Entity entity : schematic.getEntities()) {
-            try {
-                NBTTagCompound nbt = new NBTTagCompound();
-                entity.writeToNBTOptional(nbt);
+        // Only paste entities if enabled
+        if (schematic.isRenderingEntities) {
+            for (Entity entity : schematic.getEntities()) {
+                try {
+                    NBTTagCompound nbt = new NBTTagCompound();
+                    entity.writeToNBTOptional(nbt);
 
-                // Update the Pos tag list with world-offset coordinates
-                NBTTagList posList = new NBTTagList();
-                posList.appendTag(new NBTTagDouble(entity.posX + pos.x));
-                posList.appendTag(new NBTTagDouble(entity.posY + pos.y));
-                posList.appendTag(new NBTTagDouble(entity.posZ + pos.z));
-                nbt.setTag("Pos", posList);
+                    NBTTagList posList = new NBTTagList();
+                    posList.appendTag(new NBTTagDouble(entity.posX + pos.x));
+                    posList.appendTag(new NBTTagDouble(entity.posY + pos.y));
+                    posList.appendTag(new NBTTagDouble(entity.posZ + pos.z));
+                    nbt.setTag("Pos", posList);
 
-                // Remove old UUID so a new one is generated on creation
-                nbt.removeTag("UUIDMost");
-                nbt.removeTag("UUIDLeast");
+                    nbt.removeTag("UUIDMost");
+                    nbt.removeTag("UUIDLeast");
 
-                Entity newEntity = EntityList.createEntityFromNBT(nbt, serverWorld);
-                if (newEntity != null) {
-                    serverWorld.spawnEntityInWorld(newEntity);
+                    Entity newEntity = EntityList.createEntityFromNBT(nbt, serverWorld);
+                    if (newEntity != null) {
+                        serverWorld.spawnEntityInWorld(newEntity);
+                        entityCount++;
+                    }
+                } catch (Exception e) {
+                    Reference.logger.debug("Failed to paste entity at schematic offset", e);
                 }
-            } catch (Exception e) {
-                Reference.logger.debug("Failed to paste entity at schematic offset", e);
             }
         }
 
-        // Pass 2: Re-apply metadata for all non-air blocks to ensure it wasn't
-        // corrupted, then notify neighbors so redstone etc. updates correctly.
         for (int y = 0; y < schematic.getHeight(); y++) {
             for (int x = 0; x < schematic.getWidth(); x++) {
                 for (int z = 0; z < schematic.getLength(); z++) {
@@ -317,24 +380,21 @@ public class ToolHandler {
                     int wy = pos.y + y;
                     int wz = pos.z + z;
 
-                    // Force-set the correct metadata and notify neighbors
                     serverWorld.setBlockMetadataWithNotify(wx, wy, wz, metadata, 3);
                 }
             }
         }
 
-        return count;
+        return new int[] { count, entityCount };
     }
 
     /**
-     * Pastes the schematic using /setblock commands for each non-air block.
-     * Used as fallback when direct server world access is not available.
-     * Note: tile entity NBT data cannot be included via chat commands due to length limits.
+     * @return int[2]: [0] = block count, [1] = entity count
      */
-    private static int pasteWithSetblock(EntityPlayer player, SchematicWorld schematic) {
+    private static int[] pasteWithSetblock(EntityPlayer player, SchematicWorld schematic) {
         EntityClientPlayerMP clientPlayer = Minecraft.getMinecraft().thePlayer;
         if (clientPlayer == null) {
-            return 0;
+            return new int[] { 0, 0 };
         }
 
         int count = 0;
@@ -360,30 +420,31 @@ public class ToolHandler {
             }
         }
 
-        // Spawn entities via /summon commands
-        for (Entity entity : schematic.getEntities()) {
-            try {
-                String entityName = EntityList.getEntityString(entity);
-                if (entityName == null) continue;
-                double wx = entity.posX + pos.x;
-                double wy = entity.posY + pos.y;
-                double wz = entity.posZ + pos.z;
-                String cmd = "/summon " + entityName + " " + wx + " " + wy + " " + wz;
-                clientPlayer.sendChatMessage(cmd);
-            } catch (Exception e) {
-                Reference.logger.debug("Failed to summon entity via command", e);
+        int entityCount = 0;
+        // Only paste entities if enabled
+        if (schematic.isRenderingEntities) {
+            for (Entity entity : schematic.getEntities()) {
+                try {
+                    String entityName = EntityList.getEntityString(entity);
+                    if (entityName == null) continue;
+                    double wx = entity.posX + pos.x;
+                    double wy = entity.posY + pos.y;
+                    double wz = entity.posZ + pos.z;
+                    String cmd = "/summon " + entityName + " " + wx + " " + wy + " " + wz;
+                    clientPlayer.sendChatMessage(cmd);
+                    entityCount++;
+                } catch (Exception e) {
+                    Reference.logger.debug("Failed to summon entity via command", e);
+                }
             }
         }
 
-        return count;
+        return new int[] { count, entityCount };
     }
 
-    // --- DELETE ---
+    // --- DELETE (Enter-key only) ---
 
-    /**
-     * Deletes all blocks in the selected area (sets to air). Creative-only.
-     */
-    private static boolean handleDeleteUse(EntityPlayer player, MovingObjectPosition mop) {
+    private static boolean handleDeleteExecute(EntityPlayer player) {
         if (!player.capabilities.isCreativeMode) {
             sendChat(player, EnumChatFormatting.RED + "Delete requires creative mode.");
             return false;
@@ -414,12 +475,9 @@ public class ToolHandler {
         return true;
     }
 
-    // --- FILL ---
+    // --- FILL (Enter-key only, uses picked primaryBlock) ---
 
-    /**
-     * Fills the selected area with the block the player is holding. Creative-only.
-     */
-    private static boolean handleFillUse(EntityPlayer player) {
+    private static boolean handleFillExecute(EntityPlayer player) {
         if (!player.capabilities.isCreativeMode) {
             sendChat(player, EnumChatFormatting.RED + "Fill requires creative mode.");
             return false;
@@ -433,19 +491,14 @@ public class ToolHandler {
             return false;
         }
 
-        ItemStack held = player.getHeldItem();
-        if (held == null) {
-            sendChat(player, EnumChatFormatting.RED + "Hold a block to fill with.");
+        ToolMode mode = ToolMode.FILL;
+        Block block = mode.getPrimaryBlock();
+        if (block == null || block == Blocks.air) {
+            sendChat(player, EnumChatFormatting.RED + "No primary block set. Left-click a block to pick it.");
             return false;
         }
 
-        Block block = Block.getBlockFromItem(held.getItem());
-        if (block == Blocks.air) {
-            sendChat(player, EnumChatFormatting.RED + "Held item is not a placeable block.");
-            return false;
-        }
-
-        int meta = held.getItemDamage();
+        int meta = mode.getPrimaryMeta();
         World world = player.worldObj;
         int count = 0;
 
@@ -458,17 +511,14 @@ public class ToolHandler {
             }
         }
 
-        sendChat(player, "Filled " + count + " blocks with " + block.getLocalizedName() + ":" + meta);
+        String blockName = GameData.getBlockRegistry().getNameForObject(block);
+        sendChat(player, "Filled " + count + " blocks with " + blockName + ":" + meta);
         return true;
     }
 
-    // --- REPLACE_BLOCK ---
+    // --- REPLACE_BLOCK (Enter-key only, uses picked primaryBlock + secondaryBlock) ---
 
-    /**
-     * Replaces all instances of the targeted block in the selection with the held block.
-     * Creative-only.
-     */
-    private static boolean handleReplaceUse(EntityPlayer player, MovingObjectPosition mop) {
+    private static boolean handleReplaceExecute(EntityPlayer player) {
         if (!player.capabilities.isCreativeMode) {
             sendChat(player, EnumChatFormatting.RED + "Replace requires creative mode.");
             return false;
@@ -482,23 +532,22 @@ public class ToolHandler {
             return false;
         }
 
+        ToolMode mode = ToolMode.REPLACE_BLOCK;
+        Block replaceBlock = mode.getPrimaryBlock();
+        if (replaceBlock == null || replaceBlock == Blocks.air) {
+            sendChat(player, EnumChatFormatting.RED + "No primary block set. Left-click a block to pick the replacement.");
+            return false;
+        }
+
+        Block targetBlock = mode.getSecondaryBlock();
+        if (targetBlock == null) {
+            sendChat(player, EnumChatFormatting.RED + "No secondary block set. Right-click a block to pick the target.");
+            return false;
+        }
+
+        int replaceMeta = mode.getPrimaryMeta();
+        int targetMeta = mode.getSecondaryMeta();
         World world = player.worldObj;
-        Block targetBlock = world.getBlock(mop.blockX, mop.blockY, mop.blockZ);
-        int targetMeta = world.getBlockMetadata(mop.blockX, mop.blockY, mop.blockZ);
-
-        ItemStack held = player.getHeldItem();
-        if (held == null) {
-            sendChat(player, EnumChatFormatting.RED + "Hold a block to replace with.");
-            return false;
-        }
-
-        Block replaceBlock = Block.getBlockFromItem(held.getItem());
-        if (replaceBlock == Blocks.air) {
-            sendChat(player, EnumChatFormatting.RED + "Held item is not a placeable block.");
-            return false;
-        }
-
-        int replaceMeta = held.getItemDamage();
         int count = 0;
 
         for (int x = min.x; x <= max.x; x++) {
@@ -514,9 +563,11 @@ public class ToolHandler {
             }
         }
 
+        String targetName = GameData.getBlockRegistry().getNameForObject(targetBlock);
+        String replaceName = GameData.getBlockRegistry().getNameForObject(replaceBlock);
         sendChat(player, "Replaced " + count + " blocks of " +
-            targetBlock.getLocalizedName() + ":" + targetMeta +
-            " with " + replaceBlock.getLocalizedName() + ":" + replaceMeta);
+            targetName + ":" + targetMeta +
+            " with " + replaceName + ":" + replaceMeta);
         return true;
     }
 

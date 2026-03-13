@@ -136,7 +136,7 @@ public class RendererSchematicGlobal {
                 RenderHelper.VEC_ZERO,
                 sw.dimensions(),
                 RenderHelper.LINE_ALL,
-                r, g, b, 0.25f);
+                r, g, b, 0.5f);
 
             int quadCount = RenderHelper.getQuadCount();
             int lineCount = RenderHelper.getLineCount();
@@ -193,19 +193,21 @@ public class RendererSchematicGlobal {
             ClientProxy.pointMin.toVector3d(start).sub(extra);
             ClientProxy.pointMax.toVector3d(end).sub(extra).add(1, 1, 1);
             RenderHelper.drawCuboidOutline(start.toVector3f(), end.toVector3f(),
-                RenderHelper.LINE_ALL, 0.0f, 0.75f, 0.0f, 0.25f);
+                RenderHelper.LINE_ALL, 0.0f, 0.75f, 0.0f, 0.5f);
+            RenderHelper.drawCuboidSurface(start.toVector3f(), end.toVector3f(),
+                RenderHelper.QUAD_ALL, 1.0f, 1.0f, 1.0f, 0.2f);
 
             ClientProxy.pointA.toVector3d(start).sub(extra);
             end.set(start).add(1, 1, 1);
             RenderHelper.drawCuboidOutline(start.toVector3f(), end.toVector3f(),
-                RenderHelper.LINE_ALL, 0.75f, 0.0f, 0.0f, 0.25f);
+                RenderHelper.LINE_ALL, 0.75f, 0.0f, 0.0f, 0.5f);
             RenderHelper.drawCuboidSurface(start.toVector3f(), end.toVector3f(),
                 RenderHelper.QUAD_ALL, 0.75f, 0.0f, 0.0f, 0.25f);
 
             ClientProxy.pointB.toVector3d(start).sub(extra);
             end.set(start).add(1, 1, 1);
             RenderHelper.drawCuboidOutline(start.toVector3f(), end.toVector3f(),
-                RenderHelper.LINE_ALL, 0.0f, 0.0f, 0.75f, 0.25f);
+                RenderHelper.LINE_ALL, 0.0f, 0.0f, 0.75f, 0.5f);
             RenderHelper.drawCuboidSurface(start.toVector3f(), end.toVector3f(),
                 RenderHelper.QUAD_ALL, 0.0f, 0.0f, 0.75f, 0.25f);
 
@@ -224,9 +226,11 @@ public class RendererSchematicGlobal {
                     GL11.glDepthMask(true);
                 }
                 if (lineCount > 0) {
+                    GL11.glDisable(GL11.GL_DEPTH_TEST);
                     GL11.glVertexPointer(3, 0, RenderHelper.getLineVertexBuffer());
                     GL11.glColorPointer(4, 0, RenderHelper.getLineColorBuffer());
                     GL11.glDrawArrays(GL11.GL_LINES, 0, lineCount);
+                    GL11.glEnable(GL11.GL_DEPTH_TEST);
                 }
                 GL11.glDisableClientState(GL11.GL_COLOR_ARRAY);
                 GL11.glDisableClientState(GL11.GL_VERTEX_ARRAY);

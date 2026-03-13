@@ -50,6 +50,8 @@ public class SchematicWorld extends World {
     public boolean isRenderingLayer;
     public int renderingLayer;
     public boolean isRenderingEntities = false;
+    /** Whether to paste block NBT (tile entity data) when pasting this schematic. */
+    public boolean isPastingBlockNBT = true;
     public int rotationState;
     public int rotationStateX;
     public int rotationStateY;

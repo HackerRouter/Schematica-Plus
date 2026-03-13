@@ -15,6 +15,7 @@ import net.minecraftforge.common.config.Property;
 import com.github.lunatrius.schematica.Schematica;
 import com.github.lunatrius.schematica.reference.Names;
 import com.github.lunatrius.schematica.reference.Reference;
+import com.github.lunatrius.schematica.tool.ToolManager;
 
 import cpw.mods.fml.client.event.ConfigChangedEvent;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
@@ -51,6 +52,7 @@ public class ConfigurationHandler {
         SCHEMATIC_DIRECTORY_STR);
     public static final String[] EXTRA_AIR_BLOCKS_DEFAULT = {};
     public static final String SORT_TYPE_DEFAULT = "";
+    public static final String TOOL_ITEM_DEFAULT = "minecraft:stick";
     public static final boolean PRINTER_ENABLED_DEFAULT = true;
     public static final boolean SAVE_ENABLED_DEFAULT = true;
     public static final boolean LOAD_ENABLED_DEFAULT = true;
@@ -77,6 +79,7 @@ public class ConfigurationHandler {
     public static File schematicDirectory = SCHEMATIC_DIRECTORY_DEFAULT;
     public static String[] extraAirBlocks = EXTRA_AIR_BLOCKS_DEFAULT;
     public static String sortType = SORT_TYPE_DEFAULT;
+    public static String toolItem = TOOL_ITEM_DEFAULT;
     public static boolean printerEnabled = PRINTER_ENABLED_DEFAULT;
     public static boolean saveEnabled = SAVE_ENABLED_DEFAULT;
     public static boolean loadEnabled = LOAD_ENABLED_DEFAULT;
@@ -102,6 +105,7 @@ public class ConfigurationHandler {
     public static Property propSchematicDirectory = null;
     public static Property propExtraAirBlocks = null;
     public static Property propSortType = null;
+    public static Property propToolItem = null;
     public static Property propPrinterEnabled = null;
     public static Property propSaveEnabled = null;
     public static Property propLoadEnabled = null;
@@ -299,6 +303,15 @@ public class ConfigurationHandler {
             .get(Names.Config.Category.GENERAL, Names.Config.SORT_TYPE, SORT_TYPE_DEFAULT, Names.Config.SORT_TYPE_DESC);
         propSortType.setShowInGui(false);
         sortType = propSortType.getString();
+
+        propToolItem = configuration.get(
+            Names.Config.Category.TOOL,
+            Names.Config.TOOL_ITEM,
+            TOOL_ITEM_DEFAULT,
+            Names.Config.TOOL_ITEM_DESC);
+        propToolItem.setLanguageKey(Names.Config.LANG_PREFIX + "." + Names.Config.TOOL_ITEM);
+        toolItem = propToolItem.getString();
+        ToolManager.parseToolItem(toolItem);
 
         propPrinterEnabled = configuration.get(
             Names.Config.Category.SERVER,

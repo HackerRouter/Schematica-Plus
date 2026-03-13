@@ -38,11 +38,13 @@ import com.github.lunatrius.schematica.handler.client.InputHandler;
 import com.github.lunatrius.schematica.handler.client.OverlayHandler;
 import com.github.lunatrius.schematica.handler.client.RenderTickHandler;
 import com.github.lunatrius.schematica.handler.client.TickHandler;
+import com.github.lunatrius.schematica.handler.client.ToolItemHandler;
 import com.github.lunatrius.schematica.handler.client.WorldHandler;
 import com.github.lunatrius.schematica.reference.Constants;
 import com.github.lunatrius.schematica.reference.Reference;
 import com.github.lunatrius.schematica.util.Coordinates;
 import com.github.lunatrius.schematica.world.schematic.SchematicFormat;
+import com.github.lunatrius.schematica.command.CommandSchematicaSetBlock;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
@@ -81,6 +83,7 @@ public class ClientProxy extends CommonProxy {
         .create();
     private static final Type schematicDataType = new TypeToken<Map<String, Map<String, SchematicData>>>() {}.getType();
     private static final Type loadedSchematicsDataType = new TypeToken<Map<String, List<LoadedSchematicEntry>>>() {}.getType();
+    private static final Type areaSelectionDataType = new TypeToken<Map<String, AreaSelectionData>>() {}.getType();
 
     public static void setPlayerData(EntityPlayer player, float partialTicks) {
         playerPosition.x = player.lastTickPosX + (player.posX - player.lastTickPosX) * partialTicks;
@@ -183,6 +186,14 @@ public class ClientProxy extends CommonProxy {
             position.y = y;
             position.z = z;
         }
+    }
+
+    /** Persistence data for area selection (pointA, pointB, isRenderingGuide). */
+    private static class AreaSelectionData {
+        public int ax, ay, az;
+        public int bx, by, bz;
+        public boolean renderingGuide;
+        AreaSelectionData() {}
     }
 
     private static class SchematicData {
@@ -342,6 +353,9 @@ public class ClientProxy extends CommonProxy {
     public void init(FMLInitializationEvent event) {
         super.init(event);
 
+        // Register client-side commands
+        net.minecraftforge.client.ClientCommandHandler.instance.registerCommand(new CommandSchematicaSetBlock());
+
         FMLCommonHandler.instance()
             .bus()
             .register(InputHandler.INSTANCE);
@@ -359,6 +373,7 @@ public class ClientProxy extends CommonProxy {
         MinecraftForge.EVENT_BUS.register(ChatEventHandler.INSTANCE);
         MinecraftForge.EVENT_BUS.register(new OverlayHandler());
         MinecraftForge.EVENT_BUS.register(new WorldHandler());
+        MinecraftForge.EVENT_BUS.register(ToolItemHandler.INSTANCE);
     }
 
     @Override
@@ -401,11 +416,14 @@ public class ClientProxy extends CommonProxy {
         // Players should explicitly enable it when needed.
         SchematicPrinter.INSTANCE.setEnabled(false);
 
-        // Save schematics before clearing so they can be restored on next world load.
+        // Save schematics and area selection before clearing so they can be restored on next world load.
         // Use lastWorldServerName since the server may already be gone at this point.
-        if (!loadedSchematics.isEmpty() && lastWorldServerName != null && !lastWorldServerName.isEmpty()) {
-            saveLoadedSchematics(lastWorldServerName);
-            Reference.logger.info("Saved schematics during reset for '{}'", lastWorldServerName);
+        if (lastWorldServerName != null && !lastWorldServerName.isEmpty()) {
+            if (!loadedSchematics.isEmpty()) {
+                saveLoadedSchematics(lastWorldServerName);
+                Reference.logger.info("Saved schematics during reset for '{}'", lastWorldServerName);
+            }
+            saveAreaSelection(lastWorldServerName);
         }
         unloadAllSchematics();
         isPendingRestore = true;
@@ -414,9 +432,12 @@ public class ClientProxy extends CommonProxy {
         orientation = ForgeDirection.UNKNOWN;
         rotationRender = 0;
 
+        // Clear area selection — will be restored from persistence on next world load
         pointA.set(0, 0, 0);
         pointB.set(0, 0, 0);
-        updatePoints();
+        pointMin.set(0, 0, 0);
+        pointMax.set(0, 0, 0);
+        isRenderingGuide = false;
     }
 
     @Override
@@ -611,6 +632,66 @@ public class ClientProxy extends CommonProxy {
             Reference.logger.info("Restored {} schematics for '{}'", loadedSchematics.size(), worldServerName);
         } catch (Exception e) {
             Reference.logger.error("Failed to restore loaded schematics", e);
+        }
+    }
+
+    // --- Persistence: save/restore area selection across sessions ---
+
+    /** Saves the current area selection for the given world/server. */
+    public static void saveAreaSelection(String worldServerName) {
+        if (worldServerName == null || worldServerName.isEmpty()) return;
+        try {
+            File file = new File(ConfigurationHandler.schematicDirectory, "AreaSelection.json");
+            Map<String, AreaSelectionData> allData;
+            if (file.exists()) {
+                try (Reader reader = Files.newBufferedReader(file.toPath(), StandardCharsets.UTF_8)) {
+                    allData = gson.fromJson(reader, areaSelectionDataType);
+                } catch (Exception e) {
+                    allData = new HashMap<>();
+                }
+            } else {
+                allData = new HashMap<>();
+            }
+            if (allData == null) allData = new HashMap<>();
+
+            AreaSelectionData data = new AreaSelectionData();
+            data.ax = pointA.x; data.ay = pointA.y; data.az = pointA.z;
+            data.bx = pointB.x; data.by = pointB.y; data.bz = pointB.z;
+            data.renderingGuide = isRenderingGuide;
+            allData.put(worldServerName, data);
+
+            try (OutputStreamWriter writer = new OutputStreamWriter(
+                new FileOutputStream(file), StandardCharsets.UTF_8)) {
+                gson.toJson(allData, areaSelectionDataType, writer);
+                writer.flush();
+            }
+            Reference.logger.debug("Saved area selection for '{}'", worldServerName);
+        } catch (Exception e) {
+            Reference.logger.error("Failed to save area selection", e);
+        }
+    }
+
+    /** Restores previously saved area selection for the given world/server. */
+    public static void restoreAreaSelection(String worldServerName) {
+        if (worldServerName == null || worldServerName.isEmpty()) return;
+        try {
+            File file = new File(ConfigurationHandler.schematicDirectory, "AreaSelection.json");
+            if (!file.exists()) return;
+
+            Map<String, AreaSelectionData> allData;
+            try (Reader reader = Files.newBufferedReader(file.toPath(), StandardCharsets.UTF_8)) {
+                allData = gson.fromJson(reader, areaSelectionDataType);
+            }
+            if (allData == null || !allData.containsKey(worldServerName)) return;
+
+            AreaSelectionData data = allData.get(worldServerName);
+            pointA.set(data.ax, data.ay, data.az);
+            pointB.set(data.bx, data.by, data.bz);
+            isRenderingGuide = data.renderingGuide;
+            updatePoints();
+            Reference.logger.debug("Restored area selection for '{}'", worldServerName);
+        } catch (Exception e) {
+            Reference.logger.error("Failed to restore area selection", e);
         }
     }
 

@@ -95,6 +95,7 @@ public class TickHandler {
                     } catch (Exception ignored) {}
                     if (name != null && !name.isEmpty()) {
                         ClientProxy.restoreLoadedSchematics(name);
+                        ClientProxy.restoreAreaSelection(name);
                     }
                     ClientProxy.isPendingRestore = false;
                 }

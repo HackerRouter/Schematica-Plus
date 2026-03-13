@@ -14,6 +14,7 @@ public final class Names {
             public static final String TOOLTIP = "tooltip";
             public static final String GENERAL = "general";
             public static final String SERVER = "server";
+            public static final String TOOL = "tool";
         }
 
         public static final String SHOW_DEBUG_INFO = "showDebugInfo";
@@ -63,6 +64,9 @@ public final class Names {
         public static final String EXTRA_AIR_BLOCKS_DESC = "Extra blocks to consider as air for the schematic renderer.";
         public static final String SORT_TYPE = "sortType";
         public static final String SORT_TYPE_DESC = "Default sort type for the material list.";
+
+        public static final String TOOL_ITEM = "toolItem";
+        public static final String TOOL_ITEM_DESC = "Item to use as the schematic tool. Format: modid:name or modid:name@meta (e.g. minecraft:stick). Hold this item to activate tool functions.";
 
         public static final String PRINTER_ENABLED = "printerEnabled";
         public static final String PRINTER_ENABLED_DESC = "Allow players to use the printer.";
@@ -205,6 +209,7 @@ public final class Names {
             public static final String SWITCH = "schematica.gui.instances.switch";
             public static final String TOGGLE_VISIBLE = "schematica.gui.instances.toggleVisible";
             public static final String TOGGLE_ENTITIES = "schematica.gui.instances.toggleEntities";
+            public static final String TOGGLE_BLOCK_NBT = "schematica.gui.instances.toggleBlockNBT";
             public static final String LOADED = "schematica.gui.instances.loaded";
             public static final String INSTANCES = "schematica.gui.instances";
         }
@@ -230,9 +235,7 @@ public final class Names {
         public static final String CONTROL = "schematica.key.control";
         public static final String LAYER_INC = "schematica.key.layerInc";
         public static final String LAYER_DEC = "schematica.key.layerDec";
-        public static final String TOOL_MODE = "schematica.key.toolMode";
-        public static final String TOOL_USE = "schematica.key.toolUse";
-        public static final String TOOL_ATTACK = "schematica.key.toolAttack";
+        public static final String EXECUTE = "schematica.key.execute";
     }
 
     public static final class NBT {

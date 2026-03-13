@@ -41,7 +41,8 @@ schematica.gui.printer=打印
 schematica.gui.instances.title=已加载的投影
 schematica.gui.instances.switch=切换
 schematica.gui.instances.toggleVisible=切换可见
-schematica.gui.instances.toggleEntities=实体渲染
+schematica.gui.instances.toggleEntities=切换实体
+schematica.gui.instances.toggleBlockNBT=方块NBT
 schematica.gui.instances.loaded=已加载
 schematica.gui.instances=实例管理
 
@@ -138,9 +139,13 @@ schematica.key.save=保存Schematic文件
 schematica.key.control=调整Schematic文件
 schematica.key.layerInc=下一层
 schematica.key.layerDec=上一层
-schematica.key.toolMode=切换工具模式
-schematica.key.toolUse=使用工具
-schematica.key.toolAttack=攻击工具 (点A)
+schematica.key.execute=执行操作
+
+# gui - config - tool
+schematica.config.category.tool=工具
+schematica.config.category.tool.tooltip=工具物品相关设置.
+schematica.config.toolItem=工具物品
+schematica.config.toolItem.tooltip=用作Schematica工具的物品 (例如 minecraft:stick). 手持此物品以激活工具功能.
 
 # tool modes
 schematica.tool_mode.area_selection=区域选择

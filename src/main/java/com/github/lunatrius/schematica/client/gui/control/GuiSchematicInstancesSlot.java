@@ -70,7 +70,10 @@ public class GuiSchematicInstancesSlot extends GuiSlot {
 
         String prefix = isActive ? "\u00a7a\u25b6 " : "  ";
         String visibility = isVisible ? "" : " \u00a77[H]";
-        String displayStr = prefix + name + visibility;
+        // Show status indicators for disabled features
+        String entityStatus = sw.isRenderingEntities ? "" : " \u00a78[!E]";
+        String nbtStatus = sw.isPastingBlockNBT ? "" : " \u00a78[!N]";
+        String displayStr = prefix + name + visibility + entityStatus + nbtStatus;
 
         this.parent.drawString(this.minecraft.fontRenderer, displayStr, x + 2, y + 6, 0x00FFFFFF);
     }

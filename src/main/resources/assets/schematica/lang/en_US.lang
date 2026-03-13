@@ -41,7 +41,8 @@ schematica.gui.printer=Printer
 schematica.gui.instances.title=Loaded Schematics
 schematica.gui.instances.switch=Switch
 schematica.gui.instances.toggleVisible=Toggle Visible
-schematica.gui.instances.toggleEntities=Entities
+schematica.gui.instances.toggleEntities=Toggle Entities
+schematica.gui.instances.toggleBlockNBT=Block NBT
 schematica.gui.instances.loaded=loaded
 schematica.gui.instances=Instances
 
@@ -138,9 +139,13 @@ schematica.key.save=Save schematic
 schematica.key.control=Manipulate schematic
 schematica.key.layerInc=Next Layer
 schematica.key.layerDec=Previous layer
-schematica.key.toolMode=Cycle Tool Mode
-schematica.key.toolUse=Use Tool
-schematica.key.toolAttack=Attack Tool (Point A)
+schematica.key.execute=Execute Operation
+
+# gui - config - tool
+schematica.config.category.tool=Tool
+schematica.config.category.tool.tooltip=Tool item related settings.
+schematica.config.toolItem=Tool Item
+schematica.config.toolItem.tooltip=The item to use as the schematica tool (e.g. minecraft:stick). Hold this item to activate tool functions.
 
 # tool modes
 schematica.tool_mode.area_selection=Area Selection

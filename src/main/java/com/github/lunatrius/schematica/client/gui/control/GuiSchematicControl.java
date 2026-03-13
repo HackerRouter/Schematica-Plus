@@ -170,10 +170,10 @@ public class GuiSchematicControl extends GuiScreenBase {
         this.buttonList.add(this.btnRotateZ);
         rotationBoxes = new GuiOrCheckBoxHandler(btnRotateX, btnRotateY, btnRotateZ);
 
-        this.btnMaterials = new GuiButton(id++, 10, this.height - 90, 80, 20, this.strMaterials);
+        this.btnMaterials = new GuiButton(id++, 10, this.height - 110, 80, 20, this.strMaterials);
         this.buttonList.add(this.btnMaterials);
 
-        this.btnInstances = new GuiButton(id++, 10, this.height - 50, 80, 20, this.strInstances);
+        this.btnInstances = new GuiButton(id++, 10, this.height - 70, 80, 20, this.strInstances);
         this.buttonList.add(this.btnInstances);
 
         this.btnPrint = new GuiButton(
@@ -359,8 +359,8 @@ public class GuiSchematicControl extends GuiScreenBase {
     @Override
     public void drawScreen(int par1, int par2, float par3) {
         drawCenteredString(this.fontRendererObj, this.strMoveSchematic, this.centerX, this.centerY - 45, 0xFFFFFF);
-        drawCenteredString(this.fontRendererObj, this.strMaterials, 50, this.height - 105, 0xFFFFFF);
-        drawCenteredString(this.fontRendererObj, this.strInstances, 50, this.height - 65, 0xFFFFFF);
+        drawCenteredString(this.fontRendererObj, this.strMaterials, 50, this.height - 125, 0xFFFFFF);
+        drawCenteredString(this.fontRendererObj, this.strInstances, 50, this.height - 85, 0xFFFFFF);
         drawCenteredString(this.fontRendererObj, this.strPrinter, 50, this.height - 45, 0xFFFFFF);
         drawCenteredString(this.fontRendererObj, this.strLayers, this.width - 50, this.height - 165, 0xFFFFFF);
         drawCenteredString(this.fontRendererObj, this.strOperations, this.width - 50, this.height - 120, 0xFFFFFF);

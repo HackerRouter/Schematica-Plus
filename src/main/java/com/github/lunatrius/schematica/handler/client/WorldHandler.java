@@ -29,6 +29,8 @@ public class WorldHandler {
                         ClientProxy.restoreLoadedSchematics(name);
                         ClientProxy.isPendingRestore = false;
                     }
+                    // Restore area selection
+                    ClientProxy.restoreAreaSelection(name);
                 }
             } catch (Exception e) {
                 Reference.logger.debug("Could not restore schematics on world load", e);
@@ -51,6 +53,7 @@ public class WorldHandler {
                 }
                 if (name != null && !name.isEmpty()) {
                     ClientProxy.saveLoadedSchematics(name);
+                    ClientProxy.saveAreaSelection(name);
                     // Keep lastWorldServerName so resetSettings can also save if needed
                 }
             } catch (Exception e) {

@@ -17,6 +17,7 @@ public class GuiSchematicInstances extends GuiScreenBase {
     private GuiButton btnSwitch;
     private GuiButton btnToggleVisible;
     private GuiButton btnToggleEntities;
+    private GuiButton btnToggleBlockNBT;
     private GuiButton btnRemove;
     private GuiButton btnDone;
 
@@ -29,24 +30,28 @@ public class GuiSchematicInstances extends GuiScreenBase {
     @Override
     public void initGui() {
         int id = 0;
-        int btnWidth = 70;
+        int btnWidth = 60;
+        int gap = 2;
         int btnY = this.height - 28;
-        int totalWidth = btnWidth * 5 + 16; // 5 buttons with 4px gaps
+        int totalWidth = btnWidth * 6 + gap * 5; // 6 buttons with 2px gaps
         int startX = (this.width - totalWidth) / 2;
 
         this.btnSwitch = new GuiButton(id++, startX, btnY, btnWidth, 20, I18n.format(Names.Gui.Instances.SWITCH));
         this.buttonList.add(this.btnSwitch);
 
-        this.btnToggleVisible = new GuiButton(id++, startX + (btnWidth + 4), btnY, btnWidth, 20, I18n.format(Names.Gui.Instances.TOGGLE_VISIBLE));
+        this.btnToggleVisible = new GuiButton(id++, startX + (btnWidth + gap), btnY, btnWidth, 20, I18n.format(Names.Gui.Instances.TOGGLE_VISIBLE));
         this.buttonList.add(this.btnToggleVisible);
 
-        this.btnToggleEntities = new GuiButton(id++, startX + (btnWidth + 4) * 2, btnY, btnWidth, 20, I18n.format(Names.Gui.Instances.TOGGLE_ENTITIES));
+        this.btnToggleEntities = new GuiButton(id++, startX + (btnWidth + gap) * 2, btnY, btnWidth, 20, I18n.format(Names.Gui.Instances.TOGGLE_ENTITIES));
         this.buttonList.add(this.btnToggleEntities);
 
-        this.btnRemove = new GuiButton(id++, startX + (btnWidth + 4) * 3, btnY, btnWidth, 20, I18n.format(Names.Gui.Control.UNLOAD));
+        this.btnToggleBlockNBT = new GuiButton(id++, startX + (btnWidth + gap) * 3, btnY, btnWidth, 20, I18n.format(Names.Gui.Instances.TOGGLE_BLOCK_NBT));
+        this.buttonList.add(this.btnToggleBlockNBT);
+
+        this.btnRemove = new GuiButton(id++, startX + (btnWidth + gap) * 4, btnY, btnWidth, 20, I18n.format(Names.Gui.Control.UNLOAD));
         this.buttonList.add(this.btnRemove);
 
-        this.btnDone = new GuiButton(id++, startX + (btnWidth + 4) * 4, btnY, btnWidth, 20, I18n.format(Names.Gui.DONE));
+        this.btnDone = new GuiButton(id++, startX + (btnWidth + gap) * 5, btnY, btnWidth, 20, I18n.format(Names.Gui.DONE));
         this.buttonList.add(this.btnDone);
 
         this.slotList = new GuiSchematicInstancesSlot(this);
@@ -64,6 +69,8 @@ public class GuiSchematicInstances extends GuiScreenBase {
             toggleVisibility();
         } else if (button.id == this.btnToggleEntities.id) {
             toggleEntities();
+        } else if (button.id == this.btnToggleBlockNBT.id) {
+            toggleBlockNBT();
         } else if (button.id == this.btnRemove.id) {
             removeSelected();
         } else if (button.id == this.btnDone.id) {
@@ -96,6 +103,15 @@ public class GuiSchematicInstances extends GuiScreenBase {
 
         SchematicWorld sw = ClientProxy.loadedSchematics.get(idx);
         sw.isRenderingEntities = !sw.isRenderingEntities;
+        updateButtonStates();
+    }
+
+    private void toggleBlockNBT() {
+        int idx = this.slotList.selectedIndex;
+        if (idx < 0 || idx >= ClientProxy.loadedSchematics.size()) return;
+
+        SchematicWorld sw = ClientProxy.loadedSchematics.get(idx);
+        sw.isPastingBlockNBT = !sw.isPastingBlockNBT;
         updateButtonStates();
     }
 
@@ -133,6 +149,7 @@ public class GuiSchematicInstances extends GuiScreenBase {
         this.btnSwitch.enabled = hasSelection;
         this.btnToggleVisible.enabled = hasSelection;
         this.btnToggleEntities.enabled = hasSelection;
+        this.btnToggleBlockNBT.enabled = hasSelection;
         this.btnRemove.enabled = hasSelection;
     }
 
