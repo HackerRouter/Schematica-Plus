@@ -199,10 +199,12 @@ public final class BlockStateTranslator {
             }
         }
 
-        // Handle lit furnace: lit=true means lit_furnace in 1.7.10
+        // Handle lit furnace / redstone lamp: lit=true means lit_xxx in 1.7.10
         if (!properties.isEmpty() && properties.contains("lit=true")) {
             if ("minecraft:furnace".equals(legacyName)) {
                 legacyName = "minecraft:lit_furnace";
+            } else if ("minecraft:redstone_lamp".equals(legacyName)) {
+                legacyName = "minecraft:lit_redstone_lamp";
             }
         }
 
@@ -386,6 +388,17 @@ public final class BlockStateTranslator {
                 result.put(translatedKey, translatedValue);
             }
         } // end else
+
+        // Inject damage for anvil variants (modern splits into separate blocks, 1.7.10 uses damage property)
+        if ("minecraft:anvil".equals(legacyName) && !result.containsKey("damage")) {
+            if ("minecraft:chipped_anvil".equals(modernName)) {
+                result.put("damage", "1");
+            } else if ("minecraft:damaged_anvil".equals(modernName)) {
+                result.put("damage", "2");
+            } else {
+                result.put("damage", "0");
+            }
+        }
 
         // Inject missing variant for logs based on modern block name
         if ("minecraft:log".equals(legacyName) || "minecraft:log2".equals(legacyName)) {

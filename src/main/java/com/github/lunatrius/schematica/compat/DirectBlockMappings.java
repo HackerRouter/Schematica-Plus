@@ -175,12 +175,16 @@ public final class DirectBlockMappings {
         m("minecraft:mycelium", Blocks.mycelium, 0);
         m("minecraft:nether_brick_fence", Blocks.nether_brick_fence, 0);
         m("minecraft:end_portal_frame", Blocks.end_portal_frame, 0);
-        m("minecraft:torch", Blocks.torch, 0);
+        m("minecraft:torch", Blocks.torch, 5);
         m("minecraft:tnt", Blocks.tnt, 0);
         m("minecraft:pumpkin", Blocks.pumpkin, 0);
         m("minecraft:jukebox", Blocks.jukebox, 0);
         m("minecraft:note_block", Blocks.noteblock, 0);
         m("minecraft:cactus", Blocks.cactus, 0);
+        // Tallgrass variants (modern splits into separate blocks)
+        m("minecraft:short_grass", Blocks.tallgrass, 1);
+        m("minecraft:fern", Blocks.tallgrass, 2);
+        m("minecraft:dead_bush", Blocks.deadbush, 0);
         // Wool (color split)
         m("minecraft:white_wool", Blocks.wool, 0);
         m("minecraft:orange_wool", Blocks.wool, 1);

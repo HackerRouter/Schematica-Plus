@@ -163,6 +163,7 @@ final class VanillaBlockRenames {
         m.put("minecraft:podzol", "minecraft:dirt");
         m.put("minecraft:red_sand", "minecraft:sand");
         m.put("minecraft:spawner", "minecraft:mob_spawner");
+        m.put("minecraft:powered_rail", "minecraft:golden_rail");
         m.put("minecraft:nether_portal", "minecraft:portal");
         m.put("minecraft:cobweb", "minecraft:web");
         m.put("minecraft:sugar_cane", "minecraft:reeds");
@@ -178,6 +179,24 @@ final class VanillaBlockRenames {
         m.put("minecraft:cut_red_sandstone", "minecraft:red_sandstone");
         m.put("minecraft:smooth_stone", "minecraft:stone");
         m.put("minecraft:carved_pumpkin", "minecraft:pumpkin");
+        m.put("minecraft:snow", "minecraft:snow_layer");
+        m.put("minecraft:cocoa_beans", "minecraft:cocoa");
+        m.put("minecraft:short_grass", "minecraft:tallgrass");
+        m.put("minecraft:fern", "minecraft:tallgrass");
+        m.put("minecraft:dead_bush", "minecraft:deadbush");
+        m.put("minecraft:chipped_anvil", "minecraft:anvil");
+        m.put("minecraft:damaged_anvil", "minecraft:anvil");
+        m.put("minecraft:water_cauldron", "minecraft:cauldron");
+        m.put("minecraft:lava_cauldron", "minecraft:cauldron");
+        m.put("minecraft:powder_snow_cauldron", "minecraft:cauldron");
+        m.put("minecraft:rooted_dirt", "minecraft:dirt");
+        m.put("minecraft:waxed_exposed_copper", "minecraft:iron_block");
+        m.put("minecraft:waxed_weathered_copper", "minecraft:iron_block");
+        m.put("minecraft:waxed_oxidized_copper", "minecraft:iron_block");
+        m.put("minecraft:waxed_cut_copper", "minecraft:iron_block");
+        m.put("minecraft:exposed_cut_copper", "minecraft:iron_block");
+        m.put("minecraft:weathered_cut_copper", "minecraft:iron_block");
+        m.put("minecraft:oxidized_cut_copper", "minecraft:iron_block");
 
         // Skulls / Heads
         m.put("minecraft:skeleton_skull", "minecraft:skull");

@@ -251,13 +251,24 @@ final class VanillaPropertyMeta {
             p(s, "facing=north,half=top,shape=straight", 7);
         }
 
-        // Facing blocks (furnace, chest, etc.)
-        String[] facingBlocks = {
-            "minecraft:furnace", "minecraft:lit_furnace", "minecraft:dispenser",
-            "minecraft:dropper", "minecraft:chest", "minecraft:trapped_chest",
+        // Facing blocks (furnace, chest, etc.) - horizontal only
+        String[] horizontalFacingBlocks = {
+            "minecraft:furnace", "minecraft:lit_furnace",
+            "minecraft:chest", "minecraft:trapped_chest",
             "minecraft:ender_chest", "minecraft:ladder", "minecraft:wall_sign"
         };
-        for (String fb : facingBlocks) {
+        for (String fb : horizontalFacingBlocks) {
+            p(fb, "facing=north", 2);
+            p(fb, "facing=south", 3);
+            p(fb, "facing=west", 4);
+            p(fb, "facing=east", 5);
+        }
+
+        // Dispenser / Dropper: support all 6 facings (down=0, up=1, north=2, south=3, west=4, east=5)
+        String[] sixFacingBlocks = {"minecraft:dispenser", "minecraft:dropper"};
+        for (String fb : sixFacingBlocks) {
+            p(fb, "facing=down", 0);
+            p(fb, "facing=up", 1);
             p(fb, "facing=north", 2);
             p(fb, "facing=south", 3);
             p(fb, "facing=west", 4);
