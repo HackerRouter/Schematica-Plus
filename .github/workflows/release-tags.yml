@@ -1,14 +1,125 @@
-
+# 当有 tag 被 push 到 GitHub 时，自动触发这个 workflow
 name: Release tagged build
 
+# 触发条件：任何 tag 被 push 时触发
 on:
   push:
-    tags: [ '*' ]
+    tags: ['*']
 
+# 给这个 workflow 写入仓库内容的权限（创建 Release 需要）
 permissions:
   contents: write
 
 jobs:
-  release-tags:
-    uses: GTNewHorizons/GTNH-Actions-Workflows/.github/workflows/release-tags.yml@master
-    secrets: inherit
+  build-and-release:
+    # 使用 Ubuntu 最新版作为 CI 运行环境
+    runs-on: ubuntu-latest
+
+    steps:
+      # 第1步：拉取仓库代码（包括完整 git 历史，fetch-depth: 0 确保 tag 信息完整）
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # 第2步：安装 JDK 8（这个 1.7.10 Forge 模组需要 JDK 8 来编译）
+      - name: Set up JDK 8
+        uses: actions/setup-java@v4
+        with:
+          java-version: '8'
+          distribution: 'temurin'
+
+      # 第3步：给 gradlew 脚本加上可执行权限（Linux 上需要）
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      # 第4步：用 Gradle 编译项目
+      # -x 参数表示跳过某个 task，这里跳过 Spotless 代码格式检查（避免 JDK 版本问题）
+      - name: Build with Gradle
+        run: ./gradlew build -x spotlessJava -x spotlessJavaCheck -x spotlessCheck -x spotlessApply
+
+      # 第5步：生成带时间戳的文件名前缀，格式如 2.0-alpha-1303-1535
+      # TZ=Asia/Singapore 设置时区为新加坡（UTC+8），和你本地一致
+      # date 命令格式：%d=日, %m=月, %H=时, %M=分
+      # github.ref_name 就是你 push 的 tag 名，比如 "2.0-alpha"
+      # 最终 prefix 类似：Schematica-2.0-alpha-1303-1535
+      - name: Generate version prefix
+        id: version
+        run: |
+          TIMESTAMP=$(TZ=Asia/Singapore date +'%d%m-%H%M')
+          TAG="${{ github.ref_name }}"
+          PREFIX="Schematica-${TAG}-${TIMESTAMP}"
+          echo "prefix=$PREFIX" >> $GITHUB_OUTPUT
+          echo "timestamp=$TIMESTAMP" >> $GITHUB_OUTPUT
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
+
+      # 第6步：把 build/libs 里的 jar 重命名为带时间戳的格式
+      # 遍历所有 jar 文件，根据后缀分类重命名：
+      #   -api.jar    → Schematica-2.0-alpha-1303-1535-api.jar
+      #   -dev.jar    → Schematica-2.0-alpha-1303-1535-dev.jar
+      #   -sources.jar→ Schematica-2.0-alpha-1303-1535-sources.jar
+      #   其他（主jar）→ Schematica-2.0-alpha-1303-1535.jar
+      # 跳过 dirty 版本的 jar（dirty 表示有未提交改动，CI 环境不应该有）
+      - name: Rename jars with timestamp
+        id: rename
+        run: |
+          mkdir -p build/release
+          PREFIX="${{ steps.version.outputs.prefix }}"
+          for jar in build/libs/*.jar; do
+            filename=$(basename "$jar")
+            # 跳过 dirty 版本
+            if echo "$filename" | grep -q "dirty"; then
+              continue
+            fi
+            if echo "$filename" | grep -q "\-api\.jar$"; then
+              cp "$jar" "build/release/${PREFIX}-api.jar"
+            elif echo "$filename" | grep -q "\-dev\.jar$"; then
+              cp "$jar" "build/release/${PREFIX}-dev.jar"
+            elif echo "$filename" | grep -q "\-sources\.jar$"; then
+              cp "$jar" "build/release/${PREFIX}-sources.jar"
+            else
+              cp "$jar" "build/release/${PREFIX}.jar"
+            fi
+          done
+          echo "release_dir=build/release" >> $GITHUB_OUTPUT
+          ls -la build/release/
+
+      # 第7步：读取 README.md 内容，作为 Release body 的一部分
+      # 用 cat 读取文件内容，通过 EOF 分隔符写入 GITHUB_OUTPUT
+      # 这样每次发版时 Release 描述会自动包含最新的 README
+      - name: Read README
+        id: readme
+        run: |
+          {
+            echo "content<<EOF"
+            cat README.md
+            echo ""
+            echo "EOF"
+          } >> $GITHUB_OUTPUT
+
+      # 第8步：创建 GitHub Release 并上传所有 jar
+      # softprops/action-gh-release 是一个流行的第三方 Action，专门用来创建 Release
+      # files: 指定要上传的文件，build/release/*.jar 匹配所有重命名后的 jar
+      # name: Release 的标题，包含 tag 名和时间戳
+      # body: 英文的文件说明 + README.md 的完整内容
+      # prerelease: 如果 tag 名包含 alpha/beta/rc，自动标记为预发布版本
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: build/release/*.jar
+          name: "${{ steps.version.outputs.tag }} (${{ steps.version.outputs.timestamp }})"
+          body: |
+            ## Schematica-Plus ${{ steps.version.outputs.tag }}
+
+            Build Time: ${{ steps.version.outputs.timestamp }} (UTC+8)
+
+            ### Artifacts
+            - `*.jar` (no suffix) - **Main mod file, put into your mods folder**
+            - `*-api.jar` - API package for other mod developers
+            - `*-dev.jar` - Development build (non-obfuscated), for mod development & debugging
+            - `*-sources.jar` - Source code package
+
+            ---
+
+            ${{ steps.readme.outputs.content }}
+          prerelease: ${{ contains(github.ref_name, 'alpha') || contains(github.ref_name, 'beta') || contains(github.ref_name, 'rc') }}
