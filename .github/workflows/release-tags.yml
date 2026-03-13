@@ -36,7 +36,7 @@ jobs:
       # 第4步：用 Gradle 编译项目
       # -x 参数表示跳过某个 task，这里跳过 Spotless 代码格式检查（避免 JDK 版本问题）
       - name: Build with Gradle
-        run: ./gradlew build -x spotlessJava -x spotlessJavaCheck -x spotlessCheck -x spotlessApply
+        run: ./gradlew build
 
       # 第5步：生成带时间戳的文件名前缀，格式如 2.0-alpha-1303-1535
       # TZ=Asia/Singapore 设置时区为新加坡（UTC+8），和你本地一致
