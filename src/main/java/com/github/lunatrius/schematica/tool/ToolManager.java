@@ -2,16 +2,14 @@ package com.github.lunatrius.schematica.tool;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.util.Vec3;
 
 import com.github.lunatrius.schematica.client.world.SchematicWorld;
+import com.github.lunatrius.schematica.handler.ConfigurationHandler;
 import com.github.lunatrius.schematica.proxy.ClientProxy;
 import com.github.lunatrius.schematica.reference.Reference;
-
-import cpw.mods.fml.common.registry.GameData;
 
 /**
  * Central state holder for the Litematica-style tool mode system.
@@ -25,63 +23,25 @@ public class ToolManager {
 
     private static ToolMode currentMode = ToolMode.SCHEMATIC_PLACEMENT;
 
-    /** Cached parsed tool item type from config. */
-    private static Item toolItemType = null;
-    /** Cached parsed tool item meta from config. -1 means ignore meta. */
-    private static int toolItemMeta = -1;
-
     private ToolManager() {}
 
     /**
-     * Parses the tool item config string and caches the result.
-     * Supports formats: "minecraft:stick", "minecraft:dye@4"
-     */
-    public static void parseToolItem(String itemStr) {
-        toolItemType = null;
-        toolItemMeta = -1;
-
-        if (itemStr == null || itemStr.isEmpty()) {
-            return;
-        }
-
-        String name = itemStr;
-        int atIdx = itemStr.indexOf('@');
-        if (atIdx > 0) {
-            name = itemStr.substring(0, atIdx);
-            try {
-                toolItemMeta = Integer.parseInt(itemStr.substring(atIdx + 1));
-            } catch (NumberFormatException e) {
-                toolItemMeta = -1;
-            }
-        }
-
-        Item item = (Item) GameData.getItemRegistry().getObject(name);
-        if (item != null) {
-            toolItemType = item;
-            Reference.logger.debug("Tool item set to: {} (meta={})", name, toolItemMeta);
-        } else {
-            Reference.logger.warn("Tool item not found: {}, falling back to stick", name);
-            toolItemType = (Item) GameData.getItemRegistry().getObject("minecraft:stick");
-        }
-    }
-
-    /**
      * Checks if the player is currently holding the configured tool item in their main hand.
-     * When holding the tool item, mouse clicks are intercepted for tool actions.
+     * Reads the cached tool item type/meta from ConfigurationHandler (server-safe).
      */
     public static boolean isHoldingToolItem() {
         EntityPlayer player = Minecraft.getMinecraft().thePlayer;
-        if (player == null || toolItemType == null) {
+        if (player == null || ConfigurationHandler.toolItemType == null) {
             return false;
         }
         ItemStack held = player.getHeldItem();
         if (held == null) {
             return false;
         }
-        if (held.getItem() != toolItemType) {
+        if (held.getItem() != ConfigurationHandler.toolItemType) {
             return false;
         }
-        if (toolItemMeta >= 0 && held.getItemDamage() != toolItemMeta) {
+        if (ConfigurationHandler.toolItemMeta >= 0 && held.getItemDamage() != ConfigurationHandler.toolItemMeta) {
             return false;
         }
         return true;

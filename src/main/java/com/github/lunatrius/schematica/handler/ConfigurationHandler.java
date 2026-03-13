@@ -9,13 +9,13 @@ import java.util.Set;
 
 import net.minecraft.block.Block;
 import net.minecraft.init.Blocks;
+import net.minecraft.item.Item;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.common.config.Property;
 
 import com.github.lunatrius.schematica.Schematica;
 import com.github.lunatrius.schematica.reference.Names;
 import com.github.lunatrius.schematica.reference.Reference;
-import com.github.lunatrius.schematica.tool.ToolManager;
 
 import cpw.mods.fml.client.event.ConfigChangedEvent;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
@@ -113,6 +113,11 @@ public class ConfigurationHandler {
     public static Property propServersideSchematicsEnabled = null;
 
     private static final Set<Block> extraAirBlockList = new HashSet<>();
+
+    /** Cached parsed tool item type from config (server-safe). */
+    public static Item toolItemType = null;
+    /** Cached parsed tool item meta from config. -1 means ignore meta. */
+    public static int toolItemMeta = -1;
 
     public static void init(File configFile) {
         if (configuration == null) {
@@ -311,7 +316,7 @@ public class ConfigurationHandler {
             Names.Config.TOOL_ITEM_DESC);
         propToolItem.setLanguageKey(Names.Config.LANG_PREFIX + "." + Names.Config.TOOL_ITEM);
         toolItem = propToolItem.getString();
-        ToolManager.parseToolItem(toolItem);
+        parseToolItem(toolItem);
 
         propPrinterEnabled = configuration.get(
             Names.Config.Category.SERVER,
@@ -358,6 +363,40 @@ public class ConfigurationHandler {
 
         if (configuration.hasChanged()) {
             configuration.save();
+        }
+    }
+
+    /**
+     * Parses the tool item config string and caches the result.
+     * Server-safe: does not reference any client-only classes.
+     * Supports formats: "minecraft:stick", "minecraft:dye@4"
+     */
+    public static void parseToolItem(String itemStr) {
+        toolItemType = null;
+        toolItemMeta = -1;
+
+        if (itemStr == null || itemStr.isEmpty()) {
+            return;
+        }
+
+        String name = itemStr;
+        int atIdx = itemStr.indexOf('@');
+        if (atIdx > 0) {
+            name = itemStr.substring(0, atIdx);
+            try {
+                toolItemMeta = Integer.parseInt(itemStr.substring(atIdx + 1));
+            } catch (NumberFormatException e) {
+                toolItemMeta = -1;
+            }
+        }
+
+        Item item = (Item) GameData.getItemRegistry().getObject(name);
+        if (item != null) {
+            toolItemType = item;
+            Reference.logger.debug("Tool item set to: {} (meta={})", name, toolItemMeta);
+        } else {
+            Reference.logger.warn("Tool item not found: {}, falling back to stick", name);
+            toolItemType = (Item) GameData.getItemRegistry().getObject("minecraft:stick");
         }
     }
 
