@@ -60,8 +60,23 @@ final class VanillaBlockRenames {
 
         // Fence / gate / door
         m.put("minecraft:oak_fence", "minecraft:fence");
+        m.put("minecraft:spruce_fence", "minecraft:fence");
+        m.put("minecraft:birch_fence", "minecraft:fence");
+        m.put("minecraft:jungle_fence", "minecraft:fence");
+        m.put("minecraft:acacia_fence", "minecraft:fence");
+        m.put("minecraft:dark_oak_fence", "minecraft:fence");
         m.put("minecraft:oak_fence_gate", "minecraft:fence_gate");
+        m.put("minecraft:spruce_fence_gate", "minecraft:fence_gate");
+        m.put("minecraft:birch_fence_gate", "minecraft:fence_gate");
+        m.put("minecraft:jungle_fence_gate", "minecraft:fence_gate");
+        m.put("minecraft:acacia_fence_gate", "minecraft:fence_gate");
+        m.put("minecraft:dark_oak_fence_gate", "minecraft:fence_gate");
         m.put("minecraft:oak_door", "minecraft:wooden_door");
+        m.put("minecraft:spruce_door", "minecraft:wooden_door");
+        m.put("minecraft:birch_door", "minecraft:wooden_door");
+        m.put("minecraft:jungle_door", "minecraft:wooden_door");
+        m.put("minecraft:acacia_door", "minecraft:wooden_door");
+        m.put("minecraft:dark_oak_door", "minecraft:wooden_door");
 
         // Stone bricks
         m.put("minecraft:nether_bricks", "minecraft:nether_brick");
@@ -127,6 +142,11 @@ final class VanillaBlockRenames {
             m.put("minecraft:" + c + "_stained_glass_pane", "minecraft:stained_glass_pane");
             m.put("minecraft:" + c + "_wool", "minecraft:wool");
             m.put("minecraft:" + c + "_carpet", "minecraft:carpet");
+        }
+
+        // Beds (all colors -> single bed in 1.7.10)
+        for (String c : colors) {
+            m.put("minecraft:" + c + "_bed", "minecraft:bed");
         }
 
         // Misc renames
@@ -324,5 +344,51 @@ final class VanillaBlockRenames {
         m.put("minecraft:sculk_shrieker", "minecraft:wool");
         m.put("minecraft:sculk_sensor", "minecraft:wool");
         m.put("minecraft:calibrated_sculk_sensor", "minecraft:wool");
+
+        // Potted plants -> flower_pot (TE data synthesized by SchematicLitematica)
+        m.put("minecraft:potted_oak_sapling", "minecraft:flower_pot");
+        m.put("minecraft:potted_spruce_sapling", "minecraft:flower_pot");
+        m.put("minecraft:potted_birch_sapling", "minecraft:flower_pot");
+        m.put("minecraft:potted_jungle_sapling", "minecraft:flower_pot");
+        m.put("minecraft:potted_acacia_sapling", "minecraft:flower_pot");
+        m.put("minecraft:potted_dark_oak_sapling", "minecraft:flower_pot");
+        m.put("minecraft:potted_cherry_sapling", "minecraft:flower_pot");
+        m.put("minecraft:potted_pale_oak_sapling", "minecraft:flower_pot");
+        m.put("minecraft:potted_mangrove_propagule", "minecraft:flower_pot");
+        m.put("minecraft:potted_fern", "minecraft:flower_pot");
+        m.put("minecraft:potted_dandelion", "minecraft:flower_pot");
+        m.put("minecraft:potted_poppy", "minecraft:flower_pot");
+        m.put("minecraft:potted_blue_orchid", "minecraft:flower_pot");
+        m.put("minecraft:potted_allium", "minecraft:flower_pot");
+        m.put("minecraft:potted_azure_bluet", "minecraft:flower_pot");
+        m.put("minecraft:potted_red_tulip", "minecraft:flower_pot");
+        m.put("minecraft:potted_orange_tulip", "minecraft:flower_pot");
+        m.put("minecraft:potted_white_tulip", "minecraft:flower_pot");
+        m.put("minecraft:potted_pink_tulip", "minecraft:flower_pot");
+        m.put("minecraft:potted_oxeye_daisy", "minecraft:flower_pot");
+        m.put("minecraft:potted_red_mushroom", "minecraft:flower_pot");
+        m.put("minecraft:potted_brown_mushroom", "minecraft:flower_pot");
+        m.put("minecraft:potted_dead_bush", "minecraft:flower_pot");
+        m.put("minecraft:potted_cactus", "minecraft:flower_pot");
+        m.put("minecraft:potted_bamboo", "minecraft:flower_pot");
+        m.put("minecraft:potted_crimson_fungus", "minecraft:flower_pot");
+        m.put("minecraft:potted_warped_fungus", "minecraft:flower_pot");
+        m.put("minecraft:potted_crimson_roots", "minecraft:flower_pot");
+        m.put("minecraft:potted_warped_roots", "minecraft:flower_pot");
+        m.put("minecraft:potted_azalea_bush", "minecraft:flower_pot");
+        m.put("minecraft:potted_flowering_azalea_bush", "minecraft:flower_pot");
+        m.put("minecraft:potted_torchflower", "minecraft:flower_pot");
+        m.put("minecraft:potted_cornflower", "minecraft:flower_pot");
+        m.put("minecraft:potted_lily_of_the_valley", "minecraft:flower_pot");
+        m.put("minecraft:potted_wither_rose", "minecraft:flower_pot");
+
+        // Shulker boxes -> chest (to preserve contained items)
+        m.put("minecraft:shulker_box", "minecraft:chest");
+        for (String c : colors) {
+            m.put("minecraft:" + c + "_shulker_box", "minecraft:chest");
+        }
+
+        // Barrel -> chest
+        m.put("minecraft:barrel", "minecraft:chest");
     }
 }

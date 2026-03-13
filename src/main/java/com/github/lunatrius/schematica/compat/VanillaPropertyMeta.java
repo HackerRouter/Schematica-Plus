@@ -280,10 +280,8 @@ final class VanillaPropertyMeta {
             p("minecraft:piston_head", "facing=" + pFacings[i] + ",type=sticky", 8 + i);
         }
 
-        // Doors
-        String[] doors = {"minecraft:wooden_door", "minecraft:iron_door",
-            "minecraft:spruce_door", "minecraft:birch_door", "minecraft:jungle_door",
-            "minecraft:acacia_door", "minecraft:dark_oak_door"};
+        // Doors (only 1.7.10 door types; modern variants are renamed to wooden_door by VanillaBlockRenames)
+        String[] doors = {"minecraft:wooden_door", "minecraft:iron_door"};
         for (String door : doors) {
             p(door, "facing=east,half=lower,open=false", 0);
             p(door, "facing=south,half=lower,open=false", 1);
@@ -320,9 +318,8 @@ final class VanillaPropertyMeta {
         }
 
         // Fence gates - ONLY facing+open (in_wall and powered are stripped by IGNORED_PROPERTIES)
-        String[] fenceGates = {"minecraft:fence_gate", "minecraft:spruce_fence_gate",
-            "minecraft:birch_fence_gate", "minecraft:jungle_fence_gate",
-            "minecraft:dark_oak_fence_gate", "minecraft:acacia_fence_gate"};
+        // Only 1.7.10 fence_gate; modern variants are renamed by VanillaBlockRenames
+        String[] fenceGates = {"minecraft:fence_gate"};
         for (String fg : fenceGates) {
             p(fg, "facing=south,open=false", 0);
             p(fg, "facing=west,open=false", 1);
@@ -335,14 +332,23 @@ final class VanillaPropertyMeta {
         }
 
         // Bed (occupied is kept via KEEP_PROPERTIES)
+        // In 1.7.10: bits 0-1 = facing, bit 2 = occupied, bit 3 = part(head)
         p("minecraft:bed", "facing=south,occupied=false,part=foot", 0);
         p("minecraft:bed", "facing=west,occupied=false,part=foot", 1);
         p("minecraft:bed", "facing=north,occupied=false,part=foot", 2);
         p("minecraft:bed", "facing=east,occupied=false,part=foot", 3);
+        p("minecraft:bed", "facing=south,occupied=true,part=foot", 4);
+        p("minecraft:bed", "facing=west,occupied=true,part=foot", 5);
+        p("minecraft:bed", "facing=north,occupied=true,part=foot", 6);
+        p("minecraft:bed", "facing=east,occupied=true,part=foot", 7);
         p("minecraft:bed", "facing=south,occupied=false,part=head", 8);
         p("minecraft:bed", "facing=west,occupied=false,part=head", 9);
         p("minecraft:bed", "facing=north,occupied=false,part=head", 10);
         p("minecraft:bed", "facing=east,occupied=false,part=head", 11);
+        p("minecraft:bed", "facing=south,occupied=true,part=head", 12);
+        p("minecraft:bed", "facing=west,occupied=true,part=head", 13);
+        p("minecraft:bed", "facing=north,occupied=true,part=head", 14);
+        p("minecraft:bed", "facing=east,occupied=true,part=head", 15);
 
         // Anvil
         p("minecraft:anvil", "damage=0,facing=south", 0);

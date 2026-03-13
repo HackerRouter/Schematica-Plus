@@ -143,7 +143,7 @@ public final class TileEntityTranslator {
                 convertBeacon(teTag);
                 break;
             case "minecraft:flower_pot":
-                convertFlowerPot(teTag);
+                convertFlowerPot(teTag, blockStateString);
                 break;
             case "minecraft:noteblock":
             case "minecraft:note_block":
@@ -454,9 +454,117 @@ public final class TileEntityTranslator {
     // ==================== Flower Pot ====================
 
     private void convertFlowerPot(NBTTagCompound teTag) {
-        if (!teTag.hasKey("Item")) {
+        convertFlowerPot(teTag, null);
+    }
+
+    /**
+     * Converts flower pot TE data. In modern versions, potted plants are separate blocks
+     * (potted_oak_sapling, potted_poppy, etc.) with no TE. In 1.7.10, flower_pot is a
+     * single block with a FlowerPot TE that stores the contained item via Item + Data tags.
+     *
+     * @param teTag the TE NBT compound
+     * @param blockStateString the original block state string (e.g. "minecraft:potted_oak_sapling")
+     */
+    void convertFlowerPot(NBTTagCompound teTag, String blockStateString) {
+        if (!teTag.hasKey("Item") && blockStateString != null) {
+            String blockName = blockStateString;
+            int bracket = blockName.indexOf('[');
+            if (bracket >= 0) blockName = blockName.substring(0, bracket);
+
+            FlowerPotContent content = getFlowerPotContent(blockName);
+            teTag.setString("Item", content.item);
+            teTag.setInteger("Data", content.data);
+        } else if (!teTag.hasKey("Item")) {
             teTag.setString("Item", "");
             teTag.setInteger("Data", 0);
+        }
+    }
+
+    /**
+     * Creates a synthetic FlowerPot TE compound for a potted block that has no TE in modern versions.
+     */
+    public NBTTagCompound createFlowerPotTE(int x, int y, int z, String blockStateString) {
+        NBTTagCompound teTag = new NBTTagCompound();
+        teTag.setString("id", "FlowerPot");
+        teTag.setInteger("x", x);
+        teTag.setInteger("y", y);
+        teTag.setInteger("z", z);
+
+        String blockName = blockStateString;
+        int bracket = blockName.indexOf('[');
+        if (bracket >= 0) blockName = blockName.substring(0, bracket);
+
+        FlowerPotContent content = getFlowerPotContent(blockName);
+        teTag.setString("Item", content.item);
+        teTag.setInteger("Data", content.data);
+        return teTag;
+    }
+
+    /**
+     * Returns true if the given block state string represents a potted plant
+     * that needs a synthetic FlowerPot TE.
+     */
+    public boolean isPottedPlant(String blockStateString) {
+        if (blockStateString == null) return false;
+        String blockName = blockStateString;
+        int bracket = blockName.indexOf('[');
+        if (bracket >= 0) blockName = blockName.substring(0, bracket);
+        return blockName.startsWith("minecraft:potted_");
+    }
+
+    private FlowerPotContent getFlowerPotContent(String modernBlockName) {
+        // Map modern potted_xxx block names to 1.7.10 item ID + data
+        switch (modernBlockName) {
+            // Saplings
+            case "minecraft:potted_oak_sapling":     return new FlowerPotContent("minecraft:sapling", 0);
+            case "minecraft:potted_spruce_sapling":   return new FlowerPotContent("minecraft:sapling", 1);
+            case "minecraft:potted_birch_sapling":    return new FlowerPotContent("minecraft:sapling", 2);
+            case "minecraft:potted_jungle_sapling":   return new FlowerPotContent("minecraft:sapling", 3);
+            case "minecraft:potted_acacia_sapling":   return new FlowerPotContent("minecraft:sapling", 4);
+            case "minecraft:potted_dark_oak_sapling": return new FlowerPotContent("minecraft:sapling", 5);
+            // Flowers
+            case "minecraft:potted_dandelion":        return new FlowerPotContent("minecraft:yellow_flower", 0);
+            case "minecraft:potted_poppy":            return new FlowerPotContent("minecraft:red_flower", 0);
+            case "minecraft:potted_blue_orchid":      return new FlowerPotContent("minecraft:red_flower", 1);
+            case "minecraft:potted_allium":           return new FlowerPotContent("minecraft:red_flower", 2);
+            case "minecraft:potted_azure_bluet":      return new FlowerPotContent("minecraft:red_flower", 3);
+            case "minecraft:potted_red_tulip":        return new FlowerPotContent("minecraft:red_flower", 4);
+            case "minecraft:potted_orange_tulip":     return new FlowerPotContent("minecraft:red_flower", 5);
+            case "minecraft:potted_white_tulip":      return new FlowerPotContent("minecraft:red_flower", 6);
+            case "minecraft:potted_pink_tulip":       return new FlowerPotContent("minecraft:red_flower", 7);
+            case "minecraft:potted_oxeye_daisy":      return new FlowerPotContent("minecraft:red_flower", 8);
+            case "minecraft:potted_cornflower":       return new FlowerPotContent("minecraft:red_flower", 0); // no 1.7.10 equivalent
+            case "minecraft:potted_lily_of_the_valley": return new FlowerPotContent("minecraft:red_flower", 0);
+            case "minecraft:potted_wither_rose":      return new FlowerPotContent("minecraft:red_flower", 0);
+            case "minecraft:potted_torchflower":      return new FlowerPotContent("minecraft:red_flower", 0);
+            // Mushrooms
+            case "minecraft:potted_red_mushroom":     return new FlowerPotContent("minecraft:red_mushroom", 0);
+            case "minecraft:potted_brown_mushroom":   return new FlowerPotContent("minecraft:brown_mushroom", 0);
+            // Misc
+            case "minecraft:potted_fern":             return new FlowerPotContent("minecraft:tallgrass", 2);
+            case "minecraft:potted_dead_bush":        return new FlowerPotContent("minecraft:deadbush", 0);
+            case "minecraft:potted_cactus":           return new FlowerPotContent("minecraft:cactus", 0);
+            // Modern-only plants -> best approximation
+            case "minecraft:potted_bamboo":           return new FlowerPotContent("minecraft:sapling", 3); // jungle sapling
+            case "minecraft:potted_crimson_fungus":   return new FlowerPotContent("minecraft:red_mushroom", 0);
+            case "minecraft:potted_warped_fungus":    return new FlowerPotContent("minecraft:brown_mushroom", 0);
+            case "minecraft:potted_crimson_roots":    return new FlowerPotContent("minecraft:tallgrass", 2);
+            case "minecraft:potted_warped_roots":     return new FlowerPotContent("minecraft:tallgrass", 2);
+            case "minecraft:potted_azalea_bush":      return new FlowerPotContent("minecraft:sapling", 0);
+            case "minecraft:potted_flowering_azalea_bush": return new FlowerPotContent("minecraft:sapling", 0);
+            case "minecraft:potted_cherry_sapling":   return new FlowerPotContent("minecraft:sapling", 0);
+            case "minecraft:potted_pale_oak_sapling": return new FlowerPotContent("minecraft:sapling", 0);
+            case "minecraft:potted_mangrove_propagule": return new FlowerPotContent("minecraft:sapling", 3);
+            default:                                  return new FlowerPotContent("", 0);
+        }
+    }
+
+    private static class FlowerPotContent {
+        final String item;
+        final int data;
+        FlowerPotContent(String item, int data) {
+            this.item = item;
+            this.data = data;
         }
     }
 

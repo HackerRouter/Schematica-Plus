@@ -563,12 +563,7 @@ public final class BlockStateTranslator {
     /** Checks if a legacy block name is a door block */
     private boolean isDoorBlock(String legacyName) {
         return "minecraft:wooden_door".equals(legacyName)
-            || "minecraft:iron_door".equals(legacyName)
-            || "minecraft:spruce_door".equals(legacyName)
-            || "minecraft:birch_door".equals(legacyName)
-            || "minecraft:jungle_door".equals(legacyName)
-            || "minecraft:acacia_door".equals(legacyName)
-            || "minecraft:dark_oak_door".equals(legacyName);
+            || "minecraft:iron_door".equals(legacyName);
     }
 
     private BlockMapping resolveSpecialCases(String modernName, String legacyName, String properties) {

@@ -217,6 +217,8 @@ public class SchematicLitematica extends SchematicFormat {
 
         // Read tile entities
         TileEntityTranslator teTranslator = TileEntityTranslator.instance();
+        // Track which positions already have TEs from the litematic data
+        java.util.Set<Long> existingTEPositions = new java.util.HashSet<>();
         if (region.hasKey("TileEntities", Constants.NBT.TAG_LIST)) {
             NBTTagList tileEntitiesList = region.getTagList("TileEntities", Constants.NBT.TAG_COMPOUND);
             int teLoaded = 0;
@@ -234,6 +236,7 @@ public class SchematicLitematica extends SchematicFormat {
 
                         // Look up block state string at this position for TE-specific translation
                         long posKey = ((long) teX & 0xFFFFL) | (((long) teY & 0xFFFFL) << 16) | (((long) teZ & 0xFFFFL) << 32);
+                        existingTEPositions.add(posKey);
                         String blockStateStr = posToBlockState.get(posKey);
 
                         String originalId = teTag.hasKey("id") ? teTag.getString("id") : "unknown";
@@ -261,6 +264,27 @@ public class SchematicLitematica extends SchematicFormat {
             if (teLoaded > 0 || teSkipped > 0) {
                 Reference.logger.info("Region '{}': loaded {} TileEntities, skipped {}", rd.name, teLoaded, teSkipped);
             }
+        }
+
+        // Synthesize FlowerPot TEs for potted plants (modern versions have no TE for these)
+        int synthCount = 0;
+        for (Map.Entry<Long, String> entry : posToBlockState.entrySet()) {
+            String stateStr = entry.getValue();
+            if (teTranslator.isPottedPlant(stateStr) && !existingTEPositions.contains(entry.getKey())) {
+                long posKey = entry.getKey();
+                int px = (int) (posKey & 0xFFFFL);
+                int py = (int) ((posKey >> 16) & 0xFFFFL);
+                int pz = (int) ((posKey >> 32) & 0xFFFFL);
+                NBTTagCompound synthTE = teTranslator.createFlowerPotTE(px, py, pz, stateStr);
+                TileEntity te = NBTHelper.readTileEntityFromCompound(synthTE);
+                if (te != null) {
+                    schematic.setTileEntity(px, py, pz, te);
+                    synthCount++;
+                }
+            }
+        }
+        if (synthCount > 0) {
+            Reference.logger.info("Region '{}': synthesized {} FlowerPot TileEntities for potted plants", rd.name, synthCount);
         }
 
         // Read entities
@@ -340,7 +364,8 @@ public class SchematicLitematica extends SchematicFormat {
      */
     private boolean needsBlockStateForTE(String stateStr) {
         return stateStr.contains("skull") || stateStr.contains("head")
-            || stateStr.contains("sign") || stateStr.contains("banner");
+            || stateStr.contains("sign") || stateStr.contains("banner")
+            || stateStr.contains("potted_");
     }
 
     private String buildPropertiesString(NBTTagCompound props) {
