@@ -113,7 +113,7 @@ jobs:
 
             Build Time: ${{ steps.version.outputs.timestamp }} (UTC+8)
 
-            **LunatriusCore**(>= 1.2.1-GTNH) is **NEEDED**.
+            **[LunatriusCore](https://github.com/GTNewHorizons/LunatriusCore/releases)**(>= 1.2.1-GTNH) is **NEEDED**.
 
             ### Artifacts
             - `*.jar` (no suffix) - **Main mod file, put into your mods folder**
@@ -122,6 +122,5 @@ jobs:
             - `*-sources.jar` - Source code package
 
             ---
-
-            ${{ steps.readme.outputs.content }}
           prerelease: ${{ contains(github.ref_name, 'alpha') || contains(github.ref_name, 'beta') || contains(github.ref_name, 'rc') }}
+          generate_release_notes: true
