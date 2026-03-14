@@ -11,13 +11,15 @@ import com.github.lunatrius.schematica.client.world.SchematicWorld;
 import com.github.lunatrius.schematica.proxy.ClientProxy;
 import com.github.lunatrius.schematica.reference.Names;
 
+import cpw.mods.fml.client.config.GuiCheckBox;
+
 public class GuiSchematicInstances extends GuiScreenBase {
 
     private GuiSchematicInstancesSlot slotList;
     private GuiButton btnSwitch;
-    private GuiButton btnToggleVisible;
-    private GuiButton btnToggleEntities;
-    private GuiButton btnToggleBlockNBT;
+    private GuiCheckBox cbToggleVisible;
+    private GuiCheckBox cbToggleEntities;
+    private GuiCheckBox cbToggleBlockNBT;
     private GuiButton btnRemove;
     private GuiButton btnDone;
 
@@ -33,26 +35,45 @@ public class GuiSchematicInstances extends GuiScreenBase {
         int btnWidth = 60;
         int gap = 2;
         int btnY = this.height - 28;
-        int totalWidth = btnWidth * 6 + gap * 5; // 6 buttons with 2px gaps
-        int startX = (this.width - totalWidth) / 2;
 
-        this.btnSwitch = new GuiButton(id++, startX, btnY, btnWidth, 20, I18n.format(Names.Gui.Instances.SWITCH));
+        // Bottom row: Switch, Remove, Done buttons
+        int btnCount = 3;
+        int totalBtnWidth = btnWidth * btnCount + gap * (btnCount - 1);
+        int btnStartX = (this.width - totalBtnWidth) / 2;
+
+        this.btnSwitch = new GuiButton(id++, btnStartX, btnY, btnWidth, 20, I18n.format(Names.Gui.Instances.SWITCH));
         this.buttonList.add(this.btnSwitch);
 
-        this.btnToggleVisible = new GuiButton(id++, startX + (btnWidth + gap), btnY, btnWidth, 20, I18n.format(Names.Gui.Instances.TOGGLE_VISIBLE));
-        this.buttonList.add(this.btnToggleVisible);
-
-        this.btnToggleEntities = new GuiButton(id++, startX + (btnWidth + gap) * 2, btnY, btnWidth, 20, I18n.format(Names.Gui.Instances.TOGGLE_ENTITIES));
-        this.buttonList.add(this.btnToggleEntities);
-
-        this.btnToggleBlockNBT = new GuiButton(id++, startX + (btnWidth + gap) * 3, btnY, btnWidth, 20, I18n.format(Names.Gui.Instances.TOGGLE_BLOCK_NBT));
-        this.buttonList.add(this.btnToggleBlockNBT);
-
-        this.btnRemove = new GuiButton(id++, startX + (btnWidth + gap) * 4, btnY, btnWidth, 20, I18n.format(Names.Gui.Control.UNLOAD));
+        this.btnRemove = new GuiButton(id++, btnStartX + (btnWidth + gap), btnY, btnWidth, 20, I18n.format(Names.Gui.Control.UNLOAD));
         this.buttonList.add(this.btnRemove);
 
-        this.btnDone = new GuiButton(id++, startX + (btnWidth + gap) * 5, btnY, btnWidth, 20, I18n.format(Names.Gui.DONE));
+        this.btnDone = new GuiButton(id++, btnStartX + (btnWidth + gap) * 2, btnY, btnWidth, 20, I18n.format(Names.Gui.DONE));
         this.buttonList.add(this.btnDone);
+
+        // Checkboxes row above buttons
+        int cbY = this.height - 50;
+        int cbGap = 10;
+        String visibleLabel = I18n.format(Names.Gui.Instances.TOGGLE_VISIBLE);
+        String entitiesLabel = I18n.format(Names.Gui.Instances.TOGGLE_ENTITIES);
+        String blockNBTLabel = I18n.format(Names.Gui.Instances.TOGGLE_BLOCK_NBT);
+
+        // Estimate checkbox widths (11px box + 2px gap + text width)
+        int cbBoxSize = 11;
+        int cbTextGap = 2;
+        int visibleW = cbBoxSize + cbTextGap + this.fontRendererObj.getStringWidth(visibleLabel);
+        int entitiesW = cbBoxSize + cbTextGap + this.fontRendererObj.getStringWidth(entitiesLabel);
+        int blockNBTW = cbBoxSize + cbTextGap + this.fontRendererObj.getStringWidth(blockNBTLabel);
+        int totalCbWidth = visibleW + entitiesW + blockNBTW + cbGap * 2;
+        int cbStartX = (this.width - totalCbWidth) / 2;
+
+        this.cbToggleVisible = new GuiCheckBox(id++, cbStartX, cbY, visibleLabel, true);
+        this.buttonList.add(this.cbToggleVisible);
+
+        this.cbToggleEntities = new GuiCheckBox(id++, cbStartX + visibleW + cbGap, cbY, entitiesLabel, true);
+        this.buttonList.add(this.cbToggleEntities);
+
+        this.cbToggleBlockNBT = new GuiCheckBox(id++, cbStartX + visibleW + entitiesW + cbGap * 2, cbY, blockNBTLabel, true);
+        this.buttonList.add(this.cbToggleBlockNBT);
 
         this.slotList = new GuiSchematicInstancesSlot(this);
 
@@ -65,17 +86,22 @@ public class GuiSchematicInstances extends GuiScreenBase {
 
         if (button.id == this.btnSwitch.id) {
             switchToSelected();
-        } else if (button.id == this.btnToggleVisible.id) {
+        } else if (button.id == this.cbToggleVisible.id) {
             toggleVisibility();
-        } else if (button.id == this.btnToggleEntities.id) {
+        } else if (button.id == this.cbToggleEntities.id) {
             toggleEntities();
-        } else if (button.id == this.btnToggleBlockNBT.id) {
+        } else if (button.id == this.cbToggleBlockNBT.id) {
             toggleBlockNBT();
         } else if (button.id == this.btnRemove.id) {
             removeSelected();
         } else if (button.id == this.btnDone.id) {
             this.mc.displayGuiScreen(this.parentScreen);
         }
+    }
+
+    /** Called by the slot when selection changes. */
+    public void onSelectionChanged() {
+        updateButtonStates();
     }
 
     /** Called by the slot on double-click. */
@@ -93,8 +119,8 @@ public class GuiSchematicInstances extends GuiScreenBase {
         if (idx < 0 || idx >= ClientProxy.loadedSchematics.size()) return;
 
         SchematicWorld sw = ClientProxy.loadedSchematics.get(idx);
-        sw.toggleRendering();
-        updateButtonStates();
+        sw.isRendering = this.cbToggleVisible.isChecked();
+        RendererSchematicGlobal.INSTANCE.refresh();
     }
 
     private void toggleEntities() {
@@ -102,8 +128,7 @@ public class GuiSchematicInstances extends GuiScreenBase {
         if (idx < 0 || idx >= ClientProxy.loadedSchematics.size()) return;
 
         SchematicWorld sw = ClientProxy.loadedSchematics.get(idx);
-        sw.isRenderingEntities = !sw.isRenderingEntities;
-        updateButtonStates();
+        sw.isRenderingEntities = this.cbToggleEntities.isChecked();
     }
 
     private void toggleBlockNBT() {
@@ -111,8 +136,7 @@ public class GuiSchematicInstances extends GuiScreenBase {
         if (idx < 0 || idx >= ClientProxy.loadedSchematics.size()) return;
 
         SchematicWorld sw = ClientProxy.loadedSchematics.get(idx);
-        sw.isPastingBlockNBT = !sw.isPastingBlockNBT;
-        updateButtonStates();
+        sw.isPastingBlockNBT = this.cbToggleBlockNBT.isChecked();
     }
 
     private void removeSelected() {
@@ -147,10 +171,17 @@ public class GuiSchematicInstances extends GuiScreenBase {
             && this.slotList.selectedIndex < ClientProxy.loadedSchematics.size();
 
         this.btnSwitch.enabled = hasSelection;
-        this.btnToggleVisible.enabled = hasSelection;
-        this.btnToggleEntities.enabled = hasSelection;
-        this.btnToggleBlockNBT.enabled = hasSelection;
+        this.cbToggleVisible.enabled = hasSelection;
+        this.cbToggleEntities.enabled = hasSelection;
+        this.cbToggleBlockNBT.enabled = hasSelection;
         this.btnRemove.enabled = hasSelection;
+
+        if (hasSelection) {
+            SchematicWorld sw = ClientProxy.loadedSchematics.get(this.slotList.selectedIndex);
+            this.cbToggleVisible.setIsChecked(sw.isRendering);
+            this.cbToggleEntities.setIsChecked(sw.isRenderingEntities);
+            this.cbToggleBlockNBT.setIsChecked(sw.isPastingBlockNBT);
+        }
     }
 
     @Override
@@ -161,7 +192,7 @@ public class GuiSchematicInstances extends GuiScreenBase {
 
         // Show count
         String countStr = ClientProxy.loadedSchematics.size() + " " + I18n.format(Names.Gui.Instances.LOADED);
-        drawCenteredString(this.fontRendererObj, countStr, this.width / 2, this.height - 46, 0x00808080);
+        drawCenteredString(this.fontRendererObj, countStr, this.width / 2, this.height - 62, 0x00808080);
 
         super.drawScreen(mouseX, mouseY, partialTicks);
     }

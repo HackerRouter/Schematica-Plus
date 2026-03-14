@@ -4,6 +4,7 @@ package com.github.lunatrius.schematica.tool;
 import java.util.UUID;
 
 import net.minecraft.block.Block;
+import net.minecraft.block.BlockDoor;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityClientPlayerMP;
 import net.minecraft.entity.Entity;
@@ -21,6 +22,8 @@ import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
+import net.minecraft.world.chunk.Chunk;
+import net.minecraft.world.chunk.storage.ExtendedBlockStorage;
 
 import com.github.lunatrius.core.util.vector.Vector3i;
 import com.github.lunatrius.schematica.client.gui.load.GuiSchematicLoad;
@@ -303,6 +306,10 @@ public class ToolHandler {
         int entityCount = 0;
         Vector3i pos = schematic.position;
 
+        // First pass: place all blocks using raw ExtendedBlockStorage operations
+        // to completely bypass onBlockAdded/onNeighborBlockChanged callbacks.
+        // This prevents doors and other fragile multi-block structures from
+        // breaking during paste due to incomplete neighbor checks.
         for (int y = 0; y < schematic.getHeight(); y++) {
             for (int x = 0; x < schematic.getWidth(); x++) {
                 for (int z = 0; z < schematic.getLength(); z++) {
@@ -315,7 +322,21 @@ public class ToolHandler {
                     int wy = pos.y + y;
                     int wz = pos.z + z;
 
-                    serverWorld.setBlock(wx, wy, wz, block, metadata, 2);
+                    // Direct ExtendedBlockStorage manipulation — no callbacks at all
+                    Chunk chunk = serverWorld.getChunkFromBlockCoords(wx, wz);
+                    int cy = wy >> 4; // section index
+                    ExtendedBlockStorage[] storageArrays = chunk.getBlockStorageArray();
+                    ExtendedBlockStorage ebs = storageArrays[cy];
+                    if (ebs == null) {
+                        ebs = new ExtendedBlockStorage(cy << 4, !serverWorld.provider.hasNoSky);
+                        storageArrays[cy] = ebs;
+                    }
+                    int lx = wx & 15;
+                    int ly = wy & 15;
+                    int lz = wz & 15;
+                    ebs.func_150818_a(lx, ly, lz, block);
+                    ebs.setExtBlockMetadata(lx, ly, lz, metadata);
+                    chunk.isModified = true;
                     count++;
 
                     // Only paste tile entity NBT if enabled
@@ -368,6 +389,8 @@ public class ToolHandler {
             }
         }
 
+        // Second pass: notify clients for rendering updates only.
+        // markBlockForUpdate sends block change packets without triggering game logic.
         for (int y = 0; y < schematic.getHeight(); y++) {
             for (int x = 0; x < schematic.getWidth(); x++) {
                 for (int z = 0; z < schematic.getLength(); z++) {
@@ -375,12 +398,11 @@ public class ToolHandler {
                     if (block == Blocks.air || block == null) {
                         continue;
                     }
-                    int metadata = schematic.getBlockMetadata(x, y, z);
                     int wx = pos.x + x;
                     int wy = pos.y + y;
                     int wz = pos.z + z;
 
-                    serverWorld.setBlockMetadataWithNotify(wx, wy, wz, metadata, 3);
+                    serverWorld.markBlockForUpdate(wx, wy, wz);
                 }
             }
         }

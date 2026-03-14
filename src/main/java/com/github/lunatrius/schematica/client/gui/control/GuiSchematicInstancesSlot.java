@@ -15,7 +15,7 @@ public class GuiSchematicInstancesSlot extends GuiSlot {
     protected int selectedIndex = -1;
 
     public GuiSchematicInstancesSlot(GuiSchematicInstances parent) {
-        super(Minecraft.getMinecraft(), parent.width, parent.height, 16, parent.height - 52, 24);
+        super(Minecraft.getMinecraft(), parent.width, parent.height, 16, parent.height - 68, 24);
         this.parent = parent;
 
         // Pre-select the active schematic
@@ -35,6 +35,7 @@ public class GuiSchematicInstancesSlot extends GuiSlot {
     @Override
     protected void elementClicked(int index, boolean doubleClick, int mouseX, int mouseY) {
         this.selectedIndex = index;
+        parent.onSelectionChanged();
         if (doubleClick && index >= 0 && index < ClientProxy.loadedSchematics.size()) {
             // Double-click switches to that schematic
             parent.switchToSelected();

@@ -14,7 +14,6 @@ import org.lwjgl.input.Keyboard;
 
 import com.github.lunatrius.schematica.Schematica;
 import com.github.lunatrius.schematica.client.gui.control.GuiSchematicControl;
-import com.github.lunatrius.schematica.client.gui.load.GuiSchematicLoad;
 import com.github.lunatrius.schematica.client.gui.save.GuiSchematicSave;
 import com.github.lunatrius.schematica.client.renderer.RendererSchematicGlobal;
 import com.github.lunatrius.schematica.client.world.SchematicWorld;
@@ -31,17 +30,13 @@ public class InputHandler {
 
     public static final InputHandler INSTANCE = new InputHandler();
 
-    private static final KeyBinding KEY_BINDING_LOAD = new KeyBinding(
-        Names.Keys.LOAD,
-        Schematica.proxy.GTNH ? Keyboard.KEY_NONE : Keyboard.KEY_DIVIDE,
-        Names.Keys.CATEGORY);
     private static final KeyBinding KEY_BINDING_SAVE = new KeyBinding(
         Names.Keys.SAVE,
-        Schematica.proxy.GTNH ? Keyboard.KEY_NONE : Keyboard.KEY_MULTIPLY,
+        Keyboard.KEY_N,
         Names.Keys.CATEGORY);
     private static final KeyBinding KEY_BINDING_CONTROL = new KeyBinding(
         Names.Keys.CONTROL,
-        Schematica.proxy.GTNH ? Keyboard.KEY_NONE : Keyboard.KEY_SUBTRACT,
+        Keyboard.KEY_M,
         Names.Keys.CATEGORY);
     private static final KeyBinding KEY_BINDING_LAYER_INC = new KeyBinding(
         Names.Keys.LAYER_INC,
@@ -56,7 +51,7 @@ public class InputHandler {
         Keyboard.KEY_RETURN,
         Names.Keys.CATEGORY);
 
-    public static final KeyBinding[] KEY_BINDINGS = new KeyBinding[] { KEY_BINDING_LOAD, KEY_BINDING_SAVE,
+    public static final KeyBinding[] KEY_BINDINGS = new KeyBinding[] { KEY_BINDING_SAVE,
         KEY_BINDING_CONTROL, KEY_BINDING_LAYER_INC, KEY_BINDING_LAYER_DEC,
         KEY_BINDING_EXECUTE };
 
@@ -67,10 +62,6 @@ public class InputHandler {
     @SubscribeEvent
     public void onKeyInput(InputEvent event) {
         if (this.minecraft.currentScreen == null) {
-            if (KEY_BINDING_LOAD.isPressed()) {
-                this.minecraft.displayGuiScreen(new GuiSchematicLoad(this.minecraft.currentScreen));
-            }
-
             if (KEY_BINDING_SAVE.isPressed()) {
                 this.minecraft.displayGuiScreen(new GuiSchematicSave(this.minecraft.currentScreen));
             }
