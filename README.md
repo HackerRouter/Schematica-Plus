@@ -9,6 +9,13 @@ Usage:
 - Default key bind of "Schematic Management" is `M`.
 - Use right click and left click to move and select.
 
+---
+
+If you are playing on GTNH-2.8.4, you can simply replace `Schematica-1.12.6-GTNH.jar` with it.
+
+Otherwise, you would need to also install **[LunatriusCore](https://github.com/GTNewHorizons/LunatriusCore/releases)**(>= 1.2.1-GTNH).
+
+![play GTNH in multiplayer](temp.png)
 
 ---
 
