@@ -2,7 +2,7 @@
 
 Usage:
 
-- Hold `LCONTROL` and scroll to swicth current tool mode.
+- When holding the tool item, hold `LCONTROL` and scroll to swicth current tool mode.
 - Default tool item is `minecraft:stick`.
 - Default key bind of "Save Schematic" is `N`.
 - Default key bind of "Execute" (paste, etc.) is `Enter`.
