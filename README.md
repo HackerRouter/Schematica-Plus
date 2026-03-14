@@ -1,5 +1,17 @@
 ## Welcome to Schematica Plus!
 
+Usage:
+
+- Hold `LCONTROL` and scroll to swicth current tool mode.
+- Default tool item is `minecraft:stick`.
+- Default key bind of "Save Schematic" is `N`.
+- Default key bind of "Execute" (paste, etc.) is `Enter`.
+- Default key bind of "Schematic Management" is `M`.
+- Use right click and left click to move and select.
+
+
+---
+
 Changes from GTNH-ver:
 - Added most functions from [Litematica](https://github.com/maruohon/litematica/), made it more user-friendly.
 - For example, it supports loading multiple schematic instances now.
