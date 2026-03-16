@@ -185,10 +185,11 @@ public class RendererSchematicGlobal {
             playerPos.sub(extra);
             GL11.glTranslated(-playerPos.x, -playerPos.y, -playerPos.z);
 
-            RenderHelper.createBuffers();
-
             Vector3d start = new Vector3d();
             Vector3d end = new Vector3d();
+
+            // --- Pass 1: Green selection box (depth-tested, occluded by blocks) ---
+            RenderHelper.createBuffers();
 
             ClientProxy.pointMin.toVector3d(start).sub(extra);
             ClientProxy.pointMax.toVector3d(end).sub(extra).add(1, 1, 1);
@@ -196,20 +197,6 @@ public class RendererSchematicGlobal {
                 RenderHelper.LINE_ALL, 0.0f, 0.75f, 0.0f, 0.5f);
             RenderHelper.drawCuboidSurface(start.toVector3f(), end.toVector3f(),
                 RenderHelper.QUAD_ALL, 1.0f, 1.0f, 1.0f, 0.2f);
-
-            ClientProxy.pointA.toVector3d(start).sub(extra);
-            end.set(start).add(1, 1, 1);
-            RenderHelper.drawCuboidOutline(start.toVector3f(), end.toVector3f(),
-                RenderHelper.LINE_ALL, 0.75f, 0.0f, 0.0f, 0.5f);
-            RenderHelper.drawCuboidSurface(start.toVector3f(), end.toVector3f(),
-                RenderHelper.QUAD_ALL, 0.75f, 0.0f, 0.0f, 0.25f);
-
-            ClientProxy.pointB.toVector3d(start).sub(extra);
-            end.set(start).add(1, 1, 1);
-            RenderHelper.drawCuboidOutline(start.toVector3f(), end.toVector3f(),
-                RenderHelper.LINE_ALL, 0.0f, 0.0f, 0.75f, 0.5f);
-            RenderHelper.drawCuboidSurface(start.toVector3f(), end.toVector3f(),
-                RenderHelper.QUAD_ALL, 0.0f, 0.0f, 0.75f, 0.25f);
 
             int quadCount = RenderHelper.getQuadCount();
             int lineCount = RenderHelper.getLineCount();
@@ -226,6 +213,49 @@ public class RendererSchematicGlobal {
                     GL11.glDepthMask(true);
                 }
                 if (lineCount > 0) {
+                    // Green lines WITH depth test — occluded by world blocks
+                    GL11.glVertexPointer(3, 0, RenderHelper.getLineVertexBuffer());
+                    GL11.glColorPointer(4, 0, RenderHelper.getLineColorBuffer());
+                    GL11.glDrawArrays(GL11.GL_LINES, 0, lineCount);
+                }
+                GL11.glDisableClientState(GL11.GL_COLOR_ARRAY);
+                GL11.glDisableClientState(GL11.GL_VERTEX_ARRAY);
+                GL11.glEnable(GL11.GL_TEXTURE_2D);
+            }
+
+            // --- Pass 2: Red (pointA) and Blue (pointB) boxes (no depth test, always visible) ---
+            RenderHelper.createBuffers();
+
+            ClientProxy.pointA.toVector3d(start).sub(extra);
+            end.set(start).add(1, 1, 1);
+            RenderHelper.drawCuboidOutline(start.toVector3f(), end.toVector3f(),
+                RenderHelper.LINE_ALL, 0.75f, 0.0f, 0.0f, 0.5f);
+            RenderHelper.drawCuboidSurface(start.toVector3f(), end.toVector3f(),
+                RenderHelper.QUAD_ALL, 0.75f, 0.0f, 0.0f, 0.25f);
+
+            ClientProxy.pointB.toVector3d(start).sub(extra);
+            end.set(start).add(1, 1, 1);
+            RenderHelper.drawCuboidOutline(start.toVector3f(), end.toVector3f(),
+                RenderHelper.LINE_ALL, 0.0f, 0.0f, 0.75f, 0.5f);
+            RenderHelper.drawCuboidSurface(start.toVector3f(), end.toVector3f(),
+                RenderHelper.QUAD_ALL, 0.0f, 0.0f, 0.75f, 0.25f);
+
+            quadCount = RenderHelper.getQuadCount();
+            lineCount = RenderHelper.getLineCount();
+            if (quadCount > 0 || lineCount > 0) {
+                GL11.glDisable(GL11.GL_TEXTURE_2D);
+                GL11.glLineWidth(3.0f);
+                GL11.glEnableClientState(GL11.GL_VERTEX_ARRAY);
+                GL11.glEnableClientState(GL11.GL_COLOR_ARRAY);
+                if (quadCount > 0) {
+                    GL11.glDepthMask(false);
+                    GL11.glVertexPointer(3, 0, RenderHelper.getQuadVertexBuffer());
+                    GL11.glColorPointer(4, 0, RenderHelper.getQuadColorBuffer());
+                    GL11.glDrawArrays(GL11.GL_QUADS, 0, quadCount);
+                    GL11.glDepthMask(true);
+                }
+                if (lineCount > 0) {
+                    // Red/Blue lines WITHOUT depth test — always visible
                     GL11.glDisable(GL11.GL_DEPTH_TEST);
                     GL11.glVertexPointer(3, 0, RenderHelper.getLineVertexBuffer());
                     GL11.glColorPointer(4, 0, RenderHelper.getLineColorBuffer());

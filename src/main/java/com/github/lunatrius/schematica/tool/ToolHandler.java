@@ -492,21 +492,51 @@ public class ToolHandler {
             return false;
         }
 
-        World world = player.worldObj;
+        WorldServer serverWorld = getServerWorld(player);
+        int count;
+        if (serverWorld != null) {
+            count = deleteDirectly(serverWorld, min, max);
+            sendChat(player, "Deleted " + count + " blocks in selection directly.");
+        } else {
+            count = deleteWithSetblock(player, min, max);
+            sendChat(player, "Deleted " + count + " blocks in selection via commands.");
+        }
+        return true;
+    }
+
+    private static int deleteDirectly(WorldServer serverWorld, Vector3i min, Vector3i max) {
         int count = 0;
         for (int x = min.x; x <= max.x; x++) {
             for (int y = min.y; y <= max.y; y++) {
                 for (int z = min.z; z <= max.z; z++) {
-                    if (!world.isAirBlock(x, y, z)) {
-                        world.setBlock(x, y, z, Blocks.air, 0, 2);
+                    if (!serverWorld.isAirBlock(x, y, z)) {
+                        serverWorld.setBlock(x, y, z, Blocks.air, 0, 2);
+                        serverWorld.markBlockForUpdate(x, y, z);
                         count++;
                     }
                 }
             }
         }
+        return count;
+    }
 
-        sendChat(player, "Deleted " + count + " blocks in selection.");
-        return true;
+    private static int deleteWithSetblock(EntityPlayer player, Vector3i min, Vector3i max) {
+        EntityClientPlayerMP clientPlayer = Minecraft.getMinecraft().thePlayer;
+        if (clientPlayer == null) {
+            return 0;
+        }
+        int count = 0;
+        for (int x = min.x; x <= max.x; x++) {
+            for (int y = min.y; y <= max.y; y++) {
+                for (int z = min.z; z <= max.z; z++) {
+                    if (!player.worldObj.isAirBlock(x, y, z)) {
+                        clientPlayer.sendChatMessage("/setblock " + x + " " + y + " " + z + " air 0 replace");
+                        count++;
+                    }
+                }
+            }
+        }
+        return count;
     }
 
     // --- FILL (Enter-key only, uses picked primaryBlock) ---
@@ -527,27 +557,57 @@ public class ToolHandler {
 
         ToolMode mode = ToolMode.FILL;
         Block block = mode.getPrimaryBlock();
-        if (block == null || block == Blocks.air) {
-            sendChat(player, EnumChatFormatting.RED + "No primary block set. Left-click a block to pick it.");
-            return false;
+        int meta = mode.getPrimaryMeta();
+        boolean isAirFill = (block == null || block == Blocks.air);
+
+        if (isAirFill) {
+            block = Blocks.air;
+            meta = 0;
         }
 
-        int meta = mode.getPrimaryMeta();
-        World world = player.worldObj;
-        int count = 0;
+        String blockName = isAirFill ? "air" : GameData.getBlockRegistry().getNameForObject(block);
 
+        WorldServer serverWorld = getServerWorld(player);
+        int count;
+        if (serverWorld != null) {
+            count = fillDirectly(serverWorld, min, max, block, meta);
+            sendChat(player, "Filled " + count + " blocks with " + blockName + ":" + meta + " directly.");
+        } else {
+            count = fillWithSetblock(player, min, max, block, meta, blockName);
+            sendChat(player, "Filled " + count + " blocks with " + blockName + ":" + meta + " via commands.");
+        }
+        return true;
+    }
+
+    private static int fillDirectly(WorldServer serverWorld, Vector3i min, Vector3i max, Block block, int meta) {
+        int count = 0;
         for (int x = min.x; x <= max.x; x++) {
             for (int y = min.y; y <= max.y; y++) {
                 for (int z = min.z; z <= max.z; z++) {
-                    world.setBlock(x, y, z, block, meta, 2);
+                    serverWorld.setBlock(x, y, z, block, meta, 2);
+                    serverWorld.markBlockForUpdate(x, y, z);
                     count++;
                 }
             }
         }
+        return count;
+    }
 
-        String blockName = GameData.getBlockRegistry().getNameForObject(block);
-        sendChat(player, "Filled " + count + " blocks with " + blockName + ":" + meta);
-        return true;
+    private static int fillWithSetblock(EntityPlayer player, Vector3i min, Vector3i max, Block block, int meta, String blockName) {
+        EntityClientPlayerMP clientPlayer = Minecraft.getMinecraft().thePlayer;
+        if (clientPlayer == null) {
+            return 0;
+        }
+        int count = 0;
+        for (int x = min.x; x <= max.x; x++) {
+            for (int y = min.y; y <= max.y; y++) {
+                for (int z = min.z; z <= max.z; z++) {
+                    clientPlayer.sendChatMessage("/setblock " + x + " " + y + " " + z + " " + blockName + " " + meta + " replace");
+                    count++;
+                }
+            }
+        }
+        return count;
     }
 
     // --- REPLACE_BLOCK (Enter-key only, uses picked primaryBlock + secondaryBlock) ---
@@ -581,28 +641,58 @@ public class ToolHandler {
 
         int replaceMeta = mode.getPrimaryMeta();
         int targetMeta = mode.getSecondaryMeta();
-        World world = player.worldObj;
-        int count = 0;
+        String replaceName = GameData.getBlockRegistry().getNameForObject(replaceBlock);
+        String targetName = GameData.getBlockRegistry().getNameForObject(targetBlock);
 
+        WorldServer serverWorld = getServerWorld(player);
+        int count;
+        if (serverWorld != null) {
+            count = replaceDirectly(serverWorld, min, max, targetBlock, targetMeta, replaceBlock, replaceMeta);
+            sendChat(player, "Replaced " + count + " blocks of " + targetName + ":" + targetMeta +
+                " with " + replaceName + ":" + replaceMeta + " directly.");
+        } else {
+            count = replaceWithSetblock(player, min, max, targetBlock, targetMeta, replaceName, replaceMeta);
+            sendChat(player, "Replaced " + count + " blocks of " + targetName + ":" + targetMeta +
+                " with " + replaceName + ":" + replaceMeta + " via commands.");
+        }
+        return true;
+    }
+
+    private static int replaceDirectly(WorldServer serverWorld, Vector3i min, Vector3i max,
+            Block targetBlock, int targetMeta, Block replaceBlock, int replaceMeta) {
+        int count = 0;
         for (int x = min.x; x <= max.x; x++) {
             for (int y = min.y; y <= max.y; y++) {
                 for (int z = min.z; z <= max.z; z++) {
-                    Block existing = world.getBlock(x, y, z);
-                    int existingMeta = world.getBlockMetadata(x, y, z);
-                    if (existing == targetBlock && existingMeta == targetMeta) {
-                        world.setBlock(x, y, z, replaceBlock, replaceMeta, 2);
+                    if (serverWorld.getBlock(x, y, z) == targetBlock && serverWorld.getBlockMetadata(x, y, z) == targetMeta) {
+                        serverWorld.setBlock(x, y, z, replaceBlock, replaceMeta, 2);
+                        serverWorld.markBlockForUpdate(x, y, z);
                         count++;
                     }
                 }
             }
         }
+        return count;
+    }
 
-        String targetName = GameData.getBlockRegistry().getNameForObject(targetBlock);
-        String replaceName = GameData.getBlockRegistry().getNameForObject(replaceBlock);
-        sendChat(player, "Replaced " + count + " blocks of " +
-            targetName + ":" + targetMeta +
-            " with " + replaceName + ":" + replaceMeta);
-        return true;
+    private static int replaceWithSetblock(EntityPlayer player, Vector3i min, Vector3i max,
+            Block targetBlock, int targetMeta, String replaceName, int replaceMeta) {
+        EntityClientPlayerMP clientPlayer = Minecraft.getMinecraft().thePlayer;
+        if (clientPlayer == null) {
+            return 0;
+        }
+        int count = 0;
+        for (int x = min.x; x <= max.x; x++) {
+            for (int y = min.y; y <= max.y; y++) {
+                for (int z = min.z; z <= max.z; z++) {
+                    if (player.worldObj.getBlock(x, y, z) == targetBlock && player.worldObj.getBlockMetadata(x, y, z) == targetMeta) {
+                        clientPlayer.sendChatMessage("/setblock " + x + " " + y + " " + z + " " + replaceName + " " + replaceMeta + " replace");
+                        count++;
+                    }
+                }
+            }
+        }
+        return count;
     }
 
     // --- Utility ---
