@@ -27,6 +27,7 @@ import net.minecraft.world.chunk.storage.ExtendedBlockStorage;
 
 import com.github.lunatrius.core.util.vector.Vector3i;
 import com.github.lunatrius.schematica.client.gui.load.GuiSchematicLoad;
+import com.github.lunatrius.schematica.client.gui.save.GuiSchematicSave;
 import com.github.lunatrius.schematica.client.renderer.RendererSchematicGlobal;
 import com.github.lunatrius.schematica.client.world.SchematicWorld;
 import com.github.lunatrius.schematica.nbt.NBTHelper;
@@ -145,6 +146,9 @@ public class ToolHandler {
             case REPLACE_BLOCK:
                 handleReplaceExecute(player);
                 break;
+            case AREA_SELECTION:
+                handleAreaSelectionExecute(player);
+                break;
             default:
                 break;
         }
@@ -205,6 +209,14 @@ public class ToolHandler {
         ClientProxy.updatePoints();
         ClientProxy.isRenderingGuide = true;
         return true;
+    }
+
+    /**
+     * Execute in area selection mode: open the save schematic GUI.
+     */
+    private static void handleAreaSelectionExecute(EntityPlayer player) {
+        Minecraft mc = Minecraft.getMinecraft();
+        mc.displayGuiScreen(new GuiSchematicSave(mc.currentScreen));
     }
 
     // --- SCHEMATIC_PLACEMENT ---
