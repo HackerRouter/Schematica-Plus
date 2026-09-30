@@ -375,6 +375,7 @@ public class ClientProxy extends CommonProxy {
         MinecraftForge.EVENT_BUS.register(RendererSchematicGlobal.INSTANCE);
         MinecraftForge.EVENT_BUS.register(ChatEventHandler.INSTANCE);
         MinecraftForge.EVENT_BUS.register(new OverlayHandler());
+        MinecraftForge.EVENT_BUS.register(new com.github.lunatrius.schematica.handler.client.ModInfoHandler());
         MinecraftForge.EVENT_BUS.register(WorldHandler.INSTANCE);
         MinecraftForge.EVENT_BUS.register(ToolItemHandler.INSTANCE);
     }

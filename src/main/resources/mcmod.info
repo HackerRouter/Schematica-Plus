@@ -1,11 +1,11 @@
 [{
 	"modid": "${modId}",
 	"name": "${modName}",
-	"description": "A reworked GTNH Schematica fork with enhanced previews, editing tools and mod compatibility. Replaces the original and GTNH versions of Schematica.",
+	"description": "Save and load schematics, preview multiple builds, rotate or mirror them, and paste or automatically place blocks. Includes editing tools and GTNH compatibility improvements.",
 	"version": "${modVersion}",
 	"mcversion": "${minecraftVersion}",
 	"authorList": ["HackerRouter", "Lunatrius"],
-	"credits": "HackerRouter (Schematica Plus maintainer); Lunatrius (original author); GTNH and upstream contributors: AbrarSyed, Adaptivity, AtomicBlom, bilde2910, bombcar, cltnschlosser, inpixies, Johann Bernhardt, Kamesuta, Kiwi233, MattBDev, mist475, Moravuscz, qb20nh, ShaRose, Tatara88, ThranMaru, UltraMoogleMan",
+	"credits": "HackerRouter (Schematica Plus maintainer)\\nLunatrius (original author)\\nGTNH and upstream contributors:\\nAbrarSyed, Adaptivity, AtomicBlom, bilde2910\\nbombcar, cltnschlosser, inpixies, Johann Bernhardt\\nKamesuta, Kiwi233, MattBDev, mist475\\nMoravuscz, qb20nh, ShaRose, Tatara88\\nThranMaru, UltraMoogleMan",
 	"dependants": [  ],
 	"dependencies": [ ],
 	"parent": "",
@@ -13,7 +13,7 @@
 	"logoFile": "/assets/schematica/logo.png",
 	"screenshots": [  ],
 	"updateUrl": "",
-	"url": "http://mc.lunatri.us/",
+	"url": "https://github.com/HackerRouter/Schematica-Plus",
 	"useDependencyInformation": false
 }]
 
