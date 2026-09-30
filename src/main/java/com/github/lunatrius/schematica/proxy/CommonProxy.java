@@ -216,7 +216,7 @@ public abstract class CommonProxy {
     }
 
     private boolean saveSchematic(EntityPlayer player, File directory, String filename, World world, Vector3i from,
-        Vector3i to, java.util.List<com.github.lunatrius.schematica.world.storage.SchematicRegion> regions) {
+        Vector3i to, java.util.List<com.github.lunatrius.schematica.api.SchematicRegion> regions) {
         synchronized (QueueTickHandler.INSTANCE) {
         try {
             if (!QueueTickHandler.INSTANCE.canQueue(player)) {

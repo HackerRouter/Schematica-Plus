@@ -126,8 +126,8 @@ public final class WorldEditJob {
         return "/setblock " + x + " " + y + " " + z + " " + block + " " + metadata + (pasteOnlyAir ? " keep" : " replace");
     }
 
-    public void setRegions(List<com.github.lunatrius.schematica.world.storage.SchematicRegion> regions) {
-        selected = com.github.lunatrius.schematica.world.storage.RegionMask.create(regions, width, height, length);
+    public void setRegions(List<com.github.lunatrius.schematica.api.SchematicRegion> regions) {
+        selected = regions.isEmpty() ? null : com.github.lunatrius.schematica.world.storage.RegionMask.create(regions, width, height, length);
     }
 
     public void flushBlockChanges(WorldServer world) {

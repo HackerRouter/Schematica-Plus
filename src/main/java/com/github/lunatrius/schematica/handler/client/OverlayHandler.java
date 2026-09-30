@@ -95,13 +95,18 @@ public class OverlayHandler {
             if (area == null) {
                 lines.add(UiTranslations.format("litematica.message.error.no_area_selected"));
             } else {
-                lines.add(UiTranslations.format("litematica.hud.area_selection.selected_area_simple", area.name()));
-                Vector3i a = ClientProxy.pointA;
-                Vector3i b = ClientProxy.pointB;
-                lines.add(EnumChatFormatting.GRAY + "A: " + EnumChatFormatting.AQUA
-                    + a.x + ", " + a.y + ", " + a.z
-                    + EnumChatFormatting.GRAY + "  B: " + EnumChatFormatting.AQUA
-                    + b.x + ", " + b.y + ", " + b.z);
+                lines.add(UiTranslations.format("litematica.hud.area_selection.selected_area_normal", area.name()));
+                if (area.selectedBox() == null) {
+                    lines.add(UiTranslations.format("litematica.error.area_selection.grow.no_sub_region_selected"));
+                } else {
+                    lines.add(UiTranslations.format("litematica.hud.area_selection.selected_sub_region", area.boxName()));
+                    Vector3i a = ClientProxy.pointA;
+                    Vector3i b = ClientProxy.pointB;
+                    lines.add(EnumChatFormatting.GRAY + "A: " + EnumChatFormatting.AQUA
+                        + a.x + ", " + a.y + ", " + a.z
+                        + EnumChatFormatting.GRAY + "  B: " + EnumChatFormatting.AQUA
+                        + b.x + ", " + b.y + ", " + b.z);
+                }
             }
         }
 

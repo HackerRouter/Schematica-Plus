@@ -1,5 +1,7 @@
 package com.github.lunatrius.schematica.world.storage;
 
+import com.github.lunatrius.schematica.api.SchematicRegion;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -34,9 +36,9 @@ public class Schematic implements ISchematic {
     @Override public List<SchematicRegion> getRegions() { return regions; }
 
     public void setRegions(List<SchematicRegion> regions) {
-        java.util.BitSet checked = RegionMask.create(regions, width, height, length);
+        java.util.BitSet checked = regions.isEmpty() ? null : RegionMask.create(regions, width, height, length);
         this.regions = java.util.Collections.unmodifiableList(new ArrayList<>(regions));
-        this.mask = regions.isEmpty() ? null : checked;
+        this.mask = checked;
         tileEntities.removeIf(tile -> !containsBlock(tile.xCoord, tile.yCoord, tile.zCoord));
         entities.removeIf(entity -> !containsBlock((int) Math.floor(entity.posX), (int) Math.floor(entity.posY), (int) Math.floor(entity.posZ)));
     }

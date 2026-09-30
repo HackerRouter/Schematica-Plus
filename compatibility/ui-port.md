@@ -625,3 +625,63 @@ Automated coverage includes legacy migration, independent copies, switching and
 round-trip restoration, deselection/deletion without resurrection, dimension
 isolation, stale objects, coordinate rejection and corrupt/externally modified
 settings. Native GUI, tool interactions and rendered outlines remain manual tests.
+
+
+## Phase 13: multi-box selections and sparse capture
+
+This phase supersedes Phase 12's single-box limitations. The area editor now uses
+Litematica's Normal layout: mode/corner controls at y=24, selection name at y=59,
+New sub-region / Manual Origin / Save at y=81, and subregion rows at y=116.
+Rows use the original Configure / Rename / Remove order and selection highlight.
+Configure opens the subregion coordinate page with the original two-corner layout
+and plus/minus icons. Original translation keys are retained. Mode switching,
+manual origin, corner targeting/expand mode and area analysis remain unavailable;
+the controls disclose that status. The extra outline toggle and error line are
+Plus controls. Native rendering and layout have not been tested in-game.
+
+Each selection contains up to 256 named boxes, an explicitly selected box or none,
+and its existing guide flag. Tool clicks only modify the selected box. Saving,
+fill, replace and delete use the union of all boxes, even if no box is selected.
+An empty selection cannot save/edit; single-block selections can now be edited.
+Removing a box does not implicitly select another. All boxes render separately;
+only the active box gets the red/blue corner markers. The HUD shows both area and
+subregion names, or an explicit missing-subregion message. Search includes every
+box name. From Placement retains known subregions with their current transformed
+coordinates; sources without region data produce one bounding box. Import is
+validated before adding any selection to the library.
+
+AreaSelection.json writes version=3 with per-area boxes and nullable selectedBox.
+Both version=2 single-box entries and unversioned legacy entries migrate. Copies
+have independent boxes, coordinates and selected-box state. Explicit deselection,
+empty selections, other sessions and unknown fields continue to survive writes.
+Existing atomic-write, stale-session and external-edit safeguards still apply.
+
+SchematicRegion is part of the public schematic API. Schematics keep immutable
+region bounds plus a union mask. Capture skips unselected blocks, tile entities
+and entities whose position lies outside the union. Overlap is captured once.
+The queued save snapshots bounds when submitted, including before an overwrite
+confirmation. Area edits use one masked job; both integrated-server operations
+and the command fallback skip the gaps. Renderer highlights, material checks and
+the printer (including creative destruction) exclude unselected positions.
+Rotations and mirrors transform region bounds along with schematic contents.
+
+Alpha files store SchematicaPlusRegionsVersion=1 and SchematicaPlusRegions, a list
+of Name and six-integer Bounds values in schematic-local coordinates. Multiple
+or partial boxes force extended block encoding and the existing safe .schemplus
+filename upgrade. A single complete box can still use legacy .schematic; ordinary
+.schematic files remain readable as full boxes. Malformed or unsupported region
+data fails loading instead of being treated as a full rectangle. .litematic import
+retains each region's name and bounds, including negative sizes, while still
+merging block contents into one preview. No .litematic writer or independently
+editable placement subregions is provided. Older mod versions do not understand
+the new bounds tag, so use this version when loading these multi-box saves.
+
+Storage remains a dense bounding volume with a mask. Existing dimension and
+16-million-block limits therefore apply to the enclosing box, not just the sum
+of selected boxes. Widely separated small boxes can exceed those limits.
+The capture queue still walks enclosing chunks, although excluded cells are not
+read from the world. Multiplayer NBT availability and visual adapters are unchanged.
+Automated tests cover migration, atomic placement import, explicit box deselection,
+copy isolation, bounds/overlap/gaps, all six transforms, file conversion/round-trip,
+and skipping edit gaps before accessing the world. Full Forge world/client/GL
+integration requires the native checks in TESTING.md.

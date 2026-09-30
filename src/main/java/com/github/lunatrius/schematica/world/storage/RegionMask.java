@@ -1,5 +1,7 @@
 package com.github.lunatrius.schematica.world.storage;
 
+import com.github.lunatrius.schematica.api.SchematicRegion;
+
 import java.util.BitSet;
 import java.util.List;
 import com.github.lunatrius.schematica.util.SchematicLimits;

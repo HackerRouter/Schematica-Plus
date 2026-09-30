@@ -487,3 +487,42 @@ once to establish the new keys. Ordered transforms apply to newly saved sessions
   current session. The mod must retain disk data and show a persistence failure;
   reconnect to load the external edit. Restore backups after testing. Native
   client/GL behavior has not been exercised by the agent.
+
+
+## Phase 13: multiple subregions (native checks)
+
+These checks supersede Phase 12's Simple-editor and bounding-box expectations.
+
+- Back up AreaSelection.json and open a legacy or version=2 selection. In Area
+  Editor, verify its first subregion retains both corners and its box name.
+  Create two separated boxes and an overlapping box. Rename, select/unselect,
+  remove, copy the whole area, and reconnect across two dimensions. Copies must
+  stay independent; deselected/deleted boxes must not reappear. Delete all boxes
+  and verify save/edit is refused until another is created.
+- Check Normal and subregion editors in English/Chinese and at GUI scales 1-3.
+  Compare button order, coordinates, list selection, tooltips and plus/minus icons
+  against the reference UI. Check short windows and long names. Coordinate typing,
+  nudging and Move to player must affect the configured box only. A stale editor
+  after a world change must not change the new session.
+- Display all boxes and switch the selected row. Red/blue corners must follow
+  only that box, without a phantom box at 0,0,0 when no box is selected. Left/right
+  tool clicks update only the selected box. With no selected box they refuse;
+  saving the union of existing boxes remains possible.
+- Place distinctive blocks, tile entities and entities in the selected boxes and
+  in the gap. Save with NBT/entities enabled in singleplayer and on a server.
+  Load the file: selected contents remain, gap contents are absent, and overlaps
+  have no duplicate entities. Request .schematic and confirm a multi-box save
+  produces a new .schemplus file without overwriting an existing alternate file.
+  A normal one-box low-ID .schematic save/read must continue to work.
+- Rotate/mirror the loaded preview around each axis. Check bounds, selected
+  contents, gap highlights and the result of From Placement. Repeat with a
+  .litematic containing disjoint regions and negative sizes. From Placement must
+  reject out-of-world coordinates without leaving a partial new selection.
+- In a disposable creative world, place blocks in the gaps. Fill, replace,
+  delete and paste: no gap block may change. Repeat the printer test with creative
+  destruction enabled, and test multiplayer command edits on a disposable server.
+  Overlapping selected positions must only be processed once. Test cancellation,
+  single-block boxes, boxes crossing chunks, and saving with no active box.
+- Try two boxes whose enclosing bounds exceed the existing allocation limits;
+  save/edit must fail before queuing work. The agent has not run these native
+  game checks; automated checks do not prove rendered appearance or modded NBT.

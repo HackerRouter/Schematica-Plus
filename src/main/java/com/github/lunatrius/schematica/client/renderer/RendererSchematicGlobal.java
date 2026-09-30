@@ -207,12 +207,16 @@ public class RendererSchematicGlobal {
             // --- Pass 1: Green selection box (depth-tested, occluded by blocks) ---
             RenderHelper.createBuffers();
 
-            ClientProxy.pointMin.toVector3d(start).sub(extra);
-            ClientProxy.pointMax.toVector3d(end).sub(extra).add(1, 1, 1);
-            RenderHelper.drawCuboidOutline(start.toVector3f(), end.toVector3f(),
-                RenderHelper.LINE_ALL, 0.0f, 0.75f, 0.0f, 0.5f);
-            RenderHelper.drawCuboidSurface(start.toVector3f(), end.toVector3f(),
-                RenderHelper.QUAD_ALL, RenderColors.AREA_SIDES.color());
+            com.github.lunatrius.schematica.client.selection.AreaSelectionLibrary.Area area =
+                com.github.lunatrius.schematica.client.selection.AreaSelections.library().selected();
+            if (area != null) for (com.github.lunatrius.schematica.api.SchematicRegion region : area.regions()) {
+                start.set(region.minX, region.minY, region.minZ).sub(extra);
+                end.set(region.maxX + 1, region.maxY + 1, region.maxZ + 1).sub(extra);
+                RenderHelper.drawCuboidOutline(start.toVector3f(), end.toVector3f(),
+                    RenderHelper.LINE_ALL, 0.0f, 0.75f, 0.0f, 0.5f);
+                RenderHelper.drawCuboidSurface(start.toVector3f(), end.toVector3f(),
+                    RenderHelper.QUAD_ALL, RenderColors.AREA_SIDES.color());
+            }
 
             int quadCount = RenderHelper.getQuadCount();
             int lineCount = RenderHelper.getLineCount();
@@ -242,19 +246,22 @@ public class RendererSchematicGlobal {
             // --- Pass 2: Red (pointA) and Blue (pointB) boxes (no depth test, always visible) ---
             RenderHelper.createBuffers();
 
-            ClientProxy.pointA.toVector3d(start).sub(extra);
-            end.set(start).add(1, 1, 1);
-            RenderHelper.drawCuboidOutline(start.toVector3f(), end.toVector3f(),
-                RenderHelper.LINE_ALL, 0.75f, 0.0f, 0.0f, 0.5f);
-            RenderHelper.drawCuboidSurface(start.toVector3f(), end.toVector3f(),
-                RenderHelper.QUAD_ALL, 0.75f, 0.0f, 0.0f, 0.25f);
+            if (area != null && area.selectedBox() != null) {
+                ClientProxy.pointA.toVector3d(start).sub(extra);
+                end.set(start).add(1, 1, 1);
+                RenderHelper.drawCuboidOutline(start.toVector3f(), end.toVector3f(),
+                    RenderHelper.LINE_ALL, 0.75f, 0.0f, 0.0f, 0.5f);
+                RenderHelper.drawCuboidSurface(start.toVector3f(), end.toVector3f(),
+                    RenderHelper.QUAD_ALL, 0.75f, 0.0f, 0.0f, 0.25f);
 
-            ClientProxy.pointB.toVector3d(start).sub(extra);
-            end.set(start).add(1, 1, 1);
-            RenderHelper.drawCuboidOutline(start.toVector3f(), end.toVector3f(),
-                RenderHelper.LINE_ALL, 0.0f, 0.0f, 0.75f, 0.5f);
-            RenderHelper.drawCuboidSurface(start.toVector3f(), end.toVector3f(),
-                RenderHelper.QUAD_ALL, 0.0f, 0.0f, 0.75f, 0.25f);
+                ClientProxy.pointB.toVector3d(start).sub(extra);
+                end.set(start).add(1, 1, 1);
+                RenderHelper.drawCuboidOutline(start.toVector3f(), end.toVector3f(),
+                    RenderHelper.LINE_ALL, 0.0f, 0.0f, 0.75f, 0.5f);
+                RenderHelper.drawCuboidSurface(start.toVector3f(), end.toVector3f(),
+                    RenderHelper.QUAD_ALL, 0.0f, 0.0f, 0.75f, 0.25f);
+
+            }
 
             quadCount = RenderHelper.getQuadCount();
             lineCount = RenderHelper.getLineCount();

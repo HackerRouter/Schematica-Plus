@@ -9,14 +9,14 @@ import net.minecraft.tileentity.TileEntity;
 
 public interface ISchematic {
 
-    default List<com.github.lunatrius.schematica.world.storage.SchematicRegion> getRegions() {
+    default List<SchematicRegion> getRegions() {
         return java.util.Collections.emptyList();
     }
 
     default boolean containsBlock(int x, int y, int z) {
         if (x < 0 || y < 0 || z < 0 || x >= getWidth() || y >= getHeight() || z >= getLength()) return false;
         if (getRegions().isEmpty()) return true;
-        for (com.github.lunatrius.schematica.world.storage.SchematicRegion region : getRegions()) {
+        for (SchematicRegion region : getRegions()) {
             if (region.contains(x, y, z)) return true;
         }
         return false;

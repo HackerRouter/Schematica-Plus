@@ -50,8 +50,8 @@ public final class GuiSchematicMainMenu extends UiScreen {
         area = menu("area_editor", UiSprite.AREA_EDITOR, () -> mc.displayGuiScreen(new GuiAreaSelectionEditor(this)));
         selections = menu("show_area_selections", UiSprite.AREA_SELECTION, () -> mc.displayGuiScreen(new GuiAreaSelectionManager(this)));
         selectionMode = unavailable(root.add(new UiButton(() -> UiTranslations.format("litematica.gui.button.area_selection_mode",
-            UiTranslations.format("litematica.gui.label.area_selection.mode.simple")), button -> {})));
-        selectionMode.setTooltip(UiTranslations.format("schematica.ui.area.single_box"));
+            UiTranslations.format("litematica.gui.label.area_selection.mode.normal")), button -> {})));
+        selectionMode.setTooltip(UiTranslations.format("schematica.ui.area.multi_box"));
         config = menu("configuration_menu", UiSprite.CONFIGURATION, () -> mc.displayGuiScreen(new GuiModConfig(this)));
         manager = menu("schematic_manager", UiSprite.SCHEMATIC_MANAGER,
             () -> mc.displayGuiScreen(new GuiSchematicManager(this)));

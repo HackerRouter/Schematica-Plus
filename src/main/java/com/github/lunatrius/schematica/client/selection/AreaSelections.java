@@ -41,6 +41,13 @@ public final class AreaSelections {
         saveCurrent();
     }
 
+    public static void selectBox(AreaSelectionLibrary.Box box) {
+        capture();
+        library.selectBox(library.selected(), box);
+        apply();
+        saveCurrent();
+    }
+
     public static void clear() {
         library = new AreaSelectionLibrary();
         store = null;

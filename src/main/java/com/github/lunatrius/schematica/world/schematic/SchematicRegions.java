@@ -6,7 +6,7 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import com.github.lunatrius.schematica.api.ISchematic;
 import com.github.lunatrius.schematica.world.storage.RegionMask;
-import com.github.lunatrius.schematica.world.storage.SchematicRegion;
+import com.github.lunatrius.schematica.api.SchematicRegion;
 
 final class SchematicRegions {
     private static final String KEY = "SchematicaPlusRegions";
@@ -25,7 +25,7 @@ final class SchematicRegions {
             if (!entry.hasKey("Name", 8) || !entry.hasKey("Bounds", 11)) throw new IllegalArgumentException("Invalid subregion");
             int[] bounds = entry.getIntArray("Bounds");
             String name = entry.getString("Name");
-            if (bounds.length != 6 || !names.add(name.toLowerCase(java.util.Locale.ROOT))) throw new IllegalArgumentException("Invalid subregion bounds or name");
+            if (bounds.length != 6 || !names.add(name)) throw new IllegalArgumentException("Invalid subregion bounds or name");
             regions.add(new SchematicRegion(name, bounds[0], bounds[1], bounds[2], bounds[3], bounds[4], bounds[5]));
         }
         RegionMask.create(regions, width, height, length);

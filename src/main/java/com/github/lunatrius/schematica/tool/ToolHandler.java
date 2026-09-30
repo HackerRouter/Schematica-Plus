@@ -172,7 +172,8 @@ public class ToolHandler {
      */
     private static boolean handleAreaSelectionUse(EntityPlayer player, MovingObjectPosition mop) {
         if (AreaSelections.library().selected() == null || AreaSelections.library().selected().selectedBox() == null) {
-            sendChat(player, UiTranslations.format("litematica.message.error.no_area_selected"));
+            sendChat(player, UiTranslations.format(AreaSelections.library().selected() == null
+                ? "litematica.message.error.no_area_selected" : "litematica.error.area_selection.grow.no_sub_region_selected"));
             return true;
         }
         ClientProxy.pointB.set(mop.blockX, mop.blockY, mop.blockZ);
@@ -187,7 +188,8 @@ public class ToolHandler {
      */
     private static boolean handleAreaSelectionAttack(EntityPlayer player, MovingObjectPosition mop) {
         if (AreaSelections.library().selected() == null || AreaSelections.library().selected().selectedBox() == null) {
-            sendChat(player, UiTranslations.format("litematica.message.error.no_area_selected"));
+            sendChat(player, UiTranslations.format(AreaSelections.library().selected() == null
+                ? "litematica.message.error.no_area_selected" : "litematica.error.area_selection.grow.no_sub_region_selected"));
             return true;
         }
         ClientProxy.pointA.set(mop.blockX, mop.blockY, mop.blockZ);

@@ -6,7 +6,7 @@ import java.util.List;
 import net.minecraft.nbt.NBTTagCompound;
 import com.github.lunatrius.schematica.api.ISchematic;
 import com.github.lunatrius.schematica.world.storage.RegionMask;
-import com.github.lunatrius.schematica.world.storage.SchematicRegion;
+import com.github.lunatrius.schematica.api.SchematicRegion;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;

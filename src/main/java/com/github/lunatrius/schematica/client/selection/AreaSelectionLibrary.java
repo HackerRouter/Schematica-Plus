@@ -51,6 +51,20 @@ public final class AreaSelectionLibrary {
         return area;
     }
 
+    public Area createFromRegions(String name, List<com.github.lunatrius.schematica.api.SchematicRegion> regions) {
+        if (areas.size() >= 4096 || regions.isEmpty() || regions.size() > 256) throw new IllegalArgumentException("Invalid selection size");
+        Area area = new Area(UUID.randomUUID().toString(), uniqueName(name, null));
+        for (com.github.lunatrius.schematica.api.SchematicRegion region : regions) {
+            Vector3i first = new Vector3i(region.minX, region.minY, region.minZ);
+            Vector3i second = new Vector3i(region.maxX, region.maxY, region.maxZ);
+            checkPoint(first); checkPoint(second);
+            area.boxes.add(new Box(uniqueBoxName(area, region.name, null), first, second));
+        }
+        area.selectedBox = area.boxes.get(0);
+        areas.add(area);
+        return area;
+    }
+
     public void select(Area area) {
         if (area != null) require(area);
         selected = area;
@@ -260,9 +274,9 @@ public final class AreaSelectionLibrary {
         public Vector3i first() { return selectedBox == null ? new Vector3i() : selectedBox.first(); }
         public Vector3i second() { return selectedBox == null ? new Vector3i() : selectedBox.second(); }
         public boolean guide() { return guide; }
-        public List<com.github.lunatrius.schematica.world.storage.SchematicRegion> regions() {
-            List<com.github.lunatrius.schematica.world.storage.SchematicRegion> result = new ArrayList<>();
-            for (Box box : boxes) result.add(new com.github.lunatrius.schematica.world.storage.SchematicRegion(box.name,
+        public List<com.github.lunatrius.schematica.api.SchematicRegion> regions() {
+            List<com.github.lunatrius.schematica.api.SchematicRegion> result = new ArrayList<>();
+            for (Box box : boxes) result.add(new com.github.lunatrius.schematica.api.SchematicRegion(box.name,
                 box.first.x, box.first.y, box.first.z, box.second.x, box.second.y, box.second.z));
             return result;
         }

@@ -1,4 +1,4 @@
-package com.github.lunatrius.schematica.world.storage;
+package com.github.lunatrius.schematica.api;
 
 import com.github.lunatrius.schematica.util.SchematicTransform;
 

@@ -1,5 +1,7 @@
 package com.github.lunatrius.schematica.world.storage;
 
+import com.github.lunatrius.schematica.api.SchematicRegion;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;

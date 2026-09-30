@@ -7,6 +7,26 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 public class AreaSelectionLibraryTest {
+    @Test public void placementImportIsAtomicAndKeepsEveryTransformedBox() {
+        AreaSelectionLibrary library = AreaSelectionLibrary.fromJson(null);
+        Area original = library.selected();
+        java.util.List<com.github.lunatrius.schematica.api.SchematicRegion> regions = java.util.Arrays.asList(
+            new com.github.lunatrius.schematica.api.SchematicRegion("Machines", -5, 60, 2, -3, 62, 4),
+            new com.github.lunatrius.schematica.api.SchematicRegion("Pipes", 6, 64, 2, 10, 64, 2));
+        Area imported = library.createFromRegions("Import", regions);
+        assertEquals(2, imported.boxes().size());
+        assertEquals(new Vector3i(-5, 60, 2), imported.first());
+        assertEquals("Pipes", imported.boxes().get(1).name());
+        assertSame(original, library.selected());
+        assertThrows(IllegalArgumentException.class, () -> library.createFromRegions("Invalid", java.util.Arrays.asList(regions.get(0),
+            new com.github.lunatrius.schematica.api.SchematicRegion("Bad", 0, 256, 0, 0, 257, 0))));
+        assertEquals(2, library.areas().size());
+        assertSame(original, library.selected());
+        library.select(imported);
+        Area restored = AreaSelectionLibrary.fromJson(library.toJson()).selected();
+        assertEquals(2, restored.boxes().size());
+        assertEquals(new Vector3i(10, 64, 2), restored.boxes().get(1).second());
+    }
     @Test public void subregionsCopyRenameSelectAndDeleteIndependently() {
         AreaSelectionLibrary library = AreaSelectionLibrary.fromJson(null);
         Area area = library.selected();

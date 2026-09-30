@@ -34,7 +34,7 @@ import com.github.lunatrius.schematica.proxy.ClientProxy;
 public final class GuiAreaSelectionManager extends UiScreen {
     private final AreaSelectionLibrary library = AreaSelections.library();
     private final World world = Minecraft.getMinecraft().theWorld;
-    private final UiListModel<Area> model = new UiListModel<>(22, area -> area.name() + " " + area.boxName());
+    private final UiListModel<Area> model = new UiListModel<>(22, area -> area.name() + " " + area.boxes().stream().map(box -> box.name()).collect(java.util.stream.Collectors.joining(" ")));
     private UiRowList<Area> list;
     private UiTextField search;
     private UiButton searchButton;
@@ -124,7 +124,13 @@ public final class GuiAreaSelectionManager extends UiScreen {
             Vector3i first = placement.position.clone();
             Vector3i second = new Vector3i(Math.addExact(first.x, placement.getWidth() - 1),
                 Math.addExact(first.y, placement.getHeight() - 1), Math.addExact(first.z, placement.getLength() - 1));
-            AreaSelections.select(library.create(name, first, second));
+            List<com.github.lunatrius.schematica.api.SchematicRegion> regions = new ArrayList<>();
+            for (com.github.lunatrius.schematica.api.SchematicRegion region : placement.getSchematic().getRegions()) {
+                regions.add(region.offset(first.x, first.y, first.z));
+            }
+            if (regions.isEmpty()) regions.add(new com.github.lunatrius.schematica.api.SchematicRegion(name,
+                first.x, first.y, first.z, second.x, second.y, second.z));
+            AreaSelections.select(library.createFromRegions(name, regions));
         });
     }
 
@@ -157,7 +163,7 @@ public final class GuiAreaSelectionManager extends UiScreen {
         fromPlacement.setEnabled(available && ClientProxy.schematic != null);
         create.setEnabled(available);
         list.setEnabled(available);
-        status.setTooltip(statusText(), UiTranslations.format("schematica.ui.area.single_box"));
+        status.setTooltip(statusText(), UiTranslations.format("schematica.ui.area.multi_box"));
     }
 
     @Override protected void layoutWidgets() {
@@ -231,7 +237,7 @@ public final class GuiAreaSelectionManager extends UiScreen {
         @Override public List<String> tooltip(int x, int y) {
             Vector3i a = area.first(), b = area.second();
             return java.util.Arrays.asList(area.name(), area.boxName(),
-                UiTranslations.format("litematica.gui.label.area_selection_box_count", 1),
+                UiTranslations.format("litematica.gui.label.area_selection_box_count", area.boxes().size()),
                 String.format("%d, %d, %d -> %d, %d, %d", a.x, a.y, a.z, b.x, b.y, b.z));
         }
 

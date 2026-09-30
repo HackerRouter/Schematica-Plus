@@ -27,6 +27,7 @@ import com.github.lunatrius.schematica.nbt.NBTHelper;
 import com.github.lunatrius.schematica.reference.Reference;
 import com.github.lunatrius.schematica.world.WorldDummy;
 import com.github.lunatrius.schematica.world.storage.Schematic;
+import com.github.lunatrius.schematica.api.SchematicRegion;
 
 public class SchematicLitematica extends SchematicFormat {
 
@@ -62,7 +63,9 @@ public class SchematicLitematica extends SchematicFormat {
         Reference.logger.info("Litematic schematic '{}' with {} region(s)", name, getRegionCount(regions));
 
         List<RegionData> regionDataList = new ArrayList<>();
+        List<SchematicRegion> bounds = new ArrayList<>();
         Set<String> regionNames = regions.func_150296_c();
+        if (regionNames.size() > 256) throw new IllegalArgumentException("Too many subregions");
 
         int globalMinX = Integer.MAX_VALUE, globalMinY = Integer.MAX_VALUE, globalMinZ = Integer.MAX_VALUE;
         int globalMaxX = Integer.MIN_VALUE, globalMaxY = Integer.MIN_VALUE, globalMaxZ = Integer.MIN_VALUE;
@@ -94,6 +97,7 @@ public class SchematicLitematica extends SchematicFormat {
             globalMaxX = Math.max(globalMaxX, maxX);
             globalMaxY = Math.max(globalMaxY, maxY);
             globalMaxZ = Math.max(globalMaxZ, maxZ);
+            bounds.add(new SchematicRegion(regionName, minX, minY, minZ, maxX, maxY, maxZ));
 
             RegionData rd = new RegionData();
             rd.name = regionName;
@@ -115,7 +119,14 @@ public class SchematicLitematica extends SchematicFormat {
             width, height, length, globalMinX, globalMinY, globalMinZ);
 
         ItemStack icon = new ItemStack(Blocks.grass);
-        ISchematic schematic = new Schematic(icon, width, height, length);
+        Schematic schematic = new Schematic(icon, width, height, length);
+        List<SchematicRegion> localBounds = new ArrayList<>();
+        for (SchematicRegion box : bounds) {
+            localBounds.add(new SchematicRegion(box.name, Math.subtractExact(box.minX, globalMinX), Math.subtractExact(box.minY, globalMinY),
+                Math.subtractExact(box.minZ, globalMinZ), Math.subtractExact(box.maxX, globalMinX), Math.subtractExact(box.maxY, globalMinY),
+                Math.subtractExact(box.maxZ, globalMinZ)));
+        }
+        schematic.setRegions(localBounds);
         BlockStateTranslator translator = BlockStateTranslator.instance();
 
         for (RegionData rd : regionDataList) {

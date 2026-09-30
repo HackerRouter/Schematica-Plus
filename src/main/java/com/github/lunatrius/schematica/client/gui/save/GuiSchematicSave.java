@@ -122,7 +122,8 @@ public final class GuiSchematicSave extends GuiSchematicBrowser {
         super.tickScreen();
         problem = validateSelection();
         save.setEnabled(problem.isEmpty());
-        save.setTooltip(problem.isEmpty() ? UiTranslations.format("litematica.gui.button.save_schematic") : problem);
+        save.setTooltip(problem.isEmpty() ? UiTranslations.format(area.boxes().size() > 1
+            ? "schematica.ui.area.extended" : "litematica.gui.button.save_schematic") : problem);
     }
 
     private void saveSelection() {

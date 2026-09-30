@@ -22,6 +22,20 @@ public class AreaSelectionStoreTest {
         return new JsonParser().parse(new String(Files.readAllBytes(file.toPath()), StandardCharsets.UTF_8)).getAsJsonObject();
     }
 
+    @Test public void multipleBoxesAndExplicitBoxDeselectionPersistAcrossSessions() throws Exception {
+        File file = new File(temporary.getRoot(), "areas.json");
+        AreaSelectionStore store = new AreaSelectionStore(file, "world|0");
+        Area area = store.library().selected();
+        store.library().addBox(area, "Pipes", new Vector3i(10, 64, 0), new Vector3i(20, 64, 1));
+        store.library().selectBox(area, null);
+        store.save();
+        store.save();
+        AreaSelectionStore restored = new AreaSelectionStore(file, "world|0");
+        assertNull(restored.library().selected().selectedBox());
+        assertEquals(2, restored.library().selected().boxes().size());
+        assertEquals(1, new AreaSelectionStore(file, "world|-1").library().selected().boxes().size());
+    }
+
     @Test public void migratesLegacyDataAndPreservesOtherDimensionsAndUnknownFields() throws Exception {
         File file = temporary.newFile();
         write(file, "{\"world|0\":{\"ax\":1,\"ay\":60,\"az\":-3,\"bx\":20,\"by\":80,\"bz\":9,\"renderingGuide\":true,\"future\":42},\"world|-1\":{\"future\":true}}");
