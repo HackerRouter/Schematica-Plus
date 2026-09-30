@@ -256,13 +256,16 @@ public class GuiSchematicControl extends GuiScreenBase {
             }
 
             if (guiButton.id == this.numericX.id) {
-                this.schematic.position.x = this.numericX.getValue();
+                this.schematic.moveMinimumTo(this.numericX.getValue(), this.schematic.position.y, this.schematic.position.z);
+                setPoint(this.numericX, this.numericY, this.numericZ, this.schematic.position);
                 RendererSchematicGlobal.INSTANCE.refresh(this.schematic);
             } else if (guiButton.id == this.numericY.id) {
-                this.schematic.position.y = this.numericY.getValue();
+                this.schematic.moveMinimumTo(this.schematic.position.x, this.numericY.getValue(), this.schematic.position.z);
+                setPoint(this.numericX, this.numericY, this.numericZ, this.schematic.position);
                 RendererSchematicGlobal.INSTANCE.refresh(this.schematic);
             } else if (guiButton.id == this.numericZ.id) {
-                this.schematic.position.z = this.numericZ.getValue();
+                this.schematic.moveMinimumTo(this.schematic.position.x, this.schematic.position.y, this.numericZ.getValue());
+                setPoint(this.numericX, this.numericY, this.numericZ, this.schematic.position);
                 RendererSchematicGlobal.INSTANCE.refresh(this.schematic);
             } else if (guiButton.id == this.btnUnload.id) {
                 SchematicaPlus.proxy.unloadSchematic();

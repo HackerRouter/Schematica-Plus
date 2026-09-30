@@ -234,6 +234,10 @@ public class ToolHandler {
             return false;
         }
 
+        if (schematic.placementSettings().locked) {
+            sendChat(player, UiTranslations.format(com.github.lunatrius.schematica.client.world.PlacementSettings.LOCKED_MESSAGE));
+            return true;
+        }
         if (schematic.subregions() != null && schematic.subregions().selected != null) {
             try {
                 int x = mop != null && mop.typeOfHit == MovingObjectPosition.MovingObjectType.BLOCK ? mop.blockX : MathHelper.floor_double(player.posX);
@@ -256,6 +260,7 @@ public class ToolHandler {
             ClientProxy.moveSchematicToPlayer(schematic);
         }
         RendererSchematicGlobal.INSTANCE.refresh(schematic);
+        com.github.lunatrius.schematica.handler.client.WorldHandler.INSTANCE.saveSession();
         return true;
     }
 
@@ -264,6 +269,7 @@ public class ToolHandler {
         if (mode == ToolMode.PASTE_SCHEMATIC) {
             SchematicWorld schematic = ClientProxy.schematic;
             if (schematic == null) throw new IllegalArgumentException("No schematic loaded.");
+            if (!schematic.isEnabled()) throw new IllegalArgumentException(UiTranslations.format("schematica.ui.placement.disabled"));
             if (!schematic.hasEnabledRegions()) throw new IllegalArgumentException(UiTranslations.format("schematica.ui.placement.no_regions"));
             job = new WorldEditJob(player.getUniqueID(), player.dimension, WorldEditJob.Kind.PASTE,
                 schematic.position.x, schematic.position.y, schematic.position.z,

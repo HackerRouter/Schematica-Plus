@@ -50,7 +50,7 @@ public class TickHandler {
             }
             WorldHandler.INSTANCE.updateWorld(this.minecraft);
             SchematicWorld schematic = ClientProxy.schematic;
-            if (this.minecraft.thePlayer != null && schematic != null && schematic.isRendering) {
+            if (this.minecraft.thePlayer != null && schematic != null && schematic.isRenderingEnabled()) {
                 this.minecraft.mcProfiler.startSection("printer");
                 SchematicPrinter printer = SchematicPrinter.INSTANCE;
                 if (printer.isEnabled() && printer.isPrinting() && this.ticks-- < 0) {

@@ -33,5 +33,6 @@ public final class PlacementState {
         next.isPastingBlockNBT = previous.isPastingBlockNBT;
         next.isRenderingLayer = previous.isRenderingLayer;
         next.renderingLayer = Math.max(0, Math.min(previous.renderingLayer, next.getHeight() - 1));
+        next.setPlacementSettings(previous.placementSettings());
     }
 }

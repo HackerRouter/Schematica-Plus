@@ -161,10 +161,7 @@ public class ClientProxy extends CommonProxy {
 
     public static void moveSchematic(SchematicWorld schematic, Integer x, Integer y, Integer z) {
         if (schematic != null) {
-            Vector3i position = schematic.position;
-            position.x = x;
-            position.y = y;
-            position.z = z;
+            schematic.moveMinimumTo(x, y, z);
         }
     }
 
@@ -198,6 +195,7 @@ public class ClientProxy extends CommonProxy {
         public Integer layer;
         public int[] origin;
         public com.google.gson.JsonObject subregions;
+        public com.google.gson.JsonObject placementSettings;
 
         LoadedSchematicEntry() {}
     }
@@ -566,6 +564,7 @@ public class ClientProxy extends CommonProxy {
                 entry.Z = sw.position.z;
                 entry.origin = sw.originPosition().coordinates();
                 entry.subregions = sw.subregions() == null ? null : sw.subregions().toJson();
+                entry.placementSettings = sw.placementSettings().toJson();
                 entry.RotationX = sw.rotationStateX;
                 entry.RotationY = sw.rotationStateY;
                 entry.RotationZ = sw.rotationStateZ;
@@ -646,6 +645,7 @@ public class ClientProxy extends CommonProxy {
                         if (entry.blockNBT != null) restored.isPastingBlockNBT = entry.blockNBT;
                         restored.isRenderingLayer = Boolean.TRUE.equals(entry.layerMode);
                         if (entry.layer != null) restored.renderingLayer = Math.max(0, Math.min(entry.layer, restored.getHeight() - 1));
+                        restored.setPlacementSettings(com.github.lunatrius.schematica.client.world.PlacementSettings.fromJson(entry.placementSettings));
                         return restored;
                     });
                     RendererSchematicGlobal.INSTANCE.createRendererSchematicChunks(world);

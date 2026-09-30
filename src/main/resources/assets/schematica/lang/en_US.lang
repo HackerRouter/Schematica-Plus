@@ -358,3 +358,4 @@ schematica.ui.placement.region_hint=Select a row to target that region with the 
 schematica.ui.placement.region_failed=The sub-region change failed. Check coordinate/size limits and the log.
 schematica.ui.placement.region_rendering=Controls preview and printer visibility for this region. Pasting and material counts still include enabled regions.
 schematica.ui.placement.no_regions=Enable at least one sub-region first.
+schematica.ui.placement.disabled=This placement is disabled.

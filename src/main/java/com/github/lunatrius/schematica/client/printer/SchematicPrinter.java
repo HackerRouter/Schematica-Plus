@@ -92,6 +92,7 @@ public class SchematicPrinter {
      * @return true if a block was placed or there are still blocks to place, false if printing is complete.
      */
     public boolean print() {
+        if (schematic == null || !schematic.isRenderingEnabled()) return true;
         final EntityClientPlayerMP player = this.minecraft.thePlayer;
         final World world = this.minecraft.theWorld;
 
@@ -145,6 +146,7 @@ public class SchematicPrinter {
             return true;
         }
 
+        if (!this.schematic.isRenderingEnabled()) return false;
         final World world = this.minecraft.theWorld;
         if (world == null) {
             return false;

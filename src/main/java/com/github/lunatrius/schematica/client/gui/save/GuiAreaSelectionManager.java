@@ -125,6 +125,7 @@ public final class GuiAreaSelectionManager extends UiScreen {
             Vector3i second = new Vector3i(Math.addExact(first.x, placement.getWidth() - 1),
                 Math.addExact(first.y, placement.getHeight() - 1), Math.addExact(first.z, placement.getLength() - 1));
             List<com.github.lunatrius.schematica.api.SchematicRegion> regions = new ArrayList<>();
+            if (!placement.isEnabled()) throw new IllegalArgumentException(UiTranslations.format("schematica.ui.placement.disabled"));
             if (!placement.hasEnabledRegions()) throw new IllegalArgumentException(UiTranslations.format("schematica.ui.placement.no_regions"));
             for (com.github.lunatrius.schematica.api.SchematicRegion region : placement.getSchematic().getRegions()) {
                 regions.add(region.offset(first.x, first.y, first.z));

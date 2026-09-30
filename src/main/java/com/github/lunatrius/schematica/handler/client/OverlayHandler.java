@@ -33,7 +33,7 @@ public class OverlayHandler {
     public void onText(RenderGameOverlayEvent.Text event) {
         if (this.minecraft.gameSettings.showDebugInfo && ConfigurationHandler.showDebugInfo) {
             final SchematicWorld schematic = ClientProxy.schematic;
-            if (schematic != null && schematic.isRendering) {
+            if (schematic != null && schematic.isRenderingEnabled()) {
                 event.left.add("");
                 event.left.add("[§6Schematica§r] " + schematic.getDebugDimensions());
                 event.left.add("[§6Tool§r] " + ToolManager.getCurrentMode().getDisplayName());

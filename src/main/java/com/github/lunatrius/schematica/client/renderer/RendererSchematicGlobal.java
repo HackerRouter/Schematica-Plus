@@ -73,7 +73,7 @@ public class RendererSchematicGlobal {
 
             boolean anyRendering = false;
             for (SchematicWorld sw : ClientProxy.loadedSchematics) {
-                if (sw.isRendering) {
+                if (sw.isEnabled()) {
                     anyRendering = true;
                     break;
                 }
@@ -116,7 +116,7 @@ public class RendererSchematicGlobal {
 
         // Render each loaded schematic
         for (SchematicWorld sw : ClientProxy.loadedSchematics) {
-            if (!sw.isRendering) continue;
+            if (!sw.isEnabled()) continue;
 
             SchematicRenderData data = renderDataMap.get(sw);
             if (data == null || data.chunks.isEmpty()) continue;
@@ -128,7 +128,7 @@ public class RendererSchematicGlobal {
             GL11.glTranslated(-playerPos.x, -playerPos.y, -playerPos.z);
 
             // Render passes
-            for (int pass = 0; pass < 3; pass++) {
+            for (int pass = 0; sw.isRenderingEnabled() && pass < 3; pass++) {
                 boolean reverse = pass == 1 || (pass == 0 &&
                     com.github.lunatrius.schematica.handler.ConfigurationHandler.enableAlpha);
                 for (int i = 0; i < data.chunks.size(); i++) {
@@ -138,7 +138,7 @@ public class RendererSchematicGlobal {
             }
 
             // Render entities if enabled
-            if (sw.isRenderingEntities) {
+            if (sw.isRenderingEnabled() && sw.isRenderingEntities) {
                 renderEntities(sw);
             }
 
@@ -148,7 +148,7 @@ public class RendererSchematicGlobal {
             float r = isActive ? 0.75f : 0.25f;
             float g = isActive ? 0.0f : 0.5f;
             float b = isActive ? 0.75f : 0.25f;
-            if (sw.hasEnabledRegions()) RenderHelper.drawCuboidOutline(
+            if (sw.placementSettings().enclosingBox && sw.hasEnabledRegions()) RenderHelper.drawCuboidOutline(
                 RenderHelper.VEC_ZERO,
                 sw.dimensions(),
                 RenderHelper.LINE_ALL,
@@ -322,7 +322,7 @@ public class RendererSchematicGlobal {
     private void updateRenderers() {
         List<List<RendererSchematicChunk>> groups = new ArrayList<>();
         for (SchematicWorld schematic : ClientProxy.loadedSchematics) {
-            if (!schematic.isRendering) continue;
+            if (!schematic.isRenderingEnabled()) continue;
             SchematicRenderData data = renderDataMap.get(schematic);
             if (data == null) continue;
             double offsetX = schematic.position.x - this.cameraPosition.x;

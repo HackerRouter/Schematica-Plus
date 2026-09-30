@@ -132,7 +132,7 @@ public class InputHandler {
                 final SchematicWorld schematic = ClientProxy.schematic;
                 boolean revert = true;
 
-                if (schematic != null && schematic.isRendering) {
+                if (schematic != null && schematic.isRenderingEnabled()) {
                     revert = pickBlock(schematic, ClientProxy.movingObjectPosition);
                 }
 

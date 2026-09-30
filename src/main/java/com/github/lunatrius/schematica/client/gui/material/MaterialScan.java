@@ -37,7 +37,7 @@ public final class MaterialScan {
             : new int[] {0, 0, 0, schematic.getWidth(), schematic.getHeight(), schematic.getLength()};
         width = bounds[3] - bounds[0];
         length = bounds[5] - bounds[2];
-        volume = (long) width * length * (bounds[4] - bounds[1]);
+        volume = schematic.isEnabled() ? (long) width * length * (bounds[4] - bounds[1]) : 0;
     }
 
     public boolean done() { return cursor >= volume; }

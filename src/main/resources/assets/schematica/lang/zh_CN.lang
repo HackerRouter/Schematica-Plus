@@ -358,3 +358,4 @@ schematica.ui.placement.region_hint=选中一行后，移动工具只移动该�
 schematica.ui.placement.region_failed=子区域修改失败，请检查坐标、尺寸限制及日志。
 schematica.ui.placement.region_rendering=控制此区域的预览与打印机可见性。粘贴和材料统计仍包含已启用的区域。
 schematica.ui.placement.no_regions=请先启用至少一个子区域。
+schematica.ui.placement.disabled=此放置已禁用。

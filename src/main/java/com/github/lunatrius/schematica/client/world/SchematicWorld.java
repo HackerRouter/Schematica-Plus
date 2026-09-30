@@ -54,6 +54,15 @@ public class SchematicWorld extends World {
     private SubRegionPlacements subregions;
     private java.util.BitSet visibleRegionBlocks;
     private int placementRevision;
+    private PlacementSettings placementSettings = PlacementSettings.DEFAULT;
+
+    public PlacementSettings placementSettings() { return placementSettings; }
+    public void setPlacementSettings(PlacementSettings settings) {
+        placementSettings = java.util.Objects.requireNonNull(settings);
+        placementRevision++;
+    }
+    public boolean isEnabled() { return placementSettings.enabled; }
+    public boolean isRenderingEnabled() { return placementSettings.renders(isRendering); }
 
     public void setPlacementSource(SchematicSourceData source) {
         placementSource = source;
@@ -93,7 +102,10 @@ public class SchematicWorld extends World {
         changeSubregions(subregions.replace(subregions.get(name).position(relative)));
     }
 
-    public void changeSubregions(SubRegionPlacements next) { rebuildRegions(next, new ArrayList<>(transformOperations)); }
+    public void changeSubregions(SubRegionPlacements next) {
+        if (!placementSettings.allowsRegionChange(subregions, next)) throw new IllegalStateException(PlacementSettings.LOCKED_MESSAGE);
+        rebuildRegions(next, new ArrayList<>(transformOperations));
+    }
 
     public void restoreSubregions(com.google.gson.JsonObject saved) {
         if (saved == null) return;
@@ -141,8 +153,13 @@ public class SchematicWorld extends World {
 
     public void moveOriginTo(int x, int y, int z) {
         com.github.lunatrius.schematica.api.SchematicOrigin minimum = schematic.getOrigin().minimumAt(
-            new com.github.lunatrius.schematica.api.SchematicOrigin(x, y, z));
+            placementSettings.constrainOrigin(originPosition(), new com.github.lunatrius.schematica.api.SchematicOrigin(x, y, z)));
         position.set(minimum.x, minimum.y, minimum.z);
+    }
+
+    public void moveMinimumTo(int x, int y, int z) {
+        com.github.lunatrius.schematica.api.SchematicOrigin origin = schematic.getOrigin().atMinimum(x, y, z);
+        moveOriginTo(origin.x, origin.y, origin.z);
     }
 
     public final Vector3i position = new Vector3i();
@@ -197,7 +214,7 @@ public class SchematicWorld extends World {
     }
 
     public boolean isBlockInRange(int x, int y, int z) {
-        return schematic.containsBlock(x, y, z) && (!isRenderingLayer || renderingLayer == y)
+        return isEnabled() && schematic.containsBlock(x, y, z) && (!isRenderingLayer || renderingLayer == y)
             && RenderLayerSettings.RANGE.contains((long) position.x + x, (long) position.y + y, (long) position.z + z);
     }
 
@@ -403,6 +420,7 @@ public class SchematicWorld extends World {
     }
 
     private void transform(ForgeDirection direction, boolean mirror) {
+        if (placementSettings.locked) return;
         char operation;
         switch (direction) {
             case EAST: operation = 'X'; break;

@@ -55,6 +55,16 @@ public final class SubRegionPlacements {
         return false;
     }
 
+    public boolean sameGeometry(SubRegionPlacements other) {
+        if (other == null || regions.size() != other.regions.size()) return false;
+        for (int i = 0; i < regions.size(); i++) {
+            Region a = regions.get(i), b = other.regions.get(i);
+            if (a.box != b.box || a.position.x != b.position.x || a.position.y != b.position.y || a.position.z != b.position.z
+                || a.rotation != b.rotation || a.mirror != b.mirror) return false;
+        }
+        return true;
+    }
+
     public SubRegionPlacements select(String name) {
         if (name != null) get(name);
         return new SubRegionPlacements(regions, name);

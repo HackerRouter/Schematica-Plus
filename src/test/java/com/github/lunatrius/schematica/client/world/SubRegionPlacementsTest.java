@@ -14,6 +14,22 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 public class SubRegionPlacementsTest {
+    @Test public void placementLockRejectsRegionGeometryButAllowsIndependentFlags() {
+        SubRegionPlacements original = model();
+        PlacementSettings locked = PlacementSettings.DEFAULT.locked(true);
+        assertTrue(locked.allowsRegionChange(original, original.select("A")));
+        SubRegionPlacements flags = original.replace(original.get("A").enabled(false).rendering(false).ignoreEntities(true).locks(7));
+        assertTrue(locked.allowsRegionChange(original, flags));
+        assertFalse(locked.allowsRegionChange(original, original.replace(original.get("A").rotation(1))));
+        assertFalse(locked.allowsRegionChange(original, original.replace(original.get("A").mirror(1))));
+        SubRegionPlacements moved = original.replace(original.get("A").position(new SchematicOrigin(5, 7, 9)));
+        assertFalse(locked.allowsRegionChange(original, moved));
+        assertFalse(locked.allowsRegionChange(moved, moved.reset()));
+        assertTrue(locked.locked(false).allowsRegionChange(original, moved));
+        assertFalse(original.sameGeometry(model()));
+        assertFalse(original.modified());
+    }
+
     private SubRegionPlacements model(SchematicOrigin origin, SchematicRegion... regions) {
         return modelWithPivot(origin, SchematicOrigin.ZERO, regions);
     }

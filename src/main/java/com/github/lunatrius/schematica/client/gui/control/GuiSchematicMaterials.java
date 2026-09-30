@@ -76,6 +76,7 @@ public class GuiSchematicMaterials extends UiScreen {
     private int ticks;
     private int[] geometry;
     private Object source;
+    private boolean placementEnabled;
     private List<String> transforms = Collections.emptyList();
     private String notice = "";
     private long noticeUntil;
@@ -170,7 +171,7 @@ public class GuiSchematicMaterials extends UiScreen {
 
     private boolean geometryChanged() {
         if (renderLayers && layerRevision != RenderLayerSettings.RANGE.revision()) return true;
-        return !Arrays.equals(geometry, geometry()) || source != schematic.getSchematic()
+        return placementEnabled != schematic.isEnabled() || !Arrays.equals(geometry, geometry()) || source != schematic.getSchematic()
             || !transforms.equals(schematic.transformOperations);
     }
 
@@ -185,6 +186,7 @@ public class GuiSchematicMaterials extends UiScreen {
             geometry = geometry();
             layerRevision = RenderLayerSettings.RANGE.revision();
             source = schematic.getSchematic();
+            placementEnabled = schematic.isEnabled();
             transforms = new ArrayList<>(schematic.transformOperations);
             scan = new MaterialScan(schematic, openedWorld, mc.thePlayer, renderLayers);
         }

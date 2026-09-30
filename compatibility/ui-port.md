@@ -844,3 +844,26 @@ combinations, entity/hanging coordinates, old wrappers, source NBT isolation,
 allocation checks, every local Y rotation/mirror and version 1 placement migration.
 Forge translation, entity instantiation, OpenGL rendering and world placement
 still require native game checks.
+
+
+## Phase 17: main placement settings
+
+The backend now separates placement participation from the existing preview
+visibility flag. Disabled placements are excluded from render/pick/print, material
+scans, paste and From Placement. Rendering-only exclusion pauses preview and the
+printer while retaining enabled contents for materials and paste. Placement boxes
+can remain visible when preview rendering is off. Enclosing-box rendering has its
+own setting; new placements default off, following upstream.
+
+Immutable PlacementSettings stores enabled, locked, coordinateLocks and enclosingBox.
+Versioned JSON is stored beside the existing visible field in LoadedSchematics.json.
+Old entries remain enabled and retain their former visibility and enclosing outline.
+Reload restores transforms and world origin before installing the saved locks.
+
+Whole-placement locking prevents main/subregion moves and transforms. Subregion
+flag/coordinate-lock changes remain available, matching upstream. Main coordinate
+locks filter the world origin axes before converting to the normalized minimum;
+legacy coordinate setters also use this path. Disabled/hidden printer jobs pause
+without being reported as completed. Six new headless tests cover state independence,
+all coordinate masks, locked region geometry, persistence, legacy defaults and
+malformed records. The UI controls are connected in the next commit of this phase.
