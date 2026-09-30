@@ -26,6 +26,9 @@ Default tool item is `minecraft:stick`.
 
 If you are playing on GTNH-2.8.4, you can simply replace `Schematica-1.12.6-GTNH.jar` with it.
 
+GTNH compatibility work targets 2.8.4 and 2.9.0-RC-1. See the
+[versioned coverage and remaining limitations](compatibility/README.md) before testing.
+
 LunatriusCore is no longer required. Schematica Plus includes the utility classes it uses
 under its own internal package, so an external LunatriusCore can still be installed for
 other mods. See [third-party notices](THIRD_PARTY_NOTICES.md) for attribution.
@@ -54,7 +57,7 @@ textures and arbitrary mod-specific rotations still require adapters. This does
 not guarantee identical rendering for every mod; see [verification](TESTING.md).
 
 The printer can place source fluids using registered `ItemBucket` containers,
-GregTech volumetric flasks, IC2 universal fluid cells and Forestry buckets. In
+GregTech volumetric flasks, IC2 universal fluid cells, Forestry and Railcraft buckets. In
 survival, a matching container with at least 1000 mB must be in your inventory,
 and a neighboring block face must be visible and within reach. The original item
 handles consumption and container returns. Flasks/cells require a solid neighbor
