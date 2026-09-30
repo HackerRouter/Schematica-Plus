@@ -54,3 +54,22 @@ wrapped to fit the current scaled viewport.
 
 Full main-menu/file/placement/config screens, hotkey chords, subregion data and
 schematic backend changes belong to later phases.
+
+## Minecraft adapter and controls
+
+`UiScreen` bridges GuiScreen lifecycle and LWJGL2 input. It owns repeat-key state,
+parent navigation, modal confirmation, delayed wrapped tooltips and relayout.
+`MinecraftUiDraw` scopes GL attributes/modelview and preserves an existing scissor;
+its texture method accepts explicit source/atlas dimensions for later icon sheets.
+The initial icons are drawn with primitives and do not require upstream assets.
+
+Controls include left/right-click buttons, a boolean toggle, vanilla-backed text
+editing (selection/clipboard), bounded integer input, labels and a searchable,
+virtualized list with scrollbar dragging and keyboard navigation. Integer edits
+commit on Enter/focus loss; intermediate empty/minus text is allowed. Committed
+values clamp to their configured range.
+
+In Controls, bind **UI component test** in the Schematica category, then press
+it in a world. The binding defaults to unbound. The page uses 200 synthetic entries
+and does not load, save or change schematics/worlds. M/N retain their existing
+behavior. Child pages exercise return navigation with state retained in the parent.

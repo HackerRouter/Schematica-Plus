@@ -17,6 +17,13 @@ public abstract class UiWidget {
         return bounds;
     }
 
+    public final boolean containsVisible(int x, int y) {
+        for (UiWidget widget = this; widget != null; widget = widget.parent) {
+            if (!widget.isVisible() || !widget.bounds().contains(x, y)) return false;
+        }
+        return true;
+    }
+
     public void setBounds(int x, int y, int width, int height) {
         bounds = new UiBounds(x, y, width, height);
     }
@@ -30,7 +37,7 @@ public abstract class UiWidget {
     }
 
     public final boolean isEnabled() {
-        return enabled;
+        return enabled && (parent == null || parent.isEnabled());
     }
 
     public final void setEnabled(boolean enabled) {

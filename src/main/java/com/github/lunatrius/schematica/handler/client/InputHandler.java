@@ -13,6 +13,7 @@ import net.minecraftforge.common.ForgeHooks;
 import org.lwjgl.input.Keyboard;
 
 import com.github.lunatrius.schematica.SchematicaPlus;
+import com.github.lunatrius.schematica.client.gui.UiDemoScreen;
 import com.github.lunatrius.schematica.client.gui.control.GuiSchematicControl;
 import com.github.lunatrius.schematica.client.gui.save.GuiSchematicSave;
 import com.github.lunatrius.schematica.client.renderer.RendererSchematicGlobal;
@@ -50,10 +51,14 @@ public class InputHandler {
         Names.Keys.EXECUTE,
         Keyboard.KEY_RETURN,
         Names.Keys.CATEGORY);
+    private static final KeyBinding KEY_BINDING_UI_DEMO = new KeyBinding(
+        Names.Keys.UI_DEMO,
+        Keyboard.KEY_NONE,
+        Names.Keys.CATEGORY);
 
     public static final KeyBinding[] KEY_BINDINGS = new KeyBinding[] { KEY_BINDING_SAVE,
         KEY_BINDING_CONTROL, KEY_BINDING_LAYER_INC, KEY_BINDING_LAYER_DEC,
-        KEY_BINDING_EXECUTE };
+        KEY_BINDING_EXECUTE, KEY_BINDING_UI_DEMO };
 
     private final Minecraft minecraft = Minecraft.getMinecraft();
 
@@ -62,6 +67,10 @@ public class InputHandler {
     @SubscribeEvent
     public void onKeyInput(InputEvent event) {
         if (this.minecraft.currentScreen == null) {
+            if (KEY_BINDING_UI_DEMO.isPressed()) {
+                this.minecraft.displayGuiScreen(new UiDemoScreen(null));
+                return;
+            }
             if (KEY_BINDING_SAVE.isPressed()) {
                 this.minecraft.displayGuiScreen(new GuiSchematicSave(this.minecraft.currentScreen));
             }

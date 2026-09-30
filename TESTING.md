@@ -5,6 +5,30 @@ exercise bounded file/NBT inputs and pure transformation logic without starting
 Minecraft. Forge world initialization requires LaunchWrapper and is not exercised
 by the plain JUnit process.
 
+For the new UI foundation, bind `UI component test` in Controls (unbound by
+default), then open it in a world. This page only uses synthetic data.
+
+- In both GTNH 2.8.4 and 2.9.0-RC-1, test English/Chinese, GUI scales 1/2/3/Auto,
+  Unicode font, window resizing, an odd window size, and the minimum scaled
+  viewport (320x240). Text, clipping and hit targets must agree.
+- Search `019`, clear, select rows, use arrows/Home/End/PageUp/PageDown/Enter,
+  double-click a row, scroll and drag the scrollbar outside its bounds. Scroll
+  must clamp after filtering, and only visible rows should render.
+- Use Tab/Shift+Tab, select text with Shift/arrows or mouse drag, and copy/paste.
+  Edit the number to an empty string, minus sign and out-of-range values, then
+  press Enter or move focus. Step with arrows/the focused mouse wheel.
+- Disable the list: it must not receive mouse/keyboard input. Open the reset
+  dialog: background controls must not react. Escape dismisses only the dialog;
+  Tab stays inside it. Confirm and cancel must have distinct effects.
+- Open a child page and return. Search, numeric value, selection and scrolling
+  must persist in the parent, including after resizing and reopening a dialog.
+- Close the page and inspect the world, NEI/inventory item textures and other
+  mod screens. No scissor, tint, blend, depth or keyboard-repeat state should leak.
+
+Headless UI tests cover input routing, focus/capture/modal isolation, clipping
+math and list state/visible-row behavior. They do not validate native GL drawing,
+font/IME behavior or modpack rendering integrations; those require the checks above.
+
 Before a release, use a disposable 1.7.10 world to check:
 
 - Run the compatibility scenarios in both GTNH 2.8.4 and 2.9.0-RC-1. Exact
@@ -122,4 +146,3 @@ once to establish the new keys. Ordered transforms apply to newly saved sessions
 - Include an AE2 monitor away from local origin (0,0,0): its dynamic tile replacement must preserve its coordinates and saved NBT without interrupting loading of other tiles.
 - Save Galacticraft colored pipes, filled machines, solar panels and linked beam receivers/telepads. Check synchronized fields and rebased link coordinates after loading at another position.
 - Load an AE2/GT stream captured with a different mod version: incompatible binary state must be skipped while canonical NBT remains available. Named visual fields are separate from version-specific streams.
-
