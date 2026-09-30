@@ -6,6 +6,9 @@ import com.github.lunatrius.schematica.proxy.CommonProxy;
 import com.github.lunatrius.schematica.reference.Reference;
 
 import cpw.mods.fml.common.Mod;
+import cpw.mods.fml.common.FMLCommonHandler;
+import cpw.mods.fml.common.Loader;
+import cpw.mods.fml.common.LoaderException;
 import cpw.mods.fml.common.Mod.EventHandler;
 import cpw.mods.fml.common.Mod.Instance;
 import cpw.mods.fml.common.SidedProxy;
@@ -17,6 +20,7 @@ import cpw.mods.fml.common.network.NetworkCheckHandler;
 import cpw.mods.fml.common.versioning.ArtifactVersion;
 import cpw.mods.fml.common.versioning.DefaultArtifactVersion;
 import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
 
 @Mod(
     modid = Reference.MODID,
@@ -24,15 +28,39 @@ import cpw.mods.fml.relauncher.Side;
     version = Reference.VERSION,
     dependencies = Reference.DEPENDENCIES,
     guiFactory = Reference.GUI_FACTORY)
-public class Schematica {
+public class SchematicaPlus {
 
     @Instance(Reference.MODID)
-    public static Schematica instance;
+    public static SchematicaPlus instance;
 
     @SidedProxy(serverSide = Reference.PROXY_SERVER, clientSide = Reference.PROXY_CLIENT)
     public static CommonProxy proxy;
 
     private final ArtifactVersion minimumClientJoinVersion = new DefaultArtifactVersion("1.11.0");
+
+    public SchematicaPlus() {
+        String conflict = findLegacyMod(Loader.instance().getIndexedModList().keySet());
+        if (conflict != null) {
+            String message = "Schematica Plus (schematica_plus) cannot load alongside " + conflict
+                + ". Remove the original/GTNH Schematica jar, or remove Schematica Plus.";
+            if (FMLCommonHandler.instance().getSide().isClient()) {
+                showConflict(message);
+            }
+            throw new LoaderException(message);
+        }
+    }
+
+    @SideOnly(Side.CLIENT)
+    private static void showConflict(String message) {
+        throw new com.github.lunatrius.schematica.client.gui.SchematicaPlusConflictException(message);
+    }
+
+    static String findLegacyMod(Iterable<String> modIds) {
+        for (String modId : modIds) {
+            if ("schematica".equalsIgnoreCase(modId)) return modId;
+        }
+        return null;
+    }
 
     /**
      * Block any clients older than 1.11.0 to ensure the server-client settings are respected

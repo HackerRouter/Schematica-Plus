@@ -8,7 +8,7 @@ import net.minecraft.client.resources.I18n;
 import com.github.lunatrius.schematica.internal.lunatriuscore.client.gui.GuiNumericField;
 import com.github.lunatrius.schematica.internal.lunatriuscore.client.gui.GuiScreenBase;
 import com.github.lunatrius.schematica.internal.lunatriuscore.util.vector.Vector3i;
-import com.github.lunatrius.schematica.Schematica;
+import com.github.lunatrius.schematica.SchematicaPlus;
 import com.github.lunatrius.schematica.handler.ConfigurationHandler;
 import com.github.lunatrius.schematica.proxy.ClientProxy;
 import com.github.lunatrius.schematica.reference.Constants;
@@ -191,7 +191,7 @@ public class GuiSchematicSave extends GuiScreenBase {
                 SchematicFormat.saveEntities = !SchematicFormat.saveEntities;
                 this.btnSaveEntities.displayString = I18n.format(Names.Gui.Save.SAVE_ENTITIES) + ": " + (SchematicFormat.saveEntities ? this.strOn : this.strOff);
             } else if (guiButton.id == this.btnEnable.id) {
-                ClientProxy.isRenderingGuide = !ClientProxy.isRenderingGuide && Schematica.proxy.isSaveEnabled;
+                ClientProxy.isRenderingGuide = !ClientProxy.isRenderingGuide && SchematicaPlus.proxy.isSaveEnabled;
                 this.btnEnable.displayString = ClientProxy.isRenderingGuide ? this.strOn : this.strOff;
                 this.btnSave.enabled = ClientProxy.isRenderingGuide;
             } else if (guiButton.id == this.btnSave.id) {
@@ -201,7 +201,7 @@ public class GuiSchematicSave extends GuiScreenBase {
                 } else {
                     path = this.tfFilename.getText() + ".schematic";
                 }
-                if (Schematica.proxy.saveSchematic(
+                if (SchematicaPlus.proxy.saveSchematic(
                     this.mc.thePlayer,
                     ConfigurationHandler.schematicDirectory,
                     path,

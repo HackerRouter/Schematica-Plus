@@ -14,7 +14,7 @@ import net.minecraft.util.ChatStyle;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.IChatComponent;
 
-import com.github.lunatrius.schematica.Schematica;
+import com.github.lunatrius.schematica.SchematicaPlus;
 import com.github.lunatrius.schematica.reference.Names;
 import com.github.lunatrius.schematica.reference.Reference;
 import com.github.lunatrius.schematica.util.FileUtils;
@@ -67,7 +67,7 @@ public class CommandSchematicaRemove extends CommandSchematicaBase {
             }
         }
 
-        File schematicDirectory = Schematica.proxy.getPlayerSchematicDirectory(player, true);
+        File schematicDirectory = SchematicaPlus.proxy.getPlayerSchematicDirectory(player, true);
         final File file;
         try {
             file = FileUtils.findSchematicFile(schematicDirectory, name, false);

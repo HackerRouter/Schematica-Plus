@@ -5,7 +5,7 @@ import java.io.File;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.world.World;
 
-import com.github.lunatrius.schematica.Schematica;
+import com.github.lunatrius.schematica.SchematicaPlus;
 import com.github.lunatrius.schematica.api.ISchematic;
 import com.github.lunatrius.schematica.reference.Reference;
 
@@ -68,7 +68,7 @@ public class SchematicContainer {
         }
 
         Reference.logger.debug("Copying chunk at [{},{}] into {}", this.curChunkX, this.curChunkZ, this.file.getName());
-        Schematica.proxy.copyChunkToSchematic(
+        SchematicaPlus.proxy.copyChunkToSchematic(
             this.schematic,
             this.world,
             this.curChunkX,

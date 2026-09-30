@@ -5,10 +5,10 @@ import org.apache.logging.log4j.Logger;
 
 public class Reference {
 
-    public static final String MODID = "Schematica";
-    public static final String NAME = "Schematica";
+    public static final String MODID = "schematica_plus";
+    public static final String NAME = "Schematica Plus";
     public static final String VERSION = SchematicaVersion.VERSION;
-    public static final String DEPENDENCIES = "";
+    public static final String DEPENDENCIES = "before:Schematica;before:schematica";
     public static final String PROXY_SERVER = "com.github.lunatrius.schematica.proxy.ServerProxy";
     public static final String PROXY_CLIENT = "com.github.lunatrius.schematica.proxy.ClientProxy";
     public static final String LOTR_PROXY = "com.github.lunatrius.schematica.compat.LOTRProxy";

@@ -14,7 +14,7 @@ import net.minecraft.item.ItemStack;
 import org.apache.commons.io.IOUtils;
 
 import com.github.lunatrius.schematica.internal.lunatriuscore.client.gui.GuiScreenBase;
-import com.github.lunatrius.schematica.Schematica;
+import com.github.lunatrius.schematica.SchematicaPlus;
 import com.github.lunatrius.schematica.client.util.BlockList;
 import com.github.lunatrius.schematica.client.world.SchematicWorld;
 import com.github.lunatrius.schematica.handler.ConfigurationHandler;
@@ -147,7 +147,7 @@ public class GuiSchematicMaterials extends GuiScreenBase {
             stringBuilder.append(System.lineSeparator());
         }
 
-        final File dumps = Schematica.proxy.getDirectory("dumps");
+        final File dumps = SchematicaPlus.proxy.getDirectory("dumps");
         try (
             FileOutputStream outputStream = new FileOutputStream(new File(dumps, Reference.MODID + "-materials.txt"))) {
             IOUtils.write(stringBuilder.toString(), outputStream);

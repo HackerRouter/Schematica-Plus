@@ -85,7 +85,7 @@ public final class Names {
         public static final String SERVERSIDE_SCHEMATICS_ENABLED = "serversideSchematicsEnabled";
         public static final String SERVERSIDE_SCHEMATICS_ENABLED_DESC = "Allow players to save schematics serverside, download schematics and see serverside schematics";
 
-        public static final String LANG_PREFIX = Reference.MODID.toLowerCase() + ".config";
+        public static final String LANG_PREFIX = "schematica.config";
     }
 
     public static final class Chat {

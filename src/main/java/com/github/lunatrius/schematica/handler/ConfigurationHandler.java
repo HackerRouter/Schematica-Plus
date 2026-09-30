@@ -13,7 +13,7 @@ import net.minecraft.item.Item;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.common.config.Property;
 
-import com.github.lunatrius.schematica.Schematica;
+import com.github.lunatrius.schematica.SchematicaPlus;
 import com.github.lunatrius.schematica.reference.Names;
 import com.github.lunatrius.schematica.reference.Reference;
 
@@ -48,7 +48,7 @@ public class ConfigurationHandler {
         true, true };
     public static final String SCHEMATIC_DIRECTORY_STR = "schematics";
     public static final File SCHEMATIC_DIRECTORY_DEFAULT = new File(
-        Schematica.proxy.getDataDirectory(),
+        SchematicaPlus.proxy.getDataDirectory(),
         SCHEMATIC_DIRECTORY_STR);
     public static final String[] EXTRA_AIR_BLOCKS_DEFAULT = {};
     public static final String SORT_TYPE_DEFAULT = "";
@@ -127,6 +127,11 @@ public class ConfigurationHandler {
 
     public static void init(File configFile) {
         if (configuration == null) {
+            try {
+                com.github.lunatrius.schematica.util.FileUtils.migrateLegacyConfiguration(configFile);
+            } catch (IOException e) {
+                throw new cpw.mods.fml.common.LoaderException("Cannot migrate the Schematica configuration to " + configFile + ": " + e);
+            }
             configuration = new Configuration(configFile, VERSION);
             loadConfiguration();
         }
@@ -271,7 +276,7 @@ public class ConfigurationHandler {
         try {
             schematicDirectory = schematicDirectory.getCanonicalFile();
             final String schematicPath = schematicDirectory.getAbsolutePath();
-            final String dataPath = Schematica.proxy.getDataDirectory()
+            final String dataPath = SchematicaPlus.proxy.getDataDirectory()
                 .getAbsolutePath();
             if (schematicPath.contains(dataPath)) {
                 propSchematicDirectory.set(
@@ -375,7 +380,7 @@ public class ConfigurationHandler {
             .setLanguageKey(Names.Config.LANG_PREFIX + "." + Names.Config.SERVERSIDE_SCHEMATICS_ENABLED);
         serversideSchematicsEnabled = propServersideSchematicsEnabled.getBoolean(SERVERSIDE_SCHEMATICS_ENABLED_DEFAULT);
 
-        Schematica.proxy.createFolders();
+        SchematicaPlus.proxy.createFolders();
 
         if (configuration.hasChanged()) {
             configuration.save();

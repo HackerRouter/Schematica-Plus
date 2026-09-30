@@ -23,7 +23,7 @@ import org.lwjgl.Sys;
 
 import com.github.lunatrius.schematica.internal.lunatriuscore.client.gui.GuiScreenBase;
 import com.github.lunatrius.schematica.FileFilterSchematic;
-import com.github.lunatrius.schematica.Schematica;
+import com.github.lunatrius.schematica.SchematicaPlus;
 import com.github.lunatrius.schematica.client.printer.SchematicPrinter;
 import com.github.lunatrius.schematica.client.renderer.RendererSchematicGlobal;
 import com.github.lunatrius.schematica.client.world.SchematicWorld;
@@ -92,7 +92,7 @@ public class GuiSchematicLoad extends GuiScreenBase {
                     Sys.openURL("file://" + ConfigurationHandler.schematicDirectory.getAbsolutePath());
                 }
             } else if (guiButton.id == this.btnDone.id) {
-                if (Schematica.proxy.isLoadEnabled) {
+                if (SchematicaPlus.proxy.isLoadEnabled) {
                     loadSchematic();
                 }
                 this.mc.displayGuiScreen(this.parentScreen);
@@ -203,7 +203,7 @@ public class GuiSchematicLoad extends GuiScreenBase {
         try {
             if (selectedIndex >= 0 && selectedIndex < this.schematicFiles.size()) {
                 GuiSchematicEntry schematicEntry = this.schematicFiles.get(selectedIndex);
-                if (Schematica.proxy.loadSchematic(null, this.currentDirectory, schematicEntry.getName())) {
+                if (SchematicaPlus.proxy.loadSchematic(null, this.currentDirectory, schematicEntry.getName())) {
                     SchematicWorld schematic = ClientProxy.schematic;
                     if (schematic != null) {
                         Coordinates coord = ClientProxy.getCoordinates(worldServerName(this.mc), schematic.name);

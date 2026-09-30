@@ -5,7 +5,7 @@ import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.resources.I18n;
 
 import com.github.lunatrius.schematica.internal.lunatriuscore.client.gui.GuiScreenBase;
-import com.github.lunatrius.schematica.Schematica;
+import com.github.lunatrius.schematica.SchematicaPlus;
 import com.github.lunatrius.schematica.client.renderer.RendererSchematicGlobal;
 import com.github.lunatrius.schematica.client.world.SchematicWorld;
 import com.github.lunatrius.schematica.handler.client.WorldHandler;
@@ -154,7 +154,7 @@ public class GuiSchematicInstances extends GuiScreenBase {
                 int newIdx = Math.min(idx, ClientProxy.loadedSchematics.size() - 1);
                 ClientProxy.selectSchematic(ClientProxy.loadedSchematics.get(newIdx));
             } else {
-                Schematica.proxy.unloadSchematic();
+                SchematicaPlus.proxy.unloadSchematic();
             }
         }
 

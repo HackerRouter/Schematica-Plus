@@ -2,7 +2,7 @@ package com.github.lunatrius.schematica.handler.client;
 
 import net.minecraftforge.client.event.ClientChatReceivedEvent;
 
-import com.github.lunatrius.schematica.Schematica;
+import com.github.lunatrius.schematica.SchematicaPlus;
 import com.github.lunatrius.schematica.client.printer.SchematicPrinter;
 import com.github.lunatrius.schematica.reference.Names;
 import com.github.lunatrius.schematica.reference.Reference;
@@ -30,11 +30,11 @@ public class ChatEventHandler {
                 }
                 if (message.contains(Names.SBC.DISABLE_SAVE)) {
                     Reference.logger.info("Saving is disabled on this server.");
-                    Schematica.proxy.isSaveEnabled = false;
+                    SchematicaPlus.proxy.isSaveEnabled = false;
                 }
                 if (message.contains(Names.SBC.DISABLE_LOAD)) {
                     Reference.logger.info("Loading is disabled on this server.");
-                    Schematica.proxy.isLoadEnabled = false;
+                    SchematicaPlus.proxy.isLoadEnabled = false;
                 }
             }
         }

@@ -9,7 +9,7 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.ChatComponentTranslation;
 
 import com.github.lunatrius.schematica.internal.lunatriuscore.util.vector.Vector3i;
-import com.github.lunatrius.schematica.Schematica;
+import com.github.lunatrius.schematica.SchematicaPlus;
 import com.github.lunatrius.schematica.reference.Names;
 import com.github.lunatrius.schematica.reference.Reference;
 
@@ -35,7 +35,7 @@ public class CommandSchematicaSave extends CommandSchematicaBase {
             throw new CommandException(Names.Command.Save.Message.PLAYERS_ONLY);
         }
 
-        if (Schematica.proxy.isPlayerQuotaExceeded(player)) {
+        if (SchematicaPlus.proxy.isPlayerQuotaExceeded(player)) {
             throw new CommandException(Names.Command.Save.Message.QUOTA_EXCEEDED);
         }
 
@@ -55,7 +55,7 @@ public class CommandSchematicaSave extends CommandSchematicaBase {
         }
 
         Reference.logger.debug("Saving schematic from {} to {} to {}", from, to, filename);
-        final File schematicDirectory = Schematica.proxy.getPlayerSchematicDirectory(player, true);
+        final File schematicDirectory = SchematicaPlus.proxy.getPlayerSchematicDirectory(player, true);
         if (schematicDirectory == null) {
             // Chances are that if this is null, we could not retrieve their UUID.
             Reference.logger.warn("Unable to determine the schematic directory for player {}", player);
@@ -71,7 +71,7 @@ public class CommandSchematicaSave extends CommandSchematicaBase {
         }
 
         try {
-            if (!Schematica.proxy.saveSchematic(player, schematicDirectory, filename, player.getEntityWorld(), from, to)) {
+            if (!SchematicaPlus.proxy.saveSchematic(player, schematicDirectory, filename, player.getEntityWorld(), from, to)) {
                 throw new CommandException(Names.Command.Save.Message.SAVE_FAILED, name);
             }
         } catch (Exception e) {

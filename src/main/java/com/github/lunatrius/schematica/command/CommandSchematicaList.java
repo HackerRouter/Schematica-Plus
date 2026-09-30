@@ -15,7 +15,7 @@ import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.IChatComponent;
 
 import com.github.lunatrius.schematica.FileFilterSchematic;
-import com.github.lunatrius.schematica.Schematica;
+import com.github.lunatrius.schematica.SchematicaPlus;
 import com.github.lunatrius.schematica.reference.Names;
 import com.github.lunatrius.schematica.reference.Reference;
 import com.github.lunatrius.schematica.util.FileUtils;
@@ -59,7 +59,7 @@ public class CommandSchematicaList extends CommandSchematicaBase {
 
         LinkedList<IChatComponent> componentsToSend = new LinkedList<>();
 
-        File schematicDirectory = Schematica.proxy.getPlayerSchematicDirectory(player, true);
+        File schematicDirectory = SchematicaPlus.proxy.getPlayerSchematicDirectory(player, true);
         if (schematicDirectory == null) {
             Reference.logger.warn("Unable to determine the schematic directory for player {}", player);
             throw new CommandException(Names.Command.Save.Message.PLAYER_SCHEMATIC_DIR_UNAVAILABLE);

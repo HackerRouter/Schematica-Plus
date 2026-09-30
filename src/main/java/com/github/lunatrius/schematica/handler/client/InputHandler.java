@@ -12,7 +12,7 @@ import net.minecraftforge.common.ForgeHooks;
 
 import org.lwjgl.input.Keyboard;
 
-import com.github.lunatrius.schematica.Schematica;
+import com.github.lunatrius.schematica.SchematicaPlus;
 import com.github.lunatrius.schematica.client.gui.control.GuiSchematicControl;
 import com.github.lunatrius.schematica.client.gui.save.GuiSchematicSave;
 import com.github.lunatrius.schematica.client.renderer.RendererSchematicGlobal;

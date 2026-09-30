@@ -4,7 +4,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.EnumChatFormatting;
 
-import com.github.lunatrius.schematica.Schematica;
+import com.github.lunatrius.schematica.SchematicaPlus;
 import com.github.lunatrius.schematica.client.printer.SchematicPrinter;
 import com.github.lunatrius.schematica.client.world.SchematicWorld;
 import com.github.lunatrius.schematica.handler.ConfigurationHandler;
@@ -45,7 +45,7 @@ public class TickHandler {
         if (event.phase == TickEvent.Phase.END) {
             this.minecraft.mcProfiler.startSection("schematica");
             if (ClientProxy.isPendingReset) {
-                Schematica.proxy.resetSettings();
+                SchematicaPlus.proxy.resetSettings();
                 ClientProxy.isPendingReset = false;
             }
             WorldHandler.INSTANCE.updateWorld(this.minecraft);

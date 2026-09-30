@@ -12,7 +12,7 @@ import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.util.ChatComponentTranslation;
 
 import com.github.lunatrius.schematica.FileFilterSchematic;
-import com.github.lunatrius.schematica.Schematica;
+import com.github.lunatrius.schematica.SchematicaPlus;
 import com.github.lunatrius.schematica.api.ISchematic;
 import com.github.lunatrius.schematica.handler.ConfigurationHandler;
 import com.github.lunatrius.schematica.handler.DownloadHandler;
@@ -42,7 +42,7 @@ public class CommandSchematicaDownload extends CommandSchematicaBase {
             throw new CommandException(Names.Command.Download.Message.PLAYERS_ONLY);
         }
 
-        final File directory = Schematica.proxy.getPlayerSchematicDirectory((EntityPlayer) sender, true);
+        final File directory = SchematicaPlus.proxy.getPlayerSchematicDirectory((EntityPlayer) sender, true);
         final File[] files = directory.listFiles(FILE_FILTER_SCHEMATIC);
 
         if (files != null) {
@@ -68,7 +68,7 @@ public class CommandSchematicaDownload extends CommandSchematicaBase {
             throw new CommandException(Names.Command.Download.Message.PLAYERS_ONLY);
         }
 
-        final File directory = Schematica.proxy.getPlayerSchematicDirectory(player, true);
+        final File directory = SchematicaPlus.proxy.getPlayerSchematicDirectory(player, true);
         final File file;
         try {
             file = FileUtils.findSchematicFile(directory, String.join(" ", args), ConfigurationHandler.useSchematicplusFormat);

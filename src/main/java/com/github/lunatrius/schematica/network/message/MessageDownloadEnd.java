@@ -5,7 +5,7 @@ import java.io.File;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.ChatComponentTranslation;
 
-import com.github.lunatrius.schematica.Schematica;
+import com.github.lunatrius.schematica.SchematicaPlus;
 import com.github.lunatrius.schematica.handler.DownloadHandler;
 import com.github.lunatrius.schematica.reference.Names;
 import com.github.lunatrius.schematica.world.schematic.SchematicFormat;
@@ -38,7 +38,7 @@ public class MessageDownloadEnd implements IMessage, IMessageHandler<MessageDown
 
     @Override
     public IMessage onMessage(MessageDownloadEnd message, MessageContext ctx) {
-        File directory = Schematica.proxy.getPlayerSchematicDirectory(null, true);
+        File directory = SchematicaPlus.proxy.getPlayerSchematicDirectory(null, true);
         File saved = DownloadHandler.INSTANCE.isDownloadComplete() ? SchematicFormat
             .saveToFile(directory, message.name, DownloadHandler.INSTANCE.schematic, null, true, true) : null;
 

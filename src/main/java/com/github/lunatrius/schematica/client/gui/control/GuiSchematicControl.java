@@ -12,7 +12,7 @@ import net.minecraftforge.common.util.ForgeDirection;
 import com.github.lunatrius.schematica.internal.lunatriuscore.client.gui.GuiNumericField;
 import com.github.lunatrius.schematica.internal.lunatriuscore.client.gui.GuiScreenBase;
 import com.github.lunatrius.schematica.internal.lunatriuscore.util.vector.Vector3i;
-import com.github.lunatrius.schematica.Schematica;
+import com.github.lunatrius.schematica.SchematicaPlus;
 import com.github.lunatrius.schematica.client.gui.util.GuiOrCheckBoxHandler;
 import com.github.lunatrius.schematica.client.printer.SchematicPrinter;
 import com.github.lunatrius.schematica.client.renderer.RendererSchematicGlobal;
@@ -265,7 +265,7 @@ public class GuiSchematicControl extends GuiScreenBase {
                 this.schematic.position.z = this.numericZ.getValue();
                 RendererSchematicGlobal.INSTANCE.refresh(this.schematic);
             } else if (guiButton.id == this.btnUnload.id) {
-                Schematica.proxy.unloadSchematic();
+                SchematicaPlus.proxy.unloadSchematic();
                 this.mc.displayGuiScreen(this.parentScreen);
             } else if (guiButton.id == this.btnLayerMode.id) {
                 this.schematic.isRenderingLayer = !this.schematic.isRenderingLayer;
