@@ -89,6 +89,7 @@ assigned to a world, because that assignment is ambiguous. Reload/place schemati
 once to establish the new keys. Ordered transforms apply to newly saved sessions.
 # GTNH client-only visual state
 
+- Thaumic Exploration: save differently colored bound chests/jars on a remote server. Their seals and chest lids must survive without changing the linked real storage's color or contents.
 - Binnie: reopen multicolored/mature/wilted flowers and running analyser/splicer machines. Check flower type, all three colors, section and visible machine items.
 - IronChest: reopen crystal chests with several visible item types and open lids. Stored inventory and displayed top stacks must remain separate.
 - MalisisDoors: save an opened door and a door mid-animation; reopening must preserve state and allow the visual transition to finish, without playing save/load sounds or operating neighboring real doors.
