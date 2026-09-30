@@ -65,4 +65,11 @@ public class Schematica {
     public void serverStarting(FMLServerStartingEvent event) {
         proxy.serverStarting(event);
     }
+
+    @EventHandler
+    public void serverStopped(cpw.mods.fml.common.event.FMLServerStoppedEvent event) {
+        com.github.lunatrius.schematica.handler.WorldEditQueue.INSTANCE.clear();
+        com.github.lunatrius.schematica.handler.QueueTickHandler.INSTANCE.clear();
+        com.github.lunatrius.schematica.handler.DownloadHandler.INSTANCE.transferMap.clear();
+    }
 }

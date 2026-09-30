@@ -35,6 +35,13 @@ axis, and 1,048,576 X/Y array rows. NBT reads have a 128 MiB allocation budget a
 maximum nesting depth of 64. World edits and captures must stay within Y=0..255.
 Only one save per player and four queued saves globally are accepted at a time.
 
+Integrated-server edits require creative mode and command permission. They run in
+bounded batches on server ticks; pressing Execute again cancels the remaining work
+and retains edits already made. Multiplayer command fallback is rate-limited and
+reports commands sent, not server-confirmed changes. The 1.7.10 chat limit prevents
+general NBT transfer: pasting schematics with block/entity NBT through that fallback
+is rejected before sending commands. Disable those options for a block-only paste.
+
 ![play GTNH in multiplayer](temp.png)
 
 ---

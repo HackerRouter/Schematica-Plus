@@ -354,6 +354,9 @@ public class ClientProxy extends CommonProxy {
     @Override
     public void init(FMLInitializationEvent event) {
         super.init(event);
+        FMLCommonHandler.instance().bus().register(
+            com.github.lunatrius.schematica.handler.client.CommandEditQueue.INSTANCE);
+        MinecraftForge.EVENT_BUS.register(com.github.lunatrius.schematica.handler.client.CommandEditQueue.INSTANCE);
 
         // Register client-side commands
         net.minecraftforge.client.ClientCommandHandler.instance.registerCommand(new CommandSchematicaSetBlock());

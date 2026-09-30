@@ -24,6 +24,8 @@ public class QueueTickHandler {
 
     private QueueTickHandler() {}
 
+    public synchronized void clear() { this.queue.clear(); }
+
     @SubscribeEvent
     public void onClientTick(TickEvent.ClientTickEvent event) {
         if (event.phase == TickEvent.Phase.START) {

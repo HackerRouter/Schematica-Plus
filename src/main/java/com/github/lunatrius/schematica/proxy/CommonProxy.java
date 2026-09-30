@@ -52,6 +52,7 @@ public abstract class CommonProxy {
 
     public void init(FMLInitializationEvent event) {
         PacketHandler.init();
+        FMLCommonHandler.instance().bus().register(com.github.lunatrius.schematica.handler.WorldEditQueue.INSTANCE);
 
         FMLCommonHandler.instance()
             .bus()
