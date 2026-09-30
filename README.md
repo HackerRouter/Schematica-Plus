@@ -1,5 +1,7 @@
 ## Welcome to Schematica Plus!
 
+Current release: **Beta 1.0** (`1.0.0-beta.1`).
+
 Maintained by HackerRouter, based on Lunatrius's Schematica and the GTNH fork.
 The mod ID is `schematica_plus`. Installing it alongside original or GTNH
 Schematica stops loading with an incompatibility message; replace the old jar.
