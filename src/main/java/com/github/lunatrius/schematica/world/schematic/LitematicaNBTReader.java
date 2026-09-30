@@ -5,6 +5,7 @@ import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.Map;
@@ -34,7 +35,12 @@ public final class LitematicaNBTReader {
 
     public static NBTTagCompound readFromFile(File file) throws IOException {
         clearLongArrayStore();
-        try (BufferedInputStream stream = new BufferedInputStream(new FileInputStream(file))) {
+        return readFromStream(new FileInputStream(file));
+    }
+
+    public static NBTTagCompound readFromStream(InputStream source) throws IOException {
+        clearLongArrayStore();
+        try (BufferedInputStream stream = new BufferedInputStream(source)) {
             stream.mark(2);
             boolean gzip = stream.read() == 0x1f && stream.read() == 0x8b;
             stream.reset();
