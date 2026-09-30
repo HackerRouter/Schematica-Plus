@@ -791,3 +791,13 @@ Headless tests cover independent state, all horizontal region orientations compo
 with global 3D transforms, inverse coordinates, all-disabled geometry, locks,
 visibility, legacy full regions, JSON round-trips, changed-source names and invalid
 saved data/allocation bounds. They do not execute Forge block/TE/GL composition.
+
+
+## File type icons
+
+File browsers, loaded schematics, placements and placement subregions use the
+file extension consistently: .litematic uses the L sprite, .schematic uses S,
+and .schemplus uses assets/schematica_plus/textures/gui/schemplus.png. This
+standalone 12x12 RGBA texture is initially an exact copy of the upstream S
+sprite and can be replaced without modifying the shared atlas. In-memory
+placements keep the memory icon. Extension matching is case-insensitive.

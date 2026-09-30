@@ -104,7 +104,7 @@ public final class GuiSchematicLoadedList extends GuiSchematicList<Source<Schema
         @Override public void draw(UiDraw draw, int mouseX, int mouseY) {
             boolean hover = containsVisible(mouseX, mouseY);
             draw.fill(bounds(), hover || model.selected() == source ? 0x70FFFFFF : index % 2 == 1 ? 0x20FFFFFF : 0x50FFFFFF);
-            UiSprite.FILE.draw(draw, bounds().x + 2, bounds().y + 5, false, false);
+            UiSprite.schematicFile(source.file().getName()).draw(draw, bounds().x + 2, bounds().y + 5, false, false);
             draw.text(draw.trim(source.name(), buttonsStart - bounds().x - 24), bounds().x + 20, bounds().y + 7, 0xFFFFFFFF);
             super.draw(draw, mouseX, mouseY);
         }

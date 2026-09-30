@@ -79,7 +79,7 @@ public abstract class GuiSchematicBrowser extends UiScreen {
         });
         list = root.add(new UiList<>(files, UiTranslations.format("schematica.ui.browser.empty"), this::activate));
         list.setFileStyle(entry -> entry.directory ? UiSprite.DIRECTORY
-            : entry.name().toLowerCase(Locale.ROOT).endsWith(".litematic") ? UiSprite.FILE : UiSprite.SCHEMATIC,
+            : UiSprite.schematicFile(entry.name()),
             entry -> entry.directory ? entry.name() : entry.name().substring(0, entry.name().lastIndexOf('.')));
         info = root.add(new UiWidget() {
             @Override public void draw(UiDraw draw, int mouseX, int mouseY) {

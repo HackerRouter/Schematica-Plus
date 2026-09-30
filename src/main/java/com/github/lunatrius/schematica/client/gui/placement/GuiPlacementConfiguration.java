@@ -354,7 +354,7 @@ public final class GuiPlacementConfiguration extends UiScreen {
             boolean selected = regionName.equals(placement.subregions().selected);
             draw.fill(bounds(), selected || containsVisible(mouseX, mouseY) ? 0xA0707070 : index % 2 == 0 ? 0xA0303030 : 0xA0101010);
             if (selected) draw.border(bounds(), 0xFFE0E0E0);
-            (placement.sourceFilename == null ? UiSprite.MEMORY : UiSprite.FILE).draw(draw, bounds().x + 2, bounds().y + 5, false, false);
+            UiSprite.schematicFile(placement.sourceFilename).draw(draw, bounds().x + 2, bounds().y + 5, false, false);
             int reserve = region().modified() ? 15 : 0;
             draw.text(draw.trim((region().enabled ? "\u00a7a" : "\u00a7c") + regionName, configure.bounds().x - bounds().x - 24 - reserve),
                 bounds().x + 20, bounds().y + 7, 0xFFFFFFFF);

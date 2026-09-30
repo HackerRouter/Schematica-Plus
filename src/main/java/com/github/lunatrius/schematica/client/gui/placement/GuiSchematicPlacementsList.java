@@ -70,7 +70,7 @@ public final class GuiSchematicPlacementsList extends GuiSchematicList<Schematic
             int color = selected || hover ? 0xA0707070 : index % 2 == 1 ? 0xA0101010 : 0xA0303030;
             draw.fill(bounds(), color);
             if (selected) draw.border(bounds(), 0xFFE0E0E0);
-            (world.sourceFilename == null ? UiSprite.MEMORY : UiSprite.FILE).draw(draw, bounds().x + 2, bounds().y + 5, false, false);
+            UiSprite.schematicFile(world.sourceFilename).draw(draw, bounds().x + 2, bounds().y + 5, false, false);
             String name = (world.isRendering ? "\u00a7a" : "\u00a7c") + world.name;
             draw.text(draw.trim(name, buttonsStart - bounds().x - 24), bounds().x + 20, bounds().y + 7, 0xFFFFFFFF);
             super.draw(draw, mouseX, mouseY);

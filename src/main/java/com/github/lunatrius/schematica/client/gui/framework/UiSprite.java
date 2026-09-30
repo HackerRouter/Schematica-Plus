@@ -15,6 +15,7 @@ public enum UiSprite {
     TASK_MANAGER(102, 112, 14, 14, true),
     FILE(144, 0, 12, 12, false),
     SCHEMATIC(144, 12, 12, 12, false),
+    SCHEMPLUS(0, 0, 12, 12, false),
     MEMORY(186, 0, 12, 12, false),
     DIRECTORY(156, 0, 12, 12, false),
     UP(156, 12, 12, 12, false),
@@ -58,7 +59,17 @@ public enum UiSprite {
 
     public void draw(UiDraw draw, int x, int y, boolean enabled, boolean hovered) {
         int state = states ? !enabled ? 0 : hovered ? 2 : 1 : 0;
-        draw.texture(malilib ? "schematica_plus:textures/gui/malilib_widgets.png" : TEXTURE,
-            new UiBounds(x, y, width, height), u + state * width, v, width, height, 256, 256);
+        String texture = this == SCHEMPLUS ? "schematica_plus:textures/gui/schemplus.png"
+            : malilib ? "schematica_plus:textures/gui/malilib_widgets.png" : TEXTURE;
+        int size = this == SCHEMPLUS ? 12 : 256;
+        draw.texture(texture, new UiBounds(x, y, width, height), u + state * width, v, width, height, size, size);
+    }
+
+    public static UiSprite schematicFile(String name) {
+        if (name == null) return MEMORY;
+        String filename = name.toLowerCase(java.util.Locale.ROOT);
+        if (filename.endsWith(".litematic")) return FILE;
+        if (filename.endsWith(".schemplus")) return SCHEMPLUS;
+        return SCHEMATIC;
     }
 }
