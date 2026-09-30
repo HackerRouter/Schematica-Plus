@@ -30,6 +30,7 @@ public final class VisualAdapters {
         register(new GalacticraftVisualAdapter());
         register(new MultipartVisualAdapter());
         register(new GregTechVisualAdapter());
+        register(new EnderIOConduitAdapter());
         register(new LogisticsPipesVisualAdapter());
         register(new CodeChickenVisualAdapter());
         register(new BinnieVisualAdapter());
@@ -134,5 +135,20 @@ public final class VisualAdapters {
                 Reference.logger.warn("Could not transform {} for {}", adapter.id(), tile.getClass().getName(), e);
             }
         }
+    }
+
+    public static NBTTagCompound transformNBT(TileEntity tile, java.util.function.Supplier<NBTTagCompound> source, char operation) {
+        NBTTagCompound data = null;
+        for (ISchematicVisualAdapter adapter : ADAPTERS) {
+            if (!adapter.supports(tile) || !adapter.transformsNBT(tile)) continue;
+            try {
+                NBTTagCompound transformed = data == null ? source.get() : (NBTTagCompound) data.copy();
+                adapter.transformNBT(tile, transformed, operation);
+                data = transformed;
+            } catch (Exception | LinkageError e) {
+                Reference.logger.warn("Could not transform saved {} for {}", adapter.id(), tile.getClass().getName(), e);
+            }
+        }
+        return data;
     }
 }

@@ -27,7 +27,6 @@ import com.github.lunatrius.schematica.internal.lunatriuscore.util.vector.Vector
 import com.github.lunatrius.schematica.api.ISchematic;
 import com.github.lunatrius.schematica.handler.ConfigurationHandler;
 import com.github.lunatrius.schematica.nbt.TileEntitySnapshots;
-import com.github.lunatrius.schematica.compat.VisualAdapters;
 import com.github.lunatrius.schematica.reference.Reference;
 import com.github.lunatrius.schematica.util.SchematicTransform;
 import com.github.lunatrius.schematica.world.chunk.ChunkProviderSchematic;
@@ -319,8 +318,7 @@ public class SchematicWorld extends World {
             if (mirror) flipContents(direction);
             else rotateContents(direction);
             for (TileEntity tileEntity : this.schematic.getTileEntities()) {
-                VisualAdapters.transformPreview(tileEntity, operation);
-                TileEntitySnapshots.refreshPreview(tileEntity);
+                TileEntitySnapshots.transformPreview(tileEntity, operation);
             }
             for (Entity entity : entities) {
                 double[] p = SchematicTransform.point(operation, entity.posX, entity.posY, entity.posZ, w, h, l);

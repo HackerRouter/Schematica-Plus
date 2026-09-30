@@ -6,6 +6,29 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 public class TileEntitySnapshotTest {
+    @Test public void rebasesRotatedCanonicalListsWithoutLosingServerOnlyContents() {
+        NBTTagCompound original = new NBTTagCompound();
+        NBTTagList conduits = new NBTTagList();
+        NBTTagCompound conduit = new NBTTagCompound();
+        conduit.setInteger("energyStoredRF", 10000);
+        conduit.setIntArray("connections", new int[] {2});
+        conduits.appendTag(conduit);
+        original.setTag("conduits", conduits);
+        TileEntitySnapshot snapshot = new TileEntitySnapshot(original);
+        NBTTagCompound preview = (NBTTagCompound) original.copy();
+        preview.getTagList("conduits", 10).getCompoundTagAt(0).setInteger("energyStoredRF", 0);
+        snapshot.initialize(preview);
+        NBTTagCompound rotated = snapshot.write(preview, 3, 2, 1);
+        rotated.getTagList("conduits", 10).getCompoundTagAt(0).setIntArray("connections", new int[] {5});
+        preview.getTagList("conduits", 10).getCompoundTagAt(0).setIntArray("connections", new int[] {5});
+        snapshot.rebase(rotated, preview);
+        NBTTagCompound saved = snapshot.write(preview, 3, 2, 1);
+        assertEquals(10000, saved.getTagList("conduits", 10).getCompoundTagAt(0).getInteger("energyStoredRF"));
+        assertArrayEquals(new int[] {5}, saved.getTagList("conduits", 10).getCompoundTagAt(0).getIntArray("connections"));
+        rotated.getTagList("conduits", 10).getCompoundTagAt(0).setInteger("energyStoredRF", -1);
+        assertEquals(saved, snapshot.write(preview, 3, 2, 1));
+    }
+
     @Test public void preservesUnsentInventoryAndAcceptsLaterOrientationEdits() {
         NBTTagCompound original = new NBTTagCompound();
         NBTTagList inventory = new NBTTagList();

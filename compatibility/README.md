@@ -45,7 +45,7 @@ relevant state through that path; adding a duplicate adapter is unnecessary:
 
 | Family | Inspected native path |
 | --- | --- |
-| EnderIO | Conduit NBT connections, external connections, modes and active state; `TileConduitBundle` S35. |
+| EnderIO | Conduit NBT connections, external connections, modes and active state; `TileConduitBundle` S35. Rotations/mirrors transform connection directions, per-side modes, filters/upgrades, colors, redstone settings and fluid round-robin masks in both preview and saved NBT. |
 | StorageDrawers | Tile NBT/S35. |
 | ArchitectureCraft | Shape, material, side and turn in NBT/S35. |
 | Carpenter's Blocks | `TEBase` NBT/S35. |
@@ -90,7 +90,7 @@ accepted merely because they contain or interact with fluid.
 - World time, frame interpolation and selected safe visual updates advance.
   Full machine ticking is not enabled. Private tick counters, transient transport
   particles and entity-targeted effects are not universally reproduced.
-- Native block rotations remain in use. The added side-state transform covers GT
+- Native block rotations remain in use. The added side-state transform covers EnderIO conduits and GT
   pipes; AE2 multipart orientations, GT machine extended facings and other custom
   encodings are not all transformed. Absolute links inside opaque NBT/streams,
   including link rotation, need additional per-mod handling.

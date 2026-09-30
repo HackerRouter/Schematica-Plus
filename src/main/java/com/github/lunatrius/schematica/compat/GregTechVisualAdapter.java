@@ -46,7 +46,52 @@ final class GregTechVisualAdapter implements ISchematicVisualAdapter {
 
     @Override public void transformPreview(TileEntity tile, char operation) throws Exception {
         if (!Reflect.is(tile, "gregtech.api.metatileentity.BaseMetaPipeEntity")) return;
+        transformPipe(tile, operation);
+    }
+
+    @Override public boolean transformsNBT(TileEntity tile) {
+        return Reflect.is(tile, "gregtech.api.metatileentity.BaseMetaPipeEntity");
+    }
+
+    @Override public void transformNBT(TileEntity tile, NBTTagCompound data, char operation) throws Exception {
         Object meta = Reflect.call(tile, "getMetaTileEntity");
+        data.setByte("mConnections", (Byte) Reflect.get(tile, "mConnections"));
+        transformPipeNBT(data, operation, Reflect.is(meta, "gregtech.api.metatileentity.implementations.MTEFluidPipe"),
+            Reflect.is(meta, "gregtech.api.metatileentity.implementations.MTEItemPipe"));
+    }
+
+    static void transformPipeNBT(NBTTagCompound tag, char operation, boolean fluid, boolean item) {
+        for (String key : new String[] {"mConnections", "mStrongRedstone"}) mask(tag, key, operation);
+        if (tag.hasKey("mRedstoneSided", 7) && tag.getByteArray("mRedstoneSided").length == 6) {
+            byte[] sides = tag.getByteArray("mRedstoneSided").clone();
+            SchematicTransform.sides(operation, sides);
+            tag.setByteArray("mRedstoneSided", sides);
+        }
+        if (fluid) {
+            mask(tag, "mDisableInput", operation);
+            mask(tag, "mLastReceivedFrom", operation);
+        } else if (item && tag.hasKey("mLastReceivedFrom", 1)) {
+            tag.setByte("mLastReceivedFrom", (byte) SchematicTransform.direction(operation,
+                ForgeDirection.getOrientation(tag.getByte("mLastReceivedFrom"))).ordinal());
+        }
+        transformCovers(tag, operation);
+    }
+
+    static void transformPipe(Object tile, char operation) throws Exception {
+        Object meta = Reflect.call(tile, "getMetaTileEntity");
+        mask(tile, "mConnections", operation);
+        mask(tile, "mStrongRedstone", operation);
+        SchematicTransform.sides(operation, Reflect.get(tile, "mSidedRedstone"));
+        if (meta != null) {
+            Reflect.field(meta.getClass(), "mConnections").setByte(meta, (Byte) Reflect.get(tile, "mConnections"));
+            if (Reflect.is(meta, "gregtech.api.metatileentity.implementations.MTEFluidPipe")) {
+                mask(meta, "mDisableInput", operation);
+                mask(meta, "mLastReceivedFrom", operation);
+            } else if (Reflect.is(meta, "gregtech.api.metatileentity.implementations.MTEItemPipe")) {
+                java.lang.reflect.Field field = Reflect.field(meta.getClass(), "mLastReceivedFrom");
+                field.set(meta, SchematicTransform.direction(operation, (ForgeDirection) field.get(meta)));
+            }
+        }
         Object[] covers = (Object[]) Reflect.get(tile, "covers");
         Object[] rotatedCovers = covers.clone();
         Class<?> coverable = Reflect.type(tile.getClass(), "gregtech.api.metatileentity.CoverableTileEntity");
@@ -63,13 +108,6 @@ final class GregTechVisualAdapter implements ISchematicVisualAdapter {
         }
         System.arraycopy(rotatedCovers, 0, covers, 0, 6);
         mask(tile, "validCoversMask", operation);
-        mask(tile, "mConnections", operation);
-        mask(tile, "mStrongRedstone", operation);
-        SchematicTransform.sides(operation, Reflect.get(tile, "mSidedRedstone"));
-        if (meta != null) {
-            mask(meta, "mConnections", operation);
-            if (Reflect.is(meta, "gregtech.api.metatileentity.implementations.MTEFluidPipe")) mask(meta, "mDisableInput", operation);
-        }
     }
 
     static void transformCovers(NBTTagCompound tag, char operation) {
@@ -84,5 +122,9 @@ final class GregTechVisualAdapter implements ISchematicVisualAdapter {
     private static void mask(Object target, String name, char operation) throws ReflectiveOperationException {
         java.lang.reflect.Field field = Reflect.field(target.getClass(), name);
         field.setByte(target, (byte) SchematicTransform.sideMask(operation, field.getByte(target)));
+    }
+
+    private static void mask(NBTTagCompound tag, String name, char operation) {
+        if (tag.hasKey(name, 1)) tag.setByte(name, (byte) SchematicTransform.sideMask(operation, tag.getByte(name)));
     }
 }

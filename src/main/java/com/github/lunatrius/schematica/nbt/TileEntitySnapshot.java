@@ -6,7 +6,7 @@ import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 
 final class TileEntitySnapshot {
-    private final NBTTagCompound original;
+    private NBTTagCompound original;
     private NBTTagCompound baseline;
     private NBTTagCompound visual;
 
@@ -23,6 +23,12 @@ final class TileEntitySnapshot {
     boolean isInitialized() { return baseline != null; }
 
     void initialize(NBTTagCompound tag) { baseline = (NBTTagCompound) tag.copy(); }
+
+    void rebase(NBTTagCompound transformed, NBTTagCompound preview) {
+        original = (NBTTagCompound) transformed.copy();
+        original.removeTag(TileUpdateData.KEY);
+        initialize(preview);
+    }
 
     NBTTagCompound write(NBTTagCompound current, int x, int y, int z) {
         NBTTagCompound tag = (NBTTagCompound) original.copy();

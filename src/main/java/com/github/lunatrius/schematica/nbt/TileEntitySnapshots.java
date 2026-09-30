@@ -100,9 +100,19 @@ public final class TileEntitySnapshots {
     }
 
     @SideOnly(Side.CLIENT)
-    public static void refreshPreview(TileEntity tile) {
+    public static void transformPreview(TileEntity tile, char operation) {
+        NBTTagCompound transformed = VisualAdapters.transformNBT(tile, () -> write(tile), operation);
+        VisualAdapters.transformPreview(tile, operation);
         TileEntitySnapshot snapshot = SNAPSHOTS.get(tile);
-        if (snapshot == null || snapshot.visual() == null) return;
+        if (transformed == null) {
+            if (snapshot != null && snapshot.visual() != null) snapshot.visual(captureVisual(tile));
+            return;
+        }
+        if (snapshot == null) {
+            snapshot = new TileEntitySnapshot(transformed);
+            SNAPSHOTS.put(tile, snapshot);
+        }
+        snapshot.rebase(transformed, writeCurrent(tile));
         snapshot.visual(captureVisual(tile));
     }
 }
