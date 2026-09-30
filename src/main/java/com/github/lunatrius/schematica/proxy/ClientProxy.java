@@ -197,6 +197,7 @@ public class ClientProxy extends CommonProxy {
         public Boolean visible, entities, blockNBT, sourceOnly, layerMode;
         public Integer layer;
         public int[] origin;
+        public com.google.gson.JsonObject subregions;
 
         LoadedSchematicEntry() {}
     }
@@ -451,6 +452,7 @@ public class ClientProxy extends CommonProxy {
 
     private static SchematicWorld instantiate(SchematicLibrary.Source<SchematicSourceData> source, SchematicSourceData data) throws IOException {
         SchematicWorld world = new SchematicWorld(data.instantiate(), source.file().getName());
+        world.setPlacementSource(data);
         world.sourceDirectory = source.file().getParentFile();
         world.sourceFilename = source.file().getName();
         world.isRendering = true;
@@ -563,6 +565,7 @@ public class ClientProxy extends CommonProxy {
                 entry.Y = sw.position.y;
                 entry.Z = sw.position.z;
                 entry.origin = sw.originPosition().coordinates();
+                entry.subregions = sw.subregions() == null ? null : sw.subregions().toJson();
                 entry.RotationX = sw.rotationStateX;
                 entry.RotationY = sw.rotationStateY;
                 entry.RotationZ = sw.rotationStateZ;
@@ -634,6 +637,7 @@ public class ClientProxy extends CommonProxy {
                             }
                         }
                         PlacementState.applyTransforms(restored, operations);
+                        restored.restoreSubregions(entry.subregions);
                         com.github.lunatrius.schematica.api.SchematicOrigin minimum = restored.getSchematic().getOrigin()
                             .restoredMinimum(entry.X, entry.Y, entry.Z, entry.origin);
                         restored.position.set(minimum.x, minimum.y, minimum.z);

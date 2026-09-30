@@ -742,3 +742,32 @@ the 256-region limit, malformed headers and invalid bounds before allocation.
 Native GUI, rendering, modded block orientation and world placement are still
 manual checks. Simple-mode switching, expand/corner targeting, area analysis and
 independent transforms of placed subregions remain unported.
+
+## Phase 15: independent placement subregions
+
+Placement subregions now have immutable per-region positions, Y rotation,
+horizontal mirroring, enabled/rendering flags, entity exclusion and coordinate
+locks. Geometry uses coordinates relative to the schematic origin; global
+transforms are applied afterwards. World-coordinate input is inverted through
+the global transform before updating a region. Changes compose a fresh preview
+from the cached source snapshot and are committed only after composition succeeds.
+The original file and other placements remain unchanged. Disabled regions are
+excluded from the combined bounds and mask; all-disabled placements have an empty
+mask. Rendering-only exclusion keeps block data available for material/paste use.
+The printer also observes the rendering mask, as it does for render layers.
+
+LoadedSchematics.json stores a versioned subregions object containing named
+overrides and optional selection. Old entries use defaults. Reload carries over
+overrides for matching names, gives new regions defaults and drops removed names.
+The enclosing volume still has the existing allocation limits. Legacy schematics
+without region metadata expose one full region named Region.
+
+This operates on the currently imported merged source. If original Litematic
+regions overlapped with different block data, that data was already flattened
+by the importer and cannot be recovered here. Region pivots use normalized minimum
+corners; original signed-size Litematic region pivots are not yet retained.
+Overlapping placed regions resolve blocks in source region order, later regions
+winning including air. Source entities belong to the first original containing
+region, preventing duplicate entities from overlapping capture boxes. Entity and
+tile-entity transforms reuse the existing 1.7.10 adapters. Native mod rendering
+and world placement still require in-game verification.

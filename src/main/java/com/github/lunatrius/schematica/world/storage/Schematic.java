@@ -47,6 +47,13 @@ public class Schematic implements ISchematic {
         entities.removeIf(entity -> !containsBlock((int) Math.floor(entity.posX), (int) Math.floor(entity.posY), (int) Math.floor(entity.posZ)));
     }
 
+    public void setEmpty() {
+        regions = java.util.Collections.emptyList();
+        mask = new java.util.BitSet();
+        tileEntities.clear();
+        entities.clear();
+    }
+
     @Override public boolean containsBlock(int x, int y, int z) {
         return x >= 0 && y >= 0 && z >= 0 && x < width && y < height && z < length
             && (mask == null || mask.get(x + width * (z + length * y)));

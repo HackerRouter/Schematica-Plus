@@ -50,6 +50,73 @@ public class SchematicWorld extends World {
 
     private ISchematic schematic;
     public final List<String> transformOperations = new ArrayList<>();
+    private SchematicSourceData placementSource;
+    private SubRegionPlacements subregions;
+    private java.util.BitSet visibleRegionBlocks;
+    private int placementRevision;
+
+    public void setPlacementSource(SchematicSourceData source) {
+        placementSource = source;
+        subregions = SubRegionPlacements.create(schematic);
+    }
+
+    public SubRegionPlacements subregions() { return subregions; }
+    public int placementRevision() { return placementRevision; }
+    public boolean hasEnabledRegions() { return subregions == null || subregions.hasEnabled(); }
+
+    public void selectSubregion(String name) {
+        subregions = subregions.select(name);
+        placementRevision++;
+    }
+
+    public com.github.lunatrius.schematica.api.SchematicOrigin subregionPosition(String name) {
+        com.github.lunatrius.schematica.api.SchematicOrigin relative = SubRegionPlacements.vector(subregions.get(name).position, transformOperations, false);
+        com.github.lunatrius.schematica.api.SchematicOrigin origin = originPosition();
+        return relative.atMinimum(origin.x, origin.y, origin.z);
+    }
+
+    public void moveSubregionTo(String name, int x, int y, int z) {
+        com.github.lunatrius.schematica.api.SchematicOrigin origin = originPosition();
+        com.github.lunatrius.schematica.api.SchematicOrigin relative = SubRegionPlacements.vector(
+            new com.github.lunatrius.schematica.api.SchematicOrigin(Math.subtractExact(x, origin.x), Math.subtractExact(y, origin.y), Math.subtractExact(z, origin.z)),
+            transformOperations, true);
+        changeSubregions(subregions.replace(subregions.get(name).position(relative)));
+    }
+
+    public void changeSubregions(SubRegionPlacements next) { rebuildRegions(next, new ArrayList<>(transformOperations)); }
+
+    public void restoreSubregions(com.google.gson.JsonObject saved) {
+        if (saved != null) changeSubregions(subregions.restore(saved));
+    }
+
+    private void rebuildRegions(SubRegionPlacements next, List<String> operations) {
+        com.github.lunatrius.schematica.api.SchematicOrigin origin = originPosition();
+        SubRegionPlacements.Layout layout = next.layout();
+        com.github.lunatrius.schematica.api.SchematicOrigin offset = com.github.lunatrius.schematica.client.gui.placement.PlacementTransform.transformOrigin(
+            new com.github.lunatrius.schematica.api.SchematicOrigin(-layout.minimum.x, -layout.minimum.y, -layout.minimum.z),
+            layout.width, layout.height, layout.length, String.join("", operations));
+        com.github.lunatrius.schematica.api.SchematicOrigin minimum = offset.minimumAt(origin);
+        int[] size = com.github.lunatrius.schematica.client.gui.placement.PlacementTransform.transformedSize(layout.width, layout.height, layout.length, String.join("", operations));
+        for (int i = 0; i < 3; i++) if (minimum.coordinates()[i] < -30000000 || (long) minimum.coordinates()[i] + size[i] > 30000000) {
+            throw new IllegalArgumentException("Subregion placement outside coordinate limits");
+        }
+        RegionComposer composed;
+        try { composed = RegionComposer.build(placementSource.instantiate(), next, operations); }
+        catch (java.io.IOException e) { throw new IllegalArgumentException("Unable to restore schematic source", e); }
+        this.schematic = composed.world.getSchematic();
+        this.visibleRegionBlocks = composed.visible;
+        this.subregions = next;
+        this.position.set(minimum.x, minimum.y, minimum.z);
+        this.transformOperations.clear();
+        this.transformOperations.addAll(operations);
+        rotationStateX = composed.world.rotationStateX; rotationStateY = composed.world.rotationStateY; rotationStateZ = composed.world.rotationStateZ;
+        flipStateX = composed.world.flipStateX; flipStateY = composed.world.flipStateY; flipStateZ = composed.world.flipStateZ;
+        renderingLayer = Math.min(renderingLayer, getHeight() - 1);
+        for (TileEntity tile : schematic.getTileEntities()) bindTileEntity(tile);
+        for (TileEntity tile : schematic.getTileEntities()) validateTileEntity(tile);
+        refreshChests();
+        placementRevision++;
+    }
 
     public ISchematic getSchematic() { return this.schematic; }
 
@@ -111,7 +178,8 @@ public class SchematicWorld extends World {
     private boolean tracingRenderedBlocks;
 
     public boolean isBlockRendered(int x, int y, int z) {
-        return schematic.containsBlock(x, y, z) && (!isRenderingLayer || renderingLayer == y)
+        return schematic.containsBlock(x, y, z) && (visibleRegionBlocks == null || visibleRegionBlocks.get(x + getWidth() * (z + getLength() * y)))
+            && (!isRenderingLayer || renderingLayer == y)
             && RenderLayerSettings.RANGE.contains((long) position.x + x, (long) position.y + y, (long) position.z + z);
     }
 
@@ -325,6 +393,12 @@ public class SchematicWorld extends World {
             default: throw new IllegalArgumentException("Unsupported transform axis");
         }
         if (mirror) operation = Character.toLowerCase(operation);
+        if (subregions != null && subregions.modified()) {
+            List<String> operations = new ArrayList<>(transformOperations);
+            operations.add(String.valueOf(operation));
+            rebuildRegions(subregions, operations);
+            return;
+        }
         List<Entity> entities = new ArrayList<>(this.schematic.getEntities());
         for (Entity entity : entities) {
             if (entity instanceof EntityHanging) {
@@ -391,6 +465,7 @@ public class SchematicWorld extends World {
                 this.schematic.addEntity(entity);
             }
             this.transformOperations.add(String.valueOf(operation));
+            this.visibleRegionBlocks = null;
         } finally {
             this.isRenderingLayer = layerMode;
             this.renderingLayer = Math.min(this.renderingLayer, getHeight() - 1);
