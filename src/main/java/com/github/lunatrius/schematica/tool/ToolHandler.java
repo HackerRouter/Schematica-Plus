@@ -18,6 +18,8 @@ import com.github.lunatrius.schematica.client.gui.save.GuiSchematicSave;
 import com.github.lunatrius.schematica.client.renderer.RendererSchematicGlobal;
 import com.github.lunatrius.schematica.client.world.SchematicWorld;
 import com.github.lunatrius.schematica.proxy.ClientProxy;
+import com.github.lunatrius.schematica.client.selection.AreaSelections;
+import com.github.lunatrius.schematica.client.gui.framework.UiTranslations;
 import com.github.lunatrius.schematica.reference.Reference;
 
 import cpw.mods.fml.common.registry.GameData;
@@ -169,9 +171,14 @@ public class ToolHandler {
      * Right-click sets point B (second corner of selection box).
      */
     private static boolean handleAreaSelectionUse(EntityPlayer player, MovingObjectPosition mop) {
+        if (AreaSelections.library().selected() == null) {
+            sendChat(player, UiTranslations.format("litematica.message.error.no_area_selected"));
+            return true;
+        }
         ClientProxy.pointB.set(mop.blockX, mop.blockY, mop.blockZ);
         ClientProxy.updatePoints();
         ClientProxy.isRenderingGuide = true;
+        AreaSelections.saveCurrent();
         return true;
     }
 
@@ -179,9 +186,14 @@ public class ToolHandler {
      * Left-click sets point A (first corner of selection box).
      */
     private static boolean handleAreaSelectionAttack(EntityPlayer player, MovingObjectPosition mop) {
+        if (AreaSelections.library().selected() == null) {
+            sendChat(player, UiTranslations.format("litematica.message.error.no_area_selected"));
+            return true;
+        }
         ClientProxy.pointA.set(mop.blockX, mop.blockY, mop.blockZ);
         ClientProxy.updatePoints();
         ClientProxy.isRenderingGuide = true;
+        AreaSelections.saveCurrent();
         return true;
     }
 
@@ -247,6 +259,9 @@ public class ToolHandler {
                 com.github.lunatrius.schematica.handler.ConfigurationHandler.pasteOnlyAir);
             job.capture(schematic.getSchematic(), schematic.isPastingBlockNBT, schematic.isRenderingEntities);
         } else {
+            if (AreaSelections.library().selected() == null) {
+                throw new IllegalArgumentException(UiTranslations.format("litematica.message.error.no_area_selected"));
+            }
             Vector3i min = ClientProxy.pointMin.clone(), max = ClientProxy.pointMax.clone();
             if (min.equals(max)) throw new IllegalArgumentException("Select an area with two distinct corners first.");
             Block replacement = mode == ToolMode.DELETE ? Blocks.air : mode.getPrimaryBlock();

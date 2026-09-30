@@ -342,3 +342,12 @@ schematica.ui.source.save_title=Save loaded schematic source
 schematica.ui.source.save_failed=Save failed. Check the name, original extension and output permissions; see the log.
 schematica.ui.source.unloaded=This source is no longer loaded.
 schematica.ui.source.saved=Saved cached source to %s
+
+schematica.ui.area.single_box=Each saved selection currently contains one box. Selections are stored separately per world/server and dimension. Multi-box selections and manual origins have not been ported yet.
+schematica.ui.area.persistence_failed=Could not read or save area selections. Existing disk data is preserved; check the log. In-memory changes may not survive leaving this world.
+schematica.ui.area.from_placement=Create a single-box selection from the selected placement's current bounding box, including its rotation and position.
+schematica.ui.area.search=Search selection and box names in this world and dimension.
+schematica.ui.area.context=This selection session is unavailable. Reopen the area browser in the current world.
+schematica.ui.area.name_exists=A selection named '%s' already exists.
+schematica.ui.area.invalid=Use a unique, non-empty name of at most 200 characters and coordinates within the 1.7.10 world limits. The selection must still belong to this session.
+schematica.ui.area.delete=Delete selection '%s'? This removes its saved selection data; world blocks and schematic files are unaffected.

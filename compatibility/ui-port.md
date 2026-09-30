@@ -571,3 +571,57 @@ It needs no additional Python packages and is not a build-time dependency.
 Automated tests load catalogs with Minecraft's language parser, check complete
 key coverage and fallback, and exercise multiline formatting with user paths.
 Native language switching, font rendering and layout remain manual checks.
+
+## Phase 12: persistent single-box area library
+
+The Area Selection browser is operational. Each world/server/dimension owns a
+list of named selections and an explicitly selected entry, or none. Entries
+keep independent corner coordinates, box names and outline visibility. The
+browser supports creating, copying, renaming, configuring, selecting/unselecting,
+searching and confirmed deletion. Its top action bar and row button order follow
+Litematica's GuiAreaSelectionManager and WidgetAreaSelectionEntry. Configure
+selects the entry before opening the existing Simple editor. From Placement
+creates one box from that placement's current transformed bounds, not its
+original untransformed source. New selections start at the player's feet.
+
+The editor's selection and box names now persist independently. Coordinate
+edits are bounded to Minecraft 1.7.10 coordinates. Numeric field synchronization
+does not publish intermediate values. The active entry supplies the existing
+corner vectors, outline renderer, tool selection and schematic save operation.
+Tool clicks persist the changed corners. The save screen defaults to the area
+name; the tool HUD shows the selected area's name or an explicit no-selection
+message. The save screen checks that its original world/session/selection is
+still active, including after overwrite confirmation. Deselecting/deleting the active area
+clears its outline and blocks saving and area-based world edits. It does not
+select an unrelated entry automatically. Existing single-block edit restrictions
+and server save/edit permissions are unchanged.
+
+AreaSelection.json remains keyed by the existing session identity. Each session
+now has version=2, a selections array with stable UUIDs, and a nullable selected
+ID. Old pointA/pointB-style records migrate to one entry named Selection with
+their coordinates and visibility intact. A previously unseen session starts
+with the same hidden zero-coordinate selection as before. A persisted empty
+library or explicit deselection stays empty/deselected on reconnect. Unknown
+JSON fields and other sessions survive writes. Malformed data, unsupported
+versions, duplicate IDs/names and invalid coordinates block restoration without
+overwriting that data. Saves use atomic replacement and reject stale changes to
+the current session on disk; changes to other sessions are preserved. This is
+normal-use conflict detection, not a lock against concurrent filesystem writers.
+Reload external edits by reconnecting/re-entering the session. Failed writes are
+logged and surfaced in the UI; in-memory changes may then be lost on exit.
+Limits are 4,096 entries per session and 16 MiB for the settings file.
+
+This stage retains the Simple, one-box editing/saving model for every entry.
+The list is a per-session library, not Litematica's filesystem directory browser.
+Multiple boxes within one selection, directory organization/import/export,
+manual origins, corner selection/expand mode and multi-region placement editing
+remain unported. Normal mode remains unavailable. From Placement includes the
+whole bounding box, including gaps in an already merged schematic. No sparse
+multi-box saving or file-format change is introduced here. Existing upstream
+translation keys are used where behavior matches; Plus-specific limitations and
+persistence errors have separate English/Chinese keys.
+
+Automated coverage includes legacy migration, independent copies, switching and
+round-trip restoration, deselection/deletion without resurrection, dimension
+isolation, stale objects, coordinate rejection and corrupt/externally modified
+settings. Native GUI, tool interactions and rendered outlines remain manual tests.

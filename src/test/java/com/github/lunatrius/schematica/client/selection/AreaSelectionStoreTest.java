@@ -73,4 +73,32 @@ public class AreaSelectionStoreTest {
         assertThrows(IOException.class, () -> new AreaSelectionStore(file, "world"));
         assertArrayEquals(broken, Files.readAllBytes(file.toPath()));
     }
+
+    @Test public void switchingAndReloadingPreservesEverySelection() throws Exception {
+        File file = new File(temporary.getRoot(), "areas.json");
+        AreaSelectionStore store = new AreaSelectionStore(file, "server|0");
+        Area first = store.library().selected();
+        store.library().rename(first, "Factory");
+        store.library().renameBox(first, "Assembly");
+        store.library().setPoints(first, new Vector3i(20, 80, 9), new Vector3i(-5, 60, -2));
+        Area second = store.library().copy(first, "Station");
+        store.library().setPoints(second, new Vector3i(30, 90, 40), new Vector3i(31, 100, 50));
+        store.library().setGuide(second, true);
+        store.library().select(second);
+        store.save();
+        AreaSelectionStore restored = new AreaSelectionStore(file, "server|0");
+        assertEquals(2, restored.library().areas().size());
+        assertEquals("Station", restored.library().selected().name());
+        assertTrue(restored.library().selected().guide());
+        Area restoredFirst = restored.library().areas().get(0);
+        assertEquals("Assembly", restoredFirst.boxName());
+        assertEquals(new Vector3i(20, 80, 9), restoredFirst.first());
+        assertEquals(new Vector3i(-5, 60, -2), restoredFirst.second());
+        assertFalse(restoredFirst.guide());
+        restored.library().select(restoredFirst);
+        restored.save();
+        AreaSelectionStore again = new AreaSelectionStore(file, "server|0");
+        assertEquals("Factory", again.library().selected().name());
+        assertEquals(new Vector3i(30, 90, 40), again.library().areas().get(1).first());
+    }
 }

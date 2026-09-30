@@ -14,7 +14,7 @@ assets/schematica_plus/textures/gui/malilib_widgets.png.
 All language catalogs in assets/schematica_plus_litematica/lang were converted from
 upstream JSON (13 Litematica locales and 12 MaLiLib locales), retaining original
 keys, translations and translator credits. UI Java files marked LGPL-3.0-only adapt upstream screen layouts,
-layer-range/color-editor behavior, file-manager/text/confirmation dialogs, color options and defaults, icon coordinates and drawing conventions to the Schematica Plus 1.7.10 UI layer.
+layer-range/color-editor behavior, area-manager rows, file-manager/text/confirmation dialogs, color options and defaults, icon coordinates and drawing conventions to the Schematica Plus 1.7.10 UI layer.
 Adaptation and format conversion: HackerRouter, 2026.
 
 These portions retain the GNU Lesser General Public License version 3 and are

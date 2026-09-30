@@ -14,6 +14,8 @@ import com.github.lunatrius.schematica.client.gui.browser.GuiSchematicManager;
 import com.github.lunatrius.schematica.client.gui.placement.GuiSchematicLoadedList;
 import com.github.lunatrius.schematica.client.gui.placement.GuiSchematicPlacementsList;
 import com.github.lunatrius.schematica.client.gui.save.GuiAreaSelectionEditor;
+import com.github.lunatrius.schematica.client.gui.save.GuiAreaSelectionManager;
+import com.github.lunatrius.schematica.client.selection.AreaSelections;
 import com.github.lunatrius.schematica.reference.Reference;
 import com.github.lunatrius.schematica.tool.ToolManager;
 
@@ -46,9 +48,10 @@ public final class GuiSchematicMainMenu extends UiScreen {
         load = menu("load_schematics_to_memory", UiSprite.SCHEMATIC_BROWSER,
             () -> mc.displayGuiScreen(new GuiSchematicLoad(this)));
         area = menu("area_editor", UiSprite.AREA_EDITOR, () -> mc.displayGuiScreen(new GuiAreaSelectionEditor(this)));
-        selections = unavailable(menu("show_area_selections", UiSprite.AREA_SELECTION, () -> {}));
+        selections = menu("show_area_selections", UiSprite.AREA_SELECTION, () -> mc.displayGuiScreen(new GuiAreaSelectionManager(this)));
         selectionMode = unavailable(root.add(new UiButton(() -> UiTranslations.format("litematica.gui.button.area_selection_mode",
             UiTranslations.format("litematica.gui.label.area_selection.mode.simple")), button -> {})));
+        selectionMode.setTooltip(UiTranslations.format("schematica.ui.area.single_box"));
         config = menu("configuration_menu", UiSprite.CONFIGURATION, () -> mc.displayGuiScreen(new GuiModConfig(this)));
         manager = menu("schematic_manager", UiSprite.SCHEMATIC_MANAGER,
             () -> mc.displayGuiScreen(new GuiSchematicManager(this)));
@@ -62,7 +65,8 @@ public final class GuiSchematicMainMenu extends UiScreen {
     protected void tickScreen() {
         boolean world = mc.theWorld != null && mc.thePlayer != null;
         load.setEnabled(world && SchematicaPlus.proxy.isLoadEnabled);
-        area.setEnabled(world && SchematicaPlus.proxy.isSaveEnabled);
+        area.setEnabled(world && SchematicaPlus.proxy.isSaveEnabled && AreaSelections.library().selected() != null);
+        selections.setEnabled(world && SchematicaPlus.proxy.isSaveEnabled);
         mode.setEnabled(world);
     }
 

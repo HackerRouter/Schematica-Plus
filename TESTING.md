@@ -458,3 +458,32 @@ once to establish the new keys. Ordered transforms apply to newly saved sessions
   and literal backslashes as doubled backslashes for upstream UI templates.
 - Check that legacy Schematica screens, key bindings and command messages still
   translate. Adding the upstream catalogs must not enable unavailable features.
+
+## Phase 12: area selection library (native checks)
+
+- Back up AreaSelection.json. Enter a world with an old-format saved selection:
+  its corners and outline must be unchanged. Open Area Selection browser, create
+  two selections, rename each and give their boxes different names. Change their
+  corners using the editor and tool. Switch entries and reconnect; all names,
+  corners, visibility and the active entry must remain independent.
+- Copy an area, move one corner of the copy and toggle its outline. The original
+  must not change. Search by selection or box name. Rename to an existing name
+  (including different letter case) and try an empty name: the operation must
+  fail without changing either entry. Cancel a delete confirmation too.
+- Unselect the active entry, reconnect and verify no outline reappears. Saving
+  and area-based fill/delete/replace must refuse to run with no selected area.
+  Delete the active entry and then the last entry; returning to this dimension
+  must not recreate either. Other dimensions and servers keep their own lists.
+- Move and rotate a placement, then use From Placement. The new selection should
+  match its current bounding box, including the last block on each axis. Export
+  the selected area through the existing save screen and inspect the result.
+  It is one full box; gaps in a merged schematic are included. Placement bounds
+  extending outside Y=0..255 must be rejected, not clipped silently.
+- Enter a coordinate and press Enter, click another field, resize the window,
+  and return from the save screen. Values must not reset or leak into another
+  selection. World/dimension changes while a browser, editor, name dialog or
+  overwrite confirmation is open must disable actions from the old session.
+- On disposable settings, test an unreadable file and an external edit to the
+  current session. The mod must retain disk data and show a persistence failure;
+  reconnect to load the external edit. Restore backups after testing. Native
+  client/GL behavior has not been exercised by the agent.

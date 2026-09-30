@@ -6,10 +6,14 @@ import java.io.File;
 import java.io.IOException;
 
 import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.client.Minecraft;
 import net.minecraft.world.World;
 
 import com.github.lunatrius.schematica.client.gui.framework.UiTranslations;
 import com.github.lunatrius.schematica.SchematicaPlus;
+import com.github.lunatrius.schematica.client.selection.AreaSelectionLibrary;
+import com.github.lunatrius.schematica.client.selection.AreaSelectionLibrary.Area;
+import com.github.lunatrius.schematica.client.selection.AreaSelections;
 import com.github.lunatrius.schematica.client.gui.browser.GuiSchematicBrowser;
 import com.github.lunatrius.schematica.client.gui.browser.SchematicBrowserModel;
 import com.github.lunatrius.schematica.client.gui.framework.UiCheckBox;
@@ -30,13 +34,16 @@ public final class GuiSchematicSave extends GuiSchematicBrowser {
 
     private boolean extended = ConfigurationHandler.useSchematicplusFormat;
     private final String initialName;
+    private final AreaSelectionLibrary library = AreaSelections.library();
+    private final Area area = library.selected();
+    private final World sourceWorld = Minecraft.getMinecraft().theWorld;
     private UiTextField name;
     private UiButton save;
     private UiButton options;
     private final UiCheckBox[] checkboxes = new UiCheckBox[4];
     private String problem = "";
 
-    public GuiSchematicSave(GuiScreen parent) { this(parent, ""); }
+    public GuiSchematicSave(GuiScreen parent) { this(parent, AreaSelections.library().selected() == null ? "" : AreaSelections.library().selected().name()); }
 
     public GuiSchematicSave(GuiScreen parent, String initialName) {
         super(parent, UiTranslations.format("litematica.gui.title.create_schematic_from_selection"), false);
@@ -80,7 +87,12 @@ public final class GuiSchematicSave extends GuiSchematicBrowser {
 
     private File directory() { return browser == null ? ConfigurationHandler.schematicDirectory : browser.directory(); }
 
+    private boolean selectionContext() {
+        return AreaSelections.available(library) && area != null && library.selected() == area && mc.theWorld == sourceWorld;
+    }
+
     private String validateSelection() {
+        if (!selectionContext()) return UiTranslations.format("litematica.message.error.schematic_save_no_area_selected");
         if (mc.theWorld == null || mc.thePlayer == null || !SchematicaPlus.proxy.isSaveEnabled) {
             return UiTranslations.format("schematica.ui.save.disabled");
         }
@@ -140,7 +152,7 @@ public final class GuiSchematicSave extends GuiSchematicBrowser {
     }
 
     private void submit(File file, World world, Vector3i from, Vector3i to) {
-        if (mc.theWorld != world || mc.thePlayer == null || !SchematicaPlus.proxy.isSaveEnabled) {
+        if (!selectionContext() || mc.theWorld != world || mc.thePlayer == null || !SchematicaPlus.proxy.isSaveEnabled) {
             setStatus(UiTranslations.format("schematica.ui.save.disabled"));
             return;
         }
@@ -177,7 +189,7 @@ public final class GuiSchematicSave extends GuiSchematicBrowser {
             nbt = root.add(new UiToggleButton(() -> UiTranslations.format("schematica.gui.savenbt"), () -> SchematicFormat.saveNBT,
                 value -> SchematicFormat.saveNBT = value));
             guide = root.add(new UiToggleButton(() -> UiTranslations.format("schematica.ui.save.guide"), () -> ClientProxy.isRenderingGuide,
-                value -> { ClientProxy.isRenderingGuide = value; WorldHandler.INSTANCE.saveSession(); }));
+                value -> { if (selectionContext()) { ClientProxy.isRenderingGuide = value; AreaSelections.saveCurrent(); } }));
             back = addButton("gui.back", this::closeScreen);
         }
 

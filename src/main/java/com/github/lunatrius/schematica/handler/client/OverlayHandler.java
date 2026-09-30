@@ -14,6 +14,9 @@ import com.github.lunatrius.schematica.internal.lunatriuscore.util.vector.Vector
 import com.github.lunatrius.schematica.client.world.SchematicWorld;
 import com.github.lunatrius.schematica.handler.ConfigurationHandler;
 import com.github.lunatrius.schematica.proxy.ClientProxy;
+import com.github.lunatrius.schematica.client.selection.AreaSelections;
+import com.github.lunatrius.schematica.client.selection.AreaSelectionLibrary.Area;
+import com.github.lunatrius.schematica.client.gui.framework.UiTranslations;
 import com.github.lunatrius.schematica.tool.ToolManager;
 import com.github.lunatrius.schematica.tool.ToolMode;
 
@@ -88,12 +91,18 @@ public class OverlayHandler {
 
         // Line 3: Selection coords (for area-related modes)
         if (mode.getUsesAreaSelection() || mode == ToolMode.FILL || mode == ToolMode.REPLACE_BLOCK || mode == ToolMode.DELETE) {
-            Vector3i a = ClientProxy.pointA;
-            Vector3i b = ClientProxy.pointB;
-            lines.add(EnumChatFormatting.GRAY + "A: " + EnumChatFormatting.AQUA
-                + a.x + ", " + a.y + ", " + a.z
-                + EnumChatFormatting.GRAY + "  B: " + EnumChatFormatting.AQUA
-                + b.x + ", " + b.y + ", " + b.z);
+            Area area = AreaSelections.library().selected();
+            if (area == null) {
+                lines.add(UiTranslations.format("litematica.message.error.no_area_selected"));
+            } else {
+                lines.add(UiTranslations.format("litematica.hud.area_selection.selected_area_simple", area.name()));
+                Vector3i a = ClientProxy.pointA;
+                Vector3i b = ClientProxy.pointB;
+                lines.add(EnumChatFormatting.GRAY + "A: " + EnumChatFormatting.AQUA
+                    + a.x + ", " + a.y + ", " + a.z
+                    + EnumChatFormatting.GRAY + "  B: " + EnumChatFormatting.AQUA
+                    + b.x + ", " + b.y + ", " + b.z);
+            }
         }
 
         // Line 4: Primary/Secondary block (for FILL/REPLACE)
