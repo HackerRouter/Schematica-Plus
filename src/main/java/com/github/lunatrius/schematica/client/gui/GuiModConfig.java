@@ -39,6 +39,8 @@ import com.github.lunatrius.schematica.client.gui.framework.UiTextField;
 import com.github.lunatrius.schematica.client.gui.framework.UiWidget;
 import com.github.lunatrius.schematica.client.renderer.RendererSchematicGlobal;
 import com.github.lunatrius.schematica.handler.ConfigurationHandler;
+import com.github.lunatrius.schematica.handler.BlockInfoHudSettings;
+import com.github.lunatrius.schematica.util.HudAlignment;
 import com.github.lunatrius.schematica.handler.client.InputHandler;
 import com.github.lunatrius.schematica.reference.Names;
 import com.github.lunatrius.schematica.client.gui.config.ConfigTranslations;
@@ -333,6 +335,7 @@ public class GuiModConfig extends UiScreen {
         Tab tab() {
             if (key != null) return Tab.HOTKEYS;
             if (color != null) return Tab.COLORS;
+            if (BlockInfoHudSettings.CATEGORY.equals(category)) return Tab.INFO_OVERLAYS;
             if (Names.Config.Category.RENDER.equals(category)) return Tab.VISUALS;
             return Names.Config.Category.DEBUG.equals(category) ? Tab.INFO_OVERLAYS : Tab.GENERIC;
         }
@@ -391,6 +394,14 @@ public class GuiModConfig extends UiScreen {
                     panel.layout(root.bounds());
                     input.pushModal(panel);
                 }));
+            } else if (entry.draft.property.getName().equals("blockInfoLinesAlignment")
+                && BlockInfoHudSettings.CATEGORY.equals(entry.category)) {
+                editor = add(new UiButton(() -> UiTranslations.format(HudAlignment.parse(entry.draft.text()).translationKey()),
+                    button -> {
+                        HudAlignment[] values = HudAlignment.values();
+                        int current = HudAlignment.parse(entry.draft.text()).ordinal();
+                        entry.draft.setText(values[Math.floorMod(current + (button == 1 ? -1 : 1), values.length)].value());
+                    }));
             } else if (entry.draft.property.getType() == Property.Type.BOOLEAN) {
                 editor = add(new UiButton(() -> UiTranslations.format(Boolean.parseBoolean(entry.draft.text())
                     ? "malilib.gui.button.true" : "malilib.gui.button.false"),

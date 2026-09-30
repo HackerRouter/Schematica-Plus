@@ -734,3 +734,32 @@ These checks supersede Phase 12's Simple-editor and bounding-box expectations.
 - Automated coverage checks source-referenced keys in English/Chinese and formats
   active templates across all 13 bundled locales with English fallback. These
   checks do not replace in-game text-width, hover or language-switch checks.
+
+## Block info lines HUD
+
+- Reference: Litematica OverlayRenderer.renderHoverInfo/updateBlockInfoLines and
+  MaLiLib RenderUtils.renderText. The independent HUD defaults to top right,
+  scale 0.5, offsets 4/4, enabled, fluids excluded. All six controls appear under
+  Info Overlays using upstream translation keys; close the page to apply/save.
+- Look at a visible ghost block within 10 blocks without holding the tool. Check
+  the schematic title, registry name and metadata. The background is gray and
+  translucent, each line right-aligned, with no text shadow. Minecraft 1.7.10
+  metadata replaces modern block-state properties; tile NBT is not compared.
+- At the same position, test wrong blocks and different metadata: both Schematic
+  and Client sections should appear. Equal states show one schematic section;
+  unrelated real blocks in front must occlude the ghost, without displaying
+  information about a different position behind the wall.
+- Target an unselected placement, overlapping placements, shifted/rotated regions,
+  negative world coordinates, disabled regions, hidden placements and all render
+  layer modes. Only visible regions inside the current range can supply HUD data.
+- Move the Freecam camera while leaving the player still; target and reach must
+  follow the camera. Check non-full shapes (slabs, stairs, GT pipes), vanilla and
+  mod fluids. The fluid toggle includes flowing liquid blocks as well as sources.
+- Try all alignments, offsets, font scale 0/0.5/1/2 and GUI scales 1-3; reopen the
+  game to verify persistence. F1 and an open GUI suppress the HUD. Disconnect or
+  change dimensions and confirm the previous target never appears in the new
+  world. Other HUDs, item lighting and world rendering must remain unaffected.
+- Automated tests cover voxel traversal, shape hits, range, occlusion, overlapping
+  placements, coordinate translation, mutable trace inputs, state comparison,
+  configuration persistence/validation and scaled alignment. Native visual and
+  mod-compatibility checks above remain unexecuted by the agent.

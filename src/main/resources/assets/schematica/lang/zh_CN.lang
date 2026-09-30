@@ -403,3 +403,4 @@ schematica.ui.conflict.title=Schematica Plus：不兼容的模组
 schematica.ui.conflict.message=Schematica Plus（schematica_plus）无法与 %s 同时加载。请移除原版/GTNH 版 Schematica 的 jar 文件，或移除 Schematica Plus。
 schematica.message.download.update_client=Schematica Plus：请更新客户端以下载包含子区域或自定义原点的原理图。
 schematica.ui.placement.custom=自定义
+schematica.hud.block_info.metadata=元数据：§a%s
