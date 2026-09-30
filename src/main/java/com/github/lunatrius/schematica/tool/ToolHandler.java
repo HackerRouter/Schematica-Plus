@@ -246,6 +246,7 @@ public class ToolHandler {
             job.capture(schematic.getSchematic(), schematic.isPastingBlockNBT, schematic.isRenderingEntities);
         } else {
             Vector3i min = ClientProxy.pointMin.clone(), max = ClientProxy.pointMax.clone();
+            if (min.equals(max)) throw new IllegalArgumentException("Select an area with two distinct corners first.");
             Block replacement = mode == ToolMode.DELETE ? Blocks.air : mode.getPrimaryBlock();
             if (replacement == null) replacement = Blocks.air;
             Block target = mode.getSecondaryBlock();

@@ -186,6 +186,12 @@ public class SchematicAlpha extends SchematicFormat {
 
     @Override
     public boolean writeToNBT(NBTTagCompound tagCompound, ISchematic schematic, World backupWorld) {
+        return writeToNBT(tagCompound, schematic, backupWorld, SchematicFormat.saveNBT, SchematicFormat.saveEntities);
+    }
+
+    @Override
+    public boolean writeToNBT(NBTTagCompound tagCompound, ISchematic schematic, World backupWorld,
+        boolean includeNBT, boolean includeEntities) {
         if (ConfigurationHandler.useSchematicplusFormat) {
             NBTTagCompound tagCompoundIcon = new NBTTagCompound();
             ItemStack icon = schematic.getIcon();
@@ -221,7 +227,7 @@ public class SchematicAlpha extends SchematicFormat {
 
             int count = 20;
             NBTTagList tileEntitiesList = new NBTTagList();
-            if (SchematicFormat.saveNBT) {
+            if (includeNBT) {
                 for (TileEntity tileEntity : schematic.getTileEntities()) {
                     try {
                         if (!tileEntity.hasWorldObj()) {
@@ -250,7 +256,7 @@ public class SchematicAlpha extends SchematicFormat {
             }
 
             final NBTTagList entityList = new NBTTagList();
-            if (SchematicFormat.saveEntities) {
+            if (includeEntities) {
                 final List<Entity> entities = schematic.getEntities();
                 for (Entity entity : entities) {
                     try {
@@ -325,7 +331,7 @@ public class SchematicAlpha extends SchematicFormat {
 
             int count = 20;
             NBTTagList tileEntitiesList = new NBTTagList();
-            if (SchematicFormat.saveNBT) {
+            if (includeNBT) {
                 for (TileEntity tileEntity : schematic.getTileEntities()) {
                     try {
                         if (!tileEntity.hasWorldObj()) {
@@ -362,7 +368,7 @@ public class SchematicAlpha extends SchematicFormat {
             }
 
             final NBTTagList entityList = new NBTTagList();
-            if (SchematicFormat.saveEntities) {
+            if (includeEntities) {
                 final List<Entity> entities = schematic.getEntities();
                 for (Entity entity : entities) {
                     try {

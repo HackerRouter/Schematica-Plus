@@ -26,7 +26,7 @@ public class MessageDownloadBeginAck implements IMessage, IMessageHandler<Messag
     public IMessage onMessage(MessageDownloadBeginAck message, MessageContext ctx) {
         EntityPlayerMP player = ctx.getServerHandler().playerEntity;
         SchematicTransfer transfer = DownloadHandler.INSTANCE.transferMap.get(player);
-        if (transfer != null) {
+        if (transfer != null && transfer.state == SchematicTransfer.State.BEGIN) {
             transfer.setState(SchematicTransfer.State.CHUNK_WAIT);
         }
 

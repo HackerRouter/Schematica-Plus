@@ -37,6 +37,8 @@ public class TickHandler {
 
     @SubscribeEvent
     public void onClientDisconnect(FMLNetworkEvent.ClientDisconnectionFromServerEvent event) {
+        com.github.lunatrius.schematica.handler.DownloadHandler.INSTANCE.beginDownload(null);
+        CommandEditQueue.INSTANCE.cancel();
         Reference.logger.info("Scheduling client settings reset.");
         ClientProxy.isPendingReset = true;
     }

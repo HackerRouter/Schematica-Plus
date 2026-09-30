@@ -33,6 +33,11 @@ public abstract class SchematicFormat {
 
     public abstract boolean writeToNBT(NBTTagCompound tagCompound, ISchematic schematic, World backupWorld);
 
+    public boolean writeToNBT(NBTTagCompound tagCompound, ISchematic schematic, World backupWorld,
+        boolean includeNBT, boolean includeEntities) {
+        return writeToNBT(tagCompound, schematic, backupWorld);
+    }
+
     public static ISchematic readFromFile(File file) {
         try {
             // Check for .litematic format first — needs custom NBT reader for TAG_Long_Array
@@ -77,6 +82,11 @@ public abstract class SchematicFormat {
     }
 
     public static boolean writeToFile(File file, ISchematic schematic, World backupWorld) {
+        return writeToFile(file, schematic, backupWorld, saveNBT, saveEntities);
+    }
+
+    public static boolean writeToFile(File file, ISchematic schematic, World backupWorld,
+        boolean includeNBT, boolean includeEntities) {
         Path temporary = null;
         try {
             if (schematic == null) return false;
@@ -85,7 +95,7 @@ public abstract class SchematicFormat {
 
             NBTTagCompound tagCompound = new NBTTagCompound();
 
-            if (!FORMATS.get(FORMAT_DEFAULT).writeToNBT(tagCompound, schematic, backupWorld)) return false;
+            if (!FORMATS.get(FORMAT_DEFAULT).writeToNBT(tagCompound, schematic, backupWorld, includeNBT, includeEntities)) return false;
 
             // Use CompressedStreamTools.writeCompressed which writes using the new NBT
             // format (func_152446_a). This matches what readCompressed (func_152456_a)
@@ -117,9 +127,14 @@ public abstract class SchematicFormat {
     }
 
     public static boolean writeToFile(File directory, String filename, ISchematic schematic, World backupWorld) {
+        return writeToFile(directory, filename, schematic, backupWorld, saveNBT, saveEntities);
+    }
+
+    public static boolean writeToFile(File directory, String filename, ISchematic schematic, World backupWorld,
+        boolean includeNBT, boolean includeEntities) {
         try {
             return writeToFile(com.github.lunatrius.schematica.util.FileUtils.resolveSchematicFile(directory, filename),
-                schematic, backupWorld);
+                schematic, backupWorld, includeNBT, includeEntities);
         } catch (java.io.IOException e) {
             Reference.logger.warn("Rejected schematic filename", e);
             return false;

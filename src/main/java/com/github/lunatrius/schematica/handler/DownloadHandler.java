@@ -22,6 +22,36 @@ public class DownloadHandler {
     public static final DownloadHandler INSTANCE = new DownloadHandler();
 
     public ISchematic schematic = null;
+    private final java.util.BitSet receivedChunks = new java.util.BitSet();
+
+    public void beginDownload(ISchematic schematic) {
+        this.schematic = schematic;
+        receivedChunks.clear();
+    }
+
+    public boolean validChunk(int x, int y, int z) {
+        return schematic != null && x >= 0 && y >= 0 && z >= 0
+            && x < schematic.getWidth() && y < schematic.getHeight() && z < schematic.getLength()
+            && x % 16 == 0 && y % 16 == 0 && z % 16 == 0;
+    }
+
+    private int chunkIndex(int x, int y, int z) {
+        int width = (schematic.getWidth() + 15) / 16, height = (schematic.getHeight() + 15) / 16;
+        return x / 16 + width * (y / 16 + height * (z / 16));
+    }
+
+    public boolean hasReceivedChunk(int x, int y, int z) {
+        return validChunk(x, y, z) && receivedChunks.get(chunkIndex(x, y, z));
+    }
+
+    public void receivedChunk(int x, int y, int z) {
+        if (validChunk(x, y, z)) receivedChunks.set(chunkIndex(x, y, z));
+    }
+
+    public boolean isDownloadComplete() {
+        return schematic != null && receivedChunks.cardinality() == ((schematic.getWidth() + 15) / 16)
+            * ((schematic.getHeight() + 15) / 16) * ((schematic.getLength() + 15) / 16);
+    }
 
     public final Map<EntityPlayerMP, SchematicTransfer> transferMap = new LinkedHashMap<>();
 
@@ -60,7 +90,8 @@ public class DownloadHandler {
                 Reference.logger
                     .warn("{}'s download timed out, retrying (#{})", player.getDisplayName(), transfer.retries);
 
-                sendChunk(player, transfer);
+                if (transfer.state == SchematicTransfer.State.BEGIN) sendBegin(player, transfer);
+                else sendChunk(player, transfer);
                 transfer.timeout = 0;
             }
         } else if (transfer.state == SchematicTransfer.State.BEGIN_WAIT) {

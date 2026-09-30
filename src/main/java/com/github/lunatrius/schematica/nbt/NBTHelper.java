@@ -26,7 +26,7 @@ public class NBTHelper {
         for (int i = 0; i < tagList.tagCount(); i++) {
             final NBTTagCompound tileEntityCompound = tagList.getCompoundTagAt(i);
             final TileEntity tileEntity = readTileEntityFromCompound(tileEntityCompound);
-            tileEntities.add(tileEntity);
+            if (tileEntity != null) tileEntities.add(tileEntity);
         }
 
         return tileEntities;
@@ -66,7 +66,7 @@ public class NBTHelper {
         final NBTTagList tagList = compound.getTagList(Names.NBT.ENTITIES, Constants.NBT.TAG_COMPOUND);
         for (int i = 0; i < tagList.tagCount(); i++) {
             final NBTTagCompound entityCompound = tagList.getCompoundTagAt(i);
-            final Entity entity = readEntityFromCompound(entityCompound, world);
+            final Entity entity = readEntityFromCompound(entityCompound, world == null ? WorldDummy.instance() : world);
             if (entity != null) {
                 entities.add(entity);
             }
@@ -82,9 +82,8 @@ public class NBTHelper {
     public static NBTTagCompound writeEntitiesToCompound(final List<Entity> entities, final NBTTagCompound compound) {
         final NBTTagList tagList = new NBTTagList();
         for (Entity entity : entities) {
-            final NBTTagCompound entityCompound = new NBTTagCompound();
-            entity.writeToNBT(entityCompound);
-            tagList.appendTag(entityCompound);
+            final NBTTagCompound entityCompound = writeEntityToCompound(entity);
+            if (entityCompound != null) tagList.appendTag(entityCompound);
         }
 
         compound.setTag(Names.NBT.ENTITIES, tagList);
@@ -138,6 +137,15 @@ public class NBTHelper {
                     entity.posX -= offsetX;
                     entity.posY -= offsetY;
                     entity.posZ -= offsetZ;
+                    if (entity instanceof net.minecraft.entity.EntityHanging) {
+                        net.minecraft.entity.EntityHanging hanging = (net.minecraft.entity.EntityHanging) entity;
+                        hanging.field_146063_b -= offsetX;
+                        hanging.field_146064_c -= offsetY;
+                        hanging.field_146062_d -= offsetZ;
+                        hanging.setDirection(hanging.hangingDirection);
+                    } else {
+                        entity.setPosition(entity.posX, entity.posY, entity.posZ);
+                    }
                 }
             }
         } catch (Throwable t) {

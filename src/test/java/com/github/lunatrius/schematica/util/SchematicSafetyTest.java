@@ -13,11 +13,14 @@ public class SchematicSafetyTest {
 
     @Test public void rejectsEscapingNamesAndAcceptsUnicode() throws IOException {
         File directory = temporary.newFolder();
-        for (String name : new String[] {"../other.schematic", "..\\other.schematic", "/absolute", "C:stream", ""}) {
+        for (String name : new String[] {"../other.schematic", "..\\other.schematic", "/absolute", "C:stream", "",
+            "LoadedSchematics.json", "name.schematic.json"}) {
             assertThrows(IOException.class, () -> FileUtils.resolveSchematicFile(directory, name));
         }
         assertEquals(new File(directory, "建筑.schematic").getCanonicalFile(),
             FileUtils.resolveSchematicFile(directory, "建筑.schematic"));
+        assertEquals(new File(directory, "建筑.SCHEMPLUS").getCanonicalFile(),
+            FileUtils.resolveSchematicFile(directory, "建筑.SCHEMPLUS"));
     }
 
     @Test public void checksDimensionsBeforeNarrowingOrAllocating() {

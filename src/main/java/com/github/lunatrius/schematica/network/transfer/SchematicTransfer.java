@@ -52,7 +52,7 @@ public class SchematicTransfer {
     }
 
     public boolean confirmChunk(final int chunkX, final int chunkY, final int chunkZ) {
-        if (chunkX == this.baseX && chunkY == this.baseY && chunkZ == this.baseZ) {
+        if (this.state == State.CHUNK && chunkX == this.baseX && chunkY == this.baseY && chunkZ == this.baseZ) {
             setState(State.CHUNK_WAIT);
             this.baseX += Constants.SchematicChunk.WIDTH;
 
@@ -76,8 +76,8 @@ public class SchematicTransfer {
     }
 
     public void setState(State state) {
+        if (this.state != state) this.retries = 0;
         this.state = state;
         this.timeout = 0;
-        this.retries = 0;
     }
 }

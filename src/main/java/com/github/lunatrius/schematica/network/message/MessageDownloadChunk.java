@@ -46,6 +46,13 @@ public class MessageDownloadChunk implements IMessage, IMessageHandler<MessageDo
         this.tileEntities = new ArrayList<>();
         this.entities = new ArrayList<>();
 
+        for (Entity entity : schematic.getEntities()) {
+            int ex = Math.max(0, Math.min(schematic.getWidth() - 1, (int) Math.floor(entity.posX))) / 16 * 16;
+            int ey = Math.max(0, Math.min(schematic.getHeight() - 1, (int) Math.floor(entity.posY))) / 16 * 16;
+            int ez = Math.max(0, Math.min(schematic.getLength() - 1, (int) Math.floor(entity.posZ))) / 16 * 16;
+            if (ex == baseX && ey == baseY && ez == baseZ) this.entities.add(entity);
+        }
+
         for (int x = 0; x < Constants.SchematicChunk.WIDTH; x++) {
             for (int y = 0; y < Constants.SchematicChunk.HEIGHT; y++) {
                 for (int z = 0; z < Constants.SchematicChunk.LENGTH; z++) {
@@ -68,7 +75,7 @@ public class MessageDownloadChunk implements IMessage, IMessageHandler<MessageDo
                 for (int z = 0; z < Constants.SchematicChunk.LENGTH; z++) {
                     short id = this.blocks[x][y][z];
                     byte meta = this.metadata[x][y][z];
-                    Block block = BLOCK_REGISTRY.getObjectById(id);
+                    Block block = BLOCK_REGISTRY.getObjectById(id & 0xffff);
 
                     schematic.setBlock(this.baseX + x, this.baseY + y, this.baseZ + z, block, meta);
                 }
@@ -78,6 +85,7 @@ public class MessageDownloadChunk implements IMessage, IMessageHandler<MessageDo
         for (TileEntity tileEntity : this.tileEntities) {
             schematic.setTileEntity(tileEntity.xCoord, tileEntity.yCoord, tileEntity.zCoord, tileEntity);
         }
+        for (Entity entity : this.entities) schematic.addEntity(entity);
     }
 
     @Override
@@ -131,7 +139,12 @@ public class MessageDownloadChunk implements IMessage, IMessageHandler<MessageDo
 
     @Override
     public IMessage onMessage(MessageDownloadChunk message, MessageContext ctx) {
-        message.copyToSchematic(DownloadHandler.INSTANCE.schematic);
+        if (!DownloadHandler.INSTANCE.validChunk(message.baseX, message.baseY, message.baseZ)) return null;
+        // A lost acknowledgement may resend this chunk. Acknowledge it again without duplicating entities.
+        if (!DownloadHandler.INSTANCE.hasReceivedChunk(message.baseX, message.baseY, message.baseZ)) {
+            message.copyToSchematic(DownloadHandler.INSTANCE.schematic);
+            DownloadHandler.INSTANCE.receivedChunk(message.baseX, message.baseY, message.baseZ);
+        }
 
         return new MessageDownloadChunkAck(message.baseX, message.baseY, message.baseZ);
     }

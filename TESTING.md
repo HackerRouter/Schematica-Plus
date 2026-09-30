@@ -17,6 +17,11 @@ Before a release, use a disposable 1.7.10 world to check:
   another dimension and on a differently addressed server with the same display name.
 - Paste over a chest, paste luminous blocks and a door, save/reload the world, and
   check inventories, lighting and block behavior. Reject pastes crossing Y=0/256.
+- Download a schematic containing inventories, an item frame and a mob. Verify
+  that contents survive regardless of the local save-dialog options, and that a
+  repeated chunk does not duplicate entities. Interrupt/reconnect during download.
+- Start a queued save, change the save-dialog NBT/entity options, and verify the
+  queued save uses its original options.
 
 Session keys now use save-folder/server-address plus dimension. Legacy entries
 keyed only by display name remain in the JSON files but are not automatically

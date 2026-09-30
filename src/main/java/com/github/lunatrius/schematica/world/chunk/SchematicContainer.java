@@ -15,6 +15,7 @@ public class SchematicContainer {
     public final EntityPlayer player;
     public final World world;
     public final File file;
+    public final boolean includeNBT, includeEntities;
 
     public final int minX;
     public final int maxX;
@@ -40,6 +41,8 @@ public class SchematicContainer {
         this.player = player;
         this.world = world;
         this.file = file;
+        this.includeNBT = com.github.lunatrius.schematica.world.schematic.SchematicFormat.saveNBT;
+        this.includeEntities = com.github.lunatrius.schematica.world.schematic.SchematicFormat.saveEntities;
 
         this.minX = minX;
         this.maxX = maxX;

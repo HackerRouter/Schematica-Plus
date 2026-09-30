@@ -29,6 +29,10 @@ public class FileUtils {
             || filename.indexOf(':') >= 0 || filename.indexOf('\0') >= 0) {
             throw new IOException("Invalid schematic filename");
         }
+        String lowerName = filename.toLowerCase(java.util.Locale.ROOT);
+        if (!lowerName.endsWith(".schematic") && !lowerName.endsWith(".schemplus")) {
+            throw new IOException("Unsupported schematic output extension");
+        }
         File file = new File(directory, filename).getCanonicalFile();
         if (!contains(directory, file)) {
             throw new IOException("Schematic path leaves its directory");

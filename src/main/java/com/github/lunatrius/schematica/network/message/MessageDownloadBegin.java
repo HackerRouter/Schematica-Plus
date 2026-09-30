@@ -46,7 +46,13 @@ public class MessageDownloadBegin implements IMessage, IMessageHandler<MessageDo
 
     @Override
     public IMessage onMessage(MessageDownloadBegin message, MessageContext ctx) {
-        DownloadHandler.INSTANCE.schematic = new Schematic(message.icon, message.width, message.height, message.length);
+        DownloadHandler.INSTANCE.beginDownload(null);
+        try {
+            DownloadHandler.INSTANCE.beginDownload(new Schematic(message.icon, message.width, message.height, message.length));
+        } catch (IllegalArgumentException e) {
+            com.github.lunatrius.schematica.reference.Reference.logger.warn("Rejected download dimensions", e);
+            return null;
+        }
 
         return new MessageDownloadBeginAck();
     }

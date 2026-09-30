@@ -87,7 +87,8 @@ public class QueueTickHandler {
                 }
             }
 
-            final boolean success = SchematicFormat.writeToFile(container.file, container.schematic, container.world);
+            final boolean success = SchematicFormat.writeToFile(container.file, container.schematic, container.world,
+                container.includeNBT, container.includeEntities);
             final String message = success ? Names.Command.Save.Message.SAVE_SUCCESSFUL
                 : Names.Command.Save.Message.SAVE_FAILED;
             container.player.addChatMessage(new ChatComponentTranslation(message, container.file.getName()));
