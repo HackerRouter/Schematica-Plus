@@ -134,8 +134,11 @@ public class RendererSchematicChunk {
                 }
 
                 GL11.glNewList(this.glList + pass, GL11.GL_COMPILE);
-                renderBlocks(pass, minX, minY, minZ, maxX, maxY, maxZ);
-                GL11.glEndList();
+                try (SchematicRenderPass context = new SchematicRenderPass(pass)) {
+                    renderBlocks(pass, minX, minY, minZ, maxX, maxY, maxZ);
+                } finally {
+                    GL11.glEndList();
+                }
 
                 GL11.glNewList(this.glListHighlight + pass, GL11.GL_COMPILE);
                 int quadCount = RenderHelper.getQuadCount();
@@ -179,40 +182,37 @@ public class RendererSchematicChunk {
             return;
         }
 
-        // some mods enable this, beats me why - it's supposed to be disabled!
-        GL11.glDisable(GL11.GL_LIGHTING);
-
+        GL11.glPushAttrib(GL11.GL_ALL_ATTRIB_BITS);
+        int previousProgram = OpenGlHelper.shadersSupported ? GL11.glGetInteger(GL20.GL_CURRENT_PROGRAM) : 0;
         this.profiler.startSection("blocks");
-        this.minecraft.renderEngine.bindTexture(TextureMap.locationBlocksTexture);
-
-        if (OpenGlHelper.shadersSupported && ConfigurationHandler.enableAlpha) {
-            GL20.glUseProgram(SHADER_ALPHA.getProgram());
-            GL20.glUniform1f(
-                GL20.glGetUniformLocation(SHADER_ALPHA.getProgram(), "alpha_multiplier"),
-                ConfigurationHandler.alpha);
+        try (SchematicRenderPass context = new SchematicRenderPass(renderPass)) {
+            GL11.glDisable(GL11.GL_LIGHTING);
+            GL11.glEnable(GL11.GL_BLEND);
+            GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
+            GL11.glEnable(GL11.GL_CULL_FACE);
+            GL11.glCullFace(GL11.GL_BACK);
+            GL11.glColor4f(1, 1, 1, 1);
+            boolean alpha = OpenGlHelper.shadersSupported && ConfigurationHandler.enableAlpha;
+            GL11.glDepthMask(renderPass == 0 && (!alpha || ConfigurationHandler.alpha >= 1));
+            GL11.glAlphaFunc(GL11.GL_GREATER, 0.001f);
+            this.minecraft.renderEngine.bindTexture(TextureMap.locationBlocksTexture);
+            if (alpha) {
+                GL20.glUseProgram(SHADER_ALPHA.getProgram());
+                GL20.glUniform1f(GL20.glGetUniformLocation(SHADER_ALPHA.getProgram(), "alpha_multiplier"),
+                    ConfigurationHandler.alpha);
+            }
+            GL11.glCallList(this.glList + renderPass);
+            if (alpha) GL20.glUseProgram(previousProgram);
+            this.profiler.endStartSection("highlight");
+            GL11.glDepthMask(false);
+            GL11.glCallList(this.glListHighlight + renderPass);
+            this.profiler.endStartSection("tileEntities");
+            renderTileEntities(renderPass);
+        } finally {
+            if (OpenGlHelper.shadersSupported) GL20.glUseProgram(previousProgram);
+            GL11.glPopAttrib();
+            this.profiler.endSection();
         }
-
-        GL11.glCallList(this.glList + renderPass);
-
-        if (OpenGlHelper.shadersSupported && ConfigurationHandler.enableAlpha) {
-            GL20.glUseProgram(0);
-        }
-
-        this.profiler.endStartSection("highlight");
-        GL11.glCallList(this.glListHighlight + renderPass);
-
-        this.profiler.endStartSection("tileEntities");
-        renderTileEntities(renderPass);
-
-        // re-enable blending... spawners disable it, somewhere...
-        GL11.glEnable(GL11.GL_BLEND);
-        GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
-
-        // re-set alpha func... beacons set it to (GL_GREATER, 0.5f)
-        // EntityRenderer sets it to (GL_GREATER, 0.1f) before dispatching the event
-        GL11.glAlphaFunc(GL11.GL_GREATER, 0.1F);
-
-        this.profiler.endSection();
     }
 
     public void renderBlocks(int renderPass, int minX, int minY, int minZ, int maxX, int maxY, int maxZ) {
@@ -229,7 +229,7 @@ public class RendererSchematicChunk {
         this.minecraft.gameSettings.ambientOcclusion = 0;
 
         Tessellator.instance.startDrawingQuads();
-
+        try {
         for (y = minY; y < maxY; y++) {
             for (z = minZ; z < maxZ; z++) {
                 for (x = minX; x < maxX; x++) {
@@ -333,7 +333,8 @@ public class RendererSchematicChunk {
                                 }
                             }
 
-                            if (block != null && block.canRenderInPass(renderPass)) {
+                            if (renderPass < 2 && block != null && block.canRenderInPass(renderPass)) {
+                                resetRenderBlocks(renderBlocks);
                                 renderBlocks.renderBlockByRenderType(block, x, y, z);
                             }
                         }
@@ -344,13 +345,26 @@ public class RendererSchematicChunk {
             }
         }
 
-        Tessellator.instance.draw();
+        } finally {
+            this.minecraft.gameSettings.ambientOcclusion = ambientOcclusion;
+            Tessellator.instance.draw();
+        }
+    }
 
-        this.minecraft.gameSettings.ambientOcclusion = ambientOcclusion;
+    private void resetRenderBlocks(RenderBlocks renderer) {
+        renderer.blockAccess = this.schematic;
+        renderer.clearOverrideBlockTexture();
+        renderer.lockBlockBounds = false;
+        renderer.renderAllFaces = false;
+        renderer.renderFromInside = false;
+        renderer.flipTexture = false;
+        renderer.enableAO = false;
+        renderer.uvRotateTop = renderer.uvRotateBottom = renderer.uvRotateEast = renderer.uvRotateWest = 0;
+        renderer.uvRotateNorth = renderer.uvRotateSouth = 0;
     }
 
     public void renderTileEntities(int renderPass) {
-        if (renderPass != 0) {
+        if (renderPass > 1) {
             return;
         }
 
@@ -362,6 +376,7 @@ public class RendererSchematicChunk {
 
         try {
             for (TileEntity tileEntity : this.tileEntities) {
+                if (!tileEntity.shouldRenderInPass(renderPass)) continue;
                 x = tileEntity.xCoord;
                 y = tileEntity.yCoord;
                 z = tileEntity.zCoord;
@@ -379,6 +394,8 @@ public class RendererSchematicChunk {
                     TileEntitySpecialRenderer tileEntitySpecialRenderer = TileEntityRendererDispatcher.instance
                         .getSpecialRenderer(tileEntity);
                     if (tileEntitySpecialRenderer != null) {
+                        GL11.glPushMatrix();
+                        GL11.glPushAttrib(GL11.GL_ALL_ATTRIB_BITS);
                         try {
                             tileEntitySpecialRenderer.renderTileEntityAt(tileEntity, x, y, z, 0);
 
@@ -387,6 +404,10 @@ public class RendererSchematicChunk {
                             OpenGlHelper.setActiveTexture(OpenGlHelper.defaultTexUnit);
                         } catch (Exception e) {
                             Reference.logger.error("Failed to render a tile entity!", e);
+                        } finally {
+                            GL11.glPopAttrib();
+                            GL11.glPopMatrix();
+                            OpenGlHelper.setActiveTexture(OpenGlHelper.defaultTexUnit);
                         }
                         GL11.glColor4f(1.0f, 1.0f, 1.0f, ConfigurationHandler.alpha);
                     }

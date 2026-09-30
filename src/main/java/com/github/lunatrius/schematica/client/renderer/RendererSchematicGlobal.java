@@ -113,8 +113,11 @@ public class RendererSchematicGlobal {
 
             // Render passes
             for (int pass = 0; pass < 3; pass++) {
-                for (RendererSchematicChunk chunk : data.chunks) {
-                    chunk.render(pass);
+                boolean reverse = pass == 1 || (pass == 0 &&
+                    com.github.lunatrius.schematica.handler.ConfigurationHandler.enableAlpha);
+                for (int i = 0; i < data.chunks.size(); i++) {
+                    int index = reverse ? data.chunks.size() - 1 - i : i;
+                    data.chunks.get(index).render(pass);
                 }
             }
 
