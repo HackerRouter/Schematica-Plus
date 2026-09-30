@@ -294,6 +294,7 @@ public class GuiSchematicControl extends GuiScreenBase {
                 }
                 RendererSchematicGlobal.INSTANCE.createRendererSchematicChunks(this.schematic);
                 SchematicPrinter.INSTANCE.refresh();
+                setPoint(this.numericX, this.numericY, this.numericZ, this.schematic.position);
             } else if (guiButton.id == this.btnFlipX.id) {
                 flipBoxes.checkBox(btnFlipX);
                 lastCheckedFlip = 0;
@@ -316,6 +317,7 @@ public class GuiSchematicControl extends GuiScreenBase {
                 }
                 RendererSchematicGlobal.INSTANCE.createRendererSchematicChunks(this.schematic);
                 SchematicPrinter.INSTANCE.refresh();
+                setPoint(this.numericX, this.numericY, this.numericZ, this.schematic.position);
             } else if (guiButton.id == this.btnRotateX.id) {
                 rotationBoxes.checkBox(btnRotateX);
                 lastCheckedRotation = 0;

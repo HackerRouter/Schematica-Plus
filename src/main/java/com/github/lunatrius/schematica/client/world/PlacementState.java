@@ -4,8 +4,6 @@ import java.util.List;
 
 import net.minecraftforge.common.util.ForgeDirection;
 
-import com.github.lunatrius.schematica.client.gui.placement.PlacementTransform;
-
 public final class PlacementState {
 
     private PlacementState() {}
@@ -26,10 +24,8 @@ public final class PlacementState {
 
     public static void copy(SchematicWorld previous, SchematicWorld next) {
         applyTransforms(next, previous.transformOperations);
-        int[] minimum = PlacementTransform.reloadedMinimum(new int[] {previous.position.x, previous.position.y, previous.position.z},
-            new int[] {previous.getWidth(), previous.getHeight(), previous.getLength()},
-            new int[] {next.getWidth(), next.getHeight(), next.getLength()}, previous.transformOperations);
-        next.position.set(minimum[0], minimum[1], minimum[2]);
+        com.github.lunatrius.schematica.api.SchematicOrigin minimum = next.getSchematic().getOrigin().minimumAt(previous.originPosition());
+        next.position.set(minimum.x, minimum.y, minimum.z);
         next.name = previous.name;
         next.isRendering = previous.isRendering;
         next.isRenderingEntities = previous.isRenderingEntities;

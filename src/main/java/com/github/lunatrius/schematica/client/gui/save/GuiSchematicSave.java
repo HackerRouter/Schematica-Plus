@@ -97,7 +97,7 @@ public final class GuiSchematicSave extends GuiSchematicBrowser {
         }
         if (!ClientProxy.isRenderingGuide) return UiTranslations.format("schematica.ui.save.enable_guide");
         try {
-            new RegionSelection(area.regions());
+            area.snapshot();
         } catch (IllegalArgumentException e) {
             return UiTranslations.format("schematica.ui.save.invalid_selection");
         }
@@ -137,7 +137,7 @@ public final class GuiSchematicSave extends GuiSchematicBrowser {
             File file = SchematicSaveTarget.resolve(ConfigurationHandler.schematicDirectory, directory(), name.text(), extended);
             World world = mc.theWorld;
             AreaSelections.capture();
-            RegionSelection selection = new RegionSelection(area.regions());
+            RegionSelection selection = area.snapshot();
             Runnable submit = () -> submit(file, world, selection);
             if (file.exists()) {
                 confirm(UiTranslations.format("schematica.ui.save.overwrite_title"),

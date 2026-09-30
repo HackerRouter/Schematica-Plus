@@ -53,6 +53,16 @@ public class SchematicWorld extends World {
 
     public ISchematic getSchematic() { return this.schematic; }
 
+    public com.github.lunatrius.schematica.api.SchematicOrigin originPosition() {
+        return schematic.getOrigin().atMinimum(position.x, position.y, position.z);
+    }
+
+    public void moveOriginTo(int x, int y, int z) {
+        com.github.lunatrius.schematica.api.SchematicOrigin minimum = schematic.getOrigin().minimumAt(
+            new com.github.lunatrius.schematica.api.SchematicOrigin(x, y, z));
+        position.set(minimum.x, minimum.y, minimum.z);
+    }
+
     public final Vector3i position = new Vector3i();
     public boolean isRendering;
     public boolean isRenderingLayer;
@@ -332,6 +342,8 @@ public class SchematicWorld extends World {
         }
         java.util.List<com.github.lunatrius.schematica.api.SchematicRegion> regions = this.schematic.getRegions();
         int w = getWidth(), h = getHeight(), l = getLength();
+        com.github.lunatrius.schematica.api.SchematicOrigin transformedOrigin = schematic.getOrigin().transform(operation, w, h, l);
+        com.github.lunatrius.schematica.api.SchematicOrigin minimum = transformedOrigin.minimumAt(originPosition());
         boolean layerMode = this.isRenderingLayer;
         this.isRenderingLayer = false;
         try {
@@ -340,6 +352,8 @@ public class SchematicWorld extends World {
             java.util.List<com.github.lunatrius.schematica.api.SchematicRegion> transformed = new ArrayList<>();
             for (com.github.lunatrius.schematica.api.SchematicRegion region : regions) transformed.add(region.transform(operation, w, h, l));
             ((Schematic) this.schematic).setRegions(transformed);
+            ((Schematic) this.schematic).setOrigin(transformedOrigin);
+            position.set(minimum.x, minimum.y, minimum.z);
             for (TileEntity tileEntity : this.schematic.getTileEntities()) {
                 TileEntitySnapshots.transformPreview(tileEntity, operation);
             }

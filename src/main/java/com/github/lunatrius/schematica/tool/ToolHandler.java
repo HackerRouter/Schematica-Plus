@@ -171,30 +171,24 @@ public class ToolHandler {
      * Right-click sets point B (second corner of selection box).
      */
     private static boolean handleAreaSelectionUse(EntityPlayer player, MovingObjectPosition mop) {
-        if (AreaSelections.library().selected() == null || AreaSelections.library().selected().selectedBox() == null) {
-            sendChat(player, UiTranslations.format(AreaSelections.library().selected() == null
-                ? "litematica.message.error.no_area_selected" : "litematica.error.area_selection.grow.no_sub_region_selected"));
-            return true;
-        }
-        ClientProxy.pointB.set(mop.blockX, mop.blockY, mop.blockZ);
-        ClientProxy.updatePoints();
-        ClientProxy.isRenderingGuide = true;
-        AreaSelections.saveCurrent();
-        return true;
+        return setAreaPoint(player, mop, false);
     }
 
-    /**
-     * Left-click sets point A (first corner of selection box).
-     */
     private static boolean handleAreaSelectionAttack(EntityPlayer player, MovingObjectPosition mop) {
-        if (AreaSelections.library().selected() == null || AreaSelections.library().selected().selectedBox() == null) {
-            sendChat(player, UiTranslations.format(AreaSelections.library().selected() == null
+        return setAreaPoint(player, mop, true);
+    }
+
+    private static boolean setAreaPoint(EntityPlayer player, MovingObjectPosition mop, boolean first) {
+        com.github.lunatrius.schematica.client.selection.AreaSelectionLibrary.Area area = AreaSelections.library().selected();
+        if (area == null || (!area.originSelected() && area.selectedBox() == null)) {
+            sendChat(player, UiTranslations.format(area == null
                 ? "litematica.message.error.no_area_selected" : "litematica.error.area_selection.grow.no_sub_region_selected"));
             return true;
         }
-        ClientProxy.pointA.set(mop.blockX, mop.blockY, mop.blockZ);
-        ClientProxy.updatePoints();
-        ClientProxy.isRenderingGuide = true;
+        AreaSelections.capture();
+        AreaSelections.library().setTargetPoint(area, first, new Vector3i(mop.blockX, mop.blockY, mop.blockZ));
+        AreaSelections.library().setGuide(area, true);
+        AreaSelections.apply();
         AreaSelections.saveCurrent();
         return true;
     }
@@ -241,7 +235,7 @@ public class ToolHandler {
 
         if (mop != null && mop.typeOfHit == MovingObjectPosition.MovingObjectType.BLOCK) {
             int placeY = mop.blockY + 1;
-            schematic.position.set(mop.blockX, placeY, mop.blockZ);
+            schematic.moveOriginTo(mop.blockX, placeY, mop.blockZ);
         } else {
             ClientProxy.moveSchematicToPlayer(schematic);
         }

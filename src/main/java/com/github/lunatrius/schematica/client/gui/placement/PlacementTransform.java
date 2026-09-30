@@ -7,6 +7,17 @@ import com.github.lunatrius.schematica.util.SchematicTransform;
 public final class PlacementTransform {
     private PlacementTransform() {}
 
+    public static com.github.lunatrius.schematica.api.SchematicOrigin transformOrigin(
+        com.github.lunatrius.schematica.api.SchematicOrigin origin, int width, int height, int length, String operations) {
+        int[] size = {width, height, length};
+        for (int i = 0; i < operations.length(); i++) {
+            char op = operation(operations.substring(i, i + 1));
+            origin = origin.transform(op, size[0], size[1], size[2]);
+            permuteSize(size, op);
+        }
+        return origin;
+    }
+
     public static int[] anchorOffset(int width, int height, int length, List<String> operations) {
         int[] size = {width, height, length};
         for (int i = operations.size() - 1; i >= 0; i--) permuteSize(size, operation(operations.get(i)));

@@ -9,6 +9,8 @@ import net.minecraft.tileentity.TileEntity;
 
 public interface ISchematic {
 
+    default SchematicOrigin getOrigin() { return SchematicOrigin.ZERO; }
+
     default List<SchematicRegion> getRegions() {
         return java.util.Collections.emptyList();
     }

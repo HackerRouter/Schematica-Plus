@@ -172,7 +172,7 @@ public final class GuiPlacementConfiguration extends UiScreen {
     }
 
     private int[] offset() {
-        return PlacementTransform.anchorOffset(placement.getWidth(), placement.getHeight(), placement.getLength(), placement.transformOperations);
+        return placement.getSchematic().getOrigin().coordinates();
     }
 
     private int[] minimum(int[] target, int[] offset) {
@@ -205,12 +205,10 @@ public final class GuiPlacementConfiguration extends UiScreen {
     private void transform(String steps) {
         if (!available() || orientation == null) return;
         int[] anchor = origin.clone();
-        List<String> planned = new ArrayList<>(placement.transformOperations);
-        for (int i = 0; i < steps.length(); i++) planned.add(steps.substring(i, i + 1));
-        int[] size = PlacementTransform.transformedSize(placement.getWidth(), placement.getHeight(), placement.getLength(), steps);
         try {
-            minimum(anchor, PlacementTransform.anchorOffset(size[0], size[1], size[2], planned));
-        } catch (IllegalArgumentException e) {
+            minimum(anchor, PlacementTransform.transformOrigin(placement.getSchematic().getOrigin(),
+                placement.getWidth(), placement.getHeight(), placement.getLength(), steps).coordinates());
+        } catch (IllegalArgumentException | ArithmeticException e) {
             message("schematica.ui.placement.bounds");
             return;
         }

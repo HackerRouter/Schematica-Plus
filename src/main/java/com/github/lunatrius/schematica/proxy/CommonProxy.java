@@ -206,17 +206,17 @@ public abstract class CommonProxy {
 
     public boolean saveSchematic(EntityPlayer player, File directory, String filename, World world, Vector3i from,
         Vector3i to) {
-        return saveSchematic(player, directory, filename, world, from, to, java.util.Collections.emptyList());
+        return saveSchematic(player, directory, filename, world, from, to, java.util.Collections.emptyList(), com.github.lunatrius.schematica.api.SchematicOrigin.ZERO);
     }
 
     public boolean saveSchematic(EntityPlayer player, File directory, String filename, World world,
         com.github.lunatrius.schematica.world.storage.RegionSelection selection) {
         return saveSchematic(player, directory, filename, world,
-            new Vector3i(selection.minX, selection.minY, selection.minZ), new Vector3i(selection.maxX, selection.maxY, selection.maxZ), selection.localRegions);
+            new Vector3i(selection.minX, selection.minY, selection.minZ), new Vector3i(selection.maxX, selection.maxY, selection.maxZ), selection.localRegions, selection.localOrigin);
     }
 
     private boolean saveSchematic(EntityPlayer player, File directory, String filename, World world, Vector3i from,
-        Vector3i to, java.util.List<com.github.lunatrius.schematica.api.SchematicRegion> regions) {
+        Vector3i to, java.util.List<com.github.lunatrius.schematica.api.SchematicRegion> regions, com.github.lunatrius.schematica.api.SchematicOrigin origin) {
         synchronized (QueueTickHandler.INSTANCE) {
         try {
             if (!QueueTickHandler.INSTANCE.canQueue(player)) {
@@ -249,6 +249,7 @@ public abstract class CommonProxy {
 
             final Schematic schematic = new Schematic(SchematicUtil.getIconFromName(iconName), width, height, length);
             schematic.setRegions(regions);
+            schematic.setOrigin(origin);
             final SchematicContainer container = new SchematicContainer(
                 schematic,
                 player,

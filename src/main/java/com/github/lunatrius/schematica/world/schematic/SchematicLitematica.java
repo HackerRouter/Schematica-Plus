@@ -127,6 +127,8 @@ public class SchematicLitematica extends SchematicFormat {
                 Math.subtractExact(box.maxZ, globalMinZ)));
         }
         schematic.setRegions(localBounds);
+        schematic.setOrigin(new com.github.lunatrius.schematica.api.SchematicOrigin(
+            Math.negateExact(globalMinX), Math.negateExact(globalMinY), Math.negateExact(globalMinZ)));
         BlockStateTranslator translator = BlockStateTranslator.instance();
 
         for (RegionData rd : regionDataList) {

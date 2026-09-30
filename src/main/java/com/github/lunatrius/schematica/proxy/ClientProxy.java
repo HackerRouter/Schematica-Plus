@@ -154,31 +154,9 @@ public class ClientProxy extends CommonProxy {
     }
 
     public static void moveSchematicToPlayer(SchematicWorld schematic) {
-        if (schematic != null) {
-            Vector3i position = schematic.position;
-            position.x = (int) Math.floor(playerPosition.x);
-            position.y = (int) Math.floor(playerPosition.y) - 1;
-            position.z = (int) Math.floor(playerPosition.z);
-
-            switch (rotationRender) {
-                case 0:
-                    position.x -= schematic.getWidth();
-                    position.z += 1;
-                    break;
-                case 1:
-                    position.x -= schematic.getWidth();
-                    position.z -= schematic.getLength();
-                    break;
-                case 2:
-                    position.x += 1;
-                    position.z -= schematic.getLength();
-                    break;
-                case 3:
-                    position.x += 1;
-                    position.z += 1;
-                    break;
-            }
-        }
+        net.minecraft.entity.player.EntityPlayer player = Minecraft.getMinecraft().thePlayer;
+        if (schematic != null && player != null) schematic.moveOriginTo((int) Math.floor(player.posX),
+            (int) Math.floor(player.posY - player.yOffset), (int) Math.floor(player.posZ));
     }
 
     public static void moveSchematic(SchematicWorld schematic, Integer x, Integer y, Integer z) {
@@ -218,6 +196,7 @@ public class ClientProxy extends CommonProxy {
         public List<String> transforms;
         public Boolean visible, entities, blockNBT, sourceOnly, layerMode;
         public Integer layer;
+        public int[] origin;
 
         LoadedSchematicEntry() {}
     }
@@ -583,6 +562,7 @@ public class ClientProxy extends CommonProxy {
                 entry.X = sw.position.x;
                 entry.Y = sw.position.y;
                 entry.Z = sw.position.z;
+                entry.origin = sw.originPosition().coordinates();
                 entry.RotationX = sw.rotationStateX;
                 entry.RotationY = sw.rotationStateY;
                 entry.RotationZ = sw.rotationStateZ;
@@ -644,7 +624,6 @@ public class ClientProxy extends CommonProxy {
                     SchematicWorld world = SCHEMATICS.create(source, (data, previous) -> {
                         SchematicWorld restored = instantiate(source, data);
                         if (entry.displayName != null && !entry.displayName.trim().isEmpty()) restored.name = entry.displayName;
-                        restored.position.set(entry.X, entry.Y, entry.Z);
                         List<String> operations = entry.transforms;
                         if (operations == null) {
                             operations = new ArrayList<>();
@@ -655,6 +634,9 @@ public class ClientProxy extends CommonProxy {
                             }
                         }
                         PlacementState.applyTransforms(restored, operations);
+                        com.github.lunatrius.schematica.api.SchematicOrigin minimum = restored.getSchematic().getOrigin()
+                            .restoredMinimum(entry.X, entry.Y, entry.Z, entry.origin);
+                        restored.position.set(minimum.x, minimum.y, minimum.z);
                         if (entry.visible != null) restored.isRendering = entry.visible;
                         if (entry.entities != null) restored.isRenderingEntities = entry.entities;
                         if (entry.blockNBT != null) restored.isPastingBlockNBT = entry.blockNBT;

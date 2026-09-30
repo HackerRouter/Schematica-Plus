@@ -32,6 +32,10 @@ public class Schematic implements ISchematic {
     private final int length;
     private List<SchematicRegion> regions = java.util.Collections.emptyList();
     private java.util.BitSet mask;
+    private com.github.lunatrius.schematica.api.SchematicOrigin origin = com.github.lunatrius.schematica.api.SchematicOrigin.ZERO;
+
+    @Override public com.github.lunatrius.schematica.api.SchematicOrigin getOrigin() { return origin; }
+    public void setOrigin(com.github.lunatrius.schematica.api.SchematicOrigin origin) { this.origin = java.util.Objects.requireNonNull(origin); }
 
     @Override public List<SchematicRegion> getRegions() { return regions; }
 

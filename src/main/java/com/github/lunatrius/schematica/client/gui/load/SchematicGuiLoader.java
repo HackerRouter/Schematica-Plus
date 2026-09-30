@@ -48,7 +48,6 @@ public final class SchematicGuiLoader {
             } else if (coord == null) {
                 moveToLookTarget(minecraft, schematic);
             } else {
-                ClientProxy.moveSchematic(schematic, coord.posX, coord.posY, coord.posZ);
                 ForgeDirection[] axes = {ForgeDirection.EAST, ForgeDirection.UP, ForgeDirection.SOUTH};
                 int[] rotations = {coord.rotX, coord.rotY, coord.rotZ};
                 int[] flips = {coord.flipX, coord.flipY, coord.flipZ};
@@ -58,6 +57,7 @@ public final class SchematicGuiLoader {
                 for (int axis = 0; axis < axes.length; axis++) {
                     if (Math.floorMod(flips[axis], 2) != 0) schematic.flip(axes[axis]);
                 }
+                ClientProxy.moveSchematic(schematic, coord.posX, coord.posY, coord.posZ);
             }
             ClientProxy.selectSchematic(schematic);
             SchematicPrinter.INSTANCE.refresh();
@@ -78,7 +78,7 @@ public final class SchematicGuiLoader {
         Vec3 end = eye.addVector(look.xCoord * 256, look.yCoord * 256, look.zCoord * 256);
         MovingObjectPosition target = player.worldObj.rayTraceBlocks(eye, end);
         if (target != null && target.typeOfHit == MovingObjectPosition.MovingObjectType.BLOCK) {
-            schematic.position.set(target.blockX, target.blockY + 1, target.blockZ);
+            schematic.moveOriginTo(target.blockX, target.blockY + 1, target.blockZ);
         } else {
             ClientProxy.moveSchematicToPlayer(schematic);
         }

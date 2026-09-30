@@ -46,12 +46,19 @@ public final class AreaSelectionLibrary {
             if (box == source.selectedBox) area.selectedBox = copy;
         }
         area.guide = source.guide;
+        area.manualOrigin = source.manualOrigin();
+        area.originSelected = source.originSelected;
         area.extra = copyJson(source.extra);
         areas.add(area);
         return area;
     }
 
     public Area createFromRegions(String name, List<com.github.lunatrius.schematica.api.SchematicRegion> regions) {
+        return createFromRegions(name, regions, null);
+    }
+
+    public Area createFromRegions(String name, List<com.github.lunatrius.schematica.api.SchematicRegion> regions, Vector3i origin) {
+        if (origin != null) checkPoint(origin);
         if (areas.size() >= 4096 || regions.isEmpty() || regions.size() > 256) throw new IllegalArgumentException("Invalid selection size");
         Area area = new Area(UUID.randomUUID().toString(), uniqueName(name, null));
         for (com.github.lunatrius.schematica.api.SchematicRegion region : regions) {
@@ -61,6 +68,7 @@ public final class AreaSelectionLibrary {
             area.boxes.add(new Box(uniqueBoxName(area, region.name, null), first, second));
         }
         area.selectedBox = area.boxes.get(0);
+        area.manualOrigin = origin == null ? null : origin.clone();
         areas.add(area);
         return area;
     }
@@ -89,6 +97,7 @@ public final class AreaSelectionLibrary {
         Box box = new Box(checked, first, second);
         area.boxes.add(box);
         area.selectedBox = box;
+        area.originSelected = false;
         return box;
     }
 
@@ -96,6 +105,7 @@ public final class AreaSelectionLibrary {
         require(area);
         if (box != null) requireBox(area, box);
         area.selectedBox = box;
+        area.originSelected = false;
     }
 
     public void removeBox(Area area, Box box) {
@@ -117,6 +127,25 @@ public final class AreaSelectionLibrary {
         requireBox(area, box);
         checkPoint(first); checkPoint(second);
         box.first.set(first); box.second.set(second);
+    }
+
+    public void setOrigin(Area area, Vector3i origin) {
+        require(area);
+        if (origin != null) checkPoint(origin);
+        area.manualOrigin = origin == null ? null : origin.clone();
+        if (origin == null) area.originSelected = false;
+    }
+
+    public void selectOrigin(Area area, boolean selected) {
+        require(area);
+        if (selected && area.manualOrigin == null) throw new IllegalArgumentException("Manual origin is disabled");
+        area.originSelected = selected;
+    }
+
+    public void setTargetPoint(Area area, boolean first, Vector3i point) {
+        require(area);
+        if (area.originSelected) setOrigin(area, point);
+        else setPoints(area, first ? point : area.first(), first ? area.second() : point);
     }
 
     private void requireBox(Area area, Box box) {
@@ -160,7 +189,7 @@ public final class AreaSelectionLibrary {
 
     public JsonObject toJson() {
         JsonObject data = copyJson(extra);
-        data.addProperty("version", 3);
+        data.addProperty("version", 4);
         data.add("selected", selected == null ? JsonNull.INSTANCE : new com.google.gson.JsonPrimitive(selected.id));
         JsonArray entries = new JsonArray();
         for (Area area : areas) {
@@ -179,6 +208,12 @@ public final class AreaSelectionLibrary {
             entry.add("selectedBox", area.selectedBox == null ? JsonNull.INSTANCE : new com.google.gson.JsonPrimitive(area.selectedBox.name));
             for (String key : new String[] {"boxName", "ax", "ay", "az", "bx", "by", "bz"}) entry.remove(key);
             entry.addProperty("renderingGuide", area.guide);
+            JsonObject origin = new JsonObject();
+            if (area.manualOrigin != null) {
+                origin.addProperty("x", area.manualOrigin.x); origin.addProperty("y", area.manualOrigin.y); origin.addProperty("z", area.manualOrigin.z);
+            }
+            entry.add("origin", area.manualOrigin == null ? JsonNull.INSTANCE : origin);
+            entry.addProperty("originSelected", area.originSelected);
             entries.add(entry);
         }
         data.add("selections", entries);
@@ -203,7 +238,7 @@ public final class AreaSelectionLibrary {
             return library;
         }
         int version = integer(data, "version");
-        if (version != 2 && version != 3) throw new IllegalArgumentException("Unsupported selection library version");
+        if (version != 2 && version != 3 && version != 4) throw new IllegalArgumentException("Unsupported selection library version");
         for (JsonElement element : data.getAsJsonArray("selections")) {
             JsonObject entry = element.getAsJsonObject();
             String id = UUID.fromString(entry.get("id").getAsString()).toString();
@@ -228,6 +263,13 @@ public final class AreaSelectionLibrary {
                     for (Box box : checked.boxes) if (box.name.equals(selectedBox.getAsString())) checked.selectedBox = box;
                     if (checked.selectedBox == null) throw new IllegalArgumentException("Unknown selected subregion");
                 }
+            }
+            if (version >= 4) {
+                JsonElement origin = entry.get("origin");
+                if (origin == null) throw new IllegalArgumentException("Missing origin state");
+                if (!origin.isJsonNull()) library.setOrigin(checked, point(origin.getAsJsonObject(), ""));
+                if (!entry.get("originSelected").getAsJsonPrimitive().isBoolean()) throw new IllegalArgumentException("Invalid origin selection flag");
+                library.selectOrigin(checked, entry.get("originSelected").getAsBoolean());
             }
             checked.id = id;
             checked.guide = guide(entry);
@@ -263,6 +305,8 @@ public final class AreaSelectionLibrary {
         private final List<Box> boxes = new ArrayList<>();
         private Box selectedBox;
         private boolean guide = true;
+        private Vector3i manualOrigin;
+        private boolean originSelected;
         private JsonObject extra = new JsonObject();
 
         private Area(String id, String name) { this.id = id; this.name = name; }
@@ -274,6 +318,24 @@ public final class AreaSelectionLibrary {
         public Vector3i first() { return selectedBox == null ? new Vector3i() : selectedBox.first(); }
         public Vector3i second() { return selectedBox == null ? new Vector3i() : selectedBox.second(); }
         public boolean guide() { return guide; }
+        public Vector3i manualOrigin() { return manualOrigin == null ? null : manualOrigin.clone(); }
+        public boolean originSelected() { return originSelected; }
+        public Vector3i origin() {
+            if (manualOrigin != null) return manualOrigin.clone();
+            if (boxes.isEmpty()) return new Vector3i();
+            Vector3i min = boxes.get(0).first();
+            for (Box box : boxes) {
+                min.x = Math.min(min.x, Math.min(box.first.x, box.second.x));
+                min.y = Math.min(min.y, Math.min(box.first.y, box.second.y));
+                min.z = Math.min(min.z, Math.min(box.first.z, box.second.z));
+            }
+            return min;
+        }
+        public com.github.lunatrius.schematica.world.storage.RegionSelection snapshot() {
+            Vector3i point = origin();
+            return new com.github.lunatrius.schematica.world.storage.RegionSelection(regions(),
+                new com.github.lunatrius.schematica.api.SchematicOrigin(point.x, point.y, point.z));
+        }
         public List<com.github.lunatrius.schematica.api.SchematicRegion> regions() {
             List<com.github.lunatrius.schematica.api.SchematicRegion> result = new ArrayList<>();
             for (Box box : boxes) result.add(new com.github.lunatrius.schematica.api.SchematicRegion(box.name,
