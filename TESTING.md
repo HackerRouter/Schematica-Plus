@@ -35,6 +35,10 @@ Before a release, use a disposable 1.7.10 world to check:
   repeated chunk does not duplicate entities. Interrupt/reconnect during download.
 - Start a queued save, change the save-dialog NBT/entity options, and verify the
   queued save uses its original options.
+- Save adjacent mod blocks with different ID high bytes in both formats. Load
+  them after changing the format preference and verify names and metadata. Import
+  a WorldEdit schematic, including one with an odd block count. Check old files
+  made with reversed nibbles against their saved name mappings.
 
 Session keys now use save-folder/server-address plus dimension. Legacy entries
 keyed only by display name remain in the JSON files but are not automatically

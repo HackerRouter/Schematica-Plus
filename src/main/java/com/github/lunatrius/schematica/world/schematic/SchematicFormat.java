@@ -62,6 +62,9 @@ public abstract class SchematicFormat {
 
             // Standard .schematic format path
             final NBTTagCompound tagCompound = SchematicUtil.readTagCompoundFromFile(file);
+            if (fileName.endsWith(".schemplus") && !tagCompound.hasKey(SchematicBlockIds.ENCODING)) {
+                tagCompound.setString(SchematicBlockIds.ENCODING, SchematicBlockIds.EXTENDED);
+            }
             final String format = tagCompound.getString(Names.NBT.MATERIALS);
             final SchematicFormat schematicFormat = FORMATS.get(format);
 
@@ -95,7 +98,12 @@ public abstract class SchematicFormat {
 
             NBTTagCompound tagCompound = new NBTTagCompound();
 
-            if (!FORMATS.get(FORMAT_DEFAULT).writeToNBT(tagCompound, schematic, backupWorld, includeNBT, includeEntities)) return false;
+            SchematicFormat format = FORMATS.get(FORMAT_DEFAULT);
+            boolean written = format instanceof SchematicAlpha
+                ? ((SchematicAlpha) format).writeToNBT(tagCompound, schematic, backupWorld, includeNBT, includeEntities,
+                    file.getName().toLowerCase(java.util.Locale.ROOT).endsWith(".schemplus"))
+                : format.writeToNBT(tagCompound, schematic, backupWorld, includeNBT, includeEntities);
+            if (!written) return false;
 
             // Use CompressedStreamTools.writeCompressed which writes using the new NBT
             // format (func_152446_a). This matches what readCompressed (func_152456_a)
