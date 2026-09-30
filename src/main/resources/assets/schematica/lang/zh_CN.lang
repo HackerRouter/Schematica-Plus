@@ -306,3 +306,8 @@ schematica.ui.layers.cycle=左键/右键在 X、Y、Z 轴间切换。
 schematica.ui.layers.coordinate=世界绝对坐标。按回车或离开输入框时应用。
 schematica.ui.layers.here=使用摄像机在所选轴上的位置；范围模式会同时设置两个边界。
 schematica.ui.layers.adjust=左键 +1，右键 -1。\nShift ×16，Ctrl ×64，同时按下 ×1024。
+
+schematica.ui.color.hex=输入 #AARRGGBB 或 #RRGGBB；AA 为不透明度（00-FF）。非法输入保留上一个有效颜色。
+schematica.ui.color.component=范围：0-%s。按回车或离开输入框时应用。
+schematica.ui.color.pending=对应功能尚未移植，此颜色设置暂不可用。
+schematica.ui.color.metadata=1.7.10 中此项比较方块 metadata，不比较方块实体 NBT。

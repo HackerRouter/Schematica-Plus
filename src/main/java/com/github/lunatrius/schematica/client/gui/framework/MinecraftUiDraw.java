@@ -52,6 +52,57 @@ public final class MinecraftUiDraw implements UiDraw, AutoCloseable {
         if (!bounds.isEmpty()) Gui.drawRect(bounds.x, bounds.y, bounds.right(), bounds.bottom(), color);
     }
 
+    @Override
+    public void colorGrid(UiBounds bounds, int columns, int rows, int[] colors) {
+        if (columns < 1 || rows < 1 || colors.length != (columns + 1) * (rows + 1)) {
+            throw new IllegalArgumentException("Invalid color grid");
+        }
+        if (bounds.isEmpty()) return;
+        GL11.glPushAttrib(GL11.GL_ALL_ATTRIB_BITS);
+        try {
+            GL11.glDisable(GL11.GL_TEXTURE_2D);
+            GL11.glDisable(GL11.GL_ALPHA_TEST);
+            GL11.glEnable(GL11.GL_BLEND);
+            GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
+            GL11.glShadeModel(GL11.GL_SMOOTH);
+            Tessellator tessellator = Tessellator.instance;
+            tessellator.startDrawingQuads();
+            for (int y = 0; y < rows; y++) for (int x = 0; x < columns; x++) {
+                double left = bounds.x + (double) bounds.width * x / columns;
+                double right = bounds.x + (double) bounds.width * (x + 1) / columns;
+                double top = bounds.y + (double) bounds.height * y / rows;
+                double bottom = bounds.y + (double) bounds.height * (y + 1) / rows;
+                int i = y * (columns + 1) + x;
+                colorVertex(tessellator, left, top, colors[i]);
+                colorVertex(tessellator, left, bottom, colors[i + columns + 1]);
+                colorVertex(tessellator, right, bottom, colors[i + columns + 2]);
+                colorVertex(tessellator, right, top, colors[i + 1]);
+            }
+            tessellator.draw();
+        } finally { GL11.glPopAttrib(); }
+    }
+
+    private static void colorVertex(Tessellator tessellator, double x, double y, int color) {
+        tessellator.setColorRGBA_I(color & 0xFFFFFF, color >>> 24);
+        tessellator.addVertex(x, y, 0);
+    }
+
+    @Override
+    public void triangle(float x1, float y1, float x2, float y2, float x3, float y3, int color) {
+        GL11.glPushAttrib(GL11.GL_ALL_ATTRIB_BITS);
+        try {
+            GL11.glDisable(GL11.GL_TEXTURE_2D);
+            GL11.glEnable(GL11.GL_BLEND);
+            GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
+            Tessellator tessellator = Tessellator.instance;
+            tessellator.startDrawing(GL11.GL_TRIANGLES);
+            colorVertex(tessellator, x1, y1, color);
+            colorVertex(tessellator, x2, y2, color);
+            colorVertex(tessellator, x3, y3, color);
+            tessellator.draw();
+        } finally { GL11.glPopAttrib(); }
+    }
+
     private void prepareTextured() {
         GL11.glEnable(GL11.GL_TEXTURE_2D);
         GL11.glEnable(GL11.GL_BLEND);

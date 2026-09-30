@@ -116,6 +116,8 @@ public class UiControlsTest {
 
         @Override public void texture(String texture, UiBounds destination, int u, int v, int sw, int sh, int tw, int th) {}
         @Override public void fill(UiBounds bounds, int color) {}
+        @Override public void colorGrid(UiBounds bounds, int columns, int rows, int[] colors) {}
+        @Override public void triangle(float x1, float y1, float x2, float y2, float x3, float y3, int color) {}
         @Override public void text(String text, int x, int y, int color) { strings.add(text); }
         @Override public int textWidth(String text) { return text.length() * 6; }
         @Override public String trim(String text, int width) { return text.substring(0, Math.min(text.length(), Math.max(0, width / 6))); }

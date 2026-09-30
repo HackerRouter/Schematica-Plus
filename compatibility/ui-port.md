@@ -238,7 +238,8 @@ Escape first closes the string-list dialog or hides search; Shift+Escape bypasse
 search dismissal. Ordinary text typing outside an editor opens search.
 
 At phase 5, Colors, Render Layers and advanced key settings retained their upstream locations
-with disabled controls and explanatory tooltips. That stage did not yet
+with disabled controls and explanatory tooltips. Phases 7 and 8 below enable Render
+Layers and Colors. That stage did not yet
 provide Litematica's color options, global render-layer model, key chords or trigger
 settings. No cross-mod config switcher is shown: there is no MaLiLib config registry
 in this 1.7.10 port. This phase ports the config presentation and existing Plus
@@ -349,3 +350,57 @@ or saving/leaving the current world session persists changes. No extra MaLiLib
 runtime is required. Automated checks cover axes, inclusive bounds, clipping,
 legacy intersection, overflow, hotkey endpoint selection and persistence isolation.
 Native layout and GTNH render checks remain manual in TESTING.md.
+
+
+## Phase 8: colors and HSV editor
+
+Configuration > Colors now follows the upstream list of 11 color options in source
+order. Each row has the 100-pixel option area, a hex field, the original 18x18 color
+indicator and Reset. All-tab search also includes these options. The indicator uses
+an opaque RGB preview inside white/black borders, as WidgetColorIndicator does;
+alpha is edited numerically or in the picker. The internal controls keep keyboard
+focus visible. Unavailable features retain their rows with disabled editors and
+explanatory tooltips.
+
+Clicking a color opens the 300x180 MaLiLib GuiColorEditorHSV dialog centered over the
+configuration page. The layout retains the 102x102 square at (+6,+24), 16-pixel
+vertical hue strip, H/S/V/R/G/B/A rows starting at (+148,+24), 90x12 sliders,
+32x12 numeric fields and the hex field at (+160,+151). The square uses horizontal
+value and reversed vertical saturation, matching this upstream version. The lower
+left 32x32 preview is opaque like upstream. Escape closes the dialog and retains
+its valid edits in the configuration draft; closing Configuration applies/saves
+valid drafts and refreshes schematic display lists. Tab, arrow keys and captured
+mouse drags work inside the dialog. Clicking outside does not dismiss it.
+
+A batched vertex-color grid replaces the modern texture/render-pipeline code.
+The hue strips use six segments; the square uses one strip per row, interpolating
+RGB at the current hue. No dynamic textures, frame-by-frame texture allocations,
+new image assets or MaLiLib runtime are needed. The drawing adapter scopes blend,
+alpha test and shade-model state, with the surrounding widget's scissor intact.
+Native Minecraft 1.7.10 font and text-field rendering still apply.
+
+Hex input accepts RRGGBB or AARRGGBB with optional # or 0x; six digits are opaque,
+eight digits start with alpha. Applied edits are written as #AARRGGBB. Incomplete or
+invalid input never overwrites the last valid color. The outer config row remains
+marked invalid until repaired/reset; inside the picker a bad hex draft stays red
+and the last valid picker result is retained on closing. Component fields apply on
+Enter/focus loss and clamp H to 0..360, S/V to 0..100 and RGBA to 0..255. HSV edits
+preserve the chosen hue at black, and alpha-only edits do not change RGB/HSV.
+
+Five options are active: areaSelectionBoxSideColor, schematicOverlayColorExtra,
+schematicOverlayColorMissing, schematicOverlayColorWrongBlock and
+schematicOverlayColorWrongState. Their initial/default values now match Litematica
+(#30FFFFFF, #4CFF4CE6, #2C33B3E6, #4CFF3333 and #4CFF9010 respectively), replacing
+previous hard-coded overlay colors. Selection edges/endpoints keep their existing
+colors. The overlay colors affect both the existing face and outline buffers;
+Wrong State compares metadata, not tile entity NBT. Existing highlight/face/line
+visibility switches still apply.
+
+Inventory highlight, material HUD, the three rebuild selection overlays and
+pre-defined equivalent-block highlighting are pending. Their color rows remain
+unavailable; no unrelated existing renderer is presented as those features. The
+Forge config stores colors in its colors category, preserving malformed on-disk
+values for repair while using defaults at runtime. Automated checks cover ARGB
+parsing/channels, 10,000 RGB/HSV round trips, alpha retention, validation/reset,
+Forge persistence, drag capture and keyboard adjustment. In-game appearance and
+resource-pack interactions remain manual checks.

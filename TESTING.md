@@ -237,8 +237,8 @@ once to establish the new keys. Ordered transforms apply to newly saved sessions
   in a world. Done/Escape must return to the correct parent. Compare English and
   Chinese tabs, search positions, rows, reset buttons and numeric-toggle icons with
   the supplied upstream. Resize at GUI scales 1/2/3; narrow layouts must wrap tabs
-  without hiding reachable controls. Colors/advanced key settings remain unavailable and explain why.
-  Render Layers is enabled in phase 7 below.
+  without hiding reachable controls. Advanced key settings remain unavailable and explain why.
+  Render Layers and Colors are enabled in phases 7 and 8 below.
 - Edit a boolean, printer delay, alpha, directory and tool item. Change tabs, search,
   scroll offscreen and resize while editing; drafts must survive. Done must persist
   changes across restarting the game. Render changes must rebuild previews. Local
@@ -338,3 +338,37 @@ once to establish the new keys. Ordered transforms apply to newly saved sessions
   mode reset. With a backed-up deliberately malformed settings file, saving must
   log a failure and preserve it; restoration must fall back to All. Restore the
   backup after testing. These checks have not been run in a live game by the agent.
+
+
+## Phase 8: colors and HSV editor (native checks)
+
+- Open M > Configuration > Colors and the Forge mod-list Config entry. Compare
+  English/Chinese list order, 100-pixel option area, 18x18 indicators and Reset
+  positions with upstream. Search in Colors/All; scroll and resize with a color
+  draft in progress. The six pending-feature rows must be disabled with tooltips.
+- Click a supported swatch. Compare the centered 300x180 dialog, square, vertical
+  hue strip, seven component rows, hex field, current-color preview and markers.
+  Test GUI scales 1/2/3 and supported resource packs. Mouse capture must clamp at
+  edges and stop on release; keyboard Tab/arrows must stay inside the dialog.
+  Escape closes the dialog, a second Escape leaves Configuration and saves.
+- Edit H/S/V and R/G/B, alpha 0/1/128/255, black and grayscale. HSV hue must survive
+  setting V=0, editing alpha and restoring brightness. Verify vertical hue runs in
+  the upstream direction, square left is black, top-right is the selected saturated
+  hue and bottom-right is white. Swatches/previews are intentionally opaque like
+  upstream; use the A bar/value to inspect opacity.
+- Test #AARRGGBB, #RRGGBB, lowercase, 0x-prefixed input, empty and partial values,
+  invalid letters and overlong values. Invalid drafts must not replace a valid
+  color. Check Enter/focus loss on numeric components, Reset and reopening. A bad
+  picker hex draft retains its last valid result when closed. A bad outer-row draft
+  stays invalid and is not saved. Test a backed-up config containing an invalid
+  color; runtime uses its default and the row allows repair without erasing the
+  invalid persisted text automatically.
+- Place missing, extra, wrong-ID and wrong-metadata blocks inside a schematic.
+  Give each category an unmistakable color and alpha, close Configuration, and
+  verify faces/lines after bounded display-list rebuilds. Metadata matching does
+  not verify tile NBT. Test highlight, highlightAir, drawQuads and drawLines switches.
+  Change areaSelectionBoxSideColor and check selection faces; edges/point colors
+  remain as before. Defaults must match the documented Litematica palette.
+- Open item/material screens after closing the picker, then return to the world.
+  Check blend, lighting, alpha test, shade model and clipping for leaked GL state.
+  No live-game visual validation has been performed by the agent.

@@ -306,3 +306,8 @@ schematica.ui.layers.cycle=Left/right click cycles X, Y and Z.
 schematica.ui.layers.coordinate=Absolute world coordinate. Enter or leaving the field applies the value.
 schematica.ui.layers.here=Set to the camera position on the selected axis. Range mode sets both boundaries.
 schematica.ui.layers.adjust=Left click +1; right click -1.\nShift x16; Ctrl x64; both x1024.
+
+schematica.ui.color.hex=Enter #AARRGGBB or #RRGGBB. AA is opacity (00-FF). Invalid text keeps the last valid color.
+schematica.ui.color.component=Value: 0-%s. Enter or leaving the field applies the value.
+schematica.ui.color.pending=This feature has not been ported yet; its color setting is unavailable.
+schematica.ui.color.metadata=In 1.7.10 this compares block metadata, not tile entity NBT.

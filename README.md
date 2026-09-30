@@ -134,5 +134,8 @@ search, per-option reset and native single-key bindings. Render Layers now provi
 All, Single Layer, Layer Range, All Below and All Above on X/Y/Z in world coordinates,
 with per-world/dimension persistence. It filters previews, the printer and material
 render-layer counts; Paste still uses the whole placement. Legacy local Y layers
-intersect the global range. Colors and advanced key combinations are still pending. See [UI port status](compatibility/ui-port.md)
+intersect the global range. Colors now includes the MaLiLib HSV/RGBA editor, hex
+fields and reset, with upstream defaults for selection faces and the four existing
+block overlay categories. Color options for pending features remain disabled.
+Advanced key combinations are still pending. See [UI port status](compatibility/ui-port.md)
 and [manual checks](TESTING.md).

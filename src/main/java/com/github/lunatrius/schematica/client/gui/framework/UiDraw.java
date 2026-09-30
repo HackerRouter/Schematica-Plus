@@ -6,6 +6,10 @@ public interface UiDraw {
 
     void fill(UiBounds bounds, int color);
 
+    void colorGrid(UiBounds bounds, int columns, int rows, int[] colors);
+
+    void triangle(float x1, float y1, float x2, float y2, float x3, float y3, int color);
+
     void text(String text, int x, int y, int color);
 
     int textWidth(String text);

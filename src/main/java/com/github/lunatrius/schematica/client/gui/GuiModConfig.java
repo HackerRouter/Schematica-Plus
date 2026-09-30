@@ -18,6 +18,9 @@ import net.minecraftforge.common.config.Property;
 import org.lwjgl.input.Keyboard;
 
 import com.github.lunatrius.schematica.client.gui.config.ConfigPropertyDraft;
+import com.github.lunatrius.schematica.client.gui.config.ColorPickerPanel;
+import com.github.lunatrius.schematica.handler.RenderColors;
+import com.github.lunatrius.schematica.util.ColorValue;
 import com.github.lunatrius.schematica.client.gui.config.RenderLayerPanel;
 import com.github.lunatrius.schematica.client.world.RenderLayerSettings;
 import com.github.lunatrius.schematica.handler.client.WorldHandler;
@@ -96,7 +99,6 @@ public class GuiModConfig extends UiScreen {
         for (Tab value : Tab.values()) {
             UiButton button = addButton(value.key, () -> changeTab(value));
             tabs.put(value, button);
-            if (value == Tab.COLORS) unavailable(button);
         }
         searchButton = root.add(new UiButton(() -> "", button -> {
             searchOpen = !searchOpen;
@@ -139,6 +141,7 @@ public class GuiModConfig extends UiScreen {
                 && (entry.key == null || entry.key.getKeyCode() != keyFilter)) continue;
             visible.add(entry);
         }
+        if (tab == Tab.COLORS) visible.sort(Comparator.comparingInt(entry -> entry.color.ordinal()));
         model.setEntries(visible);
         model.setQuery(searchOpen && search != null ? search.text() : "");
         labelWidth = 0;
@@ -157,7 +160,7 @@ public class GuiModConfig extends UiScreen {
             int w = fontRendererObj.getStringWidth(button.label()) + 10;
             if (x > 10 && x + w > width - 10) { x = 10; y += 22; }
             button.setBounds(x, y, w, 20);
-            button.setEnabled(value != tab && value != Tab.COLORS);
+            button.setEnabled(value != tab);
             x += w + 2;
         }
         boolean renderingLayers = tab == Tab.RENDER_LAYERS;
@@ -261,7 +264,7 @@ public class GuiModConfig extends UiScreen {
 
     private String statusText() {
         int invalid = 0;
-        for (Entry entry : entries) if (entry.draft != null && !entry.draft.valid()) invalid++;
+        for (Entry entry : entries) if (entry.available() && entry.draft != null && !entry.draft.valid()) invalid++;
         return invalid == 0 ? "" : I18n.format("schematica.ui.config.invalid_count", invalid);
     }
 
@@ -272,7 +275,7 @@ public class GuiModConfig extends UiScreen {
         boolean changed = false;
         boolean restart = false;
         for (Entry entry : entries) {
-            if (entry.draft != null && entry.draft.apply()) {
+            if (entry.available() && entry.draft != null && entry.draft.apply()) {
                 changed = true;
                 restart |= entry.draft.property.requiresMcRestart();
             }
@@ -297,10 +300,12 @@ public class GuiModConfig extends UiScreen {
         final String category;
         final ConfigPropertyDraft draft;
         final KeyBinding key;
+        final RenderColors color;
 
         Entry(String category, Property property) {
             this.category = category;
-            draft = new ConfigPropertyDraft(property);
+            color = RenderColors.find(category, property.getName());
+            draft = new ConfigPropertyDraft(property, color != null);
             key = null;
         }
 
@@ -308,6 +313,16 @@ public class GuiModConfig extends UiScreen {
             category = "hotkeys";
             draft = null;
             this.key = key;
+            color = null;
+        }
+
+        boolean available() { return color == null || color.available; }
+        int previewColor() {
+            try { return ColorValue.parse(draft.text()); }
+            catch (IllegalArgumentException ignored) {
+                try { return ColorValue.parse(draft.property.getString()); }
+                catch (IllegalArgumentException invalid) { return color.defaultColor; }
+            }
         }
 
         String name() { return key == null ? draft.property.getName() : key.getKeyDescription(); }
@@ -316,11 +331,18 @@ public class GuiModConfig extends UiScreen {
         boolean modified() { return key == null ? draft.modified() : key.getKeyCode() != key.getKeyCodeDefault(); }
         Tab tab() {
             if (key != null) return Tab.HOTKEYS;
+            if (color != null) return Tab.COLORS;
             if (Names.Config.Category.RENDER.equals(category)) return Tab.VISUALS;
             return Names.Config.Category.DEBUG.equals(category) ? Tab.INFO_OVERLAYS : Tab.GENERIC;
         }
         String description() {
             if (key != null) return I18n.format("schematica.ui.config.key_hint");
+            if (color != null) {
+                String description = I18n.format("litematica.config.colors.comment." + color.key).replace("\\n", "\n");
+                if (!color.available) description += "\n" + I18n.format("schematica.ui.color.pending");
+                else if (color == RenderColors.WRONG_STATE) description += "\n" + I18n.format("schematica.ui.color.metadata");
+                return description;
+            }
             String translated = I18n.format(draft.property.getLanguageKey() + ".tooltip");
             String description = translated.equals(draft.property.getLanguageKey() + ".tooltip")
                 ? draft.property.comment : translated;
@@ -338,10 +360,11 @@ public class GuiModConfig extends UiScreen {
         private UiWidget slider;
         private UiButton sliderToggle;
         private UiWidget keySettings;
+        private UiButton swatch;
 
         ConfigRow(Entry entry) {
             this.entry = entry;
-            label = add(new UiLabel(entry::label, 0xFFFFFFFF));
+            label = add(new UiLabel(entry::label, entry.available() ? 0xFFFFFFFF : 0xFF888888));
             label.setTooltip(entry.description().split("\n"));
             reset = add(new UiButton(() -> I18n.format("malilib.gui.button.reset.caps"), button -> reset()));
             reset.setTooltip(I18n.format("schematica.ui.config.reset"));
@@ -371,9 +394,28 @@ public class GuiModConfig extends UiScreen {
                     ? "malilib.gui.button.true" : "malilib.gui.button.false"),
                     button -> entry.draft.setText(Boolean.toString(!Boolean.parseBoolean(entry.draft.text())))));
             } else {
-                text = add(new UiTextField(fontRendererObj, 65535, entry.draft::setText));
+                text = add(new UiTextField(fontRendererObj, entry.color == null ? 65535 : 12, entry.draft::setText));
                 text.setText(entry.draft.text());
                 editor = text;
+                if (entry.color != null) {
+                    swatch = add(new UiButton(() -> "", button -> {
+                        ColorPickerPanel panel = new ColorPickerPanel(fontRendererObj, entry.previewColor(), color -> {
+                            entry.draft.setText(ColorValue.format(color));
+                            text.setText(entry.draft.text());
+                        });
+                        panel.layout(root.bounds());
+                        input.pushModal(panel);
+                    }) {
+                        @Override public void draw(UiDraw draw, int mouseX, int mouseY) {
+                            draw.fill(bounds(), isEnabled() ? 0xFFFFFFFF : 0xFF808080);
+                            draw.fill(bounds().inset(1), 0xFF000000);
+                            draw.fill(bounds().inset(2), entry.previewColor() | 0xFF000000);
+                            if (isFocused()) draw.border(bounds(), 0xFFFFFF00);
+                        }
+                    });
+                    swatch.setEnabled(entry.available());
+                    swatch.setTooltip(I18n.format(entry.available() ? "malilib.hover.color_indicator.open_color_editor" : "schematica.ui.color.pending"));
+                }
                 if (entry.draft.supportsSlider()) {
                     slider = add(new UiConfigSlider(entry.draft));
                     sliderToggle = add(new UiButton(() -> "", button -> {
@@ -384,6 +426,7 @@ public class GuiModConfig extends UiScreen {
                     sliderToggle.setTooltip(I18n.format("schematica.ui.config.slider"));
                 }
             }
+            editor.setEnabled(entry.available());
             tick();
         }
 
@@ -408,8 +451,9 @@ public class GuiModConfig extends UiScreen {
             label.setBounds(bounds().x, y + 5, nameWidth, 12);
             reset.setBounds(x + optionWidth + 2, y, resetWidth, 20);
             if (text != null) {
-                int fieldWidth = optionWidth - (sliderToggle == null ? 0 : 18);
+                int fieldWidth = optionWidth - (swatch != null ? 22 : sliderToggle == null ? 0 : 18);
                 text.setBounds(x + 2, y + 1, fieldWidth - 4, 17);
+                if (swatch != null) swatch.setBounds(x + fieldWidth + 2, y + 1, 18, 18);
                 if (sliderToggle != null) {
                     text.setVisible(!entry.draft.slider);
                     slider.setVisible(entry.draft.slider);
@@ -425,16 +469,17 @@ public class GuiModConfig extends UiScreen {
 
         @Override
         public void tick() {
-            reset.setEnabled(entry.modified());
-            if (text != null) text.setTooltip(entry.draft.valid() ? entry.description().split("\n")
-                : new String[] {I18n.format("schematica.ui.config.invalid", entry.draft.property.getMinValue(), entry.draft.property.getMaxValue())});
+            reset.setEnabled(entry.available() && entry.modified());
+            if (text != null) text.setTooltip(entry.draft.valid() || !entry.available() ? entry.description().split("\n")
+                : new String[] {entry.color != null ? I18n.format("schematica.ui.color.hex")
+                    : I18n.format("schematica.ui.config.invalid", entry.draft.property.getMinValue(), entry.draft.property.getMaxValue())});
             super.tick();
         }
 
         @Override
         public void draw(UiDraw draw, int mouseX, int mouseY) {
             super.draw(draw, mouseX, mouseY);
-            if (text != null && !entry.draft.valid()) draw.border(text.bounds(), 0xFFFF5555);
+            if (text != null && entry.available() && !entry.draft.valid()) draw.border(text.bounds(), 0xFFFF5555);
         }
     }
 }
