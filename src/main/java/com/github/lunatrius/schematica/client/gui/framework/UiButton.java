@@ -69,12 +69,21 @@ public class UiButton extends UiWidget {
                 isEnabled(), hovered);
             draw.text(draw.trim(label.get(), box.width - sprite.width - 12), box.x + sprite.width + 8,
                 box.y + (box.height - 8) / 2, color);
+            drawIconHighlight(draw, hovered);
             return;
         }
         String text = draw.trim(label.get(), box.width - (icon == null ? 8 : 21));
         if (icon != null) icon.draw(draw, box.x + 5, box.y + (box.height - 7) / 2, color);
         int x = icon == null ? box.x + (box.width - draw.textWidth(text)) / 2 : box.x + 17;
         draw.text(text, x, box.y + (box.height - 8) / 2, color);
+        drawIconHighlight(draw, hovered);
+    }
+
+    private void drawIconHighlight(UiDraw draw, boolean hovered) {
+        if (!background && isEnabled() && (hovered || isFocused())) {
+            draw.fill(bounds(), 0x20C0C0C0);
+            draw.border(bounds(), 0xE0FFFFFF);
+        }
     }
 
     @Override

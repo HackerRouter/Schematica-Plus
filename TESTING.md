@@ -705,3 +705,12 @@ These checks supersede Phase 12's Simple-editor and bounding-box expectations.
 - Simple: verify both corner checkboxes and coordinate inputs, manual-origin
   controls, Save/Analyze positions and the guide toggle with origin enabled.
   Escape returns to the parent menu. Native checks remain unexecuted by the agent.
+
+## Icon button hover feedback
+
+- Hover search, parent/root/new-directory, coordinate +/- and enclosing-box icons.
+  Enabled buttons show the MaLiLib light-gray overlay and white outline inside
+  their click area; moving away removes it. Tab focus provides the same cue.
+- Disabled buttons do not highlight. Cropped list icons and icons behind a modal
+  must not react outside the visible area. File/type icons and passive info icons
+  are unchanged. This visual change still requires an in-game check.
