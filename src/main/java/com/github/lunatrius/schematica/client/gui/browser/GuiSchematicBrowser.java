@@ -193,7 +193,7 @@ public abstract class GuiSchematicBrowser extends UiScreen {
                 try {
                     browser.delete(entry);
                     refreshFiles();
-                    setStatus(UiTranslations.format("schematica.ui.files.deleted", entry.name()));
+                    setStatus(UiTranslations.format("malilib.message.file_or_directory_deleted", entry.name()));
                 } catch (IOException e) {
                     setStatus(fileError(e));
                 }
@@ -273,9 +273,9 @@ public abstract class GuiSchematicBrowser extends UiScreen {
         message.setTooltip(status);
     }
 
-    protected final void fail(String key, Exception error) {
-        Reference.logger.error(UiTranslations.format(key), error);
-        setStatus(UiTranslations.format(key));
+    protected final void fail(String key, Exception error, Object... arguments) {
+        Reference.logger.error(UiTranslations.format(key, arguments), error);
+        setStatus(UiTranslations.format(key, arguments));
     }
 
     protected final SchematicBrowserModel.Entry selection() {

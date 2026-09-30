@@ -451,7 +451,7 @@ public class SchematicWorld extends World {
                     // 1.7.10 has no floor/ceiling direction for paintings and item frames.
                     net.minecraft.client.Minecraft mc = net.minecraft.client.Minecraft.getMinecraft();
                     if (mc != null && mc.thePlayer != null) mc.thePlayer.addChatMessage(
-                        new net.minecraft.util.ChatComponentText("Cannot rotate wall-mounted entities onto a floor or ceiling."));
+                        new net.minecraft.util.ChatComponentTranslation("schematica.message.transform.hanging_entities"));
                     return;
                 }
             }

@@ -1,8 +1,7 @@
 package com.github.lunatrius.schematica.handler.client;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.util.ChatComponentText;
-import net.minecraft.util.EnumChatFormatting;
+import net.minecraft.util.ChatComponentTranslation;
 
 import com.github.lunatrius.schematica.SchematicaPlus;
 import com.github.lunatrius.schematica.client.printer.SchematicPrinter;
@@ -66,9 +65,7 @@ public class TickHandler {
                             printer.setPrinting(false);
                             Reference.logger.info("Printer finished — all blocks placed.");
                             if (this.minecraft.thePlayer != null) {
-                                this.minecraft.thePlayer.addChatMessage(new ChatComponentText(
-                                    EnumChatFormatting.GREEN + "[Schematica] " +
-                                    EnumChatFormatting.RESET + "Printing complete. Printer stopped."));
+                                this.minecraft.thePlayer.addChatMessage(new ChatComponentTranslation("schematica.message.printer.finished"));
                             }
                         }
                     }

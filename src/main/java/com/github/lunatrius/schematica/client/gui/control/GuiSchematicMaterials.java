@@ -411,13 +411,14 @@ public class GuiSchematicMaterials extends UiScreen {
             ? MaterialListExport.Format.JSON
             : isShiftKeyDown() ? MaterialListExport.Format.CSV : MaterialListExport.Format.TXT;
         try {
-            String title = (area == null ? schematic.name : area.name()) + " (" + (renderLayers ? "render layers" : "all") + ")";
+            String title = (area == null ? schematic.name : area.name()) + " (" + UiTranslations.format(renderLayers
+                ? "litematica.gui.label.block_info_list_type.render_layers" : "litematica.gui.label.block_info_list_type.all") + ")";
             String text = MaterialListExport.format(materials, title, format, key -> {
                 NBTTagCompound tag = new NBTTagCompound();
                 key.stack().writeToNBT(tag);
                 return tag.toString();
-            });
-            if (area != null) text = MaterialListExport.withAnalysisStatus(text, format, unverified, skipped);
+            }, UiTranslations::format);
+            if (area != null) text = MaterialListExport.withAnalysisStatus(text, format, unverified, skipped, UiTranslations::format);
             Path path = MaterialListExport.write(SchematicaPlus.proxy.getDirectory("dumps").toPath(), format, text);
             notice = UiTranslations.format("litematica.message.material_list_written_to_file", path.getFileName().toString());
             mc.thePlayer.addChatMessage(new ChatComponentText(notice + "\n" + path.toAbsolutePath()));

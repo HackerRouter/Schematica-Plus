@@ -1,5 +1,7 @@
 package com.github.lunatrius.schematica.tool;
 
+import com.github.lunatrius.schematica.util.MessageException;
+
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.HashMap;
@@ -92,11 +94,10 @@ public final class WorldEditJob {
 
     public void validateCommandFallback() {
         if (pasteWithoutUpdates) {
-            throw new IllegalArgumentException("Pasting without block updates requires singleplayer. Minecraft 1.7.10 server commands cannot suppress updates.");
+            throw new MessageException("schematica.message.edit.updates_require_singleplayer");
         }
         if (!tiles.isEmpty() || !entities.isEmpty()) {
-            throw new IllegalArgumentException("1.7.10 chat commands cannot safely transfer schematic NBT. "
-                + "Use an integrated server, or disable block NBT and entities before pasting.");
+            throw new MessageException("schematica.message.edit.nbt_requires_singleplayer");
         }
         java.util.Set<Block> checked = new java.util.HashSet<>();
         for (int i = 0; i < (kind == Kind.PASTE ? volume : 1); i++) {
@@ -104,7 +105,7 @@ public final class WorldEditJob {
             if (block != null && checked.add(block)) {
                 String name = GameData.getBlockRegistry().getNameForObject(block);
                 if (name == null || blockCommand(-30000000, 255, -30000000, name, 15).length() > 100) {
-                    throw new IllegalArgumentException("Block name exceeds the 1.7.10 command length limit");
+                    throw new MessageException("schematica.message.edit.command_too_long");
                 }
             }
         }
@@ -179,7 +180,7 @@ public final class WorldEditJob {
                         tile = "savedMultipart".equals(tag.getString("id"))
                             ? ForgeMultipart.createFromNBT(tag, false) : TileEntity.createAndLoadEntity(tag);
                     } else tile = block.createTileEntity(world, meta);
-                    if (tile == null) throw new IllegalStateException("Cannot create tile entity at " + wx + "," + wy + "," + wz);
+                    if (tile == null) throw new MessageException("schematica.message.edit.tile_failed", wx, wy, wz);
                     tile.xCoord = wx; tile.yCoord = wy; tile.zCoord = wz;
                     if (silentPlacement != null) silentPlacement.setTile(world, tile);
                     else {

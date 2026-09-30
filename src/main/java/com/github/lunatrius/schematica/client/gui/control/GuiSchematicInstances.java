@@ -2,7 +2,7 @@ package com.github.lunatrius.schematica.client.gui.control;
 
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.client.resources.I18n;
+import com.github.lunatrius.schematica.client.gui.framework.UiTranslations;
 
 import com.github.lunatrius.schematica.internal.lunatriuscore.client.gui.GuiScreenBase;
 import com.github.lunatrius.schematica.SchematicaPlus;
@@ -24,7 +24,7 @@ public class GuiSchematicInstances extends GuiScreenBase {
     private GuiButton btnRemove;
     private GuiButton btnDone;
 
-    private final String strTitle = I18n.format(Names.Gui.Instances.TITLE);
+    private final String strTitle = UiTranslations.format(Names.Gui.Instances.TITLE);
 
     public GuiSchematicInstances(GuiScreen parent) {
         super(parent);
@@ -42,21 +42,21 @@ public class GuiSchematicInstances extends GuiScreenBase {
         int totalBtnWidth = btnWidth * btnCount + gap * (btnCount - 1);
         int btnStartX = (this.width - totalBtnWidth) / 2;
 
-        this.btnSwitch = new GuiButton(id++, btnStartX, btnY, btnWidth, 20, I18n.format(Names.Gui.Instances.SWITCH));
+        this.btnSwitch = new GuiButton(id++, btnStartX, btnY, btnWidth, 20, UiTranslations.format(Names.Gui.Instances.SWITCH));
         this.buttonList.add(this.btnSwitch);
 
-        this.btnRemove = new GuiButton(id++, btnStartX + (btnWidth + gap), btnY, btnWidth, 20, I18n.format(Names.Gui.Control.UNLOAD));
+        this.btnRemove = new GuiButton(id++, btnStartX + (btnWidth + gap), btnY, btnWidth, 20, UiTranslations.format(Names.Gui.Control.UNLOAD));
         this.buttonList.add(this.btnRemove);
 
-        this.btnDone = new GuiButton(id++, btnStartX + (btnWidth + gap) * 2, btnY, btnWidth, 20, I18n.format(Names.Gui.DONE));
+        this.btnDone = new GuiButton(id++, btnStartX + (btnWidth + gap) * 2, btnY, btnWidth, 20, UiTranslations.format(Names.Gui.DONE));
         this.buttonList.add(this.btnDone);
 
         // Checkboxes row above buttons
         int cbY = this.height - 50;
         int cbGap = 10;
-        String visibleLabel = I18n.format(Names.Gui.Instances.TOGGLE_VISIBLE);
-        String entitiesLabel = I18n.format(Names.Gui.Instances.TOGGLE_ENTITIES);
-        String blockNBTLabel = I18n.format(Names.Gui.Instances.TOGGLE_BLOCK_NBT);
+        String visibleLabel = UiTranslations.format(Names.Gui.Instances.TOGGLE_VISIBLE);
+        String entitiesLabel = UiTranslations.format(Names.Gui.Instances.TOGGLE_ENTITIES);
+        String blockNBTLabel = UiTranslations.format(Names.Gui.Instances.TOGGLE_BLOCK_NBT);
 
         // Estimate checkbox widths (11px box + 2px gap + text width)
         int cbBoxSize = 11;
@@ -179,7 +179,7 @@ public class GuiSchematicInstances extends GuiScreenBase {
         drawCenteredString(this.fontRendererObj, this.strTitle, this.width / 2, 4, 0x00FFFFFF);
 
         // Show count
-        String countStr = ClientProxy.loadedSchematics.size() + " " + I18n.format(Names.Gui.Instances.LOADED);
+        String countStr = ClientProxy.loadedSchematics.size() + " " + UiTranslations.format(Names.Gui.Instances.LOADED);
         drawCenteredString(this.fontRendererObj, countStr, this.width / 2, this.height - 62, 0x00808080);
 
         super.drawScreen(mouseX, mouseY, partialTicks);

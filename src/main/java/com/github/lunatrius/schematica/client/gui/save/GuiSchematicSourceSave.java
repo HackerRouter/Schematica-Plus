@@ -72,7 +72,7 @@ public final class GuiSchematicSourceSave extends GuiSchematicBrowser {
             File checked = SchematicSaveTarget.sourceCopy(browser.root(), file.getParentFile(), file.getName(), source.data().snapshot.extension());
             source.data().snapshot.write(checked, replace);
             refreshFiles();
-            setStatus(UiTranslations.format("schematica.ui.source.saved", file.getName()));
+            setStatus(UiTranslations.format("litematica.message.schematic_saved_as", file.getName()));
         } catch (IOException | IllegalArgumentException e) {
             fail("schematica.ui.source.save_failed", e);
         }

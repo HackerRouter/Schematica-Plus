@@ -22,6 +22,7 @@ import com.github.lunatrius.schematica.proxy.ClientProxy;
 import com.github.lunatrius.schematica.client.selection.AreaSelections;
 import com.github.lunatrius.schematica.client.gui.framework.UiTranslations;
 import com.github.lunatrius.schematica.reference.Reference;
+import com.github.lunatrius.schematica.util.MessageException;
 
 import cpw.mods.fml.common.registry.GameData;
 
@@ -121,14 +122,16 @@ public class ToolHandler {
         try {
             if (com.github.lunatrius.schematica.handler.WorldEditQueue.INSTANCE.cancel(player.getUniqueID())
                 || com.github.lunatrius.schematica.handler.client.CommandEditQueue.INSTANCE.cancel()) {
-                sendChat(player, "Edit cancellation requested. Changes already made are retained.");
+                sendChat(player, UiTranslations.format("schematica.message.edit.cancel_requested"));
                 return;
             }
-            if (!player.capabilities.isCreativeMode) throw new IllegalArgumentException("Editing requires creative mode.");
+            if (!player.capabilities.isCreativeMode) throw new MessageException("litematica.error.generic.creative_mode_only");
             queueEdit(player, mode);
         } catch (Exception e) {
             Reference.logger.warn("Could not start schematic edit", e);
-            sendChat(player, EnumChatFormatting.RED + e.getMessage());
+            sendChat(player, EnumChatFormatting.RED + (e instanceof MessageException
+                ? UiTranslations.format(((MessageException) e).key(), ((MessageException) e).arguments())
+                : UiTranslations.format("schematica.message.edit.start_failed")));
         }
     }
     // --- Block Picking (Litematica-style) ---
@@ -141,7 +144,7 @@ public class ToolHandler {
      */
     public static boolean pickBlockFromCrosshair(EntityPlayer player, MovingObjectPosition mop, boolean primary) {
         if (mop == null || mop.typeOfHit != MovingObjectPosition.MovingObjectType.BLOCK) {
-            sendChat(player, EnumChatFormatting.RED + "No block targeted.");
+            sendChat(player, EnumChatFormatting.RED + UiTranslations.format("schematica.message.tool.no_block"));
             return false;
         }
 
@@ -151,7 +154,7 @@ public class ToolHandler {
         int meta = world.getBlockMetadata(mop.blockX, mop.blockY, mop.blockZ);
 
         if (block == null || block == Blocks.air) {
-            sendChat(player, EnumChatFormatting.RED + "Cannot pick air.");
+            sendChat(player, EnumChatFormatting.RED + UiTranslations.format("schematica.message.tool.air"));
             return false;
         }
 
@@ -240,7 +243,7 @@ public class ToolHandler {
     private static boolean handleMoveUse(EntityPlayer player, MovingObjectPosition mop) {
         SchematicWorld schematic = ClientProxy.schematic;
         if (schematic == null) {
-            sendChat(player, EnumChatFormatting.RED + "No schematic loaded.");
+            sendChat(player, EnumChatFormatting.RED + UiTranslations.format("litematica.message.error.no_placement_selected"));
             return false;
         }
 
@@ -278,9 +281,9 @@ public class ToolHandler {
         WorldEditJob job;
         if (mode == ToolMode.PASTE_SCHEMATIC) {
             SchematicWorld schematic = ClientProxy.schematic;
-            if (schematic == null) throw new IllegalArgumentException("No schematic loaded.");
-            if (!schematic.isEnabled()) throw new IllegalArgumentException(UiTranslations.format("schematica.ui.placement.disabled"));
-            if (!schematic.hasEnabledRegions()) throw new IllegalArgumentException(UiTranslations.format("schematica.ui.placement.no_regions"));
+            if (schematic == null) throw new MessageException("litematica.message.error.no_placement_selected");
+            if (!schematic.isEnabled()) throw new MessageException("schematica.ui.placement.disabled");
+            if (!schematic.hasEnabledRegions()) throw new MessageException("schematica.ui.placement.no_regions");
             job = new WorldEditJob(player.getUniqueID(), player.dimension, WorldEditJob.Kind.PASTE,
                 schematic.position.x, schematic.position.y, schematic.position.z,
                 schematic.getWidth(), schematic.getHeight(), schematic.getLength(), null, 0, null, 0,
@@ -289,7 +292,7 @@ public class ToolHandler {
             job.capture(schematic.getSchematic(), schematic.isPastingBlockNBT, schematic.isRenderingEntities);
         } else {
             if (AreaSelections.library().selected() == null) {
-                throw new IllegalArgumentException(UiTranslations.format("litematica.message.error.no_area_selected"));
+                throw new MessageException("litematica.message.error.no_area_selected");
             }
             AreaSelections.capture();
             com.github.lunatrius.schematica.world.storage.RegionSelection selection =
@@ -300,7 +303,7 @@ public class ToolHandler {
             if (replacement == null) replacement = Blocks.air;
             Block target = mode.getSecondaryBlock();
             if (mode == ToolMode.REPLACE_BLOCK && target == null) {
-                throw new IllegalArgumentException("Pick the target block before replacing.");
+                throw new MessageException("schematica.message.tool.pick_target");
             }
             job = new WorldEditJob(player.getUniqueID(), player.dimension,
                 mode == ToolMode.REPLACE_BLOCK ? WorldEditJob.Kind.REPLACE : WorldEditJob.Kind.FILL,
@@ -314,17 +317,17 @@ public class ToolHandler {
         MinecraftServer server = Minecraft.getMinecraft().getIntegratedServer();
         if (server != null) {
             if (!com.github.lunatrius.schematica.handler.WorldEditQueue.INSTANCE.submit(server, job)) {
-                throw new IllegalStateException("Another world edit is still running.");
+                throw new MessageException("schematica.message.edit.busy");
             }
-            sendChat(player, "Edit queued for the server. Press Execute again to cancel.");
+            sendChat(player, UiTranslations.format("schematica.message.edit.queued"));
         } else {
             com.github.lunatrius.schematica.handler.client.CommandEditQueue.INSTANCE.submit(job, player.worldObj);
-            sendChat(player, "Command edit queued. Server permission is required. Press Execute again to cancel.");
+            sendChat(player, UiTranslations.format("schematica.message.edit.commands_queued"));
         }
     }
 
     private static void sendChat(EntityPlayer player, String message) {
         player.addChatMessage(new ChatComponentText(
-            EnumChatFormatting.GREEN + "[Schematica] " + EnumChatFormatting.RESET + message));
+            EnumChatFormatting.GREEN + "[" + Reference.NAME + "] " + EnumChatFormatting.RESET + message));
     }
 }

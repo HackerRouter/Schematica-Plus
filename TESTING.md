@@ -714,3 +714,23 @@ These checks supersede Phase 12's Simple-editor and bounding-box expectations.
 - Disabled buttons do not highlight. Cropped list icons and icons behind a modal
   must not react outside the visible area. File/type icons and passive info icons
   are unchanged. This visual change still requires an in-game check.
+
+## Existing feature translation alignment
+
+- Switch English/Chinese, then reopen configuration, load/save, loaded schematics,
+  placement controls and area selection screens. Shared labels, visual settings,
+  success/error messages and the tool HUD use upstream Litematica/MaLiLib keys.
+  Plus-specific behavior keeps its own keys; test the 1.7.10 NBT paste warning,
+  printer completion and server permission settings in both languages.
+- Existing config values and Minecraft key bindings must survive the upgrade.
+  The translated config labels change; serialized property/binding IDs do not.
+- Export an area material list in Chinese as TXT/CSV/JSON. Text headers and partial
+  scan labels follow the language; JSON field names and item IDs remain stable.
+- Test invalid load paths and filenames containing percent signs or backslashes.
+  Error tooltips must show the path intact, with no raw key or Format error.
+- Simple-mode help must describe its independent selection, without claiming it
+  is unavailable. Early mod-conflict errors and old-client download rejection
+  retain readable English fallback when language resources are unavailable.
+- Automated coverage checks source-referenced keys in English/Chinese and formats
+  active templates across all 13 bundled locales with English fallback. These
+  checks do not replace in-game text-width, hover or language-switch checks.

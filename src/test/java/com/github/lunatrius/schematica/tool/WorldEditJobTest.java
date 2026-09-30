@@ -36,7 +36,8 @@ public class WorldEditJobTest {
     @Test public void silentPasteRejectsCommandFallbackBeforeSendingAnyCommands() {
         WorldEditJob job = job(WorldEditJob.Kind.PASTE, true, false);
         IllegalArgumentException error = assertThrows(IllegalArgumentException.class, job::validateCommandFallback);
-        assertTrue(error.getMessage().contains("cannot suppress updates"));
+        assertEquals("schematica.message.edit.updates_require_singleplayer",
+            ((com.github.lunatrius.schematica.util.MessageException) error).key());
     }
 
     private static WorldEditJob job(WorldEditJob.Kind kind, boolean silent, boolean air) {

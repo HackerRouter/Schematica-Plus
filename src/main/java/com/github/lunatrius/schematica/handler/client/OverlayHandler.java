@@ -14,6 +14,7 @@ import com.github.lunatrius.schematica.internal.lunatriuscore.util.vector.Vector
 import com.github.lunatrius.schematica.client.world.SchematicWorld;
 import com.github.lunatrius.schematica.handler.ConfigurationHandler;
 import com.github.lunatrius.schematica.proxy.ClientProxy;
+import com.github.lunatrius.schematica.reference.Reference;
 import com.github.lunatrius.schematica.client.selection.AreaSelections;
 import com.github.lunatrius.schematica.client.selection.AreaSelectionLibrary.Area;
 import com.github.lunatrius.schematica.client.gui.framework.UiTranslations;
@@ -35,8 +36,8 @@ public class OverlayHandler {
             final SchematicWorld schematic = ClientProxy.schematic;
             if (schematic != null && schematic.isRenderingEnabled()) {
                 event.left.add("");
-                event.left.add("[§6Schematica§r] " + schematic.getDebugDimensions());
-                event.left.add("[§6Tool§r] " + ToolManager.getCurrentMode().getDisplayName());
+                event.left.add("[§6" + Reference.NAME + "§r] " + schematic.getDebugDimensions());
+                event.left.add("[§6" + UiTranslations.format("litematica.hud.selected_mode") + "§r] " + ToolManager.getCurrentMode().getDisplayName());
 
                 final MovingObjectPosition mop = ClientProxy.movingObjectPosition;
                 if (mop != null && mop.typeOfHit == MovingObjectPosition.MovingObjectType.BLOCK) {
@@ -77,13 +78,13 @@ public class OverlayHandler {
         java.util.List<String> lines = new java.util.ArrayList<>();
 
         // Line 1: Mode
-        lines.add(EnumChatFormatting.GOLD + "[Schematica] " + EnumChatFormatting.WHITE + mode.getDisplayName());
+        lines.add(EnumChatFormatting.GOLD + "[" + Reference.NAME + "] " + EnumChatFormatting.WHITE + mode.getDisplayName());
 
         // Line 2: Schematic file name + dimensions (if loaded)
         final SchematicWorld schematic = ClientProxy.schematic;
         if (schematic != null) {
             String fileName = schematic.sourceFilename != null ? schematic.sourceFilename : schematic.name;
-            lines.add(EnumChatFormatting.GRAY + "File: " + EnumChatFormatting.YELLOW + fileName
+            lines.add(EnumChatFormatting.GRAY + UiTranslations.format("litematica.gui.label.schematic_placement.schematic_file", EnumChatFormatting.YELLOW + fileName)
                 + EnumChatFormatting.GRAY + " (" + schematic.getWidth() + "x" + schematic.getHeight() + "x" + schematic.getLength() + ")"
                 + EnumChatFormatting.GRAY + " @ " + EnumChatFormatting.WHITE
                 + schematic.position.x + ", " + schematic.position.y + ", " + schematic.position.z);
@@ -103,7 +104,8 @@ public class OverlayHandler {
             } else {
                 lines.add(UiTranslations.format(AreaSelections.library().mode() == com.github.lunatrius.schematica.client.selection.AreaSelectionLibrary.Mode.SIMPLE
                     ? "litematica.hud.area_selection.selected_area_simple" : "litematica.hud.area_selection.selected_area_normal", area.name()));
-                lines.add(UiTranslations.format(AreaSelections.cornerModeKey()));
+                lines.add(UiTranslations.format("litematica.hud.area_selection.selection_corners_mode",
+                    UiTranslations.format(AreaSelections.cornerModeKey())));
                 Vector3i origin = area.origin();
                 lines.add((area.originSelected() ? EnumChatFormatting.AQUA : EnumChatFormatting.GRAY)
                     + UiTranslations.format("litematica.hud.area_selection.origin", origin.x + ", " + origin.y + ", " + origin.z));
@@ -113,10 +115,12 @@ public class OverlayHandler {
                     lines.add(UiTranslations.format("litematica.hud.area_selection.selected_sub_region", area.boxName()));
                     Vector3i a = ClientProxy.pointA;
                     Vector3i b = ClientProxy.pointB;
-                    lines.add((area.selectedCorner() == com.github.lunatrius.schematica.client.selection.AreaSelectionLibrary.Corner.FIRST ? EnumChatFormatting.YELLOW : EnumChatFormatting.GRAY) + "A: " + EnumChatFormatting.AQUA
-                        + a.x + ", " + a.y + ", " + a.z
-                        + (area.selectedCorner() == com.github.lunatrius.schematica.client.selection.AreaSelectionLibrary.Corner.SECOND ? EnumChatFormatting.YELLOW : EnumChatFormatting.GRAY) + "  B: " + EnumChatFormatting.AQUA
-                        + b.x + ", " + b.y + ", " + b.z);
+                    String first = (area.selectedCorner() == com.github.lunatrius.schematica.client.selection.AreaSelectionLibrary.Corner.FIRST
+                        ? EnumChatFormatting.YELLOW : EnumChatFormatting.AQUA) + "" + a.x + ", " + a.y + ", " + a.z;
+                    String second = (area.selectedCorner() == com.github.lunatrius.schematica.client.selection.AreaSelectionLibrary.Corner.SECOND
+                        ? EnumChatFormatting.YELLOW : EnumChatFormatting.AQUA) + "" + b.x + ", " + b.y + ", " + b.z;
+                    String dimensions = (Math.abs(a.x - b.x) + 1) + " x " + (Math.abs(a.y - b.y) + 1) + " x " + (Math.abs(a.z - b.z) + 1);
+                    lines.add(UiTranslations.format("litematica.hud.area_selection.dimensions_position", dimensions, first, second));
                 }
             }
         }
@@ -124,10 +128,12 @@ public class OverlayHandler {
         // Line 4: Primary/Secondary block (for FILL/REPLACE)
         if (mode.getUsesBlockPrimary()) {
             String primaryName = mode.getPrimaryBlockName();
-            String blockText = EnumChatFormatting.GRAY + "Primary: " + EnumChatFormatting.GREEN + primaryName;
+            String blockText = UiTranslations.format("litematica.tool_hud.block_1", EnumChatFormatting.GREEN
+                + (primaryName == null ? UiTranslations.format("litematica.hud.misc.none_brackets") : primaryName));
             if (mode.getUsesBlockSecondary()) {
                 String secondaryName = mode.getSecondaryBlockName();
-                blockText += EnumChatFormatting.GRAY + "  Target: " + EnumChatFormatting.RED + secondaryName;
+                blockText += "  " + UiTranslations.format("litematica.tool_hud.block_2", EnumChatFormatting.RED
+                    + (secondaryName == null ? UiTranslations.format("litematica.hud.misc.none_brackets") : secondaryName));
             }
             lines.add(blockText);
         }

@@ -15,8 +15,6 @@ import com.github.lunatrius.schematica.client.gui.placement.GuiSchematicLoadedLi
 import com.github.lunatrius.schematica.client.gui.framework.UiCheckBox;
 import com.github.lunatrius.schematica.client.gui.framework.UiSprite;
 import com.github.lunatrius.schematica.client.gui.framework.UiButton;
-import com.github.lunatrius.schematica.client.world.SchematicLibrary;
-import com.github.lunatrius.schematica.client.world.SchematicSourceData;
 
 public final class GuiSchematicLoad extends GuiSchematicBrowser {
 
@@ -61,11 +59,10 @@ public final class GuiSchematicLoad extends GuiSchematicBrowser {
         }
         try {
             File file = browser.readableFile(entry);
-            SchematicLibrary.Source<SchematicSourceData> source = SchematicGuiLoader.load(mc, file, placeOnLoad);
-            setStatus(UiTranslations.format("schematica.ui.load.success", source.name(),
-                source.data().width, source.data().height, source.data().length));
+            SchematicGuiLoader.load(mc, file, placeOnLoad);
+            setStatus(UiTranslations.format("litematica.message.schematic_read_from_file_success", file.getName()));
         } catch (IOException | RuntimeException e) {
-            fail("schematica.ui.load.failed", e);
+            fail("litematica.error.schematic_read_from_file_failed.exception", e, entry.name());
         }
         tickScreen();
     }

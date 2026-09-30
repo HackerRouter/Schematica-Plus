@@ -41,6 +41,7 @@ import com.github.lunatrius.schematica.client.renderer.RendererSchematicGlobal;
 import com.github.lunatrius.schematica.handler.ConfigurationHandler;
 import com.github.lunatrius.schematica.handler.client.InputHandler;
 import com.github.lunatrius.schematica.reference.Names;
+import com.github.lunatrius.schematica.client.gui.config.ConfigTranslations;
 import com.github.lunatrius.schematica.reference.Reference;
 
 import cpw.mods.fml.client.event.ConfigChangedEvent;
@@ -83,7 +84,7 @@ public class GuiModConfig extends UiScreen {
     private KeyBinding capturingKey;
 
     public GuiModConfig(GuiScreen parent) {
-        super(parent, Reference.NAME + " v" + Reference.VERSION + " - " + UiTranslations.format("schematica.ui.config.title"));
+        super(parent, Reference.NAME + " v" + Reference.VERSION + " - " + UiTranslations.format("litematica.gui.button.change_menu.configuration_menu"));
     }
 
     @Override
@@ -249,7 +250,7 @@ public class GuiModConfig extends UiScreen {
     private String captureLabel() { return "§e> " + UiTranslations.format("schematica.ui.config.press_key") + " <§r"; }
 
     private String keyLabel(int code) {
-        return code == 0 ? "NONE" : GameSettings.getKeyDisplayString(code);
+        return code == 0 ? UiTranslations.format("malilib.gui.button.empty_keybind") : GameSettings.getKeyDisplayString(code);
     }
 
     private String bindingLabel(KeyBinding key) {
@@ -326,7 +327,7 @@ public class GuiModConfig extends UiScreen {
         }
 
         String name() { return key == null ? draft.property.getName() : key.getKeyDescription(); }
-        String label() { return UiTranslations.format(key == null ? draft.property.getLanguageKey() : key.getKeyDescription()); }
+        String label() { return UiTranslations.format(ConfigTranslations.label(key == null ? draft.property.getLanguageKey() : key.getKeyDescription())); }
         String searchText() { return name() + " " + label() + " " + category + (modified() ? " modified" : ""); }
         boolean modified() { return key == null ? draft.modified() : key.getKeyCode() != key.getKeyCodeDefault(); }
         Tab tab() {
@@ -343,8 +344,9 @@ public class GuiModConfig extends UiScreen {
                 else if (color == RenderColors.WRONG_STATE) description += "\n" + UiTranslations.format("schematica.ui.color.metadata");
                 return description;
             }
-            String translated = UiTranslations.format(draft.property.getLanguageKey() + ".tooltip");
-            String description = translated.equals(draft.property.getLanguageKey() + ".tooltip")
+            String commentKey = ConfigTranslations.comment(draft.property.getLanguageKey());
+            String translated = UiTranslations.format(commentKey);
+            String description = translated.equals(commentKey)
                 ? draft.property.comment : translated;
             return category + ": " + name() + "\n" + description
                 + (Names.Config.Category.SERVER.equals(category) ? "\n" + UiTranslations.format("schematica.ui.config.server") : "");

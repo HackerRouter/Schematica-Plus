@@ -17,7 +17,7 @@ public final class MaterialListExport {
 
     private MaterialListExport() {}
 
-    public static <T> String format(MaterialListModel<T> model, String title, Format format, Function<T, String> variant) {
+    public static <T> String format(MaterialListModel<T> model, String title, Format format, Function<T, String> variant, Function<String, String> translate) {
         List<MaterialListModel.Entry<T>> entries = model.visible();
         if (format == Format.JSON) {
             JsonObject root = new JsonObject();
@@ -41,7 +41,10 @@ public final class MaterialListExport {
             return new GsonBuilder().setPrettyPrinting().create().toJson(root) + "\n";
         }
         List<String[]> rows = new ArrayList<>();
-        rows.add(new String[] {"Item", "Total (x" + model.multiplier() + ")", "Missing", "Available"});
+        rows.add(new String[] {plain(translate.apply("litematica.gui.label.material_list.title.item")),
+            plain(translate.apply("litematica.gui.label.material_list.title.total")) + " (x" + model.multiplier() + ")",
+            plain(translate.apply("litematica.gui.label.material_list.title.missing")),
+            plain(translate.apply("litematica.gui.label.material_list.title.available"))});
         for (MaterialListModel.Entry<T> entry : entries) {
             rows.add(new String[] {plain(entry.name), Long.toString(model.total(entry)), Long.toString(model.missing(entry)),
                 Long.toString(entry.available)});
@@ -51,7 +54,7 @@ public final class MaterialListExport {
             for (String[] row : rows) {
                 for (int i = 0; i < row.length; i++) {
                     if (i > 0) output.append(',');
-                    output.append('"').append(row[i].replace("\"", "\"\"")).append('"');
+                    output.append(csv(row[i]));
                 }
                 output.append('\n');
             }
@@ -72,9 +75,11 @@ public final class MaterialListExport {
         return output.toString();
     }
 
+    private static String csv(String text) { return "\"" + plain(text).replace("\"", "\"\"") + "\""; }
+
     private static String plain(String text) { return text.replaceAll("§.", "").replaceAll("[\\r\\n\\t]", " "); }
 
-    public static String withAnalysisStatus(String text, Format format, int unverified, int skipped) {
+    public static String withAnalysisStatus(String text, Format format, int unverified, int skipped, Function<String, String> translate) {
         if (format == Format.JSON) {
             JsonObject data = new com.google.gson.JsonParser().parse(text).getAsJsonObject();
             data.addProperty("source", "area_analysis");
@@ -83,14 +88,17 @@ public final class MaterialListExport {
             data.addProperty("complete", unverified == 0 && skipped == 0);
             return new GsonBuilder().setPrettyPrinting().create().toJson(data) + "\n";
         }
+        String unverifiedLabel = translate.apply("schematica.ui.material.unverified_positions");
+        String skippedLabel = translate.apply("schematica.ui.material.skipped_positions");
         if (format == Format.CSV) {
             String[] rows = text.split("\n");
             StringBuilder result = new StringBuilder();
             for (int i = 0; i < rows.length; i++) result.append(rows[i]).append(i == 0
-                ? ",\"Unverified positions\",\"Skipped positions\"" : "," + unverified + "," + skipped).append('\n');
+                ? "," + csv(unverifiedLabel) + "," + csv(skippedLabel) : "," + unverified + "," + skipped).append('\n');
             return result.toString();
         }
-        return "Area analysis: unverified positions=" + unverified + ", skipped positions=" + skipped + "\n" + text;
+        return plain(translate.apply("litematica.gui.button.area_editor.analyze_area")) + ": "
+            + plain(unverifiedLabel) + "=" + unverified + ", " + plain(skippedLabel) + "=" + skipped + "\n" + text;
     }
 
     public static Path write(Path directory, Format format, String content) throws IOException {

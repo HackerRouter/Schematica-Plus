@@ -47,17 +47,17 @@ public final class GuiSchematicLoadedList extends GuiSchematicList<Source<Schema
             reload = button("reload", () -> {
                 try {
                     ClientProxy.reloadSource(source);
-                    message(UiTranslations.format("schematica.ui.source.reloaded", source.name()));
+                    message(UiTranslations.format("litematica.message.schematic_read_from_file_success", source.name()));
                 } catch (IOException | RuntimeException e) {
                     Reference.logger.warn("Schematic source reload failed", e);
-                    message(UiTranslations.format("schematica.ui.source.reload_failed"));
+                    message(UiTranslations.format("litematica.error.schematic_read_from_file_failed.exception", source.name()));
                 }
             });
             button("save_to_file", () -> mc.displayGuiScreen(new GuiSchematicSourceSave(GuiSchematicLoadedList.this, source)));
             create = button("create_placement", () -> {
                 try {
                     SchematicGuiLoader.createPlacement(mc, source, false);
-                    message(UiTranslations.format("schematica.ui.source.placement_created", source.name()));
+                    message(UiTranslations.format("litematica.message.schematic_placement_created", source.name()));
                 } catch (IOException | RuntimeException e) {
                     Reference.logger.warn("Schematic placement creation failed", e);
                     message(UiTranslations.format("schematica.ui.source.create_failed"));

@@ -101,7 +101,7 @@ public final class GuiSchematicSave extends GuiSchematicBrowser {
         } catch (IllegalArgumentException e) {
             return UiTranslations.format("schematica.ui.save.invalid_selection");
         }
-        if (name.text().trim().isEmpty()) return UiTranslations.format("schematica.ui.save.enter_name");
+        if (name.text().trim().isEmpty()) return UiTranslations.format("litematica.error.schematic_save.invalid_schematic_name", name.text());
         try {
             SchematicSaveTarget.filename(name.text(), extended);
         } catch (IllegalArgumentException e) {
@@ -156,7 +156,7 @@ public final class GuiSchematicSave extends GuiSchematicBrowser {
         }
         if (SchematicaPlus.proxy.saveSchematic(mc.thePlayer, file.getParentFile(), file.getName(), world, selection)) {
             WorldHandler.INSTANCE.saveSession();
-            setStatus(UiTranslations.format("schematica.ui.save.queued", file.getName()));
+            setStatus(UiTranslations.format("litematica.message.schematic_save_task_created"));
         } else {
             setStatus(UiTranslations.format("schematica.ui.save.failed"));
         }

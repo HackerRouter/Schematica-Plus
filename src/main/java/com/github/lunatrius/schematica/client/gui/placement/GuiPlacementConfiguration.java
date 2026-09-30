@@ -148,9 +148,9 @@ public final class GuiPlacementConfiguration extends UiScreen {
         move = button("litematica.gui.button.move_to_player", () -> moveTo(new int[] {
             MathHelper.floor_double(mc.thePlayer.posX), MathHelper.floor_double(mc.thePlayer.boundingBox.minY),
             MathHelper.floor_double(mc.thePlayer.posZ)}));
-        rotation = button(() -> UiTranslations.format("litematica.gui.button.rotation_value", orientation == null ? "CUSTOM" : orientation.rotationName()),
+        rotation = button(() -> UiTranslations.format("litematica.gui.button.rotation_value", orientation == null ? UiTranslations.format("schematica.ui.placement.custom") : orientation.rotationName()),
             mouse -> transform(mouse == 1 ? "YYY" : "Y"));
-        mirror = button(() -> UiTranslations.format("litematica.gui.button.mirror_value", orientation == null ? "CUSTOM" : orientation.mirrorName()),
+        mirror = button(() -> UiTranslations.format("litematica.gui.button.mirror_value", orientation == null ? UiTranslations.format("schematica.ui.placement.custom") : orientation.mirrorName()),
             mouse -> { if (orientation != null) transform(orientation.cycleMirror(mouse == 1)); });
         reset = button("litematica.gui.button.schematic_placement.reset_sub_region_placements", () -> updateRegions(() -> placement.resetSubregions(null)));
         materials = button("litematica.gui.button.material_list", () -> mc.displayGuiScreen(new GuiSchematicMaterials(this, placement)));

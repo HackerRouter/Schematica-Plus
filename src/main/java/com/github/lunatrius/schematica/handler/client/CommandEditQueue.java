@@ -1,7 +1,6 @@
 package com.github.lunatrius.schematica.handler.client;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.ChatComponentTranslation;
 import net.minecraft.world.World;
 import net.minecraftforge.client.event.ClientChatReceivedEvent;
@@ -51,8 +50,7 @@ public final class CommandEditQueue {
             }
         }
         if (cursor == job.volume) {
-            mc.thePlayer.addChatMessage(new ChatComponentText("[Schematica] Sent " + sent
-                + " edit commands. Check server replies for execution results."));
+            mc.thePlayer.addChatMessage(new ChatComponentTranslation("schematica.message.edit.commands_sent", sent));
             cancel();
         }
     }

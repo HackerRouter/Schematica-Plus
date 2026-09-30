@@ -35,6 +35,58 @@ public class UiTranslationsTest {
         try (InputStream stream = language(language)) { return StringTranslate.parseLangFile(stream); }
     }
 
+    private Map<String, String> catalog(String language) throws IOException {
+        Map<String, String> result = translations(language);
+        try (InputStream stream = getClass().getResourceAsStream("/assets/schematica/lang/" + language + ".lang")) {
+            if (stream != null) result.putAll(StringTranslate.parseLangFile(stream));
+        }
+        return result;
+    }
+
+    private Set<String> referencedKeys() throws IOException {
+        Set<String> keys = new java.util.TreeSet<>();
+        java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("\"((?:schematica|Schematica|litematica|malilib)\\.[^\"\\s]+)\"");
+        try (java.util.stream.Stream<java.nio.file.Path> paths = java.nio.file.Files.walk(java.nio.file.Paths.get("src/main/java"))) {
+            for (java.nio.file.Path path : paths.filter(p -> p.toString().endsWith(".java")).collect(Collectors.toList())) {
+                String source = new String(java.nio.file.Files.readAllBytes(path), java.nio.charset.StandardCharsets.UTF_8);
+                java.util.regex.Matcher matcher = pattern.matcher(source);
+                while (matcher.find()) keys.add(matcher.group(1));
+            }
+        }
+        keys.removeIf(key -> key.endsWith(".") || key.endsWith(".cfg"));
+        keys.removeAll(Arrays.asList("schematica.config", "schematica.gui.material", "litematica.gui.label.area_editor.corner_"));
+        return keys;
+    }
+
+    @Test public void activeTextKeysExistInEnglishAndChinese() throws IOException {
+        Set<String> keys = referencedKeys();
+        assertTrue(keys.size() > 250);
+        for (String language : Arrays.asList("en_US", "zh_CN")) {
+            Map<String, String> values = catalog(language);
+            for (String key : keys) assertTrue(language + ": " + key, values.containsKey(key));
+        }
+    }
+
+    @Test public void activeTemplatesFormatAcrossAllBundledLanguages() throws IOException {
+        Map<String, String> english = catalog("en_US");
+        Set<String> keys = referencedKeys();
+        java.util.regex.Pattern argument = java.util.regex.Pattern.compile("%(?:(\\d+)\\$)?s");
+        for (String language : LANGUAGES) {
+            Map<String, String> values = new java.util.HashMap<>(english);
+            values.putAll(catalog(language));
+            for (String key : keys) {
+                if (!english.containsKey(key)) continue;
+                java.util.regex.Matcher matcher = argument.matcher(english.get(key));
+                int count = 0, sequential = 0;
+                while (matcher.find()) count = Math.max(count, matcher.group(1) == null ? ++sequential : Integer.parseInt(matcher.group(1)));
+                Object[] arguments = new Object[count];
+                Arrays.fill(arguments, "D:\\new\\test.schemplus");
+                String text = UiTranslations.formatTemplate(values.get(key), arguments);
+                assertFalse(language + ": " + key + " -> " + text, text.startsWith("Format error:"));
+            }
+        }
+    }
+
     @Test public void shipsAllUpstreamKeysAndLocalesIncludingNonUiKeys() throws IOException {
         Map<String, String> english = translations("en_US");
         assertEquals(1604, english.size());

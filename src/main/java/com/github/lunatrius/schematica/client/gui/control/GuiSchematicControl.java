@@ -5,7 +5,7 @@ import static com.github.lunatrius.schematica.client.util.WorldServerName.worldS
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.client.resources.I18n;
+import com.github.lunatrius.schematica.client.gui.framework.UiTranslations;
 import net.minecraft.util.ChatComponentText;
 import net.minecraftforge.common.util.ForgeDirection;
 
@@ -59,25 +59,25 @@ public class GuiSchematicControl extends GuiScreenBase {
 
     private GuiButton btnSaveCoordinates = null;
 
-    private final String strSaveCoordinatesSuccess = I18n.format(Names.Chat.SAVE_COORDINATES_SUCCESS);
-    private final String strSaveCoordinatesFail = I18n.format(Names.Chat.SAVE_COORDINATES_FAIL);
-    private final String strSaveCoordinates = I18n.format(Names.Gui.Control.SAVE_COORDINATES);
-    private final String strMoveSchematic = I18n.format(Names.Gui.Control.MOVE_SCHEMATIC);
-    private final String strOperations = I18n.format(Names.Gui.Control.OPERATIONS);
-    private final String strName = I18n.format(Names.Gui.Control.NAME);
-    private final String strUnload = I18n.format(Names.Gui.Control.UNLOAD);
-    private final String strAll = I18n.format(Names.Gui.Control.MODE_ALL);
-    private final String strLayers = I18n.format(Names.Gui.Control.MODE_LAYERS);
-    private final String strMaterials = I18n.format(Names.Gui.Control.MATERIALS);
-    private final String strInstances = I18n.format(Names.Gui.Instances.INSTANCES);
-    private final String strPrinter = I18n.format(Names.Gui.Control.PRINTER);
-    private final String strHide = I18n.format(Names.Gui.Control.HIDE);
-    private final String strShow = I18n.format(Names.Gui.Control.SHOW);
-    private final String strX = I18n.format(Names.Gui.X);
-    private final String strY = I18n.format(Names.Gui.Y);
-    private final String strZ = I18n.format(Names.Gui.Z);
-    private final String strOn = I18n.format(Names.Gui.ON);
-    private final String strOff = I18n.format(Names.Gui.OFF);
+    private final String strSaveCoordinatesSuccess = UiTranslations.format(Names.Chat.SAVE_COORDINATES_SUCCESS);
+    private final String strSaveCoordinatesFail = UiTranslations.format(Names.Chat.SAVE_COORDINATES_FAIL);
+    private final String strSaveCoordinates = UiTranslations.format(Names.Gui.Control.SAVE_COORDINATES);
+    private final String strMoveSchematic = UiTranslations.format(Names.Gui.Control.MOVE_SCHEMATIC);
+    private final String strOperations = UiTranslations.format(Names.Gui.Control.OPERATIONS);
+    private final String strName = UiTranslations.format(Names.Gui.Control.NAME);
+    private final String strUnload = UiTranslations.format(Names.Gui.Control.UNLOAD);
+    private final String strAll = UiTranslations.format(Names.Gui.Control.MODE_ALL);
+    private final String strLayers = UiTranslations.format(Names.Gui.Control.MODE_LAYERS);
+    private final String strMaterials = UiTranslations.format(Names.Gui.Control.MATERIALS);
+    private final String strInstances = UiTranslations.format(Names.Gui.Instances.INSTANCES);
+    private final String strPrinter = UiTranslations.format(Names.Gui.Control.PRINTER);
+    private final String strHide = UiTranslations.format(Names.Gui.Control.HIDE);
+    private final String strShow = UiTranslations.format(Names.Gui.Control.SHOW);
+    private final String strX = UiTranslations.format(Names.Gui.X);
+    private final String strY = UiTranslations.format(Names.Gui.Y);
+    private final String strZ = UiTranslations.format(Names.Gui.Z);
+    private final String strOn = UiTranslations.format(Names.Gui.ON);
+    private final String strOff = UiTranslations.format(Names.Gui.OFF);
 
     public GuiSchematicControl(GuiScreen guiScreen) {
         super(guiScreen);
@@ -128,13 +128,15 @@ public class GuiSchematicControl extends GuiScreenBase {
             this.schematic != null && this.schematic.isRendering ? this.strHide : this.strShow);
         this.buttonList.add(this.btnHide);
 
+        int moveWidth = Math.max(80, Math.min(this.width / 2 - 20,
+            this.fontRendererObj.getStringWidth(UiTranslations.format(Names.Gui.Control.MOVE_HERE)) + 10));
         this.btnMove = new GuiButton(
             id++,
-            this.width - 90,
+            this.width - moveWidth - 10,
             this.height - 80,
-            80,
+            moveWidth,
             20,
-            I18n.format(Names.Gui.Control.MOVE_HERE));
+            UiTranslations.format(Names.Gui.Control.MOVE_HERE));
         this.buttonList.add(this.btnMove);
 
         this.btnFlip = new GuiButton(
@@ -143,7 +145,7 @@ public class GuiSchematicControl extends GuiScreenBase {
             this.height - 55,
             80,
             20,
-            I18n.format(Names.Gui.Control.FLIP));
+            UiTranslations.format(Names.Gui.Control.FLIP));
         this.buttonList.add(this.btnFlip);
 
         this.btnFlipX = new GuiCheckBox(id++, this.width - 90 - 60, this.height - 50, "X", false);
@@ -160,7 +162,7 @@ public class GuiSchematicControl extends GuiScreenBase {
             this.height - 30,
             80,
             20,
-            I18n.format(Names.Gui.Control.ROTATE));
+            UiTranslations.format(Names.Gui.Control.ROTATE));
         this.buttonList.add(this.btnRotate);
 
         this.btnRotateX = new GuiCheckBox(id++, this.width - 90 - 60, this.height - 25, "X", false);
@@ -174,7 +176,8 @@ public class GuiSchematicControl extends GuiScreenBase {
         this.btnMaterials = new GuiButton(id++, 10, this.height - 110, 80, 20, this.strMaterials);
         this.buttonList.add(this.btnMaterials);
 
-        this.btnInstances = new GuiButton(id++, 10, this.height - 70, 80, 20, this.strInstances);
+        int instancesWidth = Math.max(80, Math.min(this.width / 2 - 20, this.fontRendererObj.getStringWidth(this.strInstances) + 10));
+        this.btnInstances = new GuiButton(id++, 10, this.height - 70, instancesWidth, 20, this.strInstances);
         this.buttonList.add(this.btnInstances);
 
         this.btnPrint = new GuiButton(
@@ -369,7 +372,7 @@ public class GuiSchematicControl extends GuiScreenBase {
     public void drawScreen(int par1, int par2, float par3) {
         drawCenteredString(this.fontRendererObj, this.strMoveSchematic, this.centerX, this.centerY - 45, 0xFFFFFF);
         drawCenteredString(this.fontRendererObj, this.strMaterials, 50, this.height - 125, 0xFFFFFF);
-        drawCenteredString(this.fontRendererObj, this.strInstances, 50, this.height - 85, 0xFFFFFF);
+        drawCenteredString(this.fontRendererObj, this.strInstances, this.btnInstances.xPosition + this.btnInstances.width / 2, this.height - 85, 0xFFFFFF);
         drawCenteredString(this.fontRendererObj, this.strPrinter, 50, this.height - 45, 0xFFFFFF);
         drawCenteredString(this.fontRendererObj, this.strLayers, this.width - 50, this.height - 165, 0xFFFFFF);
         drawCenteredString(this.fontRendererObj, this.strOperations, this.width - 50, this.height - 120, 0xFFFFFF);

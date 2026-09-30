@@ -4,7 +4,8 @@ import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.ChatComponentText;
+import net.minecraft.util.ChatComponentTranslation;
+import com.github.lunatrius.schematica.util.MessageException;
 import net.minecraft.world.WorldServer;
 import com.github.lunatrius.schematica.reference.Reference;
 import com.github.lunatrius.schematica.tool.WorldEditJob;
@@ -46,7 +47,7 @@ public final class WorldEditQueue {
         }
         if (player == null || player.dimension != job.dimension) { pending.compareAndSet(job, null); return; }
         if (!player.capabilities.isCreativeMode || !player.canCommandSenderUseCommand(2, "setblock")) {
-            player.addChatMessage(new ChatComponentText("[Schematica] Editing requires creative mode and command permission."));
+            player.addChatMessage(new ChatComponentTranslation("schematica.message.edit.permissions"));
             pending.compareAndSet(job, null);
             return;
         }
@@ -62,14 +63,15 @@ public final class WorldEditQueue {
                 job.flushBlockChanges(world);
             }
             if (done) {
-                player.addChatMessage(new ChatComponentText("[Schematica] Edit " + (job.cancelled ? "cancelled" : "finished")
-                    + ": " + job.blockCount + " blocks, " + job.entityCount + " entities. Changes already made are retained."));
+                player.addChatMessage(new ChatComponentTranslation(job.cancelled
+                    ? "schematica.message.edit.cancelled" : "schematica.message.edit.finished", job.blockCount, job.entityCount));
                 pending.compareAndSet(job, null);
             }
         } catch (Exception e) {
             Reference.logger.error("World edit stopped after partial completion", e);
-            player.addChatMessage(new ChatComponentText("[Schematica] Edit stopped: " + e.getMessage()
-                + ". Changes already made are retained."));
+            player.addChatMessage(new ChatComponentTranslation("schematica.message.edit.stopped", e instanceof MessageException
+                ? new ChatComponentTranslation(((MessageException) e).key(), ((MessageException) e).arguments())
+                : new ChatComponentTranslation("schematica.message.edit.see_log")));
             pending.compareAndSet(job, null);
         }
     }

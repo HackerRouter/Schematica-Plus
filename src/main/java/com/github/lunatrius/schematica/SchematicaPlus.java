@@ -44,15 +44,15 @@ public class SchematicaPlus {
             String message = "Schematica Plus (schematica_plus) cannot load alongside " + conflict
                 + ". Remove the original/GTNH Schematica jar, or remove Schematica Plus.";
             if (FMLCommonHandler.instance().getSide().isClient()) {
-                showConflict(message);
+                showConflict(message, conflict);
             }
             throw new LoaderException(message);
         }
     }
 
     @SideOnly(Side.CLIENT)
-    private static void showConflict(String message) {
-        throw new com.github.lunatrius.schematica.client.gui.SchematicaPlusConflictException(message);
+    private static void showConflict(String message, String conflict) {
+        throw new com.github.lunatrius.schematica.client.gui.SchematicaPlusConflictException(message, conflict);
     }
 
     static String findLegacyMod(Iterable<String> modIds) {

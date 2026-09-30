@@ -7,8 +7,7 @@ import net.minecraft.block.Block;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.command.WrongUsageException;
-import net.minecraft.util.ChatComponentText;
-import net.minecraft.util.EnumChatFormatting;
+import net.minecraft.util.ChatComponentTranslation;
 
 import com.github.lunatrius.schematica.tool.ToolManager;
 import com.github.lunatrius.schematica.tool.ToolMode;
@@ -28,7 +27,7 @@ public class CommandSchematicaSetBlock extends CommandBase {
 
     @Override
     public String getCommandUsage(ICommandSender sender) {
-        return "/sblock <primary|target> <block_name> [meta]";
+        return "schematica.command.setblock.usage";
     }
 
     @Override
@@ -63,8 +62,7 @@ public class CommandSchematicaSetBlock extends CommandBase {
             try {
                 meta = Integer.parseInt(args[2]);
             } catch (NumberFormatException e) {
-                sender.addChatMessage(new ChatComponentText(
-                    EnumChatFormatting.RED + "[Schematica] Invalid meta value: " + args[2]));
+                sender.addChatMessage(new ChatComponentTranslation("commands.generic.num.invalid", args[2]));
                 return;
             }
         }
@@ -76,8 +74,7 @@ public class CommandSchematicaSetBlock extends CommandBase {
                 block = (Block) GameData.getBlockRegistry().getObject("minecraft:" + blockName);
             }
             if (block == null || "minecraft:air".equals(GameData.getBlockRegistry().getNameForObject(block))) {
-                sender.addChatMessage(new ChatComponentText(
-                    EnumChatFormatting.RED + "[Schematica] Block not found: " + blockName));
+                sender.addChatMessage(new ChatComponentTranslation("commands.setblock.notFound", blockName));
                 return;
             }
         }
@@ -87,16 +84,10 @@ public class CommandSchematicaSetBlock extends CommandBase {
 
         if (isPrimary) {
             mode.setPrimaryBlock(block, meta);
-            sender.addChatMessage(new ChatComponentText(
-                EnumChatFormatting.GREEN + "[Schematica] " + EnumChatFormatting.RESET +
-                "Primary block set to " + registryName + ":" + meta +
-                " (mode: " + mode.getDisplayName() + ")"));
+            sender.addChatMessage(new ChatComponentTranslation("schematica.message.tool.primary_set", registryName, meta, mode.getDisplayName()));
         } else {
             mode.setSecondaryBlock(block, meta);
-            sender.addChatMessage(new ChatComponentText(
-                EnumChatFormatting.GREEN + "[Schematica] " + EnumChatFormatting.RESET +
-                "Target block set to " + registryName + ":" + meta +
-                " (mode: " + mode.getDisplayName() + ")"));
+            sender.addChatMessage(new ChatComponentTranslation("schematica.message.tool.target_set", registryName, meta, mode.getDisplayName()));
         }
     }
 

@@ -2,6 +2,7 @@ package com.github.lunatrius.schematica.network.message;
 
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.util.ChatComponentText;
+import net.minecraft.util.StatCollector;
 
 import com.github.lunatrius.schematica.handler.DownloadHandler;
 import com.github.lunatrius.schematica.network.transfer.SchematicTransfer;
@@ -32,8 +33,9 @@ public class MessageDownloadBeginAck implements IMessage, IMessageHandler<Messag
         if (transfer != null && transfer.state == SchematicTransfer.State.BEGIN) {
             if (!transfer.acceptGeometrySupport(message.supportsGeometry)) {
                 DownloadHandler.INSTANCE.transferMap.remove(player);
-                player.addChatMessage(new ChatComponentText(
-                    "Schematica Plus: update the client to download schematics with subregions or custom origins."));
+                String key = "schematica.message.download.update_client";
+                player.addChatMessage(new ChatComponentText(StatCollector.canTranslate(key) ? StatCollector.translateToLocal(key)
+                    : "Schematica Plus: update the client to download schematics with subregions or custom origins."));
                 return null;
             }
             transfer.setState(SchematicTransfer.State.CHUNK_WAIT);
