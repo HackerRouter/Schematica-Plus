@@ -6,8 +6,8 @@ import java.io.File;
 import java.io.IOException;
 
 import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.client.resources.I18n;
 
+import com.github.lunatrius.schematica.client.gui.framework.UiTranslations;
 import com.github.lunatrius.schematica.SchematicaPlus;
 import com.github.lunatrius.schematica.client.gui.browser.GuiSchematicBrowser;
 import com.github.lunatrius.schematica.client.gui.browser.SchematicBrowserModel;
@@ -26,7 +26,7 @@ public final class GuiSchematicLoad extends GuiSchematicBrowser {
     private boolean placeOnLoad = true;
 
     public GuiSchematicLoad(GuiScreen parent) {
-        super(parent, I18n.format("litematica.gui.title.load_schematic"), false);
+        super(parent, UiTranslations.format("litematica.gui.title.load_schematic"), false);
     }
 
     @Override
@@ -40,10 +40,10 @@ public final class GuiSchematicLoad extends GuiSchematicBrowser {
         renameFile = addAction("litematica.gui.button.rename_file", this::renameSelectedFile);
         addAction("litematica.gui.button.change_menu.show_loaded_schematics",
             () -> mc.displayGuiScreen(new GuiSchematicLoadedList(this))).setSprite(UiSprite.LOADED_SCHEMATICS);
-        createPlacement = root.add(new UiCheckBox(() -> I18n.format("litematica.gui.label.schematic_load.checkbox.create_placement"),
+        createPlacement = root.add(new UiCheckBox(() -> UiTranslations.format("litematica.gui.label.schematic_load.checkbox.create_placement"),
             () -> placeOnLoad, value -> placeOnLoad = value));
-        createPlacement.setTooltip(I18n.format("schematica.ui.source.load_hint"));
-        load.setTooltip(I18n.format("schematica.ui.load.hint"));
+        createPlacement.setTooltip(UiTranslations.format("schematica.ui.source.load_hint"));
+        load.setTooltip(UiTranslations.format("schematica.ui.load.hint"));
     }
 
     @Override
@@ -55,13 +55,13 @@ public final class GuiSchematicLoad extends GuiSchematicBrowser {
     @Override
     protected void activateFile(SchematicBrowserModel.Entry entry) {
         if (!SchematicaPlus.proxy.isLoadEnabled || mc.theWorld == null || mc.thePlayer == null) {
-            setStatus(I18n.format("schematica.ui.load.disabled"));
+            setStatus(UiTranslations.format("schematica.ui.load.disabled"));
             return;
         }
         try {
             File file = browser.readableFile(entry);
             SchematicLibrary.Source<SchematicSourceData> source = SchematicGuiLoader.load(mc, file, placeOnLoad);
-            setStatus(I18n.format("schematica.ui.load.success", source.name(),
+            setStatus(UiTranslations.format("schematica.ui.load.success", source.name(),
                 source.data().width, source.data().height, source.data().length));
         } catch (IOException | RuntimeException e) {
             fail("schematica.ui.load.failed", e);

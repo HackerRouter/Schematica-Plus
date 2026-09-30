@@ -3,8 +3,8 @@
 package com.github.lunatrius.schematica.client.gui;
 
 import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.client.resources.I18n;
 
+import com.github.lunatrius.schematica.client.gui.framework.UiTranslations;
 import com.github.lunatrius.schematica.SchematicaPlus;
 import com.github.lunatrius.schematica.client.gui.framework.UiButton;
 import com.github.lunatrius.schematica.client.gui.framework.UiScreen;
@@ -47,15 +47,15 @@ public final class GuiSchematicMainMenu extends UiScreen {
             () -> mc.displayGuiScreen(new GuiSchematicLoad(this)));
         area = menu("area_editor", UiSprite.AREA_EDITOR, () -> mc.displayGuiScreen(new GuiAreaSelectionEditor(this)));
         selections = unavailable(menu("show_area_selections", UiSprite.AREA_SELECTION, () -> {}));
-        selectionMode = unavailable(root.add(new UiButton(() -> I18n.format("litematica.gui.button.area_selection_mode",
-            I18n.format("litematica.gui.label.area_selection.mode.simple")), button -> {})));
+        selectionMode = unavailable(root.add(new UiButton(() -> UiTranslations.format("litematica.gui.button.area_selection_mode",
+            UiTranslations.format("litematica.gui.label.area_selection.mode.simple")), button -> {})));
         config = menu("configuration_menu", UiSprite.CONFIGURATION, () -> mc.displayGuiScreen(new GuiModConfig(this)));
         manager = menu("schematic_manager", UiSprite.SCHEMATIC_MANAGER,
             () -> mc.displayGuiScreen(new GuiSchematicManager(this)));
         tasks = unavailable(menu("task_manager", UiSprite.TASK_MANAGER, () -> {}));
-        mode = root.add(new UiButton(() -> I18n.format("litematica.gui.button.tool_mode", ToolManager.getCurrentMode().getDisplayName()),
+        mode = root.add(new UiButton(() -> UiTranslations.format("litematica.gui.button.tool_mode", ToolManager.getCurrentMode().getDisplayName()),
             button -> { ToolManager.cycleMode(button == 0); layoutWidgets(); }));
-        mode.setTooltip(I18n.format("schematica.ui.menu.mode_hint"));
+        mode.setTooltip(UiTranslations.format("schematica.ui.menu.mode_hint"));
     }
 
     @Override
@@ -72,9 +72,9 @@ public final class GuiSchematicMainMenu extends UiScreen {
         UiButton[] buttons = {placements, loaded, load, area, selections, config, manager, tasks};
         for (UiButton button : buttons) column = Math.max(column, fontRendererObj.getStringWidth(button.label()) + 30);
         column = Math.max(column, fontRendererObj.getStringWidth(selectionMode.label()) + 10);
-        column = Math.max(column, fontRendererObj.getStringWidth(I18n.format("litematica.gui.button.change_menu.schematic_projects_manager")) + 30);
-        column = Math.max(column, fontRendererObj.getStringWidth(I18n.format("litematica.gui.button.area_selection_mode",
-            I18n.format("litematica.gui.label.area_selection.mode.normal"))) + 10);
+        column = Math.max(column, fontRendererObj.getStringWidth(UiTranslations.format("litematica.gui.button.change_menu.schematic_projects_manager")) + 30);
+        column = Math.max(column, fontRendererObj.getStringWidth(UiTranslations.format("litematica.gui.button.area_selection_mode",
+            UiTranslations.format("litematica.gui.label.area_selection.mode.normal"))) + 10);
         placements.setBounds(12, 30, column, 20);
         loaded.setBounds(12, 52, column, 20);
         load.setBounds(12, 74, column, 20);

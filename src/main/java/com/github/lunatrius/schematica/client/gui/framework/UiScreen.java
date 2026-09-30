@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.client.resources.I18n;
 
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
@@ -50,10 +49,10 @@ public abstract class UiScreen extends GuiScreen {
     protected boolean handleKey(char character, int keyCode) { return false; }
 
     protected UiButton addButton(String key, Runnable action) {
-        UiButton button = root.add(new UiButton(() -> I18n.format(key), mouseButton -> {
+        UiButton button = root.add(new UiButton(() -> UiTranslations.format(key), mouseButton -> {
             if (mouseButton == 0) action.run();
         }));
-        button.setTooltip(I18n.format(key));
+        button.setTooltip(UiTranslations.format(key));
         return button;
     }
 
@@ -200,7 +199,7 @@ public abstract class UiScreen extends GuiScreen {
 
     protected final UiButton unavailable(UiButton button) {
         button.setEnabled(false);
-        button.setTooltip(I18n.format("schematica.ui.pending"));
+        button.setTooltip(UiTranslations.format("schematica.ui.pending"));
         return button;
     }
 
@@ -242,10 +241,10 @@ public abstract class UiScreen extends GuiScreen {
         ConfirmationPanel(String title, String message, Runnable confirmed) {
             this.dialogTitle = title;
             this.message = message;
-            cancel = add(new UiButton(() -> "\u00a7c" + I18n.format("malilib.gui.button.cancel") + "\u00a7r", button -> {
+            cancel = add(new UiButton(() -> "\u00a7c" + UiTranslations.format("malilib.gui.button.cancel") + "\u00a7r", button -> {
                 if (button == 0) input.popModal();
             }));
-            accept = add(new UiButton(() -> "\u00a7a" + I18n.format("malilib.gui.button.ok") + "\u00a7r", button -> {
+            accept = add(new UiButton(() -> "\u00a7a" + UiTranslations.format("malilib.gui.button.ok") + "\u00a7r", button -> {
                 if (button == 0) {
                     input.popModal();
                     confirmed.run();

@@ -3,8 +3,8 @@
 package com.github.lunatrius.schematica.client.gui.save;
 
 import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.client.resources.I18n;
 
+import com.github.lunatrius.schematica.client.gui.framework.UiTranslations;
 import com.github.lunatrius.schematica.SchematicaPlus;
 import com.github.lunatrius.schematica.client.gui.framework.UiButton;
 import com.github.lunatrius.schematica.client.gui.framework.UiCheckBox;
@@ -29,22 +29,22 @@ public final class GuiAreaSelectionEditor extends UiScreen {
     private final UiIntegerField[][] coordinates = new UiIntegerField[2][3];
 
     public GuiAreaSelectionEditor(GuiScreen parent) {
-        super(parent, I18n.format("litematica.gui.title.area_editor_simple"));
+        super(parent, UiTranslations.format("litematica.gui.title.area_editor_simple"));
     }
 
     private UiButton fixed(String key, Object... arguments) {
-        return unavailable(root.add(new UiButton(() -> I18n.format(key, arguments), button -> {})));
+        return unavailable(root.add(new UiButton(() -> UiTranslations.format(key, arguments), button -> {})));
     }
 
     private void label(String key, int x, int y) {
-        root.add(new UiLabel(() -> I18n.format(key))).setBounds(x, y, 202, 12);
+        root.add(new UiLabel(() -> UiTranslations.format(key))).setBounds(x, y, 202, 12);
     }
 
     @Override
     protected void createWidgets() {
-        selectionMode = fixed("litematica.gui.button.area_editor.change_selection_mode", I18n.format("litematica.gui.label.area_selection.mode.simple"));
-        cornerMode = fixed("litematica.gui.button.area_editor.change_corner_mode", I18n.format("schematica.ui.area.corners"));
-        origin = fixed("litematica.gui.button.area_editor.origin_enabled", "\u00a7c" + I18n.format("options.off"));
+        selectionMode = fixed("litematica.gui.button.area_editor.change_selection_mode", UiTranslations.format("litematica.gui.label.area_selection.mode.simple"));
+        cornerMode = fixed("litematica.gui.button.area_editor.change_corner_mode", UiTranslations.format("litematica.hud.area_selection.mode.corners"));
+        origin = fixed("litematica.gui.button.area_editor.origin_enabled", "\u00a7c" + UiTranslations.format("options.off"));
         label("litematica.gui.label.area_editor.selection_name", 12, 44);
         name = root.add(new UiTextField(fontRendererObj, 200, text -> {}));
         name.setBounds(12, 59, 202, 16);
@@ -64,7 +64,7 @@ public final class GuiAreaSelectionEditor extends UiScreen {
         for (int point = 0; point < 2; point++) {
             final int index = point;
             int x = 12 + point * 110;
-            UiCheckBox corner = root.add(new UiCheckBox(() -> I18n.format("litematica.gui.label.area_editor.corner_" + (index + 1)),
+            UiCheckBox corner = root.add(new UiCheckBox(() -> UiTranslations.format("litematica.gui.label.area_editor.corner_" + (index + 1)),
                 () -> false, value -> {}));
             unavailable(corner).setBounds(x, 113, 100, 11);
             for (int axis = 0; axis < 3; axis++) {
@@ -83,7 +83,7 @@ public final class GuiAreaSelectionEditor extends UiScreen {
                 UiButton nudge = root.add(new UiButton(() -> "", button -> field.setValue((long) field.value() + (button == 0 ? 1 : -1)))
                     .setSprite(UiSprite.PLUS_MINUS).setBackground(false));
                 nudge.setBounds(x + 84, 126 + axis * 20, 16, 16);
-                nudge.setTooltip(I18n.format("schematica.ui.save.coordinate_hint"));
+                nudge.setTooltip(UiTranslations.format("schematica.ui.save.coordinate_hint"));
             }
             UiButton move = addButton("litematica.gui.button.move_to_player", () -> {
                 if (mc.thePlayer != null) { ClientProxy.movePointToPlayer(point(index)); sync(); }
@@ -95,7 +95,7 @@ public final class GuiAreaSelectionEditor extends UiScreen {
         save.setBounds(22, 208, fontRendererObj.getStringWidth(save.label()) + 10, 20);
         UiButton analyze = unavailable(addButton("litematica.gui.button.area_editor.analyze_area", () -> {}));
         analyze.setBounds(132, 208, fontRendererObj.getStringWidth(analyze.label()) + 10, 20);
-        guide = root.add(new UiCheckBox(() -> I18n.format("schematica.ui.save.guide"), () -> ClientProxy.isRenderingGuide,
+        guide = root.add(new UiCheckBox(() -> UiTranslations.format("schematica.ui.save.guide"), () -> ClientProxy.isRenderingGuide,
             value -> { ClientProxy.isRenderingGuide = value; WorldHandler.INSTANCE.saveSession(); }));
         guide.setBounds(250, 48, 160, 11);
     }

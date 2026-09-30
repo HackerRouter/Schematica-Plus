@@ -7,8 +7,8 @@ import java.util.List;
 import java.util.Locale;
 
 import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.client.resources.I18n;
 
+import com.github.lunatrius.schematica.client.gui.framework.UiTranslations;
 import com.github.lunatrius.schematica.client.gui.framework.UiButton;
 
 public final class GuiSchematicManager extends GuiSchematicBrowser {
@@ -22,7 +22,7 @@ public final class GuiSchematicManager extends GuiSchematicBrowser {
     };
 
     public GuiSchematicManager(GuiScreen parent) {
-        super(parent, I18n.format("litematica.gui.title.schematic_manager"), false);
+        super(parent, UiTranslations.format("litematica.gui.title.schematic_manager"), false);
     }
 
     @Override
@@ -38,7 +38,7 @@ public final class GuiSchematicManager extends GuiSchematicBrowser {
                 default: break;
             }
         });
-        operations.setTooltip(I18n.format("schematica.ui.files.operations_hint"));
+        operations.setTooltip(UiTranslations.format("schematica.ui.files.operations_hint"));
         groups.add(new UiButton[] {edit, selector(0)});
         groups.add(new UiButton[] {importFile});
         groups.add(new UiButton[] {export, selector(1)});
@@ -47,7 +47,7 @@ public final class GuiSchematicManager extends GuiSchematicBrowser {
     }
 
     private UiButton selector(int type) {
-        UiButton button = root.add(new UiButton(() -> I18n.format(optionKey(type)), mouse -> {
+        UiButton button = root.add(new UiButton(() -> UiTranslations.format(optionKey(type)), mouse -> {
             choices[type] = Math.floorMod(choices[type] + (mouse == 0 ? 1 : -1), OPTIONS[type].length);
             updateVisibility();
             layoutWidgets();
@@ -71,10 +71,10 @@ public final class GuiSchematicManager extends GuiSchematicBrowser {
             UiButton selector = groups.get(group)[1];
             if (type == 2) {
                 String option = OPTIONS[type][choices[type]].substring("file_op_type.".length());
-                selector.setTooltip(I18n.format("schematica.ui.files.option." + option));
+                selector.setTooltip(UiTranslations.format("schematica.ui.files.option." + option));
             } else {
-                selector.setTooltip(I18n.format("schematica.ui.pending"), I18n.format(optionKey(type)),
-                    I18n.format("schematica.ui.files.selector_hint"));
+                selector.setTooltip(UiTranslations.format("schematica.ui.pending"), UiTranslations.format(optionKey(type)),
+                    UiTranslations.format("schematica.ui.files.selector_hint"));
             }
         }
     }
@@ -92,7 +92,7 @@ public final class GuiSchematicManager extends GuiSchematicBrowser {
     @Override protected void layoutActions() { arrange(true); }
 
     private int arrange(boolean place) {
-        int available = Math.max(40, width - fontRendererObj.getStringWidth(I18n.format("litematica.gui.button.change_menu.to_main_menu")) - 44);
+        int available = Math.max(40, width - fontRendererObj.getStringWidth(UiTranslations.format("litematica.gui.button.change_menu.to_main_menu")) - 44);
         int rows = 1;
         int used = 0;
         for (UiButton[] group : groups) {

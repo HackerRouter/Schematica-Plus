@@ -522,3 +522,52 @@ renamed source-only records and changed-size origin calculations. Native GTNH
 rendering and world-session behavior still require the checks in TESTING.md.
 Area libraries, subregions, verifier/tasks, advanced input and format conversion
 remain separate backend work; this phase does not complete those features.
+
+## Phase 11: complete upstream translation catalogs
+
+Litematica 26.1.2-0.27.8 is the translation-key baseline for the UI port. All 13
+upstream language catalogs are bundled, including keys for features not yet
+ported, block names and translator credits. The English catalog has 1,149 keys;
+the other catalogs each have 1,150, including an additional shader warning that
+is absent from upstream English. MaLiLib 26.1.2-0.28.8 contributes its complete
+455-key catalogs for 12 languages. It supplies no Turkish catalog; those labels
+use Minecraft's normal English fallback. No translations are synthesized.
+
+The merged catalogs remain in assets/schematica_plus_litematica/lang. Original
+key spelling, case, placeholders, formatting codes and text are retained, including
+upstream trailing spaces (exempted from Git's check for these generated files).
+Only the storage format changes from JSON to UTF-8 .lang, and region suffixes change
+case for 1.7.10 (en_us -> en_US). pack.mcmeta registers lzh (Literary Chinese),
+which vanilla 1.7.10 does not list. Vanilla and other mods' untranslated text in
+that locale falls back to English; this does not provide new game translations
+or fonts. Available glyphs still depend on the active 1.7.10 font/resource pack.
+
+Ported screens use UiTranslations for upstream strings. Minecraft loads and
+selects the language normally, including resource-pack overrides. UiTranslations
+decodes escaped newlines, tabs, carriage returns and backslashes in the template
+before formatting, so inserted paths such as D:\new\test are never decoded.
+Native 1.7.10 numeric-placeholder normalization still applies. Original literal
+escapes are retained, including the literal backslash-n in the upstream Turkish
+commandUseStrict description. Tool modes, area corner mode, directory navigation,
+list-editor actions and the cached-source save title now use their original keys.
+
+The existing Schematica catalogs are retained for legacy controls, printer/server
+settings and commands. Plus-specific behavior and implementation-limit messages
+keep their own keys, including the extra save-options page and file operations
+whose overwrite behavior differs from upstream. The main menu retains the
+Schematica Plus product name. Adding a translation does not enable its feature.
+New ported functions should use the upstream key whenever the behavior matches,
+and should not edit generated upstream translations to describe Plus differences.
+
+Regenerate from the two reference source roots using Python 3:
+
+```text
+python tools/import_translations.py --litematica <litematica-source-root> --malilib <malilib-source-root>
+```
+
+Add --check to compare every generated file against the sources without writing.
+The importer rejects duplicate/conflicting keys and preserves all source entries.
+It needs no additional Python packages and is not a build-time dependency.
+Automated tests load catalogs with Minecraft's language parser, check complete
+key coverage and fallback, and exercise multiline formatting with user paths.
+Native language switching, font rendering and layout remain manual checks.

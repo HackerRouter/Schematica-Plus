@@ -6,8 +6,8 @@ import java.io.File;
 import java.io.IOException;
 
 import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.client.resources.I18n;
 
+import com.github.lunatrius.schematica.client.gui.framework.UiTranslations;
 import com.github.lunatrius.schematica.client.gui.browser.GuiSchematicBrowser;
 import com.github.lunatrius.schematica.client.gui.browser.SchematicBrowserModel;
 import com.github.lunatrius.schematica.client.gui.framework.UiButton;
@@ -25,7 +25,7 @@ public final class GuiSchematicSourceSave extends GuiSchematicBrowser {
     private UiLabel format;
 
     public GuiSchematicSourceSave(GuiScreen parent, Source<SchematicSourceData> source) {
-        super(parent, I18n.format("schematica.ui.source.save_title"), false);
+        super(parent, UiTranslations.format("litematica.gui.title.save_schematic_from_memory"), false);
         this.source = source;
     }
 
@@ -37,9 +37,9 @@ public final class GuiSchematicSourceSave extends GuiSchematicBrowser {
         name = root.add(new UiTextField(fontRendererObj, 210, text -> {}));
         name.setText(source.name());
         save = addButton("litematica.gui.button.save_to_file", this::save);
-        save.setTooltip(I18n.format("schematica.ui.source.save_hint"));
+        save.setTooltip(UiTranslations.format("schematica.ui.source.save_hint"));
         format = root.add(new UiLabel(() -> source.data().snapshot.extension()));
-        format.setTooltip(I18n.format("schematica.ui.source.save_hint"));
+        format.setTooltip(UiTranslations.format("schematica.ui.source.save_hint"));
     }
 
     @Override protected void tickScreen() {
@@ -55,8 +55,8 @@ public final class GuiSchematicSourceSave extends GuiSchematicBrowser {
         if (browser == null || !ClientProxy.SCHEMATICS.sources().contains(source)) return;
         try {
             File file = SchematicSaveTarget.sourceCopy(browser.root(), browser.directory(), name.text(), source.data().snapshot.extension());
-            if (file.exists()) confirm(I18n.format("schematica.ui.save.overwrite_title"),
-                I18n.format("schematica.ui.save.overwrite", file.getName()), () -> write(file, true));
+            if (file.exists()) confirm(UiTranslations.format("schematica.ui.save.overwrite_title"),
+                UiTranslations.format("schematica.ui.save.overwrite", file.getName()), () -> write(file, true));
             else write(file, false);
         } catch (IOException | IllegalArgumentException e) {
             fail("schematica.ui.source.save_failed", e);
@@ -65,14 +65,14 @@ public final class GuiSchematicSourceSave extends GuiSchematicBrowser {
 
     private void write(File file, boolean replace) {
         if (!ClientProxy.SCHEMATICS.sources().contains(source)) {
-            setStatus(I18n.format("schematica.ui.source.unloaded"));
+            setStatus(UiTranslations.format("schematica.ui.source.unloaded"));
             return;
         }
         try {
             File checked = SchematicSaveTarget.sourceCopy(browser.root(), file.getParentFile(), file.getName(), source.data().snapshot.extension());
             source.data().snapshot.write(checked, replace);
             refreshFiles();
-            setStatus(I18n.format("schematica.ui.source.saved", file.getName()));
+            setStatus(UiTranslations.format("schematica.ui.source.saved", file.getName()));
         } catch (IOException | IllegalArgumentException e) {
             fail("schematica.ui.source.save_failed", e);
         }

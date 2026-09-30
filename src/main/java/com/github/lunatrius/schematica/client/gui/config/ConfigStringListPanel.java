@@ -7,8 +7,8 @@ import java.util.Collections;
 import java.util.List;
 
 import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.client.resources.I18n;
 
+import com.github.lunatrius.schematica.client.gui.framework.UiTranslations;
 import com.github.lunatrius.schematica.client.gui.framework.UiBounds;
 import com.github.lunatrius.schematica.client.gui.framework.UiButton;
 import com.github.lunatrius.schematica.client.gui.framework.UiDraw;
@@ -58,7 +58,7 @@ public final class ConfigStringListPanel extends UiPanel {
     public void draw(UiDraw draw, int mouseX, int mouseY) {
         draw.fill(bounds(), 0xFF000000);
         draw.border(bounds(), 0xFF808080);
-        String title = I18n.format("malilib.gui.title.string_list_edit", draft.property.getName());
+        String title = UiTranslations.format("malilib.gui.title.string_list_edit", draft.property.getName());
         draw.text(draw.trim(title, bounds().width - 20), bounds().x + 10, bounds().y + 6, 0xFFFFFFFF);
         super.draw(draw, mouseX, mouseY);
     }
@@ -86,7 +86,7 @@ public final class ConfigStringListPanel extends UiPanel {
             number = add(new UiLabel(() -> String.format("%3d:", index + 1), 0xFFC0C0C0));
             text = add(new UiTextField(font, 65535, edited -> { value.text = edited; if (!isDummy) publish(); }));
             text.setText(value.text);
-            reset = add(new UiButton(() -> I18n.format("malilib.gui.button.reset.caps"), button -> text.setText("")));
+            reset = add(new UiButton(() -> UiTranslations.format("malilib.gui.button.reset.caps"), button -> text.setText("")));
             insert = action(UiSprite.ADD, "add", () -> { values.add(Math.min(index, values.size()), new Value("")); refresh(); });
             remove = action(UiSprite.REMOVE, "remove", () -> { values.remove(value); refresh(); });
             down = action(UiSprite.MOVE_DOWN, "move_down", () -> move(1));
@@ -102,7 +102,7 @@ public final class ConfigStringListPanel extends UiPanel {
         private UiButton action(UiSprite sprite, String label, Runnable action) {
             UiButton button = add(new UiButton(() -> "", mouse -> { if (mouse == 0) action.run(); })
                 .setSprite(sprite).setBackground(false));
-            button.setTooltip(I18n.format("schematica.ui.config.list." + label));
+            button.setTooltip(UiTranslations.format("malilib.gui.button.hovertext." + label));
             return button;
         }
 

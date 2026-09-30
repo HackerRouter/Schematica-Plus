@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.lwjgl.input.Keyboard;
 import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.client.resources.I18n;
+import com.github.lunatrius.schematica.client.gui.framework.UiTranslations;
 import com.github.lunatrius.schematica.client.gui.framework.UiBounds;
 import com.github.lunatrius.schematica.client.gui.framework.UiButton;
 import com.github.lunatrius.schematica.client.gui.framework.UiDraw;
@@ -34,19 +34,19 @@ public final class GuiSchematicPlacementsList extends GuiSchematicList<Schematic
             this.world = world;
             this.index = index;
             button("litematica.gui.button.schematic_placements.remove", () -> ClientProxy.removePlacement(world));
-            UiButton toggle = add(new UiButton(() -> I18n.format("litematica.gui.button.schematic_placements.placement_enabled",
-                (world.isRendering ? "\u00a7a" : "\u00a7c") + I18n.format(world.isRendering ? "options.on" : "options.off")),
+            UiButton toggle = add(new UiButton(() -> UiTranslations.format("litematica.gui.button.schematic_placements.placement_enabled",
+                (world.isRendering ? "\u00a7a" : "\u00a7c") + UiTranslations.format(world.isRendering ? "options.on" : "options.off")),
                 mouse -> { if (mouse == 0 && ClientProxy.loadedSchematics.contains(world)) { world.isRendering = !world.isRendering; WorldHandler.INSTANCE.saveSession(); } }));
             buttons.add(toggle);
             button("litematica.gui.button.schematic_placements.configure", () -> {
                 mc.displayGuiScreen(new GuiPlacementConfiguration(GuiSchematicPlacementsList.this, world));
             });
             setTooltip(world.name, world.sourceFilename == null ? "" : world.sourceFilename,
-                I18n.format("schematica.ui.source.placement_hint"));
+                UiTranslations.format("schematica.ui.source.placement_hint"));
         }
 
         private UiButton button(String key, Runnable action) {
-            UiButton button = add(new UiButton(() -> I18n.format(key), mouse -> { if (mouse == 0 && ClientProxy.loadedSchematics.contains(world)) action.run(); }));
+            UiButton button = add(new UiButton(() -> UiTranslations.format(key), mouse -> { if (mouse == 0 && ClientProxy.loadedSchematics.contains(world)) action.run(); }));
             buttons.add(button);
             return button;
         }

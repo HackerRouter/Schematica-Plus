@@ -1,5 +1,7 @@
 * text eol=lf
 
+src/main/resources/assets/schematica_plus_litematica/lang/*.lang whitespace=-blank-at-eol
+
 *.[jJ][aA][rR]          binary
 
 *.[pP][nN][gG]          binary

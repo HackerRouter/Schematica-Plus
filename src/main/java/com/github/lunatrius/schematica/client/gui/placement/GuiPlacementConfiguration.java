@@ -11,13 +11,13 @@ import java.util.function.Supplier;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.client.resources.I18n;
 import net.minecraft.util.MathHelper;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
 
 import org.lwjgl.input.Keyboard;
 
+import com.github.lunatrius.schematica.client.gui.framework.UiTranslations;
 import com.github.lunatrius.schematica.client.gui.control.GuiSchematicMaterials;
 import com.github.lunatrius.schematica.client.gui.framework.UiBounds;
 import com.github.lunatrius.schematica.client.gui.framework.UiButton;
@@ -61,7 +61,7 @@ public final class GuiPlacementConfiguration extends UiScreen {
     private String status = "";
 
     public GuiPlacementConfiguration(GuiScreen parent, SchematicWorld placement) {
-        super(parent, I18n.format("litematica.gui.title.configure_schematic_placement"));
+        super(parent, UiTranslations.format("litematica.gui.title.configure_schematic_placement"));
         this.placement = java.util.Objects.requireNonNull(placement);
         this.clientWorld = Minecraft.getMinecraft().theWorld;
         regions = new UiListModel<>(22, entry -> regionName());
@@ -78,15 +78,15 @@ public final class GuiPlacementConfiguration extends UiScreen {
     }
 
     private UiButton button(String key, Runnable action) {
-        return button(() -> I18n.format(key), mouse -> { if (mouse == 0) action.run(); });
+        return button(() -> UiTranslations.format(key), mouse -> { if (mouse == 0) action.run(); });
     }
 
     private String value(boolean enabled) {
-        return (enabled ? "\u00a7a" : "\u00a7c") + I18n.format(enabled ? "options.on" : "options.off") + "\u00a7r";
+        return (enabled ? "\u00a7a" : "\u00a7c") + UiTranslations.format(enabled ? "options.on" : "options.off") + "\u00a7r";
     }
 
     private UiButton toggle(String key, BooleanSupplier state, Runnable action) {
-        return button(() -> I18n.format(key, value(state.getAsBoolean())), mouse -> {
+        return button(() -> UiTranslations.format(key, value(state.getAsBoolean())), mouse -> {
             if (mouse == 0) { action.run(); WorldHandler.INSTANCE.saveSession(); }
         });
     }
@@ -103,21 +103,21 @@ public final class GuiPlacementConfiguration extends UiScreen {
             WorldHandler.INSTANCE.saveSession();
             status = "";
         });
-        count = controls.add(new UiLabel(() -> I18n.format("litematica.gui.label.schematic_placement.sub_regions", 1), 0xFFFFFFFF));
-        count.setTooltip(I18n.format("schematica.ui.placement.merged_region"));
+        count = controls.add(new UiLabel(() -> UiTranslations.format("litematica.gui.label.schematic_placement.sub_regions", 1), 0xFFFFFFFF));
+        count.setTooltip(UiTranslations.format("schematica.ui.placement.merged_region"));
         allOn = unavailable(button("litematica.gui.button.schematic_placement.toggle_all_on", () -> {}));
         allOff = unavailable(button("litematica.gui.button.schematic_placement.toggle_all_off", () -> {}));
         enabled = toggle("litematica.gui.button.schematic_placements.placement_enabled", () -> placement.isRendering,
             () -> placement.isRendering = !placement.isRendering);
-        enabled.setTooltip(I18n.format("schematica.ui.placement.visibility"));
+        enabled.setTooltip(UiTranslations.format("schematica.ui.placement.visibility"));
         rendering = unavailable(button(() -> (placement.isRendering ? "\u00a7a" : "\u00a7c")
-            + I18n.format("litematica.gui.button.schematic_placement.abbr.rendering"), mouse -> {}));
-        rendering.setTooltip(I18n.format("schematica.ui.placement.visibility"));
+            + UiTranslations.format("litematica.gui.button.schematic_placement.abbr.rendering"), mouse -> {}));
+        rendering.setTooltip(UiTranslations.format("schematica.ui.placement.visibility"));
         locked = unavailable(toggle("litematica.gui.button.schematic_placements.locked", () -> false, () -> {}));
         box = unavailable(button(() -> "", mouse -> {}).setSprite(UiSprite.ENCLOSING_BOX_DISABLED).setBackground(false));
         entities = toggle("litematica.gui.button.schematic_placement.ignore_entities", () -> !placement.isRenderingEntities,
             () -> placement.isRenderingEntities = !placement.isRenderingEntities);
-        originLabel = controls.add(new UiLabel(() -> I18n.format("litematica.gui.label.placement_settings.placement_origin"), 0xFFFFFFFF));
+        originLabel = controls.add(new UiLabel(() -> UiTranslations.format("litematica.gui.label.placement_settings.placement_origin"), 0xFFFFFFFF));
         for (int i = 0; i < 3; i++) {
             final int axis = i;
             axes[i] = controls.add(new UiLabel(() -> "XYZ".charAt(axis) + ":", 0xFFFFFFFF));
@@ -132,16 +132,16 @@ public final class GuiPlacementConfiguration extends UiScreen {
                 int step = (isShiftKeyDown() ? 8 : 1) * (Keyboard.isKeyDown(Keyboard.KEY_LMENU) || Keyboard.isKeyDown(Keyboard.KEY_RMENU) ? 4 : 1);
                 coordinates[axis].setValue((long) origin[axis] + (mouse == 1 ? -step : step));
             }).setSprite(UiSprite.PLUS_MINUS).setBackground(false);
-            nudges[i].setTooltip(I18n.format("litematica.gui.button.hover.plus_minus_tip"));
+            nudges[i].setTooltip(UiTranslations.format("litematica.gui.button.hover.plus_minus_tip"));
             coordinateLocks[i] = controls.add(new UiCheckBox(() -> "", () -> false, value -> {}));
             unavailable(coordinateLocks[i]);
         }
         move = button("litematica.gui.button.move_to_player", () -> moveTo(new int[] {
             MathHelper.floor_double(mc.thePlayer.posX), MathHelper.floor_double(mc.thePlayer.boundingBox.minY),
             MathHelper.floor_double(mc.thePlayer.posZ)}));
-        rotation = button(() -> I18n.format("litematica.gui.button.rotation_value", orientation == null ? "CUSTOM" : orientation.rotationName()),
+        rotation = button(() -> UiTranslations.format("litematica.gui.button.rotation_value", orientation == null ? "CUSTOM" : orientation.rotationName()),
             mouse -> transform(mouse == 1 ? "YYY" : "Y"));
-        mirror = button(() -> I18n.format("litematica.gui.button.mirror_value", orientation == null ? "CUSTOM" : orientation.mirrorName()),
+        mirror = button(() -> UiTranslations.format("litematica.gui.button.mirror_value", orientation == null ? "CUSTOM" : orientation.mirrorName()),
             mouse -> { if (orientation != null) transform(orientation.cycleMirror(mouse == 1)); });
         reset = unavailable(button("litematica.gui.button.schematic_placement.reset_sub_region_placements", () -> {}));
         materials = button("litematica.gui.button.material_list", () -> mc.displayGuiScreen(new GuiSchematicMaterials(this, placement)));
@@ -156,7 +156,7 @@ public final class GuiPlacementConfiguration extends UiScreen {
             if (searching) input.focus(search);
             else search.setText("");
         }).setSprite(UiSprite.SEARCH).setBackground(false);
-        searchButton.setTooltip(I18n.format("schematica.ui.browser.search_hint"));
+        searchButton.setTooltip(UiTranslations.format("schematica.ui.browser.search_hint"));
         search.setVisible(false);
         feedback = root.add(new UiLabel(() -> status));
     }
@@ -167,7 +167,7 @@ public final class GuiPlacementConfiguration extends UiScreen {
     }
 
     private void message(String key) {
-        status = I18n.format(key);
+        status = UiTranslations.format(key);
         feedback.setTooltip(status);
     }
 
@@ -249,7 +249,7 @@ public final class GuiPlacementConfiguration extends UiScreen {
         }
         rotation.setEnabled(orientation != null);
         mirror.setEnabled(orientation != null);
-        String tooltip = I18n.format(orientation == null ? "schematica.ui.placement.custom_transform" : "schematica.ui.placement.transform_hint");
+        String tooltip = UiTranslations.format(orientation == null ? "schematica.ui.placement.custom_transform" : "schematica.ui.placement.transform_hint");
         rotation.setTooltip(tooltip);
         mirror.setTooltip(tooltip);
     }
@@ -319,13 +319,13 @@ public final class GuiPlacementConfiguration extends UiScreen {
         private final UiButton toggle;
 
         RegionRow() {
-            configure = add(new UiButton(() -> I18n.format("litematica.gui.button.schematic_placements.configure"), mouse -> {}));
-            toggle = add(new UiButton(() -> I18n.format("litematica.gui.button.schematic_placements.placement_enabled", value(placement.isRendering)), mouse -> {}));
+            configure = add(new UiButton(() -> UiTranslations.format("litematica.gui.button.schematic_placements.configure"), mouse -> {}));
+            toggle = add(new UiButton(() -> UiTranslations.format("litematica.gui.button.schematic_placements.placement_enabled", value(placement.isRendering)), mouse -> {}));
             unavailable(configure);
             unavailable(toggle);
-            configure.setTooltip(I18n.format("schematica.ui.placement.merged_region"));
-            toggle.setTooltip(I18n.format("schematica.ui.placement.merged_region"));
-            setTooltip(I18n.format("schematica.ui.placement.merged_region"), regionName());
+            configure.setTooltip(UiTranslations.format("schematica.ui.placement.merged_region"));
+            toggle.setTooltip(UiTranslations.format("schematica.ui.placement.merged_region"));
+            setTooltip(UiTranslations.format("schematica.ui.placement.merged_region"), regionName());
         }
 
         @Override

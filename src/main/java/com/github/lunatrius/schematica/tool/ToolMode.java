@@ -2,7 +2,8 @@ package com.github.lunatrius.schematica.tool;
 
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.resources.I18n;
+
+import com.github.lunatrius.schematica.client.gui.framework.UiTranslations;
 
 import cpw.mods.fml.common.registry.GameData;
 
@@ -20,13 +21,13 @@ import cpw.mods.fml.common.registry.GameData;
  */
 public enum ToolMode {
 
-    AREA_SELECTION("schematica.tool_mode.area_selection", false, false, false, false),
-    SCHEMATIC_PLACEMENT("schematica.tool_mode.schematic_placement", false, true, false, false),
-    PASTE_SCHEMATIC("schematica.tool_mode.paste_schematic", true, true, false, false),
-    MOVE("schematica.tool_mode.move", false, true, false, false),
-    DELETE("schematica.tool_mode.delete", true, false, false, false),
-    FILL("schematica.tool_mode.fill", true, false, true, false),
-    REPLACE_BLOCK("schematica.tool_mode.replace_block", true, false, true, true);
+    AREA_SELECTION("litematica.tool_mode.name.area_selection", false, false, false, false),
+    SCHEMATIC_PLACEMENT("litematica.tool_mode.name.schematic_placement", false, true, false, false),
+    PASTE_SCHEMATIC("litematica.tool_mode.name.paste_schematic", true, true, false, false),
+    MOVE("litematica.tool_mode.name.move", false, true, false, false),
+    DELETE("litematica.tool_mode.name.delete", true, false, false, false),
+    FILL("litematica.tool_mode.name.fill", true, false, true, false),
+    REPLACE_BLOCK("litematica.tool_mode.name.replace_block", true, false, true, true);
 
     private final String translationKey;
     private final boolean creativeOnly;
@@ -116,7 +117,7 @@ public enum ToolMode {
     }
 
     public String getDisplayName() {
-        return I18n.format(this.translationKey);
+        return UiTranslations.format(this.translationKey);
     }
 
     /**

@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.Map;
 
 import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.client.resources.I18n;
 import net.minecraft.client.settings.GameSettings;
 import net.minecraft.client.settings.KeyBinding;
 import net.minecraftforge.common.config.ConfigCategory;
@@ -17,6 +16,7 @@ import net.minecraftforge.common.config.Property;
 
 import org.lwjgl.input.Keyboard;
 
+import com.github.lunatrius.schematica.client.gui.framework.UiTranslations;
 import com.github.lunatrius.schematica.client.gui.config.ConfigPropertyDraft;
 import com.github.lunatrius.schematica.client.gui.config.ColorPickerPanel;
 import com.github.lunatrius.schematica.handler.RenderColors;
@@ -83,7 +83,7 @@ public class GuiModConfig extends UiScreen {
     private KeyBinding capturingKey;
 
     public GuiModConfig(GuiScreen parent) {
-        super(parent, Reference.NAME + " v" + Reference.VERSION + " - " + I18n.format("schematica.ui.config.title"));
+        super(parent, Reference.NAME + " v" + Reference.VERSION + " - " + UiTranslations.format("schematica.ui.config.title"));
     }
 
     @Override
@@ -107,12 +107,12 @@ public class GuiModConfig extends UiScreen {
             layoutWidgets();
             if (searchOpen) input.focus(search);
         }).setSprite(UiSprite.CONFIG_SEARCH).setBackground(false));
-        searchButton.setTooltip(I18n.format("schematica.ui.config.search"));
+        searchButton.setTooltip(UiTranslations.format("schematica.ui.config.search"));
         search = root.add(new UiTextField(fontRendererObj, 256, text -> refreshEntries()));
-        search.setTooltip(I18n.format("schematica.ui.config.search"));
+        search.setTooltip(UiTranslations.format("schematica.ui.config.search"));
         keySearch = root.add(new UiButton(() -> capturingButton == keySearch ? captureLabel() : keyLabel(keyFilter),
             button -> beginCapture(null, keySearch)));
-        keySearch.setTooltip(I18n.format("schematica.ui.config.key_search"));
+        keySearch.setTooltip(UiTranslations.format("schematica.ui.config.key_search"));
         rows = root.add(new UiRowList<>(model, (entry, index) -> new ConfigRow(entry), 12));
         done = addButton("gui.done", this::closeScreen);
         status = root.add(new UiLabel(this::statusText, 0xFFFFA0A0));
@@ -246,7 +246,7 @@ public class GuiModConfig extends UiScreen {
         keysChanged = true;
     }
 
-    private String captureLabel() { return "§e> " + I18n.format("schematica.ui.config.press_key") + " <§r"; }
+    private String captureLabel() { return "§e> " + UiTranslations.format("schematica.ui.config.press_key") + " <§r"; }
 
     private String keyLabel(int code) {
         return code == 0 ? "NONE" : GameSettings.getKeyDisplayString(code);
@@ -265,7 +265,7 @@ public class GuiModConfig extends UiScreen {
     private String statusText() {
         int invalid = 0;
         for (Entry entry : entries) if (entry.available() && entry.draft != null && !entry.draft.valid()) invalid++;
-        return invalid == 0 ? "" : I18n.format("schematica.ui.config.invalid_count", invalid);
+        return invalid == 0 ? "" : UiTranslations.format("schematica.ui.config.invalid_count", invalid);
     }
 
     @Override
@@ -326,7 +326,7 @@ public class GuiModConfig extends UiScreen {
         }
 
         String name() { return key == null ? draft.property.getName() : key.getKeyDescription(); }
-        String label() { return I18n.format(key == null ? draft.property.getLanguageKey() : key.getKeyDescription()); }
+        String label() { return UiTranslations.format(key == null ? draft.property.getLanguageKey() : key.getKeyDescription()); }
         String searchText() { return name() + " " + label() + " " + category + (modified() ? " modified" : ""); }
         boolean modified() { return key == null ? draft.modified() : key.getKeyCode() != key.getKeyCodeDefault(); }
         Tab tab() {
@@ -336,18 +336,18 @@ public class GuiModConfig extends UiScreen {
             return Names.Config.Category.DEBUG.equals(category) ? Tab.INFO_OVERLAYS : Tab.GENERIC;
         }
         String description() {
-            if (key != null) return I18n.format("schematica.ui.config.key_hint");
+            if (key != null) return UiTranslations.format("schematica.ui.config.key_hint");
             if (color != null) {
-                String description = I18n.format("litematica.config.colors.comment." + color.key).replace("\\n", "\n");
-                if (!color.available) description += "\n" + I18n.format("schematica.ui.color.pending");
-                else if (color == RenderColors.WRONG_STATE) description += "\n" + I18n.format("schematica.ui.color.metadata");
+                String description = UiTranslations.format("litematica.config.colors.comment." + color.key);
+                if (!color.available) description += "\n" + UiTranslations.format("schematica.ui.color.pending");
+                else if (color == RenderColors.WRONG_STATE) description += "\n" + UiTranslations.format("schematica.ui.color.metadata");
                 return description;
             }
-            String translated = I18n.format(draft.property.getLanguageKey() + ".tooltip");
+            String translated = UiTranslations.format(draft.property.getLanguageKey() + ".tooltip");
             String description = translated.equals(draft.property.getLanguageKey() + ".tooltip")
                 ? draft.property.comment : translated;
             return category + ": " + name() + "\n" + description
-                + (Names.Config.Category.SERVER.equals(category) ? "\n" + I18n.format("schematica.ui.config.server") : "");
+                + (Names.Config.Category.SERVER.equals(category) ? "\n" + UiTranslations.format("schematica.ui.config.server") : "");
         }
     }
 
@@ -366,11 +366,11 @@ public class GuiModConfig extends UiScreen {
             this.entry = entry;
             label = add(new UiLabel(entry::label, entry.available() ? 0xFFFFFFFF : 0xFF888888));
             label.setTooltip(entry.description().split("\n"));
-            reset = add(new UiButton(() -> I18n.format("malilib.gui.button.reset.caps"), button -> reset()));
-            reset.setTooltip(I18n.format("schematica.ui.config.reset"));
+            reset = add(new UiButton(() -> UiTranslations.format("malilib.gui.button.reset.caps"), button -> reset()));
+            reset.setTooltip(UiTranslations.format("schematica.ui.config.reset"));
             if (entry.key != null) {
                 editor = add(new UiButton(() -> bindingLabel(entry.key), button -> captureEntry()));
-                editor.setTooltip(I18n.format("schematica.ui.config.key_hint"));
+                editor.setTooltip(UiTranslations.format("schematica.ui.config.key_hint"));
                 keySettings = add(new UiWidget() {
                     @Override public void draw(UiDraw draw, int mouseX, int mouseY) {
                         draw.fill(bounds(), 0xFF000000);
@@ -382,7 +382,7 @@ public class GuiModConfig extends UiScreen {
                     }
                 });
                 keySettings.setEnabled(false);
-                keySettings.setTooltip(I18n.format("schematica.ui.config.key_settings"));
+                keySettings.setTooltip(UiTranslations.format("schematica.ui.config.key_settings"));
             } else if (entry.draft.property.isList()) {
                 editor = add(new UiButton(() -> "[ " + String.join(", ", entry.draft.values()) + " ]", button -> {
                     ConfigStringListPanel panel = new ConfigStringListPanel(fontRendererObj, entry.draft);
@@ -390,7 +390,7 @@ public class GuiModConfig extends UiScreen {
                     input.pushModal(panel);
                 }));
             } else if (entry.draft.property.getType() == Property.Type.BOOLEAN) {
-                editor = add(new UiButton(() -> I18n.format(Boolean.parseBoolean(entry.draft.text())
+                editor = add(new UiButton(() -> UiTranslations.format(Boolean.parseBoolean(entry.draft.text())
                     ? "malilib.gui.button.true" : "malilib.gui.button.false"),
                     button -> entry.draft.setText(Boolean.toString(!Boolean.parseBoolean(entry.draft.text())))));
             } else {
@@ -414,7 +414,7 @@ public class GuiModConfig extends UiScreen {
                         }
                     });
                     swatch.setEnabled(entry.available());
-                    swatch.setTooltip(I18n.format(entry.available() ? "malilib.hover.color_indicator.open_color_editor" : "schematica.ui.color.pending"));
+                    swatch.setTooltip(UiTranslations.format(entry.available() ? "malilib.hover.color_indicator.open_color_editor" : "schematica.ui.color.pending"));
                 }
                 if (entry.draft.supportsSlider()) {
                     slider = add(new UiConfigSlider(entry.draft));
@@ -423,7 +423,7 @@ public class GuiModConfig extends UiScreen {
                         if (!entry.draft.slider) text.setText(entry.draft.text());
                         layout(bounds());
                     }).setBackground(false));
-                    sliderToggle.setTooltip(I18n.format("schematica.ui.config.slider"));
+                    sliderToggle.setTooltip(UiTranslations.format("schematica.ui.config.slider"));
                 }
             }
             editor.setEnabled(entry.available());
@@ -471,8 +471,8 @@ public class GuiModConfig extends UiScreen {
         public void tick() {
             reset.setEnabled(entry.available() && entry.modified());
             if (text != null) text.setTooltip(entry.draft.valid() || !entry.available() ? entry.description().split("\n")
-                : new String[] {entry.color != null ? I18n.format("schematica.ui.color.hex")
-                    : I18n.format("schematica.ui.config.invalid", entry.draft.property.getMinValue(), entry.draft.property.getMaxValue())});
+                : new String[] {entry.color != null ? UiTranslations.format("schematica.ui.color.hex")
+                    : UiTranslations.format("schematica.ui.config.invalid", entry.draft.property.getMinValue(), entry.draft.property.getMaxValue())});
             super.tick();
         }
 

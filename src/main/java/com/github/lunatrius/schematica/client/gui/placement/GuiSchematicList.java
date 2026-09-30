@@ -7,8 +7,8 @@ import java.util.List;
 import java.util.function.Function;
 
 import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.client.resources.I18n;
 
+import com.github.lunatrius.schematica.client.gui.framework.UiTranslations;
 import com.github.lunatrius.schematica.client.gui.framework.UiButton;
 import com.github.lunatrius.schematica.client.gui.framework.UiLabel;
 import com.github.lunatrius.schematica.client.gui.framework.UiListModel;
@@ -32,7 +32,7 @@ abstract class GuiSchematicList<T> extends UiScreen {
     private boolean searching;
 
     GuiSchematicList(GuiScreen parent, boolean placements, Function<T, String> label) {
-        super(parent, I18n.format(placements ? "litematica.gui.title.manage_schematic_placements"
+        super(parent, UiTranslations.format(placements ? "litematica.gui.title.manage_schematic_placements"
             : "litematica.gui.title.manage_loaded_schematics"));
         this.placements = placements;
         model = new UiListModel<>(22, label);
@@ -58,7 +58,7 @@ abstract class GuiSchematicList<T> extends UiScreen {
             if (searching) input.focus(search);
             else search.setText("");
         }).setSprite(UiSprite.SEARCH).setBackground(false));
-        searchButton.setTooltip(I18n.format("schematica.ui.browser.search_hint"));
+        searchButton.setTooltip(UiTranslations.format("schematica.ui.browser.search_hint"));
         first = addButton("litematica.gui.button.change_menu." + (placements ? "show_loaded_schematics" : "load_schematics_to_memory"),
             () -> mc.displayGuiScreen(placements ? new GuiSchematicLoadedList(this) : new GuiSchematicLoad(this)))
             .setSprite(placements ? UiSprite.LOADED_SCHEMATICS : UiSprite.SCHEMATIC_BROWSER);

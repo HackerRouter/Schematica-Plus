@@ -6,9 +6,9 @@ import java.io.File;
 import java.io.IOException;
 
 import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.client.resources.I18n;
 import net.minecraft.world.World;
 
+import com.github.lunatrius.schematica.client.gui.framework.UiTranslations;
 import com.github.lunatrius.schematica.SchematicaPlus;
 import com.github.lunatrius.schematica.client.gui.browser.GuiSchematicBrowser;
 import com.github.lunatrius.schematica.client.gui.browser.SchematicBrowserModel;
@@ -39,7 +39,7 @@ public final class GuiSchematicSave extends GuiSchematicBrowser {
     public GuiSchematicSave(GuiScreen parent) { this(parent, ""); }
 
     public GuiSchematicSave(GuiScreen parent, String initialName) {
-        super(parent, I18n.format("litematica.gui.title.create_schematic_from_selection"), false);
+        super(parent, UiTranslations.format("litematica.gui.title.create_schematic_from_selection"), false);
         this.initialName = initialName;
     }
 
@@ -61,7 +61,7 @@ public final class GuiSchematicSave extends GuiSchematicBrowser {
         String[] keys = {"ignore_entities", "save_from_schematic_world", "visible_blocks_only", "support_blocks"};
         for (int i = 0; i < keys.length; i++) {
             final int index = i;
-            checkboxes[i] = root.add(new UiCheckBox(() -> I18n.format("litematica.gui.label.schematic_save.checkbox." + keys[index]),
+            checkboxes[i] = root.add(new UiCheckBox(() -> UiTranslations.format("litematica.gui.label.schematic_save.checkbox." + keys[index]),
                 () -> index == 0 && !SchematicFormat.saveEntities,
                 value -> { if (index == 0) SchematicFormat.saveEntities = !value; }));
             if (i != 0) unavailable(checkboxes[i]);
@@ -82,23 +82,23 @@ public final class GuiSchematicSave extends GuiSchematicBrowser {
 
     private String validateSelection() {
         if (mc.theWorld == null || mc.thePlayer == null || !SchematicaPlus.proxy.isSaveEnabled) {
-            return I18n.format("schematica.ui.save.disabled");
+            return UiTranslations.format("schematica.ui.save.disabled");
         }
-        if (!ClientProxy.isRenderingGuide) return I18n.format("schematica.ui.save.enable_guide");
+        if (!ClientProxy.isRenderingGuide) return UiTranslations.format("schematica.ui.save.enable_guide");
         try {
             Vector3i min = ClientProxy.pointMin;
             Vector3i max = ClientProxy.pointMax;
             SchematicLimits.worldBounds(min.x, min.y, min.z, max.x, max.y, max.z);
         } catch (IllegalArgumentException e) {
-            return I18n.format("schematica.ui.save.invalid_selection");
+            return UiTranslations.format("schematica.ui.save.invalid_selection");
         }
-        if (name.text().trim().isEmpty()) return I18n.format("schematica.ui.save.enter_name");
+        if (name.text().trim().isEmpty()) return UiTranslations.format("schematica.ui.save.enter_name");
         try {
             SchematicSaveTarget.filename(name.text(), extended);
         } catch (IllegalArgumentException e) {
-            return I18n.format("schematica.ui.save.invalid_name");
+            return UiTranslations.format("schematica.ui.save.invalid_name");
         }
-        if (!directory().isDirectory()) return I18n.format("schematica.ui.save.invalid_directory");
+        if (!directory().isDirectory()) return UiTranslations.format("schematica.ui.save.invalid_directory");
         return "";
     }
 
@@ -113,14 +113,14 @@ public final class GuiSchematicSave extends GuiSchematicBrowser {
         super.tickScreen();
         problem = validateSelection();
         save.setEnabled(problem.isEmpty());
-        save.setTooltip(problem.isEmpty() ? I18n.format("schematica.gui.save") : problem);
+        save.setTooltip(problem.isEmpty() ? UiTranslations.format("litematica.gui.button.save_schematic") : problem);
     }
 
     private void saveSelection() {
         tickScreen();
         if (!problem.isEmpty()) return;
         if (!QueueTickHandler.INSTANCE.canQueue(mc.thePlayer)) {
-            setStatus(I18n.format("schematica.ui.save.busy"));
+            setStatus(UiTranslations.format("schematica.ui.save.busy"));
             return;
         }
         try {
@@ -130,25 +130,25 @@ public final class GuiSchematicSave extends GuiSchematicBrowser {
             Vector3i to = ClientProxy.pointMax.clone();
             Runnable submit = () -> submit(file, world, from, to);
             if (file.exists()) {
-                confirm(I18n.format("schematica.ui.save.overwrite_title"),
-                    I18n.format("schematica.ui.save.overwrite", file.getName()), submit);
+                confirm(UiTranslations.format("schematica.ui.save.overwrite_title"),
+                    UiTranslations.format("schematica.ui.save.overwrite", file.getName()), submit);
             } else submit.run();
         } catch (IOException | IllegalArgumentException e) {
             Reference.logger.error("Invalid schematic save target", e);
-            setStatus(I18n.format("schematica.ui.save.invalid_directory"));
+            setStatus(UiTranslations.format("schematica.ui.save.invalid_directory"));
         }
     }
 
     private void submit(File file, World world, Vector3i from, Vector3i to) {
         if (mc.theWorld != world || mc.thePlayer == null || !SchematicaPlus.proxy.isSaveEnabled) {
-            setStatus(I18n.format("schematica.ui.save.disabled"));
+            setStatus(UiTranslations.format("schematica.ui.save.disabled"));
             return;
         }
         if (SchematicaPlus.proxy.saveSchematic(mc.thePlayer, file.getParentFile(), file.getName(), world, from, to)) {
             WorldHandler.INSTANCE.saveSession();
-            setStatus(I18n.format("schematica.ui.save.queued", file.getName()));
+            setStatus(UiTranslations.format("schematica.ui.save.queued", file.getName()));
         } else {
-            setStatus(I18n.format("schematica.ui.save.failed"));
+            setStatus(UiTranslations.format("schematica.ui.save.failed"));
         }
         tickScreen();
     }
@@ -168,15 +168,15 @@ public final class GuiSchematicSave extends GuiSchematicBrowser {
         private UiToggleButton guide;
         private UiButton back;
 
-        SaveOptions() { super(GuiSchematicSave.this, I18n.format("schematica.ui.save.options")); }
+        SaveOptions() { super(GuiSchematicSave.this, UiTranslations.format("schematica.ui.save.options")); }
 
         @Override
         protected void createWidgets() {
             format = root.add(new UiButton(() -> extended ? ".schemplus" : ".schematic", button -> extended = !extended));
-            format.setTooltip(I18n.format("schematica.ui.save.format_hint"));
-            nbt = root.add(new UiToggleButton(() -> I18n.format("schematica.gui.savenbt"), () -> SchematicFormat.saveNBT,
+            format.setTooltip(UiTranslations.format("schematica.ui.save.format_hint"));
+            nbt = root.add(new UiToggleButton(() -> UiTranslations.format("schematica.gui.savenbt"), () -> SchematicFormat.saveNBT,
                 value -> SchematicFormat.saveNBT = value));
-            guide = root.add(new UiToggleButton(() -> I18n.format("schematica.ui.save.guide"), () -> ClientProxy.isRenderingGuide,
+            guide = root.add(new UiToggleButton(() -> UiTranslations.format("schematica.ui.save.guide"), () -> ClientProxy.isRenderingGuide,
                 value -> { ClientProxy.isRenderingGuide = value; WorldHandler.INSTANCE.saveSession(); }));
             back = addButton("gui.back", this::closeScreen);
         }

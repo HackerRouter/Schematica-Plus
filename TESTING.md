@@ -441,3 +441,20 @@ once to establish the new keys. Ordered transforms apply to newly saved sessions
   current library paths, Reload, future Create Placement, and session restoration.
   Saving a copy must not change the source path. Restore backups after testing.
 - The agent has not run these game/client/GL checks; automated tests are headless.
+
+## Phase 11: upstream translations (native checks)
+
+- Switch between English, Simplified/Traditional Chinese, French, Japanese,
+  Turkish and Literary Chinese in Minecraft's language menu. Reopen the main
+  menu, placement/source lists, browser, area editor and configuration. Upstream
+  buttons and tool-mode names should use that language; custom Plus messages
+  and absent translations may use English. Check long labels at GUI scales 1–3.
+- Hover plus/minus controls and color settings. Original multiline descriptions
+  should break into lines and preserve colors instead of displaying backslash-n.
+  Check directory up/root/create and string-list add/remove/move tooltips too.
+- Override an upstream key in a resource pack at
+  assets/schematica_plus_litematica/lang/<locale>.lang and reload resources. Both
+  buttons and tooltips should use the override. Escape newlines as backslash-n
+  and literal backslashes as doubled backslashes for upstream UI templates.
+- Check that legacy Schematica screens, key bindings and command messages still
+  translate. Adding the upstream catalogs must not enable unavailable features.

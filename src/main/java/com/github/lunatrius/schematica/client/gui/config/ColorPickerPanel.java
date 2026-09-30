@@ -7,8 +7,8 @@ import java.util.Map;
 import java.util.function.IntConsumer;
 
 import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.client.resources.I18n;
 
+import com.github.lunatrius.schematica.client.gui.framework.UiTranslations;
 import com.github.lunatrius.schematica.client.gui.config.ColorPickerModel.Channel;
 import com.github.lunatrius.schematica.client.gui.framework.UiBounds;
 import com.github.lunatrius.schematica.client.gui.framework.UiDraw;
@@ -40,7 +40,7 @@ public final class ColorPickerPanel extends UiPanel {
             UiIntegerField field = add(new UiIntegerField(font, model.component(channel), 0, channel.maximum, value -> {
                 if (!syncing) { model.setComponent(channel, value); publish(channel, false); }
             }));
-            field.setTooltip(I18n.format("schematica.ui.color.component", channel.maximum));
+            field.setTooltip(UiTranslations.format("schematica.ui.color.component", channel.maximum));
             fields.put(channel, field);
         }
         hexLabel = add(new UiLabel(() -> "HEX:"));
@@ -49,7 +49,7 @@ public final class ColorPickerPanel extends UiPanel {
             validHex = model.setHex(value);
             if (validHex) publish(null, true);
         }));
-        hex.setTooltip(I18n.format("schematica.ui.color.hex"));
+        hex.setTooltip(UiTranslations.format("schematica.ui.color.hex"));
         sync(null, false);
     }
 
@@ -85,7 +85,7 @@ public final class ColorPickerPanel extends UiPanel {
     @Override public void draw(UiDraw draw, int mouseX, int mouseY) {
         draw.fill(bounds(), 0xFF000000);
         draw.border(bounds(), 0xFF999999);
-        draw.text(I18n.format("malilib.gui.title.color_editor"), bounds().x + 10, bounds().y + 6, 0xFFFFFFFF);
+        draw.text(UiTranslations.format("malilib.gui.title.color_editor"), bounds().x + 10, bounds().y + 6, 0xFFFFFFFF);
         UiBounds preview = new UiBounds(bounds().x + 5, bounds().y + 133, 34, 34);
         draw.fill(preview.inset(1), model.color() | 0xFF000000);
         draw.border(preview, 0xC0FFFFFF);

@@ -9,7 +9,6 @@ import java.util.function.Function;
 import org.lwjgl.input.Keyboard;
 
 import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.client.resources.I18n;
 
 public final class TextInputPanel extends UiPanel {
 
@@ -49,7 +48,7 @@ public final class TextInputPanel extends UiPanel {
     }
 
     private void button(String name, Runnable action) {
-        buttons.add(add(new UiButton(() -> I18n.format("malilib.gui.button." + name), mouse -> {
+        buttons.add(add(new UiButton(() -> UiTranslations.format("malilib.gui.button." + name), mouse -> {
             if (mouse == 0) action.run();
         })));
     }

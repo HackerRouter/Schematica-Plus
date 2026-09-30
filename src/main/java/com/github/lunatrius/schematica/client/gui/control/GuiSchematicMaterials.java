@@ -12,13 +12,13 @@ import java.util.Locale;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.multiplayer.WorldClient;
-import net.minecraft.client.resources.I18n;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ChatComponentText;
 
 import org.lwjgl.input.Keyboard;
 
+import com.github.lunatrius.schematica.client.gui.framework.UiTranslations;
 import com.github.lunatrius.schematica.client.world.RenderLayerSettings;
 import com.github.lunatrius.schematica.SchematicaPlus;
 import com.github.lunatrius.schematica.client.gui.framework.UiBounds;
@@ -83,7 +83,7 @@ public class GuiSchematicMaterials extends UiScreen {
     public GuiSchematicMaterials(GuiScreen parent) { this(parent, ClientProxy.schematic); }
 
     public GuiSchematicMaterials(GuiScreen parent, SchematicWorld schematic) {
-        super(parent, I18n.format("litematica.gui.title.material_list.placement", schematic == null ? "-" : schematic.name));
+        super(parent, UiTranslations.format("litematica.gui.title.material_list.placement", schematic == null ? "-" : schematic.name));
         this.schematic = schematic;
         openedWorld = Minecraft.getMinecraft().theWorld;
         materials.restoreSort(ConfigurationHandler.sortType);
@@ -92,13 +92,13 @@ public class GuiSchematicMaterials extends UiScreen {
     @Override
     protected void createWidgets() {
         refresh = action("refresh_list", this::refresh);
-        scope = root.add(new UiButton(() -> I18n.format(PREFIX + "list_type", I18n.format(
+        scope = root.add(new UiButton(() -> UiTranslations.format(PREFIX + "list_type", UiTranslations.format(
             "litematica.gui.label.block_info_list_type." + (renderLayers ? "render_layers" : "all"))), button -> {
                 renderLayers = !renderLayers;
                 refresh();
                 layoutWidgets();
             }));
-        scope.setTooltip(I18n.format("schematica.ui.material.scope"));
+        scope.setTooltip(UiTranslations.format("schematica.ui.material.scope"));
         UiButton hide = root.add(new UiButton(() -> toggleLabel("hide_available", materials.hideAvailable()), button -> {
             materials.setHideAvailable(!materials.hideAvailable());
             refreshRows();
@@ -107,26 +107,26 @@ public class GuiSchematicMaterials extends UiScreen {
         primary.addAll(Arrays.asList(refresh, scope, hide, hud));
         UiButton clearIgnored = action("clear_ignored", () -> { materials.clearIgnored(); refreshRows(); });
         UiButton cache = unavailable(action("clear_cache", () -> {}));
-        cache.setTooltip(I18n.format("schematica.ui.material.cache_pending"));
+        cache.setTooltip(UiTranslations.format("schematica.ui.material.cache_pending"));
         export = action("write_to_file", this::export);
-        export.setTooltip(I18n.format("schematica.ui.material.export"));
+        export.setTooltip(UiTranslations.format("schematica.ui.material.export"));
         UiButton raw = unavailable(action("write_to_json", () -> {}));
-        raw.setTooltip(I18n.format("schematica.ui.material.raw_pending"));
+        raw.setTooltip(UiTranslations.format("schematica.ui.material.raw_pending"));
         secondary.addAll(Arrays.asList(clearIgnored, cache, export, raw));
-        multiplierLabel = root.add(new UiLabel(() -> I18n.format(LABEL + "multiplier"), 0xFFFFFFFF));
+        multiplierLabel = root.add(new UiLabel(() -> UiTranslations.format(LABEL + "multiplier"), 0xFFFFFFFF));
         multiplier = root.add(new UiIntegerField(fontRendererObj, 1, 1, Integer.MAX_VALUE, value -> {
             materials.setMultiplier(value);
             if (rows != null) { refreshRows(); layoutWidgets(); }
         }));
-        multiplier.setTooltip(I18n.format("schematica.ui.material.multiplier"));
+        multiplier.setTooltip(UiTranslations.format("schematica.ui.material.multiplier"));
         info = root.add(new UiWidget() {
             @Override public void draw(UiDraw draw, int x, int y) {
                 UiSprite.INFO.draw(draw, bounds().x, bounds().y, true, containsVisible(x, y));
             }
             @Override public List<String> tooltip(int x, int y) {
                 long unknown = materials.progress()[4];
-                return Arrays.asList(I18n.format("schematica.ui.material.info"),
-                    I18n.format("schematica.ui.material.unverified", unknown, skipped));
+                return Arrays.asList(UiTranslations.format("schematica.ui.material.info"),
+                    UiTranslations.format("schematica.ui.material.unverified", unknown, skipped));
             }
         });
         header = root.add(new UiPanel());
@@ -137,16 +137,16 @@ public class GuiSchematicMaterials extends UiScreen {
         }));
         searchButton = root.add(new UiButton(() -> "", button -> setSearching(!searching))
             .setSprite(UiSprite.SEARCH).setBackground(false));
-        searchButton.setTooltip(I18n.format("schematica.ui.browser.search_hint"));
+        searchButton.setTooltip(UiTranslations.format("schematica.ui.browser.search_hint"));
         menu = addButton("litematica.gui.button.change_menu.to_main_menu", this::mainMenu);
         progress = root.add(new UiLabel(this::progressText, 0xFFFFFFFF));
-        empty = root.add(new UiLabel(() -> I18n.format("schematica.ui.material.empty"), 0xFFAAAAAA));
+        empty = root.add(new UiLabel(() -> UiTranslations.format("schematica.ui.material.empty"), 0xFFAAAAAA));
     }
 
     private UiButton action(String key, Runnable action) { return addButton(PREFIX + key, action); }
 
     private String toggleLabel(String key, boolean enabled) {
-        return I18n.format(PREFIX + key, I18n.format("malilib.gui.label_colored." + (enabled ? "on" : "off")));
+        return UiTranslations.format(PREFIX + key, UiTranslations.format("malilib.gui.label_colored." + (enabled ? "on" : "off")));
     }
 
     private boolean validContext() {
@@ -200,9 +200,9 @@ public class GuiSchematicMaterials extends UiScreen {
     }
 
     private void updateColumns() {
-        int name = fontRendererObj.getStringWidth("§l" + I18n.format(LABEL + "title.item"));
+        int name = fontRendererObj.getStringWidth("§l" + UiTranslations.format(LABEL + "title.item"));
         int[] counts = new int[3];
-        for (int i = 0; i < 3; i++) counts[i] = fontRendererObj.getStringWidth("§l" + I18n.format(LABEL + "title." + HEADERS[i + 1]));
+        for (int i = 0; i < 3; i++) counts[i] = fontRendererObj.getStringWidth("§l" + UiTranslations.format(LABEL + "title." + HEADERS[i + 1]));
         for (Entry<MaterialItemKey> entry : materials.entries()) {
             name = Math.max(name, fontRendererObj.getStringWidth(entry.name));
             counts[0] = Math.max(counts[0], fontRendererObj.getStringWidth(Long.toString(materials.total(entry))));
@@ -210,7 +210,7 @@ public class GuiSchematicMaterials extends UiScreen {
             counts[2] = Math.max(counts[2], fontRendererObj.getStringWidth(Long.toString(entry.available)));
         }
         columns = MaterialColumns.positions(Math.max(0, width - 34), name, counts,
-            fontRendererObj.getStringWidth(I18n.format(PREFIX + "ignore")) + 10);
+            fontRendererObj.getStringWidth(UiTranslations.format(PREFIX + "ignore")) + 10);
         if (header != null) layoutHeader();
     }
 
@@ -241,7 +241,7 @@ public class GuiSchematicMaterials extends UiScreen {
             }
         } else if (++ticks % 20 == 0 && MaterialScan.updateAvailable(materials.entries(), mc.thePlayer)) refreshRows();
         updateButtons();
-        progress.setTooltip(progressText(), I18n.format("schematica.ui.material.unverified", materials.progress()[4], skipped));
+        progress.setTooltip(progressText(), UiTranslations.format("schematica.ui.material.unverified", materials.progress()[4], skipped));
     }
 
     @Override
@@ -255,7 +255,7 @@ public class GuiSchematicMaterials extends UiScreen {
 
     @Override
     protected void layoutWidgets() {
-        int multiplierWidth = fontRendererObj.getStringWidth(I18n.format(LABEL + "multiplier"));
+        int multiplierWidth = fontRendererObj.getStringWidth(UiTranslations.format(LABEL + "multiplier"));
         int multiplierX = width - multiplierWidth - 56;
         multiplierLabel.setBounds(multiplierX, 29, multiplierWidth, 12);
         multiplier.setBounds(width - 52, 26, 40, 16);
@@ -345,17 +345,17 @@ public class GuiSchematicMaterials extends UiScreen {
     }
 
     private String progressText() {
-        if (!validContext()) return I18n.format("schematica.ui.material.context");
-        if (scan != null) return I18n.format("schematica.ui.material.scanning", scan.percent());
+        if (!validContext()) return UiTranslations.format("schematica.ui.material.context");
+        if (scan != null) return UiTranslations.format("schematica.ui.material.scanning", scan.percent());
         if (System.nanoTime() < noticeUntil) return notice;
         long[] counts = materials.progress();
-        if (counts[4] > 0 || skipped > 0) return I18n.format("schematica.ui.material.unverified", counts[4], skipped);
-        if (counts[0] == 0) return I18n.format(LABEL + "total", 0);
-        String done = I18n.format(LABEL + "progress.done", percent(counts[1], counts[0]));
-        String missing = I18n.format(LABEL + "progress.missing", percent(counts[2], counts[0]));
-        String wrong = I18n.format(LABEL + "progress.mismatch", percent(counts[3], counts[0]));
-        return I18n.format(LABEL + "total", counts[0]) + " / "
-            + I18n.format(LABEL + "progress", done + " / " + missing + " / " + wrong);
+        if (counts[4] > 0 || skipped > 0) return UiTranslations.format("schematica.ui.material.unverified", counts[4], skipped);
+        if (counts[0] == 0) return UiTranslations.format(LABEL + "total", 0);
+        String done = UiTranslations.format(LABEL + "progress.done", percent(counts[1], counts[0]));
+        String missing = UiTranslations.format(LABEL + "progress.missing", percent(counts[2], counts[0]));
+        String wrong = UiTranslations.format(LABEL + "progress.mismatch", percent(counts[3], counts[0]));
+        return UiTranslations.format(LABEL + "total", counts[0]) + " / "
+            + UiTranslations.format(LABEL + "progress", done + " / " + missing + " / " + wrong);
     }
 
     private String percent(long part, long total) { return String.format(Locale.ROOT, "%.1f %%", part * 100.0 / total); }
@@ -374,18 +374,18 @@ public class GuiSchematicMaterials extends UiScreen {
                 return tag.toString();
             });
             Path path = MaterialListExport.write(SchematicaPlus.proxy.getDirectory("dumps").toPath(), format, text);
-            notice = I18n.format("litematica.message.material_list_written_to_file", path.getFileName().toString());
+            notice = UiTranslations.format("litematica.message.material_list_written_to_file", path.getFileName().toString());
             mc.thePlayer.addChatMessage(new ChatComponentText(notice + "\n" + path.toAbsolutePath()));
         } catch (Exception e) {
             Reference.logger.error("Could not export the material list", e);
-            notice = I18n.format("schematica.ui.material.export_failed");
+            notice = UiTranslations.format("schematica.ui.material.export_failed");
         }
         noticeUntil = System.nanoTime() + 5_000_000_000L;
     }
 
     private final class ColumnHeader extends UiWidget {
         private final int column;
-        ColumnHeader(int column) { this.column = column; setTooltip(I18n.format(LABEL + "title." + HEADERS[column])); }
+        ColumnHeader(int column) { this.column = column; setTooltip(UiTranslations.format(LABEL + "title." + HEADERS[column])); }
         @Override public boolean isFocusable() { return true; }
         @Override public boolean mouseDown(int x, int y, int button) { if (button != 0) return false; sort(); return true; }
         @Override public boolean keyTyped(char character, int code) {
@@ -402,7 +402,7 @@ public class GuiSchematicMaterials extends UiScreen {
             draw.fill(bounds(), 0xA0101010);
             draw.border(bounds(), containsVisible(x, y) || isFocused() ? 0xFFFFFFFF : 0xC0707070);
             boolean sorted = materials.sort().ordinal() == column;
-            draw.text(draw.trim("§l" + I18n.format(LABEL + "title." + HEADERS[column]), bounds().width - (sorted ? 21 : 4)),
+            draw.text(draw.trim("§l" + UiTranslations.format(LABEL + "title." + HEADERS[column]), bounds().width - (sorted ? 21 : 4)),
                 bounds().x + 3, bounds().y + 6, 0xFFFFFFFF);
             if (sorted) (materials.descending() ? UiSprite.SORT_DOWN : UiSprite.SORT_UP)
                 .draw(draw, bounds().right() - 16, bounds().y + 2, true, containsVisible(x, y));
@@ -420,7 +420,7 @@ public class GuiSchematicMaterials extends UiScreen {
             this.entry = entry;
             this.index = index;
             stack = entry.key.stack();
-            ignore = add(new UiButton(() -> I18n.format(PREFIX + "ignore"), button -> {
+            ignore = add(new UiButton(() -> UiTranslations.format(PREFIX + "ignore"), button -> {
                 if (button == 0) { materials.ignore(entry.key); refreshRows(); }
             }));
         }
@@ -452,7 +452,7 @@ public class GuiSchematicMaterials extends UiScreen {
         }
         @Override public boolean drawTooltip(UiDraw draw, int mouseX, int mouseY, UiBounds screen) {
             int labels = 0;
-            for (int i = 0; i < 3; i++) labels = Math.max(labels, draw.textWidth("§l" + I18n.format(LABEL + "title." + HEADERS[i])));
+            for (int i = 0; i < 3; i++) labels = Math.max(labels, draw.textWidth("§l" + UiTranslations.format(LABEL + "title." + HEADERS[i])));
             String total = MaterialColumns.stackCount(materials.total(entry), stack.getMaxStackSize());
             String missing = MaterialColumns.stackCount(materials.missing(entry), stack.getMaxStackSize());
             int values = Math.max(draw.textWidth(entry.name) + 20, Math.max(draw.textWidth(total), draw.textWidth(missing)));
@@ -463,7 +463,7 @@ public class GuiSchematicMaterials extends UiScreen {
             draw.fill(box, 0xFF000000);
             draw.border(box, 0xFF808080);
             int valueX = x + labels + 30;
-            for (int i = 0; i < 3; i++) draw.text("§l" + I18n.format(LABEL + "title." + HEADERS[i]), x + 10, y + 10 + i * 16, 0xFFFFFFFF);
+            for (int i = 0; i < 3; i++) draw.text("§l" + UiTranslations.format(LABEL + "title." + HEADERS[i]), x + 10, y + 10 + i * 16, 0xFFFFFFFF);
             try (UiDraw.Clip ignored = draw.clip(box.inset(2))) {
                 renderItem(draw, valueX, y + 6);
                 draw.text(draw.trim(entry.name, box.right() - valueX - 28), valueX + 20, y + 10, 0xFFFFFFFF);

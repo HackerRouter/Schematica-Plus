@@ -14,8 +14,8 @@ import java.util.Locale;
 import org.lwjgl.input.Keyboard;
 
 import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.client.resources.I18n;
 
+import com.github.lunatrius.schematica.client.gui.framework.UiTranslations;
 import com.github.lunatrius.schematica.client.gui.framework.UiButton;
 import com.github.lunatrius.schematica.client.gui.framework.UiBounds;
 import com.github.lunatrius.schematica.client.gui.framework.UiDraw;
@@ -66,18 +66,18 @@ public abstract class GuiSchematicBrowser extends UiScreen {
             }
         });
         path = root.add(new UiLabel(() -> browser == null ? "" : browser.relativeDirectory()));
-        up = icon(UiSprite.UP, "schematica.ui.browser.up", () -> navigate(browser.directory().getParentFile()));
-        home = icon(UiSprite.ROOT, "schematica.ui.browser.root", () -> navigate(browser.root()));
-        createDirectory = icon(UiSprite.CREATE_DIRECTORY, "schematica.ui.browser.create_directory", this::createDirectory);
+        up = icon(UiSprite.UP, "malilib.gui.button.hover.directory_widget.up", () -> navigate(browser.directory().getParentFile()));
+        home = icon(UiSprite.ROOT, "malilib.gui.button.hover.directory_widget.root", () -> navigate(browser.root()));
+        createDirectory = icon(UiSprite.CREATE_DIRECTORY, "malilib.gui.button.hover.directory_widget.create_directory", this::createDirectory);
         search = root.add(new UiTextField(fontRendererObj, 256, files::setQuery));
-        search.setTooltip(I18n.format("schematica.ui.browser.search_hint"));
+        search.setTooltip(UiTranslations.format("schematica.ui.browser.search_hint"));
         searchButton = icon(UiSprite.SEARCH, "schematica.ui.browser.search", () -> {
             searching = !searching;
             layoutWidgets();
             if (searching) input.focus(search);
             else search.setText("");
         });
-        list = root.add(new UiList<>(files, I18n.format("schematica.ui.browser.empty"), this::activate));
+        list = root.add(new UiList<>(files, UiTranslations.format("schematica.ui.browser.empty"), this::activate));
         list.setFileStyle(entry -> entry.directory ? UiSprite.DIRECTORY
             : entry.name().toLowerCase(Locale.ROOT).endsWith(".litematic") ? UiSprite.FILE : UiSprite.SCHEMATIC,
             entry -> entry.directory ? entry.name() : entry.name().substring(0, entry.name().lastIndexOf('.')));
@@ -89,12 +89,12 @@ public abstract class GuiSchematicBrowser extends UiScreen {
                 if (entry == null || entry.directory) return;
                 int x = bounds().x + 3;
                 int y = bounds().y + 3;
-                draw.text(I18n.format("litematica.gui.label.schematic_info.name"), x, y, 0xC0C0C0C0);
+                draw.text(UiTranslations.format("litematica.gui.label.schematic_info.name"), x, y, 0xC0C0C0C0);
                 draw.text(draw.trim(entry.name(), bounds().width - 10), x + 4, y + 12, 0xFFFFFFFF);
                 draw.text(FileUtils.humanReadableByteCount(entry.size), x, y + 36, 0xC0C0C0C0);
                 String date = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date(entry.modified));
                 draw.text(draw.trim(date, bounds().width - 6), x, y + 48, 0xC0C0C0C0);
-                draw.text(draw.trim(I18n.format("schematica.ui.browser.file_info"), bounds().width - 6), x, y + 60, 0xC0C0C0C0);
+                draw.text(draw.trim(UiTranslations.format("schematica.ui.browser.file_info"), bounds().width - 6), x, y + 60, 0xC0C0C0C0);
             }
         });
         message = root.add(new UiLabel(() -> status));
@@ -106,7 +106,7 @@ public abstract class GuiSchematicBrowser extends UiScreen {
     private UiButton icon(UiSprite sprite, String key, Runnable action) {
         UiButton button = root.add(new UiButton(() -> "", mouse -> { if (mouse == 0) action.run(); })
             .setSprite(sprite).setBackground(false));
-        button.setTooltip(I18n.format(key));
+        button.setTooltip(UiTranslations.format(key));
         return button;
     }
 
@@ -144,7 +144,7 @@ public abstract class GuiSchematicBrowser extends UiScreen {
 
     private void createDirectory() {
         if (browser == null) return;
-        prompt(I18n.format("malilib.gui.title.create_directory"), "", name -> {
+        prompt(UiTranslations.format("malilib.gui.title.create_directory"), "", name -> {
             try {
                 File directory = browser.createDirectory(name);
                 selectResult(directory);
@@ -158,7 +158,7 @@ public abstract class GuiSchematicBrowser extends UiScreen {
     protected final void renameSelectedFile() {
         SchematicBrowserModel.Entry entry = selection();
         if (entry == null || entry.directory) return;
-        prompt(I18n.format("litematica.gui.title.rename_file"), entry.name(), name -> {
+        prompt(UiTranslations.format("litematica.gui.title.rename_file"), entry.name(), name -> {
             try {
                 File source = entry.file.getCanonicalFile();
                 ClientProxy.SCHEMATICS.checkRename(source, new File(entry.file.getParentFile(), name));
@@ -175,7 +175,7 @@ public abstract class GuiSchematicBrowser extends UiScreen {
     protected final void copySelectedFile() {
         SchematicBrowserModel.Entry entry = selection();
         if (entry == null || entry.directory) return;
-        prompt(I18n.format("litematica.gui.title.copy_file"), entry.name(), name -> {
+        prompt(UiTranslations.format("litematica.gui.title.copy_file"), entry.name(), name -> {
             try {
                 selectResult(browser.copy(entry, name));
                 return null;
@@ -188,12 +188,12 @@ public abstract class GuiSchematicBrowser extends UiScreen {
     protected final void deleteSelectedFile() {
         SchematicBrowserModel.Entry entry = selection();
         if (entry == null || entry.directory) return;
-        confirm(I18n.format("litematica.gui.title.confirm_file_deletion"),
-            I18n.format("schematica.ui.files.delete_confirm", entry.name()), () -> {
+        confirm(UiTranslations.format("litematica.gui.title.confirm_file_deletion"),
+            UiTranslations.format("schematica.ui.files.delete_confirm", entry.name()), () -> {
                 try {
                     browser.delete(entry);
                     refreshFiles();
-                    setStatus(I18n.format("schematica.ui.files.deleted", entry.name()));
+                    setStatus(UiTranslations.format("schematica.ui.files.deleted", entry.name()));
                 } catch (IOException e) {
                     setStatus(fileError(e));
                 }
@@ -218,7 +218,7 @@ public abstract class GuiSchematicBrowser extends UiScreen {
             ? ((SchematicBrowserModel.FileOperationException) error).translationKey
             : error instanceof FileAlreadyExistsException ? "schematica.ui.files.error.exists" : "schematica.ui.files.error.io";
         Reference.logger.warn("Schematic file operation failed", error);
-        return I18n.format(key);
+        return UiTranslations.format(key);
     }
 
     @Override
@@ -274,8 +274,8 @@ public abstract class GuiSchematicBrowser extends UiScreen {
     }
 
     protected final void fail(String key, Exception error) {
-        Reference.logger.error(I18n.format(key), error);
-        setStatus(I18n.format(key));
+        Reference.logger.error(UiTranslations.format(key), error);
+        setStatus(UiTranslations.format(key));
     }
 
     protected final SchematicBrowserModel.Entry selection() {
@@ -284,7 +284,7 @@ public abstract class GuiSchematicBrowser extends UiScreen {
 
     private String selectionInfo() {
         SchematicBrowserModel.Entry entry = selection();
-        if (entry == null) return I18n.format("schematica.ui.browser.entries", files.entries().size());
+        if (entry == null) return UiTranslations.format("schematica.ui.browser.entries", files.entries().size());
         return entry.directory ? entry.name() + "/" : entry.name() + " | " + FileUtils.humanReadableByteCount(entry.size)
             + " | " + DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(new Date(entry.modified));
     }
