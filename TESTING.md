@@ -52,6 +52,12 @@ Before a release, use a disposable 1.7.10 world to check:
   restored view/slot/sneaking, source-versus-flow behavior, reach, occlusion, and
   server-denied placement. Verify a different fluid or solid block is not replaced.
   Printing water in the Nether must not waste buckets on repeated evaporation.
+- Print with a GregTech volumetric flask and IC2 universal fluid cells, including
+  stacked cells and a flask holding more than 1000 mB. Verify each source costs
+  1000 mB and the remaining contents survive. Try a partly filled flask below
+  1000 mB, a nearby tank, an obstructing source block and denied server interaction.
+  Test Forestry buckets separately; Forestry cans/capsules and drink containers
+  must not be selected. Forestry non-lava buckets must be skipped in the Nether.
 
 Session keys now use save-folder/server-address plus dimension. Legacy entries
 keyed only by display name remain in the JSON files but are not automatically

@@ -1,12 +1,13 @@
 package com.github.lunatrius.schematica.client.printer;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Predicate;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockLiquid;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityClientPlayerMP;
 import net.minecraft.init.Blocks;
-import net.minecraft.item.ItemBucket;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.play.client.C03PacketPlayer.C05PacketPlayerLook;
 import net.minecraft.util.MovingObjectPosition;
@@ -21,6 +22,8 @@ import net.minecraftforge.fluids.FluidContainerRegistry.FluidContainerData;
 import net.minecraftforge.fluids.FluidRegistry;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.IFluidBlock;
+import net.minecraftforge.fluids.IFluidContainerItem;
+import com.github.lunatrius.schematica.client.printer.FluidContainerSupport.Use;
 
 final class FluidPrinter {
     private FluidPrinter() {}
@@ -58,33 +61,38 @@ final class FluidPrinter {
         return required == null || required.isFluidEqual(source(world, wx, wy, wz));
     }
 
-    private static boolean isBucket(ItemStack stack, FluidStack fluid) {
-        if (stack == null || !(stack.getItem() instanceof ItemBucket)) return false;
-        FluidStack contained = FluidContainerRegistry.getFluidForFilledItem(stack);
+    private static boolean isContainer(ItemStack stack, FluidStack fluid) {
+        if (stack == null || stack.stackSize <= 0 || FluidContainerSupport.use(stack.getItem()) == null) return false;
+        ItemStack copy = stack.copy();
+        copy.stackSize = 1;
+        FluidStack contained = copy.getItem() instanceof IFluidContainerItem
+            ? ((IFluidContainerItem) copy.getItem()).drain(copy, FluidContainerRegistry.BUCKET_VOLUME, false)
+            : FluidContainerRegistry.getFluidForFilledItem(copy);
         return contained != null && contained.amount == FluidContainerRegistry.BUCKET_VOLUME
             && contained.isFluidEqual(fluid);
     }
 
-    private static ItemStack findBucket(EntityClientPlayerMP player, FluidStack fluid) {
+    private static List<ItemStack> findContainers(EntityClientPlayerMP player, FluidStack fluid) {
+        List<ItemStack> containers = new ArrayList<>();
         for (ItemStack stack : player.inventory.mainInventory) {
-            if (isBucket(stack, fluid)) return stack.copy();
+            if (isContainer(stack, fluid)) containers.add(stack.copy());
         }
         if (player.capabilities.isCreativeMode) {
             for (FluidContainerData container : FluidContainerRegistry.getRegisteredFluidContainerData()) {
-                if (isBucket(container.filledContainer, fluid)) return container.filledContainer.copy();
+                if (isContainer(container.filledContainer, fluid)) containers.add(container.filledContainer.copy());
             }
         }
-        return null;
+        return containers;
     }
 
     static boolean place(Minecraft minecraft, FluidStack fluid, int x, int y, int z,
-        Predicate<ItemStack> selectBucket) {
+        Predicate<ItemStack> selectContainer) {
         if (fluid == null || !fluid.getFluid().canBePlacedInWorld()) return false;
         EntityClientPlayerMP player = minecraft.thePlayer;
         World world = minecraft.theWorld;
         if (fluid.getFluid() == FluidRegistry.WATER && world.provider.isHellWorld) return false;
-        ItemStack bucket = findBucket(player, fluid);
-        if (bucket == null) return false;
+        List<ItemStack> containers = findContainers(player, fluid);
+        if (containers.isEmpty()) return false;
         double eyeY = player.posY + player.getEyeHeight() - player.getDefaultEyeHeight();
         Vec3 start = Vec3.createVectorHelper(player.posX, eyeY, player.posZ);
         double reach = Math.min(5.0, minecraft.playerController.getBlockReachDistance());
@@ -92,28 +100,46 @@ final class FluidPrinter {
         float pitch = player.rotationPitch;
         boolean sentLook = false;
         try {
-            for (ForgeDirection neighbor : ForgeDirection.VALID_DIRECTIONS) {
-                double hitX = x + 0.5 + neighbor.offsetX * 0.55;
-                double hitY = y + 0.5 + neighbor.offsetY * 0.55;
-                double hitZ = z + 0.5 + neighbor.offsetZ * 0.55;
-                PlacementAim aim = new PlacementAim(hitX - start.xCoord, hitY - start.yCoord, hitZ - start.zCoord);
-                player.rotationYaw = aim.yaw;
-                player.rotationPitch = aim.pitch;
-                Vec3 look = player.getLook(1.0f);
-                MovingObjectPosition hit = world.func_147447_a(start,
-                    start.addVector(look.xCoord * reach, look.yCoord * reach, look.zCoord * reach), false, true, false);
-                if (hit == null || hit.typeOfHit != MovingObjectPosition.MovingObjectType.BLOCK) continue;
-                ForgeDirection face = ForgeDirection.getOrientation(hit.sideHit);
-                if (hit.blockX + face.offsetX != x || hit.blockY + face.offsetY != y
-                    || hit.blockZ + face.offsetZ != z) continue;
-                if (!selectBucket.test(bucket)) return false;
-                if (ForgeEventFactory.onPlayerInteract(player, Action.RIGHT_CLICK_AIR, 0, 0, 0, -1, world)
-                    .isCanceled()) return false;
-                player.sendQueue.addToSendQueue(new C05PacketPlayerLook(aim.yaw, aim.pitch, player.onGround));
-                sentLook = true;
-                minecraft.playerController.sendUseItem(player, world, player.getCurrentEquippedItem());
-                player.swingItem();
-                return true;
+            for (ItemStack container : containers) {
+                Use use = FluidContainerSupport.use(container.getItem());
+                if (use == Use.FORESTRY_BUCKET && world.provider.isHellWorld
+                    && fluid.getFluid() != FluidRegistry.LAVA) continue;
+                for (ForgeDirection neighbor : ForgeDirection.VALID_DIRECTIONS) {
+                    double hitX = x + 0.5 + neighbor.offsetX * 0.55;
+                    double hitY = y + 0.5 + neighbor.offsetY * 0.55;
+                    double hitZ = z + 0.5 + neighbor.offsetZ * 0.55;
+                    PlacementAim aim = new PlacementAim(hitX - start.xCoord, hitY - start.yCoord, hitZ - start.zCoord);
+                    player.rotationYaw = aim.yaw;
+                    player.rotationPitch = aim.pitch;
+                    Vec3 look = player.getLook(1.0f);
+                    MovingObjectPosition hit = world.func_147447_a(start,
+                        start.addVector(look.xCoord * reach, look.yCoord * reach, look.zCoord * reach),
+                        use.stopOnLiquids, !use.stopOnLiquids, false);
+                    if (hit == null || hit.typeOfHit != MovingObjectPosition.MovingObjectType.BLOCK) continue;
+                    ForgeDirection face = ForgeDirection.getOrientation(hit.sideHit);
+                    if (hit.blockX + face.offsetX != x || hit.blockY + face.offsetY != y
+                        || hit.blockZ + face.offsetZ != z) continue;
+                    Block clicked = world.getBlock(hit.blockX, hit.blockY, hit.blockZ);
+                    if (use.stopOnLiquids && isFluid(clicked)) continue;
+                    if (use.onBlock && (!clicked.getMaterial().isSolid()
+                        || clicked.isReplaceable(world, hit.blockX, hit.blockY, hit.blockZ)
+                        || world.getTileEntity(hit.blockX, hit.blockY, hit.blockZ) != null)) continue;
+                    if (!selectContainer.test(container)) break;
+                    if (ForgeEventFactory.onPlayerInteract(player,
+                        use.onBlock ? Action.RIGHT_CLICK_BLOCK : Action.RIGHT_CLICK_AIR,
+                        use.onBlock ? hit.blockX : 0, use.onBlock ? hit.blockY : 0,
+                        use.onBlock ? hit.blockZ : 0, use.onBlock ? hit.sideHit : -1, world).isCanceled()) return false;
+                    player.sendQueue.addToSendQueue(new C05PacketPlayerLook(aim.yaw, aim.pitch, player.onGround));
+                    sentLook = true;
+                    if (use.onBlock) {
+                        minecraft.playerController.onPlayerRightClick(player, minecraft.theWorld,
+                            player.getCurrentEquippedItem(), hit.blockX, hit.blockY, hit.blockZ, hit.sideHit, hit.hitVec);
+                    } else {
+                        minecraft.playerController.sendUseItem(player, world, player.getCurrentEquippedItem());
+                    }
+                    player.swingItem();
+                    return true;
+                }
             }
             return false;
         } finally {
