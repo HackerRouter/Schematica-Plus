@@ -46,7 +46,7 @@ public class Schematic implements ISchematic {
             return Blocks.air;
         }
 
-        return BLOCK_REGISTRY.getObjectById(this.blocks[x][y][z]);
+        return BLOCK_REGISTRY.getObjectById(this.blocks[x][y][z] & 0xffff);
     }
 
     @Override

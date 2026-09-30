@@ -61,7 +61,7 @@ public class SchematicAlpha extends SchematicFormat {
                 for (int y = 0; y < height; y++) {
                     for (int z = 0; z < length; z++) {
                         int index = x + (y * length + z) * width;
-                        int blockID = (localBlocks[index] & 0xFF) | ((extraBlocks[index] & 0xFF) * 256);
+                        int blockID = BlockIdCodec.decode(localBlocks[index], extraBlocks[index]);
                         int meta = localMetadata[index] & 0xFF;
 
                         if ((id = oldToNew.get((short) blockID)) != null) {
@@ -208,14 +208,8 @@ public class SchematicAlpha extends SchematicFormat {
                         final int index = x + (y * schematic.getLength() + z) * schematic.getWidth();
                         final Block block = schematic.getBlock(x, y, z);
                         int blockId = BLOCK_REGISTRY.getId(block);
-                        int tempblockId = blockId;
-                        int numextra = 0;
-                        for (int i = 1; tempblockId > 256; i++) {
-                            tempblockId = tempblockId - 256;
-                            numextra = i;
-                        }
-                        localBlocks[index] = (byte) tempblockId;
-                        extraBlocks[index] = (byte) numextra;
+                        localBlocks[index] = BlockIdCodec.low(blockId);
+                        extraBlocks[index] = BlockIdCodec.high(blockId);
                         localMetadata[index] = (byte) schematic.getBlockMetadata(x, y, z);
                         String name = BLOCK_REGISTRY.getNameForObject(block);
                         if (!mappings.containsKey(name)) {

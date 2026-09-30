@@ -33,7 +33,7 @@ public final class SignTextConverter {
     /**
      * Converts modern sign NBT to 1.7.10 format in-place.
      * Modern (1.20+): front_text/back_text with messages list containing JSON text components
-     * 1.7.10: Text1-Text4 as JSON text component strings
+     * 1.7.10: Text1-Text4 as plain strings, with a 15-character limit per line.
      */
     public static void convertSign(NBTTagCompound teTag) {
         // Modern 1.20+ format: front_text.messages[]
@@ -45,7 +45,7 @@ public final class SignTextConverter {
                 if (messagesStr.tagCount() > 0) {
                     for (int i = 0; i < Math.min(messagesStr.tagCount(), 4); i++) {
                         String jsonText = messagesStr.getStringTagAt(i);
-                        teTag.setString("Text" + (i + 1), convertJsonTextTo1710(jsonText));
+                        teTag.setString("Text" + (i + 1), jsonText);
                     }
                 } else {
                     // Try reading as TAG_COMPOUND (NBT text components from litematic)
@@ -69,11 +69,10 @@ public final class SignTextConverter {
             String key = "Text" + i;
             if (teTag.hasKey(key, Constants.NBT.TAG_STRING)) {
                 String text = teTag.getString(key);
-                if (text.startsWith("{") || text.startsWith("[")) {
-                    teTag.setString(key, convertJsonTextTo1710(text));
-                }
+                text = convertJsonTextTo1710(text);
+                teTag.setString(key, text.substring(0, Math.min(15, text.length())));
             } else {
-                teTag.setString(key, "{\"text\":\"\"}");
+                teTag.setString(key, "");
             }
         }
     }
@@ -297,31 +296,43 @@ public final class SignTextConverter {
     }
 
     /**
-     * Converts a modern JSON text component string to a 1.7.10-compatible JSON text string.
+     * Flattens modern text components to the plain strings read by TileEntitySign.
      */
     static String convertJsonTextTo1710(String jsonText) {
-        if (jsonText == null || jsonText.isEmpty()) return "{\"text\":\"\"}";
-
-        if ("\"\"".equals(jsonText) || "{\"\":\"\"}".equals(jsonText)) {
-            return "{\"text\":\"\"}";
+        if (jsonText == null || jsonText.isEmpty()) return "";
+        String input = jsonText.trim();
+        if (!(input.startsWith("{") || input.startsWith("[") || input.startsWith("\""))) return jsonText;
+        // A text component can be deeply nested inside a single NBT string.
+        int depth = 0;
+        boolean quoted = false, escaped = false;
+        for (char ch : input.toCharArray()) {
+            if (escaped) { escaped = false; continue; }
+            if (quoted && ch == '\\') { escaped = true; continue; }
+            if (ch == '"') { quoted = !quoted; continue; }
+            if (!quoted && (ch == '{' || ch == '[') && ++depth > 64) return jsonText;
+            if (!quoted && (ch == '}' || ch == ']')) depth--;
         }
-
-        if (jsonText.startsWith("\"") && jsonText.endsWith("\"") && !jsonText.contains("{")) {
-            String inner = jsonText.substring(1, jsonText.length() - 1);
-            if (inner.isEmpty()) return "{\"text\":\"\"}";
-            return "{\"text\":\"" + escapeJsonString(inner) + "\"}";
-        }
-
-        if (jsonText.startsWith("{")) {
-            if (jsonText.contains("\"\":\"\"") && !jsonText.contains("\"text\"")) {
-                return "{\"text\":\"\"}";
-            }
+        try {
+            return plainText(new com.google.gson.JsonParser().parse(input));
+        } catch (RuntimeException malformed) {
             return jsonText;
         }
-
-        return "{\"text\":\"" + escapeJsonString(jsonText) + "\"}";
     }
 
+    private static String plainText(com.google.gson.JsonElement element) {
+        if (element == null || element.isJsonNull()) return "";
+        if (element.isJsonPrimitive()) return element.getAsString();
+        StringBuilder text = new StringBuilder();
+        if (element.isJsonArray()) {
+            for (com.google.gson.JsonElement child : element.getAsJsonArray()) text.append(plainText(child));
+        } else {
+            com.google.gson.JsonObject object = element.getAsJsonObject();
+            if (object.has("text")) text.append(plainText(object.get("text")));
+            else if (object.has("translate")) text.append(plainText(object.get("translate")));
+            if (object.has("extra")) text.append(plainText(object.get("extra")));
+        }
+        return text.toString();
+    }
     /**
      * Escapes a string for use inside a JSON string value.
      */

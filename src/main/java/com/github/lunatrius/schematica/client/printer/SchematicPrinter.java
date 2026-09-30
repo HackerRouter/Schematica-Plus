@@ -95,6 +95,7 @@ public class SchematicPrinter {
         final EntityClientPlayerMP player = this.minecraft.thePlayer;
         final World world = this.minecraft.theWorld;
 
+        final boolean isSneaking = player.isSneaking();
         syncSneaking(player, true);
 
         final Vector3i trans = ClientProxy.playerPosition.clone()
@@ -108,7 +109,6 @@ public class SchematicPrinter {
         final int maxZ = Math.min(this.schematic.getLength(), trans.z + 4);
 
         final int slot = player.inventory.currentItem;
-        final boolean isSneaking = player.isSneaking();
 
         final boolean isRenderingLayer = this.schematic.isRenderingLayer;
         final int renderingLayer = this.schematic.renderingLayer;
@@ -187,7 +187,7 @@ public class SchematicPrinter {
 
     private boolean placeBlock(World world, EntityPlayer player, int x, int y, int z) {
         if (this.timeout[x][y][z] > 0) {
-            this.timeout[x][y][z] -= ConfigurationHandler.placeDelay;
+            this.timeout[x][y][z] -= Math.max(1, ConfigurationHandler.placeDelay);
             return false;
         }
 

@@ -217,10 +217,14 @@ public final class BlockStateTranslator {
 
         String translatedProps = translateModernProperties(blockName, legacyName, properties);
         String sortedProps = sortProperties(translatedProps);
+        boolean doubleSlab = ("minecraft:wooden_slab".equals(legacyName) || "minecraft:stone_slab".equals(legacyName))
+            && sortedProps.contains("half=double");
+        if (doubleSlab) sortedProps = sortedProps.replace("half=double", "half=bottom");
 
         int meta = VanillaBlockMappings.getMetadata(legacyName, sortedProps);
         if (meta >= 0) {
-            Block block = BLOCK_REGISTRY.getObject(legacyName);
+            Block block = BLOCK_REGISTRY.getObject(doubleSlab
+                ? legacyName.replace("minecraft:", "minecraft:double_") : legacyName);
             if (block != null && block != Blocks.air) {
                 return new BlockMapping(block, meta);
             }
@@ -511,23 +515,25 @@ public final class BlockStateTranslator {
 
     /** Infers the 1.7.10 planks variant from the modern block name */
     private String inferPlanksVariant(String modernName) {
+        if (modernName.contains("dark_oak")) return "dark_oak";
         if (modernName.contains("oak")) return "oak";
         if (modernName.contains("spruce")) return "spruce";
         if (modernName.contains("birch")) return "birch";
         if (modernName.contains("jungle")) return "jungle";
         if (modernName.contains("acacia")) return "acacia";
-        if (modernName.contains("dark_oak")) return "dark_oak";
+
         return "oak";
     }
 
     /** Infers the 1.7.10 wooden slab variant from the modern block name */
     private String inferWoodSlabVariant(String modernName) {
+        if (modernName.contains("dark_oak")) return "dark_oak";
         if (modernName.contains("oak")) return "oak";
         if (modernName.contains("spruce")) return "spruce";
         if (modernName.contains("birch")) return "birch";
         if (modernName.contains("jungle")) return "jungle";
         if (modernName.contains("acacia")) return "acacia";
-        if (modernName.contains("dark_oak")) return "dark_oak";
+
         return "oak";
     }
 
@@ -550,12 +556,13 @@ public final class BlockStateTranslator {
 
     /** Infers the 1.7.10 sapling type from the modern block name */
     private String inferSaplingVariant(String modernName) {
+        if (modernName.contains("dark_oak")) return "dark_oak";
         if (modernName.contains("oak")) return "oak";
         if (modernName.contains("spruce")) return "spruce";
         if (modernName.contains("birch")) return "birch";
         if (modernName.contains("jungle")) return "jungle";
         if (modernName.contains("acacia")) return "acacia";
-        if (modernName.contains("dark_oak")) return "dark_oak";
+
         return "oak";
     }
 
