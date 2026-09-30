@@ -2,6 +2,10 @@ package com.github.lunatrius.schematica.world.schematic;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
+import java.nio.file.AtomicMoveNotSupportedException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -73,31 +77,53 @@ public abstract class SchematicFormat {
     }
 
     public static boolean writeToFile(File file, ISchematic schematic, World backupWorld) {
+        Path temporary = null;
         try {
+            if (schematic == null) return false;
             final PostSchematicCaptureEvent event = new PostSchematicCaptureEvent(schematic);
             MinecraftForge.EVENT_BUS.post(event);
 
             NBTTagCompound tagCompound = new NBTTagCompound();
 
-            FORMATS.get(FORMAT_DEFAULT)
-                .writeToNBT(tagCompound, schematic, backupWorld);
+            if (!FORMATS.get(FORMAT_DEFAULT).writeToNBT(tagCompound, schematic, backupWorld)) return false;
 
             // Use CompressedStreamTools.writeCompressed which writes using the new NBT
             // format (func_152446_a). This matches what readCompressed (func_152456_a)
             // expects on the read side. The old func_150298_a wrote using the legacy
             // format which is incompatible with readCompressed, causing NPE.
-            CompressedStreamTools.writeCompressed(tagCompound, new FileOutputStream(file));
+            Path target = file.toPath().toAbsolutePath();
+            temporary = Files.createTempFile(target.getParent(), ".schematica-", ".tmp");
+            try (FileOutputStream output = new FileOutputStream(temporary.toFile())) {
+                CompressedStreamTools.writeCompressed(tagCompound, output);
+            }
+            try {
+                Files.move(temporary, target, StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);
+            } catch (AtomicMoveNotSupportedException e) {
+                Files.move(temporary, target, StandardCopyOption.REPLACE_EXISTING);
+            }
 
             return true;
         } catch (Exception ex) {
             Reference.logger.error("Failed to write schematic!", ex);
+        } finally {
+            if (temporary != null) {
+                try { Files.deleteIfExists(temporary); } catch (java.io.IOException e) {
+                    Reference.logger.warn("Could not remove temporary schematic", e);
+                }
+            }
         }
 
         return false;
     }
 
     public static boolean writeToFile(File directory, String filename, ISchematic schematic, World backupWorld) {
-        return writeToFile(new File(directory, filename), schematic, backupWorld);
+        try {
+            return writeToFile(com.github.lunatrius.schematica.util.FileUtils.resolveSchematicFile(directory, filename),
+                schematic, backupWorld);
+        } catch (java.io.IOException e) {
+            Reference.logger.warn("Rejected schematic filename", e);
+            return false;
+        }
     }
 
     static {

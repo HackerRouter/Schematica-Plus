@@ -26,6 +26,11 @@ public final class LitematicBitArray {
      * @param data         the raw long[] from the NBT "BlockStates" tag
      */
     public LitematicBitArray(int bitsPerEntry, long totalEntries, long[] data) {
+        if (bitsPerEntry < 2 || bitsPerEntry > 32 || totalEntries < 0
+            || totalEntries > com.github.lunatrius.schematica.util.SchematicLimits.MAX_BLOCKS
+            || data == null || data.length < (totalEntries * bitsPerEntry + 63) / 64) {
+            throw new IllegalArgumentException("Invalid or truncated litematic block states");
+        }
         this.bitsPerEntry = bitsPerEntry;
         this.totalEntries = totalEntries;
         this.maxEntryValue = (1L << bitsPerEntry) - 1L;
@@ -40,6 +45,7 @@ public final class LitematicBitArray {
      * @return the palette index stored at that position
      */
     public int getAt(long index) {
+        if (index < 0 || index >= this.totalEntries) throw new IndexOutOfBoundsException("Block state index");
         long startOffset = index * (long) this.bitsPerEntry;
         int startArrIndex = (int) (startOffset >> 6); // startOffset / 64
         int endArrIndex = (int) (((index + 1L) * (long) this.bitsPerEntry - 1L) >> 6);

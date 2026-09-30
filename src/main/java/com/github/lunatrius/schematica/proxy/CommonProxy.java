@@ -201,7 +201,11 @@ public abstract class CommonProxy {
 
     public boolean saveSchematic(EntityPlayer player, File directory, String filename, World world, Vector3i from,
         Vector3i to) {
+        synchronized (QueueTickHandler.INSTANCE) {
         try {
+            if (!QueueTickHandler.INSTANCE.canQueue(player)) {
+                throw new IllegalStateException("A save is already pending or the save queue is full");
+            }
             String iconName = "";
 
             try {
@@ -221,16 +225,18 @@ public abstract class CommonProxy {
             final int minZ = Math.min(from.z, to.z);
             final int maxZ = Math.max(from.z, to.z);
 
-            final short width = (short) (Math.abs(maxX - minX) + 1);
-            final short height = (short) (Math.abs(maxY - minY) + 1);
-            final short length = (short) (Math.abs(maxZ - minZ) + 1);
+            com.github.lunatrius.schematica.util.SchematicLimits.worldBounds(minX, minY, minZ, maxX, maxY, maxZ);
+            final int width = com.github.lunatrius.schematica.util.SchematicLimits.dimension(minX, maxX);
+            final int height = com.github.lunatrius.schematica.util.SchematicLimits.dimension(minY, maxY);
+            final int length = com.github.lunatrius.schematica.util.SchematicLimits.dimension(minZ, maxZ);
+            final File file = com.github.lunatrius.schematica.util.FileUtils.resolveSchematicFile(directory, filename);
 
             final ISchematic schematic = new Schematic(SchematicUtil.getIconFromName(iconName), width, height, length);
             final SchematicContainer container = new SchematicContainer(
                 schematic,
                 player,
                 world,
-                new File(directory, filename),
+                file,
                 minX,
                 maxX,
                 minY,
@@ -244,6 +250,7 @@ public abstract class CommonProxy {
             Reference.logger.error("Failed to save schematic!", e);
         }
         return false;
+        }
     }
 
     public abstract boolean loadSchematic(EntityPlayer player, File directory, String filename);

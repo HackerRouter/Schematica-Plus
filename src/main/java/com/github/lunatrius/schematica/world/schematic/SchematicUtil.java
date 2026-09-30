@@ -1,11 +1,9 @@
 package com.github.lunatrius.schematica.world.schematic;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 
 import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.CompressedStreamTools;
 import net.minecraft.nbt.NBTTagCompound;
 
 import com.github.lunatrius.schematica.client.world.SchematicWorld;
@@ -18,10 +16,9 @@ public final class SchematicUtil {
 
     public static NBTTagCompound readTagCompoundFromFile(File file) throws IOException {
         try {
-            return CompressedStreamTools.readCompressed(new FileInputStream(file));
-        } catch (Exception ex) {
-            Reference.logger.warn("Failed compressed read, trying normal read...", ex);
-            return CompressedStreamTools.read(file);
+            return LitematicaNBTReader.readFromFile(file);
+        } finally {
+            LitematicaNBTReader.clearLongArrayStore();
         }
     }
 

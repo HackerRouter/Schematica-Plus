@@ -78,13 +78,15 @@ public class SchematicLitematica extends SchematicFormat {
             int sizeX = sizeTag.getInteger("x");
             int sizeY = sizeTag.getInteger("y");
             int sizeZ = sizeTag.getInteger("z");
+            com.github.lunatrius.schematica.util.SchematicLimits.volume(
+                Math.abs((long) sizeX), Math.abs((long) sizeY), Math.abs((long) sizeZ));
 
-            int minX = posX + Math.min(0, sizeX + (sizeX < 0 ? 1 : 0));
-            int minY = posY + Math.min(0, sizeY + (sizeY < 0 ? 1 : 0));
-            int minZ = posZ + Math.min(0, sizeZ + (sizeZ < 0 ? 1 : 0));
-            int maxX = posX + Math.max(0, sizeX - (sizeX > 0 ? 1 : 0));
-            int maxY = posY + Math.max(0, sizeY - (sizeY > 0 ? 1 : 0));
-            int maxZ = posZ + Math.max(0, sizeZ - (sizeZ > 0 ? 1 : 0));
+            int minX = Math.addExact(posX, Math.min(0, sizeX + (sizeX < 0 ? 1 : 0)));
+            int minY = Math.addExact(posY, Math.min(0, sizeY + (sizeY < 0 ? 1 : 0)));
+            int minZ = Math.addExact(posZ, Math.min(0, sizeZ + (sizeZ < 0 ? 1 : 0)));
+            int maxX = Math.addExact(posX, Math.max(0, sizeX - (sizeX > 0 ? 1 : 0)));
+            int maxY = Math.addExact(posY, Math.max(0, sizeY - (sizeY > 0 ? 1 : 0)));
+            int maxZ = Math.addExact(posZ, Math.max(0, sizeZ - (sizeZ > 0 ? 1 : 0)));
 
             globalMinX = Math.min(globalMinX, minX);
             globalMinY = Math.min(globalMinY, minY);
@@ -105,9 +107,9 @@ public class SchematicLitematica extends SchematicFormat {
             regionDataList.add(rd);
         }
 
-        int width = globalMaxX - globalMinX + 1;
-        int height = globalMaxY - globalMinY + 1;
-        int length = globalMaxZ - globalMinZ + 1;
+        int width = com.github.lunatrius.schematica.util.SchematicLimits.dimension(globalMinX, globalMaxX);
+        int height = com.github.lunatrius.schematica.util.SchematicLimits.dimension(globalMinY, globalMaxY);
+        int length = com.github.lunatrius.schematica.util.SchematicLimits.dimension(globalMinZ, globalMaxZ);
 
         Reference.logger.info("Litematic bounding box: {}x{}x{} (offset: {},{},{})",
             width, height, length, globalMinX, globalMinY, globalMinZ);

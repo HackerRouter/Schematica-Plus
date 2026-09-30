@@ -1,5 +1,6 @@
 // Add your dependencies here
 
 dependencies {
+    testImplementation('junit:junit:4.13.2')
     compileOnly rfg.deobf('curse.maven:lotr-423748:4091561')
 }

@@ -52,7 +52,7 @@ public class QueueTickHandler {
         processQueue();
     }
 
-    private void processQueue() {
+    private synchronized void processQueue() {
         if (this.queue.isEmpty()) {
             return;
         }
@@ -92,7 +92,12 @@ public class QueueTickHandler {
         }
     }
 
-    public void queueSchematic(SchematicContainer container) {
+    public synchronized boolean canQueue(net.minecraft.entity.player.EntityPlayer player) {
+        return this.queue.size() < 4 && this.queue.stream().noneMatch(
+            task -> task.player.getUniqueID().equals(player.getUniqueID()));
+    }
+
+    public synchronized void queueSchematic(SchematicContainer container) {
         this.queue.offer(container);
     }
 }

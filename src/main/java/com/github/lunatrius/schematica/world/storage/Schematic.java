@@ -30,6 +30,7 @@ public class Schematic implements ISchematic {
     private final int length;
 
     public Schematic(final ItemStack icon, final int width, final int height, final int length) {
+        com.github.lunatrius.schematica.util.SchematicLimits.volume(width, height, length);
         this.icon = icon;
         this.blocks = new short[width][height][length];
         this.metadata = new byte[width][height][length];

@@ -30,6 +30,11 @@ LunatriusCore is no longer required. Schematica Plus includes the utility classe
 under its own internal package, so an external LunatriusCore can still be installed for
 other mods. See [third-party notices](THIRD_PARTY_NOTICES.md) for attribution.
 
+For bounded memory use, schematics are limited to 16,777,216 blocks, 32,767 blocks per
+axis, and 1,048,576 X/Y array rows. NBT reads have a 128 MiB allocation budget and a
+maximum nesting depth of 64. World edits and captures must stay within Y=0..255.
+Only one save per player and four queued saves globally are accepted at a time.
+
 ![play GTNH in multiplayer](temp.png)
 
 ---

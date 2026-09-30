@@ -71,8 +71,9 @@ public class CommandSchematicaSave extends CommandSchematicaBase {
         }
 
         try {
-            Schematica.proxy.saveSchematic(player, schematicDirectory, filename, player.getEntityWorld(), from, to);
-            sender.addChatMessage(new ChatComponentTranslation(Names.Command.Save.Message.SAVE_SUCCESSFUL, name));
+            if (!Schematica.proxy.saveSchematic(player, schematicDirectory, filename, player.getEntityWorld(), from, to)) {
+                throw new CommandException(Names.Command.Save.Message.SAVE_FAILED, name);
+            }
         } catch (Exception e) {
             throw new CommandException(Names.Command.Save.Message.SAVE_FAILED, name);
         }

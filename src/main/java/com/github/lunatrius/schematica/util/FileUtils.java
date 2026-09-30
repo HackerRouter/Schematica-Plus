@@ -7,6 +7,19 @@ import com.github.lunatrius.schematica.reference.Reference;
 
 public class FileUtils {
 
+    public static File resolveSchematicFile(File directory, String filename) throws IOException {
+        if (directory == null || filename == null || filename.isEmpty() || filename.equals(".")
+            || filename.equals("..") || filename.indexOf('/') >= 0 || filename.indexOf('\\') >= 0
+            || filename.indexOf(':') >= 0 || filename.indexOf('\0') >= 0) {
+            throw new IOException("Invalid schematic filename");
+        }
+        File file = new File(directory, filename).getCanonicalFile();
+        if (!contains(directory, file)) {
+            throw new IOException("Schematic path leaves its directory");
+        }
+        return file;
+    }
+
     // http://stackoverflow.com/a/3758880/1166946
     public static String humanReadableByteCount(final long bytes) {
         final int unit = 1024;
