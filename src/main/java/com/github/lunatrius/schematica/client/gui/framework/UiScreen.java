@@ -33,8 +33,21 @@ public abstract class UiScreen extends GuiScreen {
 
     protected abstract void layoutWidgets();
 
+    protected void opened() {}
+
+    protected void tickScreen() {}
+
+    protected UiButton addButton(String key, Runnable action) {
+        UiButton button = root.add(new UiButton(() -> I18n.format(key), mouseButton -> {
+            if (mouseButton == 0) action.run();
+        }));
+        button.setTooltip(I18n.format(key));
+        return button;
+    }
+
     @Override
     public final void initGui() {
+        boolean opening = !repeatOwned;
         if (!repeatOwned) {
             previousRepeat = Keyboard.areRepeatEventsEnabled();
             Keyboard.enableRepeatEvents(true);
@@ -45,6 +58,7 @@ public abstract class UiScreen extends GuiScreen {
             created = true;
         }
         root.setBounds(0, 0, width, height);
+        if (opening) opened();
         layoutWidgets();
         for (UiPanel panel : input.modalPanels()) panel.layout(root.bounds());
         input.validate();
@@ -107,6 +121,7 @@ public abstract class UiScreen extends GuiScreen {
 
     @Override
     public final void updateScreen() {
+        tickScreen();
         input.validate();
         root.tick();
         for (UiPanel panel : input.modalPanels()) panel.tick();

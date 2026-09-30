@@ -242,6 +242,7 @@ public final class Names {
         public static final String LAYER_DEC = "schematica.key.layerDec";
         public static final String EXECUTE = "schematica.key.execute";
         public static final String UI_DEMO = "schematica.key.uiDemo";
+        public static final String MANIPULATE = "schematica.key.manipulate";
     }
 
     public static final class NBT {

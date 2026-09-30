@@ -52,8 +52,8 @@ border #808080, text #E0E0E0, focus #E0C060, selected row #405568. Focus, hover,
 disabled and selected states remain distinct. Text and tooltips are clipped or
 wrapped to fit the current scaled viewport.
 
-Full main-menu/file/placement/config screens, hotkey chords, subregion data and
-schematic backend changes belong to later phases.
+Phase 1 excludes business screens, hotkey chords, subregion data and schematic
+backend changes. Phase 2 below builds on this foundation.
 
 ## Minecraft adapter and controls
 
@@ -71,5 +71,28 @@ values clamp to their configured range.
 
 In Controls, bind **UI component test** in the Schematica category, then press
 it in a world. The binding defaults to unbound. The page uses 200 synthetic entries
-and does not load, save or change schematics/worlds. M/N retain their existing
-behavior. Child pages exercise return navigation with state retained in the parent.
+and does not load, save or change schematics/worlds. Child pages exercise return
+navigation with state retained in the parent.
+
+## Phase 2: main menu and file loading
+
+The existing M binding now opens `GuiSchematicMainMenu`. Its binding identifier is
+preserved, so customized keys remain assigned. Direct controls and direct loading
+have separate unbound bindings; N still opens the save screen. Menu navigation
+follows Litematica's compact grouped layout and bottom tool-mode selector, with
+only implemented features exposed. Instances, controls, materials and configuration
+currently open the existing screens; their UI/data-model ports are later work.
+
+`GuiSchematicBrowser` provides the shared directory toolbar, search, virtual list,
+file size/time information, refresh, file-manager shortcut and action/status rows.
+`SchematicBrowserModel` handles directory bounds and sorting without Minecraft or
+NBT parsing. Opening a folder no longer decodes every schematic for its icon.
+Double-click/Enter opens folders or activates files; filtering cannot activate a
+hidden selection. Back never loads a file. The footer has an explicit Load action.
+
+The load screen uses the existing three format readers, creates a new instance,
+restores saved coordinates/transforms when present and otherwise uses the existing
+look-target/player placement behavior. It refreshes rendering and saves the session.
+Failures stay on the page with feedback. Success stays on the page to allow another
+load; Esc returns to the menu, then to the world. File parsing itself remains
+synchronous, as in the previous loader; directory listing no longer parses NBT.

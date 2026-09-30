@@ -25,7 +25,8 @@ public final class UiListModel<T> {
 
     public void setEntries(List<T> entries) {
         this.entries = new ArrayList<>(entries);
-        if (!entries.contains(selected)) selected = null;
+        int selection = this.entries.indexOf(selected);
+        selected = selection < 0 ? null : this.entries.get(selection);
         refilter();
     }
 
