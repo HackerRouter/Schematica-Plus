@@ -6,6 +6,7 @@ import org.lwjgl.BufferUtils;
 
 import com.github.lunatrius.schematica.internal.lunatriuscore.util.vector.Vector3f;
 import com.github.lunatrius.schematica.handler.ConfigurationHandler;
+import com.github.lunatrius.schematica.util.ColorValue;
 
 public class RenderHelper {
 
@@ -132,6 +133,14 @@ public class RenderHelper {
         float[] tempBuffer = new float[newSize];
         System.arraycopy(oldBuffer, 0, tempBuffer, 0, oldBuffer.length);
         return tempBuffer;
+    }
+
+    public static void drawCuboidSurface(Vector3f zero, Vector3f size, int sides, int color) {
+        drawCuboidSurface(zero, size, sides, ColorValue.red(color), ColorValue.green(color), ColorValue.blue(color), ColorValue.alpha(color));
+    }
+
+    public static void drawCuboidOutline(Vector3f zero, Vector3f size, int sides, int color) {
+        drawCuboidOutline(zero, size, sides, ColorValue.red(color), ColorValue.green(color), ColorValue.blue(color), ColorValue.alpha(color));
     }
 
     public static void drawCuboidSurface(Vector3f zero, Vector3f size, int sides, float red, float green, float blue,

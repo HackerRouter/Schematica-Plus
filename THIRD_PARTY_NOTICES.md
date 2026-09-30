@@ -26,7 +26,8 @@ Litematica was supplied as a local source snapshot with the version above.
 - `assets/schematica_plus_litematica/lang/*.lang` contains selected upstream
   labels converted from JSON to the 1.7.10 language format.
 - Java files carrying `SPDX-License-Identifier: LGPL-3.0-only` adapt upstream
-  UI layouts, layer-range behavior, icon coordinates and drawing conventions to the internal 1.7.10
+  UI layouts, layer-range/color-editor behavior, color options and defaults,
+  icon coordinates and drawing conventions to the internal 1.7.10
   controls. Their headers identify the 2026 modifications by HackerRouter.
 
 These files retain LGPL-3.0 and are exceptions to the repository's MIT license.

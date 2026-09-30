@@ -6,14 +6,20 @@ import java.util.Arrays;
 
 import net.minecraftforge.common.config.Property;
 
+import com.github.lunatrius.schematica.util.ColorValue;
+
 public final class ConfigPropertyDraft {
     public final Property property;
+    private final boolean color;
     private String text;
     private String[] values;
     public boolean slider;
 
-    public ConfigPropertyDraft(Property property) {
+    public ConfigPropertyDraft(Property property) { this(property, false); }
+
+    public ConfigPropertyDraft(Property property, boolean color) {
         this.property = property;
+        this.color = color;
         text = property.getString();
         values = property.getStringList().clone();
     }
@@ -41,6 +47,7 @@ public final class ConfigPropertyDraft {
 
     private boolean validValue(String value) {
         try {
+            if (color) ColorValue.parse(value);
             if (property.getType() == Property.Type.INTEGER || property.getType() == Property.Type.DOUBLE) {
                 double number = property.getType() == Property.Type.INTEGER ? Integer.parseInt(value)
                     : Double.parseDouble(value);
@@ -51,7 +58,7 @@ public final class ConfigPropertyDraft {
             String[] allowed = property.getValidValues();
             return (allowed == null || allowed.length == 0 || Arrays.asList(allowed).contains(value))
                 && (property.getValidationPattern() == null || property.getValidationPattern().matcher(value).matches());
-        } catch (NumberFormatException e) {
+        } catch (IllegalArgumentException e) {
             return false;
         }
     }
@@ -63,6 +70,10 @@ public final class ConfigPropertyDraft {
     }
 
     private boolean sameValue(String a, String b) {
+        if (color) {
+            try { return ColorValue.parse(a) == ColorValue.parse(b); }
+            catch (IllegalArgumentException ignored) { return false; }
+        }
         if (numeric()) {
             try {
                 return Double.compare(Double.parseDouble(a), Double.parseDouble(b)) == 0;
@@ -83,7 +94,7 @@ public final class ConfigPropertyDraft {
             property.set(values.clone());
         } else {
             if (sameValue(text, property.getString())) return false;
-            property.set(text);
+            property.set(color ? ColorValue.format(ColorValue.parse(text)) : text);
         }
         return true;
     }

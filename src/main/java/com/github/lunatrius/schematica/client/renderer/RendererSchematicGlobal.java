@@ -23,6 +23,7 @@ import org.lwjgl.opengl.GL11;
 
 import com.github.lunatrius.schematica.internal.lunatriuscore.util.vector.Vector3d;
 import com.github.lunatrius.schematica.client.world.SchematicWorld;
+import com.github.lunatrius.schematica.handler.RenderColors;
 import com.github.lunatrius.schematica.proxy.ClientProxy;
 import com.github.lunatrius.schematica.nbt.TileEntitySnapshots;
 import com.github.lunatrius.schematica.reference.Constants;
@@ -211,7 +212,7 @@ public class RendererSchematicGlobal {
             RenderHelper.drawCuboidOutline(start.toVector3f(), end.toVector3f(),
                 RenderHelper.LINE_ALL, 0.0f, 0.75f, 0.0f, 0.5f);
             RenderHelper.drawCuboidSurface(start.toVector3f(), end.toVector3f(),
-                RenderHelper.QUAD_ALL, 1.0f, 1.0f, 1.0f, 0.2f);
+                RenderHelper.QUAD_ALL, RenderColors.AREA_SIDES.color());
 
             int quadCount = RenderHelper.getQuadCount();
             int lineCount = RenderHelper.getLineCount();

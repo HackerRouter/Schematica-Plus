@@ -25,6 +25,7 @@ import com.github.lunatrius.schematica.internal.lunatriuscore.util.vector.Vector
 import com.github.lunatrius.schematica.client.renderer.shader.ShaderProgram;
 import com.github.lunatrius.schematica.client.world.SchematicWorld;
 import com.github.lunatrius.schematica.handler.ConfigurationHandler;
+import com.github.lunatrius.schematica.handler.RenderColors;
 import com.github.lunatrius.schematica.reference.Constants;
 import com.github.lunatrius.schematica.reference.Reference;
 import com.github.lunatrius.schematica.compat.VisualAdapters;
@@ -293,29 +294,23 @@ public class RendererSchematicChunk {
                                             zero,
                                             size,
                                             RenderHelper.QUAD_ALL,
-                                            0.75f,
-                                            0.0f,
-                                            0.75f,
-                                            0.25f);
+                                            RenderColors.EXTRA.color());
                                     }
                                     if (ConfigurationHandler.drawLines) {
                                         RenderHelper.drawCuboidOutline(
                                             zero,
                                             size,
                                             RenderHelper.LINE_ALL,
-                                            0.75f,
-                                            0.0f,
-                                            0.75f,
-                                            0.25f);
+                                            RenderColors.EXTRA.color());
                                     }
                                 } else if (block != mcBlock) {
                                     zero.set(x, y, z);
                                     size.set(x + 1, y + 1, z + 1);
                                     if (ConfigurationHandler.drawQuads) {
-                                        RenderHelper.drawCuboidSurface(zero, size, sides, 1.0f, 0.0f, 0.0f, 0.25f);
+                                        RenderHelper.drawCuboidSurface(zero, size, sides, RenderColors.WRONG_BLOCK.color());
                                     }
                                     if (ConfigurationHandler.drawLines) {
-                                        RenderHelper.drawCuboidOutline(zero, size, sides, 1.0f, 0.0f, 0.0f, 0.25f);
+                                        RenderHelper.drawCuboidOutline(zero, size, sides, RenderColors.WRONG_BLOCK.color());
                                     }
                                 } else if (this.schematic.getBlockMetadata(x, y, z)
                                     != mcWorld.getBlockMetadata(wx, wy, wz)) {
@@ -323,11 +318,11 @@ public class RendererSchematicChunk {
                                         size.set(x + 1, y + 1, z + 1);
                                         if (ConfigurationHandler.drawQuads) {
                                             RenderHelper
-                                                .drawCuboidSurface(zero, size, sides, 0.75f, 0.35f, 0.0f, 0.25f);
+                                                .drawCuboidSurface(zero, size, sides, RenderColors.WRONG_STATE.color());
                                         }
                                         if (ConfigurationHandler.drawLines) {
                                             RenderHelper
-                                                .drawCuboidOutline(zero, size, sides, 0.75f, 0.35f, 0.0f, 0.25f);
+                                                .drawCuboidOutline(zero, size, sides, RenderColors.WRONG_STATE.color());
                                         }
                                     }
                             }
@@ -336,10 +331,10 @@ public class RendererSchematicChunk {
                                 zero.set(x, y, z);
                                 size.set(x + 1, y + 1, z + 1);
                                 if (ConfigurationHandler.drawQuads) {
-                                    RenderHelper.drawCuboidSurface(zero, size, sides, 0.0f, 0.75f, 1.0f, 0.25f);
+                                    RenderHelper.drawCuboidSurface(zero, size, sides, RenderColors.MISSING.color());
                                 }
                                 if (ConfigurationHandler.drawLines) {
-                                    RenderHelper.drawCuboidOutline(zero, size, sides, 0.0f, 0.75f, 1.0f, 0.25f);
+                                    RenderHelper.drawCuboidOutline(zero, size, sides, RenderColors.MISSING.color());
                                 }
                             }
 

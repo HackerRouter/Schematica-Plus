@@ -138,6 +138,7 @@ public class ConfigurationHandler {
     }
 
     public static void loadConfiguration() {
+        RenderColors.load(configuration);
         propShowDebugInfo = configuration.get(
             Names.Config.Category.DEBUG,
             Names.Config.SHOW_DEBUG_INFO,
