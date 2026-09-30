@@ -186,6 +186,7 @@ public class SchematicPrinter {
     }
 
     private boolean placeBlock(World world, EntityPlayer player, int x, int y, int z) {
+        if (!schematic.getSchematic().containsBlock(x, y, z)) return false;
         if (this.timeout[x][y][z] > 0) {
             this.timeout[x][y][z] -= Math.max(1, ConfigurationHandler.placeDelay);
             return false;

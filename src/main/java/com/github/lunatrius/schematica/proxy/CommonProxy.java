@@ -155,6 +155,8 @@ public abstract class CommonProxy {
                     final int localY = y - minY;
                     final int localZ = z - minZ;
 
+                    if (!schematic.containsBlock(localX, localY, localZ)) continue;
+
                     try {
                         final Block block = world.getBlock(x, y, z);
                         final int metadata = world.getBlockMetadata(x, y, z);
@@ -191,6 +193,8 @@ public abstract class CommonProxy {
         final AxisAlignedBB bb = AxisAlignedBB.getBoundingBox(minX1, minY, minZ1, maxX1 + 1, maxY + 1, maxZ1 + 1);
         final List<Entity> entities = world.getEntitiesWithinAABB(Entity.class, bb);
         for (Entity entity : entities) {
+            if (!schematic.containsBlock((int) Math.floor(entity.posX) - minX,
+                (int) Math.floor(entity.posY) - minY, (int) Math.floor(entity.posZ) - minZ)) continue;
             try {
                 final Entity reloadedEntity = NBTHelper.reloadEntity(entity, minX, minY, minZ);
                 schematic.addEntity(reloadedEntity);
@@ -202,6 +206,17 @@ public abstract class CommonProxy {
 
     public boolean saveSchematic(EntityPlayer player, File directory, String filename, World world, Vector3i from,
         Vector3i to) {
+        return saveSchematic(player, directory, filename, world, from, to, java.util.Collections.emptyList());
+    }
+
+    public boolean saveSchematic(EntityPlayer player, File directory, String filename, World world,
+        com.github.lunatrius.schematica.world.storage.RegionSelection selection) {
+        return saveSchematic(player, directory, filename, world,
+            new Vector3i(selection.minX, selection.minY, selection.minZ), new Vector3i(selection.maxX, selection.maxY, selection.maxZ), selection.localRegions);
+    }
+
+    private boolean saveSchematic(EntityPlayer player, File directory, String filename, World world, Vector3i from,
+        Vector3i to, java.util.List<com.github.lunatrius.schematica.world.storage.SchematicRegion> regions) {
         synchronized (QueueTickHandler.INSTANCE) {
         try {
             if (!QueueTickHandler.INSTANCE.canQueue(player)) {
@@ -232,7 +247,8 @@ public abstract class CommonProxy {
             final int length = com.github.lunatrius.schematica.util.SchematicLimits.dimension(minZ, maxZ);
             final File file = com.github.lunatrius.schematica.util.FileUtils.resolveSchematicFile(directory, filename);
 
-            final ISchematic schematic = new Schematic(SchematicUtil.getIconFromName(iconName), width, height, length);
+            final Schematic schematic = new Schematic(SchematicUtil.getIconFromName(iconName), width, height, length);
+            schematic.setRegions(regions);
             final SchematicContainer container = new SchematicContainer(
                 schematic,
                 player,

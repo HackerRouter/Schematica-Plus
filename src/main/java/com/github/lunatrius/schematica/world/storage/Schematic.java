@@ -28,6 +28,23 @@ public class Schematic implements ISchematic {
     private final int width;
     private final int height;
     private final int length;
+    private List<SchematicRegion> regions = java.util.Collections.emptyList();
+    private java.util.BitSet mask;
+
+    @Override public List<SchematicRegion> getRegions() { return regions; }
+
+    public void setRegions(List<SchematicRegion> regions) {
+        java.util.BitSet checked = RegionMask.create(regions, width, height, length);
+        this.regions = java.util.Collections.unmodifiableList(new ArrayList<>(regions));
+        this.mask = regions.isEmpty() ? null : checked;
+        tileEntities.removeIf(tile -> !containsBlock(tile.xCoord, tile.yCoord, tile.zCoord));
+        entities.removeIf(entity -> !containsBlock((int) Math.floor(entity.posX), (int) Math.floor(entity.posY), (int) Math.floor(entity.posZ)));
+    }
+
+    @Override public boolean containsBlock(int x, int y, int z) {
+        return x >= 0 && y >= 0 && z >= 0 && x < width && y < height && z < length
+            && (mask == null || mask.get(x + width * (z + length * y)));
+    }
 
     public Schematic(final ItemStack icon, final int width, final int height, final int length) {
         com.github.lunatrius.schematica.util.SchematicLimits.volume(width, height, length);
@@ -72,6 +89,7 @@ public class Schematic implements ISchematic {
 
     @Override
     public TileEntity getTileEntity(final int x, final int y, final int z) {
+        if (!isValid(x, y, z)) return null;
         for (final TileEntity tileEntity : this.tileEntities) {
             if (tileEntity.xCoord == x && tileEntity.yCoord == y && tileEntity.zCoord == z) {
                 return tileEntity;
@@ -136,6 +154,8 @@ public class Schematic implements ISchematic {
             return;
         }
 
+        if (mask != null && !containsBlock((int) Math.floor(entity.posX), (int) Math.floor(entity.posY), (int) Math.floor(entity.posZ))) return;
+
         for (final Entity e : this.entities) {
             if (entity.getUniqueID()
                 .equals(e.getUniqueID())) {
@@ -187,6 +207,6 @@ public class Schematic implements ISchematic {
     }
 
     private boolean isValid(final int x, final int y, final int z) {
-        return !(x < 0 || y < 0 || z < 0 || x >= this.width || y >= this.height || z >= this.length);
+        return containsBlock(x, y, z);
     }
 }

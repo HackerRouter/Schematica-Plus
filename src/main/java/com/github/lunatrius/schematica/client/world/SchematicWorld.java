@@ -101,7 +101,7 @@ public class SchematicWorld extends World {
     private boolean tracingRenderedBlocks;
 
     public boolean isBlockRendered(int x, int y, int z) {
-        return (!isRenderingLayer || renderingLayer == y)
+        return schematic.containsBlock(x, y, z) && (!isRenderingLayer || renderingLayer == y)
             && RenderLayerSettings.RANGE.contains((long) position.x + x, (long) position.y + y, (long) position.z + z);
     }
 
@@ -330,12 +330,16 @@ public class SchematicWorld extends World {
                 }
             }
         }
+        java.util.List<com.github.lunatrius.schematica.world.storage.SchematicRegion> regions = this.schematic.getRegions();
         int w = getWidth(), h = getHeight(), l = getLength();
         boolean layerMode = this.isRenderingLayer;
         this.isRenderingLayer = false;
         try {
             if (mirror) flipContents(direction);
             else rotateContents(direction);
+            java.util.List<com.github.lunatrius.schematica.world.storage.SchematicRegion> transformed = new ArrayList<>();
+            for (com.github.lunatrius.schematica.world.storage.SchematicRegion region : regions) transformed.add(region.transform(operation, w, h, l));
+            ((Schematic) this.schematic).setRegions(transformed);
             for (TileEntity tileEntity : this.schematic.getTileEntities()) {
                 TileEntitySnapshots.transformPreview(tileEntity, operation);
             }

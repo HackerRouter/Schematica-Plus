@@ -27,17 +27,27 @@ public final class AreaSelectionLibrary {
         String checked = uniqueName(name, null);
         checkPoint(first);
         checkPoint(second);
-        Area area = new Area(UUID.randomUUID().toString(), checked, checked, first, second, true);
+        Area area = new Area(UUID.randomUUID().toString(), checked);
+        Box box = new Box(checked, first, second);
+        area.boxes.add(box);
+        area.selectedBox = box;
         areas.add(area);
         return area;
     }
 
     public Area copy(Area source, String name) {
         require(source);
-        Area area = create(name, source.first, source.second);
-        area.boxName = source.boxName;
+        if (areas.size() >= 4096) throw new IllegalArgumentException("Too many selections");
+        Area area = new Area(UUID.randomUUID().toString(), uniqueName(name, null));
+        for (Box box : source.boxes) {
+            Box copy = new Box(box.name, box.first, box.second);
+            copy.extra = copyJson(box.extra);
+            area.boxes.add(copy);
+            if (box == source.selectedBox) area.selectedBox = copy;
+        }
         area.guide = source.guide;
         area.extra = copyJson(source.extra);
+        areas.add(area);
         return area;
     }
 
@@ -57,17 +67,55 @@ public final class AreaSelectionLibrary {
         area.name = uniqueName(name, area);
     }
 
-    public void renameBox(Area area, String name) {
+    public Box addBox(Area area, String name, Vector3i first, Vector3i second) {
         require(area);
-        area.boxName = validName(name);
+        if (area.boxes.size() >= 256) throw new IllegalArgumentException("Too many subregions");
+        String checked = uniqueBoxName(area, name, null);
+        checkPoint(first); checkPoint(second);
+        Box box = new Box(checked, first, second);
+        area.boxes.add(box);
+        area.selectedBox = box;
+        return box;
     }
 
-    public void setPoints(Area area, Vector3i first, Vector3i second) {
+    public void selectBox(Area area, Box box) {
         require(area);
-        checkPoint(first);
-        checkPoint(second);
-        area.first.set(first);
-        area.second.set(second);
+        if (box != null) requireBox(area, box);
+        area.selectedBox = box;
+    }
+
+    public void removeBox(Area area, Box box) {
+        requireBox(area, box);
+        area.boxes.remove(box);
+        if (area.selectedBox == box) area.selectedBox = null;
+    }
+
+    public void renameBox(Area area, String name) { renameBox(area, area.selectedBox, name); }
+
+    public void renameBox(Area area, Box box, String name) {
+        requireBox(area, box);
+        box.name = uniqueBoxName(area, name, box);
+    }
+
+    public void setPoints(Area area, Vector3i first, Vector3i second) { setPoints(area, area.selectedBox, first, second); }
+
+    public void setPoints(Area area, Box box, Vector3i first, Vector3i second) {
+        requireBox(area, box);
+        checkPoint(first); checkPoint(second);
+        box.first.set(first); box.second.set(second);
+    }
+
+    private void requireBox(Area area, Box box) {
+        require(area);
+        if (!area.boxes.contains(box)) throw new IllegalArgumentException("Subregion is no longer in this selection");
+    }
+
+    private static String uniqueBoxName(Area area, String name, Box except) {
+        String checked = validName(name);
+        for (Box box : area.boxes) {
+            if (box != except && box.name.equalsIgnoreCase(checked)) throw new NameConflictException(checked);
+        }
+        return checked;
     }
 
     public void setGuide(Area area, boolean guide) { require(area); area.guide = guide; }
@@ -98,16 +146,24 @@ public final class AreaSelectionLibrary {
 
     public JsonObject toJson() {
         JsonObject data = copyJson(extra);
-        data.addProperty("version", 2);
+        data.addProperty("version", 3);
         data.add("selected", selected == null ? JsonNull.INSTANCE : new com.google.gson.JsonPrimitive(selected.id));
         JsonArray entries = new JsonArray();
         for (Area area : areas) {
             JsonObject entry = copyJson(area.extra);
             entry.addProperty("id", area.id);
             entry.addProperty("name", area.name);
-            entry.addProperty("boxName", area.boxName);
-            entry.addProperty("ax", area.first.x); entry.addProperty("ay", area.first.y); entry.addProperty("az", area.first.z);
-            entry.addProperty("bx", area.second.x); entry.addProperty("by", area.second.y); entry.addProperty("bz", area.second.z);
+            JsonArray boxes = new JsonArray();
+            for (Box box : area.boxes) {
+                JsonObject value = copyJson(box.extra);
+                value.addProperty("name", box.name);
+                value.addProperty("ax", box.first.x); value.addProperty("ay", box.first.y); value.addProperty("az", box.first.z);
+                value.addProperty("bx", box.second.x); value.addProperty("by", box.second.y); value.addProperty("bz", box.second.z);
+                boxes.add(value);
+            }
+            entry.add("boxes", boxes);
+            entry.add("selectedBox", area.selectedBox == null ? JsonNull.INSTANCE : new com.google.gson.JsonPrimitive(area.selectedBox.name));
+            for (String key : new String[] {"boxName", "ax", "ay", "az", "bx", "by", "bz"}) entry.remove(key);
             entry.addProperty("renderingGuide", area.guide);
             entries.add(entry);
         }
@@ -132,14 +188,34 @@ public final class AreaSelectionLibrary {
             library.select(area);
             return library;
         }
-        if (integer(data, "version") != 2) throw new IllegalArgumentException("Unsupported selection library version");
+        int version = integer(data, "version");
+        if (version != 2 && version != 3) throw new IllegalArgumentException("Unsupported selection library version");
         for (JsonElement element : data.getAsJsonArray("selections")) {
             JsonObject entry = element.getAsJsonObject();
             String id = UUID.fromString(entry.get("id").getAsString()).toString();
             for (Area area : library.areas) if (area.id.equals(id)) throw new IllegalArgumentException("Duplicate selection ID");
-            Area checked = library.create(entry.get("name").getAsString(), point(entry, "a"), point(entry, "b"));
+            Area checked;
+            if (version == 2) {
+                checked = library.create(entry.get("name").getAsString(), point(entry, "a"), point(entry, "b"));
+                library.renameBox(checked, entry.get("boxName").getAsString());
+            } else {
+                if (library.areas.size() >= 4096) throw new IllegalArgumentException("Too many selections");
+                checked = new Area(id, library.uniqueName(entry.get("name").getAsString(), null));
+                library.areas.add(checked);
+                for (JsonElement boxElement : entry.getAsJsonArray("boxes")) {
+                    JsonObject value = boxElement.getAsJsonObject();
+                    Box box = library.addBox(checked, value.get("name").getAsString(), point(value, "a"), point(value, "b"));
+                    box.extra = copyJson(value);
+                }
+                JsonElement selectedBox = entry.get("selectedBox");
+                if (selectedBox == null) throw new IllegalArgumentException("Missing selected subregion");
+                checked.selectedBox = null;
+                if (!selectedBox.isJsonNull()) {
+                    for (Box box : checked.boxes) if (box.name.equals(selectedBox.getAsString())) checked.selectedBox = box;
+                    if (checked.selectedBox == null) throw new IllegalArgumentException("Unknown selected subregion");
+                }
+            }
             checked.id = id;
-            checked.boxName = validName(entry.get("boxName").getAsString());
             checked.guide = guide(entry);
             checked.extra = copyJson(entry);
         }
@@ -170,26 +246,39 @@ public final class AreaSelectionLibrary {
     public static final class Area {
         private String id;
         private String name;
-        private String boxName;
-        private final Vector3i first;
-        private final Vector3i second;
-        private boolean guide;
+        private final List<Box> boxes = new ArrayList<>();
+        private Box selectedBox;
+        private boolean guide = true;
         private JsonObject extra = new JsonObject();
 
-        private Area(String id, String name, String boxName, Vector3i first, Vector3i second, boolean guide) {
-            this.id = id;
-            this.name = name;
-            this.boxName = boxName;
-            this.first = first.clone();
-            this.second = second.clone();
-            this.guide = guide;
-        }
+        private Area(String id, String name) { this.id = id; this.name = name; }
 
         public String name() { return name; }
-        public String boxName() { return boxName; }
+        public List<Box> boxes() { return Collections.unmodifiableList(boxes); }
+        public Box selectedBox() { return selectedBox; }
+        public String boxName() { return selectedBox == null ? "" : selectedBox.name(); }
+        public Vector3i first() { return selectedBox == null ? new Vector3i() : selectedBox.first(); }
+        public Vector3i second() { return selectedBox == null ? new Vector3i() : selectedBox.second(); }
+        public boolean guide() { return guide; }
+        public List<com.github.lunatrius.schematica.world.storage.SchematicRegion> regions() {
+            List<com.github.lunatrius.schematica.world.storage.SchematicRegion> result = new ArrayList<>();
+            for (Box box : boxes) result.add(new com.github.lunatrius.schematica.world.storage.SchematicRegion(box.name,
+                box.first.x, box.first.y, box.first.z, box.second.x, box.second.y, box.second.z));
+            return result;
+        }
+    }
+
+    public static final class Box {
+        private String name;
+        private final Vector3i first, second;
+        private JsonObject extra = new JsonObject();
+
+        private Box(String name, Vector3i first, Vector3i second) {
+            this.name = name; this.first = first.clone(); this.second = second.clone();
+        }
+        public String name() { return name; }
         public Vector3i first() { return first.clone(); }
         public Vector3i second() { return second.clone(); }
-        public boolean guide() { return guide; }
     }
 
     public static final class NameConflictException extends IllegalArgumentException {

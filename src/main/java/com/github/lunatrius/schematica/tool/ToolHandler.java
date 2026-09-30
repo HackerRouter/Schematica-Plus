@@ -171,7 +171,7 @@ public class ToolHandler {
      * Right-click sets point B (second corner of selection box).
      */
     private static boolean handleAreaSelectionUse(EntityPlayer player, MovingObjectPosition mop) {
-        if (AreaSelections.library().selected() == null) {
+        if (AreaSelections.library().selected() == null || AreaSelections.library().selected().selectedBox() == null) {
             sendChat(player, UiTranslations.format("litematica.message.error.no_area_selected"));
             return true;
         }
@@ -186,7 +186,7 @@ public class ToolHandler {
      * Left-click sets point A (first corner of selection box).
      */
     private static boolean handleAreaSelectionAttack(EntityPlayer player, MovingObjectPosition mop) {
-        if (AreaSelections.library().selected() == null) {
+        if (AreaSelections.library().selected() == null || AreaSelections.library().selected().selectedBox() == null) {
             sendChat(player, UiTranslations.format("litematica.message.error.no_area_selected"));
             return true;
         }
@@ -262,8 +262,11 @@ public class ToolHandler {
             if (AreaSelections.library().selected() == null) {
                 throw new IllegalArgumentException(UiTranslations.format("litematica.message.error.no_area_selected"));
             }
-            Vector3i min = ClientProxy.pointMin.clone(), max = ClientProxy.pointMax.clone();
-            if (min.equals(max)) throw new IllegalArgumentException("Select an area with two distinct corners first.");
+            AreaSelections.capture();
+            com.github.lunatrius.schematica.world.storage.RegionSelection selection =
+                new com.github.lunatrius.schematica.world.storage.RegionSelection(AreaSelections.library().selected().regions());
+            Vector3i min = new Vector3i(selection.minX, selection.minY, selection.minZ);
+            Vector3i max = new Vector3i(selection.maxX, selection.maxY, selection.maxZ);
             Block replacement = mode == ToolMode.DELETE ? Blocks.air : mode.getPrimaryBlock();
             if (replacement == null) replacement = Blocks.air;
             Block target = mode.getSecondaryBlock();
@@ -277,6 +280,7 @@ public class ToolHandler {
                 com.github.lunatrius.schematica.util.SchematicLimits.dimension(min.y, max.y),
                 com.github.lunatrius.schematica.util.SchematicLimits.dimension(min.z, max.z),
                 replacement, mode == ToolMode.DELETE ? 0 : mode.getPrimaryMeta(), target, mode.getSecondaryMeta());
+            job.setRegions(selection.localRegions);
         }
         MinecraftServer server = Minecraft.getMinecraft().getIntegratedServer();
         if (server != null) {

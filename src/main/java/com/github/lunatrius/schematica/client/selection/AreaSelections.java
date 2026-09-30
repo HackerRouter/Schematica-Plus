@@ -21,7 +21,7 @@ public final class AreaSelections {
     public static void capture() {
         Area area = library.selected();
         if (area != null) {
-            library.setPoints(area, ClientProxy.pointA, ClientProxy.pointB);
+            if (area.selectedBox() != null) library.setPoints(area, ClientProxy.pointA, ClientProxy.pointB);
             library.setGuide(area, ClientProxy.isRenderingGuide);
         }
     }

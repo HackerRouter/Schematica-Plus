@@ -38,6 +38,7 @@ public final class WorldEditJob {
     private final Map<Integer, NBTTagCompound> tiles = new HashMap<>();
     private final List<NBTTagCompound> entities = new ArrayList<>();
     private final BitSet placed = new BitSet();
+    private BitSet selected;
     private final SilentBlockPlacement silentPlacement;
     private int cursor, phase, entityCursor;
     public int blockCount, entityCount;
@@ -63,6 +64,7 @@ public final class WorldEditJob {
     }
 
     public void capture(ISchematic source, boolean blockNBT, boolean includeEntities) {
+        setRegions(source.getRegions());
         this.blocks = new short[volume];
         this.metadata = new byte[volume];
         for (int i = 0; i < volume; i++) {
@@ -72,6 +74,7 @@ public final class WorldEditJob {
         }
         if (blockNBT) {
             for (TileEntity tile : source.getTileEntities()) {
+                if (!source.containsBlock(tile.xCoord, tile.yCoord, tile.zCoord)) continue;
                 if (tile.xCoord < 0 || tile.xCoord >= width || tile.yCoord < 0 || tile.yCoord >= height
                     || tile.zCoord < 0 || tile.zCoord >= length) continue;
                 NBTTagCompound tag = NBTHelper.writeTileEntityToCompound(tile);
@@ -108,6 +111,7 @@ public final class WorldEditJob {
     }
 
     public String command(int index, net.minecraft.world.World world) {
+        if (selected != null && !selected.get(index)) return null;
         int wx = x + index % width, wz = z + index / width % length, wy = y + index / width / length;
         if (kind == Kind.REPLACE && (world.getBlock(wx, wy, wz) != target
             || world.getBlockMetadata(wx, wy, wz) != targetMeta)) return null;
@@ -122,6 +126,10 @@ public final class WorldEditJob {
         return "/setblock " + x + " " + y + " " + z + " " + block + " " + metadata + (pasteOnlyAir ? " keep" : " replace");
     }
 
+    public void setRegions(List<com.github.lunatrius.schematica.world.storage.SchematicRegion> regions) {
+        selected = com.github.lunatrius.schematica.world.storage.RegionMask.create(regions, width, height, length);
+    }
+
     public void flushBlockChanges(WorldServer world) {
         if (silentPlacement != null) silentPlacement.flush(world);
     }
@@ -132,6 +140,7 @@ public final class WorldEditJob {
         if (phase < 3) {
             if (cursor == volume) { cursor = 0; phase++; return false; }
             int index = cursor++;
+            if (selected != null && !selected.get(index)) return false;
             int wx = x + index % width, wz = z + index / width % length, wy = y + index / width / length;
             Block block = kind == Kind.PASTE ? GameData.getBlockRegistry().getObjectById(blocks[index] & 0xffff) : replacement;
             int meta = kind == Kind.PASTE ? metadata[index] & 15 : replacementMeta;

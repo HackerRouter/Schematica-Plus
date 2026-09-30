@@ -244,6 +244,7 @@ public class RendererSchematicChunk {
         for (y = minY; y < maxY; y++) {
             for (z = minZ; z < maxZ; z++) {
                 for (x = minX; x < maxX; x++) {
+                    if (!schematic.isBlockRendered(x, y, z)) continue;
                     try {
                         block = this.schematic.getBlock(x, y, z);
 

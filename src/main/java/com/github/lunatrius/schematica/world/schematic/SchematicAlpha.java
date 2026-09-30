@@ -51,7 +51,8 @@ public class SchematicAlpha extends SchematicFormat {
                 mapping.put(names.getShort(name) & 65535, block == null ? Blocks.air : block);
             }
         }
-        ISchematic schematic = new Schematic(icon, width, height, length);
+        Schematic schematic = new Schematic(icon, width, height, length);
+        schematic.setRegions(SchematicRegions.read(tagCompound, width, height, length));
         for (int y = 0; y < height; y++) {
             for (int z = 0; z < length; z++) {
                 for (int x = 0; x < width; x++) {
@@ -185,7 +186,8 @@ public class SchematicAlpha extends SchematicFormat {
         }
 
         tagCompound.setString(Names.NBT.MATERIALS, Names.NBT.FORMAT_ALPHA);
-        SchematicBlockIds.write(tagCompound, localBlocks, extraBlocks, extended);
+        SchematicBlockIds.write(tagCompound, localBlocks, extraBlocks, extended || SchematicRegions.requiresExtended(schematic));
+        SchematicRegions.write(tagCompound, schematic);
         tagCompound.setByteArray(Names.NBT.DATA, localMetadata);
         tagCompound.setTag(Names.NBT.ENTITIES, entityList);
         tagCompound.setTag(Names.NBT.TILE_ENTITIES, tileEntitiesList);

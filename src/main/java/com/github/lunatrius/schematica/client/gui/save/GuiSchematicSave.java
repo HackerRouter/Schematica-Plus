@@ -24,10 +24,9 @@ import com.github.lunatrius.schematica.client.gui.framework.UiToggleButton;
 import com.github.lunatrius.schematica.handler.ConfigurationHandler;
 import com.github.lunatrius.schematica.handler.QueueTickHandler;
 import com.github.lunatrius.schematica.handler.client.WorldHandler;
-import com.github.lunatrius.schematica.internal.lunatriuscore.util.vector.Vector3i;
 import com.github.lunatrius.schematica.proxy.ClientProxy;
 import com.github.lunatrius.schematica.reference.Reference;
-import com.github.lunatrius.schematica.util.SchematicLimits;
+import com.github.lunatrius.schematica.world.storage.RegionSelection;
 import com.github.lunatrius.schematica.world.schematic.SchematicFormat;
 
 public final class GuiSchematicSave extends GuiSchematicBrowser {
@@ -98,9 +97,7 @@ public final class GuiSchematicSave extends GuiSchematicBrowser {
         }
         if (!ClientProxy.isRenderingGuide) return UiTranslations.format("schematica.ui.save.enable_guide");
         try {
-            Vector3i min = ClientProxy.pointMin;
-            Vector3i max = ClientProxy.pointMax;
-            SchematicLimits.worldBounds(min.x, min.y, min.z, max.x, max.y, max.z);
+            new RegionSelection(area.regions());
         } catch (IllegalArgumentException e) {
             return UiTranslations.format("schematica.ui.save.invalid_selection");
         }
@@ -138,9 +135,9 @@ public final class GuiSchematicSave extends GuiSchematicBrowser {
         try {
             File file = SchematicSaveTarget.resolve(ConfigurationHandler.schematicDirectory, directory(), name.text(), extended);
             World world = mc.theWorld;
-            Vector3i from = ClientProxy.pointMin.clone();
-            Vector3i to = ClientProxy.pointMax.clone();
-            Runnable submit = () -> submit(file, world, from, to);
+            AreaSelections.capture();
+            RegionSelection selection = new RegionSelection(area.regions());
+            Runnable submit = () -> submit(file, world, selection);
             if (file.exists()) {
                 confirm(UiTranslations.format("schematica.ui.save.overwrite_title"),
                     UiTranslations.format("schematica.ui.save.overwrite", file.getName()), submit);
@@ -151,12 +148,12 @@ public final class GuiSchematicSave extends GuiSchematicBrowser {
         }
     }
 
-    private void submit(File file, World world, Vector3i from, Vector3i to) {
+    private void submit(File file, World world, RegionSelection selection) {
         if (!selectionContext() || mc.theWorld != world || mc.thePlayer == null || !SchematicaPlus.proxy.isSaveEnabled) {
             setStatus(UiTranslations.format("schematica.ui.save.disabled"));
             return;
         }
-        if (SchematicaPlus.proxy.saveSchematic(mc.thePlayer, file.getParentFile(), file.getName(), world, from, to)) {
+        if (SchematicaPlus.proxy.saveSchematic(mc.thePlayer, file.getParentFile(), file.getName(), world, selection)) {
             WorldHandler.INSTANCE.saveSession();
             setStatus(UiTranslations.format("schematica.ui.save.queued", file.getName()));
         } else {

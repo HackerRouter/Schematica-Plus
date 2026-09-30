@@ -8,6 +8,15 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 public class WorldEditJobTest {
+    @Test public void editsSkipUnselectedGapsBeforeReadingOrWritingTheWorld() {
+        for (WorldEditJob.Kind kind : WorldEditJob.Kind.values()) {
+            WorldEditJob job = new WorldEditJob(UUID.randomUUID(), 0, kind, 0, 64, 0, 3, 1, 1, null, 0, null, 0);
+            job.setRegions(java.util.Collections.singletonList(new com.github.lunatrius.schematica.world.storage.SchematicRegion("Box", 1, 0, 0, 1, 0, 0)));
+            org.junit.Assert.assertNull(job.command(0, null));
+            org.junit.Assert.assertNull(job.command(2, null));
+            assertFalse(job.step(null));
+        }
+    }
     @Test public void pasteOptionsDefaultOffAndDoNotAffectOtherTools() {
         WorldEditJob defaults = new WorldEditJob(UUID.randomUUID(), 0, WorldEditJob.Kind.PASTE, 0, 0, 0,
             1, 1, 1, null, 0, null, 0);
