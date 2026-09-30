@@ -156,8 +156,8 @@ and removing/unloading either removes that instance. The tooltip states this.
 Separate loaded sources, new placements from memory, reload/export from memory,
 file renaming, area libraries, multiple boxes/manual origins, area analysis, task
 management and the three advanced capture options remain disabled with explanatory
-hover text. Configuration, placement Configure and materials still use their
-existing screens. The information panel currently reports file attributes, not
+hover text. At the end of phase 3, configuration, placement Configure and materials still
+used their existing screens. Phase 4 below replaces placement Configure. The information panel currently reports file attributes, not
 schematic metadata, region details or preview images. These are the next UI/data
 adapters, not completed parity. No modern MaLiLib runtime dependency is introduced.
 
@@ -166,3 +166,42 @@ filtering during a held click, alongside existing input/browser/save-path tests.
 The atlas is copied byte-for-byte. Native game appearance, resource-pack behavior,
 GUI scaling and interaction with real loaded schematics still need the phase 3
 manual checks. Compilation does not establish pixel-for-pixel visual parity.
+
+## Phase 4: placement configuration
+
+`GuiPlacementConfiguration` now opens from a placement row's Configure button.
+It follows the supplied Litematica screen's rename row, sub-region list at (10,62),
+120-pixel right column, coordinate fields/nudges/checkboxes, rotation/mirror controls
+and the height-328 breakpoint for the material/verifier/navigation buttons.
+The atlas is unchanged; this phase adds the existing enclosing-box icon mapping.
+All edits target the instance used to open the screen. Configuring an inactive
+instance and viewing its materials do not switch the printer/tool's active instance.
+
+Available: display-name rename, origin coordinates, +/- with Shift x8 and Alt x4,
+Move to player (feet block), Y rotation, horizontal mirror cycling, preview visibility,
+Ignore entities and the existing material list. Rename persists as an optional
+`displayName` in LoadedSchematics.json; older session entries keep the filename-based
+name. It neither renames the source file nor changes its contents.
+
+The existing renderer/paste backend stores the transformed minimum corner, whereas
+Litematica edits a placement origin. `PlacementTransform` recovers the original
+corner from ordered transforms and dimensions. The GUI edits that world-space
+origin and adjusts the stored minimum after rotating/mirroring, keeping the origin
+fixed. The block/entity/NBT transform pipeline is reused. Mirrors use rotated local
+axes, not unordered X/Z flip counters. Three-dimensional legacy orientations that
+cannot be represented by this page show CUSTOM and disable the two planar controls;
+the optional direct Controls binding retains the earlier X/Y/Z transform UI.
+
+A merged region row is shown because the current loader collapses sub-regions.
+Independent sub-region toggles/configuration/reset, placement/axis locks, separate
+rendering, enclosing-box control and the verifier remain unavailable in their
+upstream locations. Placement still controls existing preview visibility; it is
+not yet a separate enable switch for the tool/backend. Ignore entities uses the
+existing shared preview/paste entity option. These limits are identified in tooltips.
+
+The page guards mutations with the opened client-world identity and instance
+membership. Leaving that world or unloading the instance disables its controls.
+Resize/child-page return retains the name draft; coordinate fields synchronize
+only when the underlying geometry changes. Persistence, materials, NBT orientation,
+resource-pack appearance and native game interactions require the phase 4 checks
+in TESTING.md; automated geometry checks do not establish full visual parity.

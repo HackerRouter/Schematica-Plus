@@ -212,6 +212,7 @@ public class ClientProxy extends CommonProxy {
 
     /** Persistence entry for saving/restoring loaded schematics across sessions. */
     private static class LoadedSchematicEntry {
+        public String displayName;
         public String filename;
         public String directory;
         public int X, Y, Z;
@@ -537,6 +538,7 @@ public class ClientProxy extends CommonProxy {
             List<LoadedSchematicEntry> entries = new ArrayList<>();
             for (SchematicWorld sw : loadedSchematics) {
                 LoadedSchematicEntry entry = new LoadedSchematicEntry();
+                entry.displayName = sw.name;
                 entry.filename = sw.sourceFilename;
                 entry.directory = sw.sourceDirectory != null ? sw.sourceDirectory.getAbsolutePath() : "";
                 entry.X = sw.position.x;
@@ -595,6 +597,7 @@ public class ClientProxy extends CommonProxy {
                 }
 
                 SchematicWorld world = new SchematicWorld(schematicData, entry.filename);
+                if (entry.displayName != null && !entry.displayName.trim().isEmpty()) world.name = entry.displayName;
                 world.sourceDirectory = dir;
                 world.sourceFilename = entry.filename;
                 world.isRendering = true;

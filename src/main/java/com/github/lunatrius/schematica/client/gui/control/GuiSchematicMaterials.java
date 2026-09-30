@@ -41,9 +41,12 @@ public class GuiSchematicMaterials extends GuiScreenBase {
     protected final List<BlockList.WrappedItemStack> blockList;
 
     public GuiSchematicMaterials(GuiScreen guiScreen) {
+        this(guiScreen, ClientProxy.schematic);
+    }
+
+    public GuiSchematicMaterials(GuiScreen guiScreen, SchematicWorld schematic) {
         super(guiScreen);
         final Minecraft minecraft = Minecraft.getMinecraft();
-        final SchematicWorld schematic = ClientProxy.schematic;
         this.blockList = new BlockList().getList(minecraft.thePlayer, schematic, minecraft.theWorld);
         this.sortType.sort(this.blockList);
     }

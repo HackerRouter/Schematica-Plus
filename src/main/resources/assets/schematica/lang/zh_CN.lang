@@ -263,3 +263,12 @@ schematica.ui.save.options=选项
 schematica.ui.area.corners=角点
 schematica.ui.browser.create_directory=新建文件夹
 schematica.ui.browser.file_info=文件信息（元数据预览待移植）
+
+schematica.ui.placement.empty_name=请输入放置名称。
+schematica.ui.placement.merged_region=当前加载器会将子区域合并为一个区域，尚不支持独立编辑子区域。
+schematica.ui.placement.visibility=目前“放置”开关控制预览显示，独立的放置与渲染开关尚未移植。
+schematica.ui.placement.bounds=原点或原理图最小角超出了支持的坐标范围。
+schematica.ui.placement.custom_transform=此放置包含三维变换，请使用“直接打开控制界面”快捷键调整 X/Z 旋转或垂直镜像。
+schematica.ui.placement.transform_hint=左键正向循环，右键反向循环；旋转和镜像保持放置原点不动。
+schematica.ui.placement.transform_failed=变换失败，请检查日志和预览后再继续。
+schematica.ui.placement.unloaded=此放置已不在当前维度的已加载列表中。

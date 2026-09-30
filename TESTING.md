@@ -194,3 +194,38 @@ once to establish the new keys. Ordered transforms apply to newly saved sessions
   output still uses .schematic/.schemplus, with automatic upgrade where required.
 - Check that unavailable operations stay in the source UI positions, show a clear
   tooltip and cannot run. Configure/Forge config still open the earlier screens.
+
+
+## Litematica UI phase 4: placement configuration
+
+- In M > Schematic Placements > Configure, compare English/Chinese against the
+  supplied Litematica at the same scaled resolution, especially heights below and
+  above 328. Check the rename field, right-side origin controls, +/- icons, lock
+  checkboxes, merged region row, magnifier and the two footer arrangements.
+- Configure inactive placement B while A is selected/printing. Rename, move,
+  transform, toggle visibility/entities and open Materials. Only B may change;
+  its material list must describe B and A must stay selected. Reopen/relog: B's
+  display name and transform must persist, with its source filename unchanged.
+- Type a new name, resize, visit Materials and return: retain the unsubmitted
+  draft. Empty rename must show feedback. Load an old session without displayName;
+  its filename-based name must remain intact.
+- Use an asymmetric 2x3x5 test schematic at positive and negative coordinates.
+  Record the origin shown in the UI. Cycle rotation four times, reverse once,
+  cycle mirrors both directions, and alternate rotation/mirror. The original
+  corner must stay at that origin. Four turns or three mirror cycles must recover
+  the original result. Include directional blocks, entities, GT pipes and EnderIO
+  conduits; save/reload the session and paste to compare NBT directions.
+- Move to player while facing each direction. The origin must equal the player's
+  feet block, without the old facing-dependent placement offset. Test coordinate
+  typing, arrows/wheel, left/right nudges, Shift (8), Alt (4) and both (32), including
+  coordinate limits. Invalid proposed minima must leave the placement unchanged.
+- Open legacy Controls and apply an X/Z tilt or vertical mirror; reopening the
+  new page must show CUSTOM instead of incorrect planar labels. The legacy binding
+  remains available. Four X turns that restore a planar orientation should allow
+  planar controls again.
+- While the page has a pending coordinate edit, unload the instance or change
+  dimension/disconnect. Releasing a held button or closing the screen must not
+  modify an instance belonging to the previous world. Navigation must still work.
+- The single merged region and unavailable locks, sub-region operations, independent
+  rendering/enclosing-box options and verifier must not imply supported behavior.
+  Hover text must explain the limitation; disabled controls must not mutate state.

@@ -33,7 +33,10 @@ Default tool item is `minecraft:stick`.
 The main menu now follows Litematica's button groups, coordinates and icons.
 Loaded Schematics and Schematic Placements have separate list pages; both currently
 refer to the same instances, so removing either also unloads the instance.
-Placement Configure opens the existing controls. Direct loading and direct controls
+Placement Configure now uses the Litematica layout for renaming, origin editing,
+rotation/mirroring and preview/entity options. It keeps the placement origin fixed
+during transforms. The optional direct Controls binding retains the earlier
+three-axis controls; global configuration and materials still use the earlier UI. Direct loading and direct controls
 have optional, unbound shortcuts in Controls. Unported operations retain their
 positions and show disabled tooltips.
 

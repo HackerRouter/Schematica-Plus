@@ -4,6 +4,7 @@ package com.github.lunatrius.schematica.client.gui.framework;
 
 public enum UiSprite {
     PLUS_MINUS(0, 128, 16, 16, true),
+    ENCLOSING_BOX_DISABLED(0, 160, 16, 16, true),
     AREA_EDITOR(102, 70, 14, 14, true),
     AREA_SELECTION(102, 0, 14, 14, true),
     CONFIGURATION(102, 84, 14, 14, true),

@@ -11,7 +11,6 @@ import net.minecraft.client.resources.I18n;
 import org.lwjgl.input.Keyboard;
 
 import com.github.lunatrius.schematica.SchematicaPlus;
-import com.github.lunatrius.schematica.client.gui.control.GuiSchematicControl;
 import com.github.lunatrius.schematica.client.gui.framework.UiBounds;
 import com.github.lunatrius.schematica.client.gui.framework.UiButton;
 import com.github.lunatrius.schematica.client.gui.framework.UiDraw;
@@ -119,8 +118,7 @@ abstract class GuiSchematicList extends UiScreen {
                     mouse -> { if (mouse == 0) { world.isRendering = !world.isRendering; WorldHandler.INSTANCE.saveSession(); } }));
                 buttons.add(toggle);
                 button("litematica.gui.button.schematic_placements.configure", () -> {
-                    ClientProxy.selectSchematic(world);
-                    mc.displayGuiScreen(new GuiSchematicControl(GuiSchematicList.this));
+                    mc.displayGuiScreen(new GuiPlacementConfiguration(GuiSchematicList.this, world));
                 });
             } else {
                 button("litematica.gui.button.unload", () -> GuiSchematicList.this.remove(world));

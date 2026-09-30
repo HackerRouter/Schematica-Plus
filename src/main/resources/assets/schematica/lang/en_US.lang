@@ -263,3 +263,12 @@ schematica.ui.save.options=Options
 schematica.ui.area.corners=Corners
 schematica.ui.browser.create_directory=Create directory
 schematica.ui.browser.file_info=File information (metadata pending)
+
+schematica.ui.placement.empty_name=Enter a placement name.
+schematica.ui.placement.merged_region=This loader merges sub-regions into one region. Independent sub-region editing is not available yet.
+schematica.ui.placement.visibility=Placement currently controls preview visibility. Separate rendering and placement switches have not been ported.
+schematica.ui.placement.bounds=The origin or schematic minimum corner is outside the supported coordinate limits.
+schematica.ui.placement.custom_transform=This placement has a 3D transform. Use the direct Controls key binding for X/Z rotation or vertical mirroring.
+schematica.ui.placement.transform_hint=Left/right click to cycle forward/backward. Rotation and mirroring keep the placement origin fixed.
+schematica.ui.placement.transform_failed=The transform failed. Check the log and preview before continuing.
+schematica.ui.placement.unloaded=This placement is no longer loaded in the current world.

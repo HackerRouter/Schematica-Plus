@@ -7,20 +7,27 @@ import java.util.function.BiFunction;
 public final class UiRowList<T> extends UiPanel {
     private final UiListModel<T> model;
     private final BiFunction<T, Integer, UiPanel> factory;
+    private final int rowRightInset;
     private final UiPanel rows = add(new UiPanel());
     private final ScrollBar scrollBar = add(new ScrollBar());
     private List<T> visible = new ArrayList<>();
     private int firstIndex = -1;
 
     public UiRowList(UiListModel<T> model, BiFunction<T, Integer, UiPanel> factory) {
+        this(model, factory, 12);
+    }
+
+    public UiRowList(UiListModel<T> model, BiFunction<T, Integer, UiPanel> factory, int rowRightInset) {
+        if (rowRightInset < 8) throw new IllegalArgumentException("Rows overlap the scrollbar");
         this.model = model;
         this.factory = factory;
+        this.rowRightInset = rowRightInset;
     }
 
     @Override
     public void setBounds(int x, int y, int width, int height) {
         super.setBounds(x, y, width, height);
-        rows.setBounds(x, y, Math.max(0, width - 12), height);
+        rows.setBounds(x, y, Math.max(0, width - rowRightInset), height);
         scrollBar.setBounds(x + width - 8, y, 8, height);
         model.setViewportHeight(height);
         sync();
