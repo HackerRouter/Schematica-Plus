@@ -23,12 +23,23 @@ Default tool item is `minecraft:stick`.
 
 | Key | Action |
 |-----|--------|
-| `M` | Open Schematic Management GUI |
+| `M` | Open Schematica Plus main menu |
 | `N` | Open Save Schematic GUI |
 | `Enter` | Execute current tool action (save, paste, fill, delete, replace) |
 | `LCTRL + Scroll` | Cycle tool mode (while holding tool item) |
 | Left Click | Set point A / Pick primary block (while holding tool item) |
 | Right Click | Set point B / Pick secondary block / Place schematic (while holding tool item) |
+
+The main menu links to loading, area selection/saving, instances, controls,
+materials and configuration. Direct loading and direct controls have optional,
+unbound shortcuts in Controls. The new file browser supports subfolders, name
+search and all three input formats; selecting a row does not load it until you
+press Load, double-click, or press Enter with the list focused.
+
+The save page supports output-folder selection, `.schematic`/`.schemplus` format
+selection and confirmation before replacing an existing file. A queued save is
+not yet complete; the final filename and result appear in chat. See the
+[UI port notes](compatibility/ui-port.md) for the current scope.
 
 ---
 

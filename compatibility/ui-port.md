@@ -1,4 +1,4 @@
-# Litematica UI adaptation, phase 1
+# Litematica UI adaptation
 
 Target: Minecraft 1.7.10, Forge 10.13.4.1614, MCP stable_12, Java 8 bytecode.
 The UI is internal to Schematica Plus; it does not register a MaLiLib mod or expose
@@ -96,3 +96,28 @@ look-target/player placement behavior. It refreshes rendering and saves the sess
 Failures stay on the page with feedback. Success stays on the page to allow another
 load; Esc returns to the menu, then to the world. File parsing itself remains
 synchronous, as in the previous loader; directory listing no longer parses NBT.
+
+## Phase 2: area selection and saving
+
+`GuiSchematicSave` now uses the same component layer. It edits the existing A/B
+points, supports moving either point to the player, controls guide/NBT/entity
+settings and displays selection validation. Coordinate edits commit on Enter or
+focus loss. Resizing or returning from the folder picker retains filename and
+format choices, and the existing points remain the source of selection state.
+
+`GuiSchematicDirectory` reuses the browser in directory-only mode. Destinations
+stay within the configured schematic directory. The output format initially uses
+the configuration default, but can be changed for this save without changing that
+global preference. Known suffixes in the name field are normalized to the selected
+format, avoiding doubled extensions. `.litematic` remains import-only.
+
+`SchematicSaveTarget` validates names/destinations without writing anything. An
+existing target prompts for confirmation. The existing save queue captures the
+selection and NBT/entity options; no capture or file-format backend was replaced.
+UI feedback reports acceptance into that queue, with completion/automatic format
+upgrade reported by the existing chat messages. Queue limits and server loading/
+saving restrictions still apply.
+
+Headless checks cover directory navigation, deleted files/folders, metadata refresh,
+hidden selection, format normalization and invalid/save-target paths. Native UI,
+world capture and preview behavior need the phase 2 scenarios in `TESTING.md`.

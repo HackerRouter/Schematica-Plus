@@ -31,6 +31,28 @@ font/IME behavior or modpack rendering integrations; those require the checks ab
 
 Before a release, use a disposable 1.7.10 world to check:
 
+- Open M, load a schematic through a nested folder, search by name, double-click
+  a folder, refresh, and use the keyboard. Check `.schematic`, `.schemplus` and
+  `.litematic`, Unicode/spaced filenames, empty folders, and a corrupt schematic.
+  Back must never load; a failed load must leave a useful message on the page.
+- Load the same file twice, return through the main menu, and verify the two
+  instances and previous placement/rotation restoration. Try the direct load and
+  controls bindings. Confirm that an existing customized M binding is retained.
+- Test the new menu/load/save pages at 320x240 scaled size, larger windows,
+  Unicode font and English/Chinese. Long names, paths and messages have tooltips.
+  Return from legacy instances/control/materials/config pages to the new menu.
+- Open N, edit both corner coordinates, commit with Enter and by clicking Save,
+  and move each point to the player. Turn on Selection, enter a name, select a
+  subfolder, return and resize: the name, coordinates and format must survive.
+- Save a small selection in each output format; also paste an existing suffix in
+  the name field and ensure it is not doubled. Save high block IDs while selecting
+  `.schematic` and verify the automatic `.schemplus` name reported in chat.
+- Save over an existing file, first cancel/Escape (file unchanged), then confirm.
+  Check invalid names, removed output folders, out-of-range Y, oversized selections,
+  repeated saves during a pending job, and server-disallowed load/save actions.
+  A queued message must not be mistaken for completion. After submission, change
+  the NBT/entity toggles and confirm that the queued capture retains its options.
+
 - Run the compatibility scenarios in both GTNH 2.8.4 and 2.9.0-RC-1. Exact
   upstream versions and inspected source tags are recorded in
   `compatibility/gtnh-mods.json`; a source audit is not an in-game test.
