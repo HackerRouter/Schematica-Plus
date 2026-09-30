@@ -76,7 +76,7 @@ public class ConfigurationHandler {
     public static boolean destroyBlocks = DESTROY_BLOCKS_DEFAULT;
     public static boolean destroyInstantly = DESTROY_INSTANTLY_DEFAULT;
     public static boolean placeAdjacent = PLACE_ADJACENT_DEFAULT;
-    public static boolean[] swapSlots = SWAP_SLOTS_DEFAULT;
+    public static boolean[] swapSlots = SWAP_SLOTS_DEFAULT.clone();
     public static final Queue<Integer> swapSlotsQueue = new ArrayDeque<>();
     public static File schematicDirectory = SCHEMATIC_DIRECTORY_DEFAULT;
     public static String[] extraAirBlocks = EXTRA_AIR_BLOCKS_DEFAULT;
