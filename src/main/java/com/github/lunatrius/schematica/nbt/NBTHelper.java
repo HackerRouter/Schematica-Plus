@@ -103,6 +103,7 @@ public class NBTHelper {
 
         try {
             NBTTagCompound tileEntityCompound = writeTileEntityToCompound(tileEntity);
+            TileEntitySnapshots.capture(tileEntity, tileEntityCompound);
             tileEntity = readTileEntityFromCompound(tileEntityCompound);
             if (tileEntity == null) {
                 return null;
@@ -156,19 +157,16 @@ public class NBTHelper {
     }
 
     public static NBTTagCompound writeTileEntityToCompound(final TileEntity tileEntity) {
-        final NBTTagCompound tileEntityCompound = new NBTTagCompound();
-        tileEntity.writeToNBT(tileEntityCompound);
-        ClientVisualState.capture(tileEntity, tileEntityCompound);
-        return tileEntityCompound;
+        return TileEntitySnapshots.write(tileEntity);
     }
 
     public static TileEntity readTileEntityFromCompound(final NBTTagCompound tileEntityCompound) {
-        if (tileEntityCompound.getString("id")
-            .equals("savedMultipart")) {
-            return ForgeMultipart.createFromNBT(tileEntityCompound);
-        }
-
-        return TileEntity.createAndLoadEntity(tileEntityCompound);
+        NBTTagCompound data = (NBTTagCompound) tileEntityCompound.copy();
+        data.removeTag(TileUpdateData.KEY);
+        TileEntity tile = data.getString("id").equals("savedMultipart")
+            ? ForgeMultipart.createFromNBT(data) : TileEntity.createAndLoadEntity(data);
+        TileEntitySnapshots.attach(tile, tileEntityCompound);
+        return tile;
     }
 
     public static NBTTagCompound writeEntityToCompound(final Entity entity) {

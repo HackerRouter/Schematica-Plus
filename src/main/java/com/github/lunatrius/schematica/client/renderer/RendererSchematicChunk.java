@@ -178,6 +178,10 @@ public class RendererSchematicChunk {
     }
 
     public void render(int renderPass) {
+        render(renderPass, 0);
+    }
+
+    public void render(int renderPass, float partialTicks) {
         if (!this.isInFrustrum) {
             return;
         }
@@ -207,7 +211,7 @@ public class RendererSchematicChunk {
             GL11.glDepthMask(false);
             GL11.glCallList(this.glListHighlight + renderPass);
             this.profiler.endStartSection("tileEntities");
-            renderTileEntities(renderPass);
+            renderTileEntities(renderPass, partialTicks);
         } finally {
             if (OpenGlHelper.shadersSupported) GL20.glUseProgram(previousProgram);
             GL11.glPopAttrib();
@@ -364,6 +368,10 @@ public class RendererSchematicChunk {
     }
 
     public void renderTileEntities(int renderPass) {
+        renderTileEntities(renderPass, 0);
+    }
+
+    public void renderTileEntities(int renderPass, float partialTicks) {
         if (renderPass > 1) {
             return;
         }
@@ -374,7 +382,7 @@ public class RendererSchematicChunk {
 
         GL11.glColor4f(1.0f, 1.0f, 1.0f, ConfigurationHandler.alpha);
 
-        try {
+        try (SchematicTileRenderContext context = new SchematicTileRenderContext(this.schematic)) {
             for (TileEntity tileEntity : this.tileEntities) {
                 if (!tileEntity.shouldRenderInPass(renderPass)) continue;
                 x = tileEntity.xCoord;
@@ -397,7 +405,7 @@ public class RendererSchematicChunk {
                         GL11.glPushMatrix();
                         GL11.glPushAttrib(GL11.GL_ALL_ATTRIB_BITS);
                         try {
-                            tileEntitySpecialRenderer.renderTileEntityAt(tileEntity, x, y, z, 0);
+                            tileEntitySpecialRenderer.renderTileEntityAt(tileEntity, x, y, z, partialTicks);
 
                             OpenGlHelper.setActiveTexture(OpenGlHelper.lightmapTexUnit);
                             GL11.glDisable(GL11.GL_TEXTURE_2D);

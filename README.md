@@ -41,11 +41,26 @@ Singleplayer captures use the integrated server's world. Remote client captures
 include only synchronized data; GregTech pipe connections are preserved, but
 unsynchronized inventories and machine data still require a server-side save.
 
+With NBT saving enabled, captures also retain standard S35 tile update data for
+mods that implement `onDataPacket`. Previews restore it after all tile entities
+are bound to the schematic world. Original NBT is retained separately so partial
+client updates do not erase inventories when saving again or pasting. Older files
+cannot recover visual state they never recorded and should be captured again.
+
+Animated textures and renderers using world time/frame interpolation continue to
+animate. Machine logic is not ticked inside previews. Private synchronization,
+private animation counters, neighbors outside the selection, biome-dependent
+textures and arbitrary mod-specific rotations still require adapters. This does
+not guarantee identical rendering for every mod; see [verification](TESTING.md).
+
 The printer can place source fluids using registered `ItemBucket` containers,
-including mod buckets. In survival, a matching filled bucket must be in your
-inventory, and a neighboring block face must be visible and within reach. Flowing
-fluid is left to the game's simulation. Cells, cans, tanks and arbitrary custom
-fluid tools are not treated as placeable buckets.
+GregTech volumetric flasks, IC2 universal fluid cells and Forestry buckets. In
+survival, a matching container with at least 1000 mB must be in your inventory,
+and a neighboring block face must be visible and within reach. The original item
+handles consumption and container returns. Flasks/cells require a solid neighbor
+without a tile entity to avoid tank interactions. Flowing fluid is left to the
+game's simulation. Forestry cans/capsules, drinks and storage-only containers are
+not selected because they do not implement world fluid placement.
 
 Integrated-server edits require creative mode and command permission. They run in
 bounded batches on server ticks; pressing Execute again cancels the remaining work

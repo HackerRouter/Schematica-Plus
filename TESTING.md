@@ -44,6 +44,19 @@ Before a release, use a disposable 1.7.10 world to check:
   and remote-server saves, then reload the files and check connections, colors,
   powered/inverted state and parts. Client saves cannot recover unsynchronized
   inventories or machine data; a server save is required for those.
+- Save an active GT machine and another mod's tile using a standard S35 update,
+  with NBT enabled. Compare facing, active texture, color, covers and connections
+  in singleplayer and multiplayer. Rotate, save again and reload; verify the
+  renderer's update data survives and uses schematic coordinates. Paste the
+  singleplayer copy and verify original inventories/energy were not replaced by
+  the smaller client update. Loading a preview must not start machine sounds.
+- Check animated textures and a TESR driven by world time while moving, rotating,
+  pausing and using Freecam. Check multiple instances and nearby real machines.
+  Preview world time and frame interpolation now advance; arbitrary tile logic
+  is deliberately not ticked, so animations driven by private tick counters need
+  a mod-specific adapter. Private packets, absolute positions embedded in opaque
+  payloads, neighbors outside the selection and biome-dependent rendering still
+  need separate compatibility work; this is not a universal visual snapshot.
 - Inspect an empty and filled cauldron from all sides with alpha enabled/disabled,
   alongside mod blocks that use both render passes. Check multipart glows and
   ensure rendering them does not change nearby blocks, entities or the HUD.

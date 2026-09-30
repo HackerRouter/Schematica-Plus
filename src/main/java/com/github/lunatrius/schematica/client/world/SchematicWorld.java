@@ -26,6 +26,7 @@ import com.github.lunatrius.schematica.internal.lunatriuscore.util.vector.Vector
 import com.github.lunatrius.schematica.internal.lunatriuscore.util.vector.Vector3i;
 import com.github.lunatrius.schematica.api.ISchematic;
 import com.github.lunatrius.schematica.handler.ConfigurationHandler;
+import com.github.lunatrius.schematica.nbt.TileEntitySnapshots;
 import com.github.lunatrius.schematica.reference.Reference;
 import com.github.lunatrius.schematica.util.SchematicTransform;
 import com.github.lunatrius.schematica.world.chunk.ChunkProviderSchematic;
@@ -77,9 +78,9 @@ public class SchematicWorld extends World {
         this.schematic = schematic;
         this.isRemote = true;
 
-        for (TileEntity tileEntity : schematic.getTileEntities()) {
-            initializeTileEntity(tileEntity);
-        }
+        for (TileEntity tileEntity : schematic.getTileEntities()) bindTileEntity(tileEntity);
+        for (TileEntity tileEntity : schematic.getTileEntities()) validateTileEntity(tileEntity);
+        for (TileEntity tileEntity : schematic.getTileEntities()) restoreTileEntity(tileEntity);
 
         this.isRendering = false;
         this.isRenderingLayer = false;
@@ -215,13 +216,30 @@ public class SchematicWorld extends World {
 
     public void initializeTileEntity(TileEntity tileEntity) {
         if (tileEntity == null) return;
+        bindTileEntity(tileEntity);
+        validateTileEntity(tileEntity);
+        restoreTileEntity(tileEntity);
+    }
+
+    private void bindTileEntity(TileEntity tileEntity) {
         tileEntity.setWorldObj(this);
         tileEntity.updateContainingBlockInfo();
         tileEntity.getBlockType();
+    }
+
+    private void validateTileEntity(TileEntity tileEntity) {
         try {
             tileEntity.validate();
         } catch (Exception e) {
             Reference.logger.error("TileEntity validation for {} failed!", tileEntity.getClass(), e);
+        }
+    }
+
+    private void restoreTileEntity(TileEntity tileEntity) {
+        try {
+            TileEntitySnapshots.restorePreview(tileEntity);
+        } catch (Exception | LinkageError e) {
+            Reference.logger.warn("TileEntity preview for {} failed", tileEntity.getClass().getName(), e);
         }
     }
 
@@ -293,6 +311,9 @@ public class SchematicWorld extends World {
         try {
             if (mirror) flipContents(direction);
             else rotateContents(direction);
+            for (TileEntity tileEntity : this.schematic.getTileEntities()) {
+                TileEntitySnapshots.refreshPreview(tileEntity);
+            }
             for (Entity entity : entities) {
                 double[] p = SchematicTransform.point(operation, entity.posX, entity.posY, entity.posZ, w, h, l);
                 double yaw = Math.toRadians(entity.rotationYaw), pitch = Math.toRadians(entity.rotationPitch);

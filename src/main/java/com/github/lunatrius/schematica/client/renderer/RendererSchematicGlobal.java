@@ -16,6 +16,7 @@ import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.profiler.Profiler;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
+import net.minecraftforge.client.event.sound.PlaySoundEvent17;
 
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
@@ -23,6 +24,7 @@ import org.lwjgl.opengl.GL11;
 import com.github.lunatrius.schematica.internal.lunatriuscore.util.vector.Vector3d;
 import com.github.lunatrius.schematica.client.world.SchematicWorld;
 import com.github.lunatrius.schematica.proxy.ClientProxy;
+import com.github.lunatrius.schematica.nbt.TileEntitySnapshots;
 import com.github.lunatrius.schematica.reference.Constants;
 
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
@@ -55,6 +57,11 @@ public class RendererSchematicGlobal {
         final List<RendererSchematicChunk> chunks = new ArrayList<>();
     }
 
+    @SubscribeEvent(priority = cpw.mods.fml.common.eventhandler.EventPriority.LOWEST)
+    public void onPlaySound(PlaySoundEvent17 event) {
+        if (TileEntitySnapshots.isRestoring()) event.result = null;
+    }
+
     @SubscribeEvent
     public void onRender(RenderWorldLastEvent event) {
         EntityPlayerSP player = this.minecraft.thePlayer;
@@ -81,7 +88,7 @@ public class RendererSchematicGlobal {
                 captureMatrix(GL11.GL_PROJECTION_MATRIX, this.projection);
                 captureMatrix(GL11.GL_MODELVIEW_MATRIX, this.modelView);
                 this.frustum.update(this.projection, this.modelView);
-                renderAll();
+                renderAll(event.partialTicks);
             }
 
             this.profiler.endSection();
@@ -90,12 +97,20 @@ public class RendererSchematicGlobal {
 
     /** Renders all loaded schematics plus the guide overlay. */
     public void renderAll() {
+        renderAll(0);
+    }
+
+    public void renderAll(float partialTicks) {
         GL11.glPushMatrix();
         GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
         GL11.glEnable(GL11.GL_BLEND);
 
         this.profiler.startSection("schematic");
 
+        for (SchematicWorld sw : ClientProxy.loadedSchematics) {
+            sw.setWorldTime(this.minecraft.theWorld.getWorldTime());
+            sw.func_82738_a(this.minecraft.theWorld.getTotalWorldTime());
+        }
         updateRenderers();
 
         // Render each loaded schematic
@@ -117,7 +132,7 @@ public class RendererSchematicGlobal {
                     com.github.lunatrius.schematica.handler.ConfigurationHandler.enableAlpha);
                 for (int i = 0; i < data.chunks.size(); i++) {
                     int index = reverse ? data.chunks.size() - 1 - i : i;
-                    data.chunks.get(index).render(pass);
+                    data.chunks.get(index).render(pass, partialTicks);
                 }
             }
 

@@ -1,0 +1,91 @@
+package com.github.lunatrius.schematica.nbt;
+
+import java.util.Collections;
+import java.util.Map;
+import java.util.WeakHashMap;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.network.NetworkManager;
+import net.minecraft.network.play.server.S35PacketUpdateTileEntity;
+import net.minecraft.tileentity.TileEntity;
+import cpw.mods.fml.relauncher.Side;
+import cpw.mods.fml.relauncher.SideOnly;
+import com.github.lunatrius.schematica.reference.Reference;
+
+public final class TileEntitySnapshots {
+    private static final Map<TileEntity, TileEntitySnapshot> SNAPSHOTS = Collections.synchronizedMap(new WeakHashMap<>());
+    private static final ThreadLocal<Boolean> RESTORING = new ThreadLocal<>();
+
+    private TileEntitySnapshots() {}
+
+    static void capture(TileEntity tile, NBTTagCompound tag) {
+        if (SNAPSHOTS.containsKey(tile)) return;
+        NBTTagCompound visual = captureVisual(tile);
+        if (visual != null) tag.setTag(TileUpdateData.KEY, visual);
+    }
+
+    private static NBTTagCompound captureVisual(TileEntity tile) {
+        try {
+            if (tile.getClass().getMethod("onDataPacket", NetworkManager.class, S35PacketUpdateTileEntity.class)
+                .getDeclaringClass() == TileEntity.class) return null;
+            return TileUpdateData.capture(tile.getClass().getName(), tile.getDescriptionPacket());
+        } catch (Exception | LinkageError e) {
+            Reference.logger.debug("Could not capture visual state for {}", tile.getClass().getName(), e);
+            return null;
+        }
+    }
+
+    static void attach(TileEntity tile, NBTTagCompound tag) {
+        if (tile != null) SNAPSHOTS.put(tile, new TileEntitySnapshot(tag));
+    }
+
+    static NBTTagCompound write(TileEntity tile) {
+        TileEntitySnapshot snapshot = SNAPSHOTS.get(tile);
+        if (snapshot == null) return writeCurrent(tile);
+        NBTTagCompound current = snapshot.isInitialized() ? writeCurrent(tile) : null;
+        return snapshot.write(current, tile.xCoord, tile.yCoord, tile.zCoord);
+    }
+
+    private static NBTTagCompound writeCurrent(TileEntity tile) {
+        NBTTagCompound tag = new NBTTagCompound();
+        tile.writeToNBT(tag);
+        ClientVisualState.capture(tile, tag);
+        return tag;
+    }
+
+    public static boolean isRestoring() { return Boolean.TRUE.equals(RESTORING.get()); }
+
+    public static void removeVisualData(NBTTagCompound tag) { tag.removeTag(TileUpdateData.KEY); }
+
+    @SideOnly(Side.CLIENT)
+    public static void restorePreview(TileEntity tile) {
+        TileEntitySnapshot snapshot = SNAPSHOTS.get(tile);
+        if (snapshot == null || snapshot.isInitialized() || !tile.hasWorldObj() || !tile.getWorldObj().isRemote) return;
+        S35PacketUpdateTileEntity packet = TileUpdateData.packet(snapshot.visual(), tile.getClass().getName(),
+            tile.xCoord, tile.yCoord, tile.zCoord);
+        Boolean previous = RESTORING.get();
+        RESTORING.set(true);
+        int x = tile.xCoord, y = tile.yCoord, z = tile.zCoord;
+        try {
+            if (packet != null) tile.onDataPacket(null, packet);
+        } catch (Exception | LinkageError e) {
+            Reference.logger.warn("Could not restore visual state for {}", tile.getClass().getName(), e);
+            NBTTagCompound original = snapshot.write(null, x, y, z);
+            removeVisualData(original);
+            tile.readFromNBT(original);
+        } finally {
+            tile.xCoord = x;
+            tile.yCoord = y;
+            tile.zCoord = z;
+            if (previous == null) RESTORING.remove();
+            else RESTORING.set(previous);
+        }
+        snapshot.initialize(writeCurrent(tile));
+    }
+
+    @SideOnly(Side.CLIENT)
+    public static void refreshPreview(TileEntity tile) {
+        TileEntitySnapshot snapshot = SNAPSHOTS.get(tile);
+        if (snapshot == null || snapshot.visual() == null) return;
+        snapshot.visual(captureVisual(tile));
+    }
+}

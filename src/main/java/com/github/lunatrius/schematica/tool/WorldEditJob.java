@@ -64,6 +64,7 @@ public final class WorldEditJob {
                 if (tile.xCoord < 0 || tile.xCoord >= width || tile.yCoord < 0 || tile.yCoord >= height
                     || tile.zCoord < 0 || tile.zCoord >= length) continue;
                 NBTTagCompound tag = NBTHelper.writeTileEntityToCompound(tile);
+                com.github.lunatrius.schematica.nbt.TileEntitySnapshots.removeVisualData(tag);
                 tiles.put(tile.xCoord + width * (tile.zCoord + length * tile.yCoord), tag);
             }
         }
