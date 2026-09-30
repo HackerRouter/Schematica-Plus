@@ -49,9 +49,17 @@ public final class GuiAreaSelectionEditor extends UiScreen {
     private final UiLabel[] originAxes = new UiLabel[3];
     private final UiButton[] originNudges = new UiButton[3];
     private boolean syncingOrigin;
+    private final GuiScreen menuParent;
+    private final boolean simple = library.mode() == AreaSelectionLibrary.Mode.SIMPLE;
+    private UiTextField boxName;
+    private UiLabel boxLabel;
+    private UiButton setBoxName;
+    private final AreaCornerControls[] cornerControls = new AreaCornerControls[2];
 
     public GuiAreaSelectionEditor(GuiScreen parent) {
-        super(parent, UiTranslations.format("litematica.gui.title.area_editor_normal"));
+        super(parent, UiTranslations.format(AreaSelections.library().mode() == AreaSelectionLibrary.Mode.SIMPLE
+            ? "litematica.gui.title.area_editor_simple" : "litematica.gui.title.area_editor_normal"));
+        menuParent = parent;
     }
 
     private boolean available() {
@@ -66,11 +74,21 @@ public final class GuiAreaSelectionEditor extends UiScreen {
     }
 
     @Override protected void createWidgets() {
-        mode = unavailable(root.add(new UiButton(() -> UiTranslations.format("litematica.gui.button.area_editor.change_selection_mode",
-            UiTranslations.format("litematica.gui.label.area_selection.mode.normal")), button -> {})));
-        mode.setTooltip(UiTranslations.format("schematica.ui.area.multi_box"));
-        corners = unavailable(root.add(new UiButton(() -> UiTranslations.format("litematica.gui.button.area_editor.change_corner_mode",
-            UiTranslations.format("litematica.hud.area_selection.mode.corners")), button -> {})));
+        mode = root.add(new UiButton(() -> UiTranslations.format("litematica.gui.button.area_editor.change_selection_mode",
+            UiTranslations.format(AreaSelections.modeKey())), button -> {
+                if (!available()) return;
+                if (simple && library.normalSelection() == null) {
+                    message = UiTranslations.format("litematica.error.area_editor.switch_mode.no_selection");
+                    return;
+                }
+                AreaSelections.switchMode();
+                mc.displayGuiScreen(new GuiAreaSelectionEditor(menuParent));
+            }));
+        mode.setTooltip(UiTranslations.format("schematica.ui.area.modes_hint"));
+        corners = root.add(new UiButton(() -> UiTranslations.format("litematica.gui.button.area_editor.change_corner_mode",
+            UiTranslations.format(AreaSelections.cornerModeKey())), button -> change(() -> library.setCornerMode(
+                library.cornerMode() == AreaSelectionLibrary.CornerMode.CORNERS ? AreaSelectionLibrary.CornerMode.EXPAND : AreaSelectionLibrary.CornerMode.CORNERS))));
+        corners.setTooltip(UiTranslations.format("schematica.ui.area.tool_hint"));
         root.add(new UiLabel(() -> UiTranslations.format("litematica.gui.label.area_editor.selection_name"))).setBounds(12, 44, 202, 12);
         name = root.add(new UiTextField(fontRendererObj, 200, value -> {}));
         name.setBounds(12, 59, 202, 16);
@@ -82,7 +100,7 @@ public final class GuiAreaSelectionEditor extends UiScreen {
         }));
         origin = root.add(new UiButton(() -> UiTranslations.format("litematica.gui.button.area_editor.origin_enabled",
             (manualOrigin() ? "\u00a7a" : "\u00a7c") + UiTranslations.format(manualOrigin() ? "options.on" : "options.off")),
-            button -> { if (button == 0) change(() -> library.setOrigin(area, manualOrigin() ? null : GuiAreaSelectionManager.playerPoint())); }));
+            button -> { if (button == 0) change(() -> library.setOrigin(area, manualOrigin() ? null : simple ? area.origin() : GuiAreaSelectionManager.playerPoint())); }));
         origin.setTooltip(UiTranslations.format("schematica.ui.area.origin_hint"));
         save = action("litematica.gui.button.area_editor.create_schematic", () -> mc.displayGuiScreen(new GuiSchematicSave(this, area.name())));
         count = root.add(new UiLabel(() -> UiTranslations.format("litematica.gui.label.area_editor.sub_regions", area == null ? 0 : area.boxes().size())));
@@ -95,6 +113,13 @@ public final class GuiAreaSelectionEditor extends UiScreen {
         main = addButton("litematica.gui.button.change_menu.to_main_menu", () -> mc.displayGuiScreen(new GuiSchematicMainMenu(this)));
         status = root.add(new UiLabel(this::statusText, 0xFFFFA0A0));
         createOriginControls();
+        if (simple) {
+            boxLabel = root.add(new UiLabel(() -> UiTranslations.format("litematica.gui.label.area_editor.box_name")));
+            boxName = root.add(new UiTextField(fontRendererObj, 200, value -> {}));
+            setBoxName = action("litematica.gui.button.area_editor.set_box_name", () -> change(() -> library.renameBox(area, boxName.text())));
+            for (int i = 0; i < 2; i++) cornerControls[i] = root.add(new AreaCornerControls(fontRendererObj, library, area, area.selectedBox(),
+                i == 0 ? AreaSelectionLibrary.Corner.FIRST : AreaSelectionLibrary.Corner.SECOND, this::change));
+        }
     }
 
     private boolean manualOrigin() { return area != null && area.manualOrigin() != null; }
@@ -172,6 +197,7 @@ public final class GuiAreaSelectionEditor extends UiScreen {
         if (available()) AreaSelections.capture();
         name.setText(area == null ? "" : area.name());
         syncOrigin();
+        if (simple) { boxName.setText(area.boxName()); for (AreaCornerControls controls : cornerControls) controls.sync(); }
         refresh();
     }
     @Override protected void closed() { if (available()) AreaSelections.saveCurrent(); }
@@ -186,6 +212,11 @@ public final class GuiAreaSelectionEditor extends UiScreen {
         save.setEnabled(enabled && !area.boxes().isEmpty());
         name.setEnabled(enabled); guide.setEnabled(enabled); list.setEnabled(enabled);
         origin.setEnabled(enabled);
+        mode.setEnabled(enabled); corners.setEnabled(enabled);
+        if (simple) {
+            boxName.setEnabled(enabled);
+            for (AreaCornerControls controls : cornerControls) controls.setEnabled(enabled);
+        }
         originControls.setEnabled(enabled && manualOrigin());
         status.setTooltip(statusText());
     }
@@ -196,6 +227,7 @@ public final class GuiAreaSelectionEditor extends UiScreen {
         return x + w + 4;
     }
     @Override protected void layoutWidgets() {
+        if (simple) { layoutSimple(); return; }
         int x = place(mode, 10, 24, false);
         int originX = place(corners, x, 24, false);
         x = place(create, 10, 81, false);
@@ -223,8 +255,37 @@ public final class GuiAreaSelectionEditor extends UiScreen {
         place(main, width - fontRendererObj.getStringWidth(main.label()) - 20, height - 26, false);
     }
 
+    private void layoutSimple() {
+        int x = place(mode, 10, 24, false);
+        x = place(corners, x, 24, false);
+        place(origin, x, 24, false);
+        create.setVisible(false); count.setVisible(false); list.setVisible(false);
+        boxLabel.setBounds(12, 77, 202, 12);
+        boxName.setBounds(12, 92, 202, 16);
+        place(setBoxName, 218, 90, false);
+        guide.setBounds(232, 113, 150, 11);
+        guide.setVisible(!manualOrigin());
+        for (int i = 0; i < 2; i++) {
+            cornerControls[i].setBounds(12 + i * 110, 110, 110, 96);
+            cornerControls[i].layout(root.bounds());
+        }
+        originControls.setVisible(manualOrigin());
+        originControls.setBounds(232, 110, 120, 96);
+        originSelected.setBounds(232, 113, 100, 11);
+        for (int axis = 0; axis < 3; axis++) {
+            originAxes[axis].setBounds(232, 124 + axis * 20, 12, 20);
+            originCoordinates[axis].setBounds(244, 126 + axis * 20, 68, 16);
+            originNudges[axis].setBounds(316, 126 + axis * 20, 16, 16);
+        }
+        originToPlayer.setBounds(242, 186, 100, 20);
+        place(save, 22, 208, false); place(analyze, 132, 208, false);
+        x = place(browser, 12, height - 26, true);
+        place(main, width - fontRendererObj.getStringWidth(main.label()) - 20, height - 26, false);
+        status.setBounds(setName.bounds().right() + 10, 59, Math.max(0, width - setName.bounds().right() - 22), 16);
+    }
+
     @Override protected int titleRightMargin() {
-        return manualOrigin() && originControls != null ? Math.max(30, width - originControls.bounds().x + 8) : 30;
+        return !simple && manualOrigin() && originControls != null ? Math.max(30, width - originControls.bounds().x + 8) : 30;
     }
 
     private final class Entry extends UiPanel {

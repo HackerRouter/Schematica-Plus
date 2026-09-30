@@ -18,6 +18,16 @@ public final class AreaSelections {
     public static AreaSelectionLibrary library() { return library; }
     public static boolean saveFailed() { return saveFailed; }
 
+    public static void switchMode() {
+        capture();
+        library.setMode(library.mode() == AreaSelectionLibrary.Mode.NORMAL ? AreaSelectionLibrary.Mode.SIMPLE : AreaSelectionLibrary.Mode.NORMAL);
+        apply();
+        saveCurrent();
+    }
+
+    public static String modeKey() { return "litematica.gui.label.area_selection.mode." + library.mode().name().toLowerCase(java.util.Locale.ROOT); }
+    public static String cornerModeKey() { return "litematica.hud.area_selection.mode." + library.cornerMode().name().toLowerCase(java.util.Locale.ROOT); }
+
     public static void capture() {
         Area area = library.selected();
         if (area != null) {

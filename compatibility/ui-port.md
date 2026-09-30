@@ -884,3 +884,26 @@ and material semantics (the modern upstream paste-rendering restriction is not
 introduced). These settings govern new actions, not already captured queued edits.
 The full build, Checkstyle, 235 headless tests and 13 upstream translation files
 pass verification. Native interaction/render/printer checks remain manual.
+
+## Phase 18: selection operations
+
+Normal/Simple modes now have independent selections, with a dedicated one-box
+Simple editor using upstream labels and coordinate layout. The browser manages
+Normal selections; selecting one switches back to Normal. AreaSelection.json v5
+stores both selections, mode, corner mode and selected corner per world session.
+Versions 2-4 and the original coordinate-only format remain readable. Unknown
+fields and existing unreadable-file protections are retained.
+
+Corners mode sets and selects corner 1/2. Expand left-click grows the inclusive
+bounds and right-click resets both corners. A selected manual origin takes
+precedence in either mode. Sneaking offsets to the hit block's adjacent face.
+Middle-click picks corners, a box body or the manual origin; Alt + wheel nudges
+that element along the closest camera axis. A selected corner is cyan. Whole-box
+moves validate both endpoints before applying changes. Tool rays now use the
+same camera position as Minecraft's client ray trace (without adding eye height
+twice). Mode switching preserves the previous Normal selection and Simple state.
+
+Seven new headless tests exercise independent persistence, one-box invariants,
+Expand behavior, corner/origin movement, boundary atomicity, old-state migration,
+and ray picking/occlusion. The analysis button is connected in the next portion.
+Native UI, mouse input and rendering checks remain manual.

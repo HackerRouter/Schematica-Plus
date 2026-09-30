@@ -360,3 +360,5 @@ schematica.ui.placement.region_rendering=Controls preview and printer visibility
 schematica.ui.placement.no_regions=Enable at least one sub-region first.
 schematica.ui.placement.disabled=This placement is disabled.
 schematica.ui.placement.rendering=Controls preview and printing. Enabled placements remain available for material counts and paste; placement outlines remain visible.
+schematica.ui.area.modes_hint=Normal stores multiple named selections. Simple keeps a separate single box.
+schematica.ui.area.tool_hint=Corners: left/right click sets corner 1/2. Expand: left click expands, right click resets. Middle click selects; Alt + wheel moves the selected corner, box or origin. Sneak to target the adjacent block.

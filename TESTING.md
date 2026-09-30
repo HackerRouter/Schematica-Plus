@@ -661,3 +661,24 @@ These checks supersede Phase 12's Simple-editor and bounding-box expectations.
   No blocks are placed and no completion notification occurs while paused. Resuming
   continues the existing job. Already queued world edits retain their captured data.
 - The agent has verified headless tests/builds, not these native Minecraft checks.
+
+## Selection operations (phase 18)
+
+- In the main menu, alternate Normal/Simple and edit different coordinates, names
+  and origins. Neither selection should overwrite the other; reconnect and switch
+  dimensions to verify session isolation. Existing v2-v4 selection files must load.
+- In Simple, edit both corners directly and toggle the manual origin. The single
+  box remains selected. Open the selection browser and configure a Normal area;
+  this returns to Normal mode without losing the Simple box.
+- Hold the tool in Area Selection mode. Corners mode: left/right set corner 1/2.
+  Expand mode: right-click starts a single-block box, left-click grows it in any
+  direction, clicking inside leaves its size unchanged. Sneak offsets to the hit
+  face. Selecting the manual origin makes both mouse buttons move only the origin.
+- Middle-click each corner, the box body, an origin and empty sky. Alt + wheel
+  moves the selected corner, whole box or origin along the nearest viewing axis.
+  The chosen corner turns cyan. Check overlapping origin/corner hits, occlusion,
+  reversed corners, camera/freecam aiming and y=0/255 bounds. Invalid moves must
+  leave both endpoints unchanged. Ctrl + wheel still cycles tool modes.
+- Save and Fill/Delete/Replace from each mode: they must use only the active
+  selection. Verify all native checks in Minecraft; headless tests cannot exercise
+  GUI drawing, mouse dispatch or Forge world behavior.

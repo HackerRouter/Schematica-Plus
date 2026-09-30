@@ -10,6 +10,9 @@ import com.github.lunatrius.schematica.client.world.SchematicWorld;
 import com.github.lunatrius.schematica.handler.ConfigurationHandler;
 import com.github.lunatrius.schematica.proxy.ClientProxy;
 import com.github.lunatrius.schematica.reference.Reference;
+import com.github.lunatrius.schematica.client.selection.AreaSelectionLibrary;
+import com.github.lunatrius.schematica.client.selection.AreaSelections;
+import com.github.lunatrius.schematica.client.selection.SelectionRayTrace;
 
 /**
  * Central state holder for the Litematica-style tool mode system.
@@ -102,8 +105,9 @@ public class ToolManager {
      * Returns null if no block is hit within range.
      */
     private static MovingObjectPosition longRangeRayTrace(EntityPlayer player, double distance) {
-        Vec3 eyePos = Vec3.createVectorHelper(player.posX, player.posY + (double) player.getEyeHeight(), player.posZ);
-        Vec3 lookVec = player.getLookVec();
+        net.minecraft.entity.EntityLivingBase camera = camera(player);
+        Vec3 eyePos = camera.getPosition(1);
+        Vec3 lookVec = camera.getLook(1);
         Vec3 endPos = Vec3.createVectorHelper(
             eyePos.xCoord + lookVec.xCoord * distance,
             eyePos.yCoord + lookVec.yCoord * distance,
@@ -114,6 +118,49 @@ public class ToolManager {
             return result;
         }
         return null;
+    }
+
+    private static net.minecraft.entity.EntityLivingBase camera(EntityPlayer player) {
+        net.minecraft.entity.EntityLivingBase camera = Minecraft.getMinecraft().renderViewEntity;
+        return camera == null ? player : camera;
+    }
+
+    public static void selectAreaElement(EntityPlayer player) {
+        if (!com.github.lunatrius.schematica.SchematicaPlus.proxy.isSaveEnabled) return;
+        AreaSelectionLibrary library = AreaSelections.library();
+        AreaSelectionLibrary.Area area = library.selected();
+        if (area == null || !area.guide()) return;
+        AreaSelections.capture();
+        Vec3 eyes = camera(player).getPosition(1), look = camera(player).getLook(1);
+        MovingObjectPosition block = longRangeRayTrace(player, PLACEMENT_RAYCAST_DISTANCE);
+        double distance = block == null ? PLACEMENT_RAYCAST_DISTANCE : eyes.distanceTo(block.hitVec) + 0.001;
+        SelectionRayTrace.Hit hit = SelectionRayTrace.trace(area, eyes.xCoord, eyes.yCoord, eyes.zCoord,
+            look.xCoord, look.yCoord, look.zCoord, distance);
+        if (hit != null && hit.box == null) library.selectOrigin(area, true);
+        else if (hit != null) library.selectCorner(area, hit.box, hit.corner);
+        else if (block == null) library.selectBox(area, null);
+        AreaSelections.apply();
+        AreaSelections.saveCurrent();
+    }
+
+    public static void nudgeArea(EntityPlayer player, int amount) {
+        if (!com.github.lunatrius.schematica.SchematicaPlus.proxy.isSaveEnabled) return;
+        AreaSelectionLibrary library = AreaSelections.library();
+        AreaSelectionLibrary.Area area = library.selected();
+        if (area == null || (!area.originSelected() && area.selectedBox() == null)) return;
+        Vec3 look = camera(player).getLook(1);
+        double x = Math.abs(look.xCoord), y = Math.abs(look.yCoord), z = Math.abs(look.zCoord);
+        try {
+            AreaSelections.capture();
+            if (y >= x && y >= z) library.moveSelected(area, 0, look.yCoord < 0 ? -amount : amount, 0);
+            else if (x >= z) library.moveSelected(area, look.xCoord < 0 ? -amount : amount, 0, 0);
+            else library.moveSelected(area, 0, 0, look.zCoord < 0 ? -amount : amount);
+            AreaSelections.apply();
+            AreaSelections.saveCurrent();
+        } catch (IllegalArgumentException | ArithmeticException error) {
+            player.addChatMessage(new net.minecraft.util.ChatComponentText(
+                com.github.lunatrius.schematica.client.gui.framework.UiTranslations.format("schematica.ui.area.invalid")));
+        }
     }
 
     /**

@@ -360,3 +360,5 @@ schematica.ui.placement.region_rendering=控制此区域的预览与打印机可
 schematica.ui.placement.no_regions=请先启用至少一个子区域。
 schematica.ui.placement.disabled=此放置已禁用。
 schematica.ui.placement.rendering=控制预览与打印。已启用的放置仍可用于材料统计和粘贴，区域边框保持显示。
+schematica.ui.area.modes_hint=普通模式管理多个命名选区；简单模式保留一个独立选框。
+schematica.ui.area.tool_hint=角点模式：左/右键设置角点1/2。扩展模式：左键扩展，右键重置。中键选择；Alt＋滚轮移动选中的角点、选框或原点。潜行时选取相邻方块。

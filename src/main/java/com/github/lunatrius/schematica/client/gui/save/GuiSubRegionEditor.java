@@ -35,6 +35,7 @@ public final class GuiSubRegionEditor extends UiScreen {
     private UiButton setBox;
     private final List<UiButton> coordinateButtons = new ArrayList<>();
     private UiTextField boxName;
+    private final List<UiCheckBox> corners = new ArrayList<>();
     private final UiIntegerField[][] coordinates = new UiIntegerField[2][3];
 
     public GuiSubRegionEditor(GuiScreen parent, Box box) {
@@ -60,8 +61,11 @@ public final class GuiSubRegionEditor extends UiScreen {
             final int index = point;
             int x = 12 + point * 110;
             UiCheckBox corner = root.add(new UiCheckBox(() -> UiTranslations.format("litematica.gui.label.area_editor.corner_" + (index + 1)),
-                () -> false, value -> {}));
-            unavailable(corner).setBounds(x, 60, 100, 11);
+                () -> area.selectedBox() == box && !area.originSelected() && area.selectedCorner() == (index == 0 ? AreaSelectionLibrary.Corner.FIRST : AreaSelectionLibrary.Corner.SECOND),
+                value -> change(() -> library.selectCorner(area, box, !value ? AreaSelectionLibrary.Corner.NONE
+                    : index == 0 ? AreaSelectionLibrary.Corner.FIRST : AreaSelectionLibrary.Corner.SECOND))));
+            corner.setBounds(x, 60, 100, 11);
+            corners.add(corner);
             for (int axis = 0; axis < 3; axis++) {
                 final int component = axis;
                 root.add(new UiLabel(() -> "XYZ".charAt(component) + ":")).setBounds(x, 71 + axis * 20, 12, 20);
@@ -143,6 +147,7 @@ public final class GuiSubRegionEditor extends UiScreen {
         boolean enabled = available();
         boxName.setEnabled(enabled);
         setBox.setEnabled(enabled);
+        for (UiCheckBox corner : corners) corner.setEnabled(enabled);
         for (UiButton button : coordinateButtons) button.setEnabled(enabled);
         for (UiIntegerField[] point : coordinates) for (UiIntegerField field : point) field.setEnabled(enabled);
         status.setTooltip(statusText());

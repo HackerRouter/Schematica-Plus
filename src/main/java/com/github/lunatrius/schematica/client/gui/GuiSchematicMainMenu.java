@@ -49,9 +49,9 @@ public final class GuiSchematicMainMenu extends UiScreen {
             () -> mc.displayGuiScreen(new GuiSchematicLoad(this)));
         area = menu("area_editor", UiSprite.AREA_EDITOR, () -> mc.displayGuiScreen(new GuiAreaSelectionEditor(this)));
         selections = menu("show_area_selections", UiSprite.AREA_SELECTION, () -> mc.displayGuiScreen(new GuiAreaSelectionManager(this)));
-        selectionMode = unavailable(root.add(new UiButton(() -> UiTranslations.format("litematica.gui.button.area_selection_mode",
-            UiTranslations.format("litematica.gui.label.area_selection.mode.normal")), button -> {})));
-        selectionMode.setTooltip(UiTranslations.format("schematica.ui.area.multi_box"));
+        selectionMode = root.add(new UiButton(() -> UiTranslations.format("litematica.gui.button.area_selection_mode",
+            UiTranslations.format(AreaSelections.modeKey())), button -> { AreaSelections.switchMode(); layoutWidgets(); }));
+        selectionMode.setTooltip(UiTranslations.format("schematica.ui.area.modes_hint"));
         config = menu("configuration_menu", UiSprite.CONFIGURATION, () -> mc.displayGuiScreen(new GuiModConfig(this)));
         manager = menu("schematic_manager", UiSprite.SCHEMATIC_MANAGER,
             () -> mc.displayGuiScreen(new GuiSchematicManager(this)));
@@ -68,6 +68,7 @@ public final class GuiSchematicMainMenu extends UiScreen {
         area.setEnabled(world && SchematicaPlus.proxy.isSaveEnabled && AreaSelections.library().selected() != null);
         selections.setEnabled(world && SchematicaPlus.proxy.isSaveEnabled);
         mode.setEnabled(world);
+        selectionMode.setEnabled(world && SchematicaPlus.proxy.isSaveEnabled && AreaSelections.available(AreaSelections.library()));
     }
 
     @Override

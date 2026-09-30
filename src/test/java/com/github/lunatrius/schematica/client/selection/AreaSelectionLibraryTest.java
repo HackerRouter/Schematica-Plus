@@ -117,7 +117,7 @@ public class AreaSelectionLibraryTest {
 
     @Test public void rejectsUnsupportedVersionDuplicateIdsAndFractionalOrOverflowingCoordinates() {
         JsonObject valid = AreaSelectionLibrary.fromJson(null).toJson();
-        valid.addProperty("version", 5);
+        valid.addProperty("version", 6);
         assertThrows(IllegalArgumentException.class, () -> AreaSelectionLibrary.fromJson(valid));
         valid.addProperty("version", 4);
         JsonObject entry = valid.getAsJsonArray("selections").get(0).getAsJsonObject();

@@ -101,7 +101,9 @@ public class OverlayHandler {
             if (area == null) {
                 lines.add(UiTranslations.format("litematica.message.error.no_area_selected"));
             } else {
-                lines.add(UiTranslations.format("litematica.hud.area_selection.selected_area_normal", area.name()));
+                lines.add(UiTranslations.format(AreaSelections.library().mode() == com.github.lunatrius.schematica.client.selection.AreaSelectionLibrary.Mode.SIMPLE
+                    ? "litematica.hud.area_selection.selected_area_simple" : "litematica.hud.area_selection.selected_area_normal", area.name()));
+                lines.add(UiTranslations.format(AreaSelections.cornerModeKey()));
                 Vector3i origin = area.origin();
                 lines.add((area.originSelected() ? EnumChatFormatting.AQUA : EnumChatFormatting.GRAY)
                     + UiTranslations.format("litematica.hud.area_selection.origin", origin.x + ", " + origin.y + ", " + origin.z));
@@ -111,9 +113,9 @@ public class OverlayHandler {
                     lines.add(UiTranslations.format("litematica.hud.area_selection.selected_sub_region", area.boxName()));
                     Vector3i a = ClientProxy.pointA;
                     Vector3i b = ClientProxy.pointB;
-                    lines.add(EnumChatFormatting.GRAY + "A: " + EnumChatFormatting.AQUA
+                    lines.add((area.selectedCorner() == com.github.lunatrius.schematica.client.selection.AreaSelectionLibrary.Corner.FIRST ? EnumChatFormatting.YELLOW : EnumChatFormatting.GRAY) + "A: " + EnumChatFormatting.AQUA
                         + a.x + ", " + a.y + ", " + a.z
-                        + EnumChatFormatting.GRAY + "  B: " + EnumChatFormatting.AQUA
+                        + (area.selectedCorner() == com.github.lunatrius.schematica.client.selection.AreaSelectionLibrary.Corner.SECOND ? EnumChatFormatting.YELLOW : EnumChatFormatting.GRAY) + "  B: " + EnumChatFormatting.AQUA
                         + b.x + ", " + b.y + ", " + b.z);
                 }
             }

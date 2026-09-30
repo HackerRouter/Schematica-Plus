@@ -180,6 +180,7 @@ public class ToolHandler {
     }
 
     private static boolean setAreaPoint(EntityPlayer player, MovingObjectPosition mop, boolean first) {
+        if (!com.github.lunatrius.schematica.SchematicaPlus.proxy.isSaveEnabled) return true;
         com.github.lunatrius.schematica.client.selection.AreaSelectionLibrary.Area area = AreaSelections.library().selected();
         if (area == null || (!area.originSelected() && area.selectedBox() == null)) {
             sendChat(player, UiTranslations.format(area == null
@@ -187,7 +188,16 @@ public class ToolHandler {
             return true;
         }
         AreaSelections.capture();
-        AreaSelections.library().setTargetPoint(area, first, new Vector3i(mop.blockX, mop.blockY, mop.blockZ));
+        Vector3i point = new Vector3i(mop.blockX, mop.blockY, mop.blockZ);
+        if (player.isSneaking()) {
+            net.minecraftforge.common.util.ForgeDirection side = net.minecraftforge.common.util.ForgeDirection.getOrientation(mop.sideHit);
+            point.add(side.offsetX, side.offsetY, side.offsetZ);
+        }
+        try { AreaSelections.library().click(area, first, point); }
+        catch (IllegalArgumentException | ArithmeticException error) {
+            sendChat(player, UiTranslations.format("schematica.ui.area.invalid"));
+            return true;
+        }
         AreaSelections.library().setGuide(area, true);
         AreaSelections.apply();
         AreaSelections.saveCurrent();

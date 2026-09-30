@@ -49,6 +49,19 @@ public class ToolItemHandler {
             return;
         }
 
+        if (ToolManager.currentModeUsesAreaSelection()) {
+            if (event.button == 2) {
+                event.setCanceled(true);
+                if (event.buttonstate) ToolManager.selectAreaElement(player);
+                return;
+            }
+            if (event.dwheel != 0 && (Keyboard.isKeyDown(Keyboard.KEY_LMENU) || Keyboard.isKeyDown(Keyboard.KEY_RMENU))) {
+                event.setCanceled(true);
+                ToolManager.nudgeArea(player, event.dwheel > 0 ? 1 : -1);
+                return;
+            }
+        }
+
         // === Left click (button=0) → cancel both press and release ===
         if (event.button == 0) {
             event.setCanceled(true);

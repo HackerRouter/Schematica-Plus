@@ -55,7 +55,7 @@ public final class GuiAreaSelectionManager extends UiScreen {
     }
 
     @Override protected void createWidgets() {
-        editor = addButton("litematica.gui.button.change_menu.area_editor", () -> configure(library.selected())).setSprite(UiSprite.AREA_EDITOR);
+        editor = addButton("litematica.gui.button.change_menu.area_editor", () -> configure(library.normalSelection())).setSprite(UiSprite.AREA_EDITOR);
         unselect = addButton("litematica.gui.button.area_selections.unselect", () -> { if (available()) AreaSelections.select(null); });
         unselect.setTooltip(UiTranslations.format("litematica.gui.button.hover.area_selections.unselect"));
         fromPlacement = addButton("litematica.gui.button.area_selections.create_selection_from_placement", this::fromPlacement);
@@ -154,15 +154,15 @@ public final class GuiAreaSelectionManager extends UiScreen {
     private String statusText() {
         if (AreaSelections.saveFailed()) return UiTranslations.format("schematica.ui.area.persistence_failed");
         if (!available()) return UiTranslations.format("schematica.ui.area.context");
-        Area area = library.selected();
+        Area area = library.normalSelection();
         return area == null ? UiTranslations.format("litematica.error.area_editor.no_selection")
             : UiTranslations.format("litematica.gui.label.area_selection_manager.current_selection", area.name());
     }
 
     @Override protected void tickScreen() {
         boolean available = available();
-        editor.setEnabled(available && library.selected() != null);
-        unselect.setEnabled(available && library.selected() != null);
+        editor.setEnabled(available && library.normalSelection() != null);
+        unselect.setEnabled(available && library.normalSelection() != null);
         fromPlacement.setEnabled(available && ClientProxy.schematic != null);
         create.setEnabled(available);
         list.setEnabled(available);
@@ -229,7 +229,7 @@ public final class GuiAreaSelectionManager extends UiScreen {
         }
 
         @Override public void draw(UiDraw draw, int mouseX, int mouseY) {
-            boolean selected = library.selected() == area;
+            boolean selected = library.normalSelection() == area;
             draw.fill(bounds(), selected || containsVisible(mouseX, mouseY) ? 0xA0707070 : index % 2 == 1 ? 0xA0101010 : 0xA0303030);
             if (selected) draw.border(bounds(), 0xFFE0E0E0);
             UiSprite.AREA_SELECTION.draw(draw, bounds().x + 2, bounds().y + 5, false, false);
@@ -255,7 +255,7 @@ public final class GuiAreaSelectionManager extends UiScreen {
         private void select() {
             if (available() && library.contains(area)) {
                 model.select(index);
-                AreaSelections.select(library.selected() == area ? null : area);
+                AreaSelections.select(library.normalSelection() == area ? null : area);
             }
         }
 

@@ -256,20 +256,18 @@ public class RendererSchematicGlobal {
             RenderHelper.createBuffers();
 
             if (area != null && area.selectedBox() != null) {
-                ClientProxy.pointA.toVector3d(start).sub(extra);
-                end.set(start).add(1, 1, 1);
-                RenderHelper.drawCuboidOutline(start.toVector3f(), end.toVector3f(),
-                    RenderHelper.LINE_ALL, 0.75f, 0.0f, 0.0f, 0.5f);
-                RenderHelper.drawCuboidSurface(start.toVector3f(), end.toVector3f(),
-                    RenderHelper.QUAD_ALL, 0.75f, 0.0f, 0.0f, 0.25f);
-
-                ClientProxy.pointB.toVector3d(start).sub(extra);
-                end.set(start).add(1, 1, 1);
-                RenderHelper.drawCuboidOutline(start.toVector3f(), end.toVector3f(),
-                    RenderHelper.LINE_ALL, 0.0f, 0.0f, 0.75f, 0.5f);
-                RenderHelper.drawCuboidSurface(start.toVector3f(), end.toVector3f(),
-                    RenderHelper.QUAD_ALL, 0.0f, 0.0f, 0.75f, 0.25f);
-
+                for (int i = 0; i < 2; i++) {
+                    (i == 0 ? area.first() : area.second()).toVector3d(start).sub(extra);
+                    end.set(start).add(1, 1, 1);
+                    boolean selected = !area.originSelected() && area.selectedCorner() == (i == 0
+                        ? com.github.lunatrius.schematica.client.selection.AreaSelectionLibrary.Corner.FIRST
+                        : com.github.lunatrius.schematica.client.selection.AreaSelectionLibrary.Corner.SECOND);
+                    float r = selected ? 0 : i == 0 ? 0.75f : 0;
+                    float g = selected ? 1 : 0;
+                    float b = selected ? 1 : i == 1 ? 0.75f : 0;
+                    RenderHelper.drawCuboidOutline(start.toVector3f(), end.toVector3f(), RenderHelper.LINE_ALL, r, g, b, selected ? 1 : 0.5f);
+                    RenderHelper.drawCuboidSurface(start.toVector3f(), end.toVector3f(), RenderHelper.QUAD_ALL, r, g, b, selected ? 0.4f : 0.25f);
+                }
             }
 
             if (area != null && area.manualOrigin() != null) {
