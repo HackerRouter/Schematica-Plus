@@ -1,6 +1,8 @@
 package com.github.lunatrius.schematica.world.chunk;
 
 import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 import net.minecraft.entity.EnumCreatureType;
 import net.minecraft.util.IProgressUpdate;
@@ -10,28 +12,33 @@ import net.minecraft.world.biome.BiomeGenBase;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.EmptyChunk;
 import net.minecraft.world.chunk.IChunkProvider;
+import com.github.lunatrius.schematica.client.world.SchematicWorld;
 
 public class ChunkProviderSchematic implements IChunkProvider {
 
-    private Chunk emptyChunk;
+    private final SchematicWorld world;
+    private final Map<Long, Chunk> chunks = new HashMap<>();
 
-    public ChunkProviderSchematic(World world) {
-        this.emptyChunk = new EmptyChunk(world, 0, 0);
+    public ChunkProviderSchematic(SchematicWorld world) {
+        this.world = world;
     }
 
     @Override
     public boolean chunkExists(int x, int y) {
-        return true;
+        return world.getSchematic() != null && x >= 0 && y >= 0
+            && x <= (world.getWidth() - 1) / 16 && y <= (world.getLength() - 1) / 16;
     }
 
     @Override
     public Chunk provideChunk(int x, int y) {
-        return this.emptyChunk;
+        if (!chunkExists(x, y)) return new EmptyChunk(world, x, y);
+        long key = ((long) x << 32) | (y & 0xffffffffL);
+        return chunks.computeIfAbsent(key, ignored -> new SchematicChunk(world, x, y));
     }
 
     @Override
     public Chunk loadChunk(int x, int y) {
-        return this.emptyChunk;
+        return provideChunk(x, y);
     }
 
     @Override
@@ -69,7 +76,7 @@ public class ChunkProviderSchematic implements IChunkProvider {
 
     @Override
     public int getLoadedChunkCount() {
-        return 0;
+        return chunks.size();
     }
 
     @Override

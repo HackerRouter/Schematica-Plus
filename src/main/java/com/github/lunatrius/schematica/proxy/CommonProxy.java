@@ -173,7 +173,6 @@ public abstract class CommonProxy {
                                 } catch (NBTConversionException nce) {
                                     Reference.logger
                                         .error("Error while trying to save tile entity '{}'!", tileEntity, nce);
-                                    schematic.setBlock(localX, localY, localZ, Blocks.bedrock);
                                 }
                             }
                         }
@@ -236,7 +235,7 @@ public abstract class CommonProxy {
             final SchematicContainer container = new SchematicContainer(
                 schematic,
                 player,
-                world,
+                getServerWorld(world),
                 file,
                 minX,
                 maxX,

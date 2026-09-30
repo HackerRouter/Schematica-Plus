@@ -39,6 +39,14 @@ Before a release, use a disposable 1.7.10 world to check:
   them after changing the format preference and verify names and metadata. Import
   a WorldEdit schematic, including one with an odd block count. Check old files
   made with reversed nibbles against their saved name mappings.
+- With NBT saving enabled, save GregTech pipes/cables with bends and junctions,
+  plus ProjectRed full lamps and multipart lights with microblocks. Compare local
+  and remote-server saves, then reload the files and check connections, colors,
+  powered/inverted state and parts. Client saves cannot recover unsynchronized
+  inventories or machine data; a server save is required for those.
+- Inspect an empty and filled cauldron from all sides with alpha enabled/disabled,
+  alongside mod blocks that use both render passes. Check multipart glows and
+  ensure rendering them does not change nearby blocks, entities or the HUD.
 
 Session keys now use save-folder/server-address plus dimension. Legacy entries
 keyed only by display name remain in the JSON files but are not automatically

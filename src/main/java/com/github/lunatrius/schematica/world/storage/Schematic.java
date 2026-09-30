@@ -112,7 +112,7 @@ public class Schematic implements ISchematic {
             return 0;
         }
 
-        return this.metadata[x][y][z];
+        return this.metadata[x][y][z] & 255;
     }
 
     @Override
@@ -121,7 +121,7 @@ public class Schematic implements ISchematic {
             return false;
         }
 
-        this.metadata[x][y][z] = (byte) (metadata & 0x0F);
+        this.metadata[x][y][z] = (byte) metadata;
         return true;
     }
 

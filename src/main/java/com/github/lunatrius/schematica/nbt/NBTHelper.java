@@ -158,6 +158,7 @@ public class NBTHelper {
     public static NBTTagCompound writeTileEntityToCompound(final TileEntity tileEntity) {
         final NBTTagCompound tileEntityCompound = new NBTTagCompound();
         tileEntity.writeToNBT(tileEntityCompound);
+        ClientVisualState.capture(tileEntity, tileEntityCompound);
         return tileEntityCompound;
     }
 

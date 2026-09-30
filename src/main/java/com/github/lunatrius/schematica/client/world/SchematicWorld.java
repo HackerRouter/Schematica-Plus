@@ -75,6 +75,7 @@ public class SchematicWorld extends World {
     public SchematicWorld(ISchematic schematic) {
         super(new SaveHandlerSchematic(), "Schematica", WORLD_SETTINGS, null, new Profiler());
         this.schematic = schematic;
+        this.isRemote = true;
 
         for (TileEntity tileEntity : schematic.getTileEntities()) {
             initializeTileEntity(tileEntity);
@@ -193,7 +194,8 @@ public class SchematicWorld extends World {
 
     @Override
     public boolean blockExists(int x, int y, int z) {
-        return false;
+        return this.schematic != null && x >= 0 && x < getWidth() && y >= 0 && y < getHeight()
+            && z >= 0 && z < getLength();
     }
 
     @Override
@@ -212,7 +214,9 @@ public class SchematicWorld extends World {
     }
 
     public void initializeTileEntity(TileEntity tileEntity) {
+        if (tileEntity == null) return;
         tileEntity.setWorldObj(this);
+        tileEntity.updateContainingBlockInfo();
         tileEntity.getBlockType();
         try {
             tileEntity.validate();

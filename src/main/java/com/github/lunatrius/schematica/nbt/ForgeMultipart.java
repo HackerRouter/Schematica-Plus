@@ -23,13 +23,14 @@ import scala.collection.mutable.Map;
 public class ForgeMultipart {
 
     private static boolean enabled = false;
-    private static boolean client = false;
 
     private static Map<String, Object> instancesTypeMap;
     private static Method methodMaterialID;
     private static Method methodCreatePart;
+    private static Class<?> microblockClass;
+    private static Method methodCreateRegisteredPart;
+    private static Object multipartRegistry;
     private static Method methodLoad;
-    private static Method methodOnPartChanged;
     private static Object instanceMultipartGenerator$;
     private static Method methodGenerateCompositeTile;
     private static Method methodLoadParts;
@@ -37,9 +38,6 @@ public class ForgeMultipart {
 
     public static void init() {
         enabled = Loader.isModLoaded("ForgeMultipart");
-        client = FMLCommonHandler.instance()
-            .getSide()
-            .isClient();
 
         if (enabled) {
             try {
@@ -53,6 +51,8 @@ public class ForgeMultipart {
                     .findField(classMultiPartRegistry$, "codechicken$multipart$MultiPartRegistry$$typeMap");
                 final Object instanceMultiPartRegistry$module$ = fieldMultiPartRegistry$module$
                     .get(classMultiPartRegistry$);
+                multipartRegistry = instanceMultiPartRegistry$module$;
+                methodCreateRegisteredPart = classMultiPartRegistry$.getMethod("createPart", String.class, boolean.class);
                 instancesTypeMap = (Map<String, Object>) field$typeMap.get(instanceMultiPartRegistry$module$);
 
                 final Class<? super Object> classMicroMaterialRegistry = ReflectionHelper
@@ -62,6 +62,7 @@ public class ForgeMultipart {
 
                 final Class<? super Object> classMicroblockClass = ReflectionHelper
                     .getClass(classLoader, "codechicken.microblock.MicroblockClass");
+                microblockClass = classMicroblockClass;
                 methodCreatePart = ReflectionHelper
                     .findMethod(classMicroblockClass, null, new String[] { "create" }, boolean.class, int.class);
 
@@ -69,8 +70,6 @@ public class ForgeMultipart {
                     .getClass(classLoader, "codechicken.multipart.TMultiPart");
                 methodLoad = ReflectionHelper
                     .findMethod(classTMultiPart, null, new String[] { "load" }, NBTTagCompound.class);
-                methodOnPartChanged = ReflectionHelper
-                    .findMethod(classTMultiPart, null, new String[] { "onPartChanged" }, classTMultiPart);
 
                 final Class<? super Object> classMultipartGenerator$ = ReflectionHelper
                     .getClass(classLoader, "codechicken.multipart.MultipartGenerator$");
@@ -99,7 +98,7 @@ public class ForgeMultipart {
     }
 
     public static TileEntity createFromNBT(final NBTTagCompound tileEntityCompound) {
-        return createFromNBT(tileEntityCompound, client);
+        return createFromNBT(tileEntityCompound, FMLCommonHandler.instance().getEffectiveSide().isClient());
     }
 
     public static TileEntity createFromNBT(final NBTTagCompound tileEntityCompound, final boolean client) {
@@ -120,7 +119,6 @@ public class ForgeMultipart {
         return null;
     }
 
-    // ಠ_ಠ
     private static TileEntity createFromNBTClient(final NBTTagCompound tileEntityCompound)
         throws ReflectiveOperationException {
         final NBTTagList partList = tileEntityCompound.getTagList("parts", Constants.NBT.TAG_COMPOUND);
@@ -130,9 +128,8 @@ public class ForgeMultipart {
         for (int i = 0; i < partList.tagCount(); i++) {
             final NBTTagCompound partTag = partList.getCompoundTagAt(i);
             final String partID = partTag.getString("id");
-            final int materialID = materialID(partTag.getString("material"));
 
-            final Object part = createPart(partID, client, materialID);
+            final Object part = createPart(partID, client, partTag);
             if (part != null) {
                 load(part, partTag);
                 parts.add(part);
@@ -152,10 +149,6 @@ public class ForgeMultipart {
         tileEntity.readFromNBT(tileEntityCompound);
         loadParts(tileEntity, parts);
 
-        for (Object part : parts) {
-            onPartChanged(part, part);
-        }
-
         return tileEntity;
     }
 
@@ -173,7 +166,7 @@ public class ForgeMultipart {
         return (Integer) methodMaterialID.invoke(null, material);
     }
 
-    private static Object createPart(final String partID, final boolean client, final int materialID)
+    private static Object createPart(final String partID, final boolean client, final NBTTagCompound tag)
         throws ReflectiveOperationException {
         final Option<Object> option = instancesTypeMap.get(partID);
         if (option.isEmpty()) {
@@ -181,15 +174,14 @@ public class ForgeMultipart {
             return null;
         }
 
-        return methodCreatePart.invoke(option.get(), client, materialID);
+        Object factory = option.get();
+        return microblockClass.isInstance(factory)
+            ? methodCreatePart.invoke(factory, client, materialID(tag.getString("material")))
+            : methodCreateRegisteredPart.invoke(multipartRegistry, partID, client);
     }
 
     private static Object load(final Object part, final NBTTagCompound partTag) throws ReflectiveOperationException {
         return methodLoad.invoke(part, partTag);
-    }
-
-    private static Object onPartChanged(final Object part, final Object part2) throws ReflectiveOperationException {
-        return methodOnPartChanged.invoke(part, part2);
     }
 
     private static TileEntity generateCompositeTile(final TileEntity tileEntity, final List<Object> parts,
