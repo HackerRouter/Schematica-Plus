@@ -32,6 +32,9 @@ public final class VisualAdapters {
         register(new GregTechVisualAdapter());
         register(new LogisticsPipesVisualAdapter());
         register(new CodeChickenVisualAdapter());
+        register(new BinnieVisualAdapter());
+        register(new MalisisVisualAdapter());
+        register(new NamedFieldsAdapter("stevesaddons:rf_node", "stevesaddons.tileentities.TileEntityRFNode", "inputSides", "outputSides"));
     }
 
     private VisualAdapters() {}

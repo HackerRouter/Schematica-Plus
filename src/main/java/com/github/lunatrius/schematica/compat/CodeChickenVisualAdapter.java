@@ -11,7 +11,8 @@ final class CodeChickenVisualAdapter implements ISchematicVisualAdapter {
     private static final String CHEST = "codechicken.enderstorage.storage.item.TileEnderChest";
     private static final String TRANSLOCATOR = "codechicken.translocator.TileTranslocator";
     private static final String GRID = "codechicken.translocator.TileCraftingGrid";
-    private static final String[] ROOT = {"rotation", "lidAngle", "prevLidAngle", "c_numOpen", "items", "result"};
+    private static final String IRON_CHEST = "cpw.mods.ironchest.TileEntityIronChest";
+    private static final String[] ROOT = {"rotation", "lidAngle", "prevLidAngle", "c_numOpen", "items", "result", "topStacks", "numUsingPlayers"};
     private static final String[] LIQUID = {"s_liquid", "c_liquid", "f_liquid"};
     private static final String[] PRESSURE = {"a_pressure", "b_pressure", "a_rotate", "b_rotate"};
     private static final String[] ATTACHMENT = {"a_eject", "b_eject", "a_insertpos", "b_insertpos", "redstone", "fast",
@@ -20,7 +21,8 @@ final class CodeChickenVisualAdapter implements ISchematicVisualAdapter {
 
     @Override public String id() { return "codechicken:visual_fields"; }
     @Override public boolean supports(TileEntity tile) {
-        return Reflect.is(tile, TANK) || Reflect.is(tile, CHEST) || Reflect.is(tile, TRANSLOCATOR) || Reflect.is(tile, GRID);
+        return Reflect.is(tile, TANK) || Reflect.is(tile, CHEST) || Reflect.is(tile, TRANSLOCATOR)
+            || Reflect.is(tile, GRID) || Reflect.is(tile, IRON_CHEST);
     }
 
     @Override public NBTTagCompound capture(TileEntity tile) throws Exception {
@@ -62,10 +64,10 @@ final class CodeChickenVisualAdapter implements ISchematicVisualAdapter {
         if (Reflect.is(tile, TANK)) {
             Reflect.call(Reflect.get(tile, "pressure_state"), "update", new Class<?>[] {boolean.class}, true);
             Reflect.call(Reflect.get(tile, "liquid_state"), "update", new Class<?>[] {boolean.class}, true);
-        } else if (Reflect.is(tile, CHEST)) {
+        } else if (Reflect.is(tile, CHEST) || Reflect.is(tile, IRON_CHEST)) {
             float angle = (Float) Reflect.get(tile, "lidAngle");
             Reflect.field(tile.getClass(), "prevLidAngle").setFloat(tile, angle);
-            float target = (Integer) Reflect.get(tile, "c_numOpen") > 0 ? 1 : 0;
+            float target = (Integer) Reflect.get(tile, Reflect.is(tile, CHEST) ? "c_numOpen" : "numUsingPlayers") > 0 ? 1 : 0;
             Reflect.field(tile.getClass(), "lidAngle").setFloat(tile, angle + Math.max(-0.1f, Math.min(0.1f, target - angle)));
         } else if (Reflect.is(tile, TRANSLOCATOR)) {
             for (Object attachment : (Object[]) Reflect.get(tile, "attachments")) {
