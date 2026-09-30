@@ -10,6 +10,8 @@ import net.minecraft.tileentity.TileEntity;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import com.github.lunatrius.schematica.reference.Reference;
+import com.github.lunatrius.schematica.compat.TileNBTCompat;
+import com.github.lunatrius.schematica.compat.VisualAdapters;
 
 public final class TileEntitySnapshots {
     private static final Map<TileEntity, TileEntitySnapshot> SNAPSHOTS = Collections.synchronizedMap(new WeakHashMap<>());
@@ -24,14 +26,18 @@ public final class TileEntitySnapshots {
     }
 
     private static NBTTagCompound captureVisual(TileEntity tile) {
+        NBTTagCompound adapters = VisualAdapters.capture(tile);
+        NBTTagCompound packet = null;
         try {
-            if (tile.getClass().getMethod("onDataPacket", NetworkManager.class, S35PacketUpdateTileEntity.class)
-                .getDeclaringClass() == TileEntity.class) return null;
-            return TileUpdateData.capture(tile.getClass().getName(), tile.getDescriptionPacket());
+            if (!VisualAdapters.replacesDescriptionPacket(tile)
+                && tile.getClass().getMethod("onDataPacket", NetworkManager.class, S35PacketUpdateTileEntity.class)
+                    .getDeclaringClass() != TileEntity.class) {
+                packet = TileUpdateData.capture(tile.getClass().getName(), tile.getDescriptionPacket());
+            }
         } catch (Exception | LinkageError e) {
             Reference.logger.debug("Could not capture visual state for {}", tile.getClass().getName(), e);
-            return null;
         }
+        return TileUpdateData.combine(tile.getClass().getName(), packet, adapters);
     }
 
     static void attach(TileEntity tile, NBTTagCompound tag) {
@@ -46,8 +52,7 @@ public final class TileEntitySnapshots {
     }
 
     private static NBTTagCompound writeCurrent(TileEntity tile) {
-        NBTTagCompound tag = new NBTTagCompound();
-        tile.writeToNBT(tag);
+        NBTTagCompound tag = TileNBTCompat.write(tile);
         ClientVisualState.capture(tile, tag);
         return tag;
     }
@@ -67,6 +72,7 @@ public final class TileEntitySnapshots {
         int x = tile.xCoord, y = tile.yCoord, z = tile.zCoord;
         try {
             if (packet != null) tile.onDataPacket(null, packet);
+            VisualAdapters.restore(tile, TileUpdateData.adapters(snapshot.visual(), tile.getClass().getName()));
         } catch (Exception | LinkageError e) {
             Reference.logger.warn("Could not restore visual state for {}", tile.getClass().getName(), e);
             NBTTagCompound original = snapshot.write(null, x, y, z);

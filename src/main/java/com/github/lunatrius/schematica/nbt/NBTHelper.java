@@ -165,6 +165,11 @@ public class NBTHelper {
         data.removeTag(TileUpdateData.KEY);
         TileEntity tile = data.getString("id").equals("savedMultipart")
             ? ForgeMultipart.createFromNBT(data) : TileEntity.createAndLoadEntity(data);
+        if (tile != null) {
+            tile.xCoord = data.getInteger("x");
+            tile.yCoord = data.getInteger("y");
+            tile.zCoord = data.getInteger("z");
+        }
         TileEntitySnapshots.attach(tile, tileEntityCompound);
         return tile;
     }

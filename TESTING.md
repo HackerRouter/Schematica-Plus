@@ -7,6 +7,17 @@ by the plain JUnit process.
 
 Before a release, use a disposable 1.7.10 world to check:
 
+- Run the compatibility scenarios in both GTNH 2.8.4 and 2.9.0-RC-1. Exact
+  upstream versions and inspected source tags are recorded in
+  `compatibility/gtnh-mods.json`; a source audit is not an in-game test.
+- Save/reload Forestry machines and apiaries, Railcraft tanks/signals and
+  BuildCraft pipes with wires, facades and gates, in singleplayer and multiplayer.
+  Compare connections, fluid levels, active textures and covers. Loading a file
+  from a different protocol version must skip its opaque update and retain NBT.
+- Save OpenComputers screens/holograms away from the origin; verify they rebuild
+  at schematic coordinates. Save, move and resave a JABBA barrel, including an
+  ender-linked barrel; its real-world BSpace registration must remain unchanged.
+
 - Start the client and dedicated server without LunatriusCore; also start with it
   installed for another mod. Open the load, save, control and materials screens.
 - Load a two-layer schematic, display one layer, rotate/mirror, then display all

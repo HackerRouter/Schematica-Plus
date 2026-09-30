@@ -7,6 +7,21 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 public class TileUpdateDataTest {
+    @Test public void keepsAdaptersSeparateAndReadsLegacyPackets() throws Exception {
+        NBTTagCompound legacy = TileUpdateData.capture("test.Tile",
+            new S35PacketUpdateTileEntity(0, 0, 0, 7, new NBTTagCompound()));
+        NBTTagCompound adapters = new NBTTagCompound();
+        NBTTagCompound adapter = new NBTTagCompound();
+        adapter.setByteArray("Data", new byte[] { 1, 2, 3 });
+        adapters.setTag("example:tile", adapter);
+        NBTTagCompound combined = TileUpdateData.combine("test.Tile", legacy, adapters);
+        assertEquals(7, TileUpdateData.packet(combined, "test.Tile", 4, 5, 6).func_148853_f());
+        assertEquals(7, TileUpdateData.packet(legacy, "test.Tile", 4, 5, 6).func_148853_f());
+        assertEquals(adapters, TileUpdateData.adapters(combined, "test.Tile"));
+        assertTrue(TileUpdateData.adapters(combined, "wrong.Tile").hasNoTags());
+        assertNull(TileUpdateData.packet(TileUpdateData.combine("test.Tile", null, adapters), "test.Tile", 0, 0, 0));
+    }
+
     @Test public void roundTripsUpdateTypeAndRebasesOnlyRootCoordinates() throws Exception {
         NBTTagCompound payload = new NBTTagCompound();
         payload.setInteger("x", 1200);

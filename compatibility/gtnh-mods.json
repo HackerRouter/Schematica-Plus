@@ -1,0 +1,1628 @@
+{
+  "sources": {
+    "2.8.4": "https://github.com/GTNewHorizons/GT-New-Horizons-Modpack/blob/2.8.4/README.md",
+    "2.9.0-RC-1": "https://github.com/GTNewHorizons/GT-New-Horizons-Modpack/blob/2.9.0-RC-1/README.md"
+  },
+  "mods": [
+    {
+      "name": "Advanced Solar Panel For 1.7.10 (Unofficial)",
+      "source": "https://www.curseforge.com/minecraft/mc-mods/advancedsolarpanels",
+      "2.8.4": "1.7.10 Edition",
+      "2.9.0-RC-1": "1.7.10 Edition"
+    },
+    {
+      "name": "AdventureBackpack2",
+      "source": "https://github.com/GTNewHorizons/AdventureBackpack2",
+      "2.8.4": "1.3.13-GTNH",
+      "2.9.0-RC-1": "1.4.26-GTNH"
+    },
+    {
+      "name": "AE2FluidCraft-Rework",
+      "source": "https://github.com/GTNewHorizons/AE2FluidCraft-Rework",
+      "2.8.4": "1.4.120-gtnh",
+      "2.9.0-RC-1": "1.5.110-gtnh",
+      "source_refs": {
+        "1.4.120-gtnh": "64d2987c2d8a9595d0c9d926b60d402fd0a49d7d",
+        "1.5.110-gtnh": "6e8dd013bd4ec123cf74daaecf581534d87f2391"
+      }
+    },
+    {
+      "name": "AE2NoUltimatePatterns",
+      "source": "https://github.com/GTNewHorizons/AE2NoUltimatePatterns",
+      "2.8.4": "1.0.1"
+    },
+    {
+      "name": "ae2stuff",
+      "source": "https://github.com/GTNewHorizons/ae2stuff",
+      "2.8.4": "0.9.9-GTNH"
+    },
+    {
+      "name": "AFSU",
+      "source": "https://github.com/GTNewHorizons/AFSU",
+      "2.8.4": "1.3.1-GTNH",
+      "2.9.0-RC-1": "1.3.2-GTNH"
+    },
+    {
+      "name": "AkashicTome",
+      "source": "https://github.com/GTNewHorizons/AkashicTome",
+      "2.8.4": "1.2.6",
+      "2.9.0-RC-1": "1.2.7"
+    },
+    {
+      "name": "AlchemyGrate",
+      "source": "https://github.com/GTNewHorizons/AlchemyGrate",
+      "2.8.4": "1.3.1-GTNH",
+      "2.9.0-RC-1": "1.3.2-GTNH"
+    },
+    {
+      "name": "Amazing-Trophies",
+      "source": "https://github.com/GTNewHorizons/Amazing-Trophies",
+      "2.8.4": "1.3.8",
+      "2.9.0-RC-1": "1.4.10"
+    },
+    {
+      "name": "amunra",
+      "source": "https://github.com/GTNewHorizons/amunra",
+      "2.8.4": "0.8.2",
+      "2.9.0-RC-1": "0.8.14"
+    },
+    {
+      "name": "Angelica",
+      "source": "https://github.com/GTNewHorizons/Angelica",
+      "2.8.4": "1.0.0-beta66b",
+      "2.9.0-RC-1": "2.2.19",
+      "source_refs": {
+        "1.0.0-beta66b": "7059ee0eecbee9cc66a3b9a301bf42d7242669b3",
+        "2.2.19": "53776684c8dd8cf1c915f24023f94fdc1b88ac56"
+      }
+    },
+    {
+      "name": "AngerMod",
+      "source": "https://github.com/GTNewHorizons/AngerMod",
+      "2.8.4": "0.9.0",
+      "2.9.0-RC-1": "1.0.7"
+    },
+    {
+      "name": "AppleCore",
+      "source": "https://github.com/GTNewHorizons/AppleCore",
+      "2.8.4": "3.3.7",
+      "2.9.0-RC-1": "3.3.13"
+    },
+    {
+      "name": "Applied-Energistics-2-Unofficial",
+      "source": "https://github.com/GTNewHorizons/Applied-Energistics-2-Unofficial",
+      "2.8.4": "rv3-beta-695-GTNH",
+      "2.9.0-RC-1": "rv3-beta-1073-GTNH",
+      "source_refs": {
+        "rv3-beta-1073-GTNH": "151550f6d558a663eee792f0bfa22e12a53c0e54",
+        "rv3-beta-695-GTNH": "9e7cf61f368a42a806d70ffb21308bf26a818659"
+      }
+    },
+    {
+      "name": "Archaicfix",
+      "source": "https://github.com/embeddedt/ArchaicFix",
+      "2.8.4": "0.7.7",
+      "2.9.0-RC-1": "0.8.0"
+    },
+    {
+      "name": "ArchitectureCraft",
+      "source": "https://github.com/GTNewHorizons/ArchitectureCraft",
+      "2.8.4": "1.11.6",
+      "2.9.0-RC-1": "1.12.17",
+      "source_refs": {
+        "1.11.6": "33c345b82b065ebe4c8ffadcd9505872e55ad994",
+        "1.12.17": "d8f9d93c0690aa15a0a149110380ff15d61fa72b"
+      }
+    },
+    {
+      "name": "AsieLib",
+      "source": "https://github.com/GTNewHorizons/AsieLib",
+      "2.8.4": "0.7.0",
+      "2.9.0-RC-1": "0.7.2"
+    },
+    {
+      "name": "Automagy",
+      "source": "https://www.curseforge.com/minecraft/mc-mods/automagy",
+      "2.8.4": "0.28.2"
+    },
+    {
+      "name": "Avaritia",
+      "source": "https://github.com/GTNewHorizons/Avaritia",
+      "2.8.4": "1.77",
+      "2.9.0-RC-1": "1.99"
+    },
+    {
+      "name": "Avaritiaddons",
+      "source": "https://github.com/GTNewHorizons/Avaritiaddons",
+      "2.8.4": "1.9.3-GTNH",
+      "2.9.0-RC-1": "1.9.6-GTNH"
+    },
+    {
+      "name": "Backhand",
+      "source": "https://github.com/GTNewHorizons/Backhand",
+      "2.8.4": "1.7.7",
+      "2.9.0-RC-1": "1.8.15"
+    },
+    {
+      "name": "Battlegear2-for-Backhand",
+      "source": "https://github.com/GTNewHorizons/Battlegear2-for-Backhand",
+      "2.8.4": "1.5.9-backhand",
+      "2.9.0-RC-1": "1.6.8-backhand"
+    },
+    {
+      "name": "Baubles-Expanded",
+      "source": "https://github.com/GTNewHorizons/Baubles-Expanded",
+      "2.8.4": "2.1.19-GTNH",
+      "2.9.0-RC-1": "2.2.24-GTNH"
+    },
+    {
+      "name": "bdlib",
+      "source": "https://github.com/GTNewHorizons/bdlib",
+      "2.8.4": "1.11.0-GTNH",
+      "2.9.0-RC-1": "1.11.0-GTNH"
+    },
+    {
+      "name": "BeeBetterAtBees-GTNH",
+      "source": "https://github.com/GTNewHorizons/BeeBetterAtBees-GTNH",
+      "2.8.4": "0.4.3-GTNH",
+      "2.9.0-RC-1": "0.4.7-GTNH"
+    },
+    {
+      "name": "BetterAchievements",
+      "source": "https://github.com/GTNewHorizons/BetterAchievements",
+      "2.8.4": "0.3.0",
+      "2.9.0-RC-1": "0.3.3"
+    },
+    {
+      "name": "BetterBuildersWands",
+      "source": "https://github.com/GTNewHorizons/BetterBuildersWands",
+      "2.8.4": "0.13.3-GTNH",
+      "2.9.0-RC-1": "0.13.12-GTNH"
+    },
+    {
+      "name": "BetterCrashes",
+      "source": "https://github.com/GTNewHorizons/BetterCrashes",
+      "2.8.4": "1.4.0-GTNH",
+      "2.9.0-RC-1": "1.4.7-GTNH"
+    },
+    {
+      "name": "BetterLoadingScreen",
+      "source": "https://github.com/GTNewHorizons/BetterLoadingScreen",
+      "2.8.4": "1.7.2-GTNH",
+      "2.9.0-RC-1": "1.7.18-GTNH"
+    },
+    {
+      "name": "BetterP2P",
+      "source": "https://github.com/GTNewHorizons/BetterP2P",
+      "2.8.4": "1.3.3",
+      "2.9.0-RC-1": "1.4.7"
+    },
+    {
+      "name": "BetterQuesting",
+      "source": "https://github.com/GTNewHorizons/BetterQuesting",
+      "2.8.4": "3.7.15-GTNH",
+      "2.9.0-RC-1": "3.8.87-GTNH"
+    },
+    {
+      "name": "BiblioCraft: BiblioWoods Biomes O'Plenty Edition",
+      "source": "https://www.curseforge.com/minecraft/mc-mods/bibliocraft-bibliowoods-biomes-oplenty-edition",
+      "2.8.4": "1.9",
+      "2.9.0-RC-1": "1.9"
+    },
+    {
+      "name": "BiblioCraft: BiblioWoods Forestry Edition",
+      "source": "https://www.curseforge.com/minecraft/mc-mods/bibliocraft-bibliowoods-forestry-edition",
+      "2.8.4": "1.7",
+      "2.9.0-RC-1": "1.7"
+    },
+    {
+      "name": "BiblioCraft: BiblioWoods Natura Edition",
+      "source": "https://www.curseforge.com/minecraft/mc-mods/bibliocraft-bibliowoods-natura-edition",
+      "2.8.4": "1.5",
+      "2.9.0-RC-1": "1.5"
+    },
+    {
+      "name": "BiblioCraft",
+      "source": "https://www.curseforge.com/minecraft/mc-mods/bibliocraft",
+      "2.8.4": "1.11.7",
+      "2.9.0-RC-1": "1.11.7"
+    },
+    {
+      "name": "Binnie",
+      "source": "https://github.com/GTNewHorizons/Binnie",
+      "2.8.4": "2.5.24",
+      "2.9.0-RC-1": "2.6.48",
+      "source_refs": {
+        "2.5.24": "5135c0c3c9f19db8f87f5ad14231177115da4fc3",
+        "2.6.48": "eb36ee92607754a385e24638b64ad18723c21d23"
+      }
+    },
+    {
+      "name": "Biomes O' Plenty",
+      "source": "https://www.curseforge.com/minecraft/mc-mods/biomes-o-plenty",
+      "2.8.4": "2.1.0.2308",
+      "2.9.0-RC-1": "2.1.0.2308"
+    },
+    {
+      "name": "BlockLimiter",
+      "source": "https://github.com/GTNewHorizons/BlockLimiter",
+      "2.8.4": "0.7.0",
+      "2.9.0-RC-1": "0.7.0"
+    },
+    {
+      "name": "BlockRenderer6343",
+      "source": "https://github.com/GTNewHorizons/BlockRenderer6343",
+      "2.8.4": "1.3.17",
+      "2.9.0-RC-1": "1.4.23",
+      "source_refs": {
+        "1.3.17": "000d4ab83463ccaae7a398790127bd3367810561",
+        "1.4.23": "732916247ba85b92874dc3aa7bf76aa26578a9e8"
+      }
+    },
+    {
+      "name": "BloodArsenal",
+      "source": "https://github.com/GTNewHorizons/BloodArsenal",
+      "2.8.4": "1.4.10",
+      "2.9.0-RC-1": "1.5.12"
+    },
+    {
+      "name": "BloodMagic",
+      "source": "https://github.com/GTNewHorizons/BloodMagic",
+      "2.8.4": "1.7.52",
+      "2.9.0-RC-1": "1.9.13",
+      "source_refs": {
+        "1.7.52": "7c2046c0c111b24bee7cdbfa21288aff91e5c5d5",
+        "1.9.13": "6776676ef209d8c142a1a159519c40d06c7e0bc7"
+      }
+    },
+    {
+      "name": "Botania",
+      "source": "https://github.com/GTNewHorizons/Botania",
+      "2.8.4": "1.12.28-GTNH",
+      "2.9.0-RC-1": "1.13.36-GTNH",
+      "source_refs": {
+        "1.12.28-GTNH": "ac1864b8263b72cc3a7483285e78c03ba04907e4",
+        "1.13.36-GTNH": "c802a448e4f4b3cbe4bc26d749a164a3fb178325"
+      }
+    },
+    {
+      "name": "Botanic-horizons",
+      "source": "https://github.com/GTNewHorizons/Botanic-horizons",
+      "2.8.4": "1.11.27-GTNH",
+      "2.9.0-RC-1": "1.12.10-GTNH"
+    },
+    {
+      "name": "BrandonsCore",
+      "source": "https://github.com/GTNewHorizons/BrandonsCore",
+      "2.8.4": "1.2.0-GTNH"
+    },
+    {
+      "name": "Bug-Torch",
+      "source": "https://github.com/jss2a98aj/BugTorch",
+      "2.8.4": "1.2.14",
+      "2.9.0-RC-1": "1.3.1"
+    },
+    {
+      "name": "BuildCraft",
+      "source": "https://github.com/GTNewHorizons/BuildCraft",
+      "2.8.4": "7.1.44",
+      "2.9.0-RC-1": "7.1.63",
+      "source_refs": {
+        "7.1.44": "2d30f3648ffd748c2f4dbf133ff973885eda92e8",
+        "7.1.63": "213a3fcb93c88310dfa879b643b23f78f059c999"
+      }
+    },
+    {
+      "name": "BuildCraftCompat",
+      "source": "https://github.com/GTNewHorizons/BuildCraftCompat",
+      "2.8.4": "7.1.18",
+      "2.9.0-RC-1": "7.1.22"
+    },
+    {
+      "name": "BuildCraftOilTweak",
+      "source": "https://github.com/GTNewHorizons/BuildCraftOilTweak",
+      "2.8.4": "1.1.1",
+      "2.9.0-RC-1": "1.1.3"
+    },
+    {
+      "name": "CarpentersBlocks",
+      "source": "https://github.com/GTNewHorizons/CarpentersBlocks",
+      "2.8.4": "3.7.0-GTNH",
+      "2.9.0-RC-1": "3.7.3-GTNH",
+      "source_refs": {
+        "3.7.0-GTNH": "a2f7a2c8c94d0431eadd2e244137d9ea36dca013",
+        "3.7.3-GTNH": "0ef22db308928e53fb67bccb5647af7d5e744556"
+      }
+    },
+    {
+      "name": "Catwalks-2",
+      "source": "https://github.com/GTNewHorizons/Catwalks-2",
+      "2.8.4": "2.4.0-GTNH",
+      "2.9.0-RC-1": "2.4.2-GTNH"
+    },
+    {
+      "name": "Chisel",
+      "source": "https://github.com/GTNewHorizons/Chisel",
+      "2.8.4": "2.16.15-GTNH",
+      "2.9.0-RC-1": "2.17.33-GTNH"
+    },
+    {
+      "name": "ChiselTones",
+      "source": "https://github.com/GTNewHorizons/ChiselTones",
+      "2.8.4": "1.2.0-GTNH",
+      "2.9.0-RC-1": "1.2.0-GTNH"
+    },
+    {
+      "name": "CodeChickenCore",
+      "source": "https://github.com/GTNewHorizons/CodeChickenCore",
+      "2.8.4": "1.4.10",
+      "2.9.0-RC-1": "1.4.22"
+    },
+    {
+      "name": "CoFH Core",
+      "source": "https://www.curseforge.com/minecraft/mc-mods/cofh-core",
+      "2.8.4": "3.1.4-329",
+      "2.9.0-RC-1": "3.1.4-329"
+    },
+    {
+      "name": "Compact Kinetic Generators",
+      "source": "https://forum.industrial-craft.net/thread/12724-ic2-exp-1-7-10-compact-kinetic-generators/",
+      "2.8.4": "1.0",
+      "2.9.0-RC-1": "1.0"
+    },
+    {
+      "name": "Computronics",
+      "source": "https://github.com/GTNewHorizons/Computronics",
+      "2.8.4": "1.9.3-GTNH",
+      "2.9.0-RC-1": "1.9.10-GTNH"
+    },
+    {
+      "name": "Controlling",
+      "source": "https://github.com/GTNewHorizons/Controlling",
+      "2.8.4": "2.1.2",
+      "2.9.0-RC-1": "2.1.10"
+    },
+    {
+      "name": "CookingForBlockheads",
+      "source": "https://github.com/GTNewHorizons/CookingForBlockheads",
+      "2.8.4": "1.4.4-GTNH",
+      "2.9.0-RC-1": "1.4.14-GTNH"
+    },
+    {
+      "name": "CoreTweaks",
+      "source": "https://github.com/GTNewHorizons/CoreTweaks",
+      "2.8.4": "0.3.3.6-GTNH",
+      "2.9.0-RC-1": "0.3.4.7-GTNH"
+    },
+    {
+      "name": "Craft-Presence",
+      "source": "https://www.curseforge.com/minecraft/mc-mods/craftpresence/",
+      "2.8.4": "2.6.2",
+      "2.9.0-RC-1": "2.7.1"
+    },
+    {
+      "name": "CraftTweaker",
+      "source": "https://github.com/GTNewHorizons/CraftTweaker",
+      "2.8.4": "3.4.2",
+      "2.9.0-RC-1": "3.4.8"
+    },
+    {
+      "name": "CropLoadCore",
+      "source": "https://github.com/GTNewHorizons/CropLoadCore",
+      "2.8.4": "0.2.0"
+    },
+    {
+      "name": "Crops-plus-plus",
+      "source": "https://github.com/GTNewHorizons/Crops-plus-plus",
+      "2.8.4": "1.8.11"
+    },
+    {
+      "name": "Custom-Main-Menu",
+      "source": "https://github.com/GTNewHorizons/Custom-Main-Menu",
+      "2.8.4": "1.12.2",
+      "2.9.0-RC-1": "1.14.1"
+    },
+    {
+      "name": "Darkerer",
+      "source": "https://github.com/GTNewHorizons/Darkerer",
+      "2.8.4": "1.0.6",
+      "2.9.0-RC-1": "1.1.0"
+    },
+    {
+      "name": "Default-Configs",
+      "source": "https://github.com/GTNewHorizons/Default-Configs",
+      "2.8.4": "1.3.0",
+      "2.9.0-RC-1": "1.3.2"
+    },
+    {
+      "name": "DefaultServerList",
+      "source": "https://github.com/GTNewHorizons/DefaultServerList",
+      "2.8.4": "1.6.5",
+      "2.9.0-RC-1": "1.7.4"
+    },
+    {
+      "name": "DefaultWorldGenerator",
+      "source": "https://github.com/GTNewHorizons/DefaultWorldGenerator",
+      "2.8.4": "0.4.0",
+      "2.9.0-RC-1": "0.4.0"
+    },
+    {
+      "name": "Draconic-Evolution",
+      "source": "https://github.com/GTNewHorizons/Draconic-Evolution",
+      "2.8.4": "1.4.27-GTNH",
+      "2.9.0-RC-1": "1.5.33-GTNH",
+      "source_refs": {
+        "1.4.27-GTNH": "31050d93ae039126a493882b40f99bf578b8a2de",
+        "1.5.33-GTNH": "95453b430e9a2a5d737fa5c7913500c83ae53fac"
+      }
+    },
+    {
+      "name": "DummyCore",
+      "source": "https://github.com/GTNewHorizons/DummyCore",
+      "2.8.4": "1.20.0",
+      "2.9.0-RC-1": "1.21.0"
+    },
+    {
+      "name": "DuraDisplay",
+      "source": "https://github.com/GTNewHorizons/DuraDisplay",
+      "2.8.4": "1.3.4",
+      "2.9.0-RC-1": "1.4.6"
+    },
+    {
+      "name": "Electro-Magic-Tools",
+      "source": "https://github.com/GTNewHorizons/Electro-Magic-Tools",
+      "2.8.4": "1.6.18",
+      "2.9.0-RC-1": "1.7.25"
+    },
+    {
+      "name": "EnderCore",
+      "source": "https://github.com/GTNewHorizons/EnderCore",
+      "2.8.4": "0.4.8",
+      "2.9.0-RC-1": "0.5.15"
+    },
+    {
+      "name": "EnderIO",
+      "source": "https://github.com/GTNewHorizons/EnderIO",
+      "2.8.4": "2.9.28",
+      "2.9.0-RC-1": "2.10.46",
+      "source_refs": {
+        "2.10.46": "a8197e0026c29bfaca35b239729b3d957acca7c0",
+        "2.9.28": "09001f524c167c0d1e059d56308a00900cef3383"
+      }
+    },
+    {
+      "name": "EnderStorage",
+      "source": "https://github.com/GTNewHorizons/EnderStorage",
+      "2.8.4": "1.7.7",
+      "2.9.0-RC-1": "1.8.7",
+      "source_refs": {
+        "1.7.7": "8b8b118550c38f66808b743f098a9d289a5f17a6",
+        "1.8.7": "b77b19cfd94e68bd85585af0750c94a3c7f16351"
+      }
+    },
+    {
+      "name": "EnderZoo",
+      "source": "https://github.com/GTNewHorizons/EnderZoo",
+      "2.8.4": "1.3.3",
+      "2.9.0-RC-1": "1.3.6"
+    },
+    {
+      "name": "EnhancedLootBags",
+      "source": "https://github.com/GTNewHorizons/EnhancedLootBags",
+      "2.8.4": "1.2.8",
+      "2.9.0-RC-1": "1.3.5"
+    },
+    {
+      "name": "Et-Futurum-Requiem",
+      "source": "https://github.com/GTNewHorizons/Et-Futurum-Requiem",
+      "2.8.4": "2.6.2.25-GTNH",
+      "2.9.0-RC-1": "2.6.59-GTNH"
+    },
+    {
+      "name": "Eternal-Singularity",
+      "source": "https://github.com/GTNewHorizons/Eternal-Singularity",
+      "2.8.4": "1.2.3",
+      "2.9.0-RC-1": "1.4.3"
+    },
+    {
+      "name": "Extra Utilities",
+      "source": "https://www.curseforge.com/minecraft/mc-mods/extra-utilities",
+      "2.8.4": "1.2.12",
+      "2.9.0-RC-1": "1.2.12"
+    },
+    {
+      "name": "FindIt",
+      "source": "https://github.com/GTNewHorizons/FindIt",
+      "2.8.4": "1.4.0",
+      "2.9.0-RC-1": "1.4.6"
+    },
+    {
+      "name": "FloodLights",
+      "source": "https://github.com/GTNewHorizons/FloodLights",
+      "2.8.4": "1.5.4",
+      "2.9.0-RC-1": "1.5.6"
+    },
+    {
+      "name": "ForbiddenMagic",
+      "source": "https://github.com/GTNewHorizons/ForbiddenMagic",
+      "2.8.4": "0.8.4-GTNH",
+      "2.9.0-RC-1": "0.9.17-GTNH"
+    },
+    {
+      "name": "ForestryMC",
+      "source": "https://github.com/GTNewHorizons/ForestryMC",
+      "2.8.4": "4.10.17",
+      "2.9.0-RC-1": "4.11.38",
+      "source_refs": {
+        "4.10.17": "bf94b22345b6f016772f212a2c8b7f7e10f81c87",
+        "4.11.38": "0bd9a7978a3852c3a815e41a16e678176344aa3d"
+      }
+    },
+    {
+      "name": "Forgelin",
+      "source": "https://github.com/GTNewHorizons/Forgelin",
+      "2.8.4": "2.0.3-GTNH",
+      "2.9.0-RC-1": "2.0.3-GTNH"
+    },
+    {
+      "name": "ForgeMultipart",
+      "source": "https://github.com/GTNewHorizons/ForgeMultipart",
+      "2.8.4": "1.7.2",
+      "2.9.0-RC-1": "1.7.15",
+      "source_refs": {
+        "1.7.15": "780825446525f0a45599e1823e9e80dc45c83177",
+        "1.7.2": "a36120fc91ae6de017402df6ccf162ef819f76d1"
+      }
+    },
+    {
+      "name": "ForgeRelocation",
+      "source": "https://github.com/GTNewHorizons/ForgeRelocation",
+      "2.8.4": "0.3.4",
+      "2.9.0-RC-1": "0.3.7"
+    },
+    {
+      "name": "ForgeRelocationFMP",
+      "source": "https://github.com/GTNewHorizons/ForgeRelocationFMP",
+      "2.8.4": "0.2.0",
+      "2.9.0-RC-1": "0.2.0"
+    },
+    {
+      "name": "Gadomancy",
+      "source": "https://github.com/GTNewHorizons/Gadomancy",
+      "2.8.4": "1.4.8",
+      "2.9.0-RC-1": "1.5.16"
+    },
+    {
+      "name": "Galacticraft",
+      "source": "https://github.com/GTNewHorizons/Galacticraft",
+      "2.8.4": "3.3.13-GTNH",
+      "2.9.0-RC-1": "3.4.34-GTNH",
+      "source_refs": {
+        "3.3.13-GTNH": "31ae0924615e08fee8c7cb6db28212ca828488ea",
+        "3.4.34-GTNH": "fbdc41b97e8178ac07e58ccaa93da2474b1e2664"
+      }
+    },
+    {
+      "name": "Galaxy-Space-GTNH",
+      "source": "https://github.com/GTNewHorizons/Galaxy-Space-GTNH",
+      "2.8.4": "1.1.121-GTNH",
+      "2.9.0-RC-1": "1.1.142-GTNH"
+    },
+    {
+      "name": "gendustry",
+      "source": "https://github.com/GTNewHorizons/gendustry",
+      "2.8.4": "1.9.4-GTNH",
+      "2.9.0-RC-1": "1.9.13-GTNH"
+    },
+    {
+      "name": "Gravitation-Suite-Neo",
+      "source": "https://github.com/GTNewHorizons/Gravitation-Suite-Neo",
+      "2.8.4": "1.3.6",
+      "2.9.0-RC-1": "1.3.16"
+    },
+    {
+      "name": "Gravitation-Suite-old",
+      "source": "https://forum.industrial-craft.net/thread/6915-ic2-exp-1-7-10-gravitation-suite-v2-0-3/",
+      "2.8.4": "2.0.3",
+      "2.9.0-RC-1": "2.0.3"
+    },
+    {
+      "name": "GT5-Unofficial",
+      "source": "https://github.com/GTNewHorizons/GT5-Unofficial",
+      "2.8.4": "5.09.51.482",
+      "2.9.0-RC-1": "5.09.54.183",
+      "source_refs": {
+        "5.09.51.482": "e48304dd8f49be6df8e395c835780002bfb4e898",
+        "5.09.54.183": "f8453bce28793713d314f6dcfa5ac551d700efd6"
+      }
+    },
+    {
+      "name": "GTNH-TC-Wands",
+      "source": "https://github.com/GTNewHorizons/GTNH-TC-Wands",
+      "2.8.4": "1.4.6",
+      "2.9.0-RC-1": "1.4.14"
+    },
+    {
+      "name": "GTNHLib",
+      "source": "https://github.com/GTNewHorizons/GTNHLib",
+      "2.8.4": "0.7.10",
+      "2.9.0-RC-1": "0.11.51"
+    },
+    {
+      "name": "Hardcore-Ender-Expansion",
+      "source": "https://github.com/GTNewHorizons/Hardcore-Ender-Expansion",
+      "2.8.4": "1.12.16-GTNH",
+      "2.9.0-RC-1": "1.12.28-GTNH"
+    },
+    {
+      "name": "harvestcraft",
+      "source": "https://github.com/GTNewHorizons/harvestcraft",
+      "2.8.4": "1.3.2-GTNH",
+      "2.9.0-RC-1": "1.3.15-GTNH"
+    },
+    {
+      "name": "Healer",
+      "source": "https://www.curseforge.com/minecraft/mc-mods/healer",
+      "2.8.4": "1.2.1",
+      "2.9.0-RC-1": "1.2.1"
+    },
+    {
+      "name": "HelpFixer",
+      "source": "https://github.com/GTNewHorizons/HelpFixer",
+      "2.8.4": "1.3.0",
+      "2.9.0-RC-1": "1.3.2"
+    },
+    {
+      "name": "Hodgepodge",
+      "source": "https://github.com/GTNewHorizons/Hodgepodge",
+      "2.8.4": "2.6.112",
+      "2.9.0-RC-1": "2.7.211"
+    },
+    {
+      "name": "HoloInventory",
+      "source": "https://github.com/GTNewHorizons/HoloInventory",
+      "2.8.4": "2.5.5-GTNH",
+      "2.9.0-RC-1": "2.5.17-GTNH"
+    },
+    {
+      "name": "Hunger-Overhaul",
+      "source": "https://www.curseforge.com/minecraft/mc-mods/hunger-overhaul",
+      "2.8.4": "1.0.0.104",
+      "2.9.0-RC-1": "1.0.0.104"
+    },
+    {
+      "name": "HydroEnergy",
+      "source": "https://github.com/GTNewHorizons/HydroEnergy",
+      "2.8.4": "1.4.10",
+      "2.9.0-RC-1": "1.4.25"
+    },
+    {
+      "name": "IC2 Crop-Breeding Plugin",
+      "source": "https://www.curseforge.com/minecraft/mc-mods/ic2-nei-crop-plugin",
+      "2.8.4": "1.3.1"
+    },
+    {
+      "name": "IFU",
+      "source": "https://github.com/GTNewHorizons/IFU",
+      "2.8.4": "1.11.2",
+      "2.9.0-RC-1": "1.12.4"
+    },
+    {
+      "name": "IguanaTweaksTConstruct",
+      "source": "https://github.com/GTNewHorizons/IguanaTweaksTConstruct",
+      "2.8.4": "2.6.6",
+      "2.9.0-RC-1": "2.7.12"
+    },
+    {
+      "name": "Industrial Craft 2",
+      "source": "https://www.curseforge.com/minecraft/mc-mods/industrial-craft",
+      "2.8.4": "2.2.2.828",
+      "2.9.0-RC-1": "2.2.2.828"
+    },
+    {
+      "name": "Infernal-Mobs",
+      "source": "https://github.com/GTNewHorizons/Infernal-Mobs",
+      "2.8.4": "1.10.3-GTNH",
+      "2.9.0-RC-1": "1.10.7-GTNH"
+    },
+    {
+      "name": "InGame-Info-XML",
+      "source": "https://github.com/GTNewHorizons/InGame-Info-XML",
+      "2.8.4": "2.8.30",
+      "2.9.0-RC-1": "2.9.7"
+    },
+    {
+      "name": "InventoryBogoSorter",
+      "source": "https://github.com/GTNewHorizons/InventoryBogoSorter",
+      "2.8.4": "1.2.68-GTNH",
+      "2.9.0-RC-1": "1.3.54-GTNH"
+    },
+    {
+      "name": "ironchest",
+      "source": "https://github.com/GTNewHorizons/ironchest",
+      "2.8.4": "6.1.6",
+      "2.9.0-RC-1": "6.1.13"
+    },
+    {
+      "name": "IronChestMinecarts",
+      "source": "https://github.com/GTNewHorizons/IronChestMinecarts",
+      "2.8.4": "1.2.0",
+      "2.9.0-RC-1": "1.2.1"
+    },
+    {
+      "name": "IronTankMinecarts",
+      "source": "https://github.com/GTNewHorizons/IronTankMinecarts",
+      "2.8.4": "1.0.12",
+      "2.9.0-RC-1": "1.0.12"
+    },
+    {
+      "name": "Irontanks",
+      "source": "https://github.com/GTNewHorizons/Irontanks",
+      "2.8.4": "1.4.2",
+      "2.9.0-RC-1": "1.4.7"
+    },
+    {
+      "name": "Jabba",
+      "source": "https://github.com/GTNewHorizons/Jabba",
+      "2.8.4": "1.5.10",
+      "2.9.0-RC-1": "1.5.23",
+      "source_refs": {
+        "1.5.10": "9bcbe98f0f219a50b03b767305ec701996b8839e",
+        "1.5.23": "b04a103eac175e7c93f26c67ff486251239cb93e"
+      }
+    },
+    {
+      "name": "JourneyMap Server",
+      "source": "https://www.curseforge.com/minecraft/mc-mods/journeymap-server",
+      "2.8.4": "1.0.5",
+      "2.9.0-RC-1": "1.0.5"
+    },
+    {
+      "name": "JourneyMap",
+      "source": "https://www.curseforge.com/minecraft/mc-mods/journeymap",
+      "2.8.4": "5.2.10-fairplay",
+      "2.9.0-RC-1": "5.2.23-fairplay"
+    },
+    {
+      "name": "LittleTiles",
+      "source": "https://github.com/GTNewHorizons/LittleTiles",
+      "2.8.4": "1.5.14-GTNH",
+      "2.9.0-RC-1": "1.6.53",
+      "source_refs": {
+        "1.5.14-GTNH": "f0a42138331ef8f5484d239704b7d21c27f9d77e",
+        "1.6.53": "8cfc14b732472602ea290cd132895434f557a866"
+      }
+    },
+    {
+      "name": "LogisticsPipes",
+      "source": "https://github.com/GTNewHorizons/LogisticsPipes",
+      "2.8.4": "1.4.24-GTNH",
+      "2.9.0-RC-1": "1.5.36-GTNH",
+      "source_refs": {
+        "1.4.24-GTNH": "de7e137ef5ac8c863d2e1b40004707987def7833",
+        "1.5.36-GTNH": "df8e3fb02ca098601052a397cac2b1cba2bbd3d9"
+      }
+    },
+    {
+      "name": "LootGames",
+      "source": "https://github.com/GTNewHorizons/LootGames",
+      "2.8.4": "2.2.0.1",
+      "2.9.0-RC-1": "2.2.14"
+    },
+    {
+      "name": "LunatriusCore",
+      "source": "https://github.com/GTNewHorizons/LunatriusCore",
+      "2.8.4": "1.2.1-GTNH",
+      "2.9.0-RC-1": "1.2.1-GTNH"
+    },
+    {
+      "name": "lwjgl3ify",
+      "source": "https://github.com/GTNewHorizons/lwjgl3ify",
+      "2.8.4": "2.1.16",
+      "2.9.0-RC-1": "3.0.35"
+    },
+    {
+      "name": "MagicBees",
+      "source": "https://github.com/GTNewHorizons/MagicBees",
+      "2.8.4": "2.9.4-GTNH",
+      "2.9.0-RC-1": "2.10.12-GTNH"
+    },
+    {
+      "name": "MalisisDoors",
+      "source": "https://github.com/GTNewHorizons/MalisisDoors",
+      "2.8.4": "1.18.2-GTNH",
+      "2.9.0-RC-1": "1.19.11-GTNH"
+    },
+    {
+      "name": "Mantle",
+      "source": "https://github.com/GTNewHorizons/Mantle",
+      "2.8.4": "0.5.1",
+      "2.9.0-RC-1": "0.5.4"
+    },
+    {
+      "name": "MatterManipulator",
+      "source": "https://github.com/GTNewHorizons/MatterManipulator",
+      "2.8.4": "0.0.51-GTNH",
+      "2.9.0-RC-1": "0.1.59-GTNH",
+      "source_refs": {
+        "0.0.51-GTNH": "7dd0d50533d4dc6d1b66a2ef0287a64f1679eaae",
+        "0.1.59-GTNH": "e1cac40d2b19ca8569bb8f3838253b1fc7ac0ff4"
+      }
+    },
+    {
+      "name": "Minecraft-Backpack-Mod",
+      "source": "https://github.com/GTNewHorizons/Minecraft-Backpack-Mod",
+      "2.8.4": "2.5.10-GTNH",
+      "2.9.0-RC-1": "2.6.17-GTNH"
+    },
+    {
+      "name": "Minetweaker-Gregtech-5-Addon",
+      "source": "https://github.com/GTNewHorizons/Minetweaker-Gregtech-5-Addon",
+      "2.8.4": "2.3.1",
+      "2.9.0-RC-1": "2.3.4"
+    },
+    {
+      "name": "Mobs-Info",
+      "source": "https://github.com/GTNewHorizons/Mobs-Info",
+      "2.8.4": "0.5.6-GTNH"
+    },
+    {
+      "name": "ModernMarkings",
+      "source": "https://github.com/GTNewHorizons/ModernMarkings",
+      "2.8.4": "0.3.12-1.7.10",
+      "2.9.0-RC-1": "0.3.13-1.7.10"
+    },
+    {
+      "name": "ModTweaker",
+      "source": "https://github.com/GTNewHorizons/ModTweaker",
+      "2.8.4": "0.12.0",
+      "2.9.0-RC-1": "0.14.0"
+    },
+    {
+      "name": "ModularUI2",
+      "source": "https://github.com/GTNewHorizons/ModularUI2",
+      "2.8.4": "2.2.18-1.7.10",
+      "2.9.0-RC-1": "2.3.91-1.7.10"
+    },
+    {
+      "name": "ModularUI",
+      "source": "https://github.com/GTNewHorizons/ModularUI",
+      "2.8.4": "1.2.20",
+      "2.9.0-RC-1": "1.3.4"
+    },
+    {
+      "name": "Morpheus",
+      "source": "https://www.curseforge.com/minecraft/mc-mods/morpheus",
+      "2.8.4": "1.6.21"
+    },
+    {
+      "name": "MrTJPCore",
+      "source": "https://github.com/GTNewHorizons/MrTJPCore",
+      "2.8.4": "1.3.4",
+      "2.9.0-RC-1": "1.3.7"
+    },
+    {
+      "name": "Natura",
+      "source": "https://github.com/GTNewHorizons/Natura",
+      "2.8.4": "2.8.9",
+      "2.9.0-RC-1": "2.8.24"
+    },
+    {
+      "name": "NaturesCompass",
+      "source": "https://github.com/GTNewHorizons/NaturesCompass",
+      "2.8.4": "1.5.0-GTNH",
+      "2.9.0-RC-1": "1.5.2-GTNH"
+    },
+    {
+      "name": "Navigator",
+      "source": "https://github.com/GTNewHorizons/Navigator",
+      "2.8.4": "1.0.17",
+      "2.9.0-RC-1": "1.1.10"
+    },
+    {
+      "name": "nei-custom-diagram",
+      "source": "https://github.com/GTNewHorizons/nei-custom-diagram",
+      "2.8.4": "1.7.5",
+      "2.9.0-RC-1": "1.8.35"
+    },
+    {
+      "name": "NEI-Integration",
+      "source": "https://github.com/GTNewHorizons/NEI-Integration",
+      "2.8.4": "1.5.0",
+      "2.9.0-RC-1": "1.5.3"
+    },
+    {
+      "name": "neiaddons",
+      "source": "https://github.com/GTNewHorizons/neiaddons",
+      "2.8.4": "1.17.0",
+      "2.9.0-RC-1": "1.18.6"
+    },
+    {
+      "name": "NetherPortalFix",
+      "source": "https://github.com/GTNewHorizons/NetherPortalFix",
+      "2.8.4": "1.4.0",
+      "2.9.0-RC-1": "1.4.0"
+    },
+    {
+      "name": "NewHorizonsCoreMod",
+      "source": "https://github.com/GTNewHorizons/NewHorizonsCoreMod",
+      "2.8.4": "2.7.268",
+      "2.9.0-RC-1": "2.9.76"
+    },
+    {
+      "name": "Nodal-Mechanics",
+      "source": "https://github.com/GTNewHorizons/Nodal-Mechanics",
+      "2.8.4": "1.3.1-GTNH",
+      "2.9.0-RC-1": "1.3.4-GTNH"
+    },
+    {
+      "name": "NotEnoughEnergistics",
+      "source": "https://github.com/GTNewHorizons/NotEnoughEnergistics",
+      "2.8.4": "1.7.14",
+      "2.9.0-RC-1": "1.7.45"
+    },
+    {
+      "name": "NotEnoughIds",
+      "source": "https://github.com/GTNewHorizons/NotEnoughIds",
+      "2.8.4": "2.1.10"
+    },
+    {
+      "name": "NotEnoughItems",
+      "source": "https://github.com/GTNewHorizons/NotEnoughItems",
+      "2.8.4": "2.8.44-GTNH",
+      "2.9.0-RC-1": "2.8.145-GTNH"
+    },
+    {
+      "name": "Nuclear-Control",
+      "source": "https://github.com/GTNewHorizons/Nuclear-Control",
+      "2.8.4": "2.6.20",
+      "2.9.0-RC-1": "2.7.14"
+    },
+    {
+      "name": "Nutrition",
+      "source": "https://github.com/GTNewHorizons/Nutrition",
+      "2.8.4": "0.1.3",
+      "2.9.0-RC-1": "1.0.1"
+    },
+    {
+      "name": "oauth",
+      "source": "https://github.com/GTNewHorizons/oauth",
+      "2.8.4": "1.3.3-GTNH",
+      "2.9.0-RC-1": "1.3.4-GTNH"
+    },
+    {
+      "name": "OCGlasses",
+      "source": "https://github.com/GTNewHorizons/OCGlasses",
+      "2.8.4": "1.6.1-GTNH",
+      "2.9.0-RC-1": "1.6.9-GTNH"
+    },
+    {
+      "name": "OpenBlocks",
+      "source": "https://github.com/GTNewHorizons/OpenBlocks",
+      "2.8.4": "1.11.7-GTNH",
+      "2.9.0-RC-1": "1.12.22-GTNH",
+      "source_refs": {
+        "1.11.7-GTNH": "13c9327dda5ca6418bf2cddd9c10601896d81f33",
+        "1.12.22-GTNH": "ed3d36624c879782df41cbf83e0837441e04e14a"
+      }
+    },
+    {
+      "name": "OpenComputers",
+      "source": "https://github.com/GTNewHorizons/OpenComputers",
+      "2.8.4": "1.11.20-GTNH",
+      "2.9.0-RC-1": "1.12.62-GTNH",
+      "source_refs": {
+        "1.11.20-GTNH": "f253820d55db72fbc61d6acc4f3c7309d42ffabf",
+        "1.12.62-GTNH": "a3ac1859517905732d11af0459affd467b8748fe"
+      }
+    },
+    {
+      "name": "OpenModsLib",
+      "source": "https://github.com/GTNewHorizons/OpenModsLib",
+      "2.8.4": "0.10.11",
+      "2.9.0-RC-1": "0.10.14",
+      "source_refs": {
+        "0.10.11": "fbde453d9bb53f85500ae197042791e4f4043229",
+        "0.10.14": "e5e8177f2dd2297d5aea6bb733955a67ffa63c95"
+      }
+    },
+    {
+      "name": "OpenModularTurrets",
+      "source": "https://github.com/GTNewHorizons/OpenModularTurrets",
+      "2.8.4": "2.4.3",
+      "2.9.0-RC-1": "2.4.8"
+    },
+    {
+      "name": "OpenPrinter",
+      "source": "https://github.com/GTNewHorizons/OpenPrinter",
+      "2.8.4": "0.3.0-GTNH",
+      "2.9.0-RC-1": "0.3.1-GTNH"
+    },
+    {
+      "name": "OpenSecurity",
+      "source": "https://github.com/GTNewHorizons/OpenSecurity",
+      "2.8.4": "1.2.0-GTNH",
+      "2.9.0-RC-1": "1.2.2-GTNH"
+    },
+    {
+      "name": "Opis",
+      "source": "https://github.com/GTNewHorizons/Opis",
+      "2.8.4": "1.4.6-mapless",
+      "2.9.0-RC-1": "1.4.12-mapless"
+    },
+    {
+      "name": "OverloadedArmorBar",
+      "source": "https://github.com/GTNewHorizons/OverloadedArmorBar",
+      "2.8.4": "1.1.0",
+      "2.9.0-RC-1": "1.1.1"
+    },
+    {
+      "name": "Pam's Harvest the Nether",
+      "source": "https://www.curseforge.com/minecraft/mc-mods/pams-harvest-the-nether",
+      "2.8.4": "1.7.10a"
+    },
+    {
+      "name": "PersonalSpace",
+      "source": "https://github.com/GTNewHorizons/PersonalSpace",
+      "2.8.4": "1.0.33",
+      "2.9.0-RC-1": "1.0.41"
+    },
+    {
+      "name": "Player-API",
+      "source": "https://github.com/GTNewHorizons/Player-API",
+      "2.8.4": "1.5.0",
+      "2.9.0-RC-1": "1.5.0"
+    },
+    {
+      "name": "Postea",
+      "source": "https://github.com/GTNewHorizons/Postea",
+      "2.8.4": "1.1.3",
+      "2.9.0-RC-1": "1.2.6"
+    },
+    {
+      "name": "ProjectBlue",
+      "source": "https://github.com/GTNewHorizons/ProjectBlue",
+      "2.8.4": "1.2.1-GTNH",
+      "2.9.0-RC-1": "1.2.10-GTNH"
+    },
+    {
+      "name": "ProjectRed",
+      "source": "https://github.com/GTNewHorizons/ProjectRed",
+      "2.8.4": "4.12.6-GTNH",
+      "2.9.0-RC-1": "4.12.44-GTNH",
+      "source_refs": {
+        "4.12.44-GTNH": "c6a4cdd2d6c82eff62132c20af584608d65a37bb",
+        "4.12.6-GTNH": "c7d23e03314eaf9b30317a1edc6cc82bf917f41e"
+      }
+    },
+    {
+      "name": "Railcraft",
+      "source": "https://github.com/GTNewHorizons/Railcraft",
+      "2.8.4": "9.16.33",
+      "2.9.0-RC-1": "9.17.31",
+      "source_refs": {
+        "9.16.33": "2009186887904851b785d0d23c2d7321c3245d8b",
+        "9.17.31": "e8f755cd5eb22774d76eba4f8cd57057e2dfd5b9"
+      }
+    },
+    {
+      "name": "Random-Things",
+      "source": "https://github.com/GTNewHorizons/Random-Things",
+      "2.8.4": "2.6.6",
+      "2.9.0-RC-1": "2.7.11"
+    },
+    {
+      "name": "Realistic-World-Gen",
+      "source": "https://github.com/GTNewHorizons/Realistic-World-Gen",
+      "2.8.4": "alpha-1.5.0",
+      "2.9.0-RC-1": "alpha-1.5.2"
+    },
+    {
+      "name": "RemoteIO",
+      "source": "https://github.com/GTNewHorizons/RemoteIO",
+      "2.8.4": "2.7.6",
+      "2.9.0-RC-1": "2.7.10"
+    },
+    {
+      "name": "Roguelike-Dungeons",
+      "source": "https://github.com/GTNewHorizons/Roguelike-Dungeons",
+      "2.8.4": "1.6.6-GTNH",
+      "2.9.0-RC-1": "1.6.6-GTNH"
+    },
+    {
+      "name": "Salis-Arcana",
+      "source": "https://github.com/GTNewHorizons/Salis-Arcana",
+      "2.8.4": "1.1.33-GTNH",
+      "2.9.0-RC-1": "1.1.71-GTNH"
+    },
+    {
+      "name": "SC2",
+      "source": "https://github.com/GTNewHorizons/SC2",
+      "2.8.4": "2.3.12",
+      "2.9.0-RC-1": "2.3.15",
+      "source_refs": {
+        "2.3.12": "8614df20825636c4d66cddd7ed6893a65c9926e1",
+        "2.3.15": "6b774314024503c3ab444c1b0411eecf78bd0bd6"
+      }
+    },
+    {
+      "name": "Schematica",
+      "source": "https://github.com/GTNewHorizons/Schematica",
+      "2.8.4": "1.12.6-GTNH",
+      "2.9.0-RC-1": "1.12.6-GTNH"
+    },
+    {
+      "name": "ServerUtilities",
+      "source": "https://github.com/GTNewHorizons/ServerUtilities",
+      "2.8.4": "2.2.2",
+      "2.9.0-RC-1": "2.4.13"
+    },
+    {
+      "name": "SGCraft",
+      "source": "https://github.com/GTNewHorizons/SGCraft",
+      "2.8.4": "1.4.5-GTNH",
+      "2.9.0-RC-1": "1.4.13-GTNH"
+    },
+    {
+      "name": "Share-Where-I-am",
+      "source": "https://github.com/GTNewHorizons/Share-Where-I-am",
+      "2.8.4": "2.1.4",
+      "2.9.0-RC-1": "2.1.11"
+    },
+    {
+      "name": "SleepingBags",
+      "source": "https://github.com/GTNewHorizons/SleepingBags",
+      "2.8.4": "0.3.0",
+      "2.9.0-RC-1": "0.3.1"
+    },
+    {
+      "name": "SpecialMobs",
+      "source": "https://github.com/GTNewHorizons/SpecialMobs",
+      "2.8.4": "3.6.3",
+      "2.9.0-RC-1": "3.7.7"
+    },
+    {
+      "name": "SpiceOfLife",
+      "source": "https://github.com/GTNewHorizons/SpiceOfLife",
+      "2.8.4": "2.2.3-carrot",
+      "2.9.0-RC-1": "2.2.10-carrot"
+    },
+    {
+      "name": "Steve-s-Factory-Manager",
+      "source": "https://github.com/GTNewHorizons/Steve-s-Factory-Manager",
+      "2.8.4": "1.3.4-GTNH",
+      "2.9.0-RC-1": "1.3.13-GTNH"
+    },
+    {
+      "name": "StevesAddons",
+      "source": "https://github.com/GTNewHorizons/StevesAddons",
+      "2.8.4": "0.14.2",
+      "2.9.0-RC-1": "0.15.5"
+    },
+    {
+      "name": "StorageDrawers",
+      "source": "https://github.com/GTNewHorizons/StorageDrawers",
+      "2.8.4": "2.1.10-GTNH",
+      "2.9.0-RC-1": "2.2.31-GTNH",
+      "source_refs": {
+        "2.1.10-GTNH": "bf43610bb0976b4c2ed4c36278fec6b4cc916719",
+        "2.2.31-GTNH": "b8c869a418e23cb4e94ca3431065ccf191097652"
+      }
+    },
+    {
+      "name": "StructureCompat",
+      "source": "https://github.com/GTNewHorizons/StructureCompat",
+      "2.8.4": "0.7.4",
+      "2.9.0-RC-1": "0.7.5"
+    },
+    {
+      "name": "StructureLib",
+      "source": "https://github.com/GTNewHorizons/StructureLib",
+      "2.8.4": "1.4.23",
+      "2.9.0-RC-1": "1.4.45"
+    },
+    {
+      "name": "Super-TiC",
+      "source": "https://github.com/GTNewHorizons/Super-TiC",
+      "2.8.4": "1.5.0",
+      "2.9.0-RC-1": "1.5.6"
+    },
+    {
+      "name": "supersolarpanels",
+      "source": "https://github.com/GTNewHorizons/supersolarpanels",
+      "2.8.4": "1.1.4",
+      "2.9.0-RC-1": "1.1.5"
+    },
+    {
+      "name": "Tainted-Magic",
+      "source": "https://github.com/GTNewHorizons/Tainted-Magic",
+      "2.8.4": "7.6.26-GTNH",
+      "2.9.0-RC-1": "7.7.8-GTNH"
+    },
+    {
+      "name": "TC-4-Tweaks",
+      "source": "https://www.curseforge.com/minecraft/mc-mods/tc4tweaks",
+      "2.8.4": "1.5.39",
+      "2.9.0-RC-1": "1.5.47"
+    },
+    {
+      "name": "TCNEIAdditions",
+      "source": "https://github.com/GTNewHorizons/TCNEIAdditions",
+      "2.8.4": "1.5.4"
+    },
+    {
+      "name": "TCNodeTracker",
+      "source": "https://github.com/GTNewHorizons/TCNodeTracker",
+      "2.8.4": "1.4.0",
+      "2.9.0-RC-1": "1.4.6"
+    },
+    {
+      "name": "Thaumcraft NEI Plugin",
+      "source": "https://www.curseforge.com/minecraft/mc-mods/thaumcraft-nei-plugin",
+      "2.8.4": "1.7a"
+    },
+    {
+      "name": "thaumcraft-research-tweaks",
+      "source": "https://github.com/GTNewHorizons/thaumcraft-research-tweaks",
+      "2.8.4": "1.3.0",
+      "2.9.0-RC-1": "1.4.1"
+    },
+    {
+      "name": "Thaumcraft",
+      "source": "https://www.curseforge.com/minecraft/mc-mods/thaumcraft",
+      "2.8.4": "4.2.3.5a",
+      "2.9.0-RC-1": "4.2.3.5"
+    },
+    {
+      "name": "ThaumcraftMobAspects",
+      "source": "https://github.com/GTNewHorizons/ThaumcraftMobAspects",
+      "2.8.4": "1.2.1-GTNH",
+      "2.9.0-RC-1": "1.2.1-GTNH"
+    },
+    {
+      "name": "Thaumic Machina",
+      "source": "https://www.minecraftforum.net/forums/mapping-and-modding-java-edition/minecraft-mods/wip-mods/2200956-wip-1-7-10-open-beta-thaumcraft-4-2-addon-thaumic",
+      "2.8.4": "0.2.1"
+    },
+    {
+      "name": "Thaumic_Exploration",
+      "source": "https://github.com/GTNewHorizons/Thaumic_Exploration",
+      "2.8.4": "1.4.8-GTNH",
+      "2.9.0-RC-1": "1.5.28-GTNH"
+    },
+    {
+      "name": "ThaumicBases",
+      "source": "https://github.com/GTNewHorizons/ThaumicBases",
+      "2.8.4": "1.8.13",
+      "2.9.0-RC-1": "1.9.19"
+    },
+    {
+      "name": "ThaumicBoots",
+      "source": "https://github.com/GTNewHorizons/ThaumicBoots",
+      "2.8.4": "1.4.14",
+      "2.9.0-RC-1": "1.5.13"
+    },
+    {
+      "name": "ThaumicEnergistics",
+      "source": "https://github.com/GTNewHorizons/ThaumicEnergistics",
+      "2.8.4": "1.7.14-GTNH",
+      "2.9.0-RC-1": "1.7.60-GTNH"
+    },
+    {
+      "name": "ThaumicHorizons",
+      "source": "https://github.com/GTNewHorizons/ThaumicHorizons",
+      "2.8.4": "1.7.9",
+      "2.9.0-RC-1": "1.8.25"
+    },
+    {
+      "name": "thaumicinsurgence",
+      "source": "https://github.com/GTNewHorizons/thaumicinsurgence",
+      "2.8.4": "0.4.0",
+      "2.9.0-RC-1": "0.4.1"
+    },
+    {
+      "name": "ThaumicTinkerer",
+      "source": "https://github.com/GTNewHorizons/ThaumicTinkerer",
+      "2.8.4": "2.11.27",
+      "2.9.0-RC-1": "2.12.33"
+    },
+    {
+      "name": "TiC-Tooltips",
+      "source": "https://github.com/GTNewHorizons/TiC-Tooltips",
+      "2.8.4": "1.4.0",
+      "2.9.0-RC-1": "1.4.2"
+    },
+    {
+      "name": "Tinkers-Defense",
+      "source": "https://github.com/GTNewHorizons/Tinkers-Defense",
+      "2.8.4": "1.3.2",
+      "2.9.0-RC-1": "1.3.4"
+    },
+    {
+      "name": "Tinkers-Gregworks",
+      "source": "https://github.com/Vexatos/TinkersGregworks/tree/GT-NH",
+      "2.8.4": "1.0.28",
+      "2.9.0-RC-1": "1.0.33"
+    },
+    {
+      "name": "TinkersConstruct",
+      "source": "https://github.com/GTNewHorizons/TinkersConstruct",
+      "2.8.4": "1.13.57-GTNH",
+      "2.9.0-RC-1": "1.14.115-GTNH",
+      "source_refs": {
+        "1.13.57-GTNH": "ba672fb6af0f71678a5c7aac2b2c4c05abf1e2de",
+        "1.14.115-GTNH": "27d296fd4d52702f09877e3026a721596b41ff90"
+      }
+    },
+    {
+      "name": "TinkersMechworks",
+      "source": "https://github.com/GTNewHorizons/TinkersMechworks",
+      "2.8.4": "0.4.1",
+      "2.9.0-RC-1": "0.4.2"
+    },
+    {
+      "name": "TooMuchLoot",
+      "source": "https://github.com/GTNewHorizons/TooMuchLoot",
+      "2.8.4": "4.3.0-GTNH",
+      "2.9.0-RC-1": "4.3.0-GTNH"
+    },
+    {
+      "name": "ToroHealth",
+      "source": "https://github.com/GTNewHorizons/ToroHealth",
+      "2.8.4": "1.2.0",
+      "2.9.0-RC-1": "1.2.3"
+    },
+    {
+      "name": "Translocators",
+      "source": "https://github.com/GTNewHorizons/Translocators",
+      "2.8.4": "1.3.1",
+      "2.9.0-RC-1": "1.4.5",
+      "source_refs": {
+        "1.3.1": "79a92d0b0f1edbfa25f0744fad0fed86d83d8ab1",
+        "1.4.5": "d25e7e8937261c7a59da015d7eabbdad23bbf17a"
+      }
+    },
+    {
+      "name": "twilightforest",
+      "source": "https://github.com/GTNewHorizons/twilightforest",
+      "2.8.4": "2.7.13",
+      "2.9.0-RC-1": "2.7.42"
+    },
+    {
+      "name": "TX-Loader",
+      "source": "https://github.com/GTNewHorizons/TX-Loader",
+      "2.8.4": "1.8.5",
+      "2.9.0-RC-1": "1.9.1"
+    },
+    {
+      "name": "UniLib",
+      "source": "https://legacy.curseforge.com/minecraft/mc-mods/unilib",
+      "2.8.4": "1.1.1",
+      "2.9.0-RC-1": "1.2.1"
+    },
+    {
+      "name": "UniMixins",
+      "source": "https://github.com/LegacyModdingMC/UniMixins",
+      "2.8.4": "0.1.23",
+      "2.9.0-RC-1": "0.3.1"
+    },
+    {
+      "name": "Universal-Singularities",
+      "source": "https://github.com/GTNewHorizons/Universal-Singularities",
+      "2.8.4": "8.10.0",
+      "2.9.0-RC-1": "8.15.4"
+    },
+    {
+      "name": "VisualProspecting",
+      "source": "https://github.com/GTNewHorizons/VisualProspecting",
+      "2.8.4": "1.4.8",
+      "2.9.0-RC-1": "1.5.41"
+    },
+    {
+      "name": "waila",
+      "source": "https://github.com/GTNewHorizons/waila",
+      "2.8.4": "1.8.15",
+      "2.9.0-RC-1": "1.19.34"
+    },
+    {
+      "name": "WailaHarvestability",
+      "source": "https://github.com/GTNewHorizons/WailaHarvestability",
+      "2.8.4": "1.3.4-GTNH",
+      "2.9.0-RC-1": "1.3.6-GTNH"
+    },
+    {
+      "name": "WAILAPlugins",
+      "source": "https://github.com/GTNewHorizons/WAILAPlugins",
+      "2.8.4": "0.6.0",
+      "2.9.0-RC-1": "0.7.2"
+    },
+    {
+      "name": "WanionLib",
+      "source": "https://github.com/GTNewHorizons/WanionLib",
+      "2.8.4": "1.10.0",
+      "2.9.0-RC-1": "1.10.1"
+    },
+    {
+      "name": "WarpTheory",
+      "source": "https://github.com/GTNewHorizons/WarpTheory",
+      "2.8.4": "1.5.0-GTNH",
+      "2.9.0-RC-1": "1.5.8-GTNH"
+    },
+    {
+      "name": "WAWLA",
+      "source": "https://github.com/GTNewHorizons/WAWLA",
+      "2.8.4": "1.3.1-GTNH",
+      "2.9.0-RC-1": "1.3.3-GTNH"
+    },
+    {
+      "name": "WirelessCraftingTerminal",
+      "source": "https://github.com/GTNewHorizons/WirelessCraftingTerminal",
+      "2.8.4": "1.12.7",
+      "2.9.0-RC-1": "1.12.16"
+    },
+    {
+      "name": "WirelessRedstone-CBE",
+      "source": "https://github.com/GTNewHorizons/WirelessRedstone-CBE",
+      "2.8.4": "1.7.1",
+      "2.9.0-RC-1": "1.7.12"
+    },
+    {
+      "name": "Witchery",
+      "source": "https://www.curseforge.com/minecraft/mc-mods/witchery",
+      "2.8.4": "0.24.1",
+      "2.9.0-RC-1": "0.24.1"
+    },
+    {
+      "name": "WitcheryExtras",
+      "source": "https://github.com/GTNewHorizons/WitcheryExtras",
+      "2.8.4": "1.3.8",
+      "2.9.0-RC-1": "1.4.20"
+    },
+    {
+      "name": "WitchingGadgets",
+      "source": "https://github.com/GTNewHorizons/WitchingGadgets",
+      "2.8.4": "1.7.25-GTNH",
+      "2.9.0-RC-1": "1.8.51-GTNH"
+    },
+    {
+      "name": "Yamcl",
+      "source": "https://github.com/GTNewHorizons/Yamcl",
+      "2.8.4": "0.7.1",
+      "2.9.0-RC-1": "0.7.5"
+    },
+    {
+      "name": "Ztones",
+      "source": "https://www.curseforge.com/minecraft/mc-mods/ztones",
+      "2.8.4": "2.2.2",
+      "2.9.0-RC-1": "2.2.2"
+    },
+    {
+      "name": "AspectRecipeIndex",
+      "source": "https://github.com/GTNewHorizons/AspectRecipeIndex",
+      "2.9.0-RC-1": "1.1.5"
+    },
+    {
+      "name": "Automagy-GTNH",
+      "source": "https://github.com/GTNewHorizons/Automagy-GTNH",
+      "2.9.0-RC-1": "0.29.8-GTNH"
+    },
+    {
+      "name": "ChromaticTooltips",
+      "source": "https://github.com/GTNewHorizons/ChromaticTooltips",
+      "2.9.0-RC-1": "1.0.36-GTNH"
+    },
+    {
+      "name": "ChromaticTooltipsCompat",
+      "source": "https://github.com/GTNewHorizons/ChromaticTooltipsCompat",
+      "2.9.0-RC-1": "1.0.38-GTNH"
+    },
+    {
+      "name": "Chunk API",
+      "source": "https://www.curseforge.com/minecraft/mc-mods/chunkapi/",
+      "2.9.0-RC-1": "0.8.4"
+    },
+    {
+      "name": "CosmeticArmorReworked",
+      "source": "https://github.com/GTNewHorizons/CosmeticArmorReworked",
+      "2.9.0-RC-1": "1.0.7-GTNH"
+    },
+    {
+      "name": "CropsNH",
+      "source": "https://github.com/GTNewHorizons/CropsNH",
+      "2.9.0-RC-1": "2.0.129",
+      "source_refs": {
+        "2.0.129": "47debb72b230382c91aa256b92d715062c3a318e"
+      }
+    },
+    {
+      "name": "EndlessIDs",
+      "source": "https://www.curseforge.com/minecraft/mc-mods/endlessids/",
+      "2.9.0-RC-1": "1.7.4"
+    },
+    {
+      "name": "Extreme Sound Muffler",
+      "source": "https://www.curseforge.com/minecraft/mc-mods/extreme-sound-muffler-legacy",
+      "2.9.0-RC-1": "1.1.1"
+    },
+    {
+      "name": "FalsepatternLib",
+      "source": "https://www.curseforge.com/minecraft/mc-mods/fplib",
+      "2.9.0-RC-1": "1.12.2"
+    },
+    {
+      "name": "Fether",
+      "source": "https://github.com/GTNewHorizons/Fether",
+      "2.9.0-RC-1": "2.0.7"
+    },
+    {
+      "name": "Freecam",
+      "source": "https://github.com/GTNewHorizons/Freecam",
+      "2.9.0-RC-1": "1.0.12"
+    },
+    {
+      "name": "GregoryTweaksForCrafting",
+      "source": "https://github.com/GTNewHorizons/GregoryTweaksForCrafting",
+      "2.9.0-RC-1": "1.0.3"
+    },
+    {
+      "name": "GTNH-Credits",
+      "source": "https://github.com/GTNewHorizons/GTNH-Credits",
+      "2.9.0-RC-1": "1.3.3"
+    },
+    {
+      "name": "GTNHExtLib",
+      "source": "https://github.com/GTNewHorizons/GTNHExtLib",
+      "2.9.0-RC-1": "1.0.4"
+    },
+    {
+      "name": "GuideNH",
+      "source": "https://github.com/GTNewHorizons/GuideNH",
+      "2.9.0-RC-1": "1.3.36"
+    },
+    {
+      "name": "JarJar",
+      "source": "https://github.com/GTNewHorizons/JarJar",
+      "2.9.0-RC-1": "0.3.7-beta"
+    },
+    {
+      "name": "Mobs Info",
+      "source": "https://www.curseforge.com/minecraft/mc-mods/mobs-info/",
+      "2.9.0-RC-1": "0.6.0"
+    },
+    {
+      "name": "MouseTweaks",
+      "source": "https://github.com/GTNewHorizons/MouseTweaks",
+      "2.9.0-RC-1": "2.5.3-GTNH"
+    },
+    {
+      "name": "NoHotbarNeeded",
+      "source": "https://github.com/GTNewHorizons/NoHotbarNeeded",
+      "2.9.0-RC-1": "0.0.6"
+    },
+    {
+      "name": "RandomBoubles",
+      "source": "https://github.com/GTNewHorizons/RandomBoubles",
+      "2.9.0-RC-1": "1.1.7"
+    },
+    {
+      "name": "SimpleSkinBackport",
+      "source": "https://github.com/GTNewHorizons/SimpleSkinBackport",
+      "2.9.0-RC-1": "1.0.3-GTNH"
+    },
+    {
+      "name": "ThaumicMachina",
+      "source": "https://github.com/GTNewHorizons/ThaumicMachina",
+      "2.9.0-RC-1": "0.2.5-GTNH"
+    },
+    {
+      "name": "VendingMachine",
+      "source": "https://github.com/GTNewHorizons/VendingMachine",
+      "2.9.0-RC-1": "0.4.100"
+    },
+    {
+      "name": "VillageNames",
+      "source": "https://github.com/GTNewHorizons/VillageNames",
+      "2.9.0-RC-1": "4.5.19-GTNH"
+    }
+  ]
+}

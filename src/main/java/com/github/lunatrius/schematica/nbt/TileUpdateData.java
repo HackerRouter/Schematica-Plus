@@ -12,6 +12,21 @@ final class TileUpdateData {
 
     private TileUpdateData() {}
 
+    static NBTTagCompound combine(String tileClass, NBTTagCompound packet, NBTTagCompound adapters) {
+        if (packet == null && adapters.hasNoTags()) return null;
+        NBTTagCompound data = new NBTTagCompound();
+        data.setInteger("Version", 2);
+        data.setString("Class", tileClass);
+        if (packet != null) data.setTag("Packet", packet);
+        data.setTag("Adapters", adapters);
+        return data;
+    }
+
+    static NBTTagCompound adapters(NBTTagCompound data, String tileClass) {
+        return data != null && data.getInteger("Version") == 2 && data.getString("Class").equals(tileClass)
+            ? data.getCompoundTag("Adapters") : new NBTTagCompound();
+    }
+
     static NBTTagCompound capture(String tileClass, Packet packet) throws IOException {
         if (!(packet instanceof S35PacketUpdateTileEntity)) return null;
         PacketBuffer buffer = new PacketBuffer(Unpooled.buffer(256, Short.MAX_VALUE + 13));
@@ -33,6 +48,9 @@ final class TileUpdateData {
     }
 
     static S35PacketUpdateTileEntity packet(NBTTagCompound data, String tileClass, int x, int y, int z) {
+        if (data != null && data.getInteger("Version") == 2 && data.getString("Class").equals(tileClass)) {
+            data = data.getCompoundTag("Packet");
+        }
         if (data == null || data.getInteger("Version") != 1 || !data.getString("Class").equals(tileClass)
             || !data.hasKey("Type", 3) || !data.hasKey("Data", 10)) return null;
         int type = data.getInteger("Type");
