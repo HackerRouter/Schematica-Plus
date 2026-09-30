@@ -20,6 +20,7 @@ import com.github.lunatrius.schematica.client.world.SchematicWorld;
 public final class GuiSchematicLoad extends GuiSchematicBrowser {
 
     private UiButton load;
+    private UiButton renameFile;
     private UiCheckBox createPlacement;
 
     public GuiSchematicLoad(GuiScreen parent) {
@@ -34,7 +35,7 @@ public final class GuiSchematicLoad extends GuiSchematicBrowser {
         });
         unavailable(addAction("litematica.gui.button.material_list", () -> {}));
         unavailable(addAction("litematica.gui.button.rename_schematic", () -> {}));
-        unavailable(addAction("litematica.gui.button.rename_file", () -> {}));
+        renameFile = addAction("litematica.gui.button.rename_file", this::renameSelectedFile);
         addAction("litematica.gui.button.change_menu.show_loaded_schematics",
             () -> mc.displayGuiScreen(new GuiSchematicLoadedList(this))).setSprite(UiSprite.LOADED_SCHEMATICS);
         createPlacement = root.add(new UiCheckBox(() -> I18n.format("litematica.gui.label.schematic_load.checkbox.create_placement"),
@@ -72,6 +73,6 @@ public final class GuiSchematicLoad extends GuiSchematicBrowser {
         super.tickScreen();
         SchematicBrowserModel.Entry entry = selection();
         load.setEnabled(SchematicaPlus.proxy.isLoadEnabled && mc.theWorld != null && entry != null && !entry.directory);
-
+        renameFile.setEnabled(entry != null && !entry.directory);
     }
 }

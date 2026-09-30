@@ -4,6 +4,7 @@ package com.github.lunatrius.schematica.client.gui.browser;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.FileAlreadyExistsException;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -28,6 +29,8 @@ import com.github.lunatrius.schematica.client.gui.framework.UiTextField;
 import com.github.lunatrius.schematica.handler.ConfigurationHandler;
 import com.github.lunatrius.schematica.reference.Reference;
 import com.github.lunatrius.schematica.util.FileUtils;
+import com.github.lunatrius.schematica.proxy.ClientProxy;
+import com.github.lunatrius.schematica.client.world.SchematicWorld;
 
 public abstract class GuiSchematicBrowser extends UiScreen {
 
@@ -66,7 +69,7 @@ public abstract class GuiSchematicBrowser extends UiScreen {
         path = root.add(new UiLabel(() -> browser == null ? "" : browser.relativeDirectory()));
         up = icon(UiSprite.UP, "schematica.ui.browser.up", () -> navigate(browser.directory().getParentFile()));
         home = icon(UiSprite.ROOT, "schematica.ui.browser.root", () -> navigate(browser.root()));
-        createDirectory = unavailable(icon(UiSprite.CREATE_DIRECTORY, "schematica.ui.browser.create_directory", () -> {}));
+        createDirectory = icon(UiSprite.CREATE_DIRECTORY, "schematica.ui.browser.create_directory", this::createDirectory);
         search = root.add(new UiTextField(fontRendererObj, 256, files::setQuery));
         search.setTooltip(I18n.format("schematica.ui.browser.search_hint"));
         searchButton = icon(UiSprite.SEARCH, "schematica.ui.browser.search", () -> {
@@ -140,6 +143,93 @@ public abstract class GuiSchematicBrowser extends UiScreen {
 
     protected void selectionChanged(SchematicBrowserModel.Entry entry) {}
 
+    private void createDirectory() {
+        if (browser == null) return;
+        prompt(I18n.format("malilib.gui.title.create_directory"), "", name -> {
+            try {
+                File directory = browser.createDirectory(name);
+                selectResult(directory);
+                return null;
+            } catch (IOException e) {
+                return fileError(e);
+            }
+        });
+    }
+
+    protected final void renameSelectedFile() {
+        SchematicBrowserModel.Entry entry = selection();
+        if (entry == null || entry.directory) return;
+        prompt(I18n.format("litematica.gui.title.rename_file"), entry.name(), name -> {
+            try {
+                File source = entry.file.getCanonicalFile();
+                List<SchematicWorld> instances = new ArrayList<>();
+                for (SchematicWorld world : ClientProxy.loadedSchematics) {
+                    if (world.sourceFilename == null) continue;
+                    File directory = world.sourceDirectory == null ? browser.root() : world.sourceDirectory;
+                    if (new File(directory, world.sourceFilename).getCanonicalFile().equals(source)) instances.add(world);
+                }
+                File target = browser.rename(entry, name);
+                for (SchematicWorld world : instances) {
+                    world.sourceDirectory = target.getParentFile();
+                    world.sourceFilename = target.getName();
+                }
+                selectResult(target);
+                return null;
+            } catch (IOException e) {
+                return fileError(e);
+            }
+        });
+    }
+
+    protected final void copySelectedFile() {
+        SchematicBrowserModel.Entry entry = selection();
+        if (entry == null || entry.directory) return;
+        prompt(I18n.format("litematica.gui.title.copy_file"), entry.name(), name -> {
+            try {
+                selectResult(browser.copy(entry, name));
+                return null;
+            } catch (IOException e) {
+                return fileError(e);
+            }
+        });
+    }
+
+    protected final void deleteSelectedFile() {
+        SchematicBrowserModel.Entry entry = selection();
+        if (entry == null || entry.directory) return;
+        confirm(I18n.format("litematica.gui.title.confirm_file_deletion"),
+            I18n.format("schematica.ui.files.delete_confirm", entry.name()), () -> {
+                try {
+                    browser.delete(entry);
+                    refreshFiles();
+                    setStatus(I18n.format("schematica.ui.files.deleted", entry.name()));
+                } catch (IOException e) {
+                    setStatus(fileError(e));
+                }
+            });
+    }
+
+    private void selectResult(File result) {
+        search.setText("");
+        refreshFiles();
+        for (int i = 0; i < files.entries().size(); i++) {
+            if (files.entries().get(i).file.equals(result)) {
+                files.select(i);
+                files.revealSelection();
+                break;
+            }
+        }
+        tickScreen();
+    }
+
+    private String fileError(IOException error) {
+        String key = error instanceof SchematicBrowserModel.FileOperationException
+            ? ((SchematicBrowserModel.FileOperationException) error).translationKey
+            : error instanceof FileAlreadyExistsException ? "schematica.ui.files.error.exists" : "schematica.ui.files.error.io";
+        Reference.logger.warn("Schematic file operation failed", error);
+        return I18n.format(key);
+    }
+
     @Override
     protected boolean handleKey(char character, int keyCode) {
         if (keyCode == Keyboard.KEY_F5) {
@@ -212,6 +302,7 @@ public abstract class GuiSchematicBrowser extends UiScreen {
     protected void tickScreen() {
         up.setEnabled(browser != null && browser.canGoUp());
         home.setEnabled(browser != null);
+        createDirectory.setEnabled(browser != null && browser.directory().isDirectory());
         info.setTooltip(selectionInfo());
         SchematicBrowserModel.Entry current = selection();
         if (!java.util.Objects.equals(current, lastSelection)) {

@@ -174,7 +174,8 @@ public abstract class UiScreen extends GuiScreen {
         } else if (keyCode == Keyboard.KEY_TAB) {
             input.cycleFocus(isShiftKeyDown());
         } else {
-            if (!handleKey(character, keyCode) && !(Keyboard.isRepeatEvent() && input.focused() instanceof UiButton)) {
+            boolean handled = input.modalPanels().isEmpty() && handleKey(character, keyCode);
+            if (!handled && !(Keyboard.isRepeatEvent() && input.focused() instanceof UiButton)) {
                 input.keyTyped(character, keyCode);
             }
         }
@@ -209,6 +210,12 @@ public abstract class UiScreen extends GuiScreen {
         input.pushModal(panel);
     }
 
+    protected final void prompt(String title, String initial, java.util.function.Function<String, String> apply) {
+        UiPanel panel = new TextInputPanel(fontRendererObj, input, title, initial, apply);
+        panel.layout(root.bounds());
+        input.pushModal(panel);
+    }
+
     @Override
     public final void onGuiClosed() {
         resumeFocus = input.focused();
@@ -235,10 +242,10 @@ public abstract class UiScreen extends GuiScreen {
         ConfirmationPanel(String title, String message, Runnable confirmed) {
             this.dialogTitle = title;
             this.message = message;
-            cancel = add(new UiButton(() -> I18n.format("gui.cancel"), button -> {
+            cancel = add(new UiButton(() -> "\u00a7c" + I18n.format("malilib.gui.button.cancel") + "\u00a7r", button -> {
                 if (button == 0) input.popModal();
             }));
-            accept = add(new UiButton(() -> I18n.format("gui.yes"), button -> {
+            accept = add(new UiButton(() -> "\u00a7a" + I18n.format("malilib.gui.button.ok") + "\u00a7r", button -> {
                 if (button == 0) {
                     input.popModal();
                     confirmed.run();
@@ -248,26 +255,26 @@ public abstract class UiScreen extends GuiScreen {
 
         @Override
         public void layout(UiBounds screen) {
-            int width = Math.max(40, Math.min(320, screen.width - 24));
-            lines = fontRendererObj.listFormattedStringToWidth(message, Math.max(1, width - 20));
-            int height = Math.min(screen.height - 16, 60 + lines.size() * 11);
+            int width = Math.max(40, Math.min(400, screen.width - 24));
+            lines = fontRendererObj.listFormattedStringToWidth(message, Math.max(1, width - 30));
+            int height = Math.min(screen.height - 16, 54 + lines.size() * (fontRendererObj.FONT_HEIGHT + 1));
             setBounds((screen.width - width) / 2, (screen.height - height) / 2, width, height);
-            int buttonWidth = Math.max(10, (width - 24) / 2);
-            cancel.setBounds(bounds().x + 10, bounds().bottom() - 28, buttonWidth, 20);
-            accept.setBounds(bounds().right() - buttonWidth - 10, bounds().bottom() - 28, buttonWidth, 20);
+            int buttonWidth = Math.max(fontRendererObj.getStringWidth(accept.label()), fontRendererObj.getStringWidth(cancel.label())) + 10;
+            accept.setBounds(bounds().x + 10, bounds().bottom() - 24, buttonWidth, 20);
+            cancel.setBounds(bounds().x + 20 + buttonWidth, bounds().bottom() - 24, buttonWidth, 20);
         }
 
         @Override
         public void draw(UiDraw draw, int mouseX, int mouseY) {
-            draw.fill(bounds(), UiTheme.PANEL);
+            draw.fill(bounds(), 0xF0000000);
             draw.border(bounds(), UiTheme.BORDER);
-            draw.text(draw.trim(dialogTitle, bounds().width - 20), bounds().x + 10, bounds().y + 9, UiTheme.TEXT);
-            try (UiDraw.Clip ignored = draw.clip(new UiBounds(bounds().x + 10, bounds().y + 24,
-                bounds().width - 20, bounds().height - 56))) {
-                int y = bounds().y + 24;
+            draw.text(draw.trim(dialogTitle, bounds().width - 20), bounds().x + 10, bounds().y + 4, UiTheme.TEXT);
+            try (UiDraw.Clip ignored = draw.clip(new UiBounds(bounds().x + 10, bounds().y + 20,
+                bounds().width - 20, bounds().height - 48))) {
+                int y = bounds().y + 20;
                 for (String line : lines) {
-                    draw.text(line, bounds().x + 10, y, UiTheme.TEXT);
-                    y += 11;
+                    draw.text(line, bounds().x + 10, y, 0xFFC0C0C0);
+                    y += fontRendererObj.FONT_HEIGHT + 1;
                 }
             }
             super.draw(draw, mouseX, mouseY);

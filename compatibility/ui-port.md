@@ -404,3 +404,55 @@ values for repair while using defaults at runtime. Automated checks cover ARGB
 parsing/channels, 10,000 RGB/HSV round trips, alpha retention, validation/reset,
 Forge persistence, drag capture and keyboard adjustment. In-game appearance and
 resource-pack interactions remain manual checks.
+
+
+## Phase 9: schematic manager and file dialogs
+
+M > Schematic Manager opens the source-layout browser at (10,24), with height H-60.
+Selecting a .litematic shows Schematic Edit + edit selector, Import, Export As +
+export selector, then File + file-operation selector. Legacy .schematic and Plus
+.schemplus show Import and File operations. No file selection hides these actions.
+Buttons start at (10,H-26), use text width +10 with 4-pixel gaps, and retain the
+right-aligned Main Menu button. If the row cannot fit, whole operation groups wrap
+upward and the browser shrinks; controls within an oversized group trim their text.
+Left/right click cycles selectors in opposite directions. Metadata editing, author,
+preview generation, import and export are pending: their execution buttons remain
+disabled. Their selectors display the upstream choices with a pending tooltip.
+
+Rename, Copy and Delete operate on all three supported extensions. Rename File on
+the Load screen is also connected. The shared browser Create Directory toolbar
+button now works on loading, saving and directory-picker screens. Text dialogs adapt
+MaLiLib GuiTextInputBase's centered 260x80 layout, title at (+10,+4), 240x20 field at
+(+12,+20), and OK/Reset/Cancel row at (+10,+50). Failed operations keep the dialog
+and input open with an expanded error area. Enter submits from the field; Reset
+restores the original value; Escape cancels. Confirmation dialogs use the upstream
+400-pixel width, green OK on the left and red Cancel beside it, retaining initial
+keyboard focus on Cancel. They also serve the existing save-overwrite dialog.
+Root screen shortcuts such as F5 and Backspace do not run beneath a modal.
+
+Names must be single path components, without Windows reserved characters/names,
+trailing spaces/dots or a changed extension. No operation overwrites an existing
+file (including Shift-click); the port's tooltips describe that behavior. Copy uses
+a temporary sibling and preserves the file bytes without NBT conversion. Rename
+also preserves bytes. File mutations validate the selected file's identity, size
+and full-precision modification time again; stale selections and linked files are
+rejected. Directories are created one level at a time, cannot escape the browser
+root, and cannot be renamed/deleted through these file-only actions.
+
+Rename updates matching LoadedSchematics.json references across sessions/dimensions
+and matching in-memory instances, retaining display names, transforms and positions.
+Unknown JSON properties are preserved by this operation. An unreadable session
+index prevents rename; a changed index is not overwritten, and a write failure
+attempts to restore the original filename. These checks protect normal local use,
+not concurrent hostile changes to filesystem links. Old Coordinates.json defaults,
+external scripts and unrelated third-party references are not rewritten.
+
+Delete requires confirmation and removes only the selected file. Already loaded
+previews and session records are retained, as with deleting a source externally;
+they cannot reload that missing source later. Copy/rename select the resulting
+file after refresh. Creating a directory selects it; opening it is a separate action.
+Read-only browsing and file operations do not require an active world. File info
+still shows filename, size and date, not parsed metadata or screenshot previews.
+Automated checks cover preserved bytes, no overwrite/format change, invalid names,
+stale/deleted targets, directory refusal and cross-session reference preservation.
+Live-game rendering, scaling and modpack interactions remain manual checks.

@@ -372,3 +372,34 @@ once to establish the new keys. Ordered transforms apply to newly saved sessions
 - Open item/material screens after closing the picker, then return to the world.
   Check blend, lighting, alpha test, shade model and clipping for leaked GL state.
   No live-game visual validation has been performed by the agent.
+
+
+## Phase 9: schematic manager and file dialogs (native checks)
+
+- Use disposable copies in a test schematics folder. Open M > Schematic Manager;
+  compare the (10,24) browser, footer order, labels and source icons in English and
+  Chinese. Select each of .schematic/.schemplus/.litematic and a directory. Check
+  GUI scales 1/2/3, narrow windows and resize: groups wrap without covering Main
+  Menu. Metadata/import/export execute buttons must remain disabled with tooltips.
+- Cycle the File selector with left/right clicks. Rename/copy each format; verify
+  file hashes and retained extension, then load the result. Existing names and
+  attempts to change extensions must fail, including Shift-click. Errors keep
+  the input editable. Test Chinese names, spaces, invalid paths/reserved names,
+  Enter, Reset, Cancel, Escape and Tab focus. Load > Rename File must work too.
+- Open Create Directory from loading, saving and directory selection. Create a
+  nested folder by navigating one level at a time. F5, Backspace, wheel and clicks
+  outside an open modal must not change the underlying directory or selection.
+- Load multiple instances, including custom names and transforms. Save sessions
+  in two dimensions, then rename their source file through the manager. Current
+  previews and positions must stay intact; revisit both dimensions and reconnect
+  to verify source references. Other source files/sessions must remain untouched.
+- With a backed-up malformed LoadedSchematics.json, rename must fail while both
+  the original source and JSON remain intact. Restore the backup after the check.
+  Test read-only files/folders and a selected file edited/deleted externally while
+  its dialog is open. Errors must be visible and must not affect a different file.
+- Delete only disposable copies. Confirm the green OK/red Cancel positions and
+  default focus on Cancel. Cancel/Escape must leave the file intact; confirmation
+  removes only that file. Already loaded previews remain until unloaded, but a
+  deleted source cannot restore after leaving the world. Check the existing save
+  overwrite confirmation with its updated layout as well.
+- These native GUI and gameplay checks have not been run by the agent.

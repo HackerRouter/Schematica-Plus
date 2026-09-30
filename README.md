@@ -139,3 +139,9 @@ fields and reset, with upstream defaults for selection faces and the four existi
 block overlay categories. Color options for pending features remain disabled.
 Advanced key combinations are still pending. See [UI port status](compatibility/ui-port.md)
 and [manual checks](TESTING.md).
+
+
+The Schematic Manager now provides byte-preserving Rename/Copy, confirmed Delete,
+and shared Create Directory dialogs for .schematic, .schemplus and .litematic.
+Rename updates loaded-instance source paths and saved session references. Existing
+files are never overwritten. Metadata edits and format conversion remain pending.

@@ -10,6 +10,7 @@ import com.github.lunatrius.schematica.client.gui.framework.UiButton;
 import com.github.lunatrius.schematica.client.gui.framework.UiScreen;
 import com.github.lunatrius.schematica.client.gui.framework.UiSprite;
 import com.github.lunatrius.schematica.client.gui.load.GuiSchematicLoad;
+import com.github.lunatrius.schematica.client.gui.browser.GuiSchematicManager;
 import com.github.lunatrius.schematica.client.gui.placement.GuiSchematicLoadedList;
 import com.github.lunatrius.schematica.client.gui.placement.GuiSchematicPlacementsList;
 import com.github.lunatrius.schematica.client.gui.save.GuiAreaSelectionEditor;
@@ -49,7 +50,8 @@ public final class GuiSchematicMainMenu extends UiScreen {
         selectionMode = unavailable(root.add(new UiButton(() -> I18n.format("litematica.gui.button.area_selection_mode",
             I18n.format("litematica.gui.label.area_selection.mode.simple")), button -> {})));
         config = menu("configuration_menu", UiSprite.CONFIGURATION, () -> mc.displayGuiScreen(new GuiModConfig(this)));
-        manager = unavailable(menu("schematic_manager", UiSprite.SCHEMATIC_MANAGER, () -> {}));
+        manager = menu("schematic_manager", UiSprite.SCHEMATIC_MANAGER,
+            () -> mc.displayGuiScreen(new GuiSchematicManager(this)));
         tasks = unavailable(menu("task_manager", UiSprite.TASK_MANAGER, () -> {}));
         mode = root.add(new UiButton(() -> I18n.format("litematica.gui.button.tool_mode", ToolManager.getCurrentMode().getDisplayName()),
             button -> { ToolManager.cycleMode(button == 0); layoutWidgets(); }));
