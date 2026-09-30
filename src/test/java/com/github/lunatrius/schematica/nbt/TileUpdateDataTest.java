@@ -7,6 +7,18 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 public class TileUpdateDataTest {
+    @Test public void skipsForeignModStreamsWithoutLosingNamedAdapterData() throws Exception {
+        NBTTagCompound packet = TileUpdateData.capture("test.Tile",
+            new S35PacketUpdateTileEntity(0, 0, 0, 64, new NBTTagCompound()));
+        packet.setString("Protocol", "old-mod-version");
+        NBTTagCompound adapters = new NBTTagCompound();
+        adapters.setTag("test:fields", new NBTTagCompound());
+        NBTTagCompound tag = TileUpdateData.combine("test.Tile", packet, adapters);
+        assertNull(TileUpdateData.packet(tag, "test.Tile", "new-mod-version", 0, 0, 0));
+        assertNotNull(TileUpdateData.packet(tag, "test.Tile", "old-mod-version", 0, 0, 0));
+        assertEquals(adapters, TileUpdateData.adapters(tag, "test.Tile"));
+    }
+
     @Test public void keepsAdaptersSeparateAndReadsLegacyPackets() throws Exception {
         NBTTagCompound legacy = TileUpdateData.capture("test.Tile",
             new S35PacketUpdateTileEntity(0, 0, 0, 7, new NBTTagCompound()));

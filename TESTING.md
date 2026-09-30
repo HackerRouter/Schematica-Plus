@@ -87,3 +87,10 @@ Session keys now use save-folder/server-address plus dimension. Legacy entries
 keyed only by display name remain in the JSON files but are not automatically
 assigned to a world, because that assignment is ambiguous. Reload/place schematics
 once to establish the new keys. Ordered transforms apply to newly saved sessions.
+# GTNH client-only visual state
+
+- Test GTNH 2.8.4 and 2.9.0-RC-1 separately: save powered AE2 smart/dense cables, terminals, storage/crafting monitors, drives and AE2 Fluid Crafting parts. Check connections, channel stripes, colors, indicators and displayed stacks after reopening. The original live network must keep its state after saving.
+- Include an AE2 monitor away from local origin (0,0,0): its dynamic tile replacement must preserve its coordinates and saved NBT without interrupting loading of other tiles.
+- Save Galacticraft colored pipes, filled machines, solar panels and linked beam receivers/telepads. Check synchronized fields and rebased link coordinates after loading at another position.
+- Load an AE2/GT stream captured with a different mod version: incompatible binary state must be skipped while canonical NBT remains available. Named visual fields are separate from version-specific streams.
+

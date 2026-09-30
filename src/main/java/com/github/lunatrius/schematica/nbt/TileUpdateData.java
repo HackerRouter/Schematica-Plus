@@ -48,11 +48,16 @@ final class TileUpdateData {
     }
 
     static S35PacketUpdateTileEntity packet(NBTTagCompound data, String tileClass, int x, int y, int z) {
+        return packet(data, tileClass, "1", x, y, z);
+    }
+
+    static S35PacketUpdateTileEntity packet(NBTTagCompound data, String tileClass, String protocol, int x, int y, int z) {
         if (data != null && data.getInteger("Version") == 2 && data.getString("Class").equals(tileClass)) {
             data = data.getCompoundTag("Packet");
         }
         if (data == null || data.getInteger("Version") != 1 || !data.getString("Class").equals(tileClass)
             || !data.hasKey("Type", 3) || !data.hasKey("Data", 10)) return null;
+        if (data.hasKey("Protocol", 8) && !data.getString("Protocol").equals(protocol)) return null;
         int type = data.getInteger("Type");
         if (type < 0 || type > 255) return null;
         NBTTagCompound payload = (NBTTagCompound) data.getCompoundTag("Data").copy();

@@ -32,12 +32,13 @@ public final class TileEntitySnapshots {
             if (!VisualAdapters.replacesDescriptionPacket(tile)
                 && tile.getClass().getMethod("onDataPacket", NetworkManager.class, S35PacketUpdateTileEntity.class)
                     .getDeclaringClass() != TileEntity.class) {
-                packet = TileUpdateData.capture(tile.getClass().getName(), tile.getDescriptionPacket());
+                packet = TileUpdateData.capture(VisualAdapters.typeName(tile), tile.getDescriptionPacket());
+                if (packet != null) packet.setString("Protocol", VisualAdapters.packetProtocol(tile));
             }
         } catch (Exception | LinkageError e) {
             Reference.logger.debug("Could not capture visual state for {}", tile.getClass().getName(), e);
         }
-        return TileUpdateData.combine(tile.getClass().getName(), packet, adapters);
+        return TileUpdateData.combine(VisualAdapters.typeName(tile), packet, adapters);
     }
 
     static void attach(TileEntity tile, NBTTagCompound tag) {
@@ -61,18 +62,27 @@ public final class TileEntitySnapshots {
 
     public static void removeVisualData(NBTTagCompound tag) { tag.removeTag(TileUpdateData.KEY); }
 
+    public static void replacePreview(TileEntity previous, TileEntity replacement) {
+        if (!isRestoring() || previous == null || replacement == null
+            || !VisualAdapters.typeName(previous).equals(VisualAdapters.typeName(replacement))) return;
+        TileEntitySnapshot snapshot = SNAPSHOTS.get(previous);
+        if (snapshot != null) SNAPSHOTS.put(replacement, snapshot);
+    }
+
     @SideOnly(Side.CLIENT)
     public static void restorePreview(TileEntity tile) {
         TileEntitySnapshot snapshot = SNAPSHOTS.get(tile);
-        if (snapshot == null || snapshot.isInitialized() || !tile.hasWorldObj() || !tile.getWorldObj().isRemote) return;
-        S35PacketUpdateTileEntity packet = TileUpdateData.packet(snapshot.visual(), tile.getClass().getName(),
-            tile.xCoord, tile.yCoord, tile.zCoord);
+        if (snapshot == null || snapshot.isInitialized() || isRestoring() || !tile.hasWorldObj() || !tile.getWorldObj().isRemote) return;
+        S35PacketUpdateTileEntity packet = TileUpdateData.packet(snapshot.visual(), VisualAdapters.typeName(tile),
+            VisualAdapters.packetProtocol(tile), tile.xCoord, tile.yCoord, tile.zCoord);
         Boolean previous = RESTORING.get();
         RESTORING.set(true);
         int x = tile.xCoord, y = tile.yCoord, z = tile.zCoord;
         try {
             if (packet != null) tile.onDataPacket(null, packet);
-            VisualAdapters.restore(tile, TileUpdateData.adapters(snapshot.visual(), tile.getClass().getName()));
+            TileEntity current = tile.getWorldObj().getTileEntity(x, y, z);
+            if (current != null && SNAPSHOTS.get(current) == snapshot) tile = current;
+            VisualAdapters.restore(tile, TileUpdateData.adapters(snapshot.visual(), VisualAdapters.typeName(tile)));
         } catch (Exception | LinkageError e) {
             Reference.logger.warn("Could not restore visual state for {}", tile.getClass().getName(), e);
             NBTTagCompound original = snapshot.write(null, x, y, z);
@@ -85,7 +95,8 @@ public final class TileEntitySnapshots {
             if (previous == null) RESTORING.remove();
             else RESTORING.set(previous);
         }
-        snapshot.initialize(writeCurrent(tile));
+        TileEntity current = tile.getWorldObj().getTileEntity(x, y, z);
+        snapshot.initialize(writeCurrent(current != null && SNAPSHOTS.get(current) == snapshot ? current : tile));
     }
 
     @SideOnly(Side.CLIENT)

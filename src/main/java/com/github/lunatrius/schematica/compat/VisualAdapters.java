@@ -19,9 +19,22 @@ public final class VisualAdapters {
         register(new StreamVisualAdapter("buildcraft:tiles", "buildcraft.core.lib.block.TileBuildCraft", "BuildCraft|Core",
             "writeData", "readData", null, null));
         register(new BuildCraftPipeAdapter());
+        register(new AE2VisualAdapter());
+        register(new GalacticraftVisualAdapter());
     }
 
     private VisualAdapters() {}
+
+    public static String typeName(Object tile) {
+        String cableBus = "appeng.tile.networking.TileCableBus";
+        return Reflect.is(tile, cableBus) ? cableBus : tile.getClass().getName();
+    }
+
+    public static String packetProtocol(TileEntity tile) {
+        if (Reflect.is(tile, "appeng.tile.AEBaseTile")) return StreamVisualAdapter.version("appliedenergistics2");
+        if (Reflect.is(tile, "gregtech.api.metatileentity.CommonBaseMetaTileEntity")) return StreamVisualAdapter.version("gregtech");
+        return "1";
+    }
 
     public static synchronized void register(ISchematicVisualAdapter adapter) {
         if (adapter == null || !adapter.id().matches("[a-z0-9_.:-]{1,128}")) {

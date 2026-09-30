@@ -80,7 +80,7 @@ public class SchematicWorld extends World {
 
         for (TileEntity tileEntity : schematic.getTileEntities()) bindTileEntity(tileEntity);
         for (TileEntity tileEntity : schematic.getTileEntities()) validateTileEntity(tileEntity);
-        for (TileEntity tileEntity : schematic.getTileEntities()) restoreTileEntity(tileEntity);
+        for (TileEntity tileEntity : new ArrayList<>(schematic.getTileEntities())) restoreTileEntity(tileEntity);
 
         this.isRendering = false;
         this.isRenderingLayer = false;
@@ -119,6 +119,12 @@ public class SchematicWorld extends World {
 
     @Override
     public void setTileEntity(int x, int y, int z, TileEntity tileEntity) {
+        TileEntitySnapshots.replacePreview(getTileEntity(x, y, z), tileEntity);
+        if (tileEntity != null) {
+            tileEntity.xCoord = x;
+            tileEntity.yCoord = y;
+            tileEntity.zCoord = z;
+        }
         this.schematic.setTileEntity(x, y, z, tileEntity);
         initializeTileEntity(tileEntity);
     }
