@@ -130,6 +130,9 @@ For example:
 
 The Litematica-style Configuration page now also opens from the Forge mod list.
 It supports existing settings, validated numeric fields/sliders, string lists,
-search, per-option reset and native single-key bindings. Colors, global render
-layers and advanced key combinations are still pending. See [UI port status](compatibility/ui-port.md)
+search, per-option reset and native single-key bindings. Render Layers now provides
+All, Single Layer, Layer Range, All Below and All Above on X/Y/Z in world coordinates,
+with per-world/dimension persistence. It filters previews, the printer and material
+render-layer counts; Paste still uses the whole placement. Legacy local Y layers
+intersect the global range. Colors and advanced key combinations are still pending. See [UI port status](compatibility/ui-port.md)
 and [manual checks](TESTING.md).

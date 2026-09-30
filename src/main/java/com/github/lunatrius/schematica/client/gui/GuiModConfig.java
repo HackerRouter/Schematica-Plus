@@ -18,6 +18,9 @@ import net.minecraftforge.common.config.Property;
 import org.lwjgl.input.Keyboard;
 
 import com.github.lunatrius.schematica.client.gui.config.ConfigPropertyDraft;
+import com.github.lunatrius.schematica.client.gui.config.RenderLayerPanel;
+import com.github.lunatrius.schematica.client.world.RenderLayerSettings;
+import com.github.lunatrius.schematica.handler.client.WorldHandler;
 import com.github.lunatrius.schematica.client.gui.config.ConfigStringListPanel;
 import com.github.lunatrius.schematica.client.gui.config.UiConfigSlider;
 import com.github.lunatrius.schematica.client.gui.framework.UiBounds;
@@ -62,6 +65,7 @@ public class GuiModConfig extends UiScreen {
     private final Map<Tab, UiButton> tabs = new EnumMap<>(Tab.class);
     private final UiListModel<Entry> model = new UiListModel<>(22, Entry::searchText);
     private UiRowList<Entry> rows;
+    private RenderLayerPanel layers;
     private UiButton searchButton;
     private UiButton keySearch;
     private UiButton done;
@@ -92,7 +96,7 @@ public class GuiModConfig extends UiScreen {
         for (Tab value : Tab.values()) {
             UiButton button = addButton(value.key, () -> changeTab(value));
             tabs.put(value, button);
-            if (value == Tab.COLORS || value == Tab.RENDER_LAYERS) unavailable(button);
+            if (value == Tab.COLORS) unavailable(button);
         }
         searchButton = root.add(new UiButton(() -> "", button -> {
             searchOpen = !searchOpen;
@@ -110,14 +114,17 @@ public class GuiModConfig extends UiScreen {
         rows = root.add(new UiRowList<>(model, (entry, index) -> new ConfigRow(entry), 12));
         done = addButton("gui.done", this::closeScreen);
         status = root.add(new UiLabel(this::statusText, 0xFFFFA0A0));
+        layers = root.add(new RenderLayerPanel(fontRendererObj, RenderLayerSettings.RANGE, () -> input.focus(null)));
         refreshEntries();
     }
 
     private void changeTab(Tab selected) {
+        input.focus(null);
         tab = selected;
         lastTab = selected;
         capturingButton = null;
         keyFilter = 0;
+        searchOpen = false;
         search.setText("");
         model.setOffset(0);
         refreshEntries();
@@ -145,20 +152,30 @@ public class GuiModConfig extends UiScreen {
         int y = 26;
         for (Tab value : Tab.values()) {
             UiButton button = tabs.get(value);
+            button.setVisible(tab != Tab.RENDER_LAYERS || value != Tab.ALL);
+            if (!button.isVisible()) continue;
             int w = fontRendererObj.getStringWidth(button.label()) + 10;
             if (x > 10 && x + w > width - 10) { x = 10; y += 22; }
             button.setBounds(x, y, w, 20);
-            button.setEnabled(value != tab && value != Tab.COLORS && value != Tab.RENDER_LAYERS);
+            button.setEnabled(value != tab && value != Tab.COLORS);
             x += w + 2;
         }
+        boolean renderingLayers = tab == Tab.RENDER_LAYERS;
+        layers.setVisible(renderingLayers);
+        layers.setBounds(10, y + 34, Math.max(0, width - 20), Math.max(0, height - y - 44));
+        layers.layout(root.bounds());
+        rows.setVisible(!renderingLayers);
+        searchButton.setVisible(!renderingLayers);
+        done.setVisible(!renderingLayers);
+        status.setVisible(!renderingLayers);
         int listY = y + 24;
         boolean withKeys = tab.keySearch();
         int searchY = listY + (withKeys ? 7 : 4);
         searchButton.setBounds(14, searchY + 1, 12, 12);
         search.setBounds(30, searchY, Math.max(20, width - (withKeys ? 213 : 53)), 14);
-        search.setVisible(searchOpen);
+        search.setVisible(!renderingLayers && searchOpen);
         keySearch.setBounds(width - 174, listY + 4, 140, 20);
-        keySearch.setVisible(searchOpen && withKeys);
+        keySearch.setVisible(!renderingLayers && searchOpen && withKeys);
         int rowY = listY + 4 + (withKeys ? 23 : 17);
         rows.setBounds(12, rowY, Math.max(1, width - 24), Math.max(0, height - 34 - rowY));
         done.setBounds(10, height - 26, 80, 20);
@@ -196,6 +213,7 @@ public class GuiModConfig extends UiScreen {
 
     @Override
     protected boolean handleKey(char character, int code) {
+        if (tab == Tab.RENDER_LAYERS) return false;
         if (!input.modalPanels().isEmpty() || input.focused() instanceof UiTextField || isCtrlKeyDown()
             || character <= 32 || character == 127) return false;
         searchOpen = true;
@@ -249,6 +267,7 @@ public class GuiModConfig extends UiScreen {
 
     @Override
     protected void closed() {
+        WorldHandler.INSTANCE.saveSession();
         capturingButton = null;
         boolean changed = false;
         boolean restart = false;

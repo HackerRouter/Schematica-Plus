@@ -289,7 +289,7 @@ schematica.ui.config.list.remove=Remove entry.
 schematica.ui.config.list.move_down=Move entry down.
 schematica.ui.config.list.move_up=Move entry up.
 
-schematica.ui.material.scope=All counts the whole placement. Render layers uses this placement's existing layer filter; it does not change rendering.
+schematica.ui.material.scope=All counts the whole placement. Render layers uses the global world-coordinate range intersected with any legacy local layer; counting scope does not change rendering.
 schematica.ui.material.cache_pending=A reusable material cache has not been ported; Refresh rescans this placement.
 schematica.ui.material.raw_pending=Recipe-based raw material breakdown has not been ported.
 schematica.ui.material.export=Write the displayed list as UTF-8 text. Hold Shift for CSV or Alt for JSON. Each export creates a new file in dumps.
@@ -300,3 +300,9 @@ schematica.ui.material.empty=No materials match the current list filters.
 schematica.ui.material.context=The original world or placement is no longer available.
 schematica.ui.material.scanning=Scanning materials: %s%%
 schematica.ui.material.export_failed=Could not export the material list; see the log.
+
+schematica.ui.layers.scope=World-coordinate layers apply to all placements, material render-layer scope and the printer.\nLegacy per-placement layers intersect this range.\nPaste operations still use the whole placement. Left/right click cycles modes.
+schematica.ui.layers.cycle=Left/right click cycles X, Y and Z.
+schematica.ui.layers.coordinate=Absolute world coordinate. Enter or leaving the field applies the value.
+schematica.ui.layers.here=Set to the camera position on the selected axis. Range mode sets both boundaries.
+schematica.ui.layers.adjust=Left click +1; right click -1.\nShift x16; Ctrl x64; both x1024.

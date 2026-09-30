@@ -289,7 +289,7 @@ schematica.ui.config.list.remove=删除这一项。
 schematica.ui.config.list.move_down=下移这一项。
 schematica.ui.config.list.move_up=上移这一项。
 
-schematica.ui.material.scope=“全部”统计整个放置；“渲染层”使用此放置已有的层过滤设置，不会改变渲染范围。
+schematica.ui.material.scope=全部统计完整蓝图；渲染层按全局世界坐标范围与旧版局部单层的交集统计。切换统计范围不会改变渲染设置。
 schematica.ui.material.cache_pending=尚未移植可复用的材料缓存；“刷新”会重新扫描此放置。
 schematica.ui.material.raw_pending=尚未移植按合成配方拆解原材料的功能。
 schematica.ui.material.export=以 UTF-8 文本导出当前显示的列表。按住 Shift 导出 CSV，Alt 导出 JSON。每次在 dumps 中生成新文件。
@@ -300,3 +300,9 @@ schematica.ui.material.empty=没有符合当前筛选条件的材料。
 schematica.ui.material.context=原来的世界或蓝图放置已不可用。
 schematica.ui.material.scanning=正在统计材料：%s%%
 schematica.ui.material.export_failed=材料列表导出失败，请查看日志。
+
+schematica.ui.layers.scope=世界坐标层范围作用于所有放置、材料列表的渲染层统计和打印机。\n旧控制页的局部单层与此范围取交集。\n粘贴仍使用完整蓝图。左键/右键切换模式。
+schematica.ui.layers.cycle=左键/右键在 X、Y、Z 轴间切换。
+schematica.ui.layers.coordinate=世界绝对坐标。按回车或离开输入框时应用。
+schematica.ui.layers.here=使用摄像机在所选轴上的位置；范围模式会同时设置两个边界。
+schematica.ui.layers.adjust=左键 +1，右键 -1。\nShift ×16，Ctrl ×64，同时按下 ×1024。

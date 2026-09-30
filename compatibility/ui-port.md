@@ -237,8 +237,8 @@ or enter the search field. The search key filter uses the same native key codes.
 Escape first closes the string-list dialog or hides search; Shift+Escape bypasses
 search dismissal. Ordinary text typing outside an editor opens search.
 
-Colors, Render Layers and advanced key settings retain their upstream locations
-with disabled controls and explanatory tooltips. The current backend does not yet
+At phase 5, Colors, Render Layers and advanced key settings retained their upstream locations
+with disabled controls and explanatory tooltips. That stage did not yet
 provide Litematica's color options, global render-layer model, key chords or trigger
 settings. No cross-mod config switcher is shown: there is no MaLiLib config registry
 in this 1.7.10 port. This phase ports the config presentation and existing Plus
@@ -275,7 +275,7 @@ Scanning runs on the client thread in batches of at most 4096 positions or rough
 Only a completed snapshot is shown/exported. Moving, transforming or replacing the
 placement restarts the scan, while closing the page, unloading the placement or
 leaving the captured client world cancels it. Rendering-layer scope uses the
-placement's existing single-layer filter without altering that filter. Unloaded
+placement's layer filter without altering that filter (extended to global ranges in phase 7). Unloaded
 real-world chunks/out-of-height positions stay unverified and count conservatively
 as missing; they are not included as completed positions. Failed/unavailable pick
 items are counted separately. World progress is a scan-time snapshot; inventory
@@ -295,5 +295,57 @@ plain text by default, Shift for CSV, Alt for JSON. Existing dumps are not overw
 failures produce feedback. JSON is Schematica Plus material-list schema version 1,
 including registry IDs, serialized item variant NBT and counts, not a modern
 Litematica recipe-cache format. Raw Materials, Info HUD and Clear cache remain
-unavailable with tooltips. Global render layers and the other pending UI pages are
+unavailable with tooltips. Phase 7 below adds global render layers; other pending UI pages are
 unchanged. See TESTING.md for game checks, including mod icons and NBT variants.
+
+
+## Phase 7: render layers
+
+Configuration > Render Layers follows Litematica GuiRenderLayer and MaLiLib
+GuiRenderLayerEditBase. It uses the six source tabs at (10,26), without the All
+config tab on this page, mode and axis controls at (10,60), 60x20 coordinate fields
+at y=86, maximum above minimum with a 23-pixel gap, the original 16x16 plus/minus
+icons, range hotkey checkboxes and Set Here below the fields. Tabs wrap at narrow
+widths and move the editor down accordingly. The existing configuration screen
+hosts the editor so changing tabs retains unsaved configuration drafts and the
+correct Forge/main-menu parent. Escape returns to that parent.
+
+All, Single Layer, Layer Range, All Below and All Above cycle in upstream order;
+right click reverses mode/axis cycling. Both range endpoints are inclusive. The
+range uses absolute world coordinates on X/Y/Z and applies to all loaded placements.
+Each mode retains its own coordinate values. Endpoints cannot cross, and arithmetic
+saturates rather than wrapping at integer limits. Fields commit on Enter/focus loss.
+Plus/minus uses left +1, right -1, Shift x16 and Ctrl x64, with both modifiers x1024.
+Set Here uses the active camera entity, subtracting the 1.7.10 yOffset on Y to match
+modern entity base coordinates; in Range mode both endpoints become that position.
+
+Existing next/previous-layer bindings move the global range whenever it is active.
+Range checkboxes choose the moved endpoint, both checked move the whole interval,
+and neither checked chooses the nearest endpoint (ties choose maximum). Whole-range
+movement preserves width at integer limits. When global mode is All, the bindings
+retain the active placement's legacy local-Y behavior. Legacy local layers remain
+available and intersect the global range; the mode tooltip explains this.
+
+The same bounds filter block/highlight compilation, tile/entity preview anchors,
+preview ray picking, printer placement/completion and material Render Layers scans.
+Changing world coordinates or range state dirties display lists through the existing
+bounded rebuild scheduler. Updates can therefore take several frames on large
+placements. Entity/TESR geometry is not sliced geometrically: its anchor selects
+whether the renderer runs. Standard boundary blocks request all faces so cut faces
+stay visible; custom mod renderers that ignore RenderBlocks.renderAllFaces still
+need in-game verification. Placement/selection outlines remain full size.
+
+SchematicWorld block reads now retain the complete neighborhood for connection
+models, material All counts and transforms. Only preview ray tracing temporarily
+filters reads, restoring state in finally. Rendering filters do not mutate schematic
+data or affect full-placement Paste/save operations. Material scope uses a clipped
+volume snapshot; moving/rotating the placement or changing the range restarts the
+scan before results can be exported.
+
+RenderLayers.json uses the existing save/server-and-dimension session keys, resets
+when leaving a session, and restores before subsequent previews. Saves are atomic;
+a corrupt existing file is preserved instead of overwritten. Closing Configuration
+or saving/leaving the current world session persists changes. No extra MaLiLib
+runtime is required. Automated checks cover axes, inclusive bounds, clipping,
+legacy intersection, overflow, hotkey endpoint selection and persistence isolation.
+Native layout and GTNH render checks remain manual in TESTING.md.

@@ -237,8 +237,8 @@ once to establish the new keys. Ordered transforms apply to newly saved sessions
   in a world. Done/Escape must return to the correct parent. Compare English and
   Chinese tabs, search positions, rows, reset buttons and numeric-toggle icons with
   the supplied upstream. Resize at GUI scales 1/2/3; narrow layouts must wrap tabs
-  without hiding reachable controls. Colors/Render Layers/advanced key settings
-  remain unavailable and explain why.
+  without hiding reachable controls. Colors/advanced key settings remain unavailable and explain why.
+  Render Layers is enabled in phase 7 below.
 - Edit a boolean, printer delay, alpha, directory and tool item. Change tabs, search,
   scroll offscreen and resize while editing; drafts must survive. Done must persist
   changes across restarting the game. Render changes must rebuild previews. Local
@@ -301,3 +301,40 @@ once to establish the new keys. Ordered transforms apply to newly saved sessions
 - Render enchanted items, 3-D blocks and custom GTNH item renderers, then open other
   UI pages and return to the world. Check lighting/depth/scissor state, tooltip
   layering and clipped rows while scrolling. This requires native game testing.
+
+
+## Phase 7: render layers (native checks)
+
+- Open M > Configuration > Render Layers. Compare English/Chinese with the supplied
+  Litematica/MaLiLib editor: six tabs without All, mode/axis at (10,60), coordinate
+  fields at y=86, maximum first, minimum 23 pixels below, plus/minus icons, Hotkey
+  checkboxes and Set Here. Test GUI scales 1/2/3 and narrow windows; tabs must wrap
+  without overlapping the editor. Change a config draft before switching tabs;
+  preserve it, and return through Escape to the correct parent.
+- Test all five modes on all three axes, negative X/Z, inclusive endpoints, equal
+  endpoints, a range entirely outside the schematic and an empty intersection with
+  a legacy local Y layer. Left/right mode/axis cycling must reverse. Edit fields,
+  use Enter/focus loss, resize, and try integer limits. Test plus/minus, Shift, Ctrl
+  and Shift+Ctrl. Set Here must use the active camera base, including Freecam, and
+  match the expected world Y rather than the player's 1.7.10 eye-height offset.
+- Assign the existing next/previous layer bindings. Neither range checkbox chooses
+  the nearest endpoint; one chooses that endpoint; both move the entire interval.
+  At integer limits preserve range width. With global All, legacy local-Y hotkeys
+  must still work. Disable the legacy local filter when testing global ranges alone.
+- Load multiple placements at different heights. Move, rotate and switch the active
+  placement while slicing X/Y/Z: each preview must stay clipped in world coordinates,
+  with bounded rebuilds completing. Check opaque cube cut faces, cauldrons, GT pipes,
+  Ender IO conduits, animated TESRs and entities. Hidden neighbors must remain
+  available to connection logic. Test picking through hidden blocks onto visible
+  layers. TESR/entity visibility uses the anchor; their geometry can extend beyond
+  a slice. Custom mod renderers may require further cut-face adapters.
+- Compare material All and Render Layers with both global and legacy filters.
+  All must count the entire placement. Move/change layers during a scan and check
+  that refresh/export never publishes mixed results. The printer must place/check
+  only the visible range. Save/rotate/full Paste must still contain all blocks;
+  the UI tooltip explicitly distinguishes full Paste from printer layer filtering.
+- Set different ranges in overworld/nether, disconnect, reload, and visit another
+  server/save. Check RenderLayers.json isolation and restoration, including an All
+  mode reset. With a backed-up deliberately malformed settings file, saving must
+  log a failure and preserve it; restoration must fall back to All. Restore the
+  backup after testing. These checks have not been run in a live game by the agent.
