@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: LGPL-3.0-only
+// Litematica/MaLiLib visual conventions, adapted for 1.7.10 by HackerRouter, 2026.
 package com.github.lunatrius.schematica.client.gui.framework;
 
 import java.util.ArrayList;
@@ -37,6 +39,8 @@ public abstract class UiScreen extends GuiScreen {
 
     protected void tickScreen() {}
 
+    protected boolean handleKey(char character, int keyCode) { return false; }
+
     protected UiButton addButton(String key, Runnable action) {
         UiButton button = root.add(new UiButton(() -> I18n.format(key), mouseButton -> {
             if (mouseButton == 0) action.run();
@@ -71,10 +75,10 @@ public abstract class UiScreen extends GuiScreen {
 
     @Override
     public final void drawScreen(int mouseX, int mouseY, float partialTicks) {
-        drawDefaultBackground();
         input.validate();
         try (MinecraftUiDraw draw = new MinecraftUiDraw(mc); UiDraw.Clip ignored = draw.clip(root.bounds())) {
-            draw.text(draw.trim(title, width - 56), 12, 10, UiTheme.TEXT);
+            draw.fill(root.bounds(), 0xB0000000);
+            draw.text(draw.trim(title, width - 30), 20, 10, 0xFFFFFFFF);
             List<UiPanel> modals = input.modalPanels();
             root.draw(draw, modals.isEmpty() ? mouseX : -1, modals.isEmpty() ? mouseY : -1);
             for (int i = 0; i < modals.size(); i++) {
@@ -160,7 +164,7 @@ public abstract class UiScreen extends GuiScreen {
         } else if (keyCode == Keyboard.KEY_TAB) {
             input.cycleFocus(isShiftKeyDown());
         } else {
-            if (!(Keyboard.isRepeatEvent() && input.focused() instanceof UiButton)) {
+            if (!handleKey(character, keyCode) && !(Keyboard.isRepeatEvent() && input.focused() instanceof UiButton)) {
                 input.keyTyped(character, keyCode);
             }
         }
@@ -169,6 +173,24 @@ public abstract class UiScreen extends GuiScreen {
     protected final void closeScreen() {
         mc.displayGuiScreen(parent);
         if (parent == null) mc.setIngameFocus();
+    }
+
+    protected final void mainMenu() {
+        GuiScreen screen = parent;
+        while (screen instanceof UiScreen) {
+            if (screen instanceof com.github.lunatrius.schematica.client.gui.GuiSchematicMainMenu) {
+                mc.displayGuiScreen(screen);
+                return;
+            }
+            screen = ((UiScreen) screen).parent;
+        }
+        mc.displayGuiScreen(new com.github.lunatrius.schematica.client.gui.GuiSchematicMainMenu(null));
+    }
+
+    protected final UiButton unavailable(UiButton button) {
+        button.setEnabled(false);
+        button.setTooltip(I18n.format("schematica.ui.pending"));
+        return button;
     }
 
     protected final void confirm(String title, String message, Runnable confirmed) {

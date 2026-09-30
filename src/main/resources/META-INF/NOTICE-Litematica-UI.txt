@@ -1,0 +1,23 @@
+Litematica / MaLiLib UI port
+
+Upstream authors: masa, Sakura-Ryoko and contributors.
+Litematica reference: supplied source snapshot 26.1.2-0.27.8.
+MaLiLib reference: 26.1.2-0.28.8, d194eb689d60f13ba39df4ab525dca64b1cf4478.
+https://github.com/maruohon/litematica
+https://github.com/maruohon/malilib
+https://github.com/sakura-ryoko/malilib
+
+The Litematica GUI atlas is bundled without modification at
+assets/schematica_plus/textures/gui/litematica_widgets.png.
+Selected labels in assets/schematica_plus_litematica/lang were converted from
+upstream JSON. UI Java files marked LGPL-3.0-only adapt upstream screen layouts,
+icon coordinates and drawing conventions to the Schematica Plus 1.7.10 UI layer.
+Adaptation and format conversion: HackerRouter, 2026.
+
+These portions retain the GNU Lesser General Public License version 3 and are
+exceptions to the project's MIT license. See LICENSE-Litematica-LGPL-3.0.txt,
+LICENSE-MaLiLib-LGPL-3.0.txt and LICENSE-GPL-3.0.txt in this directory.
+Modified source and build scripts: https://github.com/HackerRouter/Schematica-Plus
+See THIRD_PARTY_NOTICES.md in the source repository for the scope of the port.
+
+No modern Minecraft textures or MaLiLib runtime are included.

@@ -256,3 +256,10 @@ schematica.ui.save.overwrite_title=覆盖已有原理图？
 schematica.ui.save.overwrite=用当前选区覆盖 %s？
 schematica.ui.save.queued=已提交 %s 的保存任务，最终文件名和结果将显示在聊天中。
 schematica.ui.save.failed=无法提交保存任务，请检查日志和正在进行的保存任务。
+
+schematica.ui.pending=此功能尚未移植。
+schematica.ui.linked_instances=目前已加载原理图与放置共用同一个实例，移除或卸载都会移除该实例。
+schematica.ui.save.options=选项
+schematica.ui.area.corners=角点
+schematica.ui.browser.create_directory=新建文件夹
+schematica.ui.browser.file_info=文件信息（元数据预览待移植）

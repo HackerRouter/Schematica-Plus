@@ -69,6 +69,12 @@ public final class MinecraftUiDraw implements UiDraw, AutoCloseable {
         return minecraft.fontRenderer.trimStringToWidth(text, Math.max(0, width));
     }
 
+    @Override
+    public void texture(String texture, UiBounds destination, int u, int v, int sourceWidth,
+        int sourceHeight, int textureWidth, int textureHeight) {
+        texture(new ResourceLocation(texture), destination, u, v, sourceWidth, sourceHeight, textureWidth, textureHeight);
+    }
+
     public void texture(ResourceLocation texture, UiBounds destination, int u, int v, int sourceWidth,
         int sourceHeight, int textureWidth, int textureHeight) {
         prepareTextured();

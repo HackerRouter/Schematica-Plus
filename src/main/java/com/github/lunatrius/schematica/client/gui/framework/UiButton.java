@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: LGPL-3.0-only
+// Litematica/MaLiLib visual conventions, adapted for 1.7.10 by HackerRouter, 2026.
 package com.github.lunatrius.schematica.client.gui.framework;
 
 import java.util.function.IntConsumer;
@@ -10,6 +12,8 @@ public class UiButton extends UiWidget {
     private final Supplier<String> label;
     private final IntConsumer action;
     private final UiIcon icon;
+    private UiSprite sprite;
+    private boolean background = true;
     private int pressed = -1;
 
     public UiButton(Supplier<String> label, IntConsumer action) {
@@ -27,17 +31,50 @@ public class UiButton extends UiWidget {
         return true;
     }
 
+    public UiButton setSprite(UiSprite sprite) {
+        this.sprite = sprite;
+        return this;
+    }
+
+    public UiButton setBackground(boolean background) {
+        this.background = background;
+        return this;
+    }
+
+    public String label() {
+        return label.get();
+    }
+
+    public int preferredWidth(int textWidth) {
+        return textWidth + (sprite == null ? 10 : sprite.width + 16);
+    }
+
     @Override
     public void draw(UiDraw draw, int mouseX, int mouseY) {
         UiBounds box = bounds();
         boolean hovered = containsVisible(mouseX, mouseY);
-        draw.fill(box, isEnabled() && hovered ? UiTheme.HOVER : UiTheme.CONTROL);
-        draw.border(box, isFocused() ? UiTheme.FOCUS : UiTheme.BORDER);
-        int color = isEnabled() ? UiTheme.TEXT : UiTheme.DISABLED;
+        if (background) {
+            int v = !isEnabled() ? 46 : hovered ? 86 : 66;
+            int left = box.width / 2;
+            draw.texture("minecraft:textures/gui/widgets.png", new UiBounds(box.x, box.y, left, box.height),
+                0, v, Math.min(left, 200), 20, 256, 256);
+            int right = box.width - left;
+            draw.texture("minecraft:textures/gui/widgets.png", new UiBounds(box.x + left, box.y, right, box.height),
+                200 - Math.min(right, 200), v, Math.min(right, 200), 20, 256, 256);
+            if (isFocused() && isEnabled()) draw.border(box, 0xFFE0E0E0);
+        }
+        int color = !isEnabled() ? 0xFFA0A0A0 : hovered ? 0xFFFFFFFF : 0xFFE0E0E0;
+        if (sprite != null) {
+            sprite.draw(draw, box.x + (background ? 4 : 0), box.y + (box.height - sprite.height) / 2,
+                isEnabled(), hovered);
+            draw.text(draw.trim(label.get(), box.width - sprite.width - 12), box.x + sprite.width + 8,
+                box.y + (box.height - 8) / 2, color);
+            return;
+        }
         String text = draw.trim(label.get(), box.width - (icon == null ? 8 : 21));
         if (icon != null) icon.draw(draw, box.x + 5, box.y + (box.height - 7) / 2, color);
         int x = icon == null ? box.x + (box.width - draw.textWidth(text)) / 2 : box.x + 17;
-        draw.text(text, x, box.y + (box.height - 8) / 2 + (pressed >= 0 ? 1 : 0), color);
+        draw.text(text, x, box.y + (box.height - 8) / 2, color);
     }
 
     @Override

@@ -12,6 +12,9 @@ public interface UiDraw {
 
     Clip clip(UiBounds bounds);
 
+    void texture(String texture, UiBounds destination, int u, int v, int sourceWidth,
+        int sourceHeight, int textureWidth, int textureHeight);
+
     default void border(UiBounds bounds, int color) {
         if (bounds.isEmpty()) return;
         fill(new UiBounds(bounds.x, bounds.y, bounds.width, 1), color);

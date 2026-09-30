@@ -256,3 +256,10 @@ schematica.ui.save.overwrite_title=Replace existing schematic?
 schematica.ui.save.overwrite=Replace %s with the selected area?
 schematica.ui.save.queued=Queued %s. The final filename and result will appear in chat.
 schematica.ui.save.failed=Could not queue the save. Check the log and any pending saves.
+
+schematica.ui.pending=This feature has not been ported yet.
+schematica.ui.linked_instances=Loaded schematics and placements currently share one instance. Removing either also unloads that instance.
+schematica.ui.save.options=Options
+schematica.ui.area.corners=Corners
+schematica.ui.browser.create_directory=Create directory
+schematica.ui.browser.file_info=File information (metadata pending)

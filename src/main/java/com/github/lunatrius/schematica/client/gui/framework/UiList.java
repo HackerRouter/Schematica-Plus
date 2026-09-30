@@ -1,8 +1,11 @@
+// SPDX-License-Identifier: LGPL-3.0-only
+// Litematica/MaLiLib visual conventions, adapted for 1.7.10 by HackerRouter, 2026.
 package com.github.lunatrius.schematica.client.gui.framework;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 import org.lwjgl.input.Keyboard;
 
@@ -15,6 +18,13 @@ public final class UiList<T> extends UiWidget {
     private int dragOffset;
     private int lastClickIndex = -1;
     private long lastClickTime;
+    private Function<T, UiSprite> icons;
+    private Function<T, String> displayName;
+
+    public void setFileStyle(Function<T, UiSprite> icons, Function<T, String> displayName) {
+        this.icons = icons;
+        this.displayName = displayName;
+    }
 
     public UiList(UiListModel<T> model, String emptyText, Consumer<T> activated) {
         this.model = model;
@@ -25,7 +35,7 @@ public final class UiList<T> extends UiWidget {
     @Override
     public void setBounds(int x, int y, int width, int height) {
         super.setBounds(x, y, width, height);
-        model.setViewportHeight(Math.max(0, height - 2));
+        model.setViewportHeight(Math.max(0, height - (icons == null ? 2 : 0)));
     }
 
     @Override
@@ -34,7 +44,7 @@ public final class UiList<T> extends UiWidget {
     }
 
     private UiBounds content() {
-        return bounds().inset(1);
+        return icons == null ? bounds().inset(1) : bounds();
     }
 
     private UiBounds thumb() {
@@ -49,19 +59,30 @@ public final class UiList<T> extends UiWidget {
     @Override
     public void draw(UiDraw draw, int mouseX, int mouseY) {
         UiBounds content = content();
-        draw.fill(bounds(), UiTheme.FIELD);
-        draw.border(bounds(), isFocused() ? UiTheme.FOCUS : UiTheme.BORDER);
+        if (icons == null) {
+            draw.fill(bounds(), UiTheme.FIELD);
+            draw.border(bounds(), isFocused() ? UiTheme.FOCUS : UiTheme.BORDER);
+        }
         try (UiDraw.Clip ignored = draw.clip(content)) {
             int first = model.offset() / model.rowHeight();
             int end = Math.min(model.entries().size(), first + content.height / model.rowHeight() + 2);
             int selected = model.selectedIndex();
             int hovered = content.contains(mouseX, mouseY) ? model.indexAt(mouseY - content.y) : -1;
-            int rowWidth = Math.max(0, content.width - (model.maxOffset() > 0 ? 7 : 0));
+            int rowWidth = Math.max(0, content.width - (icons != null ? 12 : model.maxOffset() > 0 ? 7 : 0));
             for (int index = first; index < end; index++) {
                 int y = content.y + index * model.rowHeight() - model.offset();
                 int background = index == selected ? UiTheme.SELECTED
                     : index == hovered ? UiTheme.HOVER : (index % 2 == 0 ? UiTheme.ROW : UiTheme.PANEL);
-                draw.fill(new UiBounds(content.x, y, rowWidth, model.rowHeight()), background);
+                UiBounds row = new UiBounds(content.x, y, rowWidth, model.rowHeight());
+                if (icons != null) {
+                    T entry = model.entries().get(index);
+                    draw.fill(row, index == selected || index == hovered ? 0x70FFFFFF : index % 2 == 1 ? 0x20FFFFFF : 0x38FFFFFF);
+                    if (index == selected) draw.border(row, 0xEEEEEEEE);
+                    icons.apply(entry).draw(draw, content.x, y + 1, false, false);
+                    draw.text(draw.trim(displayName.apply(entry), rowWidth - 18), content.x + 16, y + 3, 0xFFFFFFFF);
+                    continue;
+                }
+                draw.fill(row, background);
                 String label = draw.trim(model.label(model.entries().get(index)), rowWidth - 8);
                 draw.text(label, content.x + 4, y + (model.rowHeight() - 8) / 2,
                     isEnabled() ? UiTheme.TEXT : UiTheme.DISABLED);
