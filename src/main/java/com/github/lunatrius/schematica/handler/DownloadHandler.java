@@ -76,7 +76,7 @@ public class DownloadHandler {
             .next();
         final SchematicTransfer transfer = this.transferMap.remove(player);
 
-        if (transfer == null) {
+        if (transfer == null || transfer.cancelled) {
             return;
         }
 
@@ -103,7 +103,7 @@ public class DownloadHandler {
             return;
         }
 
-        this.transferMap.put(player, transfer);
+        if (!transfer.cancelled) this.transferMap.put(player, transfer);
     }
 
     private void sendBegin(EntityPlayerMP player, SchematicTransfer transfer) {

@@ -727,9 +727,18 @@ source transforms so an updated source origin does not move the world anchor.
 Entries lacking the tuple retain their saved minimum. Reload also keeps the
 world origin when the source dimensions or origin change.
 
+Server downloads now carry the origin and named region bounds in a bounded,
+versioned header. The client installs the mask before receiving block chunks.
+The begin acknowledgement advertises support; a new server cancels downloads
+with this metadata when an old client cannot preserve it. Plain legacy downloads
+remain compatible. Both ends must be updated to preserve metadata: an old server
+does not send it, so a new client cannot recover it from those downloads.
+
 Automated coverage includes origin isolation/copy, targeted tool changes,
 version migration, out-of-box capture without volume growth, complete and mixed
 3D transforms, legacy/new placement coordinate meanings and file round-trips.
+Download checks cover old/new headers, support negotiation, Unicode region names,
+the 256-region limit, malformed headers and invalid bounds before allocation.
 Native GUI, rendering, modded block orientation and world placement are still
 manual checks. Simple-mode switching, expand/corner targeting, area analysis and
 independent transforms of placed subregions remain unported.

@@ -37,6 +37,7 @@ public class SchematicTransfer {
     public State state = State.BEGIN_WAIT;
     public int timeout = 0;
     public int retries = 0;
+    public volatile boolean cancelled;
 
     public int baseX = 0;
     public int baseY = 0;
@@ -49,6 +50,11 @@ public class SchematicTransfer {
         this.width = schematic.getWidth();
         this.height = schematic.getHeight();
         this.length = schematic.getLength();
+    }
+
+    public boolean acceptGeometrySupport(boolean supported) {
+        if (!supported && DownloadGeometry.of(this.schematic).requiresSupport()) this.cancelled = true;
+        return !this.cancelled;
     }
 
     public boolean confirmChunk(final int chunkX, final int chunkY, final int chunkZ) {

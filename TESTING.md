@@ -558,3 +558,9 @@ These checks supersede Phase 12's Simple-editor and bounding-box expectations.
   returning from another screen and changing worlds while the editor is open.
   Hidden/disabled controls must not modify state. No native game tests have been
   run by the agent; source and headless test checks do not replace these checks.
+- Use /schematicaDownload on an updated server and client for a file with two
+  separated regions and an outside origin. Reload the downloaded file and check
+  gaps, origin and rotation. Repeat a plain legacy file with an older client;
+  it should still download. An older client requesting a metadata-bearing file
+  from a new server must receive an update notice and no incomplete saved file.
+  Older servers cannot transmit the origin or region metadata; update both ends.
