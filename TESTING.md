@@ -564,3 +564,38 @@ These checks supersede Phase 12's Simple-editor and bounding-box expectations.
   it should still download. An older client requesting a metadata-bearing file
   from a new server must receive an update notice and no incomplete saved file.
   Older servers cannot transmit the origin or region metadata; update both ends.
+
+## Phase 15: independent placement subregions (native checks)
+
+- Load a two-region schematic with an outside origin. Verify the placement list
+  has both names, search works, and Configure opens each region's own state.
+  Check English/Chinese at GUI scales 1-3, resize, keyboard activation, click
+  sounds and returning from the subregion page. Main screen state must refresh.
+- Move one region by XYZ, nudge and Move to player; rotate and mirror it. Its
+  original minimum-corner pivot stays at the entered position, and the other
+  region stays unchanged. Test four turns, double mirrors, reset and reload.
+  Repeat under global Y and legacy X/Z rotations and mirrors.
+- Select a row, close the GUI and use Move. Only that region should move; its
+  name/origin appears in the HUD and its outline is cyan. Deselect the row to
+  move the whole placement. Lock coordinates and verify locked relative axes
+  are preserved, including under global rotation.
+- Toggle enabled off/on, All off/on and Reset. Disabled contents must be absent
+  from preview, materials, paste and printer (including creative destruction).
+  An all-disabled placement must refuse Paste and From Placement. Re-enabling
+  must recover its original data. Rendering off alone hides preview/printing
+  but keeps enabled contents in material counts and paste.
+- Include GT/Ender IO pipes, tile entities with distinct NBT and animated visuals,
+  entities and hanging entities. Verify previews and pasted orientations after
+  local/global transforms. Ignore entities must only affect that region. X/Z
+  transformations unsupported for hanging entities must fail without losing data.
+- Move regions into overlapping positions and apart. Later source regions win
+  blocks including air; overwritten tile entities must disappear, then return
+  correctly when moved apart. An entity in overlapping source boxes occurs only
+  once and belongs to the first source region. Original files remain unchanged.
+- Reconnect and switch dimensions with transforms, flags and selection saved.
+  Reload a changed source: matching names keep overrides, new names use defaults,
+  removed names clear selection. Other placements of the same source are independent.
+- Attempt positions whose combined dimensions exceed allocation limits. The
+  rejected geometry must leave the previous placement usable. Signed-size region
+  pivots and distinct overlapping Litematic payloads are still importer limitations.
+  These native game checks have not been run by the agent.

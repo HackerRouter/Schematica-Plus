@@ -9,6 +9,7 @@ import net.minecraft.init.Blocks;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.EnumChatFormatting;
+import net.minecraft.util.MathHelper;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.world.World;
 
@@ -233,6 +234,21 @@ public class ToolHandler {
             return false;
         }
 
+        if (schematic.subregions() != null && schematic.subregions().selected != null) {
+            try {
+                int x = mop != null && mop.typeOfHit == MovingObjectPosition.MovingObjectType.BLOCK ? mop.blockX : MathHelper.floor_double(player.posX);
+                int y = mop != null && mop.typeOfHit == MovingObjectPosition.MovingObjectType.BLOCK ? mop.blockY + 1 : MathHelper.floor_double(player.boundingBox.minY);
+                int z = mop != null && mop.typeOfHit == MovingObjectPosition.MovingObjectType.BLOCK ? mop.blockZ : MathHelper.floor_double(player.posZ);
+                schematic.moveSubregionTo(schematic.subregions().selected, x, y, z);
+                RendererSchematicGlobal.INSTANCE.createRendererSchematicChunks(schematic);
+                com.github.lunatrius.schematica.client.printer.SchematicPrinter.INSTANCE.refresh();
+                com.github.lunatrius.schematica.handler.client.WorldHandler.INSTANCE.saveSession();
+            } catch (RuntimeException e) {
+                com.github.lunatrius.schematica.reference.Reference.logger.warn("Failed to move selected subregion", e);
+                sendChat(player, UiTranslations.format("schematica.ui.placement.region_failed"));
+            }
+            return true;
+        }
         if (mop != null && mop.typeOfHit == MovingObjectPosition.MovingObjectType.BLOCK) {
             int placeY = mop.blockY + 1;
             schematic.moveOriginTo(mop.blockX, placeY, mop.blockZ);
@@ -248,6 +264,7 @@ public class ToolHandler {
         if (mode == ToolMode.PASTE_SCHEMATIC) {
             SchematicWorld schematic = ClientProxy.schematic;
             if (schematic == null) throw new IllegalArgumentException("No schematic loaded.");
+            if (!schematic.hasEnabledRegions()) throw new IllegalArgumentException(UiTranslations.format("schematica.ui.placement.no_regions"));
             job = new WorldEditJob(player.getUniqueID(), player.dimension, WorldEditJob.Kind.PASTE,
                 schematic.position.x, schematic.position.y, schematic.position.z,
                 schematic.getWidth(), schematic.getHeight(), schematic.getLength(), null, 0, null, 0,

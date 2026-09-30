@@ -771,3 +771,23 @@ winning including air. Source entities belong to the first original containing
 region, preventing duplicate entities from overlapping capture boxes. Entity and
 tile-entity transforms reuse the existing 1.7.10 adapters. Native mod rendering
 and world placement still require in-game verification.
+
+The placement configuration lists real named subregions with upstream Configure,
+enabled buttons and modified markers. All on/off and Reset are active. The new
+subregion configuration page follows the upstream right-column positions, icons
+and translation keys: XYZ world coordinates, nudge, coordinate locks, Move to
+player, Y rotation, horizontal mirror, enabled/rendering/entity flags and reset.
+The upstream placeholder Slice control remains unavailable. Main placement locks
+and separate main placement/rendering flags remain as previously documented.
+
+Clicking a region row selects or deselects it for the Move tool. Selection is
+persisted, shown in the HUD and outlined in cyan, including a selected disabled
+region. Other enabled/rendered regions receive individual outlines. From Placement
+uses the composed enabled bounds; it and Paste refuse an all-disabled placement.
+Material counting uses enabled regions and the existing layer range, independently
+of the rendering-only switch. Unmodified session restoration avoids rebuilding.
+
+Headless tests cover independent state, all horizontal region orientations composed
+with global 3D transforms, inverse coordinates, all-disabled geometry, locks,
+visibility, legacy full regions, JSON round-trips, changed-source names and invalid
+saved data/allocation bounds. They do not execute Forge block/TE/GL composition.

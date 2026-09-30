@@ -2,9 +2,6 @@
 // Litematica placement configuration layout, adapted for 1.7.10 by HackerRouter, 2026.
 package com.github.lunatrius.schematica.client.gui.placement;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 import java.util.function.BooleanSupplier;
 import java.util.function.IntConsumer;
 import java.util.function.Supplier;
@@ -34,6 +31,7 @@ import com.github.lunatrius.schematica.client.gui.framework.UiTextField;
 import com.github.lunatrius.schematica.client.printer.SchematicPrinter;
 import com.github.lunatrius.schematica.client.renderer.RendererSchematicGlobal;
 import com.github.lunatrius.schematica.client.world.SchematicWorld;
+import com.github.lunatrius.schematica.client.world.SubRegionPlacements;
 import com.github.lunatrius.schematica.handler.client.WorldHandler;
 import com.github.lunatrius.schematica.proxy.ClientProxy;
 import com.github.lunatrius.schematica.reference.Constants;
@@ -47,8 +45,8 @@ public final class GuiPlacementConfiguration extends UiScreen {
     private final UiLabel[] axes = new UiLabel[3];
     private final UiButton[] nudges = new UiButton[3];
     private final UiCheckBox[] coordinateLocks = new UiCheckBox[3];
-    private final UiListModel<SchematicWorld> regions;
-    private UiRowList<SchematicWorld> list;
+    private final UiListModel<SubRegionPlacements.Region> regions;
+    private UiRowList<SubRegionPlacements.Region> list;
     private UiTextField name;
     private UiTextField search;
     private UiButton searchButton, rename, allOn, allOff, enabled, rendering, locked, box, entities;
@@ -56,16 +54,16 @@ public final class GuiPlacementConfiguration extends UiScreen {
     private UiLabel count, originLabel, feedback;
     private PlacementTransform.Orientation orientation;
     private int[] origin = new int[3];
-    private int lastX, lastY, lastZ, lastOperationCount = -1;
-    private boolean syncing, searching, selectedRegion;
+    private int lastX, lastY, lastZ, lastOperationCount = -1, lastRevision = -1;
+    private boolean syncing, searching;
     private String status = "";
 
     public GuiPlacementConfiguration(GuiScreen parent, SchematicWorld placement) {
         super(parent, UiTranslations.format("litematica.gui.title.configure_schematic_placement"));
         this.placement = java.util.Objects.requireNonNull(placement);
         this.clientWorld = Minecraft.getMinecraft().theWorld;
-        regions = new UiListModel<>(22, entry -> regionName());
-        regions.setEntries(Collections.singletonList(placement));
+        regions = new UiListModel<>(22, SubRegionPlacements.Region::name);
+        regions.setEntries(placement.subregions().regions());
     }
 
     private boolean available() {
@@ -103,10 +101,9 @@ public final class GuiPlacementConfiguration extends UiScreen {
             WorldHandler.INSTANCE.saveSession();
             status = "";
         });
-        count = controls.add(new UiLabel(() -> UiTranslations.format("litematica.gui.label.schematic_placement.sub_regions", 1), 0xFFFFFFFF));
-        count.setTooltip(UiTranslations.format("schematica.ui.placement.merged_region"));
-        allOn = unavailable(button("litematica.gui.button.schematic_placement.toggle_all_on", () -> {}));
-        allOff = unavailable(button("litematica.gui.button.schematic_placement.toggle_all_off", () -> {}));
+        count = controls.add(new UiLabel(() -> UiTranslations.format("litematica.gui.label.schematic_placement.sub_regions", placement.subregions().regions().size()), 0xFFFFFFFF));
+        allOn = button("litematica.gui.button.schematic_placement.toggle_all_on", () -> updateRegions(placement.subregions().enabled(true)));
+        allOff = button("litematica.gui.button.schematic_placement.toggle_all_off", () -> updateRegions(placement.subregions().enabled(false)));
         enabled = toggle("litematica.gui.button.schematic_placements.placement_enabled", () -> placement.isRendering,
             () -> placement.isRendering = !placement.isRendering);
         enabled.setTooltip(UiTranslations.format("schematica.ui.placement.visibility"));
@@ -143,11 +140,11 @@ public final class GuiPlacementConfiguration extends UiScreen {
             mouse -> transform(mouse == 1 ? "YYY" : "Y"));
         mirror = button(() -> UiTranslations.format("litematica.gui.button.mirror_value", orientation == null ? "CUSTOM" : orientation.mirrorName()),
             mouse -> { if (orientation != null) transform(orientation.cycleMirror(mouse == 1)); });
-        reset = unavailable(button("litematica.gui.button.schematic_placement.reset_sub_region_placements", () -> {}));
+        reset = button("litematica.gui.button.schematic_placement.reset_sub_region_placements", () -> updateRegions(placement.subregions().reset()));
         materials = button("litematica.gui.button.material_list", () -> mc.displayGuiScreen(new GuiSchematicMaterials(this, placement)));
         verifier = unavailable(button("litematica.gui.button.schematic_verifier", () -> {}));
         placements = addButton("litematica.gui.button.change_menu.show_schematic_placements", this::closeScreen);
-        list = controls.add(new UiRowList<>(regions, (entry, index) -> new RegionRow(), 11));
+        list = controls.add(new UiRowList<>(regions, (entry, index) -> new RegionRow(entry.name(), index), 11));
         search = controls.add(new UiTextField(fontRendererObj, 256, text -> { regions.setQuery(text); list.sync(); }));
         searchButton = button(() -> "", mouse -> {
             if (mouse != 0) return;
@@ -161,9 +158,19 @@ public final class GuiPlacementConfiguration extends UiScreen {
         feedback = root.add(new UiLabel(() -> status));
     }
 
-    private String regionName() {
-        return placement.sourceFilename == null ? placement.name
-            : placement.sourceFilename.replaceFirst("(?i)\\.(schematic|schemplus|litematic)$", "");
+    private void updateRegions(SubRegionPlacements next) {
+        if (!available()) return;
+        try {
+            placement.changeSubregions(next);
+            RendererSchematicGlobal.INSTANCE.createRendererSchematicChunks(placement);
+            if (ClientProxy.schematic == placement) SchematicPrinter.INSTANCE.refresh();
+            WorldHandler.INSTANCE.saveSession();
+            status = "";
+        } catch (RuntimeException e) {
+            Reference.logger.warn("Failed to update placement subregions", e);
+            message("schematica.ui.placement.region_failed");
+        }
+        syncGeometry();
     }
 
     private void message(String key) {
@@ -239,6 +246,10 @@ public final class GuiPlacementConfiguration extends UiScreen {
         orientation = PlacementTransform.orientation(placement.transformOperations);
         lastX = placement.position.x; lastY = placement.position.y; lastZ = placement.position.z;
         lastOperationCount = placement.transformOperations.size();
+        lastRevision = placement.placementRevision();
+        regions.setEntries(placement.subregions().regions());
+        list.sync();
+        reset.setEnabled(placement.subregions().modified());
         syncing = true;
         try {
             for (int i = 0; i < 3; i++) coordinates[i].setValue(origin[i]);
@@ -264,7 +275,7 @@ public final class GuiPlacementConfiguration extends UiScreen {
         feedback.setVisible(!status.isEmpty());
         if (!available()) { message("schematica.ui.placement.unloaded"); return; }
         if (lastX != placement.position.x || lastY != placement.position.y || lastZ != placement.position.z
-            || lastOperationCount != placement.transformOperations.size()) syncGeometry();
+            || lastOperationCount != placement.transformOperations.size() || lastRevision != placement.placementRevision()) syncGeometry();
     }
 
     @Override
@@ -313,18 +324,24 @@ public final class GuiPlacementConfiguration extends UiScreen {
     private int textWidth(UiButton button) { return fontRendererObj.getStringWidth(button.label()) + 10; }
 
     private final class RegionRow extends UiPanel {
+        private final String regionName;
+        private final int index;
         private final UiButton configure;
         private final UiButton toggle;
 
-        RegionRow() {
-            configure = add(new UiButton(() -> UiTranslations.format("litematica.gui.button.schematic_placements.configure"), mouse -> {}));
-            toggle = add(new UiButton(() -> UiTranslations.format("litematica.gui.button.schematic_placements.placement_enabled", value(placement.isRendering)), mouse -> {}));
-            unavailable(configure);
-            unavailable(toggle);
-            configure.setTooltip(UiTranslations.format("schematica.ui.placement.merged_region"));
-            toggle.setTooltip(UiTranslations.format("schematica.ui.placement.merged_region"));
-            setTooltip(UiTranslations.format("schematica.ui.placement.merged_region"), regionName());
+        RegionRow(String regionName, int index) {
+            this.regionName = regionName;
+            this.index = index;
+            configure = add(new UiButton(() -> UiTranslations.format("litematica.gui.button.schematic_placements.configure"), mouse -> {
+                if (mouse == 0 && available()) mc.displayGuiScreen(new GuiSubRegionConfiguration(GuiPlacementConfiguration.this, placement, regionName));
+            }));
+            toggle = add(new UiButton(() -> UiTranslations.format("litematica.gui.button.schematic_placements.placement_enabled", value(region().enabled)), mouse -> {
+                if (mouse == 0) updateRegions(placement.subregions().replace(region().enabled(!region().enabled)));
+            }));
+            setTooltip(UiTranslations.format("schematica.ui.placement.region_hint"));
         }
+
+        private SubRegionPlacements.Region region() { return placement.subregions().get(regionName); }
 
         @Override
         public void layout(UiBounds screen) {
@@ -334,18 +351,22 @@ public final class GuiPlacementConfiguration extends UiScreen {
 
         @Override
         public void draw(UiDraw draw, int mouseX, int mouseY) {
-            draw.fill(bounds(), selectedRegion || containsVisible(mouseX, mouseY) ? 0xA0707070 : 0xA0303030);
-            if (selectedRegion) draw.border(bounds(), 0xFFE0E0E0);
+            boolean selected = regionName.equals(placement.subregions().selected);
+            draw.fill(bounds(), selected || containsVisible(mouseX, mouseY) ? 0xA0707070 : index % 2 == 0 ? 0xA0303030 : 0xA0101010);
+            if (selected) draw.border(bounds(), 0xFFE0E0E0);
             (placement.sourceFilename == null ? UiSprite.MEMORY : UiSprite.FILE).draw(draw, bounds().x + 2, bounds().y + 5, false, false);
-            draw.text(draw.trim((placement.isRendering ? "\u00a7a" : "\u00a7c") + regionName(), configure.bounds().x - bounds().x - 24),
+            int reserve = region().modified() ? 15 : 0;
+            draw.text(draw.trim((region().enabled ? "\u00a7a" : "\u00a7c") + regionName, configure.bounds().x - bounds().x - 24 - reserve),
                 bounds().x + 20, bounds().y + 7, 0xFFFFFFFF);
+            if (region().modified()) UiSprite.NOTICE.draw(draw, configure.bounds().x - 15, bounds().y + 6, false, false);
             super.draw(draw, mouseX, mouseY);
         }
 
         @Override
         public boolean mouseDown(int x, int y, int button) {
-            if (button != 0) return false;
-            selectedRegion = !selectedRegion;
+            if (button != 0 || !available()) return false;
+            placement.selectSubregion(regionName.equals(placement.subregions().selected) ? null : regionName);
+            WorldHandler.INSTANCE.saveSession();
             return true;
         }
     }

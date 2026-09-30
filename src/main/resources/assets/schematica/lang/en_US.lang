@@ -353,3 +353,8 @@ schematica.ui.area.delete=Delete selection '%s'? This removes its saved selectio
 schematica.ui.area.multi_box=Normal mode supports multiple subregions and a manual origin. Tools edit the selected subregion or origin; saving and area edits include all subregions. Simple-mode switching is not available yet.
 schematica.ui.area.extended=Subregions or an origin offset require .schemplus. Choosing .schematic automatically saves a .schemplus file to preserve them.
 schematica.ui.area.origin_hint=Enable a manual origin at your position, then edit its coordinates. Select the Origin checkbox to move it with tool clicks. Turning it off uses the minimum corner of all boxes. The origin does not expand the saved area.
+
+schematica.ui.placement.region_hint=Select a row to target that region with the Move tool. Click it again to target the whole placement. Configure changes only this placement; the source file stays unchanged.
+schematica.ui.placement.region_failed=The sub-region change failed. Check coordinate/size limits and the log.
+schematica.ui.placement.region_rendering=Controls preview and printer visibility for this region. Pasting and material counts still include enabled regions.
+schematica.ui.placement.no_regions=Enable at least one sub-region first.

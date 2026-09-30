@@ -75,6 +75,16 @@ public class SchematicWorld extends World {
         return relative.atMinimum(origin.x, origin.y, origin.z);
     }
 
+    public com.github.lunatrius.schematica.api.SchematicRegion subregionBounds(String name) {
+        com.github.lunatrius.schematica.api.SchematicRegion box = subregions.get(name).bounds();
+        com.github.lunatrius.schematica.api.SchematicOrigin origin = originPosition();
+        com.github.lunatrius.schematica.api.SchematicOrigin a = SubRegionPlacements.vector(
+            new com.github.lunatrius.schematica.api.SchematicOrigin(box.minX, box.minY, box.minZ), transformOperations, false).atMinimum(origin.x, origin.y, origin.z);
+        com.github.lunatrius.schematica.api.SchematicOrigin b = SubRegionPlacements.vector(
+            new com.github.lunatrius.schematica.api.SchematicOrigin(box.maxX, box.maxY, box.maxZ), transformOperations, false).atMinimum(origin.x, origin.y, origin.z);
+        return new com.github.lunatrius.schematica.api.SchematicRegion(name, a.x, a.y, a.z, b.x, b.y, b.z);
+    }
+
     public void moveSubregionTo(String name, int x, int y, int z) {
         com.github.lunatrius.schematica.api.SchematicOrigin origin = originPosition();
         com.github.lunatrius.schematica.api.SchematicOrigin relative = SubRegionPlacements.vector(
@@ -86,7 +96,12 @@ public class SchematicWorld extends World {
     public void changeSubregions(SubRegionPlacements next) { rebuildRegions(next, new ArrayList<>(transformOperations)); }
 
     public void restoreSubregions(com.google.gson.JsonObject saved) {
-        if (saved != null) changeSubregions(subregions.restore(saved));
+        if (saved == null) return;
+        SubRegionPlacements next = subregions.restore(saved);
+        if (!subregions.modified() && !next.modified()) {
+            subregions = next;
+            placementRevision++;
+        } else changeSubregions(next);
     }
 
     private void rebuildRegions(SubRegionPlacements next, List<String> operations) {
@@ -178,8 +193,11 @@ public class SchematicWorld extends World {
     private boolean tracingRenderedBlocks;
 
     public boolean isBlockRendered(int x, int y, int z) {
-        return schematic.containsBlock(x, y, z) && (visibleRegionBlocks == null || visibleRegionBlocks.get(x + getWidth() * (z + getLength() * y)))
-            && (!isRenderingLayer || renderingLayer == y)
+        return isBlockInRange(x, y, z) && (visibleRegionBlocks == null || visibleRegionBlocks.get(x + getWidth() * (z + getLength() * y)));
+    }
+
+    public boolean isBlockInRange(int x, int y, int z) {
+        return schematic.containsBlock(x, y, z) && (!isRenderingLayer || renderingLayer == y)
             && RenderLayerSettings.RANGE.contains((long) position.x + x, (long) position.y + y, (long) position.z + z);
     }
 

@@ -353,3 +353,8 @@ schematica.ui.area.delete=删除选区“%s”？这会移除保存的选区数�
 schematica.ui.area.multi_box=普通模式支持多个子区域和手动原点。工具修改当前选中的子区域或原点；保存和区域编辑处理全部子区域。简单模式切换尚未移植。
 schematica.ui.area.extended=子区域或原点偏移需要 .schemplus。选择 .schematic 时会自动保存为 .schemplus，以保留这些信息。
 schematica.ui.area.origin_hint=开启后在玩家位置设置手动原点，可输入坐标调整。勾选“原点”后可用工具点击移动它。关闭后使用全部选框的最小角作为原点。原点不会扩大保存范围。
+
+schematica.ui.placement.region_hint=选中一行后，移动工具只移动该子区域；再次点击取消选中，改为移动整个放置。配置仅影响当前放置，不修改源文件。
+schematica.ui.placement.region_failed=子区域修改失败，请检查坐标、尺寸限制及日志。
+schematica.ui.placement.region_rendering=控制此区域的预览与打印机可见性。粘贴和材料统计仍包含已启用的区域。
+schematica.ui.placement.no_regions=请先启用至少一个子区域。

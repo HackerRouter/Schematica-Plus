@@ -148,11 +148,20 @@ public class RendererSchematicGlobal {
             float r = isActive ? 0.75f : 0.25f;
             float g = isActive ? 0.0f : 0.5f;
             float b = isActive ? 0.75f : 0.25f;
-            RenderHelper.drawCuboidOutline(
+            if (sw.hasEnabledRegions()) RenderHelper.drawCuboidOutline(
                 RenderHelper.VEC_ZERO,
                 sw.dimensions(),
                 RenderHelper.LINE_ALL,
                 r, g, b, 0.5f);
+
+            if (sw.subregions() != null) for (com.github.lunatrius.schematica.client.world.SubRegionPlacements.Region region : sw.subregions().regions()) {
+                boolean selected = isActive && region.name().equals(sw.subregions().selected);
+                if (!selected && (!region.enabled || !region.rendering)) continue;
+                com.github.lunatrius.schematica.api.SchematicRegion bounds = sw.subregionBounds(region.name()).offset(-sw.position.x, -sw.position.y, -sw.position.z);
+                RenderHelper.drawCuboidOutline(new com.github.lunatrius.schematica.internal.lunatriuscore.util.vector.Vector3f(bounds.minX, bounds.minY, bounds.minZ),
+                    new com.github.lunatrius.schematica.internal.lunatriuscore.util.vector.Vector3f(bounds.maxX + 1, bounds.maxY + 1, bounds.maxZ + 1),
+                    RenderHelper.LINE_ALL, selected ? 0 : r, selected ? 1 : g, selected ? 1 : b, selected ? 0.9f : 0.35f);
+            }
 
             int quadCount = RenderHelper.getQuadCount();
             int lineCount = RenderHelper.getLineCount();

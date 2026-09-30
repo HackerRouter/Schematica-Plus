@@ -87,6 +87,12 @@ public class OverlayHandler {
                 + EnumChatFormatting.GRAY + " (" + schematic.getWidth() + "x" + schematic.getHeight() + "x" + schematic.getLength() + ")"
                 + EnumChatFormatting.GRAY + " @ " + EnumChatFormatting.WHITE
                 + schematic.position.x + ", " + schematic.position.y + ", " + schematic.position.z);
+            if (schematic.subregions() != null && schematic.subregions().selected != null && !mode.getUsesAreaSelection()) {
+                String name = schematic.subregions().selected;
+                com.github.lunatrius.schematica.api.SchematicOrigin origin = schematic.subregionPosition(name);
+                lines.add(EnumChatFormatting.AQUA + UiTranslations.format("litematica.hud.schematic_placement.selected_sub_region") + ": " + name);
+                lines.add(UiTranslations.format("litematica.hud.schematic_placement.sub_region_origin", origin.x + ", " + origin.y + ", " + origin.z));
+            }
         }
 
         // Line 3: Selection coords (for area-related modes)
