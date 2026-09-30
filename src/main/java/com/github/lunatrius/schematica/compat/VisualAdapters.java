@@ -124,4 +124,14 @@ public final class VisualAdapters {
             catch (Exception | LinkageError e) { Reference.logger.debug("Could not animate {}", adapter.id(), e); }
         }
     }
+
+    public static void transformPreview(TileEntity tile, char operation) {
+        for (ISchematicVisualAdapter adapter : ADAPTERS) {
+            if (!adapter.supports(tile)) continue;
+            try { adapter.transformPreview(tile, operation); }
+            catch (Exception | LinkageError e) {
+                Reference.logger.warn("Could not transform {} for {}", adapter.id(), tile.getClass().getName(), e);
+            }
+        }
+    }
 }

@@ -9,6 +9,7 @@ public interface ISchematicVisualAdapter {
     NBTTagCompound capture(TileEntity tile) throws Exception;
     void restore(TileEntity tile, NBTTagCompound data) throws Exception;
     default void beforeRender(TileEntity tile, float partialTicks) throws Exception {}
+    default void transformPreview(TileEntity tile, char operation) throws Exception {}
     default String protocol() { return "1"; }
     default boolean replacesDescriptionPacket(TileEntity tile) { return true; }
 }

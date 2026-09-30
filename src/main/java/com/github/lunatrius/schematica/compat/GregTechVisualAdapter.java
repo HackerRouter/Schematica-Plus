@@ -1,8 +1,11 @@
 package com.github.lunatrius.schematica.compat;
 
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagList;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraftforge.common.util.ForgeDirection;
 import com.github.lunatrius.schematica.api.ISchematicVisualAdapter;
+import com.github.lunatrius.schematica.util.SchematicTransform;
 
 final class GregTechVisualAdapter implements ISchematicVisualAdapter {
     @Override public String id() { return "gregtech:custom_data"; }
@@ -39,5 +42,47 @@ final class GregTechVisualAdapter implements ISchematicVisualAdapter {
         if (meta != null && tag.getString("Class").equals(meta.getClass().getName()) && tag.hasKey("Value", 1)) {
             Reflect.call(meta, "onValueUpdate", new Class<?>[] {byte.class}, tag.getByte("Value"));
         }
+    }
+
+    @Override public void transformPreview(TileEntity tile, char operation) throws Exception {
+        if (!Reflect.is(tile, "gregtech.api.metatileentity.BaseMetaPipeEntity")) return;
+        Object meta = Reflect.call(tile, "getMetaTileEntity");
+        Object[] covers = (Object[]) Reflect.get(tile, "covers");
+        Object[] rotatedCovers = covers.clone();
+        Class<?> coverable = Reflect.type(tile.getClass(), "gregtech.api.metatileentity.CoverableTileEntity");
+        java.lang.reflect.Method write = coverable.getDeclaredMethod("writeCoverNBT", NBTTagCompound.class, boolean.class);
+        write.setAccessible(true);
+        NBTTagCompound coverTag = new NBTTagCompound();
+        write.invoke(tile, coverTag, false);
+        transformCovers(coverTag, operation);
+        SchematicTransform.sides(operation, rotatedCovers);
+        for (Object cover : (Iterable<?>) coverable.getMethod("readCoversNBT", NBTTagCompound.class, coverable).invoke(null, coverTag, tile)) {
+            ForgeDirection side = (ForgeDirection) Reflect.call(cover, "getSide");
+            if (side != ForgeDirection.UNKNOWN) rotatedCovers[side.ordinal()] = cover;
+            else throw new IllegalArgumentException("Could not reconstruct transformed GT cover");
+        }
+        System.arraycopy(rotatedCovers, 0, covers, 0, 6);
+        mask(tile, "validCoversMask", operation);
+        mask(tile, "mConnections", operation);
+        mask(tile, "mStrongRedstone", operation);
+        SchematicTransform.sides(operation, Reflect.get(tile, "mSidedRedstone"));
+        if (meta != null) {
+            mask(meta, "mConnections", operation);
+            if (Reflect.is(meta, "gregtech.api.metatileentity.implementations.MTEFluidPipe")) mask(meta, "mDisableInput", operation);
+        }
+    }
+
+    static void transformCovers(NBTTagCompound tag, char operation) {
+        NBTTagList covers = tag.getTagList("gt.covers", 10);
+        for (int i = 0; i < covers.tagCount(); i++) {
+            NBTTagCompound cover = covers.getCompoundTagAt(i);
+            ForgeDirection side = ForgeDirection.getOrientation(cover.getByte("s"));
+            cover.setByte("s", (byte) SchematicTransform.direction(operation, side).ordinal());
+        }
+    }
+
+    private static void mask(Object target, String name, char operation) throws ReflectiveOperationException {
+        java.lang.reflect.Field field = Reflect.field(target.getClass(), name);
+        field.setByte(target, (byte) SchematicTransform.sideMask(operation, field.getByte(target)));
     }
 }
