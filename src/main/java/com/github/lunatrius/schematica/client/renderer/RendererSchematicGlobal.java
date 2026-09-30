@@ -2,14 +2,14 @@ package com.github.lunatrius.schematica.client.renderer;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
+import java.nio.FloatBuffer;
 import java.util.List;
 import java.util.Map;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.client.renderer.RenderBlocks;
-import net.minecraft.client.renderer.culling.Frustrum;
+import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
@@ -17,6 +17,7 @@ import net.minecraft.profiler.Profiler;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
 
+import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
 
 import com.github.lunatrius.schematica.internal.lunatriuscore.util.vector.Vector3d;
@@ -33,7 +34,11 @@ public class RendererSchematicGlobal {
     private final Minecraft minecraft = Minecraft.getMinecraft();
     private final Profiler profiler = this.minecraft.mcProfiler;
 
-    private final Frustrum frustrum = new Frustrum();
+    private final SchematicFrustum frustum = new SchematicFrustum();
+    private final Vector3d cameraPosition = new Vector3d();
+    private final FloatBuffer matrixBuffer = BufferUtils.createFloatBuffer(16);
+    private final float[] projection = new float[16];
+    private final float[] modelView = new float[16];
     /** Renderer chunks for the active/selected schematic (used by printer, tools). */
     public RenderBlocks renderBlocks = null;
     public final List<RendererSchematicChunk> sortedRendererSchematicChunk = new ArrayList<>();
@@ -67,6 +72,15 @@ public class RendererSchematicGlobal {
             }
 
             if (anyRendering || ClientProxy.isRenderingGuide) {
+                EntityLivingBase camera = this.minecraft.renderViewEntity;
+                if (camera == null) camera = player;
+                this.cameraPosition.set(
+                    camera.lastTickPosX + (camera.posX - camera.lastTickPosX) * event.partialTicks,
+                    camera.lastTickPosY + (camera.posY - camera.lastTickPosY) * event.partialTicks,
+                    camera.lastTickPosZ + (camera.posZ - camera.lastTickPosZ) * event.partialTicks);
+                captureMatrix(GL11.GL_PROJECTION_MATRIX, this.projection);
+                captureMatrix(GL11.GL_MODELVIEW_MATRIX, this.modelView);
+                this.frustum.update(this.projection, this.modelView);
                 renderAll();
             }
 
@@ -93,7 +107,7 @@ public class RendererSchematicGlobal {
 
             GL11.glPushMatrix();
 
-            Vector3d playerPos = ClientProxy.playerPosition.clone();
+            Vector3d playerPos = this.cameraPosition.clone();
             playerPos.sub(sw.position.toVector3d());
             GL11.glTranslated(-playerPos.x, -playerPos.y, -playerPos.z);
 
@@ -164,7 +178,7 @@ public class RendererSchematicGlobal {
             }
 
             GL11.glPushMatrix();
-            Vector3d playerPos = ClientProxy.playerPosition.clone();
+            Vector3d playerPos = this.cameraPosition.clone();
             playerPos.sub(extra);
             GL11.glTranslated(-playerPos.x, -playerPos.y, -playerPos.z);
 
@@ -266,14 +280,16 @@ public class RendererSchematicGlobal {
             if (!schematic.isRendering) continue;
             SchematicRenderData data = renderDataMap.get(schematic);
             if (data == null) continue;
-            this.frustrum.setPosition(
-                ClientProxy.playerPosition.x - schematic.position.x,
-                ClientProxy.playerPosition.y - schematic.position.y,
-                ClientProxy.playerPosition.z - schematic.position.z);
+            double offsetX = schematic.position.x - this.cameraPosition.x;
+            double offsetY = schematic.position.y - this.cameraPosition.y;
+            double offsetZ = schematic.position.z - this.cameraPosition.z;
             for (RendererSchematicChunk chunk : data.chunks) {
-                chunk.isInFrustrum = this.frustrum.isBoundingBoxInFrustum(chunk.getBoundingBox());
+                AxisAlignedBB box = chunk.getBoundingBox();
+                chunk.isInFrustrum = this.frustum.isVisible(
+                    box.minX + offsetX, box.minY + offsetY, box.minZ + offsetZ,
+                    box.maxX + offsetX, box.maxY + offsetY, box.maxZ + offsetZ);
             }
-            this.rendererSchematicChunkComparator.setPosition(schematic.position);
+            this.rendererSchematicChunkComparator.setPosition(schematic.position, this.cameraPosition);
             data.chunks.sort(this.rendererSchematicChunkComparator);
             groups.add(data.chunks);
         }
@@ -395,67 +411,27 @@ public class RendererSchematicGlobal {
         }
     }
 
+    private void captureMatrix(int matrix, float[] values) {
+        this.matrixBuffer.clear();
+        GL11.glGetFloat(matrix, this.matrixBuffer);
+        this.matrixBuffer.position(0);
+        this.matrixBuffer.get(values);
+    }
+
     private void renderEntities(SchematicWorld schematic) {
         RenderManager renderManager = RenderManager.instance;
-
-        // The GL matrix is translated by (sw.position - playerPosition).
-        // renderEntitySimple renders at (entity.pos - renderManager.renderPos).
-        // Final screen position = GL_translate + render_offset
-        //   = (sw.position - playerPos) + (entity.pos - renderPosX/Y/Z)
-        // Since renderPosX/Y/Z == playerPos, this gives:
-        //   sw.position + entity.pos - 2*playerPos  (WRONG)
-        // We want: sw.position + entity.pos - playerPos
-        // Fix: temporarily offset entity.pos by +playerPos so the -renderPos cancels correctly.
-
         for (Entity entity : schematic.getEntities()) {
+            GL11.glPushMatrix();
+            GL11.glPushAttrib(GL11.GL_ALL_ATTRIB_BITS);
             try {
-                // Save original position
-                double origX = entity.posX;
-                double origY = entity.posY;
-                double origZ = entity.posZ;
-                double origPrevX = entity.prevPosX;
-                double origPrevY = entity.prevPosY;
-                double origPrevZ = entity.prevPosZ;
-                double origLastX = entity.lastTickPosX;
-                double origLastY = entity.lastTickPosY;
-                double origLastZ = entity.lastTickPosZ;
-
-                // Offset entity position so renderEntitySimple places it correctly
-                // in the already-translated GL coordinate space
-                double offsetX = ClientProxy.playerPosition.x;
-                double offsetY = ClientProxy.playerPosition.y;
-                double offsetZ = ClientProxy.playerPosition.z;
-                entity.posX = origX + offsetX;
-                entity.posY = origY + offsetY;
-                entity.posZ = origZ + offsetZ;
-                entity.prevPosX = origX + offsetX;
-                entity.prevPosY = origY + offsetY;
-                entity.prevPosZ = origZ + offsetZ;
-                entity.lastTickPosX = origX + offsetX;
-                entity.lastTickPosY = origY + offsetY;
-                entity.lastTickPosZ = origZ + offsetZ;
-
-                // Temporarily set the entity's world to the client world so the renderer can access textures
-                net.minecraft.world.World originalWorld = entity.worldObj;
-                entity.worldObj = this.minecraft.theWorld;
-
-                // Use partialTicks=1.0 so the renderer uses current values (posX, rotationYaw)
-                // rather than interpolating with prev values (which may differ for non-ticking entities)
-                renderManager.renderEntitySimple(entity, 1.0f);
-
-                // Restore original state
-                entity.worldObj = originalWorld;
-                entity.posX = origX;
-                entity.posY = origY;
-                entity.posZ = origZ;
-                entity.prevPosX = origPrevX;
-                entity.prevPosY = origPrevY;
-                entity.prevPosZ = origPrevZ;
-                entity.lastTickPosX = origLastX;
-                entity.lastTickPosY = origLastY;
-                entity.lastTickPosZ = origLastZ;
-            } catch (Exception e) {
-                // Silently ignore rendering errors for unsupported entities
+                OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, 240, 240);
+                GL11.glColor4f(1, 1, 1, 1);
+                renderManager.renderEntityWithPosYaw(entity, entity.posX, entity.posY, entity.posZ,
+                    entity.rotationYaw, 1.0f);
+            } catch (Exception ignored) {
+            } finally {
+                GL11.glPopAttrib();
+                GL11.glPopMatrix();
             }
         }
     }

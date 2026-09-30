@@ -4,7 +4,6 @@ import java.util.Comparator;
 
 import com.github.lunatrius.schematica.internal.lunatriuscore.util.vector.Vector3d;
 import com.github.lunatrius.schematica.internal.lunatriuscore.util.vector.Vector3i;
-import com.github.lunatrius.schematica.proxy.ClientProxy;
 
 public class RendererSchematicChunkComparator implements Comparator<RendererSchematicChunk> {
 
@@ -24,8 +23,8 @@ public class RendererSchematicChunkComparator implements Comparator<RendererSche
         }
     }
 
-    public void setPosition(Vector3i position) {
-        this.position.set(ClientProxy.playerPosition)
+    public void setPosition(Vector3i position, Vector3d cameraPosition) {
+        this.position.set(cameraPosition)
             .sub(position.toVector3d(this.schematicPosition));
     }
 }

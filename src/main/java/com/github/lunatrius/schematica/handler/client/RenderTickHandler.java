@@ -36,24 +36,13 @@ public class RenderTickHandler {
         // overlay raycast is not limited by the player's reach (typically ~4.5 blocks).
         final double rayTraceDistance = 256.0;
 
-        final double posX = renderViewEntity.posX;
-        final double posY = renderViewEntity.posY;
-        final double posZ = renderViewEntity.posZ;
-
-        renderViewEntity.posX -= schematic.position.x;
-        renderViewEntity.posY -= schematic.position.y;
-        renderViewEntity.posZ -= schematic.position.z;
-
-        final Vec3 vecPosition = renderViewEntity.getPosition(partialTicks);
+        final Vec3 vecPosition = renderViewEntity.getPosition(partialTicks)
+            .addVector(-schematic.position.x, -schematic.position.y, -schematic.position.z);
         final Vec3 vecLook = renderViewEntity.getLook(partialTicks);
         final Vec3 vecExtendedLook = vecPosition.addVector(
             vecLook.xCoord * rayTraceDistance,
             vecLook.yCoord * rayTraceDistance,
             vecLook.zCoord * rayTraceDistance);
-
-        renderViewEntity.posX = posX;
-        renderViewEntity.posY = posY;
-        renderViewEntity.posZ = posZ;
 
         return schematic.func_147447_a(vecPosition, vecExtendedLook, false, false, true);
     }

@@ -20,6 +20,9 @@ Before a release, use a disposable 1.7.10 world to check:
   schematic around each axis and check the final partial chunks are present.
 - Move one schematic away from matching world blocks across X/Z=15/16 and -1/0;
   its previously hidden blocks must appear without rebuilding unrelated instances.
+- Walk around a large schematic across subchunk boundaries and view it beyond
+  160 blocks with sufficient render distance. Enable Freecam, fly away from the
+  player and rotate the view; blocks, entities and selection boxes must stay fixed.
 - Apply Y then X rotations, reconnect, and compare the restored result. Repeat in
   another dimension and on a differently addressed server with the same display name.
 - Load different blueprints in the Overworld and Nether, remove the last one in

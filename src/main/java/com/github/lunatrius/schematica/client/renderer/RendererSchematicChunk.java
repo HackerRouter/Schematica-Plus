@@ -24,7 +24,6 @@ import com.github.lunatrius.schematica.internal.lunatriuscore.util.vector.Vector
 import com.github.lunatrius.schematica.client.renderer.shader.ShaderProgram;
 import com.github.lunatrius.schematica.client.world.SchematicWorld;
 import com.github.lunatrius.schematica.handler.ConfigurationHandler;
-import com.github.lunatrius.schematica.proxy.ClientProxy;
 import com.github.lunatrius.schematica.reference.Constants;
 import com.github.lunatrius.schematica.reference.Reference;
 
@@ -41,7 +40,6 @@ public class RendererSchematicChunk {
     private final SchematicWorld schematic;
     private final RenderBlocks ownRenderBlocks;
     private final List<TileEntity> tileEntities = new ArrayList<>();
-    private final Vector3d distance = new Vector3d();
 
     private final AxisAlignedBB boundingBox = AxisAlignedBB.getBoundingBox(0, 0, 0, 0, 0, 0);
 
@@ -178,13 +176,6 @@ public class RendererSchematicChunk {
 
     public void render(int renderPass) {
         if (!this.isInFrustrum) {
-            return;
-        }
-
-        if (this.distance.set(ClientProxy.playerPosition)
-            .sub(this.schematic.position.x, this.schematic.position.y, this.schematic.position.z)
-            .sub(this.centerPosition)
-            .lengthSquared() > 25600) {
             return;
         }
 
