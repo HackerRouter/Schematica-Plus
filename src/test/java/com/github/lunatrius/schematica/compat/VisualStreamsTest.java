@@ -8,6 +8,33 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 public class VisualStreamsTest {
+    public static class Multipart {
+        int connections = 0x531;
+        ByteBuf lastBuffer;
+        public void writeDesc(codechicken.lib.data.MCDataOutput stream) {
+            lastBuffer = ((codechicken.lib.packet.PacketCustom) stream).buffer;
+            stream.writeInt(connections);
+        }
+        public void readDesc(codechicken.lib.data.MCDataInput stream) {
+            lastBuffer = ((codechicken.lib.packet.PacketCustom) stream).buffer;
+            connections = stream.readInt();
+        }
+    }
+
+    @Test public void roundTripsMultipartDescriptionsAndReleasesCodecBuffers() throws Exception {
+        Multipart source = new Multipart();
+        byte[] data = VisualStreams.writeMultipart(source);
+        assertEquals(4, data.length);
+        assertEquals(0, source.lastBuffer.refCnt());
+        Multipart preview = new Multipart();
+        preview.connections = 0;
+        VisualStreams.readMultipart(preview, data);
+        assertEquals(source.connections, preview.connections);
+        assertEquals(0, preview.lastBuffer.refCnt());
+        assertThrows(IOException.class, () -> VisualStreams.readMultipart(preview, new byte[8]));
+        assertEquals(0, preview.lastBuffer.refCnt());
+    }
+
     public static class StreamTile {
         int facing;
         boolean active;

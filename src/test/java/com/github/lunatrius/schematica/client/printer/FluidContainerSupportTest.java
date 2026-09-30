@@ -25,4 +25,9 @@ public class FluidContainerSupportTest {
         assertFalse(FluidContainerSupport.Use.BUCKET.stopOnLiquids);
         assertFalse(FluidContainerSupport.Use.FORESTRY_BUCKET.onBlock);
     }
+
+    @Test public void acceptsRailcraftBucketsWithoutRequiringVanillaBucketInheritance() {
+        assertEquals(FluidContainerSupport.Use.BUCKET,
+            FluidContainerSupport.use(new mods.railcraft.common.fluids.ItemBucketRailcraft()));
+    }
 }

@@ -13,6 +13,34 @@ final class VisualStreams {
 
     private VisualStreams() {}
 
+    static byte[] writeMultipart(Object part) throws Exception {
+        ByteBuf buffer = Unpooled.buffer(256, MAX_BYTES + 1);
+        try {
+            Object stream = multipartStream(part, buffer.writeByte(1));
+            Class<?> output = Class.forName("codechicken.lib.data.MCDataOutput", false, part.getClass().getClassLoader());
+            Reflect.call(part, "writeDesc", new Class<?>[] {output}, stream);
+            byte[] bytes = new byte[buffer.readableBytes()];
+            buffer.readBytes(bytes);
+            return bytes;
+        } finally { buffer.release(); }
+    }
+
+    static void readMultipart(Object part, byte[] bytes) throws Exception {
+        checkSize(bytes.length);
+        ByteBuf buffer = Unpooled.buffer(bytes.length + 1, bytes.length + 1);
+        try {
+            Object stream = multipartStream(part, buffer.writeByte(1).writeBytes(bytes));
+            Class<?> input = Class.forName("codechicken.lib.data.MCDataInput", false, part.getClass().getClassLoader());
+            Reflect.call(part, "readDesc", new Class<?>[] {input}, stream);
+            if (buffer.isReadable()) throw new IOException("Unconsumed multipart visual data");
+        } finally { buffer.release(); }
+    }
+
+    private static Object multipartStream(Object part, ByteBuf buffer) throws ReflectiveOperationException {
+        return Class.forName("codechicken.lib.packet.PacketCustom", false, part.getClass().getClassLoader())
+            .getConstructor(ByteBuf.class).newInstance(buffer);
+    }
+
     static byte[] writeBuffer(Object target, String method) throws ReflectiveOperationException {
         ByteBuf buffer = Unpooled.buffer(256, MAX_BYTES);
         try {

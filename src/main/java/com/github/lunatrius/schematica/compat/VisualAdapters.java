@@ -1,7 +1,13 @@
 package com.github.lunatrius.schematica.compat;
 
 import java.util.List;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 import java.util.concurrent.CopyOnWriteArrayList;
+import cpw.mods.fml.common.Loader;
+import cpw.mods.fml.common.ModContainer;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import com.github.lunatrius.schematica.api.ISchematicVisualAdapter;
@@ -9,6 +15,7 @@ import com.github.lunatrius.schematica.reference.Reference;
 
 public final class VisualAdapters {
     private static final List<ISchematicVisualAdapter> ADAPTERS = new CopyOnWriteArrayList<>();
+    private static String environmentProtocol;
 
     static {
         register(new StreamVisualAdapter("forestry:tiles", "forestry.core.network.IStreamable", "Forestry",
@@ -21,13 +28,32 @@ public final class VisualAdapters {
         register(new BuildCraftPipeAdapter());
         register(new AE2VisualAdapter());
         register(new GalacticraftVisualAdapter());
+        register(new MultipartVisualAdapter());
+        register(new GregTechVisualAdapter());
     }
 
     private VisualAdapters() {}
 
     public static String typeName(Object tile) {
         String cableBus = "appeng.tile.networking.TileCableBus";
-        return Reflect.is(tile, cableBus) ? cableBus : tile.getClass().getName();
+        if (Reflect.is(tile, cableBus)) return cableBus;
+        String multipart = "codechicken.multipart.TileMultipart";
+        return Reflect.is(tile, multipart) ? multipart : tile.getClass().getName();
+    }
+
+    static synchronized String environmentProtocol() {
+        if (environmentProtocol != null) return environmentProtocol;
+        try {
+            List<String> mods = new ArrayList<>();
+            for (ModContainer mod : Loader.instance().getModList()) {
+                if (!mod.getModId().equals(Reference.MODID)) mods.add(mod.getModId() + "=" + mod.getVersion());
+            }
+            Collections.sort(mods);
+            byte[] digest = MessageDigest.getInstance("SHA-256").digest(String.join("\n", mods).getBytes(StandardCharsets.UTF_8));
+            StringBuilder result = new StringBuilder();
+            for (byte value : digest) result.append(String.format("%02x", value & 255));
+            return environmentProtocol = result.toString();
+        } catch (java.security.NoSuchAlgorithmException e) { throw new IllegalStateException(e); }
     }
 
     public static String packetProtocol(TileEntity tile) {

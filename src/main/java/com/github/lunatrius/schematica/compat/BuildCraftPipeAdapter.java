@@ -2,6 +2,8 @@ package com.github.lunatrius.schematica.compat;
 
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraftforge.fluids.Fluid;
+import net.minecraftforge.fluids.FluidRegistry;
 import com.github.lunatrius.schematica.api.ISchematicVisualAdapter;
 
 final class BuildCraftPipeAdapter implements ISchematicVisualAdapter {
@@ -20,6 +22,20 @@ final class BuildCraftPipeAdapter implements ISchematicVisualAdapter {
                 tag.setByteArray("State" + id, VisualStreams.writeBuffer(state, "writeData"));
             }
         }
+        Object pipe = Reflect.get(tile, "pipe");
+        if (pipe != null) {
+            Object transport = Reflect.get(pipe, "transport");
+            NBTTagCompound state = new NBTTagCompound();
+            if (Reflect.is(transport, "buildcraft.transport.PipeTransportPower")) {
+                VisualFields.capture(transport, state, "displayPower", "overload");
+            } else if (Reflect.is(transport, "buildcraft.transport.PipeTransportFluids")) {
+                Object cache = Reflect.get(transport, "renderCache");
+                VisualFields.capture(cache, state, "amount", "color", "flags");
+                Fluid fluid = FluidRegistry.getFluid((Integer) Reflect.get(cache, "fluidID"));
+                if (fluid != null) state.setString("Fluid", fluid.getName());
+            }
+            tag.setTag("Transport", state);
+        }
         return tag;
     }
 
@@ -29,6 +45,19 @@ final class BuildCraftPipeAdapter implements ISchematicVisualAdapter {
             Object state = Reflect.call(tile, "getStateInstance", new Class<?>[] { byte.class }, id);
             VisualStreams.readBuffer(state, "readData", tag.getByteArray("State" + id));
             Reflect.call(tile, "afterStateUpdated", new Class<?>[] { byte.class }, id);
+        }
+        Object pipe = Reflect.get(tile, "pipe");
+        if (pipe != null && tag.hasKey("Transport", 10)) {
+            Object transport = Reflect.get(pipe, "transport");
+            NBTTagCompound state = tag.getCompoundTag("Transport");
+            if (Reflect.is(transport, "buildcraft.transport.PipeTransportPower")) {
+                VisualFields.restore(transport, state, "displayPower", "overload");
+            } else if (Reflect.is(transport, "buildcraft.transport.PipeTransportFluids")) {
+                Object cache = Reflect.get(transport, "renderCache");
+                VisualFields.restore(cache, state, "amount", "color", "flags");
+                Fluid fluid = FluidRegistry.getFluid(state.getString("Fluid"));
+                Reflect.field(cache.getClass(), "fluidID").setInt(cache, fluid == null ? 0 : fluid.getID());
+            }
         }
     }
 }

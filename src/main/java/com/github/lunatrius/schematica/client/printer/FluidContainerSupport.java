@@ -21,6 +21,9 @@ final class FluidContainerSupport {
         @Override protected FluidContainerSupport computeValue(Class<?> type) {
             for (Class<?> parent = type; parent != null; parent = parent.getSuperclass()) {
                 String name = parent.getName();
+                if (name.equals("mods.railcraft.common.fluids.ItemBucketRailcraft")) {
+                    return new FluidContainerSupport(Use.BUCKET, null, null);
+                }
                 if (name.equals("gregtech.common.items.ItemVolumetricFlask")
                     || name.equals("ic2.core.item.ItemFluidCell")) {
                     return new FluidContainerSupport(Use.BLOCK, null, null);
