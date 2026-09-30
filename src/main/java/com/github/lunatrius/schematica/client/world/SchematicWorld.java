@@ -107,6 +107,11 @@ public class SchematicWorld extends World {
         rebuildRegions(next, new ArrayList<>(transformOperations));
     }
 
+    public void resetSubregions(String name) {
+        if (placementSettings.locked) throw new IllegalStateException(PlacementSettings.LOCKED_MESSAGE);
+        changeSubregions(name == null ? subregions.reset() : subregions.replace(subregions.get(name).reset()));
+    }
+
     public void restoreSubregions(com.google.gson.JsonObject saved) {
         if (saved == null) return;
         SubRegionPlacements next = subregions.restore(saved);
@@ -224,6 +229,7 @@ public class SchematicWorld extends World {
     }
 
     public net.minecraft.util.MovingObjectPosition rayTraceRendered(net.minecraft.util.Vec3 start, net.minecraft.util.Vec3 end) {
+        if (!isRenderingEnabled()) return null;
         boolean previous = tracingRenderedBlocks;
         tracingRenderedBlocks = true;
         try { return func_147447_a(start, end, false, false, false); }

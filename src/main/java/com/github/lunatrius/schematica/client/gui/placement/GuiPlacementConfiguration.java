@@ -31,6 +31,7 @@ import com.github.lunatrius.schematica.client.gui.framework.UiTextField;
 import com.github.lunatrius.schematica.client.printer.SchematicPrinter;
 import com.github.lunatrius.schematica.client.renderer.RendererSchematicGlobal;
 import com.github.lunatrius.schematica.client.world.SchematicWorld;
+import com.github.lunatrius.schematica.client.world.PlacementSettings;
 import com.github.lunatrius.schematica.client.world.SubRegionPlacements;
 import com.github.lunatrius.schematica.handler.client.WorldHandler;
 import com.github.lunatrius.schematica.proxy.ClientProxy;
@@ -104,14 +105,20 @@ public final class GuiPlacementConfiguration extends UiScreen {
         count = controls.add(new UiLabel(() -> UiTranslations.format("litematica.gui.label.schematic_placement.sub_regions", placement.subregions().regions().size()), 0xFFFFFFFF));
         allOn = button("litematica.gui.button.schematic_placement.toggle_all_on", () -> updateRegions(placement.subregions().enabled(true)));
         allOff = button("litematica.gui.button.schematic_placement.toggle_all_off", () -> updateRegions(placement.subregions().enabled(false)));
-        enabled = toggle("litematica.gui.button.schematic_placements.placement_enabled", () -> placement.isRendering,
-            () -> placement.isRendering = !placement.isRendering);
+        enabled = toggle("litematica.gui.button.schematic_placements.placement_enabled", placement::isEnabled,
+            () -> configure(placement.placementSettings().enabled(!placement.isEnabled())));
         enabled.setTooltip(UiTranslations.format("schematica.ui.placement.visibility"));
-        rendering = unavailable(button(() -> (placement.isRendering ? "\u00a7a" : "\u00a7c")
-            + UiTranslations.format("litematica.gui.button.schematic_placement.abbr.rendering"), mouse -> {}));
-        rendering.setTooltip(UiTranslations.format("schematica.ui.placement.visibility"));
-        locked = unavailable(toggle("litematica.gui.button.schematic_placements.locked", () -> false, () -> {}));
-        box = unavailable(button(() -> "", mouse -> {}).setSprite(UiSprite.ENCLOSING_BOX_DISABLED).setBackground(false));
+        rendering = button(() -> (placement.isRendering ? "\u00a7a" : "\u00a7c")
+            + UiTranslations.format("litematica.gui.button.schematic_placement.abbr.rendering"), mouse -> {
+                if (mouse == 0) { placement.toggleRendering(); WorldHandler.INSTANCE.saveSession(); }
+            });
+        rendering.setTooltip(UiTranslations.format("schematica.ui.placement.rendering"));
+        locked = toggle("litematica.gui.button.schematic_placements.locked", () -> placement.placementSettings().locked,
+            () -> configure(placement.placementSettings().locked(!placement.placementSettings().locked)));
+        locked.setTooltip(UiTranslations.format("litematica.gui.button.schematic_placement.hover.lock"));
+        box = button(() -> "", mouse -> {
+            if (mouse == 0) { configure(placement.placementSettings().enclosingBox(!placement.placementSettings().enclosingBox)); WorldHandler.INSTANCE.saveSession(); }
+        }).setSprite(UiSprite.ENCLOSING_BOX_DISABLED).setBackground(false);
         entities = toggle("litematica.gui.button.schematic_placement.ignore_entities", () -> !placement.isRenderingEntities,
             () -> placement.isRenderingEntities = !placement.isRenderingEntities);
         originLabel = controls.add(new UiLabel(() -> UiTranslations.format("litematica.gui.label.placement_settings.placement_origin"), 0xFFFFFFFF));
@@ -130,8 +137,13 @@ public final class GuiPlacementConfiguration extends UiScreen {
                 coordinates[axis].setValue((long) origin[axis] + (mouse == 1 ? -step : step));
             }).setSprite(UiSprite.PLUS_MINUS).setBackground(false);
             nudges[i].setTooltip(UiTranslations.format("litematica.gui.button.hover.plus_minus_tip"));
-            coordinateLocks[i] = controls.add(new UiCheckBox(() -> "", () -> false, value -> {}));
-            unavailable(coordinateLocks[i]);
+            coordinateLocks[i] = controls.add(new UiCheckBox(() -> "", () -> placement.placementSettings().coordinateLocked(axis), value -> {
+                if (!available()) return;
+                int mask = placement.placementSettings().coordinateLocks;
+                configure(placement.placementSettings().coordinateLocks(value ? mask | 1 << axis : mask & ~(1 << axis)));
+                WorldHandler.INSTANCE.saveSession();
+            }));
+            coordinateLocks[i].setTooltip(UiTranslations.format("litematica.hud.schematic_placement.hover_info.lock_coordinate"));
         }
         move = button("litematica.gui.button.move_to_player", () -> moveTo(new int[] {
             MathHelper.floor_double(mc.thePlayer.posX), MathHelper.floor_double(mc.thePlayer.boundingBox.minY),
@@ -140,7 +152,7 @@ public final class GuiPlacementConfiguration extends UiScreen {
             mouse -> transform(mouse == 1 ? "YYY" : "Y"));
         mirror = button(() -> UiTranslations.format("litematica.gui.button.mirror_value", orientation == null ? "CUSTOM" : orientation.mirrorName()),
             mouse -> { if (orientation != null) transform(orientation.cycleMirror(mouse == 1)); });
-        reset = button("litematica.gui.button.schematic_placement.reset_sub_region_placements", () -> updateRegions(placement.subregions().reset()));
+        reset = button("litematica.gui.button.schematic_placement.reset_sub_region_placements", () -> updateRegions(() -> placement.resetSubregions(null)));
         materials = button("litematica.gui.button.material_list", () -> mc.displayGuiScreen(new GuiSchematicMaterials(this, placement)));
         verifier = unavailable(button("litematica.gui.button.schematic_verifier", () -> {}));
         placements = addButton("litematica.gui.button.change_menu.show_schematic_placements", this::closeScreen);
@@ -158,17 +170,30 @@ public final class GuiPlacementConfiguration extends UiScreen {
         feedback = root.add(new UiLabel(() -> status));
     }
 
-    private void updateRegions(SubRegionPlacements next) {
+    private void configure(PlacementSettings settings) {
+        boolean participationChanged = settings.enabled != placement.isEnabled();
+        placement.setPlacementSettings(settings);
+        if (participationChanged) RendererSchematicGlobal.INSTANCE.refresh(placement);
+        status = "";
+        syncGeometry();
+    }
+
+    private void updateRegions(SubRegionPlacements next) { updateRegions(() -> placement.changeSubregions(next)); }
+
+    private void updateRegions(Runnable action) {
         if (!available()) return;
         try {
-            placement.changeSubregions(next);
+            action.run();
             RendererSchematicGlobal.INSTANCE.createRendererSchematicChunks(placement);
             if (ClientProxy.schematic == placement) SchematicPrinter.INSTANCE.refresh();
             WorldHandler.INSTANCE.saveSession();
             status = "";
         } catch (RuntimeException e) {
-            Reference.logger.warn("Failed to update placement subregions", e);
-            message("schematica.ui.placement.region_failed");
+            if (PlacementSettings.LOCKED_MESSAGE.equals(e.getMessage())) message(PlacementSettings.LOCKED_MESSAGE);
+            else {
+                Reference.logger.warn("Failed to update placement subregions", e);
+                message("schematica.ui.placement.region_failed");
+            }
         }
         syncGeometry();
     }
@@ -198,8 +223,10 @@ public final class GuiPlacementConfiguration extends UiScreen {
     private void moveTo(int[] target) {
         if (!available()) return;
         try {
-            int[] pos = minimum(target, offset());
-            placement.position.set(pos[0], pos[1], pos[2]);
+            com.github.lunatrius.schematica.api.SchematicOrigin adjusted = placement.placementSettings().constrainOrigin(
+                placement.originPosition(), new com.github.lunatrius.schematica.api.SchematicOrigin(target[0], target[1], target[2]));
+            minimum(adjusted.coordinates(), offset());
+            placement.moveOriginTo(adjusted.x, adjusted.y, adjusted.z);
             RendererSchematicGlobal.INSTANCE.refresh(placement);
             WorldHandler.INSTANCE.saveSession();
             status = "";
@@ -211,6 +238,7 @@ public final class GuiPlacementConfiguration extends UiScreen {
 
     private void transform(String steps) {
         if (!available() || orientation == null) return;
+        if (placement.placementSettings().locked) { message(PlacementSettings.LOCKED_MESSAGE); return; }
         int[] anchor = origin.clone();
         try {
             minimum(anchor, PlacementTransform.transformOrigin(placement.getSchematic().getOrigin(),
@@ -230,8 +258,6 @@ public final class GuiPlacementConfiguration extends UiScreen {
             Reference.logger.error("Failed to transform placement", e);
             message("schematica.ui.placement.transform_failed");
         } finally {
-            int[] delta = offset();
-            placement.position.set(anchor[0] - delta[0], anchor[1] - delta[1], anchor[2] - delta[2]);
             RendererSchematicGlobal.INSTANCE.createRendererSchematicChunks(placement);
             if (ClientProxy.schematic == placement) SchematicPrinter.INSTANCE.refresh();
             WorldHandler.INSTANCE.saveSession();
@@ -249,16 +275,29 @@ public final class GuiPlacementConfiguration extends UiScreen {
         lastRevision = placement.placementRevision();
         regions.setEntries(placement.subregions().regions());
         list.sync();
-        reset.setEnabled(placement.subregions().modified());
+        PlacementSettings settings = placement.placementSettings();
+        reset.setEnabled(!settings.locked && placement.subregions().modified());
+        reset.setTooltip(settings.locked ? UiTranslations.format(PlacementSettings.LOCKED_MESSAGE) : "");
+        move.setEnabled(!settings.locked && settings.coordinateLocks != 7);
+        move.setTooltip(settings.locked ? UiTranslations.format(PlacementSettings.LOCKED_MESSAGE) : "");
+        box.setSprite(settings.enclosingBox ? UiSprite.ENCLOSING_BOX_ENABLED : UiSprite.ENCLOSING_BOX_DISABLED);
+        box.setTooltip(UiTranslations.format("litematica.gui.button.schematic_placement.hover.enclosing_box", value(settings.enclosingBox)));
+        for (int i = 0; i < 3; i++) {
+            boolean editable = !settings.locked && !settings.coordinateLocked(i);
+            coordinates[i].setEnabled(editable);
+            nudges[i].setEnabled(editable);
+            coordinates[i].setTooltip(!editable ? UiTranslations.format(settings.locked ? PlacementSettings.LOCKED_MESSAGE
+                : "litematica.hud.schematic_placement.hover_info.lock_coordinate") : "");
+        }
         syncing = true;
         try {
             for (int i = 0; i < 3; i++) coordinates[i].setValue(origin[i]);
         } finally {
             syncing = false;
         }
-        rotation.setEnabled(orientation != null);
-        mirror.setEnabled(orientation != null);
-        String tooltip = UiTranslations.format(orientation == null ? "schematica.ui.placement.custom_transform" : "schematica.ui.placement.transform_hint");
+        rotation.setEnabled(!settings.locked && orientation != null);
+        mirror.setEnabled(!settings.locked && orientation != null);
+        String tooltip = UiTranslations.format(settings.locked ? PlacementSettings.LOCKED_MESSAGE : orientation == null ? "schematica.ui.placement.custom_transform" : "schematica.ui.placement.transform_hint");
         rotation.setTooltip(tooltip);
         mirror.setTooltip(tooltip);
     }

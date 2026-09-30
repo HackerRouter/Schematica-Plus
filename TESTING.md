@@ -628,3 +628,36 @@ These checks supersede Phase 12's Simple-editor and bounding-box expectations.
   signed anchors yet; do not use these as lossless Litematic source backups.
 - Headless build/tests cover data and geometry; the agent has not run these native
   GUI, Forge rendering or paste checks in Minecraft.
+
+
+## Phase 17: placement activation, locks and enclosing boxes (native checks)
+
+- In the placement list and configuration page, disable a placement. Its blocks,
+  entities and outlines must disappear; pick-block and printing stop, material
+  refresh is empty, and Paste/From Placement refuse it. Re-enable to recover its
+  data and prior rendering preference. Other placements remain unchanged.
+- Toggle R off while enabled: previews/entities and printing stop, outlines remain,
+  materials still count and Paste still works. Toggle the enclosing-box icon with
+  separated regions and verify only the combined outline changes. Check hover and
+  disabled states at English/Chinese GUI scales 1-3. New enclosing boxes default off.
+- Lock the placement. Main/subregion XYZ, Move, rotate, mirror and reset must be
+  unavailable. Attempt Move with a selected subregion and with the entire placement;
+  the upstream locked message should appear and no geometry changes. Repeat from
+  the legacy controls. Visibility/entity flags and subregion enable switches remain
+  usable. Unlock and verify geometry edits resume.
+- Test each main coordinate lock and combinations, using field edits, nudges, Move
+  to player, the Move tool and legacy minimum-coordinate controls. Locked world
+  origin coordinates stay fixed, including after global rotations and with an
+  outside origin. Coordinate locks do not prevent rotating around that origin.
+- Reload the source, reconnect and switch dimensions with locked/disabled placements,
+  mixed subregion transforms and coordinate locks. Geometry must restore before
+  locks apply. Old entries without placementSettings stay enabled, retain their
+  visible preference and have the enclosing outline enabled. New state is isolated
+  per placement; unreadable settings must not restore a partially configured entry.
+- Hold Shift when loading with Create Placement checked, or clicking Create Placement
+  in the loaded list. The new placement is disabled and can later be enabled. Normal
+  creation remains enabled. Saving/loading only a source must not create a placement.
+- Pause an active printer by disabling or hiding the placement, then restore it.
+  No blocks are placed and no completion notification occurs while paused. Resuming
+  continues the existing job. Already queued world edits retain their captured data.
+- The agent has verified headless tests/builds, not these native Minecraft checks.

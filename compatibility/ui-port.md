@@ -866,4 +866,21 @@ locks filter the world origin axes before converting to the normalized minimum;
 legacy coordinate setters also use this path. Disabled/hidden printer jobs pause
 without being reported as completed. Six new headless tests cover state independence,
 all coordinate masks, locked region geometry, persistence, legacy defaults and
-malformed records. The UI controls are connected in the next commit of this phase.
+malformed records.
+
+The placement list now toggles enabled independently of the R rendering button.
+Main configuration connects the upstream Locked control, coordinate checkboxes
+and both enclosing-box icon states at their original positions. Geometry controls
+are disabled while locked; subregion geometry/reset observes the same parent lock,
+while region enable/render/entity switches remain usable. Legacy minimum-coordinate
+controls and Move/Rotate/Flip also respect these locks. Lock/box changes do not
+recompile block meshes. Shift while loading/creating a placement creates it disabled,
+using the upstream tooltip key.
+
+The existing visible session field remains the rendering preference. Old entries
+with visible=false are still hidden previews; outlines now follow the separate
+placement/box controls. Rendering-only exclusion retains the earlier Plus paste
+and material semantics (the modern upstream paste-rendering restriction is not
+introduced). These settings govern new actions, not already captured queued edits.
+The full build, Checkstyle, 235 headless tests and 13 upstream translation files
+pass verification. Native interaction/render/printer checks remain manual.

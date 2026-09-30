@@ -59,6 +59,7 @@ public final class SchematicGuiLoader {
                 }
                 ClientProxy.moveSchematic(schematic, coord.posX, coord.posY, coord.posZ);
             }
+            if (net.minecraft.client.gui.GuiScreen.isShiftKeyDown()) schematic.setPlacementSettings(schematic.placementSettings().enabled(false));
             ClientProxy.selectSchematic(schematic);
             SchematicPrinter.INSTANCE.refresh();
             WorldHandler.INSTANCE.saveSession();

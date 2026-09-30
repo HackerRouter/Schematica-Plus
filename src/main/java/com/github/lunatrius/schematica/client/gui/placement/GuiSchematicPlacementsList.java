@@ -35,8 +35,9 @@ public final class GuiSchematicPlacementsList extends GuiSchematicList<Schematic
             this.index = index;
             button("litematica.gui.button.schematic_placements.remove", () -> ClientProxy.removePlacement(world));
             UiButton toggle = add(new UiButton(() -> UiTranslations.format("litematica.gui.button.schematic_placements.placement_enabled",
-                (world.isRendering ? "\u00a7a" : "\u00a7c") + UiTranslations.format(world.isRendering ? "options.on" : "options.off")),
-                mouse -> { if (mouse == 0 && ClientProxy.loadedSchematics.contains(world)) { world.isRendering = !world.isRendering; WorldHandler.INSTANCE.saveSession(); } }));
+                (world.isEnabled() ? "\u00a7a" : "\u00a7c") + UiTranslations.format(world.isEnabled() ? "options.on" : "options.off")),
+                mouse -> { if (mouse == 0 && ClientProxy.loadedSchematics.contains(world)) { world.setPlacementSettings(world.placementSettings().enabled(!world.isEnabled()));
+                    com.github.lunatrius.schematica.client.renderer.RendererSchematicGlobal.INSTANCE.refresh(world); WorldHandler.INSTANCE.saveSession(); } }));
             buttons.add(toggle);
             button("litematica.gui.button.schematic_placements.configure", () -> {
                 mc.displayGuiScreen(new GuiPlacementConfiguration(GuiSchematicPlacementsList.this, world));
@@ -71,7 +72,7 @@ public final class GuiSchematicPlacementsList extends GuiSchematicList<Schematic
             draw.fill(bounds(), color);
             if (selected) draw.border(bounds(), 0xFFE0E0E0);
             UiSprite.schematicFile(world.sourceFilename).draw(draw, bounds().x + 2, bounds().y + 5, false, false);
-            String name = (world.isRendering ? "\u00a7a" : "\u00a7c") + world.name;
+            String name = (world.isEnabled() ? "\u00a7a" : "\u00a7c") + world.name;
             draw.text(draw.trim(name, buttonsStart - bounds().x - 24), bounds().x + 20, bounds().y + 7, 0xFFFFFFFF);
             super.draw(draw, mouseX, mouseY);
         }

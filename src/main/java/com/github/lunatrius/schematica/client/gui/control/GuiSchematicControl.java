@@ -195,28 +195,31 @@ public class GuiSchematicControl extends GuiScreenBase {
             this.strSaveCoordinates);
         this.buttonList.add(this.btnSaveCoordinates);
 
-        this.numericX.setEnabled(this.schematic != null);
-        this.numericY.setEnabled(this.schematic != null);
-        this.numericZ.setEnabled(this.schematic != null);
+        this.numericX.setEnabled(this.schematic != null && !this.schematic.placementSettings().locked
+            && !this.schematic.placementSettings().coordinateLocked(0));
+        this.numericY.setEnabled(this.schematic != null && !this.schematic.placementSettings().locked
+            && !this.schematic.placementSettings().coordinateLocked(1));
+        this.numericZ.setEnabled(this.schematic != null && !this.schematic.placementSettings().locked
+            && !this.schematic.placementSettings().coordinateLocked(2));
 
         this.btnUnload.enabled = this.schematic != null;
         this.btnLayerMode.enabled = this.schematic != null;
         this.nfLayer.setEnabled(this.schematic != null && this.schematic.isRenderingLayer);
 
         this.btnHide.enabled = this.schematic != null;
-        this.btnMove.enabled = this.schematic != null;
+        this.btnMove.enabled = this.schematic != null && !this.schematic.placementSettings().locked && this.schematic.placementSettings().coordinateLocks != 7;
 
-        this.btnFlip.enabled = this.schematic != null;
+        this.btnFlip.enabled = this.schematic != null && !this.schematic.placementSettings().locked;
         this.btnFlipX.enabled = this.schematic != null;
         this.btnFlipY.enabled = this.schematic != null;
         this.btnFlipZ.enabled = this.schematic != null;
-        this.btnRotate.enabled = this.schematic != null;
+        this.btnRotate.enabled = this.schematic != null && !this.schematic.placementSettings().locked;
         this.btnRotateX.enabled = this.schematic != null;
         this.btnRotateY.enabled = this.schematic != null;
         this.btnRotateZ.enabled = this.schematic != null;
         this.btnMaterials.enabled = this.schematic != null;
         this.btnInstances.enabled = !ClientProxy.loadedSchematics.isEmpty();
-        this.btnPrint.enabled = this.schematic != null && this.printer.isEnabled();
+        this.btnPrint.enabled = this.schematic != null && this.schematic.isRenderingEnabled() && this.printer.isEnabled();
 
         this.btnSaveCoordinates.enabled = this.schematic != null;
 

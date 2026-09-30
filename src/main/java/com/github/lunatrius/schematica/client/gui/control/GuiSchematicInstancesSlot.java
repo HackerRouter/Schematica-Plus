@@ -61,7 +61,7 @@ public class GuiSchematicInstancesSlot extends GuiSlot {
 
         SchematicWorld sw = ClientProxy.loadedSchematics.get(index);
         boolean isActive = (sw == ClientProxy.schematic);
-        boolean isVisible = sw.isRendering;
+        boolean isVisible = sw.isRenderingEnabled();
 
         // Build display string
         String name = sw.name;

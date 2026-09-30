@@ -20,7 +20,7 @@ public class BlockList {
         final WorldClient mcWorld) {
         final List<WrappedItemStack> blockList = new ArrayList<>();
 
-        if (world == null) {
+        if (world == null || !world.isEnabled()) {
             return blockList;
         }
 

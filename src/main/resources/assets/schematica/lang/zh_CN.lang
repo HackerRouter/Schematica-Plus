@@ -265,7 +265,7 @@ schematica.ui.browser.file_info=文件信息（元数据预览待移植）
 
 schematica.ui.placement.empty_name=请输入放置名称。
 schematica.ui.placement.merged_region=当前加载器会将子区域合并为一个区域，尚不支持独立编辑子区域。
-schematica.ui.placement.visibility=目前“放置”开关控制预览显示，独立的放置与渲染开关尚未移植。
+schematica.ui.placement.visibility=禁用放置后，不参与预览、打印、材料统计和粘贴。
 schematica.ui.placement.bounds=原点或原理图最小角超出了支持的坐标范围。
 schematica.ui.placement.custom_transform=此放置包含三维变换，请使用“直接打开控制界面”快捷键调整 X/Z 旋转或垂直镜像。
 schematica.ui.placement.transform_hint=左键正向循环，右键反向循环；旋转和镜像保持放置原点不动。
@@ -359,3 +359,4 @@ schematica.ui.placement.region_failed=子区域修改失败，请检查坐标、
 schematica.ui.placement.region_rendering=控制此区域的预览与打印机可见性。粘贴和材料统计仍包含已启用的区域。
 schematica.ui.placement.no_regions=请先启用至少一个子区域。
 schematica.ui.placement.disabled=此放置已禁用。
+schematica.ui.placement.rendering=控制预览与打印。已启用的放置仍可用于材料统计和粘贴，区域边框保持显示。

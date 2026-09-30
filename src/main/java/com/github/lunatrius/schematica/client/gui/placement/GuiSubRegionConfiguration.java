@@ -13,6 +13,7 @@ import net.minecraft.world.World;
 import org.lwjgl.input.Keyboard;
 
 import com.github.lunatrius.schematica.api.SchematicOrigin;
+import com.github.lunatrius.schematica.client.world.PlacementSettings;
 import com.github.lunatrius.schematica.client.gui.framework.UiButton;
 import com.github.lunatrius.schematica.client.gui.framework.UiCheckBox;
 import com.github.lunatrius.schematica.client.gui.framework.UiIntegerField;
@@ -97,7 +98,7 @@ public final class GuiSubRegionConfiguration extends UiScreen {
         mirror = button(() -> UiTranslations.format("litematica.gui.button.mirror_value", new String[] {"NONE", "LEFT_RIGHT", "FRONT_BACK"}[region().mirror]),
             mouse -> change(region -> region.mirror(region.mirror + (mouse == 1 ? -1 : 1))));
         reset = button(() -> (region().modified() ? "\u00a76" : "") + UiTranslations.format("litematica.gui.button.placement_sub.reset_sub_region_placement"),
-            mouse -> { if (mouse == 0) change(Region::reset); });
+            mouse -> { if (mouse == 0) update(() -> placement.resetSubregions(regionName)); });
         slice = unavailable(button(() -> UiTranslations.format("litematica.gui.button.placement_sub.slice_type", "-"), mouse -> {}));
         back = addButton("litematica.gui.button.placement_sub.placement_configuration", this::closeScreen);
         menu = addButton("litematica.gui.button.change_menu.to_main_menu", this::mainMenu);
@@ -122,8 +123,11 @@ public final class GuiSubRegionConfiguration extends UiScreen {
             WorldHandler.INSTANCE.saveSession();
             status = "";
         } catch (RuntimeException e) {
-            Reference.logger.warn("Failed to update subregion {}", regionName, e);
-            status = UiTranslations.format("schematica.ui.placement.region_failed");
+            if (PlacementSettings.LOCKED_MESSAGE.equals(e.getMessage())) status = UiTranslations.format(PlacementSettings.LOCKED_MESSAGE);
+            else {
+                Reference.logger.warn("Failed to update subregion {}", regionName, e);
+                status = UiTranslations.format("schematica.ui.placement.region_failed");
+            }
         }
         sync();
     }
@@ -134,7 +138,18 @@ public final class GuiSubRegionConfiguration extends UiScreen {
         syncing = true;
         try { for (int i = 0; i < 3; i++) coordinates[i].setValue(lastPosition.coordinates()[i]); }
         finally { syncing = false; }
-        reset.setEnabled(region().modified());
+        boolean editable = !placement.placementSettings().locked;
+        for (int i = 0; i < 3; i++) {
+            coordinates[i].setEnabled(editable);
+            nudges[i].setEnabled(editable);
+        }
+        move.setEnabled(editable);
+        rotation.setEnabled(editable);
+        mirror.setEnabled(editable);
+        reset.setEnabled(editable && region().modified());
+        String hint = editable ? "" : UiTranslations.format(PlacementSettings.LOCKED_MESSAGE);
+        for (UiButton button : new UiButton[] {move, rotation, mirror, reset}) button.setTooltip(hint);
+        for (UiIntegerField coordinate : coordinates) coordinate.setTooltip(hint);
         feedback.setTooltip(status);
     }
 
