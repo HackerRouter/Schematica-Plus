@@ -907,3 +907,30 @@ Seven new headless tests exercise independent persistence, one-box invariants,
 Expand behavior, corner/origin movement, boundary atomicity, old-state migration,
 and ray picking/occlusion. The analysis button is connected in the next portion.
 Native UI, mouse input and rendering checks remain manual.
+
+### Phase 18: area analysis
+
+Analyze Area now opens the shared upstream-style material list for the active
+Simple or Normal selection. A bounded client-thread scan reads actual loaded
+world blocks (4096 positions / approximately 4 ms per GUI tick). Selection bounds
+and the optional world-coordinate layer range are snapshotted; overlapping boxes
+count once and gaps are excluded. Existing schematic allocation/extent limits
+apply to the enclosing box. Closing the screen cancels an unfinished scan;
+changing selection geometry/range restarts it, and leaving the world invalidates it.
+
+The block's getPickBlock implementation supplies the item/meta/NBT identity.
+Air is omitted. Unloaded positions are not read, and missing item representations
+or per-block failures are counted separately. The user can load the area and
+refresh. Search, sorting, ignored rows, inventory counts, multipliers and TXT/CSV/
+JSON export reuse the material UI. All exports include analysis completeness
+counts. Missing/mismatch remain zero for existing-world analysis, matching
+upstream; this is not a placement comparison or a raw crafting-recipe calculation.
+The same unsupported HUD/raw-recipe controls remain disabled.
+
+Eight additional headless tests cover overlap/gaps, bounded continuation,
+unloaded/air/error distinctions, immutable selection/layer snapshots, deadlines,
+size limits, X/Z filters and partial-export metadata. The full build, Checkstyle,
+250 headless tests and all 13 upstream translation catalogs pass. Native gameplay,
+mod-specific pick-block behavior and visual layout still need Minecraft testing.
+Simple mode uses upstream's compact editor without the Normal browser footer,
+avoiding its overlap with Save/Analyze at short GUI heights.

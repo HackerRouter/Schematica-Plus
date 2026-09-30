@@ -92,7 +92,11 @@ public final class GuiAreaSelectionEditor extends UiScreen {
         root.add(new UiLabel(() -> UiTranslations.format("litematica.gui.label.area_editor.selection_name"))).setBounds(12, 44, 202, 12);
         name = root.add(new UiTextField(fontRendererObj, 200, value -> {}));
         name.setBounds(12, 59, 202, 16);
-        setName = action("litematica.gui.button.area_editor.set_selection_name", () -> change(() -> library.rename(area, name.text())));
+        setName = action("litematica.gui.button.area_editor.set_selection_name", () -> change(() -> {
+            library.rename(area, name.text());
+            name.setText(area.name());
+            if (simple) boxName.setText(area.boxName());
+        }));
         setName.setBounds(218, 57, fontRendererObj.getStringWidth(setName.label()) + 10, 20);
         create = action("litematica.gui.button.area_editor.create_sub_region", () -> promptName("litematica.gui.title.area_editor.sub_region_name", "", value -> {
             Vector3i point = GuiAreaSelectionManager.playerPoint();
@@ -109,7 +113,10 @@ public final class GuiAreaSelectionEditor extends UiScreen {
         list = root.add(new UiRowList<>(model, Entry::new));
         browser = addButton("litematica.gui.button.change_menu.show_area_selections", () -> mc.displayGuiScreen(new GuiAreaSelectionManager(this)))
             .setSprite(UiSprite.AREA_SELECTION);
-        analyze = unavailable(addButton("litematica.gui.button.area_editor.analyze_area", () -> {}));
+        analyze = action("litematica.gui.button.area_editor.analyze_area", () -> {
+            AreaSelections.capture();
+            mc.displayGuiScreen(new com.github.lunatrius.schematica.client.gui.control.GuiSchematicMaterials(this, area));
+        });
         main = addButton("litematica.gui.button.change_menu.to_main_menu", () -> mc.displayGuiScreen(new GuiSchematicMainMenu(this)));
         status = root.add(new UiLabel(this::statusText, 0xFFFFA0A0));
         createOriginControls();
@@ -210,6 +217,7 @@ public final class GuiAreaSelectionEditor extends UiScreen {
         boolean enabled = available();
         for (UiButton button : actions) button.setEnabled(enabled);
         save.setEnabled(enabled && !area.boxes().isEmpty());
+        analyze.setEnabled(enabled && !area.boxes().isEmpty());
         name.setEnabled(enabled); guide.setEnabled(enabled); list.setEnabled(enabled);
         origin.setEnabled(enabled);
         mode.setEnabled(enabled); corners.setEnabled(enabled);
@@ -263,8 +271,7 @@ public final class GuiAreaSelectionEditor extends UiScreen {
         boxLabel.setBounds(12, 77, 202, 12);
         boxName.setBounds(12, 92, 202, 16);
         place(setBoxName, 218, 90, false);
-        guide.setBounds(232, 113, 150, 11);
-        guide.setVisible(!manualOrigin());
+        guide.setBounds(232, 77, 150, 11);
         for (int i = 0; i < 2; i++) {
             cornerControls[i].setBounds(12 + i * 110, 110, 110, 96);
             cornerControls[i].layout(root.bounds());
@@ -279,8 +286,7 @@ public final class GuiAreaSelectionEditor extends UiScreen {
         }
         originToPlayer.setBounds(242, 186, 100, 20);
         place(save, 22, 208, false); place(analyze, 132, 208, false);
-        x = place(browser, 12, height - 26, true);
-        place(main, width - fontRendererObj.getStringWidth(main.label()) - 20, height - 26, false);
+        browser.setVisible(false); main.setVisible(false);
         status.setBounds(setName.bounds().right() + 10, 59, Math.max(0, width - setName.bounds().right() - 22), 16);
     }
 

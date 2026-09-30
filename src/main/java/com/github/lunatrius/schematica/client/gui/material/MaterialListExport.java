@@ -74,6 +74,25 @@ public final class MaterialListExport {
 
     private static String plain(String text) { return text.replaceAll("§.", "").replaceAll("[\\r\\n\\t]", " "); }
 
+    public static String withAnalysisStatus(String text, Format format, int unverified, int skipped) {
+        if (format == Format.JSON) {
+            JsonObject data = new com.google.gson.JsonParser().parse(text).getAsJsonObject();
+            data.addProperty("source", "area_analysis");
+            data.addProperty("unverified_positions", unverified);
+            data.addProperty("skipped_positions", skipped);
+            data.addProperty("complete", unverified == 0 && skipped == 0);
+            return new GsonBuilder().setPrettyPrinting().create().toJson(data) + "\n";
+        }
+        if (format == Format.CSV) {
+            String[] rows = text.split("\n");
+            StringBuilder result = new StringBuilder();
+            for (int i = 0; i < rows.length; i++) result.append(rows[i]).append(i == 0
+                ? ",\"Unverified positions\",\"Skipped positions\"" : "," + unverified + "," + skipped).append('\n');
+            return result.toString();
+        }
+        return "Area analysis: unverified positions=" + unverified + ", skipped positions=" + skipped + "\n" + text;
+    }
+
     public static Path write(Path directory, Format format, String content) throws IOException {
         Files.createDirectories(directory);
         Path output = Files.createTempFile(directory, "schematica_plus-materials-", "." + format.name().toLowerCase(java.util.Locale.ROOT));

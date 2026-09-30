@@ -682,3 +682,26 @@ These checks supersede Phase 12's Simple-editor and bounding-box expectations.
 - Save and Fill/Delete/Replace from each mode: they must use only the active
   selection. Verify all native checks in Minecraft; headless tests cannot exercise
   GUI drawing, mouse dispatch or Forge world behavior.
+
+### Area analysis
+
+- Open Analyze Area from both modes. Select overlapping boxes, an air gap between
+  boxes, mod machines/pipes with different picked-item metadata/NBT, and ordinary
+  blocks. A real world position must count once; gaps and air must not become items.
+  This counts the block's picked item, not recipes or inventory contents.
+- Switch All/Render Layers for X/Y/Z and each range mode, including an empty range.
+  Analyze bounds use absolute world coordinates. Search, sort, ignore/reset,
+  multiplier and player inventory counts should work as on placement materials.
+- Include unloaded chunks; their positions appear in the incomplete-result count.
+  They must not be read as air or trigger client chunk loading. Load them and
+  refresh. Blocks whose pick hook throws/returns no usable item should be skipped
+  with a count, while the remaining scan finishes.
+- Export TXT, Shift+export CSV and Alt+export JSON. All include unloaded/skipped
+  counts; partial JSON sets complete=false. Missing/mismatch columns are zero for
+  analysis of existing blocks, not a comparison against a blueprint.
+- Close a large scan and reopen; it starts afresh. Change dimensions/disconnect
+  during scanning; old-world results must not be delivered or exported. Invalid
+  or oversized selections should show the size-limit message without retry spam.
+- Simple: verify both corner checkboxes and coordinate inputs, manual-origin
+  controls, Save/Analyze positions and the guide toggle with origin enabled.
+  Escape returns to the parent menu. Native checks remain unexecuted by the agent.

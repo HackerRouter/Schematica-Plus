@@ -18,7 +18,7 @@ import com.github.lunatrius.schematica.reference.Reference;
 
 import cpw.mods.fml.common.registry.GameData;
 
-public final class MaterialScan {
+public final class MaterialScan implements MaterialScanner {
     private final SchematicWorld schematic;
     private final WorldClient world;
     private final EntityPlayer player;

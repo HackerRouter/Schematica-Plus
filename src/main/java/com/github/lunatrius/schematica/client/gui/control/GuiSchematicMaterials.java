@@ -39,6 +39,11 @@ import com.github.lunatrius.schematica.client.gui.material.MaterialListExport;
 import com.github.lunatrius.schematica.client.gui.material.MaterialListModel;
 import com.github.lunatrius.schematica.client.gui.material.MaterialListModel.Entry;
 import com.github.lunatrius.schematica.client.gui.material.MaterialScan;
+import com.github.lunatrius.schematica.client.gui.material.MaterialScanner;
+import com.github.lunatrius.schematica.client.gui.material.AreaMaterialScan;
+import com.github.lunatrius.schematica.client.selection.AreaSelectionLibrary;
+import com.github.lunatrius.schematica.client.selection.AreaSelectionLibrary.Area;
+import com.github.lunatrius.schematica.client.selection.AreaSelections;
 import com.github.lunatrius.schematica.client.world.SchematicWorld;
 import com.github.lunatrius.schematica.handler.ConfigurationHandler;
 import com.github.lunatrius.schematica.proxy.ClientProxy;
@@ -49,6 +54,8 @@ public class GuiSchematicMaterials extends UiScreen {
     private static final String LABEL = "litematica.gui.label.material_list.";
     private static final String[] HEADERS = { "item", "total", "missing", "available" };
     private final SchematicWorld schematic;
+    private final Area area;
+    private final AreaSelectionLibrary library;
     private final WorldClient openedWorld;
     private final MaterialListModel<MaterialItemKey> materials = new MaterialListModel<>();
     private final UiListModel<Entry<MaterialItemKey>> rowsModel = new UiListModel<>(22, entry -> entry.name);
@@ -67,12 +74,14 @@ public class GuiSchematicMaterials extends UiScreen {
     private UiWidget info;
     private UiLabel progress;
     private UiLabel empty;
-    private MaterialScan scan;
+    private MaterialScanner scan;
     private boolean hasResult;
     private boolean searching;
     private boolean renderLayers;
     private int[] columns = {4, 44, 84, 124, 164};
     private int skipped;
+    private int unverified;
+    private String scanError = "";
     private int ticks;
     private int[] geometry;
     private Object source;
@@ -86,6 +95,16 @@ public class GuiSchematicMaterials extends UiScreen {
     public GuiSchematicMaterials(GuiScreen parent, SchematicWorld schematic) {
         super(parent, UiTranslations.format("litematica.gui.title.material_list.placement", schematic == null ? "-" : schematic.name));
         this.schematic = schematic;
+        area = null; library = null;
+        openedWorld = Minecraft.getMinecraft().theWorld;
+        materials.restoreSort(ConfigurationHandler.sortType);
+    }
+
+    public GuiSchematicMaterials(GuiScreen parent, Area area) {
+        super(parent, UiTranslations.format("litematica.gui.title.material_list.area_analyzer", area.name()));
+        this.area = area;
+        library = AreaSelections.library();
+        schematic = null;
         openedWorld = Minecraft.getMinecraft().theWorld;
         materials.restoreSort(ConfigurationHandler.sortType);
     }
@@ -99,7 +118,7 @@ public class GuiSchematicMaterials extends UiScreen {
                 refresh();
                 layoutWidgets();
             }));
-        scope.setTooltip(UiTranslations.format("schematica.ui.material.scope"));
+        scope.setTooltip(UiTranslations.format(area == null ? "schematica.ui.material.scope" : "schematica.ui.area.analysis_scope"));
         UiButton hide = root.add(new UiButton(() -> toggleLabel("hide_available", materials.hideAvailable()), button -> {
             materials.setHideAvailable(!materials.hideAvailable());
             refreshRows();
@@ -125,9 +144,8 @@ public class GuiSchematicMaterials extends UiScreen {
                 UiSprite.INFO.draw(draw, bounds().x, bounds().y, true, containsVisible(x, y));
             }
             @Override public List<String> tooltip(int x, int y) {
-                long unknown = materials.progress()[4];
-                return Arrays.asList(UiTranslations.format("schematica.ui.material.info"),
-                    UiTranslations.format("schematica.ui.material.unverified", unknown, skipped));
+                return Arrays.asList(UiTranslations.format(area == null ? "schematica.ui.material.info" : "schematica.ui.area.analysis_info"),
+                    incompleteText());
             }
         });
         header = root.add(new UiPanel());
@@ -151,11 +169,21 @@ public class GuiSchematicMaterials extends UiScreen {
     }
 
     private boolean validContext() {
-        return schematic != null && openedWorld != null && mc.theWorld == openedWorld && mc.thePlayer != null
-            && ClientProxy.loadedSchematics.contains(schematic);
+        if (openedWorld == null || mc.theWorld != openedWorld || mc.thePlayer == null) return false;
+        return area != null ? AreaSelections.available(library) && library.contains(area) && SchematicaPlus.proxy.isSaveEnabled
+            : schematic != null && ClientProxy.loadedSchematics.contains(schematic);
     }
 
     private int[] geometry() {
+        if (area != null) {
+            int[] bounds = new int[area.boxes().size() * 6];
+            int i = 0;
+            for (com.github.lunatrius.schematica.api.SchematicRegion region : area.regions()) {
+                bounds[i++] = region.minX; bounds[i++] = region.minY; bounds[i++] = region.minZ;
+                bounds[i++] = region.maxX; bounds[i++] = region.maxY; bounds[i++] = region.maxZ;
+            }
+            return bounds;
+        }
         return new int[] {schematic.position.x, schematic.position.y, schematic.position.z,
             schematic.getWidth(), schematic.getHeight(), schematic.getLength(),
             renderLayers && schematic.isRenderingLayer ? schematic.renderingLayer : -1};
@@ -171,6 +199,7 @@ public class GuiSchematicMaterials extends UiScreen {
 
     private boolean geometryChanged() {
         if (renderLayers && layerRevision != RenderLayerSettings.RANGE.revision()) return true;
+        if (area != null) return !Arrays.equals(geometry, geometry());
         return placementEnabled != schematic.isEnabled() || !Arrays.equals(geometry, geometry()) || source != schematic.getSchematic()
             || !transforms.equals(schematic.transformOperations);
     }
@@ -178,17 +207,22 @@ public class GuiSchematicMaterials extends UiScreen {
     private void refresh() {
         scan = null;
         hasResult = false;
-        skipped = 0;
+        skipped = 0; unverified = 0; scanError = "";
         notice = "";
         materials.setEntries(Collections.emptyList());
         refreshRows();
         if (validContext()) {
             geometry = geometry();
             layerRevision = RenderLayerSettings.RANGE.revision();
-            source = schematic.getSchematic();
-            placementEnabled = schematic.isEnabled();
-            transforms = new ArrayList<>(schematic.transformOperations);
-            scan = new MaterialScan(schematic, openedWorld, mc.thePlayer, renderLayers);
+            if (area != null) {
+                try { scan = new AreaMaterialScan(area.regions(), openedWorld, mc.thePlayer, renderLayers); }
+                catch (IllegalArgumentException error) { scanError = UiTranslations.format("schematica.ui.area.analysis_invalid"); }
+            } else {
+                source = schematic.getSchematic();
+                placementEnabled = schematic.isEnabled();
+                transforms = new ArrayList<>(schematic.transformOperations);
+                scan = new MaterialScan(schematic, openedWorld, mc.thePlayer, renderLayers);
+            }
         }
         updateButtons();
     }
@@ -231,19 +265,20 @@ public class GuiSchematicMaterials extends UiScreen {
             updateButtons();
             return;
         }
-        if (scan == null && !hasResult || geometryChanged()) refresh();
+        if (scan == null && !hasResult && scanError.isEmpty() || geometryChanged()) refresh();
         if (scan != null) {
             scan.step();
             if (scan.done()) {
                 materials.setEntries(scan.result());
                 skipped = scan.skipped();
+                unverified = scan.unverified();
                 scan = null;
                 hasResult = true;
                 refreshRows();
             }
         } else if (++ticks % 20 == 0 && MaterialScan.updateAvailable(materials.entries(), mc.thePlayer)) refreshRows();
         updateButtons();
-        progress.setTooltip(progressText(), UiTranslations.format("schematica.ui.material.unverified", materials.progress()[4], skipped));
+        progress.setTooltip(progressText(), incompleteText());
     }
 
     @Override
@@ -348,16 +383,23 @@ public class GuiSchematicMaterials extends UiScreen {
 
     private String progressText() {
         if (!validContext()) return UiTranslations.format("schematica.ui.material.context");
+        if (!scanError.isEmpty()) return scanError;
         if (scan != null) return UiTranslations.format("schematica.ui.material.scanning", scan.percent());
         if (System.nanoTime() < noticeUntil) return notice;
         long[] counts = materials.progress();
-        if (counts[4] > 0 || skipped > 0) return UiTranslations.format("schematica.ui.material.unverified", counts[4], skipped);
+        if (counts[4] > 0 || unverified > 0 || skipped > 0) return incompleteText();
+        if (area != null) return UiTranslations.format(LABEL + "total", counts[0]);
         if (counts[0] == 0) return UiTranslations.format(LABEL + "total", 0);
         String done = UiTranslations.format(LABEL + "progress.done", percent(counts[1], counts[0]));
         String missing = UiTranslations.format(LABEL + "progress.missing", percent(counts[2], counts[0]));
         String wrong = UiTranslations.format(LABEL + "progress.mismatch", percent(counts[3], counts[0]));
         return UiTranslations.format(LABEL + "total", counts[0]) + " / "
             + UiTranslations.format(LABEL + "progress", done + " / " + missing + " / " + wrong);
+    }
+
+    private String incompleteText() {
+        return UiTranslations.format(area == null ? "schematica.ui.material.unverified" : "schematica.ui.area.analysis_incomplete",
+            area == null ? materials.progress()[4] : unverified, skipped);
     }
 
     private String percent(long part, long total) { return String.format(Locale.ROOT, "%.1f %%", part * 100.0 / total); }
@@ -369,12 +411,13 @@ public class GuiSchematicMaterials extends UiScreen {
             ? MaterialListExport.Format.JSON
             : isShiftKeyDown() ? MaterialListExport.Format.CSV : MaterialListExport.Format.TXT;
         try {
-            String title = schematic.name + " (" + (renderLayers ? "render layers" : "all") + ")";
+            String title = (area == null ? schematic.name : area.name()) + " (" + (renderLayers ? "render layers" : "all") + ")";
             String text = MaterialListExport.format(materials, title, format, key -> {
                 NBTTagCompound tag = new NBTTagCompound();
                 key.stack().writeToNBT(tag);
                 return tag.toString();
             });
+            if (area != null) text = MaterialListExport.withAnalysisStatus(text, format, unverified, skipped);
             Path path = MaterialListExport.write(SchematicaPlus.proxy.getDirectory("dumps").toPath(), format, text);
             notice = UiTranslations.format("litematica.message.material_list_written_to_file", path.getFileName().toString());
             mc.thePlayer.addChatMessage(new ChatComponentText(notice + "\n" + path.toAbsolutePath()));
