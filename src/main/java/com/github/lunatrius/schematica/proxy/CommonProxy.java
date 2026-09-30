@@ -119,9 +119,10 @@ public abstract class CommonProxy {
      * if the integrated server is not running).
      */
     protected World getServerWorld(final World world) {
+        if (!world.isRemote) return world;
         try {
             final MinecraftServer server = MinecraftServer.getServer();
-            if (server != null) {
+            if (server != null && server.isServerRunning() && !server.isServerStopped()) {
                 final WorldServer serverWorld = server.worldServerForDimension(world.provider.dimensionId);
                 if (serverWorld != null) {
                     return serverWorld;

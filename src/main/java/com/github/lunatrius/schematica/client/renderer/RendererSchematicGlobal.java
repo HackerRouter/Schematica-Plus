@@ -424,15 +424,18 @@ public class RendererSchematicGlobal {
     private void renderEntities(SchematicWorld schematic) {
         RenderManager renderManager = RenderManager.instance;
         for (Entity entity : schematic.getEntities()) {
+            net.minecraft.world.World originalWorld = entity.worldObj;
             GL11.glPushMatrix();
             GL11.glPushAttrib(GL11.GL_ALL_ATTRIB_BITS);
             try {
+                entity.worldObj = schematic;
                 OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, 240, 240);
                 GL11.glColor4f(1, 1, 1, 1);
                 renderManager.renderEntityWithPosYaw(entity, entity.posX, entity.posY, entity.posZ,
                     entity.rotationYaw, 1.0f);
             } catch (Exception ignored) {
             } finally {
+                entity.worldObj = originalWorld;
                 GL11.glPopAttrib();
                 GL11.glPopMatrix();
             }
