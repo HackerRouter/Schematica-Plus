@@ -1,40 +1,421 @@
+// SPDX-License-Identifier: LGPL-3.0-only
+// Litematica GuiConfigs and MaLiLib config rows, adapted for 1.7.10 by HackerRouter, 2026.
 package com.github.lunatrius.schematica.client.gui;
 
 import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.EnumMap;
 import java.util.List;
+import java.util.Map;
 
 import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.client.resources.I18n;
+import net.minecraft.client.settings.GameSettings;
+import net.minecraft.client.settings.KeyBinding;
 import net.minecraftforge.common.config.ConfigCategory;
-import net.minecraftforge.common.config.ConfigElement;
+import net.minecraftforge.common.config.Property;
 
+import org.lwjgl.input.Keyboard;
+
+import com.github.lunatrius.schematica.client.gui.config.ConfigPropertyDraft;
+import com.github.lunatrius.schematica.client.gui.config.ConfigStringListPanel;
+import com.github.lunatrius.schematica.client.gui.config.UiConfigSlider;
+import com.github.lunatrius.schematica.client.gui.framework.UiBounds;
+import com.github.lunatrius.schematica.client.gui.framework.UiButton;
+import com.github.lunatrius.schematica.client.gui.framework.UiDraw;
+import com.github.lunatrius.schematica.client.gui.framework.UiLabel;
+import com.github.lunatrius.schematica.client.gui.framework.UiListModel;
+import com.github.lunatrius.schematica.client.gui.framework.UiPanel;
+import com.github.lunatrius.schematica.client.gui.framework.UiRowList;
+import com.github.lunatrius.schematica.client.gui.framework.UiScreen;
+import com.github.lunatrius.schematica.client.gui.framework.UiSprite;
+import com.github.lunatrius.schematica.client.gui.framework.UiTextField;
+import com.github.lunatrius.schematica.client.gui.framework.UiWidget;
+import com.github.lunatrius.schematica.client.renderer.RendererSchematicGlobal;
 import com.github.lunatrius.schematica.handler.ConfigurationHandler;
+import com.github.lunatrius.schematica.handler.client.InputHandler;
 import com.github.lunatrius.schematica.reference.Names;
 import com.github.lunatrius.schematica.reference.Reference;
 
-import cpw.mods.fml.client.config.GuiConfig;
-import cpw.mods.fml.client.config.IConfigElement;
+import cpw.mods.fml.client.event.ConfigChangedEvent;
+import cpw.mods.fml.common.FMLCommonHandler;
+import cpw.mods.fml.common.eventhandler.Event;
 
-public class GuiModConfig extends GuiConfig {
+public class GuiModConfig extends UiScreen {
+    private enum Tab {
+        ALL("malilib.gui.title.all", 204),
+        GENERIC("litematica.gui.button.config_gui.generic", 180),
+        INFO_OVERLAYS("litematica.gui.button.config_gui.info_overlays", 140),
+        VISUALS("litematica.gui.button.config_gui.visuals", 180),
+        COLORS("litematica.gui.button.config_gui.colors", 100),
+        HOTKEYS("litematica.gui.button.config_gui.hotkeys", 204),
+        RENDER_LAYERS("litematica.gui.button.config_gui.render_layers", 204);
 
-    public GuiModConfig(GuiScreen guiScreen) {
-        super(
-            guiScreen,
-            getConfigElements(),
-            Reference.MODID,
-            false,
-            false,
-            GuiConfig.getAbridgedConfigPath(ConfigurationHandler.configuration.toString()));
+        final String key;
+        final int width;
+        Tab(String key, int width) { this.key = key; this.width = width; }
+        boolean keySearch() { return this == ALL || this == GENERIC || this == VISUALS || this == HOTKEYS; }
     }
 
-    private static List<IConfigElement> getConfigElements() {
-        List<IConfigElement> elements = new ArrayList<>();
-        for (String name : ConfigurationHandler.configuration.getCategoryNames()) {
-            final ConfigCategory category = ConfigurationHandler.configuration.getCategory(name)
-                .setLanguageKey(Names.Config.LANG_PREFIX + ".category." + name);
-            if (category.parent == null) {
-                elements.add(new ConfigElement(category));
+    private static Tab lastTab = Tab.GENERIC;
+    private final List<Entry> entries = new ArrayList<>();
+    private final Map<Tab, UiButton> tabs = new EnumMap<>(Tab.class);
+    private final UiListModel<Entry> model = new UiListModel<>(22, Entry::searchText);
+    private UiRowList<Entry> rows;
+    private UiButton searchButton;
+    private UiButton keySearch;
+    private UiButton done;
+    private UiTextField search;
+    private UiLabel status;
+    private boolean searchOpen;
+    private boolean keysChanged;
+    private int keyFilter;
+    private int labelWidth;
+    private Tab tab = lastTab;
+    private UiButton capturingButton;
+    private KeyBinding capturingKey;
+
+    public GuiModConfig(GuiScreen parent) {
+        super(parent, Reference.NAME + " v" + Reference.VERSION + " - " + I18n.format("schematica.ui.config.title"));
+    }
+
+    @Override
+    protected void createWidgets() {
+        for (String categoryName : ConfigurationHandler.configuration.getCategoryNames()) {
+            ConfigCategory category = ConfigurationHandler.configuration.getCategory(categoryName);
+            for (Property property : category.values()) {
+                if (property.showInGui()) entries.add(new Entry(categoryName, property));
             }
         }
-        return elements;
+        for (KeyBinding key : InputHandler.KEY_BINDINGS) entries.add(new Entry(key));
+        entries.sort(Comparator.comparing(Entry::name, String.CASE_INSENSITIVE_ORDER));
+        for (Tab value : Tab.values()) {
+            UiButton button = addButton(value.key, () -> changeTab(value));
+            tabs.put(value, button);
+            if (value == Tab.COLORS || value == Tab.RENDER_LAYERS) unavailable(button);
+        }
+        searchButton = root.add(new UiButton(() -> "", button -> {
+            searchOpen = !searchOpen;
+            capturingButton = null;
+            refreshEntries();
+            layoutWidgets();
+            if (searchOpen) input.focus(search);
+        }).setSprite(UiSprite.CONFIG_SEARCH).setBackground(false));
+        searchButton.setTooltip(I18n.format("schematica.ui.config.search"));
+        search = root.add(new UiTextField(fontRendererObj, 256, text -> refreshEntries()));
+        search.setTooltip(I18n.format("schematica.ui.config.search"));
+        keySearch = root.add(new UiButton(() -> capturingButton == keySearch ? captureLabel() : keyLabel(keyFilter),
+            button -> beginCapture(null, keySearch)));
+        keySearch.setTooltip(I18n.format("schematica.ui.config.key_search"));
+        rows = root.add(new UiRowList<>(model, (entry, index) -> new ConfigRow(entry), 12));
+        done = addButton("gui.done", this::closeScreen);
+        status = root.add(new UiLabel(this::statusText, 0xFFFFA0A0));
+        refreshEntries();
+    }
+
+    private void changeTab(Tab selected) {
+        tab = selected;
+        lastTab = selected;
+        capturingButton = null;
+        keyFilter = 0;
+        search.setText("");
+        model.setOffset(0);
+        refreshEntries();
+        layoutWidgets();
+    }
+
+    private void refreshEntries() {
+        List<Entry> visible = new ArrayList<>();
+        for (Entry entry : entries) {
+            if (tab != Tab.ALL && tab != entry.tab()) continue;
+            if (searchOpen && tab.keySearch() && keyFilter != 0
+                && (entry.key == null || entry.key.getKeyCode() != keyFilter)) continue;
+            visible.add(entry);
+        }
+        model.setEntries(visible);
+        model.setQuery(searchOpen && search != null ? search.text() : "");
+        labelWidth = 0;
+        for (Entry entry : model.entries()) labelWidth = Math.max(labelWidth, fontRendererObj.getStringWidth(entry.label()));
+        if (rows != null) rows.sync();
+    }
+
+    @Override
+    protected void layoutWidgets() {
+        int x = 10;
+        int y = 26;
+        for (Tab value : Tab.values()) {
+            UiButton button = tabs.get(value);
+            int w = fontRendererObj.getStringWidth(button.label()) + 10;
+            if (x > 10 && x + w > width - 10) { x = 10; y += 22; }
+            button.setBounds(x, y, w, 20);
+            button.setEnabled(value != tab && value != Tab.COLORS && value != Tab.RENDER_LAYERS);
+            x += w + 2;
+        }
+        int listY = y + 24;
+        boolean withKeys = tab.keySearch();
+        int searchY = listY + (withKeys ? 7 : 4);
+        searchButton.setBounds(14, searchY + 1, 12, 12);
+        search.setBounds(30, searchY, Math.max(20, width - (withKeys ? 213 : 53)), 14);
+        search.setVisible(searchOpen);
+        keySearch.setBounds(width - 174, listY + 4, 140, 20);
+        keySearch.setVisible(searchOpen && withKeys);
+        int rowY = listY + 4 + (withKeys ? 23 : 17);
+        rows.setBounds(12, rowY, Math.max(1, width - 24), Math.max(0, height - 34 - rowY));
+        done.setBounds(10, height - 26, 80, 20);
+        status.setBounds(98, height - 24, Math.max(0, width - 110), 16);
+    }
+
+    @Override
+    protected void tickScreen() {
+        if (capturingButton != null && input.focused() != capturingButton) capturingButton = null;
+    }
+
+    @Override
+    protected boolean interceptKey(char character, int code) {
+        if (capturingButton != null && input.focused() == capturingButton) {
+            if (!Keyboard.isRepeatEvent()) assignKey(code == Keyboard.KEY_ESCAPE ? 0 : code);
+            return true;
+        }
+        if (Keyboard.isRepeatEvent() && input.focused() instanceof UiButton) return true;
+        if (!input.modalPanels().isEmpty()) return false;
+        if (code == Keyboard.KEY_ESCAPE && searchOpen && !isShiftKeyDown()) {
+            searchOpen = false;
+            refreshEntries();
+            layoutWidgets();
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    protected boolean interceptMouse(int x, int y, int button) {
+        if (capturingButton == null || input.focused() != capturingButton) return false;
+        assignKey(button - 100);
+        return true;
+    }
+
+    @Override
+    protected boolean handleKey(char character, int code) {
+        if (!input.modalPanels().isEmpty() || input.focused() instanceof UiTextField || isCtrlKeyDown()
+            || character <= 32 || character == 127) return false;
+        searchOpen = true;
+        search.setText(Character.toString(character));
+        layoutWidgets();
+        input.focus(search);
+        return true;
+    }
+
+    private void beginCapture(KeyBinding key, UiButton button) {
+        capturingKey = key;
+        capturingButton = button;
+        input.focus(button);
+    }
+
+    private void assignKey(int code) {
+        if (capturingKey == null) keyFilter = code;
+        else setKey(capturingKey, code);
+        capturingButton = null;
+        refreshEntries();
+    }
+
+    private void setKey(KeyBinding key, int code) {
+        if (key.getKeyCode() == code) return;
+        key.setKeyCode(code);
+        KeyBinding.resetKeyBindingArrayAndHash();
+        keysChanged = true;
+    }
+
+    private String captureLabel() { return "§e> " + I18n.format("schematica.ui.config.press_key") + " <§r"; }
+
+    private String keyLabel(int code) {
+        return code == 0 ? "NONE" : GameSettings.getKeyDisplayString(code);
+    }
+
+    private String bindingLabel(KeyBinding key) {
+        if (capturingButton != null && capturingKey == key) return captureLabel();
+        if (key.getKeyCode() != 0) {
+            for (KeyBinding other : mc.gameSettings.keyBindings) {
+                if (other != key && other.getKeyCode() == key.getKeyCode()) return "§c" + keyLabel(key.getKeyCode());
+            }
+        }
+        return keyLabel(key.getKeyCode());
+    }
+
+    private String statusText() {
+        int invalid = 0;
+        for (Entry entry : entries) if (entry.draft != null && !entry.draft.valid()) invalid++;
+        return invalid == 0 ? "" : I18n.format("schematica.ui.config.invalid_count", invalid);
+    }
+
+    @Override
+    protected void closed() {
+        capturingButton = null;
+        boolean changed = false;
+        boolean restart = false;
+        for (Entry entry : entries) {
+            if (entry.draft != null && entry.draft.apply()) {
+                changed = true;
+                restart |= entry.draft.property.requiresMcRestart();
+            }
+        }
+        if (changed) {
+            ConfigChangedEvent.OnConfigChangedEvent event = new ConfigChangedEvent.OnConfigChangedEvent(
+                Reference.MODID, null, mc.theWorld != null, restart);
+            FMLCommonHandler.instance().bus().post(event);
+            if (event.getResult() != Event.Result.DENY) {
+                FMLCommonHandler.instance().bus().post(new ConfigChangedEvent.PostConfigChangedEvent(
+                    Reference.MODID, null, mc.theWorld != null, restart));
+            }
+            RendererSchematicGlobal.INSTANCE.refresh();
+        }
+        if (keysChanged) {
+            mc.gameSettings.saveOptions();
+            keysChanged = false;
+        }
+    }
+
+    private final class Entry {
+        final String category;
+        final ConfigPropertyDraft draft;
+        final KeyBinding key;
+
+        Entry(String category, Property property) {
+            this.category = category;
+            draft = new ConfigPropertyDraft(property);
+            key = null;
+        }
+
+        Entry(KeyBinding key) {
+            category = "hotkeys";
+            draft = null;
+            this.key = key;
+        }
+
+        String name() { return key == null ? draft.property.getName() : key.getKeyDescription(); }
+        String label() { return I18n.format(key == null ? draft.property.getLanguageKey() : key.getKeyDescription()); }
+        String searchText() { return name() + " " + label() + " " + category + (modified() ? " modified" : ""); }
+        boolean modified() { return key == null ? draft.modified() : key.getKeyCode() != key.getKeyCodeDefault(); }
+        Tab tab() {
+            if (key != null) return Tab.HOTKEYS;
+            if (Names.Config.Category.RENDER.equals(category)) return Tab.VISUALS;
+            return Names.Config.Category.DEBUG.equals(category) ? Tab.INFO_OVERLAYS : Tab.GENERIC;
+        }
+        String description() {
+            if (key != null) return I18n.format("schematica.ui.config.key_hint");
+            String translated = I18n.format(draft.property.getLanguageKey() + ".tooltip");
+            String description = translated.equals(draft.property.getLanguageKey() + ".tooltip")
+                ? draft.property.comment : translated;
+            return category + ": " + name() + "\n" + description
+                + (Names.Config.Category.SERVER.equals(category) ? "\n" + I18n.format("schematica.ui.config.server") : "");
+        }
+    }
+
+    private final class ConfigRow extends UiPanel {
+        private final Entry entry;
+        private final UiLabel label;
+        private final UiButton reset;
+        private final UiWidget editor;
+        private UiTextField text;
+        private UiWidget slider;
+        private UiButton sliderToggle;
+        private UiWidget keySettings;
+
+        ConfigRow(Entry entry) {
+            this.entry = entry;
+            label = add(new UiLabel(entry::label, 0xFFFFFFFF));
+            label.setTooltip(entry.description().split("\n"));
+            reset = add(new UiButton(() -> I18n.format("malilib.gui.button.reset.caps"), button -> reset()));
+            reset.setTooltip(I18n.format("schematica.ui.config.reset"));
+            if (entry.key != null) {
+                editor = add(new UiButton(() -> bindingLabel(entry.key), button -> captureEntry()));
+                editor.setTooltip(I18n.format("schematica.ui.config.key_hint"));
+                keySettings = add(new UiWidget() {
+                    @Override public void draw(UiDraw draw, int mouseX, int mouseY) {
+                        draw.fill(bounds(), 0xFF000000);
+                        draw.border(bounds(), 0xFF808080);
+                        for (int u = 0; u <= 72; u += 18) {
+                            draw.texture("schematica_plus:textures/gui/malilib_widgets.png",
+                                new UiBounds(bounds().x + 1, bounds().y + 1, 18, 18), u, 0, 18, 18, 256, 256);
+                        }
+                    }
+                });
+                keySettings.setEnabled(false);
+                keySettings.setTooltip(I18n.format("schematica.ui.config.key_settings"));
+            } else if (entry.draft.property.isList()) {
+                editor = add(new UiButton(() -> "[ " + String.join(", ", entry.draft.values()) + " ]", button -> {
+                    ConfigStringListPanel panel = new ConfigStringListPanel(fontRendererObj, entry.draft);
+                    panel.layout(root.bounds());
+                    input.pushModal(panel);
+                }));
+            } else if (entry.draft.property.getType() == Property.Type.BOOLEAN) {
+                editor = add(new UiButton(() -> I18n.format(Boolean.parseBoolean(entry.draft.text())
+                    ? "malilib.gui.button.true" : "malilib.gui.button.false"),
+                    button -> entry.draft.setText(Boolean.toString(!Boolean.parseBoolean(entry.draft.text())))));
+            } else {
+                text = add(new UiTextField(fontRendererObj, 65535, entry.draft::setText));
+                text.setText(entry.draft.text());
+                editor = text;
+                if (entry.draft.supportsSlider()) {
+                    slider = add(new UiConfigSlider(entry.draft));
+                    sliderToggle = add(new UiButton(() -> "", button -> {
+                        entry.draft.slider = !entry.draft.slider;
+                        if (!entry.draft.slider) text.setText(entry.draft.text());
+                        layout(bounds());
+                    }).setBackground(false));
+                    sliderToggle.setTooltip(I18n.format("schematica.ui.config.slider"));
+                }
+            }
+            tick();
+        }
+
+        private void reset() {
+            if (entry.key != null) setKey(entry.key, entry.key.getKeyCodeDefault());
+            else {
+                entry.draft.reset();
+                if (text != null) text.setText(entry.draft.text());
+            }
+            tick();
+        }
+
+        private void captureEntry() { beginCapture(entry.key, (UiButton) editor); }
+
+        @Override
+        public void layout(UiBounds screen) {
+            int resetWidth = fontRendererObj.getStringWidth(reset.label()) + 10;
+            int optionWidth = Math.min(tab.width, Math.max(60, bounds().width - resetWidth - 90));
+            int nameWidth = Math.min(labelWidth, Math.max(20, bounds().width - optionWidth - resetWidth - 12));
+            int x = bounds().x + nameWidth + 10;
+            int y = bounds().y + 1;
+            label.setBounds(bounds().x, y + 5, nameWidth, 12);
+            reset.setBounds(x + optionWidth + 2, y, resetWidth, 20);
+            if (text != null) {
+                int fieldWidth = optionWidth - (sliderToggle == null ? 0 : 18);
+                text.setBounds(x + 2, y + 1, fieldWidth - 4, 17);
+                if (sliderToggle != null) {
+                    text.setVisible(!entry.draft.slider);
+                    slider.setVisible(entry.draft.slider);
+                    slider.setBounds(x, y, fieldWidth, 20);
+                    sliderToggle.setBounds(x + fieldWidth + 2, y + 2, 16, 16);
+                    sliderToggle.setSprite(entry.draft.slider ? UiSprite.TEXT_FIELD : UiSprite.SLIDER);
+                }
+            } else {
+                editor.setBounds(x, y, optionWidth - (keySettings == null ? 0 : 22), 20);
+                if (keySettings != null) keySettings.setBounds(x + optionWidth - 20, y, 20, 20);
+            }
+        }
+
+        @Override
+        public void tick() {
+            reset.setEnabled(entry.modified());
+            if (text != null) text.setTooltip(entry.draft.valid() ? entry.description().split("\n")
+                : new String[] {I18n.format("schematica.ui.config.invalid", entry.draft.property.getMinValue(), entry.draft.property.getMaxValue())});
+            super.tick();
+        }
+
+        @Override
+        public void draw(UiDraw draw, int mouseX, int mouseY) {
+            super.draw(draw, mouseX, mouseY);
+            if (text != null && !entry.draft.valid()) draw.border(text.bounds(), 0xFFFF5555);
+        }
     }
 }

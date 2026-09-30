@@ -39,6 +39,12 @@ public abstract class UiScreen extends GuiScreen {
 
     protected void tickScreen() {}
 
+    protected void closed() {}
+
+    protected boolean interceptKey(char character, int keyCode) { return false; }
+
+    protected boolean interceptMouse(int x, int y, int button) { return false; }
+
     protected boolean handleKey(char character, int keyCode) { return false; }
 
     protected UiButton addButton(String key, Runnable action) {
@@ -133,7 +139,7 @@ public abstract class UiScreen extends GuiScreen {
 
     @Override
     protected final void mouseClicked(int x, int y, int button) {
-        input.mouseDown(x, y, button);
+        if (!interceptMouse(x, y, button)) input.mouseDown(x, y, button);
     }
 
     @Override
@@ -159,6 +165,7 @@ public abstract class UiScreen extends GuiScreen {
 
     @Override
     protected final void keyTyped(char character, int keyCode) {
+        if (interceptKey(character, keyCode)) return;
         if (keyCode == Keyboard.KEY_ESCAPE) {
             if (!input.popModal()) closeScreen();
         } else if (keyCode == Keyboard.KEY_TAB) {
@@ -207,6 +214,7 @@ public abstract class UiScreen extends GuiScreen {
             Keyboard.enableRepeatEvents(previousRepeat);
             repeatOwned = false;
         }
+        closed();
     }
 
     @Override

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: LGPL-3.0-only
-// Litematica Icons/ButtonIcons, adapted for 1.7.10 by HackerRouter, 2026.
+// Litematica/MaLiLib icons, adapted for 1.7.10 by HackerRouter, 2026.
 package com.github.lunatrius.schematica.client.gui.framework;
 
 public enum UiSprite {
@@ -22,7 +22,14 @@ public enum UiSprite {
     SEARCH(156, 36, 12, 12, false),
     CREATE_DIRECTORY(156, 48, 12, 12, false),
     CHECK_OFF(198, 0, 11, 11, false),
-    CHECK_ON(198, 11, 11, 11, false);
+    CHECK_ON(198, 11, 11, 11, false),
+    CONFIG_SEARCH(201, 0, 12, 12, false, true),
+    SLIDER(153, 0, 16, 16, true, true),
+    TEXT_FIELD(153, 16, 16, 16, true, true),
+    MOVE_UP(108, 0, 15, 15, true, true),
+    MOVE_DOWN(108, 15, 15, 15, true, true),
+    ADD(108, 30, 15, 15, true, true),
+    REMOVE(108, 45, 15, 15, true, true);
 
     private static final String TEXTURE = "schematica_plus:textures/gui/litematica_widgets.png";
     public final int u;
@@ -30,17 +37,24 @@ public enum UiSprite {
     public final int width;
     public final int height;
     private final boolean states;
+    private final boolean malilib;
 
     UiSprite(int u, int v, int width, int height, boolean states) {
+        this(u, v, width, height, states, false);
+    }
+
+    UiSprite(int u, int v, int width, int height, boolean states, boolean malilib) {
         this.u = u;
         this.v = v;
         this.width = width;
         this.height = height;
         this.states = states;
+        this.malilib = malilib;
     }
 
     public void draw(UiDraw draw, int x, int y, boolean enabled, boolean hovered) {
         int state = states ? !enabled ? 0 : hovered ? 2 : 1 : 0;
-        draw.texture(TEXTURE, new UiBounds(x, y, width, height), u + state * width, v, width, height, 256, 256);
+        draw.texture(malilib ? "schematica_plus:textures/gui/malilib_widgets.png" : TEXTURE,
+            new UiBounds(x, y, width, height), u + state * width, v, width, height, 256, 256);
     }
 }

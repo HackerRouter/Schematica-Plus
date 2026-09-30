@@ -21,6 +21,8 @@ Litematica was supplied as a local source snapshot with the version above.
 
 - `assets/schematica_plus/textures/gui/litematica_widgets.png` is the unmodified
   Litematica `assets/litematica/textures/gui/gui_widgets.png` atlas.
+- `assets/schematica_plus/textures/gui/malilib_widgets.png` is the unmodified
+  MaLiLib `assets/malilib/textures/gui/gui_widgets.png` atlas.
 - `assets/schematica_plus_litematica/lang/*.lang` contains selected upstream
   labels converted from JSON to the 1.7.10 language format.
 - Java files carrying `SPDX-License-Identifier: LGPL-3.0-only` adapt upstream

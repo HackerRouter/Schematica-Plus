@@ -36,7 +36,8 @@ refer to the same instances, so removing either also unloads the instance.
 Placement Configure now uses the Litematica layout for renaming, origin editing,
 rotation/mirroring and preview/entity options. It keeps the placement origin fixed
 during transforms. The optional direct Controls binding retains the earlier
-three-axis controls; global configuration and materials still use the earlier UI. Direct loading and direct controls
+three-axis controls; materials still use the earlier UI. Global configuration uses the
+ported tabbed page. Direct loading and direct controls
 have optional, unbound shortcuts in Controls. Unported operations retain their
 positions and show disabled tooltips.
 
@@ -125,3 +126,10 @@ For example:
 - Store Coordinates & rotation of schematics per world/server. No more re-entering coordinates for large builds!
 - Fix heavy lag when having lotr armor stands/weapon racks in loaded schematic
 - Updated Chinese translation
+
+
+The Litematica-style Configuration page now also opens from the Forge mod list.
+It supports existing settings, validated numeric fields/sliders, string lists,
+search, per-option reset and native single-key bindings. Colors, global render
+layers and advanced key combinations are still pending. See [UI port status](compatibility/ui-port.md)
+and [manual checks](TESTING.md).

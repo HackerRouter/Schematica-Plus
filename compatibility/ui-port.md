@@ -157,7 +157,8 @@ Separate loaded sources, new placements from memory, reload/export from memory,
 file renaming, area libraries, multiple boxes/manual origins, area analysis, task
 management and the three advanced capture options remain disabled with explanatory
 hover text. At the end of phase 3, configuration, placement Configure and materials still
-used their existing screens. Phase 4 below replaces placement Configure. The information panel currently reports file attributes, not
+used their existing screens. Phases 4 and 5 below replace placement Configure and
+global configuration. The information panel currently reports file attributes, not
 schematic metadata, region details or preview images. These are the next UI/data
 adapters, not completed parity. No modern MaLiLib runtime dependency is introduced.
 
@@ -205,3 +206,42 @@ Resize/child-page return retains the name draft; coordinate fields synchronize
 only when the underlying geometry changes. Persistence, materials, NBT orientation,
 resource-pack appearance and native game interactions require the phase 4 checks
 in TESTING.md; automated geometry checks do not establish full visual parity.
+
+
+## Phase 5: configuration
+
+Both M > Configuration and the Forge mod-list Config button now open the ported
+configuration page. It follows GuiConfigs' seven tabs at (10,26), browser origin
+(10,50), 22-pixel config rows, measured label column, tab-specific option widths
+(180/140/204), reset buttons and expandable search with a 140-pixel key filter.
+The string-list dialog uses the centered 400-pixel MaLiLib layout, numbered rows,
+insert/remove/move icons and row resets. The MaLiLib atlas is copied unchanged.
+At narrow scaled resolutions the tabs wrap and the columns shrink to keep controls
+reachable. A Done button is provided for returning to the Forge parent screen.
+
+Existing Forge properties remain in schematica_plus.cfg. General, printer, hotbar
+slots, tool and local server settings are in Generic; debug information is in Info
+Overlays; rendering options are in Visuals. All also includes the mod's existing
+Minecraft key bindings. Hidden properties such as material sort order remain hidden.
+Properties are sorted by their internal names and can be searched by translated
+label, name, category or the word modified. Numeric rows support validated text
+and bounded sliders; unbounded numbers retain text input. Invalid values are marked
+red and do not replace the last applied property on close. Drafts survive tab,
+filter, scroll and resize changes. Closing applies valid drafts through the existing
+configuration handler, writes settings and refreshes schematic render chunks.
+
+The Hotkeys tab edits existing single-key or mouse-button bindings, shows conflicts,
+resets to Minecraft defaults and saves options.txt on close. During capture, Escape
+unbinds and Tab is assignable; captured input cannot close the screen, navigate focus
+or enter the search field. The search key filter uses the same native key codes.
+Escape first closes the string-list dialog or hides search; Shift+Escape bypasses
+search dismissal. Ordinary text typing outside an editor opens search.
+
+Colors, Render Layers and advanced key settings retain their upstream locations
+with disabled controls and explanatory tooltips. The current backend does not yet
+provide Litematica's color options, global render-layer model, key chords or trigger
+settings. No cross-mod config switcher is shown: there is no MaLiLib config registry
+in this 1.7.10 port. This phase ports the config presentation and existing Plus
+settings, not the entire modern Litematica option set. Material lists and the
+remaining pending pages still need their UI ports. Native font, scaling and visual
+comparisons remain manual checks; passing tests does not establish visual parity.

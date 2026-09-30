@@ -57,6 +57,7 @@ public final class ConfigPropertyDraft {
     }
 
     public boolean modified() {
+        if (!valid()) return true;
         return property.isList() ? !Arrays.equals(values, property.getDefaults())
             : !sameValue(text, property.getDefault());
     }

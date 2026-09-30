@@ -31,6 +31,10 @@ public class ConfigPropertyDraftTest {
         assertFalse(integer.valid());
         integer.setText("1.5");
         assertFalse(integer.valid());
+        integer.setText("0.0");
+        assertTrue(integer.modified());
+        integer.reset();
+        assertTrue(integer.valid());
     }
 
     @Test public void resetUsesDefaultsAndEquivalentNumbersAreUnmodified() {

@@ -193,7 +193,7 @@ once to establish the new keys. Ordered transforms apply to newly saved sessions
   illegal paths/names, a full queue and overwrite cancellation/confirmation. The
   output still uses .schematic/.schemplus, with automatic upgrade where required.
 - Check that unavailable operations stay in the source UI positions, show a clear
-  tooltip and cannot run. Configure/Forge config still open the earlier screens.
+  tooltip and cannot run. Configure and Forge Config are superseded by phases 4 and 5 below.
 
 
 ## Litematica UI phase 4: placement configuration
@@ -229,3 +229,35 @@ once to establish the new keys. Ordered transforms apply to newly saved sessions
 - The single merged region and unavailable locks, sub-region operations, independent
   rendering/enclosing-box options and verifier must not imply supported behavior.
   Hover text must explain the limitation; disabled controls must not mutate state.
+
+
+## Litematica UI phase 5: configuration
+
+- Open Config from the Forge mod list with no world loaded, and M > Configuration
+  in a world. Done/Escape must return to the correct parent. Compare English and
+  Chinese tabs, search positions, rows, reset buttons and numeric-toggle icons with
+  the supplied upstream. Resize at GUI scales 1/2/3; narrow layouts must wrap tabs
+  without hiding reachable controls. Colors/Render Layers/advanced key settings
+  remain unavailable and explain why.
+- Edit a boolean, printer delay, alpha, directory and tool item. Change tabs, search,
+  scroll offscreen and resize while editing; drafts must survive. Done must persist
+  changes across restarting the game. Render changes must rebuild previews. Local
+  server options must not imply that remote server permissions have changed.
+- Try empty/minus numeric drafts, letters, NaN, infinity and out-of-range values.
+  Invalid fields must be red, with a warning count; close must keep those properties'
+  previous applied values while saving other valid edits. Reset must repair invalid
+  input. Check numeric reset, text/slider toggling, mouse drag outside the slider,
+  left/right arrows, and each of the nine printer-slot defaults after several edits.
+- Search English/internal names, Chinese labels, categories and modified. Toggle the
+  magnifier and type outside an editor to open search. Escape hides search first;
+  Shift+Escape closes the page. Hold a row control while filtering/scrolling: release
+  must not edit a removed row. Closing without changes must not rewrite settings.
+- Edit extraAirBlocks from empty and populated lists: insert, type, reset, move,
+  delete first/middle/last, scroll and resize. Escape closes only the dialog. Close
+  Config, restart and confirm order/values. Reset the entire list and confirm empty
+  brackets and defaults. Clipboard paste and selection must work inside fields.
+- In Hotkeys, bind a normal key, Tab and a mouse button; Escape during capture must
+  unbind without closing. Try a conflicting vanilla/mod key, then reset. Click and
+  keyboard activation must both begin capture without leaking the key into search.
+  Saved keys must work after reopening the world/game. Exercise All's key filter,
+  clear it with Escape, and scroll a capturing row out of view to cancel capture.
