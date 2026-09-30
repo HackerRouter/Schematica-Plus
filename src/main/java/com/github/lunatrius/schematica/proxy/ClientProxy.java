@@ -25,6 +25,7 @@ import net.minecraftforge.common.config.Property;
 import net.minecraftforge.common.util.ForgeDirection;
 
 import com.github.lunatrius.schematica.handler.client.WorldHandler;
+import com.github.lunatrius.schematica.client.selection.AreaSelections;
 import com.github.lunatrius.schematica.client.world.RenderLayerSettings;
 import com.github.lunatrius.schematica.internal.lunatriuscore.util.vector.Vector3d;
 import com.github.lunatrius.schematica.internal.lunatriuscore.util.vector.Vector3i;
@@ -85,7 +86,6 @@ public class ClientProxy extends CommonProxy {
         .create();
     private static final Type schematicDataType = new TypeToken<Map<String, Map<String, SchematicData>>>() {}.getType();
     private static final Type loadedSchematicsDataType = new TypeToken<Map<String, List<LoadedSchematicEntry>>>() {}.getType();
-    private static final Type areaSelectionDataType = new TypeToken<Map<String, AreaSelectionData>>() {}.getType();
 
     public static void setPlayerData(EntityPlayer player, float partialTicks) {
         playerPosition.x = player.lastTickPosX + (player.posX - player.lastTickPosX) * partialTicks;
@@ -188,14 +188,6 @@ public class ClientProxy extends CommonProxy {
             position.y = y;
             position.z = z;
         }
-    }
-
-    /** Persistence data for area selection (pointA, pointB, isRenderingGuide). */
-    private static class AreaSelectionData {
-        public int ax, ay, az;
-        public int bx, by, bz;
-        public boolean renderingGuide;
-        AreaSelectionData() {}
     }
 
     private static class SchematicData {
@@ -434,6 +426,7 @@ public class ClientProxy extends CommonProxy {
     }
 
     public static void clearWorldState() {
+        AreaSelections.clear();
         RenderLayerSettings.RANGE.load(null);
         unloadAllSchematics();
         lastWorldServerName = null;
@@ -683,61 +676,12 @@ public class ClientProxy extends CommonProxy {
         }
     }
 
-    // --- Persistence: save/restore area selection across sessions ---
-
-    /** Saves the current area selection for the given world/server. */
     public static void saveAreaSelection(String worldServerName) {
-        if (worldServerName == null || worldServerName.isEmpty()) return;
-        try {
-            File file = new File(ConfigurationHandler.schematicDirectory, "AreaSelection.json");
-            Map<String, AreaSelectionData> allData;
-            if (file.exists()) {
-                try (Reader reader = Files.newBufferedReader(file.toPath(), StandardCharsets.UTF_8)) {
-                    allData = gson.fromJson(reader, areaSelectionDataType);
-                } catch (Exception e) {
-                    throw new IOException("Existing area settings are unreadable; preserving the file", e);
-                }
-            } else {
-                allData = new HashMap<>();
-            }
-            if (allData == null) allData = new HashMap<>();
-
-            AreaSelectionData data = new AreaSelectionData();
-            data.ax = pointA.x; data.ay = pointA.y; data.az = pointA.z;
-            data.bx = pointB.x; data.by = pointB.y; data.bz = pointB.z;
-            data.renderingGuide = isRenderingGuide;
-            allData.put(worldServerName, data);
-
-            com.github.lunatrius.schematica.util.FileUtils.writeUtf8Atomically(file,
-                gson.toJson(allData, areaSelectionDataType));
-            Reference.logger.debug("Saved area selection for '{}'", worldServerName);
-        } catch (Exception e) {
-            Reference.logger.error("Failed to save area selection", e);
-        }
+        AreaSelections.save(worldServerName);
     }
 
-    /** Restores previously saved area selection for the given world/server. */
     public static void restoreAreaSelection(String worldServerName) {
-        if (worldServerName == null || worldServerName.isEmpty()) return;
-        try {
-            File file = new File(ConfigurationHandler.schematicDirectory, "AreaSelection.json");
-            if (!file.exists()) return;
-
-            Map<String, AreaSelectionData> allData;
-            try (Reader reader = Files.newBufferedReader(file.toPath(), StandardCharsets.UTF_8)) {
-                allData = gson.fromJson(reader, areaSelectionDataType);
-            }
-            if (allData == null || !allData.containsKey(worldServerName)) return;
-
-            AreaSelectionData data = allData.get(worldServerName);
-            pointA.set(data.ax, data.ay, data.az);
-            pointB.set(data.bx, data.by, data.bz);
-            isRenderingGuide = data.renderingGuide;
-            updatePoints();
-            Reference.logger.debug("Restored area selection for '{}'", worldServerName);
-        } catch (Exception e) {
-            Reference.logger.error("Failed to restore area selection", e);
-        }
+        AreaSelections.restore(worldServerName);
     }
 
     @Override
