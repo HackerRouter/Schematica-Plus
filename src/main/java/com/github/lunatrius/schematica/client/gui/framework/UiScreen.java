@@ -5,7 +5,9 @@ package com.github.lunatrius.schematica.client.gui.framework;
 import java.util.ArrayList;
 import java.util.List;
 
+import net.minecraft.client.audio.PositionedSoundRecord;
 import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.util.ResourceLocation;
 
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
@@ -13,7 +15,8 @@ import org.lwjgl.input.Mouse;
 public abstract class UiScreen extends GuiScreen {
 
     protected final UiPanel root = new UiPanel();
-    protected final UiInput input = new UiInput(root);
+    protected final UiInput input = new UiInput(root, () -> mc.getSoundHandler().playSound(
+        PositionedSoundRecord.func_147674_a(new ResourceLocation("gui.button.press"), 1.0F)));
     private final GuiScreen parent;
     private final String title;
     private boolean created;

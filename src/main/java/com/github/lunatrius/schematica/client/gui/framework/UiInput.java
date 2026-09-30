@@ -6,13 +6,19 @@ import java.util.List;
 public final class UiInput {
 
     private final UiPanel root;
+    private final Runnable buttonSound;
     private final List<Modal> modals = new ArrayList<>();
     private UiWidget focused;
     private UiWidget captured;
     private int capturedButton = -1;
 
     public UiInput(UiPanel root) {
+        this(root, () -> {});
+    }
+
+    public UiInput(UiPanel root, Runnable buttonSound) {
         this.root = root;
+        this.buttonSound = buttonSound;
     }
 
     private UiPanel active() {
@@ -109,6 +115,7 @@ public final class UiInput {
             UiWidget target = captured;
             captured = null;
             capturedButton = -1;
+            if (target instanceof UiButton && target.containsVisible(x, y)) buttonSound.run();
             target.mouseUp(x, y, button);
         }
     }
@@ -128,7 +135,10 @@ public final class UiInput {
 
     public boolean keyTyped(char character, int keyCode) {
         validate();
-        return focused != null && focused.keyTyped(character, keyCode);
+        UiWidget target = focused;
+        if (target == null || !target.keyTyped(character, keyCode)) return false;
+        if (target instanceof UiButton) buttonSound.run();
+        return true;
     }
 
     public void cycleFocus(boolean backwards) {
