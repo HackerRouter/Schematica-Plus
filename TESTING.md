@@ -13,6 +13,13 @@ Before a release, use a disposable 1.7.10 world to check:
   layers. Verify both layers and entity positions survive.
 - Load two differently colored/oriented schematics; switching or unloading one
   must not change the other instance.
+- Use two schematics wider/taller than 32 blocks. Switch repeatedly, then hide the
+  selected instance and move the other one. Its chunks must continue rebuilding.
+- From Controls, open Instances, select another schematic and return. Coordinates,
+  movement and rotation must affect the newly selected instance. Rotate a 17x33x49
+  schematic around each axis and check the final partial chunks are present.
+- Move one schematic away from matching world blocks across X/Z=15/16 and -1/0;
+  its previously hidden blocks must appear without rebuilding unrelated instances.
 - Apply Y then X rotations, reconnect, and compare the restored result. Repeat in
   another dimension and on a differently addressed server with the same display name.
 - Paste over a chest, paste luminous blocks and a door, save/reload the world, and

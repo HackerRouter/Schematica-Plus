@@ -503,10 +503,8 @@ public class ClientProxy extends CommonProxy {
     /** Selects a schematic as the active one for tools/printer/control. */
     public static void selectSchematic(SchematicWorld world) {
         ClientProxy.schematic = world;
-        if (world != null) {
-            RendererSchematicGlobal.INSTANCE.createRendererSchematicChunks(world);
-            SchematicPrinter.INSTANCE.setSchematic(world);
-        }
+        RendererSchematicGlobal.INSTANCE.selectSchematic(world);
+        SchematicPrinter.INSTANCE.setSchematic(world);
     }
 
     /** Cycles to the next loaded schematic. */

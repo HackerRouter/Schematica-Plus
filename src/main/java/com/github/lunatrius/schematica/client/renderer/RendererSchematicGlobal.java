@@ -38,6 +38,7 @@ public class RendererSchematicGlobal {
     public RenderBlocks renderBlocks = null;
     public final List<RendererSchematicChunk> sortedRendererSchematicChunk = new ArrayList<>();
     private final RendererSchematicChunkComparator rendererSchematicChunkComparator = new RendererSchematicChunkComparator();
+    private final RenderUpdateScheduler<RendererSchematicChunk> updateScheduler = new RenderUpdateScheduler<>();
 
     /** Per-schematic renderer data for multi-schematic rendering. */
     private final Map<SchematicWorld, SchematicRenderData> renderDataMap = new HashMap<>();
@@ -81,6 +82,8 @@ public class RendererSchematicGlobal {
 
         this.profiler.startSection("schematic");
 
+        updateRenderers();
+
         // Render each loaded schematic
         for (SchematicWorld sw : ClientProxy.loadedSchematics) {
             if (!sw.isRendering) continue;
@@ -93,28 +96,6 @@ public class RendererSchematicGlobal {
             Vector3d playerPos = ClientProxy.playerPosition.clone();
             playerPos.sub(sw.position.toVector3d());
             GL11.glTranslated(-playerPos.x, -playerPos.y, -playerPos.z);
-
-            // Update frustrum for this schematic
-            this.frustrum.setPosition(
-                ClientProxy.playerPosition.x - sw.position.x,
-                ClientProxy.playerPosition.y - sw.position.y,
-                ClientProxy.playerPosition.z - sw.position.z);
-            for (RendererSchematicChunk chunk : data.chunks) {
-                chunk.isInFrustrum = this.frustrum.isBoundingBoxInFrustum(chunk.getBoundingBox());
-            }
-
-            // Sort and update dirty chunks
-            if (RendererSchematicChunk.getCanUpdate()) {
-                this.rendererSchematicChunkComparator.setPosition(sw.position);
-                data.chunks.sort(this.rendererSchematicChunkComparator);
-                int updatedCount = 0;
-                for (RendererSchematicChunk chunk : data.chunks) {
-                    if (chunk.getDirty()) {
-                        chunk.updateRenderer();
-                        if (++updatedCount >= 3) break;
-                    }
-                }
-            }
 
             // Render passes
             for (int pass = 0; pass < 3; pass++) {
@@ -277,6 +258,36 @@ public class RendererSchematicGlobal {
         GL11.glDisable(GL11.GL_BLEND);
         GL11.glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
         GL11.glPopMatrix();
+    }
+
+    private void updateRenderers() {
+        List<List<RendererSchematicChunk>> groups = new ArrayList<>();
+        for (SchematicWorld schematic : ClientProxy.loadedSchematics) {
+            if (!schematic.isRendering) continue;
+            SchematicRenderData data = renderDataMap.get(schematic);
+            if (data == null) continue;
+            this.frustrum.setPosition(
+                ClientProxy.playerPosition.x - schematic.position.x,
+                ClientProxy.playerPosition.y - schematic.position.y,
+                ClientProxy.playerPosition.z - schematic.position.z);
+            for (RendererSchematicChunk chunk : data.chunks) {
+                chunk.isInFrustrum = this.frustrum.isBoundingBoxInFrustum(chunk.getBoundingBox());
+            }
+            this.rendererSchematicChunkComparator.setPosition(schematic.position);
+            data.chunks.sort(this.rendererSchematicChunkComparator);
+            groups.add(data.chunks);
+        }
+        long deadline = System.nanoTime() + 4_000_000L;
+        updateScheduler.update(groups, 3, () -> System.nanoTime() < deadline,
+            RendererSchematicChunk::getDirty, RendererSchematicChunk::updateRenderer);
+    }
+
+    public void selectSchematic(SchematicWorld schematic) {
+        if (schematic != null && !renderDataMap.containsKey(schematic)) {
+            createRendererSchematicChunks(schematic);
+        } else {
+            rebuildLegacyChunkList();
+        }
     }
 
     public void createRendererSchematicChunks(SchematicWorld schematic) {

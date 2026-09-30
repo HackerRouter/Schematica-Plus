@@ -8,7 +8,6 @@ import net.minecraft.util.EnumChatFormatting;
 
 import com.github.lunatrius.schematica.Schematica;
 import com.github.lunatrius.schematica.client.printer.SchematicPrinter;
-import com.github.lunatrius.schematica.client.renderer.RendererSchematicChunk;
 import com.github.lunatrius.schematica.client.world.SchematicWorld;
 import com.github.lunatrius.schematica.handler.ConfigurationHandler;
 import com.github.lunatrius.schematica.proxy.ClientProxy;
@@ -71,9 +70,6 @@ public class TickHandler {
                         }
                     }
                 }
-
-                this.minecraft.mcProfiler.endStartSection("canUpdate");
-                RendererSchematicChunk.setCanUpdate(true);
 
                 this.minecraft.mcProfiler.endSection();
             }

@@ -32,8 +32,6 @@ public class RendererSchematicChunk {
 
     private static final ShaderProgram SHADER_ALPHA = new ShaderProgram("schematica", null, "shaders/alpha.frag");
 
-    private static boolean canUpdate = false;
-
     public boolean isInFrustrum = false;
 
     public final Vector3d centerPosition = new Vector3d();
@@ -101,14 +99,6 @@ public class RendererSchematicChunk {
         return this.boundingBox;
     }
 
-    public static void setCanUpdate(boolean parCanUpdate) {
-        canUpdate = parCanUpdate;
-    }
-
-    public static boolean getCanUpdate() {
-        return canUpdate;
-    }
-
     public void setDirty() {
         this.needsUpdate = true;
     }
@@ -120,7 +110,6 @@ public class RendererSchematicChunk {
     public void updateRenderer() {
         if (this.needsUpdate) {
             this.needsUpdate = false;
-            setCanUpdate(false);
 
             RenderHelper.createBuffers();
 

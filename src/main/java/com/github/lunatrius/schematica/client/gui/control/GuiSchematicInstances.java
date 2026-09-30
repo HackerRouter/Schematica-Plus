@@ -120,7 +120,6 @@ public class GuiSchematicInstances extends GuiScreenBase {
 
         SchematicWorld sw = ClientProxy.loadedSchematics.get(idx);
         sw.isRendering = this.cbToggleVisible.isChecked();
-        RendererSchematicGlobal.INSTANCE.refresh();
     }
 
     private void toggleEntities() {

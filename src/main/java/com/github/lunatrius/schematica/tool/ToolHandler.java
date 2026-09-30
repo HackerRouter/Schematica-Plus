@@ -231,7 +231,7 @@ public class ToolHandler {
         } else {
             ClientProxy.moveSchematicToPlayer(schematic);
         }
-        RendererSchematicGlobal.INSTANCE.refresh();
+        RendererSchematicGlobal.INSTANCE.refresh(schematic);
         return true;
     }
 

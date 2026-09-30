@@ -75,7 +75,7 @@ public class InputHandler {
                 if (schematic != null && schematic.isRenderingLayer) {
                     schematic.renderingLayer = MathHelper
                         .clamp_int(schematic.renderingLayer + 1, 0, schematic.getHeight() - 1);
-                    RendererSchematicGlobal.INSTANCE.refresh();
+                    RendererSchematicGlobal.INSTANCE.refresh(schematic);
                 }
             }
 
@@ -84,7 +84,7 @@ public class InputHandler {
                 if (schematic != null && schematic.isRenderingLayer) {
                     schematic.renderingLayer = MathHelper
                         .clamp_int(schematic.renderingLayer - 1, 0, schematic.getHeight() - 1);
-                    RendererSchematicGlobal.INSTANCE.refresh();
+                    RendererSchematicGlobal.INSTANCE.refresh(schematic);
                 }
             }
 
