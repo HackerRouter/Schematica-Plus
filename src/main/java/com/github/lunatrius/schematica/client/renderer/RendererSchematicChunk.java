@@ -26,6 +26,7 @@ import com.github.lunatrius.schematica.client.world.SchematicWorld;
 import com.github.lunatrius.schematica.handler.ConfigurationHandler;
 import com.github.lunatrius.schematica.reference.Constants;
 import com.github.lunatrius.schematica.reference.Reference;
+import com.github.lunatrius.schematica.compat.VisualAdapters;
 
 public class RendererSchematicChunk {
 
@@ -405,6 +406,7 @@ public class RendererSchematicChunk {
                         GL11.glPushMatrix();
                         GL11.glPushAttrib(GL11.GL_ALL_ATTRIB_BITS);
                         try {
+                            VisualAdapters.beforeRender(tileEntity, partialTicks);
                             tileEntitySpecialRenderer.renderTileEntityAt(tileEntity, x, y, z, partialTicks);
 
                             OpenGlHelper.setActiveTexture(OpenGlHelper.lightmapTexUnit);

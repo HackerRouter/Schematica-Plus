@@ -8,6 +8,28 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 public class VisualStreamsTest {
+    public static class BufferWrapper {
+        final ByteBuf buffer;
+        public BufferWrapper(ByteBuf buffer) { this.buffer = buffer; }
+    }
+
+    public static class WrappedState {
+        int mask = 37;
+        ByteBuf buffer;
+        public void write(BufferWrapper output) { buffer = output.buffer; buffer.writeInt(mask); }
+        public void read(BufferWrapper input) { buffer = input.buffer; mask = buffer.readInt(); }
+    }
+
+    @Test public void supportsLocalStreamWrappersWithoutNetworkDispatch() throws Exception {
+        WrappedState state = new WrappedState();
+        byte[] bytes = VisualStreams.writeBuffer(state, "write", BufferWrapper.class.getName());
+        assertEquals(0, state.buffer.refCnt());
+        state.mask = 0;
+        VisualStreams.readBuffer(state, "read", BufferWrapper.class.getName(), bytes);
+        assertEquals(37, state.mask);
+        assertEquals(0, state.buffer.refCnt());
+    }
+
     public static class Multipart {
         int connections = 0x531;
         ByteBuf lastBuffer;

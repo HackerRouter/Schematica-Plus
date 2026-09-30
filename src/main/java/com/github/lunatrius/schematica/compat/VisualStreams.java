@@ -42,9 +42,13 @@ final class VisualStreams {
     }
 
     static byte[] writeBuffer(Object target, String method) throws ReflectiveOperationException {
+        return writeBuffer(target, method, null);
+    }
+
+    static byte[] writeBuffer(Object target, String method, String wrapperClass) throws ReflectiveOperationException {
         ByteBuf buffer = Unpooled.buffer(256, MAX_BYTES);
         try {
-            Reflect.call(target, method, new Class<?>[] { ByteBuf.class }, buffer);
+            callBuffer(target, method, wrapperClass, buffer);
             byte[] bytes = new byte[buffer.readableBytes()];
             buffer.readBytes(bytes);
             return bytes;
@@ -54,14 +58,26 @@ final class VisualStreams {
     }
 
     static void readBuffer(Object target, String method, byte[] bytes) throws Exception {
+        readBuffer(target, method, null, bytes);
+    }
+
+    static void readBuffer(Object target, String method, String wrapperClass, byte[] bytes) throws Exception {
         checkSize(bytes.length);
         ByteBuf buffer = Unpooled.wrappedBuffer(bytes);
         try {
-            Reflect.call(target, method, new Class<?>[] { ByteBuf.class }, buffer);
+            callBuffer(target, method, wrapperClass, buffer);
             if (buffer.isReadable()) throw new IOException("Unconsumed visual update data");
         } finally {
             buffer.release();
         }
+    }
+
+    private static void callBuffer(Object target, String method, String wrapperClass, ByteBuf buffer)
+        throws ReflectiveOperationException {
+        Class<?> type = wrapperClass == null ? ByteBuf.class
+            : Class.forName(wrapperClass, false, target.getClass().getClassLoader());
+        Object stream = wrapperClass == null ? buffer : type.getConstructor(ByteBuf.class).newInstance(buffer);
+        Reflect.call(target, method, new Class<?>[] {type}, stream);
     }
 
     static byte[] writeStream(Object target, String method, String streamClass) throws Exception {

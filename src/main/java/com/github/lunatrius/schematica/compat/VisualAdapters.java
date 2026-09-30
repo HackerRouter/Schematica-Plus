@@ -30,6 +30,8 @@ public final class VisualAdapters {
         register(new GalacticraftVisualAdapter());
         register(new MultipartVisualAdapter());
         register(new GregTechVisualAdapter());
+        register(new LogisticsPipesVisualAdapter());
+        register(new CodeChickenVisualAdapter());
     }
 
     private VisualAdapters() {}
@@ -110,6 +112,13 @@ public final class VisualAdapters {
             } catch (Exception | LinkageError e) {
                 Reference.logger.warn("Could not restore {} for {}", adapter.id(), tile.getClass().getName(), e);
             }
+        }
+    }
+
+    public static void beforeRender(TileEntity tile, float partialTicks) {
+        for (ISchematicVisualAdapter adapter : ADAPTERS) {
+            try { adapter.beforeRender(tile, partialTicks); }
+            catch (Exception | LinkageError e) { Reference.logger.debug("Could not animate {}", adapter.id(), e); }
         }
     }
 }

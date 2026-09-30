@@ -89,6 +89,9 @@ assigned to a world, because that assignment is ambiguous. Reload/place schemati
 once to establish the new keys. Ordered transforms apply to newly saved sessions.
 # GTNH client-only visual state
 
+- LogisticsPipes: reopen routed pipes with power indicators, mixed BuildCraft connections and pluggables. Check the old and new pipe renderers.
+- EnderStorage/Translocators: reopen filled ender tanks, their redstone-controlled valves, open ender chests and upgraded translocator attachments. Visual interpolation must continue without changing storage contents or sending placement/transfer packets.
+
 - GT: check formed turbine/air-filter overlays and custom machine indicators, including single-player server capture and multiplayer client capture.
 - BuildCraft: save filled fluid pipes, powered kinesis pipes, gates and facades. Verify the pipe contents and per-side power display after reopening.
 - Multipart: test ProjectRed lamps, framed/unframed wires, gates, microblocks and AE2 parts sharing a multipart tile. Check part count, lamp state, covers and connections after reopening. Repeat with a different mod version to check binary payload rejection.
