@@ -21,7 +21,7 @@ public class WorldHandler {
             addWorldAccess(event.world, SchematicUpdater.INSTANCE);
             // Resolve and track the world/server name
             try {
-                String name = worldServerName(Minecraft.getMinecraft());
+                String name = worldServerName(Minecraft.getMinecraft(), event.world);
                 if (name != null && !name.isEmpty()) {
                     ClientProxy.lastWorldServerName = name;
                     // Restore schematics if they were cleared by resetSettings or if this is a fresh load
@@ -46,7 +46,7 @@ public class WorldHandler {
                 // Try to get the current name; fall back to lastWorldServerName
                 String name = null;
                 try {
-                    name = worldServerName(Minecraft.getMinecraft());
+                    name = worldServerName(Minecraft.getMinecraft(), event.world);
                 } catch (Exception ignored) {}
                 if (name == null || name.isEmpty()) {
                     name = ClientProxy.lastWorldServerName;
@@ -60,6 +60,13 @@ public class WorldHandler {
                 Reference.logger.debug("Could not save schematics on world unload", e);
             }
             removeWorldAccess(event.world, SchematicUpdater.INSTANCE);
+            ClientProxy.unloadAllSchematics();
+            ClientProxy.lastWorldServerName = null;
+            ClientProxy.isPendingRestore = true;
+            ClientProxy.pointA.set(0, 0, 0);
+            ClientProxy.pointB.set(0, 0, 0);
+            ClientProxy.updatePoints();
+            ClientProxy.isRenderingGuide = false;
         }
     }
 

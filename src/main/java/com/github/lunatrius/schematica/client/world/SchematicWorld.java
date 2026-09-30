@@ -2,9 +2,12 @@ package com.github.lunatrius.schematica.client.world;
 
 import java.io.File;
 import java.util.List;
+import java.util.ArrayList;
 
 import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityHanging;
+import net.minecraft.util.Direction;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemStack;
 import net.minecraft.profiler.Profiler;
@@ -24,6 +27,7 @@ import com.github.lunatrius.schematica.internal.lunatriuscore.util.vector.Vector
 import com.github.lunatrius.schematica.api.ISchematic;
 import com.github.lunatrius.schematica.handler.ConfigurationHandler;
 import com.github.lunatrius.schematica.reference.Reference;
+import com.github.lunatrius.schematica.util.SchematicTransform;
 import com.github.lunatrius.schematica.world.chunk.ChunkProviderSchematic;
 import com.github.lunatrius.schematica.world.storage.SaveHandlerSchematic;
 import com.github.lunatrius.schematica.world.storage.Schematic;
@@ -44,6 +48,9 @@ public class SchematicWorld extends World {
     public static final ItemStack DEFAULT_ICON = new ItemStack(Blocks.grass);
 
     private ISchematic schematic;
+    public final List<String> transformOperations = new ArrayList<>();
+
+    public ISchematic getSchematic() { return this.schematic; }
 
     public final Vector3i position = new Vector3i();
     public boolean isRendering;
@@ -245,6 +252,84 @@ public class SchematicWorld extends World {
     }
 
     public void flip(ForgeDirection direction) {
+        transform(direction, true);
+    }
+
+    public void rotate(ForgeDirection direction) {
+        transform(direction, false);
+    }
+
+    private void transform(ForgeDirection direction, boolean mirror) {
+        char operation;
+        switch (direction) {
+            case EAST: operation = 'X'; break;
+            case UP: operation = 'Y'; break;
+            case SOUTH: operation = 'Z'; break;
+            default: throw new IllegalArgumentException("Unsupported transform axis");
+        }
+        if (mirror) operation = Character.toLowerCase(operation);
+        List<Entity> entities = new ArrayList<>(this.schematic.getEntities());
+        for (Entity entity : entities) {
+            if (entity instanceof EntityHanging) {
+                int facing = ((EntityHanging) entity).hangingDirection;
+                double[] normal = SchematicTransform.point(operation, Direction.offsetX[facing], 0,
+                    Direction.offsetZ[facing], 0, 0, 0);
+                if (normal[1] != 0) {
+                    // 1.7.10 has no floor/ceiling direction for paintings and item frames.
+                    net.minecraft.client.Minecraft mc = net.minecraft.client.Minecraft.getMinecraft();
+                    if (mc != null && mc.thePlayer != null) mc.thePlayer.addChatMessage(
+                        new net.minecraft.util.ChatComponentText("Cannot rotate wall-mounted entities onto a floor or ceiling."));
+                    return;
+                }
+            }
+        }
+        int w = getWidth(), h = getHeight(), l = getLength();
+        boolean layerMode = this.isRenderingLayer;
+        this.isRenderingLayer = false;
+        try {
+            if (mirror) flipContents(direction);
+            else rotateContents(direction);
+            for (Entity entity : entities) {
+                double[] p = SchematicTransform.point(operation, entity.posX, entity.posY, entity.posZ, w, h, l);
+                double yaw = Math.toRadians(entity.rotationYaw), pitch = Math.toRadians(entity.rotationPitch);
+                double[] look = SchematicTransform.point(operation, -Math.sin(yaw) * Math.cos(pitch),
+                    -Math.sin(pitch), Math.cos(yaw) * Math.cos(pitch), 0, 0, 0);
+                entity.setLocationAndAngles(p[0], p[1], p[2],
+                    (float) Math.toDegrees(Math.atan2(-look[0], look[2])),
+                    (float) Math.toDegrees(Math.atan2(-look[1], Math.hypot(look[0], look[2]))));
+                double[] motion = SchematicTransform.point(operation, entity.motionX, entity.motionY, entity.motionZ, 0, 0, 0);
+                entity.motionX = motion[0]; entity.motionY = motion[1]; entity.motionZ = motion[2];
+                if (entity instanceof EntityHanging) {
+                    EntityHanging hanging = (EntityHanging) entity;
+                    double[] anchor = SchematicTransform.point(operation, hanging.field_146063_b, hanging.field_146064_c,
+                        hanging.field_146062_d, w - 1, h - 1, l - 1);
+                    hanging.field_146063_b = (int) anchor[0];
+                    hanging.field_146064_c = (int) anchor[1];
+                    hanging.field_146062_d = (int) anchor[2];
+                    double[] normal = SchematicTransform.point(operation, Direction.offsetX[hanging.hangingDirection], 0,
+                        Direction.offsetZ[hanging.hangingDirection], 0, 0, 0);
+                    for (int i = 0; i < 4; i++) {
+                        if (normal[0] == Direction.offsetX[i] && normal[2] == Direction.offsetZ[i]) {
+                            hanging.setDirection(i);
+                            break;
+                        }
+                    }
+                }
+                entity.prevPosX = entity.lastTickPosX = entity.posX;
+                entity.prevPosY = entity.lastTickPosY = entity.posY;
+                entity.prevPosZ = entity.lastTickPosZ = entity.posZ;
+                entity.prevRotationYaw = entity.rotationYaw;
+                entity.prevRotationPitch = entity.rotationPitch;
+                this.schematic.addEntity(entity);
+            }
+            this.transformOperations.add(String.valueOf(operation));
+        } finally {
+            this.isRenderingLayer = layerMode;
+            this.renderingLayer = Math.min(this.renderingLayer, getHeight() - 1);
+        }
+    }
+
+    private void flipContents(ForgeDirection direction) {
         final ItemStack icon = this.schematic.getIcon();
         final int width = this.schematic.getWidth();
         final int height = this.schematic.getHeight();
@@ -328,7 +413,7 @@ public class SchematicWorld extends World {
         refreshChests();
     }
 
-    public void rotate(ForgeDirection direction) {
+    private void rotateContents(ForgeDirection direction) {
         final ItemStack icon = this.schematic.getIcon();
         final int width = this.schematic.getWidth();
         final int height = this.schematic.getHeight();

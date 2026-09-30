@@ -292,7 +292,7 @@ public class RendererSchematicGlobal {
         for (int y = 0; y < height; y++) {
             for (int z = 0; z < length; z++) {
                 for (int x = 0; x < width; x++) {
-                    data.chunks.add(new RendererSchematicChunk(schematic, x, y, z));
+                    data.chunks.add(new RendererSchematicChunk(schematic, data.renderBlocks, x, y, z));
                 }
             }
         }

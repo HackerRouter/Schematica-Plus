@@ -220,6 +220,8 @@ public class ClientProxy extends CommonProxy {
         public int RotationX, RotationY, RotationZ;
         public int FlipX, FlipY, FlipZ;
         public boolean isActive;
+        public List<String> transforms;
+        public Boolean visible, entities, blockNBT;
 
         LoadedSchematicEntry() {}
     }
@@ -443,9 +445,9 @@ public class ClientProxy extends CommonProxy {
     public void unloadSchematic() {
         if (schematic != null) {
             loadedSchematics.remove(schematic);
+            RendererSchematicGlobal.INSTANCE.removeRendererSchematicChunks(schematic);
         }
         schematic = null;
-        RendererSchematicGlobal.INSTANCE.destroyRendererSchematicChunks();
         SchematicPrinter.INSTANCE.setSchematic(null);
         // If there are still loaded schematics, select the first one
         if (!loadedSchematics.isEmpty()) {
@@ -530,7 +532,7 @@ public class ClientProxy extends CommonProxy {
                 try (Reader reader = Files.newBufferedReader(file.toPath(), StandardCharsets.UTF_8)) {
                     allData = gson.fromJson(reader, loadedSchematicsDataType);
                 } catch (Exception e) {
-                    allData = new HashMap<>();
+                    throw new IOException("Existing schematic settings are unreadable; preserving the file", e);
                 }
             } else {
                 allData = new HashMap<>();
@@ -552,15 +554,16 @@ public class ClientProxy extends CommonProxy {
                 entry.FlipY = sw.flipStateY;
                 entry.FlipZ = sw.flipStateZ;
                 entry.isActive = (sw == schematic);
+                entry.transforms = new ArrayList<>(sw.transformOperations);
+                entry.visible = sw.isRendering;
+                entry.entities = sw.isRenderingEntities;
+                entry.blockNBT = sw.isPastingBlockNBT;
                 entries.add(entry);
             }
             allData.put(worldServerName, entries);
 
-            try (OutputStreamWriter writer = new OutputStreamWriter(
-                new FileOutputStream(file), StandardCharsets.UTF_8)) {
-                gson.toJson(allData, loadedSchematicsDataType, writer);
-                writer.flush();
-            }
+            com.github.lunatrius.schematica.util.FileUtils.writeUtf8Atomically(file,
+                gson.toJson(allData, loadedSchematicsDataType));
             Reference.logger.info("Saved {} loaded schematics for '{}'", entries.size(), worldServerName);
         } catch (Exception e) {
             Reference.logger.error("Failed to save loaded schematics", e);
@@ -604,7 +607,19 @@ public class ClientProxy extends CommonProxy {
                 // Restore position
                 world.position.set(entry.X, entry.Y, entry.Z);
 
-                // Restore rotations
+                if (entry.transforms != null) {
+                    for (String op : entry.transforms) {
+                        if (op == null || op.length() != 1 || "XYZxyz".indexOf(op.charAt(0)) < 0) {
+                            throw new IllegalArgumentException("Invalid saved transformation");
+                        }
+                        char axis = Character.toUpperCase(op.charAt(0));
+                        ForgeDirection direction = axis == 'X' ? ForgeDirection.EAST
+                            : axis == 'Y' ? ForgeDirection.UP : ForgeDirection.SOUTH;
+                        if (Character.isLowerCase(op.charAt(0))) world.flip(direction);
+                        else world.rotate(direction);
+                    }
+                } else {
+                // Legacy files did not retain the operation order.
                 for (int i = 0; i < entry.RotationX; i++) world.rotate(ForgeDirection.EAST);
                 for (int i = 0; i < entry.RotationY; i++) world.rotate(ForgeDirection.UP);
                 for (int i = 0; i < entry.RotationZ; i++) world.rotate(ForgeDirection.SOUTH);
@@ -613,6 +628,10 @@ public class ClientProxy extends CommonProxy {
                 for (int i = 0; i < entry.FlipX; i++) world.flip(ForgeDirection.EAST);
                 for (int i = 0; i < entry.FlipY; i++) world.flip(ForgeDirection.UP);
                 for (int i = 0; i < entry.FlipZ; i++) world.flip(ForgeDirection.SOUTH);
+                }
+                if (entry.visible != null) world.isRendering = entry.visible;
+                if (entry.entities != null) world.isRenderingEntities = entry.entities;
+                if (entry.blockNBT != null) world.isPastingBlockNBT = entry.blockNBT;
 
                 loadedSchematics.add(world);
                 // Create render data for EVERY restored schematic so it's visible
@@ -646,7 +665,7 @@ public class ClientProxy extends CommonProxy {
                 try (Reader reader = Files.newBufferedReader(file.toPath(), StandardCharsets.UTF_8)) {
                     allData = gson.fromJson(reader, areaSelectionDataType);
                 } catch (Exception e) {
-                    allData = new HashMap<>();
+                    throw new IOException("Existing area settings are unreadable; preserving the file", e);
                 }
             } else {
                 allData = new HashMap<>();
@@ -659,11 +678,8 @@ public class ClientProxy extends CommonProxy {
             data.renderingGuide = isRenderingGuide;
             allData.put(worldServerName, data);
 
-            try (OutputStreamWriter writer = new OutputStreamWriter(
-                new FileOutputStream(file), StandardCharsets.UTF_8)) {
-                gson.toJson(allData, areaSelectionDataType, writer);
-                writer.flush();
-            }
+            com.github.lunatrius.schematica.util.FileUtils.writeUtf8Atomically(file,
+                gson.toJson(allData, areaSelectionDataType));
             Reference.logger.debug("Saved area selection for '{}'", worldServerName);
         } catch (Exception e) {
             Reference.logger.error("Failed to save area selection", e);

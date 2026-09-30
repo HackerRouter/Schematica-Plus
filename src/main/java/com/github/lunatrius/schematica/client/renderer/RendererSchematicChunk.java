@@ -41,6 +41,7 @@ public class RendererSchematicChunk {
     private final Minecraft minecraft = Minecraft.getMinecraft();
     private final Profiler profiler = this.minecraft.mcProfiler;
     private final SchematicWorld schematic;
+    private final RenderBlocks ownRenderBlocks;
     private final List<TileEntity> tileEntities = new ArrayList<>();
     private final Vector3d distance = new Vector3d();
 
@@ -51,8 +52,9 @@ public class RendererSchematicChunk {
     // TODO: move this away from GL lists
     private int glListHighlight = -1;
 
-    public RendererSchematicChunk(SchematicWorld schematicWorld, int baseX, int baseY, int baseZ) {
+    public RendererSchematicChunk(SchematicWorld schematicWorld, RenderBlocks renderBlocks, int baseX, int baseY, int baseZ) {
         this.schematic = schematicWorld;
+        this.ownRenderBlocks = renderBlocks;
         this.boundingBox.setBounds(
             baseX * Constants.SchematicChunk.WIDTH,
             baseY * Constants.SchematicChunk.HEIGHT,
@@ -235,7 +237,7 @@ public class RendererSchematicChunk {
 
     public void renderBlocks(int renderPass, int minX, int minY, int minZ, int maxX, int maxY, int maxZ) {
         IBlockAccess mcWorld = this.minecraft.theWorld;
-        RenderBlocks renderBlocks = RendererSchematicGlobal.INSTANCE.renderBlocks;
+        RenderBlocks renderBlocks = this.ownRenderBlocks;
 
         int x, y, z, wx, wy, wz;
         int sides;

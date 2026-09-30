@@ -7,6 +7,22 @@ import com.github.lunatrius.schematica.reference.Reference;
 
 public class FileUtils {
 
+    public static void writeUtf8Atomically(File file, String text) throws IOException {
+        java.nio.file.Path target = file.toPath().toAbsolutePath();
+        java.nio.file.Path temporary = java.nio.file.Files.createTempFile(target.getParent(), ".schematica-", ".tmp");
+        try {
+            java.nio.file.Files.write(temporary, text.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+            try {
+                java.nio.file.Files.move(temporary, target, java.nio.file.StandardCopyOption.ATOMIC_MOVE,
+                    java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+            } catch (java.nio.file.AtomicMoveNotSupportedException e) {
+                java.nio.file.Files.move(temporary, target, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+            }
+        } finally {
+            java.nio.file.Files.deleteIfExists(temporary);
+        }
+    }
+
     public static File resolveSchematicFile(File directory, String filename) throws IOException {
         if (directory == null || filename == null || filename.isEmpty() || filename.equals(".")
             || filename.equals("..") || filename.indexOf('/') >= 0 || filename.indexOf('\\') >= 0

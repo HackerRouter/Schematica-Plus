@@ -13,16 +13,21 @@ public class WorldServerName {
      * @return {@link String} world name or server name
      */
     public static String worldServerName(Minecraft mc) {
+        return worldServerName(mc, mc.theWorld);
+    }
+
+    public static String worldServerName(Minecraft mc, net.minecraft.world.World world) {
         String WorldOrServerName;
         if (mc.isSingleplayer()) {
             WorldOrServerName = FMLCommonHandler.instance()
                 .getMinecraftServerInstance()
-                .getWorldName();
+                .getFolderName();
+            WorldOrServerName = "save:" + WorldOrServerName;
         } else {
             // Gets the server data, only works if you're playing on a server. if you're using direct connect the name
             // will be "Minecraft Server". Crashes if singleplayer
-            WorldOrServerName = mc.func_147104_D().serverName;
+            WorldOrServerName = "server:" + mc.func_147104_D().serverIP.toLowerCase(java.util.Locale.ROOT);
         }
-        return WorldOrServerName;
+        return WorldOrServerName + "|dimension:" + (world == null ? 0 : world.provider.dimensionId);
     }
 }
