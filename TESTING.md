@@ -22,6 +22,9 @@ Before a release, use a disposable 1.7.10 world to check:
   its previously hidden blocks must appear without rebuilding unrelated instances.
 - Apply Y then X rotations, reconnect, and compare the restored result. Repeat in
   another dimension and on a differently addressed server with the same display name.
+- Load different blueprints in the Overworld and Nether, remove the last one in
+  the Nether, then travel back and forth twice and reconnect. The removed instance
+  must remain absent and the Overworld instance must keep its own position.
 - Paste over a chest, paste luminous blocks and a door, save/reload the world, and
   check inventories, lighting and block behavior. Reject pastes crossing Y=0/256.
 - Download a schematic containing inventories, an item frame and a mob. Verify

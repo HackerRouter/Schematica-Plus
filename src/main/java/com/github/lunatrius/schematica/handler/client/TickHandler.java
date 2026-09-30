@@ -1,7 +1,5 @@
 package com.github.lunatrius.schematica.handler.client;
 
-import static com.github.lunatrius.schematica.client.util.WorldServerName.worldServerName;
-
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.EnumChatFormatting;
@@ -46,6 +44,11 @@ public class TickHandler {
     public void onClientTick(TickEvent.ClientTickEvent event) {
         if (event.phase == TickEvent.Phase.END) {
             this.minecraft.mcProfiler.startSection("schematica");
+            if (ClientProxy.isPendingReset) {
+                Schematica.proxy.resetSettings();
+                ClientProxy.isPendingReset = false;
+            }
+            WorldHandler.INSTANCE.updateWorld(this.minecraft);
             SchematicWorld schematic = ClientProxy.schematic;
             if (this.minecraft.thePlayer != null && schematic != null && schematic.isRendering) {
                 this.minecraft.mcProfiler.startSection("printer");
@@ -72,31 +75,6 @@ public class TickHandler {
                 }
 
                 this.minecraft.mcProfiler.endSection();
-            }
-
-            if (ClientProxy.isPendingReset) {
-                Schematica.proxy.resetSettings();
-                ClientProxy.isPendingReset = false;
-
-                // resetSettings saved and cleared schematics, setting isPendingRestore.
-                // If we're already in a world (connect reset fires after WorldEvent.Load),
-                // restore immediately so schematics aren't lost.
-                if (ClientProxy.isPendingRestore && this.minecraft.theWorld != null) {
-                    String name = ClientProxy.lastWorldServerName;
-                    // Try to get a fresh name if possible
-                    try {
-                        String fresh = worldServerName(this.minecraft);
-                        if (fresh != null && !fresh.isEmpty()) {
-                            name = fresh;
-                            ClientProxy.lastWorldServerName = name;
-                        }
-                    } catch (Exception ignored) {}
-                    if (name != null && !name.isEmpty()) {
-                        ClientProxy.restoreLoadedSchematics(name);
-                        ClientProxy.restoreAreaSelection(name);
-                    }
-                    ClientProxy.isPendingRestore = false;
-                }
             }
 
             this.minecraft.mcProfiler.endSection();

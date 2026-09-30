@@ -8,6 +8,7 @@ import net.minecraft.world.World;
 import net.minecraftforge.event.world.WorldEvent;
 
 import com.github.lunatrius.schematica.client.world.SchematicUpdater;
+import com.github.lunatrius.schematica.client.util.WorldSession;
 import com.github.lunatrius.schematica.proxy.ClientProxy;
 import com.github.lunatrius.schematica.reference.Reference;
 
@@ -15,58 +16,47 @@ import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 
 public class WorldHandler {
 
+    public static final WorldHandler INSTANCE = new WorldHandler();
+    private final WorldSession<World> session = new WorldSession<>(key -> {
+        ClientProxy.saveLoadedSchematics(key);
+        ClientProxy.saveAreaSelection(key);
+    }, ClientProxy::clearWorldState, key -> {
+        ClientProxy.lastWorldServerName = key;
+        ClientProxy.restoreLoadedSchematics(key);
+        ClientProxy.restoreAreaSelection(key);
+    });
+
+    private WorldHandler() {}
+
+    public void updateWorld(Minecraft minecraft) {
+        try {
+            World world = minecraft.theWorld;
+            session.update(world, world == null ? null : worldServerName(minecraft, world));
+        } catch (Exception e) {
+            Reference.logger.error("Could not switch schematic world session", e);
+        }
+    }
+
+    public void closeSession() {
+        session.update(null, null);
+    }
+
+    public void saveSession() {
+        session.save();
+    }
+
     @SubscribeEvent
     public void onLoad(final WorldEvent.Load event) {
         if (event.world.isRemote) {
             addWorldAccess(event.world, SchematicUpdater.INSTANCE);
-            // Resolve and track the world/server name
-            try {
-                String name = worldServerName(Minecraft.getMinecraft(), event.world);
-                if (name != null && !name.isEmpty()) {
-                    ClientProxy.lastWorldServerName = name;
-                    // Restore schematics if they were cleared by resetSettings or if this is a fresh load
-                    if (ClientProxy.isPendingRestore || ClientProxy.loadedSchematics.isEmpty()) {
-                        ClientProxy.restoreLoadedSchematics(name);
-                        ClientProxy.isPendingRestore = false;
-                    }
-                    // Restore area selection
-                    ClientProxy.restoreAreaSelection(name);
-                }
-            } catch (Exception e) {
-                Reference.logger.debug("Could not restore schematics on world load", e);
-            }
         }
     }
 
     @SubscribeEvent
     public void onUnload(final WorldEvent.Unload event) {
         if (event.world.isRemote) {
-            // Save loaded schematics before unloading
-            try {
-                // Try to get the current name; fall back to lastWorldServerName
-                String name = null;
-                try {
-                    name = worldServerName(Minecraft.getMinecraft(), event.world);
-                } catch (Exception ignored) {}
-                if (name == null || name.isEmpty()) {
-                    name = ClientProxy.lastWorldServerName;
-                }
-                if (name != null && !name.isEmpty()) {
-                    ClientProxy.saveLoadedSchematics(name);
-                    ClientProxy.saveAreaSelection(name);
-                    // Keep lastWorldServerName so resetSettings can also save if needed
-                }
-            } catch (Exception e) {
-                Reference.logger.debug("Could not save schematics on world unload", e);
-            }
+            session.unload(event.world);
             removeWorldAccess(event.world, SchematicUpdater.INSTANCE);
-            ClientProxy.unloadAllSchematics();
-            ClientProxy.lastWorldServerName = null;
-            ClientProxy.isPendingRestore = true;
-            ClientProxy.pointA.set(0, 0, 0);
-            ClientProxy.pointB.set(0, 0, 0);
-            ClientProxy.updatePoints();
-            ClientProxy.isRenderingGuide = false;
         }
     }
 

@@ -8,6 +8,7 @@ import com.github.lunatrius.schematica.internal.lunatriuscore.client.gui.GuiScre
 import com.github.lunatrius.schematica.Schematica;
 import com.github.lunatrius.schematica.client.renderer.RendererSchematicGlobal;
 import com.github.lunatrius.schematica.client.world.SchematicWorld;
+import com.github.lunatrius.schematica.handler.client.WorldHandler;
 import com.github.lunatrius.schematica.proxy.ClientProxy;
 import com.github.lunatrius.schematica.reference.Names;
 
@@ -156,6 +157,8 @@ public class GuiSchematicInstances extends GuiScreenBase {
                 Schematica.proxy.unloadSchematic();
             }
         }
+
+        WorldHandler.INSTANCE.saveSession();
 
         // Adjust selection
         if (this.slotList.selectedIndex >= ClientProxy.loadedSchematics.size()) {

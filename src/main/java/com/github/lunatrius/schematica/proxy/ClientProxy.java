@@ -67,8 +67,6 @@ public class ClientProxy extends CommonProxy {
     private static final Minecraft MINECRAFT = Minecraft.getMinecraft();
     public static boolean isRenderingGuide = false;
     public static boolean isPendingReset = false;
-    /** Set to true after resetSettings clears schematics; WorldHandler.onLoad will restore them. */
-    public static boolean isPendingRestore = false;
     public static ForgeDirection orientation = ForgeDirection.UNKNOWN;
     public static int rotationRender = 0;
     /** The currently active/selected schematic (for tools, printer, control GUI). */
@@ -377,7 +375,7 @@ public class ClientProxy extends CommonProxy {
         MinecraftForge.EVENT_BUS.register(RendererSchematicGlobal.INSTANCE);
         MinecraftForge.EVENT_BUS.register(ChatEventHandler.INSTANCE);
         MinecraftForge.EVENT_BUS.register(new OverlayHandler());
-        MinecraftForge.EVENT_BUS.register(new WorldHandler());
+        MinecraftForge.EVENT_BUS.register(WorldHandler.INSTANCE);
         MinecraftForge.EVENT_BUS.register(ToolItemHandler.INSTANCE);
     }
 
@@ -420,23 +418,17 @@ public class ClientProxy extends CommonProxy {
         // Turn on the printer again.
         SchematicPrinter.INSTANCE.setEnabled(true);
 
-        // Save schematics and area selection before clearing so they can be restored on next world load.
-        // Use lastWorldServerName since the server may already be gone at this point.
-        if (lastWorldServerName != null && !lastWorldServerName.isEmpty()) {
-            if (!loadedSchematics.isEmpty()) {
-                saveLoadedSchematics(lastWorldServerName);
-                Reference.logger.info("Saved schematics during reset for '{}'", lastWorldServerName);
-            }
-            saveAreaSelection(lastWorldServerName);
-        }
-        unloadAllSchematics();
-        isPendingRestore = true;
+        WorldHandler.INSTANCE.closeSession();
+        clearWorldState();
 
         playerPosition.set(0, 0, 0);
         orientation = ForgeDirection.UNKNOWN;
         rotationRender = 0;
+    }
 
-        // Clear area selection — will be restored from persistence on next world load
+    public static void clearWorldState() {
+        unloadAllSchematics();
+        lastWorldServerName = null;
         pointA.set(0, 0, 0);
         pointB.set(0, 0, 0);
         pointMin.set(0, 0, 0);
@@ -456,6 +448,7 @@ public class ClientProxy extends CommonProxy {
         if (!loadedSchematics.isEmpty()) {
             selectSchematic(loadedSchematics.get(0));
         }
+        WorldHandler.INSTANCE.saveSession();
     }
 
     /** Unloads all schematics. */
