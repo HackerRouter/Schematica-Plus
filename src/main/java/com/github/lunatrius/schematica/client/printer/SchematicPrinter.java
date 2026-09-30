@@ -175,6 +175,10 @@ public class SchematicPrinter {
                     final int metadata = this.schematic.getBlockMetadata(x, y, z);
                     final int realMetadata = world.getBlockMetadata(wx, wy, wz);
 
+                    if (FluidPrinter.isFluid(block)) {
+                        if (!FluidPrinter.matches(this.schematic, x, y, z, world, wx, wy, wz)) return false;
+                        continue;
+                    }
                     if (block != realBlock || metadata != realMetadata) {
                         return false;
                     }
@@ -201,6 +205,18 @@ public class SchematicPrinter {
         final int realMetadata = world.getBlockMetadata(wx, wy, wz);
 
         if (block == realBlock && metadata == realMetadata) {
+            return false;
+        }
+
+        if (FluidPrinter.isFluid(block)) {
+            if (FluidPrinter.matches(this.schematic, x, y, z, world, wx, wy, wz)) return false;
+            if (!world.isAirBlock(wx, wy, wz) && !FluidPrinter.isFluid(realBlock)) return false;
+            if (FluidPrinter.isFluid(realBlock) && !FluidPrinter.sameFluid(block, realBlock)) return false;
+            if (FluidPrinter.place(this.minecraft, FluidPrinter.source(this.schematic, x, y, z), wx, wy, wz,
+                bucket -> swapToItem(player.inventory, bucket, true, true))) {
+                this.timeout[x][y][z] = (byte) Math.max(20, ConfigurationHandler.timeout);
+                return true;
+            }
             return false;
         }
 
@@ -423,7 +439,11 @@ public class SchematicPrinter {
     }
 
     private boolean swapToItem(InventoryPlayer inventory, ItemStack itemStack, boolean swapSlots) {
-        int slot = getInventorySlotWithItem(inventory, itemStack);
+        return swapToItem(inventory, itemStack, swapSlots, false);
+    }
+
+    private boolean swapToItem(InventoryPlayer inventory, ItemStack itemStack, boolean swapSlots, boolean matchNBT) {
+        int slot = getInventorySlotWithItem(inventory, itemStack, matchNBT);
 
         if (this.minecraft.playerController.isInCreativeMode()
             && (slot < Constants.Inventory.InventoryOffset.HOTBAR
@@ -444,15 +464,16 @@ public class SchematicPrinter {
         } else if (swapSlots && slot >= Constants.Inventory.InventoryOffset.INVENTORY
             && slot < Constants.Inventory.InventoryOffset.INVENTORY + Constants.Inventory.Size.INVENTORY) {
                 if (swapSlots(inventory, slot)) {
-                    return swapToItem(inventory, itemStack, false);
+                    return swapToItem(inventory, itemStack, false, matchNBT);
                 }
             }
         return false;
     }
 
-    private int getInventorySlotWithItem(final InventoryPlayer inventory, final ItemStack itemStack) {
+    private int getInventorySlotWithItem(final InventoryPlayer inventory, final ItemStack itemStack, boolean matchNBT) {
         for (int i = 0; i < inventory.mainInventory.length; i++) {
-            if (inventory.mainInventory[i] != null && inventory.mainInventory[i].isItemEqual(itemStack)) {
+            if (inventory.mainInventory[i] != null && inventory.mainInventory[i].isItemEqual(itemStack)
+                && (!matchNBT || ItemStack.areItemStackTagsEqual(inventory.mainInventory[i], itemStack))) {
                 return i;
             }
         }

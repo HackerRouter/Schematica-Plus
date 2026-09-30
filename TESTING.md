@@ -47,6 +47,11 @@ Before a release, use a disposable 1.7.10 world to check:
 - Inspect an empty and filled cauldron from all sides with alpha enabled/disabled,
   alongside mod blocks that use both render passes. Check multipart glows and
   ensure rendering them does not change nearby blocks, entities or the HUD.
+- Print water/lava and a registered mod fluid bucket in survival and creative,
+  with the bucket in the hotbar and main inventory. Check consumption/empty bucket,
+  restored view/slot/sneaking, source-versus-flow behavior, reach, occlusion, and
+  server-denied placement. Verify a different fluid or solid block is not replaced.
+  Printing water in the Nether must not waste buckets on repeated evaporation.
 
 Session keys now use save-folder/server-address plus dimension. Legacy entries
 keyed only by display name remain in the JSON files but are not automatically

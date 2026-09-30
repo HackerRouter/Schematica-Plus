@@ -35,6 +35,18 @@ axis, and 1,048,576 X/Y array rows. NBT reads have a 128 MiB allocation budget a
 maximum nesting depth of 64. World edits and captures must stay within Y=0..255.
 Only one save per player and four queued saves globally are accepted at a time.
 
+Both `.schematic` and `.schemplus` can be loaded regardless of the save-format
+preference. Standard files use 12-bit block IDs; use `.schemplus` for IDs above 4095.
+Singleplayer captures use the integrated server's world. Remote client captures
+include only synchronized data; GregTech pipe connections are preserved, but
+unsynchronized inventories and machine data still require a server-side save.
+
+The printer can place source fluids using registered `ItemBucket` containers,
+including mod buckets. In survival, a matching filled bucket must be in your
+inventory, and a neighboring block face must be visible and within reach. Flowing
+fluid is left to the game's simulation. Cells, cans, tanks and arbitrary custom
+fluid tools are not treated as placeable buckets.
+
 Integrated-server edits require creative mode and command permission. They run in
 bounded batches on server ticks; pressing Execute again cancels the remaining work
 and retains edits already made. Multiplayer command fallback is rate-limited and
