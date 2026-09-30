@@ -15,6 +15,15 @@ import static org.junit.Assert.*;
 
 public class SubRegionPlacementsTest {
     private SubRegionPlacements model(SchematicOrigin origin, SchematicRegion... regions) {
+        return modelWithPivot(origin, SchematicOrigin.ZERO, regions);
+    }
+
+    private SubRegionPlacements modelWithPivot(SchematicOrigin origin, SchematicOrigin pivot, SchematicRegion... regions) {
+        ISchematic part = (ISchematic) Proxy.newProxyInstance(getClass().getClassLoader(), new Class<?>[] {ISchematic.class},
+            (proxy, method, args) -> {
+                if (method.getName().equals("getOrigin")) return pivot;
+                throw new UnsupportedOperationException(method.getName());
+            });
         ISchematic source = (ISchematic) Proxy.newProxyInstance(getClass().getClassLoader(), new Class<?>[] {ISchematic.class},
             (proxy, method, args) -> {
                 switch (method.getName()) {
@@ -23,6 +32,7 @@ public class SubRegionPlacementsTest {
                     case "getLength": return 10;
                     case "getOrigin": return origin;
                     case "getRegions": return Arrays.asList(regions);
+                    case "getRegionSchematic": return part;
                     default: throw new UnsupportedOperationException(method.getName());
                 }
             });
@@ -115,11 +125,53 @@ public class SubRegionPlacementsTest {
         JsonObject saved = original.replace(original.get("B").rotation(2)).toJson();
         saved.getAsJsonArray("regions").get(0).getAsJsonObject().addProperty("rotation", 8);
         assertThrows(IllegalArgumentException.class, () -> original.restore(saved));
-        saved.addProperty("version", 2);
+        saved.addProperty("version", 3);
         assertThrows(IllegalArgumentException.class, () -> original.restore(saved));
         assertFalse(original.modified());
         assertThrows(IllegalArgumentException.class, () -> original.select("missing"));
         assertThrows(IllegalArgumentException.class, () -> original.replace(model().get("B")));
+    }
+
+    @Test public void signedRegionAnchorsRemainFixedForAllLocalOrientations() {
+        for (int px : new int[] {0, 2}) for (int py : new int[] {0, 3}) for (int pz : new int[] {0, 4}) {
+            SchematicOrigin pivot = new SchematicOrigin(px, py, pz);
+            SubRegionPlacements model = modelWithPivot(new SchematicOrigin(10, 9, 8), pivot, new SchematicRegion("A", 5, 6, 7, 7, 9, 11));
+            assertArrayEquals(new int[] {-5 + px, -3 + py, -1 + pz}, model.get("A").position.coordinates());
+            for (int r = 0; r < 4; r++) for (int m = 0; m < 3; m++) {
+                SubRegionPlacements.Region region = model.get("A").rotation(r).mirror(m).position(new SchematicOrigin(8, 20, -5));
+                SchematicRegion bounds = region.bounds();
+                for (int x : new int[] {0, 2}) for (int y : new int[] {0, 3}) for (int z : new int[] {0, 4}) {
+                    SchematicOrigin point = SubRegionPlacements.vector(new SchematicOrigin(x - px, y - py, z - pz), region.operations(), false)
+                        .atMinimum(region.position.x, region.position.y, region.position.z);
+                    assertTrue(bounds.contains(point.x, point.y, point.z));
+                }
+                assertArrayEquals(new int[] {8, 20, -5}, region.position.coordinates());
+                assertEquals(r % 2 == 0 ? 3 : 5, bounds.maxX - bounds.minX + 1);
+                assertEquals(r % 2 == 0 ? 5 : 3, bounds.maxZ - bounds.minZ + 1);
+                SubRegionPlacements changed = model.replace(region);
+                assertEquals(changed.toJson(), model.restore(changed.toJson()).toJson());
+                assertArrayEquals(model.get("A").position.coordinates(), changed.reset().get("A").position.coordinates());
+            }
+        }
+    }
+
+    @Test public void migratesOldMinimumCornerPlacementsWithoutMovingTheirBlocks() {
+        SchematicRegion box = new SchematicRegion("A", 0, 0, 0, 2, 3, 4);
+        SubRegionPlacements old = model(SchematicOrigin.ZERO, box);
+        SubRegionPlacements current = modelWithPivot(SchematicOrigin.ZERO, new SchematicOrigin(2, 3, 4), box);
+        for (int r = 0; r < 4; r++) for (int m = 0; m < 3; m++) {
+            SubRegionPlacements.Region before = old.get("A").position(new SchematicOrigin(11, -4, 8)).rotation(r).mirror(m).locks(5);
+            JsonObject saved = old.replace(before).select("A").toJson();
+            saved.addProperty("version", 1);
+            SubRegionPlacements migrated = current.restore(saved);
+            SchematicRegion expected = before.bounds(), actual = migrated.get("A").bounds();
+            assertArrayEquals(new int[] {expected.minX, expected.minY, expected.minZ, expected.maxX, expected.maxY, expected.maxZ},
+                new int[] {actual.minX, actual.minY, actual.minZ, actual.maxX, actual.maxY, actual.maxZ});
+            assertEquals(5, migrated.get("A").locks);
+            assertEquals("A", migrated.selected);
+            assertEquals(2, migrated.toJson().get("version").getAsInt());
+            assertEquals(migrated.toJson(), current.restore(migrated.toJson()).toJson());
+        }
     }
 
     @Test public void legacyFilesExposeOneEditableFullRegion() {

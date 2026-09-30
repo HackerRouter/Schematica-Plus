@@ -11,6 +11,8 @@ public interface ISchematic {
 
     default SchematicOrigin getOrigin() { return SchematicOrigin.ZERO; }
 
+    default ISchematic getRegionSchematic(String name) { return null; }
+
     default List<SchematicRegion> getRegions() {
         return java.util.Collections.emptyList();
     }

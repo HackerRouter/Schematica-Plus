@@ -572,7 +572,7 @@ These checks supersede Phase 12's Simple-editor and bounding-box expectations.
   Check English/Chinese at GUI scales 1-3, resize, keyboard activation, click
   sounds and returning from the subregion page. Main screen state must refresh.
 - Move one region by XYZ, nudge and Move to player; rotate and mirror it. Its
-  original minimum-corner pivot stays at the entered position, and the other
+  original region anchor stays at the entered position, and the other
   region stays unchanged. Test four turns, double mirrors, reset and reload.
   Repeat under global Y and legacy X/Z rotations and mirrors.
 - Select a row, close the GUI and use Move. Only that region should move; its
@@ -596,6 +596,35 @@ These checks supersede Phase 12's Simple-editor and bounding-box expectations.
   Reload a changed source: matching names keep overrides, new names use defaults,
   removed names clear selection. Other placements of the same source are independent.
 - Attempt positions whose combined dimensions exceed allocation limits. The
-  rejected geometry must leave the previous placement usable. Signed-size region
-  pivots and distinct overlapping Litematic payloads are still importer limitations.
+  rejected geometry must leave the previous placement usable. See Phase 16 for
+  signed-size region pivots and distinct overlapping Litematic payloads.
   These native game checks have not been run by the agent.
+
+
+## Phase 16: Litematic source preservation and file icons (native checks)
+
+- Browse .litematic, .schematic and .schemplus files (including uppercase suffixes).
+  Check L, S and the separate schemplus.png icon in browsers, loaded lists and
+  placement rows at GUI scales 1-3. Replace the 12x12 RGBA schemplus.png, rebuild
+  or reload resources, and confirm only the Schemplus icon changes.
+- Import a .litematic with overlapping named regions containing different blocks,
+  chest/sign NBT and air at the same positions. Sorted later names win the initial
+  preview. Disable or move the winning region and check the earlier original data
+  returns. Move both apart, rotate/mirror, reset, reload and reconnect. Repeated
+  edits and multiple placements must not contaminate each other's source data.
+- Use regions whose Size is negative on X, Y and Z, separately and together, with
+  a nonzero Position and a global origin outside the enclosing box. Subregion UI,
+  Move tool and outlines must use the saved Position anchor. Test all local Y
+  rotations and mirrors, followed by global transforms. Reset restores the source.
+- Include hanging entities and distinct entities in overlapping source regions.
+  Check entity positions and anchors before/after edits and pasted placement.
+  Ignore entities excludes only that region's entries; repeated UUIDs remain
+  deduplicated in the combined preview. Test both v1 wrappers and v2-7 flat NBT.
+- Back up LoadedSchematics.json and restore an old version 1 subregions record
+  with moved/rotated negative-size regions. Blocks must stay at the old positions;
+  the displayed anchor coordinates can change. Saving upgrades the record to v2.
+- Save Source and compare the .litematic bytes with the original. Server download
+  and flat .schemplus exports do not preserve independent overlapping payloads or
+  signed anchors yet; do not use these as lossless Litematic source backups.
+- Headless build/tests cover data and geometry; the agent has not run these native
+  GUI, Forge rendering or paste checks in Minecraft.

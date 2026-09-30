@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityList;
 import net.minecraft.entity.EntityLivingBase;
@@ -28,6 +27,8 @@ import com.github.lunatrius.schematica.reference.Reference;
 import com.github.lunatrius.schematica.world.WorldDummy;
 import com.github.lunatrius.schematica.world.storage.Schematic;
 import com.github.lunatrius.schematica.api.SchematicRegion;
+import com.github.lunatrius.schematica.api.SchematicOrigin;
+import com.github.lunatrius.schematica.world.storage.MultiRegionSchematic;
 
 public class SchematicLitematica extends SchematicFormat {
 
@@ -48,113 +49,28 @@ public class SchematicLitematica extends SchematicFormat {
     }
 
     private ISchematic readLitematica(NBTTagCompound root) {
-        int version = root.getInteger("Version");
-        Reference.logger.info("Reading .litematic schematic, format version {}", version);
-
-        NBTTagCompound metadata = root.getCompoundTag("Metadata");
-        NBTTagCompound regions = root.getCompoundTag("Regions");
-
-        if (regions.hasNoTags()) {
-            Reference.logger.error("No regions found in .litematic file!");
-            return null;
-        }
-
-        String name = metadata.hasKey("Name") ? metadata.getString("Name") : "Unknown";
-        Reference.logger.info("Litematic schematic '{}' with {} region(s)", name, getRegionCount(regions));
-
-        List<RegionData> regionDataList = new ArrayList<>();
+        LitematicRegions document = new LitematicRegions(root);
+        MultiRegionSchematic schematic = new MultiRegionSchematic(new ItemStack(Blocks.grass), document.width, document.height, document.length);
+        SchematicOrigin min = document.minimum;
+        schematic.setOrigin(new SchematicOrigin(-min.x, -min.y, -min.z));
         List<SchematicRegion> bounds = new ArrayList<>();
-        Set<String> regionNames = regions.func_150296_c();
-        if (regionNames.size() > 256) throw new IllegalArgumentException("Too many subregions");
-
-        int globalMinX = Integer.MAX_VALUE, globalMinY = Integer.MAX_VALUE, globalMinZ = Integer.MAX_VALUE;
-        int globalMaxX = Integer.MIN_VALUE, globalMaxY = Integer.MIN_VALUE, globalMaxZ = Integer.MIN_VALUE;
-
-        for (String regionName : regionNames) {
-            NBTTagCompound region = regions.getCompoundTag(regionName);
-            NBTTagCompound posTag = region.getCompoundTag("Position");
-            NBTTagCompound sizeTag = region.getCompoundTag("Size");
-
-            int posX = posTag.getInteger("x");
-            int posY = posTag.getInteger("y");
-            int posZ = posTag.getInteger("z");
-            int sizeX = sizeTag.getInteger("x");
-            int sizeY = sizeTag.getInteger("y");
-            int sizeZ = sizeTag.getInteger("z");
-            com.github.lunatrius.schematica.util.SchematicLimits.volume(
-                Math.abs((long) sizeX), Math.abs((long) sizeY), Math.abs((long) sizeZ));
-
-            int minX = Math.addExact(posX, Math.min(0, sizeX + (sizeX < 0 ? 1 : 0)));
-            int minY = Math.addExact(posY, Math.min(0, sizeY + (sizeY < 0 ? 1 : 0)));
-            int minZ = Math.addExact(posZ, Math.min(0, sizeZ + (sizeZ < 0 ? 1 : 0)));
-            int maxX = Math.addExact(posX, Math.max(0, sizeX - (sizeX > 0 ? 1 : 0)));
-            int maxY = Math.addExact(posY, Math.max(0, sizeY - (sizeY > 0 ? 1 : 0)));
-            int maxZ = Math.addExact(posZ, Math.max(0, sizeZ - (sizeZ > 0 ? 1 : 0)));
-
-            globalMinX = Math.min(globalMinX, minX);
-            globalMinY = Math.min(globalMinY, minY);
-            globalMinZ = Math.min(globalMinZ, minZ);
-            globalMaxX = Math.max(globalMaxX, maxX);
-            globalMaxY = Math.max(globalMaxY, maxY);
-            globalMaxZ = Math.max(globalMaxZ, maxZ);
-            bounds.add(new SchematicRegion(regionName, minX, minY, minZ, maxX, maxY, maxZ));
-
-            RegionData rd = new RegionData();
-            rd.name = regionName;
-            rd.region = region;
-            rd.posX = posX;
-            rd.posY = posY;
-            rd.posZ = posZ;
-            rd.sizeX = sizeX;
-            rd.sizeY = sizeY;
-            rd.sizeZ = sizeZ;
-            regionDataList.add(rd);
-        }
-
-        int width = com.github.lunatrius.schematica.util.SchematicLimits.dimension(globalMinX, globalMaxX);
-        int height = com.github.lunatrius.schematica.util.SchematicLimits.dimension(globalMinY, globalMaxY);
-        int length = com.github.lunatrius.schematica.util.SchematicLimits.dimension(globalMinZ, globalMaxZ);
-
-        Reference.logger.info("Litematic bounding box: {}x{}x{} (offset: {},{},{})",
-            width, height, length, globalMinX, globalMinY, globalMinZ);
-
-        ItemStack icon = new ItemStack(Blocks.grass);
-        Schematic schematic = new Schematic(icon, width, height, length);
-        List<SchematicRegion> localBounds = new ArrayList<>();
-        for (SchematicRegion box : bounds) {
-            localBounds.add(new SchematicRegion(box.name, Math.subtractExact(box.minX, globalMinX), Math.subtractExact(box.minY, globalMinY),
-                Math.subtractExact(box.minZ, globalMinZ), Math.subtractExact(box.maxX, globalMinX), Math.subtractExact(box.maxY, globalMinY),
-                Math.subtractExact(box.maxZ, globalMinZ)));
-        }
-        schematic.setRegions(localBounds);
-        schematic.setOrigin(new com.github.lunatrius.schematica.api.SchematicOrigin(
-            Math.negateExact(globalMinX), Math.negateExact(globalMinY), Math.negateExact(globalMinZ)));
+        for (LitematicRegions.Region region : document.regions) bounds.add(region.box.offset(-min.x, -min.y, -min.z));
+        schematic.setRegions(bounds);
         BlockStateTranslator translator = BlockStateTranslator.instance();
-
-        for (RegionData rd : regionDataList) {
-            readRegion(rd, schematic, translator, globalMinX, globalMinY, globalMinZ);
+        for (LitematicRegions.Region region : document.regions) {
+            Schematic part = new Schematic(schematic.getIcon(), region.width, region.height, region.length);
+            part.setOrigin(region.origin);
+            readRegion(region, part, translator);
+            schematic.addRegion(region.box.offset(-min.x, -min.y, -min.z), part);
         }
-
         return schematic;
     }
 
-    private void readRegion(RegionData rd, ISchematic schematic, BlockStateTranslator translator,
-                            int offsetX, int offsetY, int offsetZ) {
-        NBTTagCompound region = rd.region;
-
-        int absSizeX = Math.abs(rd.sizeX);
-        int absSizeY = Math.abs(rd.sizeY);
-        int absSizeZ = Math.abs(rd.sizeZ);
-
-        NBTTagList paletteList = region.getTagList("BlockStatePalette", Constants.NBT.TAG_COMPOUND);
+    private void readRegion(LitematicRegions.Region rd, ISchematic schematic, BlockStateTranslator translator) {
+        int absSizeX = rd.width, absSizeY = rd.height, absSizeZ = rd.length;
+        NBTTagList paletteList = rd.palette;
         int paletteSize = paletteList.tagCount();
 
-        if (paletteSize == 0) {
-            Reference.logger.warn("Region '{}' has empty palette, skipping", rd.name);
-            return;
-        }
-
-        // Build palette and keep original state strings for TE translation
         BlockMapping[] palette = new BlockMapping[paletteSize];
         String[] paletteStateStrings = new String[paletteSize];
         for (int i = 0; i < paletteSize; i++) {
@@ -172,54 +88,21 @@ public class SchematicLitematica extends SchematicFormat {
             paletteStateStrings[i] = fullState;
         }
 
-        // Unpack bit-packed block states
-        long[] blockStatesArray = LitematicaNBTReader.getLongArray(region, "BlockStates");
-        if (blockStatesArray == null || blockStatesArray.length == 0) {
-            Reference.logger.warn("Region '{}' has no BlockStates data, skipping", rd.name);
-            return;
-        }
-
-        long totalBlocks = (long) absSizeX * absSizeY * absSizeZ;
-        int bitsPerEntry = LitematicBitArray.getRequiredBits(paletteSize);
-        LitematicBitArray bitArray = new LitematicBitArray(bitsPerEntry, totalBlocks, blockStatesArray);
-
-        // Build a map of schematic-local position -> block state string for TE translation
         Map<Long, String> posToBlockState = new HashMap<>();
 
-        int regionOriginX = rd.sizeX < 0 ? rd.posX + rd.sizeX + 1 : rd.posX;
-        int regionOriginY = rd.sizeY < 0 ? rd.posY + rd.sizeY + 1 : rd.posY;
-        int regionOriginZ = rd.sizeZ < 0 ? rd.posZ + rd.sizeZ + 1 : rd.posZ;
-
-        // Litematica index order: x + z * sizeX + y * sizeX * sizeZ
         for (int y = 0; y < absSizeY; y++) {
             for (int z = 0; z < absSizeZ; z++) {
                 for (int x = 0; x < absSizeX; x++) {
-                    long index = x + (long) z * absSizeX + (long) y * absSizeX * absSizeZ;
-                    int paletteIndex = bitArray.getAt(index);
-
-                    if (paletteIndex < 0 || paletteIndex >= paletteSize) {
-                        continue;
-                    }
-
+                    int paletteIndex = rd.paletteIndex(x, y, z);
                     BlockMapping mapping = palette[paletteIndex];
-                    if (mapping.block == Blocks.air) {
-                        continue;
-                    }
-
-                    int worldX = rd.sizeX < 0 ? rd.posX + rd.sizeX + 1 + x : rd.posX + x;
-                    int worldY = rd.sizeY < 0 ? rd.posY + rd.sizeY + 1 + y : rd.posY + y;
-                    int worldZ = rd.sizeZ < 0 ? rd.posZ + rd.sizeZ + 1 + z : rd.posZ + z;
-
-                    int localX = worldX - offsetX;
-                    int localY = worldY - offsetY;
-                    int localZ = worldZ - offsetZ;
+                    if (mapping.block == Blocks.air) continue;
+                    int localX = x, localY = y, localZ = z;
 
                     if (localX >= 0 && localX < schematic.getWidth()
                         && localY >= 0 && localY < schematic.getHeight()
                         && localZ >= 0 && localZ < schematic.getLength()) {
                         schematic.setBlock(localX, localY, localZ, mapping.block, mapping.metadata);
 
-                        // Store block state string for TE translation (skulls, signs, etc.)
                         String stateStr = paletteStateStrings[paletteIndex];
                         if (stateStr != null && needsBlockStateForTE(stateStr)) {
                             long posKey = ((long) localX & 0xFFFFL) | (((long) localY & 0xFFFFL) << 16) | (((long) localZ & 0xFFFFL) << 32);
@@ -230,26 +113,23 @@ public class SchematicLitematica extends SchematicFormat {
             }
         }
 
-        // Read tile entities
         TileEntityTranslator teTranslator = TileEntityTranslator.instance();
-        // Track which positions already have TEs from the litematic data
         java.util.Set<Long> existingTEPositions = new java.util.HashSet<>();
-        if (region.hasKey("TileEntities", Constants.NBT.TAG_LIST)) {
-            NBTTagList tileEntitiesList = region.getTagList("TileEntities", Constants.NBT.TAG_COMPOUND);
+        {
+            NBTTagList tileEntitiesList = rd.tileEntities();
             int teLoaded = 0;
             int teSkipped = 0;
             for (int i = 0; i < tileEntitiesList.tagCount(); i++) {
                 try {
                     NBTTagCompound teTag = tileEntitiesList.getCompoundTagAt(i);
                     if (teTag.hasKey("x") && teTag.hasKey("y") && teTag.hasKey("z")) {
-                        int teX = teTag.getInteger("x") + regionOriginX - offsetX;
-                        int teY = teTag.getInteger("y") + regionOriginY - offsetY;
-                        int teZ = teTag.getInteger("z") + regionOriginZ - offsetZ;
+                        int teX = teTag.getInteger("x");
+                        int teY = teTag.getInteger("y");
+                        int teZ = teTag.getInteger("z");
                         teTag.setInteger("x", teX);
                         teTag.setInteger("y", teY);
                         teTag.setInteger("z", teZ);
 
-                        // Look up block state string at this position for TE-specific translation
                         long posKey = ((long) teX & 0xFFFFL) | (((long) teY & 0xFFFFL) << 16) | (((long) teZ & 0xFFFFL) << 32);
                         existingTEPositions.add(posKey);
                         String blockStateStr = posToBlockState.get(posKey);
@@ -272,16 +152,15 @@ public class SchematicLitematica extends SchematicFormat {
                         }
                     }
                 } catch (Exception e) {
-                    Reference.logger.debug("Failed to load TileEntity from litematic region '{}': {}", rd.name, e.getMessage());
+                    Reference.logger.debug("Failed to load TileEntity from litematic region '{}': {}", rd.box.name, e.getMessage());
                     teSkipped++;
                 }
             }
             if (teLoaded > 0 || teSkipped > 0) {
-                Reference.logger.info("Region '{}': loaded {} TileEntities, skipped {}", rd.name, teLoaded, teSkipped);
+                Reference.logger.info("Region '{}': loaded {} TileEntities, skipped {}", rd.box.name, teLoaded, teSkipped);
             }
         }
 
-        // Synthesize FlowerPot TEs for potted plants (modern versions have no TE for these)
         int synthCount = 0;
         for (Map.Entry<Long, String> entry : posToBlockState.entrySet()) {
             String stateStr = entry.getValue();
@@ -299,32 +178,17 @@ public class SchematicLitematica extends SchematicFormat {
             }
         }
         if (synthCount > 0) {
-            Reference.logger.info("Region '{}': synthesized {} FlowerPot TileEntities for potted plants", rd.name, synthCount);
+            Reference.logger.info("Region '{}': synthesized {} FlowerPot TileEntities for potted plants", rd.box.name, synthCount);
         }
 
-        // Read entities
         EntityTranslator entityTranslator = EntityTranslator.instance();
-        if (region.hasKey("Entities", Constants.NBT.TAG_LIST)) {
-            NBTTagList entitiesList = region.getTagList("Entities", Constants.NBT.TAG_COMPOUND);
+        {
+            NBTTagList entitiesList = rd.entities();
             int entLoaded = 0;
             int entSkipped = 0;
             for (int i = 0; i < entitiesList.tagCount(); i++) {
                 try {
                     NBTTagCompound entityTag = entitiesList.getCompoundTagAt(i);
-
-                    if (entityTag.hasKey("Pos", Constants.NBT.TAG_LIST)) {
-                        NBTTagList posList = entityTag.getTagList("Pos", Constants.NBT.TAG_DOUBLE);
-                        if (posList.tagCount() == 3) {
-                            double ex = posList.func_150309_d(0) + rd.posX - offsetX;
-                            double ey = posList.func_150309_d(1) + rd.posY - offsetY;
-                            double ez = posList.func_150309_d(2) + rd.posZ - offsetZ;
-                            NBTTagList newPos = new NBTTagList();
-                            newPos.appendTag(new net.minecraft.nbt.NBTTagDouble(ex));
-                            newPos.appendTag(new net.minecraft.nbt.NBTTagDouble(ey));
-                            newPos.appendTag(new net.minecraft.nbt.NBTTagDouble(ez));
-                            entityTag.setTag("Pos", newPos);
-                        }
-                    }
 
                     String originalId = entityTag.hasKey("id") ? entityTag.getString("id") : "unknown";
                     if (!entityTranslator.translate(entityTag)) {
@@ -335,7 +199,6 @@ public class SchematicLitematica extends SchematicFormat {
 
                     Entity entity = EntityList.createEntityFromNBT(entityTag, WorldDummy.instance());
                     if (entity != null) {
-                        // Sync prev values so rendering with partialTicks=0 uses the correct state
                         entity.prevRotationYaw = entity.rotationYaw;
                         entity.prevRotationPitch = entity.rotationPitch;
                         entity.prevPosX = entity.posX;
@@ -345,7 +208,6 @@ public class SchematicLitematica extends SchematicFormat {
                         entity.lastTickPosY = entity.posY;
                         entity.lastTickPosZ = entity.posZ;
 
-                        // Sync body/head yaw for living entities so renderers show correct orientation
                         if (entity instanceof EntityLivingBase) {
                             EntityLivingBase living = (EntityLivingBase) entity;
                             living.renderYawOffset = entity.rotationYaw;
@@ -360,17 +222,17 @@ public class SchematicLitematica extends SchematicFormat {
                         entSkipped++;
                     }
                 } catch (Exception e) {
-                    Reference.logger.debug("Failed to load Entity from litematic region '{}': {}", rd.name, e.getMessage());
+                    Reference.logger.debug("Failed to load Entity from litematic region '{}': {}", rd.box.name, e.getMessage());
                     entSkipped++;
                 }
             }
             if (entLoaded > 0 || entSkipped > 0) {
-                Reference.logger.info("Region '{}': loaded {} Entities, skipped {}", rd.name, entLoaded, entSkipped);
+                Reference.logger.info("Region '{}': loaded {} Entities, skipped {}", rd.box.name, entLoaded, entSkipped);
             }
         }
 
         Reference.logger.info("Region '{}': {}x{}x{}, palette size {}, loaded successfully",
-            rd.name, absSizeX, absSizeY, absSizeZ, paletteSize);
+            rd.box.name, absSizeX, absSizeY, absSizeZ, paletteSize);
     }
 
     /**
@@ -398,20 +260,10 @@ public class SchematicLitematica extends SchematicFormat {
         return sb.toString();
     }
 
-    private int getRegionCount(NBTTagCompound regions) {
-        return regions.func_150296_c().size();
-    }
-
     public static boolean isLitematicFormat(NBTTagCompound tagCompound) {
         return tagCompound.hasKey("Version")
             && tagCompound.hasKey("Regions")
             && tagCompound.hasKey("Metadata");
     }
 
-    private static class RegionData {
-        String name;
-        NBTTagCompound region;
-        int posX, posY, posZ;
-        int sizeX, sizeY, sizeZ;
-    }
 }

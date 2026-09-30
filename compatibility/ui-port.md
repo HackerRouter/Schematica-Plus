@@ -762,10 +762,10 @@ overrides for matching names, gives new regions defaults and drops removed names
 The enclosing volume still has the existing allocation limits. Legacy schematics
 without region metadata expose one full region named Region.
 
-This operates on the currently imported merged source. If original Litematic
+The initial Phase 15 implementation operated on the imported merged source. If original Litematic
 regions overlapped with different block data, that data was already flattened
 by the importer and cannot be recovered here. Region pivots use normalized minimum
-corners; original signed-size Litematic region pivots are not yet retained.
+corners. Phase 16 below replaces both limitations for local Litematic sources.
 Overlapping placed regions resolve blocks in source region order, later regions
 winning including air. Source entities belong to the first original containing
 region, preventing duplicate entities from overlapping capture boxes. Entity and
@@ -801,3 +801,46 @@ and .schemplus uses assets/schematica_plus/textures/gui/schemplus.png. This
 standalone 12x12 RGBA texture is initially an exact copy of the upstream S
 sprite and can be replaced without modifying the shared atlas. In-memory
 placements keep the memory icon. Extension matching is case-insensitive.
+
+
+## Phase 16: independent Litematic import data and signed anchors
+
+The importer retains a separate normalized block container, translated tile
+entities and entities for each .litematic region. The combined preview is built
+in sorted region-name order, with later regions replacing earlier blocks including
+air and clearing covered tile entities. Editing or disabling an overlapping
+region now reconstructs the preview from independent original region contents.
+The generic flat-source fallback remains available for .schematic/.schemplus.
+
+Signed Size values retain Position as the region anchor. Blocks and tile entities
+use coordinates relative to the minimum corner; entity positions and hanging
+anchors are rebased from Position to that same local container. Local rotations
+and mirrors use the retained anchor. Hanging block_pos int arrays and compounds
+are converted to legacy TileX/Y/Z, and nested entity positions are rebased too.
+Version 1 EntityData/TileNBT wrappers are read alongside flat version 2-7 data.
+NBT translation works on copies, leaving the original source snapshot untouched.
+Existing modern-to-1.7.10 block/entity translation limits still apply.
+
+Subregion placement JSON is now version 2. Version 1 overrides migrate from
+minimum-corner positions by adding the locally transformed anchor offset, keeping
+their block geometry unchanged. Reset returns to the file's original anchor.
+Global placement transforms continue to apply after local transforms.
+
+Both the enclosing volume and the sum of independent region volumes are bounded
+at 16,777,216 blocks, with the existing dimension/array limits. Missing palettes,
+truncated block arrays, invalid indices and malformed geometry fail the import.
+Region order is deterministic, including when the source NBT map order changes.
+Entities with repeated UUIDs still deduplicate in the combined preview; each
+independent region retains its own source entries for rebuilding.
+
+Save Source continues to copy the original .litematic bytes. This phase does not
+add independent overlapping payloads or signed anchors to the .schemplus format
+or the server download protocol: those paths still carry the combined block data
+and named bounds. They cannot round-trip these independent Litematic contents.
+
+The full build, Checkstyle and 229 headless tests pass. New tests cover distinct
+overlapping palettes/NBT, air replacement, covered tile removal, all signed-size
+combinations, entity/hanging coordinates, old wrappers, source NBT isolation,
+allocation checks, every local Y rotation/mirror and version 1 placement migration.
+Forge translation, entity instantiation, OpenGL rendering and world placement
+still require native game checks.

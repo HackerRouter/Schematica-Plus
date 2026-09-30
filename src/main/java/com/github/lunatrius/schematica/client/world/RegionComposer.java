@@ -11,7 +11,7 @@ import com.github.lunatrius.schematica.api.ISchematic;
 import com.github.lunatrius.schematica.api.SchematicOrigin;
 import com.github.lunatrius.schematica.api.SchematicRegion;
 import com.github.lunatrius.schematica.client.gui.placement.PlacementTransform;
-import com.github.lunatrius.schematica.nbt.NBTHelper;
+import com.github.lunatrius.schematica.world.storage.SchematicCopies;
 import com.github.lunatrius.schematica.util.SchematicLimits;
 import com.github.lunatrius.schematica.world.storage.Schematic;
 
@@ -40,21 +40,15 @@ final class RegionComposer {
             PlacementState.applyTransforms(part, region.operations());
             SchematicRegion box = region.bounds();
             int dx = box.minX - layout.minimum.x, dy = box.minY - layout.minimum.y, dz = box.minZ - layout.minimum.z;
+            SchematicCopies.overlay(part.getSchematic(), result, dx, dy, dz, true);
             for (int y = 0; y < part.getHeight(); y++) {
                 for (int z = 0; z < part.getLength(); z++) {
                     for (int x = 0; x < part.getWidth(); x++) {
-                        result.setBlock(x + dx, y + dy, z + dz, part.getBlock(x, y, z), part.getBlockMetadata(x, y, z));
                         visible.set(x + dx + layout.width * (z + dz + layout.length * (y + dy)), region.rendering);
                     }
                 }
             }
-            result.getTileEntities().removeIf(tile -> tile.xCoord >= dx && tile.xCoord < dx + part.getWidth()
-                && tile.yCoord >= dy && tile.yCoord < dy + part.getHeight() && tile.zCoord >= dz && tile.zCoord < dz + part.getLength());
-            for (TileEntity tile : part.getTileEntities()) {
-                TileEntity copy = copyTile(tile, -dx, -dy, -dz);
-                result.setTileEntity(copy.xCoord, copy.yCoord, copy.zCoord, copy);
-            }
-            for (Entity entity : part.getEntities()) result.addEntity(copyEntity(entity, -dx, -dy, -dz));
+
         }
         int width = layout.width, height = layout.height, length = layout.length;
         for (String operation : operations) {
@@ -77,6 +71,12 @@ final class RegionComposer {
     private static Schematic extract(ISchematic source, SubRegionPlacements placements, SubRegionPlacements.Region region) {
         SchematicRegion box = region.box;
         Schematic result = new Schematic(source.getIcon(), box.maxX - box.minX + 1, box.maxY - box.minY + 1, box.maxZ - box.minZ + 1);
+        result.setOrigin(region.pivot);
+        ISchematic independent = source.getRegionSchematic(region.name());
+        if (independent != null) {
+            SchematicCopies.overlay(independent, result, 0, 0, 0, !region.ignoreEntities);
+            return result;
+        }
         for (int y = box.minY; y <= box.maxY; y++) {
             for (int z = box.minZ; z <= box.maxZ; z++) {
                 for (int x = box.minX; x <= box.maxX; x++) {
@@ -85,36 +85,17 @@ final class RegionComposer {
             }
         }
         for (TileEntity tile : source.getTileEntities()) if (box.contains(tile.xCoord, tile.yCoord, tile.zCoord)) {
-            TileEntity copy = copyTile(tile, box.minX, box.minY, box.minZ);
+            TileEntity copy = SchematicCopies.tile(tile, box.minX, box.minY, box.minZ);
             result.setTileEntity(copy.xCoord, copy.yCoord, copy.zCoord, copy);
         }
         if (!region.ignoreEntities) for (Entity entity : source.getEntities()) {
             int x = (int) Math.floor(entity.posX), y = (int) Math.floor(entity.posY), z = (int) Math.floor(entity.posZ);
             for (SubRegionPlacements.Region owner : placements.regions()) if (owner.box.contains(x, y, z)) {
-                if (owner == region) result.addEntity(copyEntity(entity, box.minX, box.minY, box.minZ));
+                if (owner == region) result.addEntity(SchematicCopies.entity(entity, box.minX, box.minY, box.minZ));
                 break;
             }
         }
         return result;
     }
 
-    private static TileEntity copyTile(TileEntity tile, int x, int y, int z) {
-        try {
-            TileEntity copy = NBTHelper.reloadTileEntity(tile, x, y, z);
-            if (copy == null) throw new IllegalArgumentException("Unable to copy tile entity");
-            return copy;
-        } catch (com.github.lunatrius.schematica.nbt.NBTConversionException e) {
-            throw new IllegalArgumentException("Unable to copy tile entity", e);
-        }
-    }
-
-    private static Entity copyEntity(Entity entity, int x, int y, int z) {
-        try {
-            Entity copy = NBTHelper.reloadEntity(entity, x, y, z);
-            if (copy == null) throw new IllegalArgumentException("Unable to copy entity");
-            return copy;
-        } catch (com.github.lunatrius.schematica.nbt.NBTConversionException e) {
-            throw new IllegalArgumentException("Unable to copy entity", e);
-        }
-    }
 }

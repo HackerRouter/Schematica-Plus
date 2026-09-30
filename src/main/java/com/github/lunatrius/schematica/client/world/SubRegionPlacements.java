@@ -32,7 +32,8 @@ public final class SubRegionPlacements {
         Set<String> names = new HashSet<>();
         for (SchematicRegion box : bounds) {
             if (!names.add(box.name)) throw new IllegalArgumentException("Duplicate subregion name");
-            regions.add(new Region(box, source.getOrigin()));
+            ISchematic contents = source.getRegionSchematic(box.name);
+            regions.add(new Region(box, source.getOrigin(), contents == null ? SchematicOrigin.ZERO : contents.getOrigin()));
         }
         return new SubRegionPlacements(regions, null);
     }
@@ -83,7 +84,7 @@ public final class SubRegionPlacements {
 
     public JsonObject toJson() {
         JsonObject root = new JsonObject();
-        root.addProperty("version", 1);
+        root.addProperty("version", 2);
         root.addProperty("selected", selected);
         JsonArray entries = new JsonArray();
         for (Region region : regions) {
@@ -107,7 +108,8 @@ public final class SubRegionPlacements {
 
     public SubRegionPlacements restore(JsonObject root) {
         if (root == null) return this;
-        if (integer(root.get("version")) != 1 || !root.has("regions") || !root.get("regions").isJsonArray()) {
+        int version = integer(root.get("version"));
+        if (version < 1 || version > 2 || !root.has("regions") || !root.get("regions").isJsonArray()) {
             throw new IllegalArgumentException("Invalid subregion placement data");
         }
         JsonArray entries = root.getAsJsonArray("regions");
@@ -126,6 +128,10 @@ public final class SubRegionPlacements {
             boolean enabled = bool(entry.get("enabled")), rendering = bool(entry.get("rendering")), ignore = bool(entry.get("ignoreEntities"));
             validate(position, rotation, mirror, locks);
             for (Region region : regions) if (region.name().equals(name)) {
+                if (version == 1) {
+                    SchematicOrigin pivot = vector(region.pivot, region.rotation(rotation).mirror(mirror).operations(), false);
+                    position = position.atMinimum(pivot.x, pivot.y, pivot.z);
+                }
                 result = result.replace(new Region(region, position, rotation, mirror, enabled, rendering, ignore, locks));
                 break;
             }
@@ -175,13 +181,15 @@ public final class SubRegionPlacements {
 
     public static final class Region {
         public final SchematicRegion box;
-        public final SchematicOrigin defaultPosition, position;
+        public final SchematicOrigin defaultPosition, position, pivot;
         public final int rotation, mirror, locks;
         public final boolean enabled, rendering, ignoreEntities;
 
-        private Region(SchematicRegion box, SchematicOrigin origin) {
+        private Region(SchematicRegion box, SchematicOrigin origin, SchematicOrigin pivot) {
             this.box = box;
-            defaultPosition = new SchematicOrigin(Math.subtractExact(box.minX, origin.x), Math.subtractExact(box.minY, origin.y), Math.subtractExact(box.minZ, origin.z));
+            this.pivot = pivot;
+            defaultPosition = new SchematicOrigin(Math.subtractExact(box.minX, origin.x), Math.subtractExact(box.minY, origin.y), Math.subtractExact(box.minZ, origin.z))
+                .atMinimum(pivot.x, pivot.y, pivot.z);
             position = defaultPosition;
             rotation = 0; mirror = 0; locks = 0;
             enabled = true; rendering = true; ignoreEntities = false;
@@ -189,7 +197,7 @@ public final class SubRegionPlacements {
 
         private Region(Region source, SchematicOrigin position, int rotation, int mirror, boolean enabled, boolean rendering, boolean ignoreEntities, int locks) {
             validate(position, rotation, mirror, locks);
-            box = source.box; defaultPosition = source.defaultPosition;
+            box = source.box; defaultPosition = source.defaultPosition; pivot = source.pivot;
             this.position = position; this.rotation = rotation; this.mirror = mirror;
             this.enabled = enabled; this.rendering = rendering; this.ignoreEntities = ignoreEntities; this.locks = locks;
         }
@@ -217,9 +225,11 @@ public final class SubRegionPlacements {
             return result;
         }
         public SchematicRegion bounds() {
-            SchematicOrigin end = vector(new SchematicOrigin(box.maxX - box.minX, box.maxY - box.minY, box.maxZ - box.minZ), operations(), false)
+            SchematicOrigin start = vector(new SchematicOrigin(-pivot.x, -pivot.y, -pivot.z), operations(), false)
                 .atMinimum(position.x, position.y, position.z);
-            return new SchematicRegion(name(), position.x, position.y, position.z, end.x, end.y, end.z);
+            SchematicOrigin end = vector(new SchematicOrigin(box.maxX - box.minX - pivot.x, box.maxY - box.minY - pivot.y, box.maxZ - box.minZ - pivot.z), operations(), false)
+                .atMinimum(position.x, position.y, position.z);
+            return new SchematicRegion(name(), start.x, start.y, start.z, end.x, end.y, end.z);
         }
     }
 
