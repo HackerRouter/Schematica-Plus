@@ -4,7 +4,7 @@ import java.nio.FloatBuffer;
 
 import org.lwjgl.BufferUtils;
 
-import com.github.lunatrius.core.util.vector.Vector3f;
+import com.github.lunatrius.schematica.internal.lunatriuscore.util.vector.Vector3f;
 import com.github.lunatrius.schematica.handler.ConfigurationHandler;
 
 public class RenderHelper {

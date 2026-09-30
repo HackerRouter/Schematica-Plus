@@ -19,8 +19,8 @@ import net.minecraft.world.biome.BiomeGenBase;
 import net.minecraft.world.chunk.IChunkProvider;
 import net.minecraftforge.common.util.ForgeDirection;
 
-import com.github.lunatrius.core.util.vector.Vector3f;
-import com.github.lunatrius.core.util.vector.Vector3i;
+import com.github.lunatrius.schematica.internal.lunatriuscore.util.vector.Vector3f;
+import com.github.lunatrius.schematica.internal.lunatriuscore.util.vector.Vector3i;
 import com.github.lunatrius.schematica.api.ISchematic;
 import com.github.lunatrius.schematica.handler.ConfigurationHandler;
 import com.github.lunatrius.schematica.reference.Reference;

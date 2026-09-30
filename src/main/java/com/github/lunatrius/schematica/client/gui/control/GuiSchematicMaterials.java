@@ -13,7 +13,7 @@ import net.minecraft.item.ItemStack;
 
 import org.apache.commons.io.IOUtils;
 
-import com.github.lunatrius.core.client.gui.GuiScreenBase;
+import com.github.lunatrius.schematica.internal.lunatriuscore.client.gui.GuiScreenBase;
 import com.github.lunatrius.schematica.Schematica;
 import com.github.lunatrius.schematica.client.util.BlockList;
 import com.github.lunatrius.schematica.client.world.SchematicWorld;

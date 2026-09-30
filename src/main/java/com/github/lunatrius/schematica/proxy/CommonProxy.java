@@ -14,7 +14,7 @@ import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 
-import com.github.lunatrius.core.util.vector.Vector3i;
+import com.github.lunatrius.schematica.internal.lunatriuscore.util.vector.Vector3i;
 import com.github.lunatrius.schematica.api.ISchematic;
 import com.github.lunatrius.schematica.command.CommandSchematicaList;
 import com.github.lunatrius.schematica.command.CommandSchematicaRemove;

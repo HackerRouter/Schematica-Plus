@@ -8,7 +8,7 @@ public class Reference {
     public static final String MODID = "Schematica";
     public static final String NAME = "Schematica";
     public static final String VERSION = SchematicaVersion.VERSION;
-    public static final String DEPENDENCIES = "required-after:LunatriusCore;";
+    public static final String DEPENDENCIES = "";
     public static final String PROXY_SERVER = "com.github.lunatrius.schematica.proxy.ServerProxy";
     public static final String PROXY_CLIENT = "com.github.lunatrius.schematica.proxy.ClientProxy";
     public static final String LOTR_PROXY = "com.github.lunatrius.schematica.compat.LOTRProxy";

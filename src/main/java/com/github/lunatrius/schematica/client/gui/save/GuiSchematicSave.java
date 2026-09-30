@@ -5,9 +5,9 @@ import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.GuiTextField;
 import net.minecraft.client.resources.I18n;
 
-import com.github.lunatrius.core.client.gui.GuiNumericField;
-import com.github.lunatrius.core.client.gui.GuiScreenBase;
-import com.github.lunatrius.core.util.vector.Vector3i;
+import com.github.lunatrius.schematica.internal.lunatriuscore.client.gui.GuiNumericField;
+import com.github.lunatrius.schematica.internal.lunatriuscore.client.gui.GuiScreenBase;
+import com.github.lunatrius.schematica.internal.lunatriuscore.util.vector.Vector3i;
 import com.github.lunatrius.schematica.Schematica;
 import com.github.lunatrius.schematica.handler.ConfigurationHandler;
 import com.github.lunatrius.schematica.proxy.ClientProxy;

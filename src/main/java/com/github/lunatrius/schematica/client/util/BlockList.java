@@ -10,7 +10,7 @@ import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.MovingObjectPosition;
 
-import com.github.lunatrius.core.entity.EntityHelper;
+import com.github.lunatrius.schematica.internal.lunatriuscore.entity.EntityHelper;
 import com.github.lunatrius.schematica.client.world.SchematicWorld;
 import com.github.lunatrius.schematica.reference.Reference;
 

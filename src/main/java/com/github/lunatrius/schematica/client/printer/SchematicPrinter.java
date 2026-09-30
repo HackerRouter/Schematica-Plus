@@ -22,7 +22,7 @@ import net.minecraftforge.event.entity.player.PlayerInteractEvent.Action;
 import net.minecraftforge.fluids.BlockFluidBase;
 import net.minecraftforge.fluids.IFluidBlock;
 
-import com.github.lunatrius.core.util.vector.Vector3i;
+import com.github.lunatrius.schematica.internal.lunatriuscore.util.vector.Vector3i;
 import com.github.lunatrius.schematica.client.printer.registry.PlacementData;
 import com.github.lunatrius.schematica.client.printer.registry.PlacementRegistry;
 import com.github.lunatrius.schematica.client.util.BlockToItemStack;

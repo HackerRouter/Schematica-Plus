@@ -26,7 +26,9 @@ Default tool item is `minecraft:stick`.
 
 If you are playing on GTNH-2.8.4, you can simply replace `Schematica-1.12.6-GTNH.jar` with it.
 
-Otherwise, you would need to also install **[LunatriusCore](https://github.com/GTNewHorizons/LunatriusCore/releases)**(>= 1.2.1-GTNH).
+LunatriusCore is no longer required. Schematica Plus includes the utility classes it uses
+under its own internal package, so an external LunatriusCore can still be installed for
+other mods. See [third-party notices](THIRD_PARTY_NOTICES.md) for attribution.
 
 ![play GTNH in multiplayer](temp.png)
 

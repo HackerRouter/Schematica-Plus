@@ -24,8 +24,8 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.config.Property;
 import net.minecraftforge.common.util.ForgeDirection;
 
-import com.github.lunatrius.core.util.vector.Vector3d;
-import com.github.lunatrius.core.util.vector.Vector3i;
+import com.github.lunatrius.schematica.internal.lunatriuscore.util.vector.Vector3d;
+import com.github.lunatrius.schematica.internal.lunatriuscore.util.vector.Vector3i;
 import com.github.lunatrius.schematica.api.ISchematic;
 import com.github.lunatrius.schematica.client.printer.SchematicPrinter;
 import com.github.lunatrius.schematica.client.renderer.RendererSchematicGlobal;

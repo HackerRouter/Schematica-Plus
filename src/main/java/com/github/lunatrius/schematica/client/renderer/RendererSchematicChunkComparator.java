@@ -2,8 +2,8 @@ package com.github.lunatrius.schematica.client.renderer;
 
 import java.util.Comparator;
 
-import com.github.lunatrius.core.util.vector.Vector3d;
-import com.github.lunatrius.core.util.vector.Vector3i;
+import com.github.lunatrius.schematica.internal.lunatriuscore.util.vector.Vector3d;
+import com.github.lunatrius.schematica.internal.lunatriuscore.util.vector.Vector3i;
 import com.github.lunatrius.schematica.proxy.ClientProxy;
 
 public class RendererSchematicChunkComparator implements Comparator<RendererSchematicChunk> {

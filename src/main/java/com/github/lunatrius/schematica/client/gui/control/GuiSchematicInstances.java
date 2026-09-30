@@ -4,7 +4,7 @@ import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.resources.I18n;
 
-import com.github.lunatrius.core.client.gui.GuiScreenBase;
+import com.github.lunatrius.schematica.internal.lunatriuscore.client.gui.GuiScreenBase;
 import com.github.lunatrius.schematica.Schematica;
 import com.github.lunatrius.schematica.client.renderer.RendererSchematicGlobal;
 import com.github.lunatrius.schematica.client.world.SchematicWorld;

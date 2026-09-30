@@ -19,7 +19,7 @@ import net.minecraftforge.client.event.RenderWorldLastEvent;
 
 import org.lwjgl.opengl.GL11;
 
-import com.github.lunatrius.core.util.vector.Vector3d;
+import com.github.lunatrius.schematica.internal.lunatriuscore.util.vector.Vector3d;
 import com.github.lunatrius.schematica.client.world.SchematicWorld;
 import com.github.lunatrius.schematica.proxy.ClientProxy;
 import com.github.lunatrius.schematica.reference.Constants;

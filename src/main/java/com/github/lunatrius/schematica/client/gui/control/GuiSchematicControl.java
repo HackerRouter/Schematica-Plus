@@ -9,9 +9,9 @@ import net.minecraft.client.resources.I18n;
 import net.minecraft.util.ChatComponentText;
 import net.minecraftforge.common.util.ForgeDirection;
 
-import com.github.lunatrius.core.client.gui.GuiNumericField;
-import com.github.lunatrius.core.client.gui.GuiScreenBase;
-import com.github.lunatrius.core.util.vector.Vector3i;
+import com.github.lunatrius.schematica.internal.lunatriuscore.client.gui.GuiNumericField;
+import com.github.lunatrius.schematica.internal.lunatriuscore.client.gui.GuiScreenBase;
+import com.github.lunatrius.schematica.internal.lunatriuscore.util.vector.Vector3i;
 import com.github.lunatrius.schematica.Schematica;
 import com.github.lunatrius.schematica.client.gui.util.GuiOrCheckBoxHandler;
 import com.github.lunatrius.schematica.client.printer.SchematicPrinter;

@@ -19,8 +19,8 @@ import net.minecraft.world.IBlockAccess;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL20;
 
-import com.github.lunatrius.core.util.vector.Vector3d;
-import com.github.lunatrius.core.util.vector.Vector3f;
+import com.github.lunatrius.schematica.internal.lunatriuscore.util.vector.Vector3d;
+import com.github.lunatrius.schematica.internal.lunatriuscore.util.vector.Vector3f;
 import com.github.lunatrius.schematica.client.renderer.shader.ShaderProgram;
 import com.github.lunatrius.schematica.client.world.SchematicWorld;
 import com.github.lunatrius.schematica.handler.ConfigurationHandler;

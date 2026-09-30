@@ -21,7 +21,7 @@ import net.minecraftforge.common.util.ForgeDirection;
 
 import org.lwjgl.Sys;
 
-import com.github.lunatrius.core.client.gui.GuiScreenBase;
+import com.github.lunatrius.schematica.internal.lunatriuscore.client.gui.GuiScreenBase;
 import com.github.lunatrius.schematica.FileFilterSchematic;
 import com.github.lunatrius.schematica.Schematica;
 import com.github.lunatrius.schematica.client.printer.SchematicPrinter;
