@@ -40,6 +40,16 @@ public class FileUtils {
         return file;
     }
 
+    public static File findSchematicFile(File directory, String name, boolean preferExtended) throws IOException {
+        if (name == null) throw new IOException("Invalid schematic filename");
+        String lower = name.toLowerCase(java.util.Locale.ROOT);
+        if (lower.endsWith(".schematic") || lower.endsWith(".schemplus")) return resolveSchematicFile(directory, name);
+        File preferred = resolveSchematicFile(directory, name + (preferExtended ? ".schemplus" : ".schematic"));
+        if (preferred.isFile()) return preferred;
+        File alternate = resolveSchematicFile(directory, name + (preferExtended ? ".schematic" : ".schemplus"));
+        return alternate.isFile() ? alternate : preferred;
+    }
+
     // http://stackoverflow.com/a/3758880/1166946
     public static String humanReadableByteCount(final long bytes) {
         final int unit = 1024;

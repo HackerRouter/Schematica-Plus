@@ -11,8 +11,6 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.util.ChatComponentTranslation;
 
-import org.apache.commons.io.FilenameUtils;
-
 import com.github.lunatrius.schematica.FileFilterSchematic;
 import com.github.lunatrius.schematica.Schematica;
 import com.github.lunatrius.schematica.api.ISchematic;
@@ -51,7 +49,7 @@ public class CommandSchematicaDownload extends CommandSchematicaBase {
             final List<String> filenames = new ArrayList<>();
 
             for (File file : files) {
-                filenames.add(FilenameUtils.removeExtension(file.getName()));
+                filenames.add(file.getName());
             }
 
             return getListOfStringsFromIterableMatchingLastWord(args, filenames);
@@ -70,20 +68,16 @@ public class CommandSchematicaDownload extends CommandSchematicaBase {
             throw new CommandException(Names.Command.Download.Message.PLAYERS_ONLY);
         }
 
-        final String filename;
-        if (ConfigurationHandler.useSchematicplusFormat) {
-            filename = args[0] + ".schemplus";
-        } else {
-            filename = args[0] + ".schematic";
-        }
-
         final File directory = Schematica.proxy.getPlayerSchematicDirectory(player, true);
-        if (!FileUtils.contains(directory, filename)) {
-            Reference.logger.error("{} has tried to download the file {}", player.getDisplayName(), filename);
+        final File file;
+        try {
+            file = FileUtils.findSchematicFile(directory, String.join(" ", args), ConfigurationHandler.useSchematicplusFormat);
+        } catch (java.io.IOException e) {
+            Reference.logger.warn("Rejected schematic download filename", e);
             throw new CommandException(Names.Command.Download.Message.DOWNLOAD_FAILED);
         }
-
-        final ISchematic schematic = SchematicFormat.readFromFile(directory, filename);
+        final String filename = file.getName();
+        final ISchematic schematic = SchematicFormat.readFromFile(file);
 
         if (schematic != null) {
             DownloadHandler.INSTANCE.transferMap.put(player, new SchematicTransfer(schematic, filename));

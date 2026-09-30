@@ -14,8 +14,6 @@ import net.minecraft.util.ChatStyle;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.IChatComponent;
 
-import org.apache.commons.io.FilenameUtils;
-
 import com.github.lunatrius.schematica.FileFilterSchematic;
 import com.github.lunatrius.schematica.Schematica;
 import com.github.lunatrius.schematica.reference.Names;
@@ -78,15 +76,13 @@ public class CommandSchematicaList extends CommandSchematicaBase {
         final File[] files = schematicDirectory.listFiles(FILE_FILTER_SCHEMATIC);
         for (File path : files) {
             if (currentFile >= pageStart && currentFile < pageEnd) {
-                String fileName = FilenameUtils.removeExtension(path.getName());
-
                 IChatComponent chatComponent = new ChatComponentText(
                     String.format(
                         "%2d (%s): %s [",
                         currentFile + 1,
                         FileUtils.humanReadableByteCount(path.length()),
-                        fileName));
-                String removeCommand = String.format("/%s %s", Names.Command.Remove.NAME, fileName);
+                        path.getName()));
+                String removeCommand = String.format("/%s %s", Names.Command.Remove.NAME, path.getName());
 
                 IChatComponent removeLink = new ChatComponentTranslation(Names.Command.List.Message.REMOVE)
                     .setChatStyle(
@@ -95,7 +91,7 @@ public class CommandSchematicaList extends CommandSchematicaBase {
                 chatComponent.appendSibling(removeLink);
                 chatComponent.appendText("][");
 
-                String downloadCommand = String.format("/%s %s", Names.Command.Download.NAME, fileName);
+                String downloadCommand = String.format("/%s %s", Names.Command.Download.NAME, path.getName());
                 IChatComponent downloadLink = new ChatComponentTranslation(Names.Command.List.Message.DOWNLOAD)
                     .setChatStyle(
                         new ChatStyle()

@@ -31,4 +31,27 @@ public class SchematicSafetyTest {
         assertThrows(IllegalArgumentException.class, () -> SchematicLimits.worldBounds(0, 255, 0, 1, 256, 1));
         SchematicLimits.worldBounds(-1, 0, -1, 0, 255, 0);
     }
+
+    @Test public void findsEitherFormatAndHonorsExplicitDownloadNames() throws IOException {
+        File directory = temporary.newFolder();
+        File extended = new File(directory, "建筑.schemplus");
+        java.nio.file.Files.createFile(extended.toPath());
+        assertEquals(extended.getCanonicalFile(), FileUtils.findSchematicFile(directory, "建筑", false));
+        File standard = new File(directory, "建筑.schematic");
+        java.nio.file.Files.createFile(standard.toPath());
+        assertEquals(standard.getCanonicalFile(), FileUtils.findSchematicFile(directory, "建筑", false));
+        assertEquals(extended.getCanonicalFile(), FileUtils.findSchematicFile(directory, "建筑", true));
+        assertEquals(extended.getCanonicalFile(), FileUtils.findSchematicFile(directory, "建筑.schemplus", false));
+        assertEquals(standard.getCanonicalFile(), FileUtils.findSchematicFile(directory, "建筑.schematic", true));
+        File onlyStandard = new File(directory, "other.schematic");
+        java.nio.file.Files.createFile(onlyStandard.toPath());
+        assertEquals(onlyStandard.getCanonicalFile(), FileUtils.findSchematicFile(directory, "other", true));
+    }
+
+    @Test public void downloadFormatFallbackCannotEscapeItsDirectory() throws IOException {
+        File directory = temporary.newFolder();
+        for (String name : new String[] {"../outside", "..\\outside.schemplus", "C:outside", "/absolute.schematic"}) {
+            assertThrows(IOException.class, () -> FileUtils.findSchematicFile(directory, name, false));
+        }
+    }
 }

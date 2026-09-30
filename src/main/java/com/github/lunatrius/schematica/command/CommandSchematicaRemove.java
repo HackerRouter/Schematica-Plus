@@ -67,15 +67,17 @@ public class CommandSchematicaRemove extends CommandSchematicaBase {
             }
         }
 
-        String filename = String.format("%s.schematic", name);
         File schematicDirectory = Schematica.proxy.getPlayerSchematicDirectory(player, true);
-        File file = new File(schematicDirectory, filename);
-        if (!FileUtils.contains(schematicDirectory, file)) {
-            Reference.logger.error("{} has tried to download the file {}", player.getDisplayName(), filename);
+        final File file;
+        try {
+            file = FileUtils.findSchematicFile(schematicDirectory, name, false);
+        } catch (java.io.IOException e) {
+            Reference.logger.warn("Rejected schematic removal filename", e);
             throw new CommandException(Names.Command.Remove.Message.SCHEMATIC_NOT_FOUND);
         }
+        name = file.getName();
 
-        if (file.exists()) {
+        if (file.isFile()) {
             if (delete) {
                 if (file.delete()) {
                     sender.addChatMessage(

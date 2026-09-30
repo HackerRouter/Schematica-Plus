@@ -55,6 +55,9 @@ Before a release, use a disposable 1.7.10 world to check:
   `.schemplus` and the completion message must show its actual filename. Repeat
   with an existing `.schemplus` of the same name: keep that file and use a numbered
   name. Selections containing only IDs up to 4095 must keep `.schematic`.
+  Download a server file by its full name and by its base name with the opposite
+  format preference selected. When both extensions exist, each list download link
+  and removal confirmation must target the exact listed file. Include a name with spaces.
 - With NBT saving enabled, save GregTech pipes/cables with bends and junctions,
   plus ProjectRed full lamps and multipart lights with microblocks. Compare local
   and remote-server saves, then reload the files and check connections, colors,
