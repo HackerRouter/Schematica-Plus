@@ -5,12 +5,16 @@ import java.io.IOException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.LinkOption;
+import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.nio.file.attribute.FileTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 
 public final class SchematicBrowserModel {
 
@@ -53,8 +57,7 @@ public final class SchematicBrowserModel {
                     Path resolved = checked(path);
                     BasicFileAttributes attributes = Files.readAttributes(resolved, BasicFileAttributes.class);
                     if (attributes.isDirectory() || attributes.isRegularFile() && supported(path.getFileName().toString())) {
-                        found.add(new Entry(path.toFile(), attributes.isDirectory(), attributes.size(),
-                            attributes.lastModifiedTime().toMillis()));
+                        found.add(new Entry(path.toFile(), attributes));
                     }
                 } catch (IOException ignored) {}
             }
@@ -84,6 +87,95 @@ public final class SchematicBrowserModel {
         return entry.file;
     }
 
+    public File createDirectory(String name) throws IOException {
+        validateName(name);
+        Path target = checked(directory).resolve(name);
+        requireAbsent(target);
+        return Files.createDirectory(target).toFile();
+    }
+
+    public File rename(Entry entry, String name) throws IOException {
+        Path source = currentFile(entry);
+        Path target = destination(source, name);
+        if (source.equals(target) && entry.name().equals(name)) return source.toFile();
+        requireAbsent(target);
+        SchematicSourceIndex update = SchematicSourceIndex.prepare(root.toFile(), source.toFile(), target.toFile());
+        Files.move(source, target);
+        try {
+            update.save();
+        } catch (IOException e) {
+            try {
+                Files.move(target, source);
+            } catch (IOException rollback) {
+                e.addSuppressed(rollback);
+            }
+            throw e;
+        }
+        return target.toFile();
+    }
+
+    public File copy(Entry entry, String name) throws IOException {
+        Path source = currentFile(entry);
+        Path target = destination(source, name);
+        requireAbsent(target);
+        Path temporary = Files.createTempFile(source.getParent(), ".schematica-copy-", ".tmp");
+        try {
+            Files.copy(source, temporary, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+            currentFile(entry);
+            Files.move(temporary, target);
+            return target.toFile();
+        } finally {
+            Files.deleteIfExists(temporary);
+        }
+    }
+
+    public void delete(Entry entry) throws IOException {
+        Files.delete(currentFile(entry));
+    }
+
+    private Path currentFile(Entry entry) throws IOException {
+        if (entry == null || entry.directory || !entries.contains(entry)) throw new FileOperationException("selection");
+        Path source = entry.file.toPath().toAbsolutePath().normalize();
+        if (!checked(source).equals(source)) throw new FileOperationException("link");
+        BasicFileAttributes now = Files.readAttributes(source, BasicFileAttributes.class, LinkOption.NOFOLLOW_LINKS);
+        if (!now.isRegularFile() || now.size() != entry.size || !now.lastModifiedTime().equals(entry.modifiedTime)
+            || !Objects.equals(now.fileKey(), entry.fileKey)) throw new FileOperationException("changed");
+        return source;
+    }
+
+    private Path destination(Path source, String name) throws IOException {
+        validateName(name);
+        String extension = source.getFileName().toString().substring(source.getFileName().toString().lastIndexOf('.'));
+        if (!name.toLowerCase(Locale.ROOT).endsWith(extension.toLowerCase(Locale.ROOT))) {
+            throw new FileOperationException("extension");
+        }
+        return source.getParent().resolve(name);
+    }
+
+    private static void requireAbsent(Path target) throws IOException {
+        if (Files.exists(target, LinkOption.NOFOLLOW_LINKS)) throw new FileAlreadyExistsException(target.toString());
+    }
+
+    private static void validateName(String name) throws IOException {
+        if (name == null || name.trim().isEmpty() || name.length() > 255 || name.endsWith(".") || name.endsWith(" ")
+            || name.equals(".") || name.equals("..")) throw new FileOperationException("name");
+        for (int i = 0; i < name.length(); i++) {
+            char c = name.charAt(i);
+            if (c < 32 || "<>:\"/\\|?*".indexOf(c) >= 0) throw new FileOperationException("name");
+        }
+        String stem = name.split("\\.", 2)[0].toUpperCase(Locale.ROOT);
+        if (stem.matches("CON|PRN|AUX|NUL|COM[1-9¹²³]|LPT[1-9¹²³]")) throw new FileOperationException("name");
+    }
+
+    public static final class FileOperationException extends IOException {
+        public final String translationKey;
+
+        FileOperationException(String reason) {
+            super(reason);
+            translationKey = "schematica.ui.files.error." + reason;
+        }
+    }
+
     private Path checked(Path path) throws IOException {
         Path real = path.toRealPath();
         if (!real.startsWith(root)) throw new IOException("Path leaves the schematic directory");
@@ -101,11 +193,16 @@ public final class SchematicBrowserModel {
         public final long size;
         public final long modified;
 
-        private Entry(File file, boolean directory, long size, long modified) {
+        private final FileTime modifiedTime;
+        private final Object fileKey;
+
+        private Entry(File file, BasicFileAttributes attributes) {
             this.file = file;
-            this.directory = directory;
-            this.size = size;
-            this.modified = modified;
+            this.directory = attributes.isDirectory();
+            this.size = attributes.size();
+            this.modifiedTime = attributes.lastModifiedTime();
+            this.modified = modifiedTime.toMillis();
+            this.fileKey = attributes.fileKey();
         }
 
         public String name() {
