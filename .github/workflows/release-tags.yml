@@ -45,40 +45,18 @@ jobs:
         run: ./gradlew build
 
 
-      - name: Generate version prefix
+      - name: Prepare main mod release
         id: version
         run: |
-          TIMESTAMP=$(TZ=Asia/Singapore date +'%d%m-%H%M')
-          TAG="${{ github.ref_name }}"
-          PREFIX="Schematica-${TAG}-${TIMESTAMP}"
-          echo "prefix=$PREFIX" >> $GITHUB_OUTPUT
-          echo "timestamp=$TIMESTAMP" >> $GITHUB_OUTPUT
-          echo "tag=$TAG" >> $GITHUB_OUTPUT
+          TIMESTAMP=$(TZ=Asia/Singapore date +'%d/%m/%Y %H:%M:%S')
+          TAG="$GITHUB_REF_NAME"
+          JAR="build/libs/schematica_plus-${TAG}.jar"
+          test -f "$JAR"
+          echo "jar=$JAR" >> "$GITHUB_OUTPUT"
+          echo "timestamp=$TIMESTAMP" >> "$GITHUB_OUTPUT"
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
 
 
-      - name: Rename jars with timestamp
-        id: rename
-        run: |
-          mkdir -p build/release
-          PREFIX="${{ steps.version.outputs.prefix }}"
-          for jar in build/libs/*.jar; do
-            filename=$(basename "$jar")
-            # 跳过 dirty 版本
-            if echo "$filename" | grep -q "dirty"; then
-              continue
-            fi
-            if echo "$filename" | grep -q "\-api\.jar$"; then
-              cp "$jar" "build/release/${PREFIX}-api.jar"
-            elif echo "$filename" | grep -q "\-dev\.jar$"; then
-              cp "$jar" "build/release/${PREFIX}-dev.jar"
-            elif echo "$filename" | grep -q "\-sources\.jar$"; then
-              cp "$jar" "build/release/${PREFIX}-sources.jar"
-            else
-              cp "$jar" "build/release/${PREFIX}.jar"
-            fi
-          done
-          echo "release_dir=build/release" >> $GITHUB_OUTPUT
-          ls -la build/release/
       - name: Read README
         id: readme
         run: |
@@ -91,20 +69,12 @@ jobs:
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          files: build/release/*.jar
+          files: ${{ steps.version.outputs.jar }}
           name: "${{ steps.version.outputs.tag }} (${{ steps.version.outputs.timestamp }})"
           body: |
             ## Schematica-Plus ${{ steps.version.outputs.tag }}
 
             Build Time: ${{ steps.version.outputs.timestamp }} (UTC+8)
-
-            **[LunatriusCore](https://github.com/GTNewHorizons/LunatriusCore/releases)**(>= 1.2.1-GTNH) is **NEEDED**.
-
-            ### Artifacts
-            - `*.jar` (no suffix) - **Main mod file, put into your mods folder**
-            - `*-api.jar` - API package for other mod developers
-            - `*-dev.jar` - Development build (non-obfuscated), for mod development & debugging
-            - `*-sources.jar` - Source code package
 
             ---
           prerelease: ${{ contains(github.ref_name, 'alpha') || contains(github.ref_name, 'beta') || contains(github.ref_name, 'rc') }}
