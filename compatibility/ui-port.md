@@ -23,9 +23,9 @@ render helpers also reinforce the need to restore texture/blend state after draw
 OpenModsLib's broad child event dispatch is not reused: only the topmost hit and
 the focused control receive input here, and a modal blocks the underlying layer.
 
-This phase independently implements the adapter and primitives. No upstream code
-or textures are bundled. A later source/asset port must preserve the relevant
-upstream license and attribution alongside those files.
+Phase 1 independently implemented the adapter and primitives. Phase 3 below
+introduces attributed LGPL UI layouts, translations and the upstream icon atlas.
+See THIRD_PARTY_NOTICES.md for the file-level license exceptions.
 
 ## Internal contract
 
@@ -46,11 +46,14 @@ upstream license and attribution alongside those files.
 
 ## Visual direction
 
-Use Minecraft's font, compact 20-pixel controls, 4-pixel gaps, left-aligned list
-content and a title/navigation row. Palette: panel #202020, control #383838,
-border #808080, text #E0E0E0, focus #E0C060, selected row #405568. Focus, hover,
-disabled and selected states remain distinct. Text and tooltips are clipped or
-wrapped to fit the current scaled viewport.
+The target is the supplied Litematica UI, including positions, text-derived button
+widths, icons, grouping and row actions. The initial compact custom layout was a
+foundation, not the visual specification. Match upstream scaled GUI coordinates;
+do not redistribute the buttons into equal-width rows or substitute text for icons.
+The screen overlay is #B0000000, list/info outlines #FF999999 and titles white at
+(20, 10). Use the unmodified Litematica atlas. MaLiLib's vanilla button background
+is resolved through the running 1.7.10 resource pack, so its skin and the font
+rasterization can differ from Minecraft 26.1.2. Keyboard focus retains a light border.
 
 Phase 1 excludes business screens, hotkey chords, subregion data and schematic
 backend changes. Phase 2 below builds on this foundation.
@@ -74,7 +77,7 @@ it in a world. The binding defaults to unbound. The page uses 200 synthetic entr
 and does not load, save or change schematics/worlds. Child pages exercise return
 navigation with state retained in the parent.
 
-## Phase 2: main menu and file loading
+## Phase 2 (superseded layout): main menu and file loading
 
 The existing M binding now opens `GuiSchematicMainMenu`. Its binding identifier is
 preserved, so customized keys remain assigned. Direct controls and direct loading
@@ -97,7 +100,7 @@ Failures stay on the page with feedback. Success stays on the page to allow anot
 load; Esc returns to the menu, then to the world. File parsing itself remains
 synchronous, as in the previous loader; directory listing no longer parses NBT.
 
-## Phase 2: area selection and saving
+## Phase 2 (superseded layout): area selection and saving
 
 `GuiSchematicSave` now uses the same component layer. It edits the existing A/B
 points, supports moving either point to the player, controls guide/NBT/entity
@@ -121,3 +124,45 @@ saving restrictions still apply.
 Headless checks cover directory navigation, deleted files/folders, metadata refresh,
 hidden selection, format normalization and invalid/save-target paths. Native UI,
 world capture and preview behavior need the phase 2 scenarios in `TESTING.md`.
+
+## Phase 3: source-aligned layouts and instance lists
+
+- Main menu: the upstream x=12, y=30/52/74 and 118/140/162 left groups,
+  second column separated by 20 pixels, configuration at y=30 and manager/task
+  entries at y=118/140, plus the tool selector at height-26. Widths include every
+  upstream menu label and both selection modes. Projects remain hidden as in the
+  upstream default. The mod name/version retain the Schematica Plus identity.
+- Loaded schematics and placements: 22-pixel rows, expandable search at (14,34),
+  upstream right-aligned row actions and bottom navigation. Rows are virtualized;
+  rebuilding filtered rows cancels captured actions on removed controls. Placement
+  selection, render toggling, configuration and removal use the existing backend.
+- Browser/load: icon navigation at y=28, 14-pixel entries, 170-pixel information
+  panel, create-placement checkbox at height-40 and upstream action order at
+  height-26. Search toggles with the magnifier; F5 refreshes and Backspace navigates
+  up unless editing text. Existing readers and bounded directory handling remain.
+- Simple area editor: selection/subregion name rows and the two 68-pixel coordinate
+  columns follow the upstream simple editor. Coordinate nudges and move-to-player
+  use the existing A/B selection. The selection visibility checkbox at (250,48)
+  is a Plus addition. Names are screen-local drafts, not persistent named selections.
+- Saving: filename at (10,32), four checkbox positions at y=28/40/52/64, save at
+  (10,54), browser at (10,80). Existing format/NBT/selection-visibility options are
+  in a separate Options page beside Save. File selection fills the name; typing,
+  directory navigation and returning from Options retain the draft. Bounds checks,
+  overwrite confirmation, queue limits and world identity checks remain unchanged.
+
+This is an incremental UI port. The loaded-source/placement backend is still a
+single SchematicWorld per instance; both lists therefore show the same instances,
+and removing/unloading either removes that instance. The tooltip states this.
+Separate loaded sources, new placements from memory, reload/export from memory,
+file renaming, area libraries, multiple boxes/manual origins, area analysis, task
+management and the three advanced capture options remain disabled with explanatory
+hover text. Configuration, placement Configure and materials still use their
+existing screens. The information panel currently reports file attributes, not
+schematic metadata, region details or preview images. These are the next UI/data
+adapters, not completed parity. No modern MaLiLib runtime dependency is introduced.
+
+Automated verification covers row virtualization, clipping and cancellation when
+filtering during a held click, alongside existing input/browser/save-path tests.
+The atlas is copied byte-for-byte. Native game appearance, resource-pack behavior,
+GUI scaling and interaction with real loaded schematics still need the phase 3
+manual checks. Compilation does not establish pixel-for-pixel visual parity.

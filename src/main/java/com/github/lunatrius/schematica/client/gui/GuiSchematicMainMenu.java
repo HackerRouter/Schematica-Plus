@@ -1,91 +1,87 @@
+// SPDX-License-Identifier: LGPL-3.0-only
+// Litematica GuiMainMenu layout, adapted for 1.7.10 by HackerRouter, 2026.
 package com.github.lunatrius.schematica.client.gui;
 
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.resources.I18n;
 
 import com.github.lunatrius.schematica.SchematicaPlus;
-import com.github.lunatrius.schematica.client.gui.control.GuiSchematicControl;
-import com.github.lunatrius.schematica.client.gui.control.GuiSchematicInstances;
-import com.github.lunatrius.schematica.client.gui.control.GuiSchematicMaterials;
 import com.github.lunatrius.schematica.client.gui.framework.UiButton;
-import com.github.lunatrius.schematica.client.gui.framework.UiLabel;
 import com.github.lunatrius.schematica.client.gui.framework.UiScreen;
+import com.github.lunatrius.schematica.client.gui.framework.UiSprite;
 import com.github.lunatrius.schematica.client.gui.load.GuiSchematicLoad;
-import com.github.lunatrius.schematica.client.gui.save.GuiSchematicSave;
-import com.github.lunatrius.schematica.proxy.ClientProxy;
+import com.github.lunatrius.schematica.client.gui.placement.GuiSchematicLoadedList;
+import com.github.lunatrius.schematica.client.gui.placement.GuiSchematicPlacementsList;
+import com.github.lunatrius.schematica.client.gui.save.GuiAreaSelectionEditor;
 import com.github.lunatrius.schematica.reference.Reference;
 import com.github.lunatrius.schematica.tool.ToolManager;
 
 public final class GuiSchematicMainMenu extends UiScreen {
-
-    private UiButton instances;
+    private UiButton placements;
+    private UiButton loaded;
     private UiButton load;
-    private UiButton control;
-    private UiButton save;
+    private UiButton area;
+    private UiButton selections;
+    private UiButton selectionMode;
     private UiButton config;
-    private UiButton materials;
-    private UiButton components;
+    private UiButton manager;
+    private UiButton tasks;
     private UiButton mode;
-    private UiButton done;
-    private UiLabel active;
 
     public GuiSchematicMainMenu(GuiScreen parent) {
-        super(parent, Reference.NAME + " " + Reference.VERSION);
+        super(parent, Reference.NAME + " v" + Reference.VERSION);
+    }
+
+    private UiButton menu(String key, UiSprite icon, Runnable action) {
+        return addButton("litematica.gui.button.change_menu." + key, action).setSprite(icon);
     }
 
     @Override
     protected void createWidgets() {
-        instances = addButton("schematica.gui.instances.title", () -> mc.displayGuiScreen(new GuiSchematicInstances(this)));
-        load = addButton("schematica.ui.menu.load", () -> mc.displayGuiScreen(new GuiSchematicLoad(this)));
-        control = addButton("schematica.ui.menu.control", () -> mc.displayGuiScreen(new GuiSchematicControl(this)));
-        save = addButton("schematica.ui.menu.save", () -> mc.displayGuiScreen(new GuiSchematicSave(this)));
-        config = addButton("schematica.ui.menu.config", () -> mc.displayGuiScreen(new GuiModConfig(this)));
-        materials = addButton("schematica.gui.materials", () -> {
-            if (ClientProxy.schematic != null) mc.displayGuiScreen(new GuiSchematicMaterials(this));
-        });
-        components = addButton("schematica.ui.menu.components", () -> mc.displayGuiScreen(new UiDemoScreen(this)));
-        mode = root.add(new UiButton(() -> I18n.format("schematica.ui.menu.mode", ToolManager.getCurrentMode().getDisplayName()),
-            mouseButton -> ToolManager.cycleMode(mouseButton == 0)));
+        placements = menu("show_schematic_placements", UiSprite.SCHEMATIC_PLACEMENTS,
+            () -> mc.displayGuiScreen(new GuiSchematicPlacementsList(this)));
+        loaded = menu("show_loaded_schematics", UiSprite.LOADED_SCHEMATICS,
+            () -> mc.displayGuiScreen(new GuiSchematicLoadedList(this)));
+        load = menu("load_schematics_to_memory", UiSprite.SCHEMATIC_BROWSER,
+            () -> mc.displayGuiScreen(new GuiSchematicLoad(this)));
+        area = menu("area_editor", UiSprite.AREA_EDITOR, () -> mc.displayGuiScreen(new GuiAreaSelectionEditor(this)));
+        selections = unavailable(menu("show_area_selections", UiSprite.AREA_SELECTION, () -> {}));
+        selectionMode = unavailable(root.add(new UiButton(() -> I18n.format("litematica.gui.button.area_selection_mode",
+            I18n.format("litematica.gui.label.area_selection.mode.simple")), button -> {})));
+        config = menu("configuration_menu", UiSprite.CONFIGURATION, () -> mc.displayGuiScreen(new GuiModConfig(this)));
+        manager = unavailable(menu("schematic_manager", UiSprite.SCHEMATIC_MANAGER, () -> {}));
+        tasks = unavailable(menu("task_manager", UiSprite.TASK_MANAGER, () -> {}));
+        mode = root.add(new UiButton(() -> I18n.format("litematica.gui.button.tool_mode", ToolManager.getCurrentMode().getDisplayName()),
+            button -> { ToolManager.cycleMode(button == 0); layoutWidgets(); }));
         mode.setTooltip(I18n.format("schematica.ui.menu.mode_hint"));
-        done = addButton("gui.back", this::closeScreen);
-        active = root.add(new UiLabel(this::activeName));
-    }
-
-    private String activeName() {
-        return ClientProxy.schematic == null ? I18n.format("schematica.ui.menu.no_active")
-            : I18n.format("schematica.ui.menu.active", ClientProxy.schematic.name);
-    }
-
-    @Override
-    protected void opened() {
-        tickScreen();
     }
 
     @Override
     protected void tickScreen() {
         boolean world = mc.theWorld != null && mc.thePlayer != null;
         load.setEnabled(world && SchematicaPlus.proxy.isLoadEnabled);
-        save.setEnabled(world && SchematicaPlus.proxy.isSaveEnabled);
-        control.setEnabled(world && ClientProxy.schematic != null);
-        instances.setEnabled(world && !ClientProxy.loadedSchematics.isEmpty());
-        materials.setEnabled(world && ClientProxy.schematic != null);
+        area.setEnabled(world && SchematicaPlus.proxy.isSaveEnabled);
         mode.setEnabled(world);
-        active.setTooltip(activeName());
     }
 
     @Override
     protected void layoutWidgets() {
-        int column = Math.min(220, (width - 36) / 2);
-        int right = 24 + column;
-        instances.setBounds(12, 32, column, 20);
-        load.setBounds(12, 56, column, 20);
-        control.setBounds(12, 80, column, 20);
-        save.setBounds(12, 124, column, 20);
-        config.setBounds(right, 32, column, 20);
-        materials.setBounds(right, 56, column, 20);
-        components.setBounds(right, 124, column, 20);
-        active.setBounds(12, height - 64, width - 24, 20);
-        mode.setBounds(12, height - 36, Math.max(1, width - 116), 20);
-        done.setBounds(width - 100, height - 36, 88, 20);
+        int column = 0;
+        UiButton[] buttons = {placements, loaded, load, area, selections, config, manager, tasks};
+        for (UiButton button : buttons) column = Math.max(column, fontRendererObj.getStringWidth(button.label()) + 30);
+        column = Math.max(column, fontRendererObj.getStringWidth(selectionMode.label()) + 10);
+        column = Math.max(column, fontRendererObj.getStringWidth(I18n.format("litematica.gui.button.change_menu.schematic_projects_manager")) + 30);
+        column = Math.max(column, fontRendererObj.getStringWidth(I18n.format("litematica.gui.button.area_selection_mode",
+            I18n.format("litematica.gui.label.area_selection.mode.normal"))) + 10);
+        placements.setBounds(12, 30, column, 20);
+        loaded.setBounds(12, 52, column, 20);
+        load.setBounds(12, 74, column, 20);
+        area.setBounds(12, 118, column, 20);
+        selections.setBounds(12, 140, column, 20);
+        selectionMode.setBounds(12, 162, column, 20);
+        config.setBounds(32 + column, 30, column, 20);
+        manager.setBounds(32 + column, 118, column, 20);
+        tasks.setBounds(32 + column, 140, column, 20);
+        mode.setBounds(12, height - 26, fontRendererObj.getStringWidth(mode.label()) + 10, 20);
     }
 }

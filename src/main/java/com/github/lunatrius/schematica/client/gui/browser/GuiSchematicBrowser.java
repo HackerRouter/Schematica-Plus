@@ -1,19 +1,25 @@
+// SPDX-License-Identifier: LGPL-3.0-only
+// Litematica/MaLiLib browser layout, adapted for 1.7.10 by HackerRouter, 2026.
 package com.github.lunatrius.schematica.client.gui.browser;
 
-import java.awt.Desktop;
 import java.io.File;
 import java.io.IOException;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
+
+import org.lwjgl.input.Keyboard;
 
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.resources.I18n;
 
-import org.lwjgl.Sys;
-
 import com.github.lunatrius.schematica.client.gui.framework.UiButton;
+import com.github.lunatrius.schematica.client.gui.framework.UiBounds;
+import com.github.lunatrius.schematica.client.gui.framework.UiDraw;
+import com.github.lunatrius.schematica.client.gui.framework.UiSprite;
+import com.github.lunatrius.schematica.client.gui.framework.UiWidget;
 import com.github.lunatrius.schematica.client.gui.framework.UiLabel;
 import com.github.lunatrius.schematica.client.gui.framework.UiList;
 import com.github.lunatrius.schematica.client.gui.framework.UiListModel;
@@ -26,21 +32,23 @@ import com.github.lunatrius.schematica.util.FileUtils;
 public abstract class GuiSchematicBrowser extends UiScreen {
 
     protected SchematicBrowserModel browser;
-    protected final UiListModel<SchematicBrowserModel.Entry> files = new UiListModel<>(20, SchematicBrowserModel.Entry::label);
+    protected final UiListModel<SchematicBrowserModel.Entry> files = new UiListModel<>(14, SchematicBrowserModel.Entry::label);
     private final boolean directoriesOnly;
     private UiLabel path;
     private UiButton up;
     private UiButton home;
-    private UiButton refresh;
-    private UiButton openFolder;
-    private UiLabel searchLabel;
+    private UiButton createDirectory;
+    private UiButton searchButton;
+    private UiButton back;
     private UiTextField search;
-    private UiButton clear;
+    private UiWidget frame;
+    private UiWidget info;
+    private boolean searching;
     private UiList<SchematicBrowserModel.Entry> list;
-    private UiLabel selected;
     private UiLabel message;
     private final List<UiButton> actions = new ArrayList<>();
     private String status = "";
+    private SchematicBrowserModel.Entry lastSelection;
 
     protected GuiSchematicBrowser(GuiScreen parent, String title, boolean directoriesOnly) {
         super(parent, title);
@@ -49,24 +57,61 @@ public abstract class GuiSchematicBrowser extends UiScreen {
 
     @Override
     protected final void createWidgets() {
+        frame = root.add(new UiWidget() {
+            @Override public void draw(UiDraw draw, int mouseX, int mouseY) {
+                draw.fill(bounds(), 0xB0000000);
+                draw.border(bounds(), 0xFF999999);
+            }
+        });
         path = root.add(new UiLabel(() -> browser == null ? "" : browser.relativeDirectory()));
-        up = addButton("schematica.ui.browser.up", () -> navigate(browser.directory().getParentFile()));
-        home = addButton("schematica.ui.browser.root", () -> navigate(browser.root()));
-        refresh = addButton("schematica.ui.browser.refresh", this::refreshFiles);
-        openFolder = addButton("schematica.gui.openFolder", this::openFolder);
-        searchLabel = root.add(new UiLabel(() -> I18n.format("schematica.ui.browser.search")));
+        up = icon(UiSprite.UP, "schematica.ui.browser.up", () -> navigate(browser.directory().getParentFile()));
+        home = icon(UiSprite.ROOT, "schematica.ui.browser.root", () -> navigate(browser.root()));
+        createDirectory = unavailable(icon(UiSprite.CREATE_DIRECTORY, "schematica.ui.browser.create_directory", () -> {}));
         search = root.add(new UiTextField(fontRendererObj, 256, files::setQuery));
         search.setTooltip(I18n.format("schematica.ui.browser.search_hint"));
-        clear = addButton("schematica.ui.demo.clear", () -> {
-            search.setText("");
-            input.focus(search);
+        searchButton = icon(UiSprite.SEARCH, "schematica.ui.browser.search", () -> {
+            searching = !searching;
+            layoutWidgets();
+            if (searching) input.focus(search);
+            else search.setText("");
         });
         list = root.add(new UiList<>(files, I18n.format("schematica.ui.browser.empty"), this::activate));
-        selected = root.add(new UiLabel(this::selectionInfo));
+        list.setFileStyle(entry -> entry.directory ? UiSprite.DIRECTORY
+            : entry.name().toLowerCase(Locale.ROOT).endsWith(".litematic") ? UiSprite.FILE : UiSprite.SCHEMATIC,
+            entry -> entry.directory ? entry.name() : entry.name().substring(0, entry.name().lastIndexOf('.')));
+        info = root.add(new UiWidget() {
+            @Override public void draw(UiDraw draw, int mouseX, int mouseY) {
+                draw.fill(bounds(), 0xA0000000);
+                draw.border(bounds(), 0xFF999999);
+                SchematicBrowserModel.Entry entry = selection();
+                if (entry == null || entry.directory) return;
+                int x = bounds().x + 3;
+                int y = bounds().y + 3;
+                draw.text(I18n.format("litematica.gui.label.schematic_info.name"), x, y, 0xC0C0C0C0);
+                draw.text(draw.trim(entry.name(), bounds().width - 10), x + 4, y + 12, 0xFFFFFFFF);
+                draw.text(FileUtils.humanReadableByteCount(entry.size), x, y + 36, 0xC0C0C0C0);
+                String date = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date(entry.modified));
+                draw.text(draw.trim(date, bounds().width - 6), x, y + 48, 0xC0C0C0C0);
+                draw.text(draw.trim(I18n.format("schematica.ui.browser.file_info"), bounds().width - 6), x, y + 60, 0xC0C0C0C0);
+            }
+        });
         message = root.add(new UiLabel(() -> status));
         createActions();
-        actions.add(addButton("gui.back", this::closeScreen));
+        back = addButton(directoriesOnly ? "gui.back" : "litematica.gui.button.change_menu.to_main_menu",
+            directoriesOnly ? this::closeScreen : this::mainMenu);
     }
+
+    private UiButton icon(UiSprite sprite, String key, Runnable action) {
+        UiButton button = root.add(new UiButton(() -> "", mouse -> { if (mouse == 0) action.run(); })
+            .setSprite(sprite).setBackground(false));
+        button.setTooltip(I18n.format(key));
+        return button;
+    }
+
+    protected int browserX() { return 12; }
+    protected int browserY() { return 24; }
+    protected int browserHeight() { return height - 70; }
+    protected boolean showFooter() { return true; }
 
     protected abstract void createActions();
 
@@ -92,6 +137,21 @@ public abstract class GuiSchematicBrowser extends UiScreen {
     }
 
     protected void activateFile(SchematicBrowserModel.Entry entry) {}
+
+    protected void selectionChanged(SchematicBrowserModel.Entry entry) {}
+
+    @Override
+    protected boolean handleKey(char character, int keyCode) {
+        if (keyCode == Keyboard.KEY_F5) {
+            refreshFiles();
+            return true;
+        }
+        if (!(input.focused() instanceof UiTextField) && keyCode == Keyboard.KEY_BACK && browser != null && browser.canGoUp()) {
+            navigate(browser.directory().getParentFile());
+            return true;
+        }
+        return false;
+    }
 
     protected final void navigate(File directory) {
         if (browser == null) return;
@@ -148,37 +208,51 @@ public abstract class GuiSchematicBrowser extends UiScreen {
             + " | " + DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(new Date(entry.modified));
     }
 
-    private void openFolder() {
-        if (browser == null) return;
-        try {
-            Desktop.getDesktop().open(browser.directory());
-        } catch (Exception e) {
-            if (!Sys.openURL(browser.directory().toURI().toString())) fail("schematica.ui.browser.open_failed", e);
-        }
-    }
-
     @Override
     protected void tickScreen() {
         up.setEnabled(browser != null && browser.canGoUp());
         home.setEnabled(browser != null);
-        openFolder.setEnabled(browser != null && browser.directory().isDirectory());
-        selected.setTooltip(selectionInfo());
+        info.setTooltip(selectionInfo());
+        SchematicBrowserModel.Entry current = selection();
+        if (!java.util.Objects.equals(current, lastSelection)) {
+            lastSelection = current;
+            selectionChanged(current);
+        }
     }
 
     @Override
     protected final void layoutWidgets() {
-        int available = width - 24;
-        path.setBounds(12, 28, available, 12);
-        UiButton[] navigation = {up, home, refresh, openFolder};
-        int cell = (available - 12) / 4;
-        for (int i = 0; i < navigation.length; i++) navigation[i].setBounds(12 + i * (cell + 4), 44, cell, 20);
-        searchLabel.setBounds(12, 68, 46, 20);
-        search.setBounds(60, 68, available - 106, 20);
-        clear.setBounds(width - 66, 68, 54, 20);
-        list.setBounds(12, 94, available, Math.max(20, height - 162));
-        selected.setBounds(12, height - 65, available, 13);
-        message.setBounds(12, height - 49, available, 13);
-        int actionWidth = (available - (actions.size() - 1) * 4) / actions.size();
-        for (int i = 0; i < actions.size(); i++) actions.get(i).setBounds(12 + i * (actionWidth + 4), height - 30, actionWidth, 20);
+        int x = browserX();
+        int y = browserY();
+        int browserWidth = Math.max(24, width - 196);
+        int browserHeight = Math.max(0, browserHeight());
+        frame.setBounds(x, y, browserWidth, browserHeight);
+        home.setBounds(x + 2, y + 5, 12, 12);
+        up.setBounds(x + 16, y + 5, 12, 12);
+        createDirectory.setBounds(x + 30, y + 5, 12, 12);
+        searchButton.setBounds(x + browserWidth - 24, y + 5, 12, 12);
+        path.setBounds(x + 48, y + 4, browserWidth - 76, 14);
+        search.setBounds(x + 2, y + 4, browserWidth - 28, 14);
+        search.setVisible(searching);
+        path.setVisible(!searching);
+        home.setVisible(!searching);
+        up.setVisible(!searching);
+        createDirectory.setVisible(!searching);
+        list.setBounds(x + 2, y + 21, browserWidth - 4, Math.max(0, browserHeight - 25));
+        info.setBounds(x + width - 190, y, 170, Math.min(310, browserHeight + (showFooter() ? 10 : 0)));
+        message.setBounds(info.bounds().x + 3, info.bounds().bottom() - 25, 164, 22);
+        back.setVisible(showFooter());
+        int menuWidth = fontRendererObj.getStringWidth(back.label()) + 20;
+        back.setBounds(width - menuWidth - 10, height - 26, menuWidth, 20);
+        layoutActions();
+    }
+
+    protected void layoutActions() {
+        int x = 12;
+        for (UiButton button : actions) {
+            int w = button.preferredWidth(fontRendererObj.getStringWidth(button.label()));
+            button.setBounds(x, height - 26, w, 20);
+            x += w + 4;
+        }
     }
 }

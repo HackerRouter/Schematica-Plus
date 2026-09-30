@@ -168,3 +168,29 @@ once to establish the new keys. Ordered transforms apply to newly saved sessions
 - Include an AE2 monitor away from local origin (0,0,0): its dynamic tile replacement must preserve its coordinates and saved NBT without interrupting loading of other tiles.
 - Save Galacticraft colored pipes, filled machines, solar panels and linked beam receivers/telepads. Check synchronized fields and rebased link coordinates after loading at another position.
 - Load an AE2/GT stream captured with a different mod version: incompatible binary state must be skipped while canonical NBT remains available. Named visual fields are separate from version-specific streams.
+
+
+## Litematica UI phase 3
+
+- Compare M with the supplied Litematica at the same scaled resolution, in English
+  and Chinese. Check the two button groups, icon states, title, bottom tool selector
+  and disabled-entry tooltips. Test GUI scales 1/2/3 and resizing while a child is open.
+  Vanilla button skins/font glyphs are expected to follow the 1.7.10 resource pack.
+- Open both Loaded Schematics and Schematic Placements, including when empty.
+  With many instances, search, drag the scrollbar, toggle a row and remove first,
+  middle, last and active instances. Clicking a row button must not select a different
+  row. Filter or scroll while holding a button; releasing must not act on an old row.
+  Verify both lists reflect the same current backend and session reload retains changes.
+- Check the load browser's root/up/search icons, 14-pixel file rows, side panel,
+  bottom checkbox and action order. Search, Enter/double-click, F5 refresh and
+  Backspace navigation must work. Check every supported extension and file deletion
+  between selection and Load. Metadata/preview and disabled operations are pending.
+- In Area Editor, edit A/B coordinates, use the +/- icons and Move to player, then
+  Save Schematic. The save page must use a file browser rather than coordinate fields.
+  Select a file to fill its name, type a new name, navigate directories, open Options,
+  switch format/NBT, resize and return; the draft and destination must survive.
+- Confirm saving with Ignore entities on/off, disabled selection, invalid bounds,
+  illegal paths/names, a full queue and overwrite cancellation/confirmation. The
+  output still uses .schematic/.schemplus, with automatic upgrade where required.
+- Check that unavailable operations stay in the source UI positions, show a clear
+  tooltip and cannot run. Configure/Forge config still open the earlier screens.
