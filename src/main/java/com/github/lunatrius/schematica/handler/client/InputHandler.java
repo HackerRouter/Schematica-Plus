@@ -12,13 +12,14 @@ import net.minecraftforge.common.ForgeHooks;
 
 import org.lwjgl.input.Keyboard;
 
+import com.github.lunatrius.schematica.client.world.RenderLayerSettings;
+import com.github.lunatrius.schematica.client.world.RenderLayerRange;
 import com.github.lunatrius.schematica.SchematicaPlus;
 import com.github.lunatrius.schematica.client.gui.UiDemoScreen;
 import com.github.lunatrius.schematica.client.gui.GuiSchematicMainMenu;
 import com.github.lunatrius.schematica.client.gui.load.GuiSchematicLoad;
 import com.github.lunatrius.schematica.client.gui.control.GuiSchematicControl;
 import com.github.lunatrius.schematica.client.gui.save.GuiSchematicSave;
-import com.github.lunatrius.schematica.client.renderer.RendererSchematicGlobal;
 import com.github.lunatrius.schematica.client.world.SchematicWorld;
 import com.github.lunatrius.schematica.proxy.ClientProxy;
 import com.github.lunatrius.schematica.reference.Names;
@@ -93,23 +94,8 @@ public class InputHandler {
                 return;
             }
 
-            if (KEY_BINDING_LAYER_INC.isPressed()) {
-                final SchematicWorld schematic = ClientProxy.schematic;
-                if (schematic != null && schematic.isRenderingLayer) {
-                    schematic.renderingLayer = MathHelper
-                        .clamp_int(schematic.renderingLayer + 1, 0, schematic.getHeight() - 1);
-                    RendererSchematicGlobal.INSTANCE.refresh(schematic);
-                }
-            }
-
-            if (KEY_BINDING_LAYER_DEC.isPressed()) {
-                final SchematicWorld schematic = ClientProxy.schematic;
-                if (schematic != null && schematic.isRenderingLayer) {
-                    schematic.renderingLayer = MathHelper
-                        .clamp_int(schematic.renderingLayer - 1, 0, schematic.getHeight() - 1);
-                    RendererSchematicGlobal.INSTANCE.refresh(schematic);
-                }
-            }
+            if (KEY_BINDING_LAYER_INC.isPressed()) moveLayer(1);
+            if (KEY_BINDING_LAYER_DEC.isPressed()) moveLayer(-1);
 
             if (KEY_BINDING_EXECUTE.isPressed()) {
                 if (ToolManager.isHoldingToolItem()) {
@@ -118,6 +104,24 @@ public class InputHandler {
             }
 
             handlePickBlock();
+        }
+    }
+
+    private void moveLayer(int amount) {
+        RenderLayerRange range = RenderLayerSettings.RANGE;
+        if (range.mode() != RenderLayerRange.Mode.ALL) {
+            net.minecraft.entity.Entity camera = minecraft.renderViewEntity;
+            if (camera != null) {
+                double coordinate = range.axis() == RenderLayerRange.Axis.X
+                    ? camera.posX : range.axis() == RenderLayerRange.Axis.Y
+                    ? camera.posY - camera.yOffset : camera.posZ;
+                range.move(amount, coordinate);
+            }
+        } else {
+            SchematicWorld schematic = ClientProxy.schematic;
+            if (schematic != null && schematic.isRenderingLayer) {
+                schematic.renderingLayer = MathHelper.clamp_int(schematic.renderingLayer + amount, 0, schematic.getHeight() - 1);
+            }
         }
     }
 

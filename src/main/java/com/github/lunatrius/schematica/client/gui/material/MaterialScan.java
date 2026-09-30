@@ -23,7 +23,8 @@ public final class MaterialScan {
     private final WorldClient world;
     private final EntityPlayer player;
     private final Map<MaterialItemKey, int[]> counts = new LinkedHashMap<>();
-    private final int startY;
+    private final int[] bounds;
+    private final int width, length;
     private final long volume;
     private long cursor;
     private int skipped;
@@ -32,9 +33,11 @@ public final class MaterialScan {
         this.schematic = schematic;
         this.world = world;
         this.player = player;
-        boolean single = renderLayers && schematic.isRenderingLayer;
-        startY = single ? schematic.renderingLayer : 0;
-        volume = (long) schematic.getWidth() * schematic.getLength() * (single ? 1 : schematic.getHeight());
+        bounds = renderLayers ? schematic.renderBounds()
+            : new int[] {0, 0, 0, schematic.getWidth(), schematic.getHeight(), schematic.getLength()};
+        width = bounds[3] - bounds[0];
+        length = bounds[5] - bounds[2];
+        volume = (long) width * length * (bounds[4] - bounds[1]);
     }
 
     public boolean done() { return cursor >= volume; }
@@ -48,9 +51,9 @@ public final class MaterialScan {
         int processed = 0;
         while (!done() && processed++ < 4096) {
             long index = cursor++;
-            int z = (int) (index % schematic.getLength());
-            int x = (int) (index / schematic.getLength() % schematic.getWidth());
-            int y = (int) (index / ((long) schematic.getLength() * schematic.getWidth())) + startY;
+            int z = (int) (index % length) + bounds[2];
+            int x = (int) (index / length % width) + bounds[0];
+            int y = (int) (index / ((long) length * width)) + bounds[1];
             collect(x, y, z);
             if (System.nanoTime() >= deadline) break;
         }

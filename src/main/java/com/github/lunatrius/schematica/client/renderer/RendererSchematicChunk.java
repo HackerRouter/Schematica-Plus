@@ -19,6 +19,7 @@ import net.minecraft.world.IBlockAccess;
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL20;
 
+import com.github.lunatrius.schematica.client.world.RenderLayerSettings;
 import com.github.lunatrius.schematica.internal.lunatriuscore.util.vector.Vector3d;
 import com.github.lunatrius.schematica.internal.lunatriuscore.util.vector.Vector3f;
 import com.github.lunatrius.schematica.client.renderer.shader.ShaderProgram;
@@ -45,6 +46,9 @@ public class RendererSchematicChunk {
     private final AxisAlignedBB boundingBox = AxisAlignedBB.getBoundingBox(0, 0, 0, 0, 0, 0);
 
     private boolean needsUpdate = true;
+    private long layerRevision = -1;
+    private int originX, originY, originZ, localLayer;
+    private boolean localLayerEnabled;
     private int glList = -1;
     // TODO: move this away from GL lists
     private int glListHighlight = -1;
@@ -103,12 +107,18 @@ public class RendererSchematicChunk {
     }
 
     public boolean getDirty() {
-        return this.needsUpdate;
+        return this.needsUpdate
+            || layerRevision != RenderLayerSettings.RANGE.revision()
+            || originX != schematic.position.x || originY != schematic.position.y || originZ != schematic.position.z
+            || localLayer != schematic.renderingLayer || localLayerEnabled != schematic.isRenderingLayer;
     }
 
     public void updateRenderer() {
-        if (this.needsUpdate) {
+        if (getDirty()) {
             this.needsUpdate = false;
+            layerRevision = RenderLayerSettings.RANGE.revision();
+            originX = schematic.position.x; originY = schematic.position.y; originZ = schematic.position.z;
+            localLayer = schematic.renderingLayer; localLayerEnabled = schematic.isRenderingLayer;
 
             RenderHelper.createBuffers();
 
@@ -124,15 +134,10 @@ public class RendererSchematicChunk {
                 minZ = (int) this.boundingBox.minZ;
                 maxZ = Math.min((int) this.boundingBox.maxZ, this.schematic.getLength());
 
-                int renderingLayer = this.schematic.renderingLayer;
-                if (this.schematic.isRenderingLayer) {
-                    if (renderingLayer >= minY && renderingLayer < maxY) {
-                        minY = renderingLayer;
-                        maxY = renderingLayer + 1;
-                    } else {
-                        minY = maxY = 0;
-                    }
-                }
+                int[] limits = schematic.renderBounds();
+                minX = Math.max(minX, limits[0]); maxX = Math.min(maxX, limits[3]);
+                minY = Math.max(minY, limits[1]); maxY = Math.min(maxY, limits[4]);
+                minZ = Math.max(minZ, limits[2]); maxZ = Math.min(maxZ, limits[5]);
 
                 GL11.glNewList(this.glList + pass, GL11.GL_COMPILE);
                 try (SchematicRenderPass context = new SchematicRenderPass(pass)) {
@@ -249,27 +254,27 @@ public class RendererSchematicChunk {
 
                         sides = 0;
                         if (block != null) {
-                            if (block.shouldSideBeRendered(this.schematic, x, y - 1, z, 0)) {
+                            if (!schematic.isBlockRendered(x, y - 1, z) || block.shouldSideBeRendered(this.schematic, x, y - 1, z, 0)) {
                                 sides |= RenderHelper.QUAD_DOWN;
                             }
 
-                            if (block.shouldSideBeRendered(this.schematic, x, y + 1, z, 1)) {
+                            if (!schematic.isBlockRendered(x, y + 1, z) || block.shouldSideBeRendered(this.schematic, x, y + 1, z, 1)) {
                                 sides |= RenderHelper.QUAD_UP;
                             }
 
-                            if (block.shouldSideBeRendered(this.schematic, x, y, z - 1, 2)) {
+                            if (!schematic.isBlockRendered(x, y, z - 1) || block.shouldSideBeRendered(this.schematic, x, y, z - 1, 2)) {
                                 sides |= RenderHelper.QUAD_NORTH;
                             }
 
-                            if (block.shouldSideBeRendered(this.schematic, x, y, z + 1, 3)) {
+                            if (!schematic.isBlockRendered(x, y, z + 1) || block.shouldSideBeRendered(this.schematic, x, y, z + 1, 3)) {
                                 sides |= RenderHelper.QUAD_SOUTH;
                             }
 
-                            if (block.shouldSideBeRendered(this.schematic, x - 1, y, z, 4)) {
+                            if (!schematic.isBlockRendered(x - 1, y, z) || block.shouldSideBeRendered(this.schematic, x - 1, y, z, 4)) {
                                 sides |= RenderHelper.QUAD_WEST;
                             }
 
-                            if (block.shouldSideBeRendered(this.schematic, x + 1, y, z, 5)) {
+                            if (!schematic.isBlockRendered(x + 1, y, z) || block.shouldSideBeRendered(this.schematic, x + 1, y, z, 5)) {
                                 sides |= RenderHelper.QUAD_EAST;
                             }
                         }
@@ -340,6 +345,10 @@ public class RendererSchematicChunk {
 
                             if (renderPass < 2 && block != null && block.canRenderInPass(renderPass)) {
                                 resetRenderBlocks(renderBlocks);
+                                renderBlocks.renderAllFaces = !schematic.isBlockRendered(x - 1, y, z)
+                                    || !schematic.isBlockRendered(x + 1, y, z) || !schematic.isBlockRendered(x, y - 1, z)
+                                    || !schematic.isBlockRendered(x, y + 1, z) || !schematic.isBlockRendered(x, y, z - 1)
+                                    || !schematic.isBlockRendered(x, y, z + 1);
                                 renderBlocks.renderBlockByRenderType(block, x, y, z);
                             }
                         }
@@ -390,7 +399,7 @@ public class RendererSchematicChunk {
                 y = tileEntity.yCoord;
                 z = tileEntity.zCoord;
 
-                if (this.schematic.isRenderingLayer && this.schematic.renderingLayer != y) {
+                if (!this.schematic.isBlockRendered(x, y, z)) {
                     continue;
                 }
 

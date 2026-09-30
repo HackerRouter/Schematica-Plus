@@ -29,7 +29,7 @@ public class BlockList {
         for (int y = 0; y < world.getHeight(); y++) {
             for (int x = 0; x < world.getWidth(); x++) {
                 for (int z = 0; z < world.getLength(); z++) {
-                    if (world.isRenderingLayer && y != world.renderingLayer) {
+                    if (!world.isBlockRendered(x, y, z)) {
                         continue;
                     }
 

@@ -7,6 +7,7 @@ import net.minecraft.world.IWorldAccess;
 import net.minecraft.world.World;
 import net.minecraftforge.event.world.WorldEvent;
 
+import com.github.lunatrius.schematica.client.world.RenderLayerSettings;
 import com.github.lunatrius.schematica.client.world.SchematicUpdater;
 import com.github.lunatrius.schematica.client.util.WorldSession;
 import com.github.lunatrius.schematica.proxy.ClientProxy;
@@ -20,10 +21,12 @@ public class WorldHandler {
     private final WorldSession<World> session = new WorldSession<>(key -> {
         ClientProxy.saveLoadedSchematics(key);
         ClientProxy.saveAreaSelection(key);
+        RenderLayerSettings.save(key);
     }, ClientProxy::clearWorldState, key -> {
         ClientProxy.lastWorldServerName = key;
         ClientProxy.restoreLoadedSchematics(key);
         ClientProxy.restoreAreaSelection(key);
+        RenderLayerSettings.restore(key);
     });
 
     private WorldHandler() {}

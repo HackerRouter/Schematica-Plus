@@ -98,9 +98,28 @@ public class SchematicWorld extends World {
         this.name = filename.replaceAll("(?i)\\.(schematic|litematic|schemplus)$", "");
     }
 
+    private boolean tracingRenderedBlocks;
+
+    public boolean isBlockRendered(int x, int y, int z) {
+        return (!isRenderingLayer || renderingLayer == y)
+            && RenderLayerSettings.RANGE.contains((long) position.x + x, (long) position.y + y, (long) position.z + z);
+    }
+
+    public int[] renderBounds() {
+        return RenderLayerSettings.RANGE.localBounds(position.x, position.y, position.z,
+            getWidth(), getHeight(), getLength(), isRenderingLayer, renderingLayer);
+    }
+
+    public net.minecraft.util.MovingObjectPosition rayTraceRendered(net.minecraft.util.Vec3 start, net.minecraft.util.Vec3 end) {
+        boolean previous = tracingRenderedBlocks;
+        tracingRenderedBlocks = true;
+        try { return func_147447_a(start, end, false, false, false); }
+        finally { tracingRenderedBlocks = previous; }
+    }
+
     @Override
     public Block getBlock(int x, int y, int z) {
-        if (this.isRenderingLayer && this.renderingLayer != y) {
+        if (tracingRenderedBlocks && !isBlockRendered(x, y, z)) {
             return Blocks.air;
         }
 

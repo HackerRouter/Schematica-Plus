@@ -13,7 +13,7 @@ The MaLiLib GUI atlas is bundled without modification at
 assets/schematica_plus/textures/gui/malilib_widgets.png.
 Selected labels in assets/schematica_plus_litematica/lang were converted from
 upstream JSON. UI Java files marked LGPL-3.0-only adapt upstream screen layouts,
-icon coordinates and drawing conventions to the Schematica Plus 1.7.10 UI layer.
+layer-range behavior, icon coordinates and drawing conventions to the Schematica Plus 1.7.10 UI layer.
 Adaptation and format conversion: HackerRouter, 2026.
 
 These portions retain the GNU Lesser General Public License version 3 and are

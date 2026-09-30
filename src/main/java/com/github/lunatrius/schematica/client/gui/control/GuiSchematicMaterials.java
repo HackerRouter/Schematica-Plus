@@ -19,6 +19,7 @@ import net.minecraft.util.ChatComponentText;
 
 import org.lwjgl.input.Keyboard;
 
+import com.github.lunatrius.schematica.client.world.RenderLayerSettings;
 import com.github.lunatrius.schematica.SchematicaPlus;
 import com.github.lunatrius.schematica.client.gui.framework.UiBounds;
 import com.github.lunatrius.schematica.client.gui.framework.UiButton;
@@ -165,7 +166,10 @@ public class GuiSchematicMaterials extends UiScreen {
     @Override
     protected int titleRightMargin() { return 50; }
 
+    private long layerRevision;
+
     private boolean geometryChanged() {
+        if (renderLayers && layerRevision != RenderLayerSettings.RANGE.revision()) return true;
         return !Arrays.equals(geometry, geometry()) || source != schematic.getSchematic()
             || !transforms.equals(schematic.transformOperations);
     }
@@ -179,6 +183,7 @@ public class GuiSchematicMaterials extends UiScreen {
         refreshRows();
         if (validContext()) {
             geometry = geometry();
+            layerRevision = RenderLayerSettings.RANGE.revision();
             source = schematic.getSchematic();
             transforms = new ArrayList<>(schematic.transformOperations);
             scan = new MaterialScan(schematic, openedWorld, mc.thePlayer, renderLayers);

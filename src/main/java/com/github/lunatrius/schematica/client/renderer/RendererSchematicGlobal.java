@@ -439,6 +439,8 @@ public class RendererSchematicGlobal {
     private void renderEntities(SchematicWorld schematic) {
         RenderManager renderManager = RenderManager.instance;
         for (Entity entity : schematic.getEntities()) {
+            if (!schematic.isBlockRendered(net.minecraft.util.MathHelper.floor_double(entity.posX),
+                net.minecraft.util.MathHelper.floor_double(entity.posY), net.minecraft.util.MathHelper.floor_double(entity.posZ))) continue;
             net.minecraft.world.World originalWorld = entity.worldObj;
             GL11.glPushMatrix();
             GL11.glPushAttrib(GL11.GL_ALL_ATTRIB_BITS);

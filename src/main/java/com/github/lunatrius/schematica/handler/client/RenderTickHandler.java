@@ -44,6 +44,6 @@ public class RenderTickHandler {
             vecLook.yCoord * rayTraceDistance,
             vecLook.zCoord * rayTraceDistance);
 
-        return schematic.func_147447_a(vecPosition, vecExtendedLook, false, false, true);
+        return schematic.rayTraceRendered(vecPosition, vecExtendedLook);
     }
 }

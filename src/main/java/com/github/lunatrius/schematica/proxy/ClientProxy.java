@@ -24,6 +24,8 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.config.Property;
 import net.minecraftforge.common.util.ForgeDirection;
 
+import com.github.lunatrius.schematica.handler.client.WorldHandler;
+import com.github.lunatrius.schematica.client.world.RenderLayerSettings;
 import com.github.lunatrius.schematica.internal.lunatriuscore.util.vector.Vector3d;
 import com.github.lunatrius.schematica.internal.lunatriuscore.util.vector.Vector3i;
 import com.github.lunatrius.schematica.api.ISchematic;
@@ -39,7 +41,6 @@ import com.github.lunatrius.schematica.handler.client.OverlayHandler;
 import com.github.lunatrius.schematica.handler.client.RenderTickHandler;
 import com.github.lunatrius.schematica.handler.client.TickHandler;
 import com.github.lunatrius.schematica.handler.client.ToolItemHandler;
-import com.github.lunatrius.schematica.handler.client.WorldHandler;
 import com.github.lunatrius.schematica.reference.Constants;
 import com.github.lunatrius.schematica.reference.Reference;
 import com.github.lunatrius.schematica.util.Coordinates;
@@ -429,6 +430,7 @@ public class ClientProxy extends CommonProxy {
     }
 
     public static void clearWorldState() {
+        RenderLayerSettings.RANGE.load(null);
         unloadAllSchematics();
         lastWorldServerName = null;
         pointA.set(0, 0, 0);

@@ -110,15 +110,10 @@ public class SchematicPrinter {
 
         final int slot = player.inventory.currentItem;
 
-        final boolean isRenderingLayer = this.schematic.isRenderingLayer;
-        final int renderingLayer = this.schematic.renderingLayer;
         for (int y = minY; y < maxY; y++) {
-            if (isRenderingLayer && y != renderingLayer) {
-                continue;
-            }
-
             for (int x = minX; x < maxX; x++) {
                 for (int z = minZ; z < maxZ; z++) {
+                    if (!schematic.isBlockRendered(x, y, z)) continue;
                     try {
                         if (placeBlock(world, player, x, y, z)) {
                             player.inventory.currentItem = slot;
@@ -162,6 +157,7 @@ public class SchematicPrinter {
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
                 for (int z = 0; z < length; z++) {
+                    if (!schematic.isBlockRendered(x, y, z)) continue;
                     final Block block = this.schematic.getBlock(x, y, z);
                     if (block == null || block.isAir(this.schematic, x, y, z)) {
                         continue;
