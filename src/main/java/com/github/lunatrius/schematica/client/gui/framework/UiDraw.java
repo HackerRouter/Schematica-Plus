@@ -1,5 +1,7 @@
 package com.github.lunatrius.schematica.client.gui.framework;
 
+import net.minecraft.item.ItemStack;
+
 public interface UiDraw {
 
     void fill(UiBounds bounds, int color);
@@ -9,6 +11,8 @@ public interface UiDraw {
     int textWidth(String text);
 
     String trim(String text, int width);
+
+    void item(ItemStack stack, int x, int y);
 
     Clip clip(UiBounds bounds);
 

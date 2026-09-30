@@ -242,6 +242,58 @@ with disabled controls and explanatory tooltips. The current backend does not ye
 provide Litematica's color options, global render-layer model, key chords or trigger
 settings. No cross-mod config switcher is shown: there is no MaLiLib config registry
 in this 1.7.10 port. This phase ports the config presentation and existing Plus
-settings, not the entire modern Litematica option set. Material lists and the
-remaining pending pages still need their UI ports. Native font, scaling and visual
+settings, not the entire modern Litematica option set. Phase 6 below replaces the
+material list; other pending pages still need their ports. Native font, scaling and visual
 comparisons remain manual checks; passing tests does not establish visual parity.
+
+
+## Phase 6: placement materials
+
+The placement Materials button and the legacy Controls Materials button now open
+GuiSchematicMaterials in the ported UI. It follows GuiMaterialList's top actions at
+(12,24), right-aligned multiplier, info icon, browser at (10,44), 22-pixel header and
+rows, four sortable columns, right-aligned Ignore buttons and width-dependent
+footer. Names/counts determine column widths. Small windows wrap actions and shrink
+columns to keep controls reachable; hover details retain full counts and item stack
+sizes. Search replaces the header text, with the original magnifier on the right.
+The original Litematica atlas supplies the info/sort icons without new image edits.
+Minecraft 1.7.10 item rendering is scoped so lighting, depth and matrix state return
+to the surrounding UI after each icon. This does not establish native visual parity.
+
+The backend counts one pick-block item per non-air schematic position, preserving
+the old material estimate convention. Item identity now includes item NBT, so
+variants with identical item IDs/metadata are not merged and cannot borrow each
+other's inventory counts. Inventory covers main slots, including the hotbar; it
+does not unpack bags, cells or other containers. Creative mode shows actual item
+counts rather than an unlimited-inventory marker. Existing blocks are still checked
+by block ID and metadata, not full tile NBT. Multipart counts, paired/multi-block
+items, fluid quantities and recipe decomposition are not guaranteed by this generic
+pick-block mapping. The info tooltip states these limits.
+
+Scanning runs on the client thread in batches of at most 4096 positions or roughly
+4 ms between calls; a slow individual mod pick-block hook can exceed that budget.
+Only a completed snapshot is shown/exported. Moving, transforming or replacing the
+placement restarts the scan, while closing the page, unloading the placement or
+leaving the captured client world cancels it. Rendering-layer scope uses the
+placement's existing single-layer filter without altering that filter. Unloaded
+real-world chunks/out-of-height positions stay unverified and count conservatively
+as missing; they are not included as completed positions. Failed/unavailable pick
+items are counted separately. World progress is a scan-time snapshot; inventory
+counts refresh once per second while the page is open.
+
+Available: Refresh/F5, All/Render layers, current-inventory Hide available, Ignore,
+Clear ignored, text/registry search, all four column sorts, multiplier and UTF-8
+exports. At multiplier 1, Missing subtracts placed blocks; at larger multipliers it
+uses the full multiplied total as upstream does. Arithmetic uses long integers.
+Ignore is local to the page and survives rescans; hiding available items follows
+current counts rather than upstream's remembered resource-gathering behavior.
+The old NAME_ASC/NAME_DESC/SIZE_ASC/SIZE_DESC preference is read; new sort criteria
+persist through the existing hidden sortType property.
+
+Write to file exports exactly the visible, sorted rows to a new file in dumps:
+plain text by default, Shift for CSV, Alt for JSON. Existing dumps are not overwritten;
+failures produce feedback. JSON is Schematica Plus material-list schema version 1,
+including registry IDs, serialized item variant NBT and counts, not a modern
+Litematica recipe-cache format. Raw Materials, Info HUD and Clear cache remain
+unavailable with tooltips. Global render layers and the other pending UI pages are
+unchanged. See TESTING.md for game checks, including mod icons and NBT variants.

@@ -36,8 +36,8 @@ refer to the same instances, so removing either also unloads the instance.
 Placement Configure now uses the Litematica layout for renaming, origin editing,
 rotation/mirroring and preview/entity options. It keeps the placement origin fixed
 during transforms. The optional direct Controls binding retains the earlier
-three-axis controls; materials still use the earlier UI. Global configuration uses the
-ported tabbed page. Direct loading and direct controls
+three-axis controls. Global configuration uses the ported tabbed page, and placement
+materials use the ported searchable list with counts, sorting and exports. Direct loading and direct controls
 have optional, unbound shortcuts in Controls. Unported operations retain their
 positions and show disabled tooltips.
 

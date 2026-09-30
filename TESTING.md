@@ -261,3 +261,43 @@ once to establish the new keys. Ordered transforms apply to newly saved sessions
   keyboard activation must both begin capture without leaking the key into search.
   Saved keys must work after reopening the world/game. Exercise All's key filter,
   clear it with Escape, and scroll a capturing row out of view to cancel capture.
+
+
+## Litematica UI phase 6: placement materials
+
+- Open Materials from placement A's configuration while B is the active printer
+  placement. All counts must describe A; neither the active placement nor the
+  printer may switch. Repeat through legacy Controls. Escape returns to the parent;
+  Main Menu opens M. Empty/unloaded placements must not crash the page.
+- Compare English/Chinese with the supplied upstream at wide and narrow scaled
+  resolutions: top actions, multiplier, info icon, four sortable headers, alternating
+  rows, icons, Ignore and footer. Check GUI scales 1/2/3, long mod names and 16-digit
+  counts. Columns/actions must not overlap. Hover must show full counts and actual
+  stack limits (1, 16, 64); resource-pack fonts and mod item icons remain native.
+- Use one completed block, one air position, one incorrect real-world block and
+  one unloaded chunk. Totals/missing/available colors and progress must distinguish
+  these cases; unverified positions must not appear completed. Move/rotate during a
+  large scan, then unload or change dimension: restart/cancel without exporting a
+  mixed or incomplete snapshot. Verify the UI remains responsive during scans.
+- Compare two items with identical IDs/metadata but different NBT, including GTNH
+  mod variants. Inventory and list entries must remain separate. Do not treat block
+  ID/metadata progress as proof of correct machine NBT. Review skipped blocks and
+  generic pick-block mapping limits in the info tooltip.
+- Click every header twice, search by translated name and registry ID, ignore a
+  row, refresh, then Clear ignored. Toggle Hide available, change inventory while
+  the page remains open, and confirm filtering updates. Reopen to check saved sort
+  order; ignore/search/multiplier state is local to this page. Test the magnifier,
+  ordinary typing to search, Escape to hide it, and Shift+Escape to close.
+- Change multiplier to 2, back to 1, and Integer.MAX_VALUE. Counts must not overflow;
+  larger multipliers must require full copies rather than crediting the current
+  placement repeatedly. Test text edits, Enter, focus loss, resize and arrows/wheel.
+- Compare All with Render layers, both with the placement layer filter enabled and
+  disabled. Counting scope must not change preview or printer settings.
+- Export TXT, Shift+CSV and Alt+JSON with filters/ignored rows active. Verify displayed
+  order/counts, Unicode, CSV quotes/commas and JSON variant NBT. Repeated exports must
+  create new UTF-8 files under dumps and retain old files. Test an unwritable directory
+  and confirm error feedback. Export stays disabled during scanning or after world
+  invalidation. HUD/cache/raw-material actions must remain disabled with explanations.
+- Render enchanted items, 3-D blocks and custom GTNH item renderers, then open other
+  UI pages and return to the world. Check lighting/depth/scissor state, tooltip
+  layering and clipped rows while scrolling. This requires native game testing.

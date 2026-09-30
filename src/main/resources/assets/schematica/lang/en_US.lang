@@ -288,3 +288,15 @@ schematica.ui.config.list.add=Insert entry (Escape closes the list editor).
 schematica.ui.config.list.remove=Remove entry.
 schematica.ui.config.list.move_down=Move entry down.
 schematica.ui.config.list.move_up=Move entry up.
+
+schematica.ui.material.scope=All counts the whole placement. Render layers uses this placement's existing layer filter; it does not change rendering.
+schematica.ui.material.cache_pending=A reusable material cache has not been ported; Refresh rescans this placement.
+schematica.ui.material.raw_pending=Recipe-based raw material breakdown has not been ported.
+schematica.ui.material.export=Write the displayed list as UTF-8 text. Hold Shift for CSV or Alt for JSON. Each export creates a new file in dumps.
+schematica.ui.material.multiplier=At x1, Missing accounts for existing blocks. At x2 or more, Missing is the full requirement for that many copies.
+schematica.ui.material.info=Counts use pick-block items, one per schematic position. Placed blocks are compared by block and metadata, not tile NBT. Inventory matching includes item NBT and excludes container contents. These are material estimates, not recipe totals.
+schematica.ui.material.unverified=Unverified positions: %s; blocks without counted items: %s
+schematica.ui.material.empty=No materials match the current list filters.
+schematica.ui.material.context=The original world or placement is no longer available.
+schematica.ui.material.scanning=Scanning materials: %s%%
+schematica.ui.material.export_failed=Could not export the material list; see the log.

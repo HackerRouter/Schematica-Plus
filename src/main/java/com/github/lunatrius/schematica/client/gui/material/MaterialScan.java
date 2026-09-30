@@ -11,6 +11,7 @@ import net.minecraft.client.multiplayer.WorldClient;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.MovingObjectPosition;
+import net.minecraft.world.chunk.Chunk;
 
 import com.github.lunatrius.schematica.client.world.SchematicWorld;
 import com.github.lunatrius.schematica.reference.Reference;
@@ -67,7 +68,8 @@ public final class MaterialScan {
             int wx = schematic.position.x + x;
             int wy = schematic.position.y + y;
             int wz = schematic.position.z + z;
-            boolean unknown = !world.blockExists(wx, wy, wz);
+            Chunk chunk = world.getChunkFromChunkCoords(wx >> 4, wz >> 4);
+            boolean unknown = !verifiedChunk(chunk, wy);
             boolean missing = unknown || world.getBlock(wx, wy, wz) != block
                 || world.getBlockMetadata(wx, wy, wz) != schematic.getBlockMetadata(x, y, z);
             boolean mismatched = missing && !unknown && !world.isAirBlock(wx, wy, wz);
@@ -97,6 +99,10 @@ public final class MaterialScan {
         }
         updateAvailable(result, player);
         return result;
+    }
+
+    static boolean verifiedChunk(Chunk chunk, int y) {
+        return y >= 0 && y < 256 && chunk != null && chunk.isChunkLoaded && !chunk.isEmpty();
     }
 
     public static boolean updateAvailable(List<MaterialListModel.Entry<MaterialItemKey>> entries, EntityPlayer player) {

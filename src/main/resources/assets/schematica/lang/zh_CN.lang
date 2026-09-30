@@ -288,3 +288,15 @@ schematica.ui.config.list.add=插入一项（Esc 关闭列表编辑器）。
 schematica.ui.config.list.remove=删除这一项。
 schematica.ui.config.list.move_down=下移这一项。
 schematica.ui.config.list.move_up=上移这一项。
+
+schematica.ui.material.scope=“全部”统计整个放置；“渲染层”使用此放置已有的层过滤设置，不会改变渲染范围。
+schematica.ui.material.cache_pending=尚未移植可复用的材料缓存；“刷新”会重新扫描此放置。
+schematica.ui.material.raw_pending=尚未移植按合成配方拆解原材料的功能。
+schematica.ui.material.export=以 UTF-8 文本导出当前显示的列表。按住 Shift 导出 CSV，Alt 导出 JSON。每次在 dumps 中生成新文件。
+schematica.ui.material.multiplier=倍率为 1 时，缺少数量会扣除已放置方块；倍率大于 1 时，缺少数量为多份蓝图的完整需求。
+schematica.ui.material.info=通过选取方块获取材料，每个蓝图位置计一件。已放置判定仅比较方块和元数据，不核验方块实体 NBT。背包匹配包含物品 NBT，不读取容器内部物品。这是材料估算，不是配方原料统计。
+schematica.ui.material.unverified=未核验位置：%s；未计入材料的方块：%s
+schematica.ui.material.empty=没有符合当前筛选条件的材料。
+schematica.ui.material.context=原来的世界或蓝图放置已不可用。
+schematica.ui.material.scanning=正在统计材料：%s%%
+schematica.ui.material.export_failed=材料列表导出失败，请查看日志。

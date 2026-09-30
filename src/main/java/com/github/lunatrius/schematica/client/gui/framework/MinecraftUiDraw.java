@@ -8,10 +8,15 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.client.renderer.RenderHelper;
+import net.minecraft.client.renderer.OpenGlHelper;
+import net.minecraft.client.renderer.entity.RenderItem;
+import net.minecraft.item.ItemStack;
 import net.minecraft.util.ResourceLocation;
 
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL12;
 
 public final class MinecraftUiDraw implements UiDraw, AutoCloseable {
 
@@ -19,6 +24,7 @@ public final class MinecraftUiDraw implements UiDraw, AutoCloseable {
     private final int scale;
     private final int matrixMode;
     private final Deque<UiBounds> clips = new ArrayDeque<>();
+    private static final RenderItem ITEM_RENDERER = new RenderItem();
 
     public MinecraftUiDraw(Minecraft minecraft) {
         this.minecraft = minecraft;
@@ -67,6 +73,34 @@ public final class MinecraftUiDraw implements UiDraw, AutoCloseable {
     @Override
     public String trim(String text, int width) {
         return minecraft.fontRenderer.trimStringToWidth(text, Math.max(0, width));
+    }
+
+    @Override
+    public void item(ItemStack stack, int x, int y) {
+        if (stack == null || stack.getItem() == null) return;
+        int mode = GL11.glGetInteger(GL11.GL_MATRIX_MODE);
+        float z = ITEM_RENDERER.zLevel;
+        float brightnessX = OpenGlHelper.lastBrightnessX;
+        float brightnessY = OpenGlHelper.lastBrightnessY;
+        GL11.glPushAttrib(GL11.GL_ALL_ATTRIB_BITS);
+        GL11.glMatrixMode(GL11.GL_MODELVIEW);
+        GL11.glPushMatrix();
+        try {
+            prepareTextured();
+            GL11.glEnable(GL11.GL_DEPTH_TEST);
+            GL11.glDepthFunc(GL11.GL_LEQUAL);
+            GL11.glEnable(GL12.GL_RESCALE_NORMAL);
+            RenderHelper.enableGUIStandardItemLighting();
+            ITEM_RENDERER.zLevel = 200;
+            ITEM_RENDERER.renderItemAndEffectIntoGUI(minecraft.fontRenderer, minecraft.getTextureManager(), stack, x, y);
+        } finally {
+            ITEM_RENDERER.zLevel = z;
+            OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, brightnessX, brightnessY);
+            GL11.glMatrixMode(GL11.GL_MODELVIEW);
+            GL11.glPopMatrix();
+            GL11.glPopAttrib();
+            GL11.glMatrixMode(mode);
+        }
     }
 
     @Override

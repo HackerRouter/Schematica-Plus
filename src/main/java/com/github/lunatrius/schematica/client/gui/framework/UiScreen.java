@@ -39,6 +39,8 @@ public abstract class UiScreen extends GuiScreen {
 
     protected void tickScreen() {}
 
+    protected int titleRightMargin() { return 30; }
+
     protected void closed() {}
 
     protected boolean interceptKey(char character, int keyCode) { return false; }
@@ -84,7 +86,7 @@ public abstract class UiScreen extends GuiScreen {
         input.validate();
         try (MinecraftUiDraw draw = new MinecraftUiDraw(mc); UiDraw.Clip ignored = draw.clip(root.bounds())) {
             draw.fill(root.bounds(), 0xB0000000);
-            draw.text(draw.trim(title, width - 30), 20, 10, 0xFFFFFFFF);
+            draw.text(draw.trim(title, width - titleRightMargin()), 20, 10, 0xFFFFFFFF);
             List<UiPanel> modals = input.modalPanels();
             root.draw(draw, modals.isEmpty() ? mouseX : -1, modals.isEmpty() ? mouseY : -1);
             for (int i = 0; i < modals.size(); i++) {
@@ -104,6 +106,7 @@ public abstract class UiScreen extends GuiScreen {
         lastMouseX = mouseX;
         lastMouseY = mouseY;
         if (target == null || now - hoverSince < 400_000_000L) return;
+        if (target.drawTooltip(draw, mouseX, mouseY, root.bounds())) return;
         List<String> lines = new ArrayList<>();
         int maxWidth = Math.max(1, Math.min(320, width - 20));
         for (String text : target.tooltip(mouseX, mouseY)) {

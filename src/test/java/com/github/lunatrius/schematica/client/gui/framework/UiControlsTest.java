@@ -112,6 +112,8 @@ public class UiControlsTest {
         int clipDepth;
         final List<String> strings = new ArrayList<>();
 
+        @Override public void item(net.minecraft.item.ItemStack stack, int x, int y) {}
+
         @Override public void texture(String texture, UiBounds destination, int u, int v, int sw, int sh, int tw, int th) {}
         @Override public void fill(UiBounds bounds, int color) {}
         @Override public void text(String text, int x, int y, int color) { strings.add(text); }

@@ -61,6 +61,8 @@ public abstract class UiWidget {
         return tooltip;
     }
 
+    public boolean drawTooltip(UiDraw draw, int mouseX, int mouseY, UiBounds screen) { return false; }
+
     public boolean isFocusable() {
         return false;
     }
