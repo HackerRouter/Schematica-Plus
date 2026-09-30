@@ -335,12 +335,17 @@ public class RendererSchematicGlobal {
 
         SchematicRenderData data = new SchematicRenderData();
         data.renderBlocks = new RenderBlocks(schematic);
-        for (int y = 0; y < height; y++) {
-            for (int z = 0; z < length; z++) {
-                for (int x = 0; x < width; x++) {
-                    data.chunks.add(new RendererSchematicChunk(schematic, data.renderBlocks, x, y, z));
+        try {
+            for (int y = 0; y < height; y++) {
+                for (int z = 0; z < length; z++) {
+                    for (int x = 0; x < width; x++) {
+                        data.chunks.add(new RendererSchematicChunk(schematic, data.renderBlocks, x, y, z));
+                    }
                 }
             }
+        } catch (RuntimeException e) {
+            for (RendererSchematicChunk chunk : data.chunks) chunk.delete();
+            throw e;
         }
         renderDataMap.put(schematic, data);
 

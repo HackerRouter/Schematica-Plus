@@ -456,3 +456,69 @@ still shows filename, size and date, not parsed metadata or screenshot previews.
 Automated checks cover preserved bytes, no overwrite/format change, invalid names,
 stale/deleted targets, directory refusal and cross-session reference preservation.
 Live-game rendering, scaling and modpack interactions remain manual checks.
+
+
+## Phase 10: loaded sources and placements
+
+Loaded Schematics and Schematic Placements now have separate backends. The library
+owns one source per canonical file path and zero or more independent SchematicWorld
+placements. Loading the same path reuses its cached source; use Reload to read
+changed disk contents. The Load screen's Create Placement checkbox is operational.
+Unchecked loading neither creates render data nor changes the active placement.
+The Loaded list exposes Create Placement, Reload, Save to File and Unload. The
+Placements list and legacy controls remove individual placements while retaining
+their source. Unload in the Loaded list removes that source and all its placements.
+
+The source holds an immutable snapshot of the original file bytes, validated through
+the existing format reader. Each placement decodes that snapshot into separate
+blocks, metadata, tile entities and entities. Transforms therefore cannot mutate
+another placement or the cached source. This preserves original visual-state NBT
+and modern long arrays without a lossy round trip through the legacy writer. It
+also preserves fields the current reader does not understand for subsequent Save
+to File. Existing rendering/conversion limitations of each reader still apply.
+Snapshots are bounded to 128 MiB of file bytes in addition to the existing decoded
+NBT/volume limits. Parsing and creation remain synchronous; placements retain their
+own full mutable geometry, rather than sharing transformed block arrays.
+
+Create Placement from the Loaded list uses the player's position and selects the
+new placement. Creation from the file browser retains the previous saved-coordinate
+or look-target behavior. Placement names are unique without reusing an existing
+numeric suffix. The cached source can create placements or be saved even after
+its disk file is removed. No new .litematic encoder is introduced: Save to File
+copies the cached source bytes in their original extension, including entities,
+NBT and metadata, without applying placement transforms. It uses the existing
+browser pattern, contained output paths, an explicit overwrite dialog and sibling
+temporary files. Saving a copy does not retarget the loaded source.
+
+Reload reads/validates a new snapshot and prepares all dependent placements and
+render data before publishing replacements. A preparation failure keeps the old
+snapshot and placements and releases prepared render buffers. Successful reload
+retains placement order, names, world-space origins, ordered three-axis transforms,
+visibility, entity/NBT flags and legacy layer settings (clamped to the new height).
+Origin retention also handles changed source dimensions. The active placement
+follows its replacement; reloading another source does not reset the active printer.
+Reload replaces placement block/entity data with source-file data; it does not
+merge local edits. Open child pages holding replaced placements become unavailable
+through their existing membership checks.
+
+LoadedSchematics.json keeps the existing per-world/server/dimension arrays. Regular
+entries remain placement records; a source with no placements gets sourceOnly=true.
+Old records without that field are restored as placements and share their source
+by canonical path. Source-only records never create a preview on restore. Local
+layer settings now persist too. Explicitly having no active placement survives a
+session reload. One malformed/missing entry no longer prevents later entries from
+restoring. World transitions clear both sources and placements, and the file manager
+renames current source paths plus matching persisted records, including unplaced
+sources. A rename cannot take a path already owned by another loaded source,
+even if that source's disk file was deleted. Session persistence references files,
+not embedded snapshot bytes;
+a deleted source cannot restore after leaving that session.
+
+Automated coverage includes canonical-path deduplication, independent placement
+factories, removal vs. unload, stale actions, staged reload rollback, unrelated
+placement order, no-placement sources, retained unknown NBT, fresh modern long
+arrays, byte-identical saving, no overwrite/format relabeling, save path checks,
+renamed source-only records and changed-size origin calculations. Native GTNH
+rendering and world-session behavior still require the checks in TESTING.md.
+Area libraries, subregions, verifier/tasks, advanced input and format conversion
+remain separate backend work; this phase does not complete those features.

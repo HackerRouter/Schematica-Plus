@@ -145,3 +145,12 @@ The Schematic Manager now provides byte-preserving Rename/Copy, confirmed Delete
 and shared Create Directory dialogs for .schematic, .schemplus and .litematic.
 Rename updates loaded-instance source paths and saved session references. Existing
 files are never overwritten. Metadata edits and format conversion remain pending.
+
+
+Loaded sources and placements are now independent. Load without creating a preview,
+create multiple placements from a cached source, remove placements without unloading
+it, reload its placements from disk, or save the cached original file. Reload keeps
+placement origins/transforms and stages replacements before applying them. Saving
+from Loaded Schematics preserves the original format and bytes; it does not bake
+placement transforms or convert formats. Unplaced sources persist by file reference
+per world/dimension alongside placements.

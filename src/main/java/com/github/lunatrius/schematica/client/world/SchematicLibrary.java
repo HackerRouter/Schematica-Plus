@@ -87,8 +87,18 @@ public final class SchematicLibrary<D, P> {
     }
 
     public void renamed(File previous, File next) throws IOException {
+        checkRename(previous, next);
         File canonical = next.getCanonicalFile();
         for (Source<D> source : sources) if (source.file.equals(previous)) source.file = canonical;
+    }
+
+    public void checkRename(File previous, File next) throws IOException {
+        File canonical = next.getCanonicalFile();
+        for (Source<D> source : sources) {
+            if (source.file.equals(canonical) && !source.file.equals(previous)) {
+                throw new java.nio.file.FileAlreadyExistsException("A source is already loaded under this name: " + canonical);
+            }
+        }
     }
 
     public void clear() {

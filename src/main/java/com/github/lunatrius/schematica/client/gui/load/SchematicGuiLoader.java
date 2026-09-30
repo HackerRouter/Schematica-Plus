@@ -13,25 +13,39 @@ import net.minecraftforge.common.util.ForgeDirection;
 
 import com.github.lunatrius.schematica.SchematicaPlus;
 import com.github.lunatrius.schematica.client.printer.SchematicPrinter;
-import com.github.lunatrius.schematica.client.renderer.RendererSchematicGlobal;
 import com.github.lunatrius.schematica.client.world.SchematicWorld;
+import com.github.lunatrius.schematica.client.world.SchematicLibrary;
+import com.github.lunatrius.schematica.client.world.SchematicSourceData;
 import com.github.lunatrius.schematica.handler.client.WorldHandler;
 import com.github.lunatrius.schematica.proxy.ClientProxy;
 import com.github.lunatrius.schematica.util.Coordinates;
 
-final class SchematicGuiLoader {
+public final class SchematicGuiLoader {
 
     private SchematicGuiLoader() {}
 
-    static SchematicWorld load(Minecraft minecraft, File file) throws IOException {
-        SchematicWorld previous = ClientProxy.schematic;
-        if (!SchematicaPlus.proxy.loadSchematic(null, file.getParentFile(), file.getName())) {
-            throw new IOException("Unable to read schematic: " + file);
+    public static SchematicLibrary.Source<SchematicSourceData> load(Minecraft minecraft, File file, boolean createPlacement) throws IOException {
+        if (minecraft.theWorld == null || minecraft.thePlayer == null || !SchematicaPlus.proxy.isLoadEnabled) {
+            throw new IOException("Schematic loading is unavailable in this world");
         }
-        SchematicWorld schematic = ClientProxy.schematic;
+        SchematicLibrary.Source<SchematicSourceData> source = ClientProxy.loadSource(file);
+        if (createPlacement) createPlacement(minecraft, source, true);
+        WorldHandler.INSTANCE.saveSession();
+        return source;
+    }
+
+    public static SchematicWorld createPlacement(Minecraft minecraft, SchematicLibrary.Source<SchematicSourceData> source,
+        boolean restoreCoordinates) throws IOException {
+        if (minecraft.theWorld == null || minecraft.thePlayer == null || !SchematicaPlus.proxy.isLoadEnabled) {
+            throw new IOException("Schematic loading is unavailable in this world");
+        }
+        SchematicWorld previous = ClientProxy.schematic;
+        SchematicWorld schematic = ClientProxy.createPlacement(source);
         try {
-            Coordinates coord = ClientProxy.getCoordinates(worldServerName(minecraft), schematic.name);
-            if (coord == null) {
+            Coordinates coord = restoreCoordinates ? ClientProxy.getCoordinates(worldServerName(minecraft), schematic.name) : null;
+            if (!restoreCoordinates) {
+                ClientProxy.moveSchematicToPlayer(schematic);
+            } else if (coord == null) {
                 moveToLookTarget(minecraft, schematic);
             } else {
                 ClientProxy.moveSchematic(schematic, coord.posX, coord.posY, coord.posZ);
@@ -45,12 +59,12 @@ final class SchematicGuiLoader {
                     if (Math.floorMod(flips[axis], 2) != 0) schematic.flip(axes[axis]);
                 }
             }
-            RendererSchematicGlobal.INSTANCE.createRendererSchematicChunks(schematic);
+            ClientProxy.selectSchematic(schematic);
             SchematicPrinter.INSTANCE.refresh();
             WorldHandler.INSTANCE.saveSession();
             return schematic;
         } catch (RuntimeException e) {
-            SchematicaPlus.proxy.unloadSchematic();
+            ClientProxy.removePlacement(schematic);
             if (previous != null && ClientProxy.loadedSchematics.contains(previous)) ClientProxy.selectSchematic(previous);
             WorldHandler.INSTANCE.saveSession();
             throw e;

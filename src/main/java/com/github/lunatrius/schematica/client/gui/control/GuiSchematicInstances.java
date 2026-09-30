@@ -144,21 +144,7 @@ public class GuiSchematicInstances extends GuiScreenBase {
         if (idx < 0 || idx >= ClientProxy.loadedSchematics.size()) return;
 
         SchematicWorld sw = ClientProxy.loadedSchematics.get(idx);
-        boolean wasActive = (sw == ClientProxy.schematic);
-
-        ClientProxy.loadedSchematics.remove(idx);
-        RendererSchematicGlobal.INSTANCE.removeRendererSchematicChunks(sw);
-
-        if (wasActive) {
-            if (!ClientProxy.loadedSchematics.isEmpty()) {
-                int newIdx = Math.min(idx, ClientProxy.loadedSchematics.size() - 1);
-                ClientProxy.selectSchematic(ClientProxy.loadedSchematics.get(newIdx));
-            } else {
-                SchematicaPlus.proxy.unloadSchematic();
-            }
-        }
-
-        WorldHandler.INSTANCE.saveSession();
+        ClientProxy.removePlacement(sw);
 
         // Adjust selection
         if (this.slotList.selectedIndex >= ClientProxy.loadedSchematics.size()) {

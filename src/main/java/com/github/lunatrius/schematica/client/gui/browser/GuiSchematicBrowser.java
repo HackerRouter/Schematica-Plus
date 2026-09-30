@@ -30,7 +30,6 @@ import com.github.lunatrius.schematica.handler.ConfigurationHandler;
 import com.github.lunatrius.schematica.reference.Reference;
 import com.github.lunatrius.schematica.util.FileUtils;
 import com.github.lunatrius.schematica.proxy.ClientProxy;
-import com.github.lunatrius.schematica.client.world.SchematicWorld;
 
 public abstract class GuiSchematicBrowser extends UiScreen {
 
@@ -162,17 +161,9 @@ public abstract class GuiSchematicBrowser extends UiScreen {
         prompt(I18n.format("litematica.gui.title.rename_file"), entry.name(), name -> {
             try {
                 File source = entry.file.getCanonicalFile();
-                List<SchematicWorld> instances = new ArrayList<>();
-                for (SchematicWorld world : ClientProxy.loadedSchematics) {
-                    if (world.sourceFilename == null) continue;
-                    File directory = world.sourceDirectory == null ? browser.root() : world.sourceDirectory;
-                    if (new File(directory, world.sourceFilename).getCanonicalFile().equals(source)) instances.add(world);
-                }
+                ClientProxy.SCHEMATICS.checkRename(source, new File(entry.file.getParentFile(), name));
                 File target = browser.rename(entry, name);
-                for (SchematicWorld world : instances) {
-                    world.sourceDirectory = target.getParentFile();
-                    world.sourceFilename = target.getName();
-                }
+                ClientProxy.sourceRenamed(source, target);
                 selectResult(target);
                 return null;
             } catch (IOException e) {

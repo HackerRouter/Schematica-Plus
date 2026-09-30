@@ -1,0 +1,86 @@
+// SPDX-License-Identifier: LGPL-3.0-only
+// Litematica save browser layout, adapted for 1.7.10 by HackerRouter, 2026.
+package com.github.lunatrius.schematica.client.gui.save;
+
+import java.io.File;
+import java.io.IOException;
+
+import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.client.resources.I18n;
+
+import com.github.lunatrius.schematica.client.gui.browser.GuiSchematicBrowser;
+import com.github.lunatrius.schematica.client.gui.browser.SchematicBrowserModel;
+import com.github.lunatrius.schematica.client.gui.framework.UiButton;
+import com.github.lunatrius.schematica.client.gui.framework.UiLabel;
+import com.github.lunatrius.schematica.client.gui.framework.UiTextField;
+import com.github.lunatrius.schematica.client.world.SchematicLibrary.Source;
+import com.github.lunatrius.schematica.client.world.SchematicSourceData;
+import com.github.lunatrius.schematica.proxy.ClientProxy;
+
+public final class GuiSchematicSourceSave extends GuiSchematicBrowser {
+
+    private final Source<SchematicSourceData> source;
+    private UiTextField name;
+    private UiButton save;
+    private UiLabel format;
+
+    public GuiSchematicSourceSave(GuiScreen parent, Source<SchematicSourceData> source) {
+        super(parent, I18n.format("schematica.ui.source.save_title"), false);
+        this.source = source;
+    }
+
+    @Override protected int browserX() { return 10; }
+    @Override protected int browserY() { return 80; }
+    @Override protected int browserHeight() { return height - 116; }
+
+    @Override protected void createActions() {
+        name = root.add(new UiTextField(fontRendererObj, 210, text -> {}));
+        name.setText(source.name());
+        save = addButton("litematica.gui.button.save_to_file", this::save);
+        save.setTooltip(I18n.format("schematica.ui.source.save_hint"));
+        format = root.add(new UiLabel(() -> source.data().snapshot.extension()));
+        format.setTooltip(I18n.format("schematica.ui.source.save_hint"));
+    }
+
+    @Override protected void tickScreen() {
+        super.tickScreen();
+        save.setEnabled(browser != null && ClientProxy.SCHEMATICS.sources().contains(source));
+    }
+
+    @Override protected void selectionChanged(SchematicBrowserModel.Entry entry) {
+        if (entry != null && !entry.directory) name.setText(entry.name());
+    }
+
+    private void save() {
+        if (browser == null || !ClientProxy.SCHEMATICS.sources().contains(source)) return;
+        try {
+            File file = SchematicSaveTarget.sourceCopy(browser.root(), browser.directory(), name.text(), source.data().snapshot.extension());
+            if (file.exists()) confirm(I18n.format("schematica.ui.save.overwrite_title"),
+                I18n.format("schematica.ui.save.overwrite", file.getName()), () -> write(file, true));
+            else write(file, false);
+        } catch (IOException | IllegalArgumentException e) {
+            fail("schematica.ui.source.save_failed", e);
+        }
+    }
+
+    private void write(File file, boolean replace) {
+        if (!ClientProxy.SCHEMATICS.sources().contains(source)) {
+            setStatus(I18n.format("schematica.ui.source.unloaded"));
+            return;
+        }
+        try {
+            File checked = SchematicSaveTarget.sourceCopy(browser.root(), file.getParentFile(), file.getName(), source.data().snapshot.extension());
+            source.data().snapshot.write(checked, replace);
+            refreshFiles();
+            setStatus(I18n.format("schematica.ui.source.saved", file.getName()));
+        } catch (IOException | IllegalArgumentException e) {
+            fail("schematica.ui.source.save_failed", e);
+        }
+    }
+
+    @Override protected void layoutActions() {
+        name.setBounds(10, 32, Math.max(1, width - 140), 18);
+        format.setBounds(name.bounds().right() + 6, 36, 110, 12);
+        save.setBounds(10, 54, fontRendererObj.getStringWidth(save.label()) + 10, 20);
+    }
+}

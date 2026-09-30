@@ -41,4 +41,26 @@ public final class SchematicSaveTarget {
         if (file.exists() && !file.isFile()) throw new IOException("Output path is not a regular file");
         return file;
     }
+
+    public static File sourceCopy(File root, File directory, String input, String extension) throws IOException {
+        if (!extension.equals(".schematic") && !extension.equals(".schemplus") && !extension.equals(".litematic")) {
+            throw new IllegalArgumentException("Invalid source format");
+        }
+        String name = input.trim();
+        String lower = name.toLowerCase(Locale.ROOT);
+        if (lower.endsWith(extension)) name = name.substring(0, name.length() - extension.length());
+        else if (lower.endsWith(".schematic") || lower.endsWith(".schemplus") || lower.endsWith(".litematic")) {
+            throw new IllegalArgumentException("Keep the original source extension");
+        }
+        filename(name, true);
+        File parent = directory.getCanonicalFile();
+        if (!parent.toPath().startsWith(root.getCanonicalFile().toPath()) || !parent.isDirectory()) {
+            throw new IOException("Invalid source output directory");
+        }
+        File file = new File(parent, name + extension);
+        if (!file.getCanonicalFile().equals(file) || file.exists() && !file.isFile()) {
+            throw new IOException("Invalid source output file");
+        }
+        return file;
+    }
 }

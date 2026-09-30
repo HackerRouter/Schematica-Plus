@@ -52,4 +52,23 @@ public class SchematicFileSnapshotTest {
         assertArrayEquals(new byte[] {1, 2, 3}, Files.readAllBytes(existing.toPath()));
         assertEquals(2, temporary.getRoot().list().length);
     }
+
+    @Test public void modernLongArraysAreRecreatedForEachInstance() throws IOException {
+        File file = temporary.newFile("source.litematic");
+        try (java.io.DataOutputStream out = new java.io.DataOutputStream(Files.newOutputStream(file.toPath()))) {
+            out.writeByte(10); out.writeUTF("");
+            out.writeByte(12); out.writeUTF("BlockStates"); out.writeInt(2);
+            out.writeLong(123456789L); out.writeLong(-1L);
+            out.writeByte(0);
+        }
+        SchematicFileSnapshot snapshot = SchematicFileSnapshot.read(file);
+        try {
+            NBTTagCompound first = snapshot.readNBT();
+            LitematicaNBTReader.getLongArray(first, "BlockStates")[0] = 0;
+            NBTTagCompound second = snapshot.readNBT();
+            assertArrayEquals(new long[] {123456789L, -1L}, LitematicaNBTReader.getLongArray(second, "BlockStates"));
+        } finally {
+            LitematicaNBTReader.clearLongArrayStore();
+        }
+    }
 }

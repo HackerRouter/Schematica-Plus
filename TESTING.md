@@ -403,3 +403,41 @@ once to establish the new keys. Ordered transforms apply to newly saved sessions
   deleted source cannot restore after leaving the world. Check the existing save
   overwrite confirmation with its updated layout as well.
 - These native GUI and gameplay checks have not been run by the agent.
+
+
+## Phase 10: loaded source / placement backend (native checks)
+
+- Back up LoadedSchematics.json and use test schematic copies. Uncheck Create
+  Placement on Load. The source appears in Loaded Schematics, no placement or
+  preview appears, and an unrelated active placement stays selected. Repeated
+  loading of the same path must keep one source row. Checked loading adds a new
+  placement. Create Placement on the Loaded row adds one at the player.
+- Create two placements of a GT/Ender IO pipe schematic with tile NBT and entities.
+  Move, rotate, mirror and hide one. The other and a newly created third placement
+  must retain the original data. Remove every placement: the source row remains.
+  Unload that source: all its placements disappear, and other sources stay loaded.
+- Give two placements different names, origins, transforms, render/entity/NBT
+  flags and local layers. Replace their disk source with a valid different-size
+  test schematic, then Reload. Origins, transforms, order and active selection
+  must survive; local layers clamp to the new height. Check renderer buffers and
+  printer selection. Reloading an unrelated source must not reset the printer.
+- Replace only a disposable source file with invalid/truncated NBT and Reload.
+  The source cache and all existing previews must survive the failed read. Also
+  check a new source whose entities cannot accept a previous three-axis rotation:
+  failure must retain all old placements, not publish a partially rebuilt group.
+- Delete a loaded test source outside the game. Create Placement and Save to File
+  must still work from memory. Compare saved bytes/hashes with the backed-up
+  original for .schematic/.schemplus/.litematic, including raw visual-state NBT and
+  long arrays. It saves source data, not a placement's rotations or local edits.
+  Changing the extension must fail; overwriting requires confirmation. Cancelling
+  or switching world while the save dialog is open must not write a stale source.
+- Keep both a source with no placements and one with multiple placements. Visit
+  two dimensions, reconnect and reopen the lists. Restore old session files too.
+  Source-only records must not create previews; missing files and invalid entries
+  must not block unrelated entries. Deselect every placement before disconnecting
+  and verify it stays deselected. Unload a source, leave and return: it must stay
+  unloaded in that dimension. Check the legacy instance/control removal buttons.
+- Rename both a placed and an unplaced source through Schematic Manager. Verify
+  current library paths, Reload, future Create Placement, and session restoration.
+  Saving a copy must not change the source path. Restore backups after testing.
+- The agent has not run these game/client/GL checks; automated tests are headless.

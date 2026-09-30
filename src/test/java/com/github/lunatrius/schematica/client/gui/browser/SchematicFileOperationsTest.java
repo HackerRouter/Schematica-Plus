@@ -177,4 +177,21 @@ public class SchematicFileOperationsTest {
         } catch (IOException expected) {}
         assertArrayEquals(changed, Files.readAllBytes(index.toPath()));
     }
+
+    @Test public void renameRetainsUnplacedSourceRecordsAndPlacementLayerSettings() throws IOException {
+        File root = temporary.newFolder();
+        write(root, "source.litematic", new byte[] {1});
+        File index = write(root, "LoadedSchematics.json", ("{\"dimension0\":[{\"filename\":\"source.litematic\",\"sourceOnly\":true}],"
+            + "\"dimension1\":[{\"filename\":\"source.litematic\",\"layerMode\":true,\"layer\":7}]}").getBytes(StandardCharsets.UTF_8));
+        SchematicBrowserModel model = browser(root);
+        model.rename(model.entries().get(0), "renamed.litematic");
+        JsonObject sessions = new JsonParser().parse(new String(Files.readAllBytes(index.toPath()), StandardCharsets.UTF_8)).getAsJsonObject();
+        JsonObject unplaced = sessions.getAsJsonArray("dimension0").get(0).getAsJsonObject();
+        assertEquals("renamed.litematic", unplaced.get("filename").getAsString());
+        assertTrue(unplaced.get("sourceOnly").getAsBoolean());
+        JsonObject placement = sessions.getAsJsonArray("dimension1").get(0).getAsJsonObject();
+        assertTrue(placement.get("layerMode").getAsBoolean());
+        assertEquals(7, placement.get("layer").getAsInt());
+        assertFalse(placement.has("sourceOnly"));
+    }
 }

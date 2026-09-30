@@ -25,6 +25,13 @@ public final class PlacementTransform {
         return size;
     }
 
+    public static int[] reloadedMinimum(int[] minimum, int[] previousSize, int[] nextSize, List<String> operations) {
+        int[] previous = anchorOffset(previousSize[0], previousSize[1], previousSize[2], operations);
+        int[] next = anchorOffset(nextSize[0], nextSize[1], nextSize[2], operations);
+        return new int[] {Math.addExact(minimum[0], previous[0] - next[0]),
+            Math.addExact(minimum[1], previous[1] - next[1]), Math.addExact(minimum[2], previous[2] - next[2])};
+    }
+
     private static void permuteSize(int[] size, char op) {
         if (Character.isLowerCase(op)) return;
         int a = op == 'X' ? 1 : 0;

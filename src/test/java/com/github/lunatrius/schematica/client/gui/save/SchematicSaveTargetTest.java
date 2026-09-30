@@ -55,4 +55,16 @@ public class SchematicSaveTargetTest {
             } catch (IOException expected) {}
         }
     }
+
+    @Test public void sourceCopyKeepsFormatAndSupportsCachedLitematicWithoutConversion() throws IOException {
+        File root = temporary.newFolder();
+        assertEquals("Factory.litematic", SchematicSaveTarget.sourceCopy(root, root, "Factory.LITEMATIC", ".litematic").getName());
+        assertEquals("Factory.schemplus", SchematicSaveTarget.sourceCopy(root, root, "Factory", ".schemplus").getName());
+        assertThrows(IllegalArgumentException.class, () -> SchematicSaveTarget.sourceCopy(root, root, "Factory.schematic", ".litematic"));
+        for (String name : new String[] {"", "../a", "sub/a", "CON", "a?b", ".litematic"}) {
+            assertThrows(IllegalArgumentException.class, () -> SchematicSaveTarget.sourceCopy(root, root, name, ".litematic"));
+        }
+        assertThrows(IOException.class, () -> SchematicSaveTarget.sourceCopy(root, temporary.getRoot(), "Factory", ".litematic"));
+        assertEquals(0, root.list().length);
+    }
 }

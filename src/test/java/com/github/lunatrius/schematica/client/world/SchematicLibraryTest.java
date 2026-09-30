@@ -115,4 +115,37 @@ public class SchematicLibraryTest {
         assertTrue(library.placements().isEmpty());
         assertEquals(1, library.sources().size());
     }
+
+    @Test public void reloadKeepsUnrelatedPlacementsInOrderAndDoesNotCreateOneForAnUnplacedSource() throws IOException {
+        SchematicLibrary<byte[], byte[]> library = library();
+        SchematicLibrary.Source<byte[]> first = library.load(source("a.schematic", 1));
+        SchematicLibrary.Source<byte[]> second = library.load(source("b.schematic", 2));
+        byte[] one = library.create(first, (data, previous) -> data.clone());
+        byte[] other = library.create(second, (data, previous) -> data.clone());
+        byte[] two = library.create(first, (data, previous) -> data.clone());
+        Map<byte[], byte[]> changes = library.reload(first, (data, previous) -> data.clone());
+        assertEquals(2, changes.size());
+        assertSame(changes.get(one), library.placements().get(0));
+        assertSame(other, library.placements().get(1));
+        assertSame(changes.get(two), library.placements().get(2));
+        library.remove(other);
+        assertTrue(library.reload(second, (data, previous) -> { throw new AssertionError("Unexpected placement"); }).isEmpty());
+        assertEquals(2, library.placements().size());
+        assertEquals(2, library.sources().size());
+    }
+
+    @Test public void renameCannotTakeThePathOfAnotherCachedSourceWhoseFileWasDeleted() throws IOException {
+        SchematicLibrary<byte[], byte[]> library = library();
+        SchematicLibrary.Source<byte[]> first = library.load(source("a.schematic", 1));
+        SchematicLibrary.Source<byte[]> second = library.load(source("b.schematic", 2));
+        File original = first.file();
+        Files.delete(second.file().toPath());
+        assertThrows(java.nio.file.FileAlreadyExistsException.class, () -> library.checkRename(original, second.file()));
+        assertThrows(java.nio.file.FileAlreadyExistsException.class, () -> library.renamed(original, second.file()));
+        assertEquals(original, first.file());
+        assertEquals(1, first.data()[0]);
+        assertEquals(2, second.data()[0]);
+        library.unload(second);
+        library.checkRename(original, second.file());
+    }
 }

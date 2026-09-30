@@ -68,4 +68,20 @@ public class PlacementTransformTest {
     @Test(expected = IllegalArgumentException.class) public void invalidHistoryIsRejected() {
         PlacementTransform.anchorOffset(2, 3, 5, Arrays.asList("Y", "invalid"));
     }
+
+    @Test public void reloadWithDifferentDimensionsPreservesWorldOriginAfterRotationAndMirror() {
+        assertArrayEquals(new int[] {96, 64, 200}, PlacementTransform.reloadedMinimum(new int[] {100, 64, 200},
+            new int[] {5, 3, 2}, new int[] {9, 3, 2}, operations("Y")));
+        for (String history : Arrays.asList("YxzYYz", "XYZxyzXYZ", "XXzzYYY", "ZZXXYY", "xyxy", "")) {
+            int[] previousSize = PlacementTransform.transformedSize(2, 3, 5, history);
+            int[] nextSize = PlacementTransform.transformedSize(7, 11, 9, history);
+            int[] oldOffset = PlacementTransform.anchorOffset(previousSize[0], previousSize[1], previousSize[2], operations(history));
+            int[] nextOffset = PlacementTransform.anchorOffset(nextSize[0], nextSize[1], nextSize[2], operations(history));
+            int[] next = PlacementTransform.reloadedMinimum(new int[] {-120, 75, 32}, previousSize, nextSize, operations(history));
+            assertArrayEquals(new int[] {-120 + oldOffset[0], 75 + oldOffset[1], 32 + oldOffset[2]},
+                new int[] {next[0] + nextOffset[0], next[1] + nextOffset[1], next[2] + nextOffset[2]});
+        }
+        assertThrows(ArithmeticException.class, () -> PlacementTransform.reloadedMinimum(new int[] {Integer.MIN_VALUE, 0, 0},
+            new int[] {5, 3, 2}, new int[] {9, 3, 2}, operations("Y")));
+    }
 }

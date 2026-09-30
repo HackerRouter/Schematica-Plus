@@ -34,44 +34,37 @@ public abstract class SchematicFormat {
 
     public static ISchematic readFromFile(File file) {
         try {
-            // Check for .litematic format first — needs custom NBT reader for TAG_Long_Array
-            final String fileName = file.getName().toLowerCase();
-            if (fileName.endsWith(".litematic")) {
-                Reference.logger.info("Detected .litematic file: {}", file.getName());
-                final NBTTagCompound tagCompound = LitematicaNBTReader.readFromFile(file);
-                final SchematicFormat litematicFormat = FORMATS.get("Litematica");
-                if (litematicFormat != null) {
-                    try {
-                        return litematicFormat.readFromNBT(tagCompound);
-                    } finally {
-                        // Free side-channel long array storage after reading is complete
-                        LitematicaNBTReader.clearLongArrayStore();
-                    }
-                } else {
-                    LitematicaNBTReader.clearLongArrayStore();
-                    Reference.logger.error("Litematica format handler not registered!");
-                    return null;
-                }
-            }
-
-            // Standard .schematic format path
-            final NBTTagCompound tagCompound = SchematicUtil.readTagCompoundFromFile(file);
-            if (fileName.endsWith(".schemplus") && !tagCompound.hasKey(SchematicBlockIds.ENCODING)) {
-                tagCompound.setString(SchematicBlockIds.ENCODING, SchematicBlockIds.EXTENDED);
-            }
-            final String format = tagCompound.getString(Names.NBT.MATERIALS);
-            final SchematicFormat schematicFormat = FORMATS.get(format);
-
-            if (schematicFormat == null) {
-                throw new UnsupportedFormatException(format);
-            }
-
-            return schematicFormat.readFromNBT(tagCompound);
+            return decode(LitematicaNBTReader.readFromFile(file), file.getName());
         } catch (Exception ex) {
             Reference.logger.error("Failed to read schematic!", ex);
+            return null;
+        } finally {
+            LitematicaNBTReader.clearLongArrayStore();
         }
+    }
 
-        return null;
+    public static ISchematic readFromSnapshot(SchematicFileSnapshot snapshot) throws java.io.IOException {
+        try {
+            ISchematic data = decode(snapshot.readNBT(), snapshot.extension());
+            if (data == null) throw new java.io.IOException("Unable to decode schematic source");
+            return data;
+        } catch (RuntimeException ex) {
+            throw new java.io.IOException("Unable to decode schematic source", ex);
+        } finally {
+            LitematicaNBTReader.clearLongArrayStore();
+        }
+    }
+
+    private static ISchematic decode(NBTTagCompound tag, String filename) {
+        String name = filename.toLowerCase(java.util.Locale.ROOT);
+        if (name.endsWith(".litematic")) return FORMATS.get("Litematica").readFromNBT(tag);
+        if (name.endsWith(".schemplus") && !tag.hasKey(SchematicBlockIds.ENCODING)) {
+            tag.setString(SchematicBlockIds.ENCODING, SchematicBlockIds.EXTENDED);
+        }
+        String format = tag.getString(Names.NBT.MATERIALS);
+        SchematicFormat reader = FORMATS.get(format);
+        if (reader == null) throw new IllegalArgumentException("Unsupported schematic format: " + format);
+        return reader.readFromNBT(tag);
     }
 
     public static ISchematic readFromFile(File directory, String filename) {

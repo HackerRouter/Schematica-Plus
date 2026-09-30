@@ -15,13 +15,15 @@ import com.github.lunatrius.schematica.client.gui.placement.GuiSchematicLoadedLi
 import com.github.lunatrius.schematica.client.gui.framework.UiCheckBox;
 import com.github.lunatrius.schematica.client.gui.framework.UiSprite;
 import com.github.lunatrius.schematica.client.gui.framework.UiButton;
-import com.github.lunatrius.schematica.client.world.SchematicWorld;
+import com.github.lunatrius.schematica.client.world.SchematicLibrary;
+import com.github.lunatrius.schematica.client.world.SchematicSourceData;
 
 public final class GuiSchematicLoad extends GuiSchematicBrowser {
 
     private UiButton load;
     private UiButton renameFile;
     private UiCheckBox createPlacement;
+    private boolean placeOnLoad = true;
 
     public GuiSchematicLoad(GuiScreen parent) {
         super(parent, I18n.format("litematica.gui.title.load_schematic"), false);
@@ -39,9 +41,8 @@ public final class GuiSchematicLoad extends GuiSchematicBrowser {
         addAction("litematica.gui.button.change_menu.show_loaded_schematics",
             () -> mc.displayGuiScreen(new GuiSchematicLoadedList(this))).setSprite(UiSprite.LOADED_SCHEMATICS);
         createPlacement = root.add(new UiCheckBox(() -> I18n.format("litematica.gui.label.schematic_load.checkbox.create_placement"),
-            () -> true, value -> {}));
-        createPlacement.setEnabled(false);
-        createPlacement.setTooltip(I18n.format("schematica.ui.linked_instances"));
+            () -> placeOnLoad, value -> placeOnLoad = value));
+        createPlacement.setTooltip(I18n.format("schematica.ui.source.load_hint"));
         load.setTooltip(I18n.format("schematica.ui.load.hint"));
     }
 
@@ -59,9 +60,9 @@ public final class GuiSchematicLoad extends GuiSchematicBrowser {
         }
         try {
             File file = browser.readableFile(entry);
-            SchematicWorld schematic = SchematicGuiLoader.load(mc, file);
-            setStatus(I18n.format("schematica.ui.load.success", schematic.name,
-                schematic.getWidth(), schematic.getHeight(), schematic.getLength()));
+            SchematicLibrary.Source<SchematicSourceData> source = SchematicGuiLoader.load(mc, file, placeOnLoad);
+            setStatus(I18n.format("schematica.ui.load.success", source.name(),
+                source.data().width, source.data().height, source.data().length));
         } catch (IOException | RuntimeException e) {
             fail("schematica.ui.load.failed", e);
         }
