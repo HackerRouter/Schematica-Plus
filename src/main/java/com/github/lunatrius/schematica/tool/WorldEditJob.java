@@ -29,6 +29,7 @@ public final class WorldEditJob {
     public final UUID player;
     public final int dimension, x, y, z, width, height, length, volume;
     public final Kind kind;
+    public final boolean pasteWithoutUpdates, pasteOnlyAir;
     public volatile boolean cancelled;
     private final Block replacement, target;
     private final int replacementMeta, targetMeta;
@@ -37,11 +38,18 @@ public final class WorldEditJob {
     private final Map<Integer, NBTTagCompound> tiles = new HashMap<>();
     private final List<NBTTagCompound> entities = new ArrayList<>();
     private final BitSet placed = new BitSet();
+    private final SilentBlockPlacement silentPlacement;
     private int cursor, phase, entityCursor;
     public int blockCount, entityCount;
 
     public WorldEditJob(UUID player, int dimension, Kind kind, int x, int y, int z,
         int width, int height, int length, Block replacement, int replacementMeta, Block target, int targetMeta) {
+        this(player, dimension, kind, x, y, z, width, height, length, replacement, replacementMeta, target, targetMeta, false, false);
+    }
+
+    public WorldEditJob(UUID player, int dimension, Kind kind, int x, int y, int z,
+        int width, int height, int length, Block replacement, int replacementMeta, Block target, int targetMeta,
+        boolean pasteWithoutUpdates, boolean pasteOnlyAir) {
         SchematicLimits.worldBounds(x, y, z, (long) x + width - 1, (long) y + height - 1, (long) z + length - 1);
         this.player = player; this.dimension = dimension; this.kind = kind;
         this.x = x; this.y = y; this.z = z;
@@ -49,6 +57,9 @@ public final class WorldEditJob {
         this.volume = SchematicLimits.volume(width, height, length);
         this.replacement = replacement; this.replacementMeta = replacementMeta;
         this.target = target; this.targetMeta = targetMeta;
+        this.pasteWithoutUpdates = kind == Kind.PASTE && pasteWithoutUpdates;
+        this.pasteOnlyAir = kind == Kind.PASTE && pasteOnlyAir;
+        this.silentPlacement = this.pasteWithoutUpdates ? new SilentBlockPlacement() : null;
     }
 
     public void capture(ISchematic source, boolean blockNBT, boolean includeEntities) {
@@ -77,6 +88,9 @@ public final class WorldEditJob {
     }
 
     public void validateCommandFallback() {
+        if (pasteWithoutUpdates) {
+            throw new IllegalArgumentException("Pasting without block updates requires singleplayer. Minecraft 1.7.10 server commands cannot suppress updates.");
+        }
         if (!tiles.isEmpty() || !entities.isEmpty()) {
             throw new IllegalArgumentException("1.7.10 chat commands cannot safely transfer schematic NBT. "
                 + "Use an integrated server, or disable block NBT and entities before pasting.");
@@ -86,7 +100,7 @@ public final class WorldEditJob {
             Block block = kind == Kind.PASTE ? GameData.getBlockRegistry().getObjectById(blocks[i] & 0xffff) : replacement;
             if (block != null && checked.add(block)) {
                 String name = GameData.getBlockRegistry().getNameForObject(block);
-                if (name == null || ("/setblock -30000000 255 -30000000 " + name + " 15 replace").length() > 100) {
+                if (name == null || blockCommand(-30000000, 255, -30000000, name, 15).length() > 100) {
                     throw new IllegalArgumentException("Block name exceeds the 1.7.10 command length limit");
                 }
             }
@@ -97,11 +111,19 @@ public final class WorldEditJob {
         int wx = x + index % width, wz = z + index / width % length, wy = y + index / width / length;
         if (kind == Kind.REPLACE && (world.getBlock(wx, wy, wz) != target
             || world.getBlockMetadata(wx, wy, wz) != targetMeta)) return null;
+        if (pasteOnlyAir && !world.isAirBlock(wx, wy, wz)) return null;
         Block block = kind == Kind.PASTE ? GameData.getBlockRegistry().getObjectById(blocks[index] & 0xffff) : replacement;
         if (block == null || (kind == Kind.PASTE && block == Blocks.air)) return null;
         int meta = kind == Kind.PASTE ? metadata[index] & 15 : replacementMeta;
-        return "/setblock " + wx + " " + wy + " " + wz + " "
-            + GameData.getBlockRegistry().getNameForObject(block) + " " + meta + " replace";
+        return blockCommand(wx, wy, wz, GameData.getBlockRegistry().getNameForObject(block), meta);
+    }
+
+    String blockCommand(int x, int y, int z, String block, int metadata) {
+        return "/setblock " + x + " " + y + " " + z + " " + block + " " + metadata + (pasteOnlyAir ? " keep" : " replace");
+    }
+
+    public void flushBlockChanges(WorldServer world) {
+        if (silentPlacement != null) silentPlacement.flush(world);
     }
 
     /** Process one cell/entity, returning true only when all phases are finished. */
@@ -115,7 +137,7 @@ public final class WorldEditJob {
             int meta = kind == Kind.PASTE ? metadata[index] & 15 : replacementMeta;
             if (block == null || (kind == Kind.PASTE && block == Blocks.air)) return false;
             if (phase == 2) {
-                if (!placed.get(index)) return false;
+                if (!placed.get(index) || pasteWithoutUpdates) return false;
                 world.markBlockForUpdate(wx, wy, wz);
                 world.notifyBlocksOfNeighborChange(wx, wy, wz, block);
                 return false;
@@ -125,13 +147,18 @@ public final class WorldEditJob {
             if ((phase == 0) != structural) return false;
             if (kind == Kind.REPLACE && (world.getBlock(wx, wy, wz) != target
                 || world.getBlockMetadata(wx, wy, wz) != targetMeta)) return false;
-            if (kind == Kind.PASTE) world.removeTileEntity(wx, wy, wz);
-            boolean previous = world.restoringBlockSnapshots;
-            try {
-                world.restoringBlockSnapshots = true; // Suppress item drops from replaced inventories.
-                world.setBlock(wx, wy, wz, block, meta, 2);
-            } finally {
-                world.restoringBlockSnapshots = previous;
+            if (pasteOnlyAir && !world.isAirBlock(wx, wy, wz)) return false;
+            if (silentPlacement != null) {
+                silentPlacement.setBlock(world, wx, wy, wz, block, meta);
+            } else {
+                if (kind == Kind.PASTE) world.removeTileEntity(wx, wy, wz);
+                boolean previous = world.restoringBlockSnapshots;
+                try {
+                    world.restoringBlockSnapshots = true; // Suppress item drops from replaced inventories.
+                    world.setBlock(wx, wy, wz, block, meta, 2);
+                } finally {
+                    world.restoringBlockSnapshots = previous;
+                }
             }
             if (world.getBlock(wx, wy, wz) == block && world.getBlockMetadata(wx, wy, wz) == meta) {
                 if (kind == Kind.PASTE && block.hasTileEntity(meta)) {
@@ -144,8 +171,12 @@ public final class WorldEditJob {
                             ? ForgeMultipart.createFromNBT(tag, false) : TileEntity.createAndLoadEntity(tag);
                     } else tile = block.createTileEntity(world, meta);
                     if (tile == null) throw new IllegalStateException("Cannot create tile entity at " + wx + "," + wy + "," + wz);
-                    world.setTileEntity(wx, wy, wz, tile);
-                    tile.markDirty();
+                    tile.xCoord = wx; tile.yCoord = wy; tile.zCoord = wz;
+                    if (silentPlacement != null) silentPlacement.setTile(world, tile);
+                    else {
+                        world.setTileEntity(wx, wy, wz, tile);
+                        tile.markDirty();
+                    }
                 }
                 placed.set(index);
                 blockCount++;

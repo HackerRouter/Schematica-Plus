@@ -54,8 +54,12 @@ public final class WorldEditQueue {
         try {
             long deadline = System.nanoTime() + 8_000_000L;
             boolean done = false;
-            for (int i = 0; i < 2048 && System.nanoTime() < deadline; i++) {
-                if (job.step(world)) { done = true; break; }
+            try {
+                for (int i = 0; i < 2048 && System.nanoTime() < deadline; i++) {
+                    if (job.step(world)) { done = true; break; }
+                }
+            } finally {
+                job.flushBlockChanges(world);
             }
             if (done) {
                 player.addChatMessage(new ChatComponentText("[Schematica] Edit " + (job.cancelled ? "cancelled" : "finished")

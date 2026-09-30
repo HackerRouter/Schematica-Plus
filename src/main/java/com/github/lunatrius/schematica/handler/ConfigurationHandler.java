@@ -53,6 +53,8 @@ public class ConfigurationHandler {
     public static final String[] EXTRA_AIR_BLOCKS_DEFAULT = {};
     public static final String SORT_TYPE_DEFAULT = "";
     public static final String TOOL_ITEM_DEFAULT = "minecraft:stick";
+    public static final boolean PASTE_WITHOUT_UPDATES_DEFAULT = false;
+    public static final boolean PASTE_ONLY_AIR_DEFAULT = false;
     public static final boolean PRINTER_ENABLED_DEFAULT = true;
     public static final boolean SAVE_ENABLED_DEFAULT = true;
     public static final boolean LOAD_ENABLED_DEFAULT = true;
@@ -80,6 +82,8 @@ public class ConfigurationHandler {
     public static String[] extraAirBlocks = EXTRA_AIR_BLOCKS_DEFAULT;
     public static String sortType = SORT_TYPE_DEFAULT;
     public static String toolItem = TOOL_ITEM_DEFAULT;
+    public static boolean pasteWithoutUpdates = PASTE_WITHOUT_UPDATES_DEFAULT;
+    public static boolean pasteOnlyAir = PASTE_ONLY_AIR_DEFAULT;
     public static boolean printerEnabled = PRINTER_ENABLED_DEFAULT;
     public static boolean saveEnabled = SAVE_ENABLED_DEFAULT;
     public static boolean loadEnabled = LOAD_ENABLED_DEFAULT;
@@ -106,6 +110,8 @@ public class ConfigurationHandler {
     public static Property propExtraAirBlocks = null;
     public static Property propSortType = null;
     public static Property propToolItem = null;
+    public static Property propPasteWithoutUpdates = null;
+    public static Property propPasteOnlyAir = null;
     public static Property propPrinterEnabled = null;
     public static Property propSaveEnabled = null;
     public static Property propLoadEnabled = null;
@@ -317,6 +323,16 @@ public class ConfigurationHandler {
         propToolItem.setLanguageKey(Names.Config.LANG_PREFIX + "." + Names.Config.TOOL_ITEM);
         toolItem = propToolItem.getString();
         parseToolItem(toolItem);
+
+        propPasteWithoutUpdates = configuration.get(Names.Config.Category.TOOL, Names.Config.PASTE_WITHOUT_UPDATES,
+            PASTE_WITHOUT_UPDATES_DEFAULT, Names.Config.PASTE_WITHOUT_UPDATES_DESC);
+        propPasteWithoutUpdates.setLanguageKey(Names.Config.LANG_PREFIX + "." + Names.Config.PASTE_WITHOUT_UPDATES);
+        pasteWithoutUpdates = propPasteWithoutUpdates.getBoolean(PASTE_WITHOUT_UPDATES_DEFAULT);
+
+        propPasteOnlyAir = configuration.get(Names.Config.Category.TOOL, Names.Config.PASTE_ONLY_AIR,
+            PASTE_ONLY_AIR_DEFAULT, Names.Config.PASTE_ONLY_AIR_DESC);
+        propPasteOnlyAir.setLanguageKey(Names.Config.LANG_PREFIX + "." + Names.Config.PASTE_ONLY_AIR);
+        pasteOnlyAir = propPasteOnlyAir.getBoolean(PASTE_ONLY_AIR_DEFAULT);
 
         propPrinterEnabled = configuration.get(
             Names.Config.Category.SERVER,

@@ -145,6 +145,10 @@ schematica.key.execute=Execute Operation
 schematica.config.category.tool=Tool
 schematica.config.category.tool.tooltip=Tool item related settings.
 schematica.config.toolItem=Tool Item
+schematica.config.pasteWithoutUpdates=Paste Without Block Updates
+schematica.config.pasteWithoutUpdates.tooltip=Skip placement/removal block callbacks and neighbor notifications when pasting. Singleplayer only. Lighting, display synchronization and normal game ticks remain active.
+schematica.config.pasteOnlyAir=Paste Only Into Air
+schematica.config.pasteOnlyAir.tooltip=Place schematic blocks only where the world contains air. Keep existing blocks and their contents.
 schematica.config.toolItem.tooltip=The item to use as the schematica tool (e.g. minecraft:stick). Hold this item to activate tool functions.
 
 # tool modes

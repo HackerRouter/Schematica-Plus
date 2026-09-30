@@ -145,6 +145,10 @@ schematica.key.execute=执行操作
 schematica.config.category.tool=工具
 schematica.config.category.tool.tooltip=工具物品相关设置.
 schematica.config.toolItem=工具物品
+schematica.config.pasteWithoutUpdates=粘贴时不发出方块更新
+schematica.config.pasteWithoutUpdates.tooltip=粘贴时跳过方块放置、移除回调和邻居更新。仅单人世界可用。画面、光照同步及方块自身运行仍会继续。
+schematica.config.pasteOnlyAir=粘贴时仅替换空气
+schematica.config.pasteOnlyAir.tooltip=仅在目标世界的空气位置放置蓝图方块，保留已有方块及其内容。
 schematica.config.toolItem.tooltip=用作Schematica工具的物品 (例如 minecraft:stick). 手持此物品以激活工具功能.
 
 # tool modes

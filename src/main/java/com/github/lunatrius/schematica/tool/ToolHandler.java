@@ -242,7 +242,9 @@ public class ToolHandler {
             if (schematic == null) throw new IllegalArgumentException("No schematic loaded.");
             job = new WorldEditJob(player.getUniqueID(), player.dimension, WorldEditJob.Kind.PASTE,
                 schematic.position.x, schematic.position.y, schematic.position.z,
-                schematic.getWidth(), schematic.getHeight(), schematic.getLength(), null, 0, null, 0);
+                schematic.getWidth(), schematic.getHeight(), schematic.getLength(), null, 0, null, 0,
+                com.github.lunatrius.schematica.handler.ConfigurationHandler.pasteWithoutUpdates,
+                com.github.lunatrius.schematica.handler.ConfigurationHandler.pasteOnlyAir);
             job.capture(schematic.getSchematic(), schematic.isPastingBlockNBT, schematic.isRenderingEntities);
         } else {
             Vector3i min = ClientProxy.pointMin.clone(), max = ClientProxy.pointMax.clone();
