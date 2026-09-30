@@ -130,7 +130,8 @@ public final class GuiAreaSelectionManager extends UiScreen {
             }
             if (regions.isEmpty()) regions.add(new com.github.lunatrius.schematica.api.SchematicRegion(name,
                 first.x, first.y, first.z, second.x, second.y, second.z));
-            AreaSelections.select(library.createFromRegions(name, regions));
+            com.github.lunatrius.schematica.api.SchematicOrigin origin = placement.originPosition();
+            AreaSelections.select(library.createFromRegions(name, regions, new Vector3i(origin.x, origin.y, origin.z)));
         });
     }
 
@@ -235,10 +236,18 @@ public final class GuiAreaSelectionManager extends UiScreen {
         }
 
         @Override public List<String> tooltip(int x, int y) {
-            Vector3i a = area.first(), b = area.second();
-            return java.util.Arrays.asList(area.name(), area.boxName(),
-                UiTranslations.format("litematica.gui.label.area_selection_box_count", area.boxes().size()),
-                String.format("%d, %d, %d -> %d, %d, %d", a.x, a.y, a.z, b.x, b.y, b.z));
+            Vector3i origin = area.origin();
+            List<String> lines = new ArrayList<>();
+            lines.add(area.name());
+            lines.add(UiTranslations.format("litematica.gui.label.area_selection_box_count", area.boxes().size()));
+            lines.add(UiTranslations.format("litematica.gui.label.area_selection_origin", origin.x + ", " + origin.y + ", " + origin.z)
+                + " (" + UiTranslations.format(area.manualOrigin() == null ? "litematica.gui.label.origin.auto" : "litematica.gui.label.origin.manual") + ")");
+            if (area.selectedBox() != null) {
+                Vector3i a = area.first(), b = area.second();
+                lines.add(area.boxName());
+                lines.add(String.format("%d, %d, %d -> %d, %d, %d", a.x, a.y, a.z, b.x, b.y, b.z));
+            }
+            return lines;
         }
 
         private void select() {

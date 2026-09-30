@@ -96,9 +96,12 @@ public class OverlayHandler {
                 lines.add(UiTranslations.format("litematica.message.error.no_area_selected"));
             } else {
                 lines.add(UiTranslations.format("litematica.hud.area_selection.selected_area_normal", area.name()));
-                if (area.selectedBox() == null) {
+                Vector3i origin = area.origin();
+                lines.add((area.originSelected() ? EnumChatFormatting.AQUA : EnumChatFormatting.GRAY)
+                    + UiTranslations.format("litematica.hud.area_selection.origin", origin.x + ", " + origin.y + ", " + origin.z));
+                if (area.selectedBox() == null && !area.originSelected()) {
                     lines.add(UiTranslations.format("litematica.error.area_selection.grow.no_sub_region_selected"));
-                } else {
+                } else if (area.selectedBox() != null) {
                     lines.add(UiTranslations.format("litematica.hud.area_selection.selected_sub_region", area.boxName()));
                     Vector3i a = ClientProxy.pointA;
                     Vector3i b = ClientProxy.pointB;

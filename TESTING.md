@@ -526,3 +526,35 @@ These checks supersede Phase 12's Simple-editor and bounding-box expectations.
 - Try two boxes whose enclosing bounds exceed the existing allocation limits;
   save/edit must fail before queuing work. The agent has not run these native
   game checks; automated checks do not prove rendered appearance or modded NBT.
+
+
+## Phase 14: manual origins (native checks)
+
+- Enable Manual Origin in Normal Area Editor. It starts at your feet. Edit XYZ,
+  nudge, move it to the player, and select its checkbox. Both tool clicks should
+  now move only the origin. Select/configure another subregion and verify tool
+  clicks edit that box again. Watch the orange/cyan origin marker and HUD.
+- Put the origin outside two separated boxes; save, reload and paste. The file
+  must keep its small enclosing box and gaps, with no extra volume out to the
+  origin. Check that entering a placement origin aligns the designated original
+  reference point. Test .schematic upgrade to .schemplus for a nonzero offset,
+  and ordinary legacy files with zero offsets.
+- Toggle Manual Origin off, reconnect, copy a selection, delete a selected box
+  and switch dimensions. Automatic origins must follow the remaining minimum;
+  manual origins and their selection state must remain independent. An empty
+  area with a manual origin must still refuse saving or area edits.
+- Rotate/mirror around X/Y/Z from the legacy controls and around Y from the
+  Litematica placement editor. The world origin must stay fixed. Four rotations
+  or two matching mirrors should restore contents and position. Include pipes,
+  tile entities and entities; test negative offsets and non-square dimensions.
+- Import a .litematic with regions on both sides of its origin, then use From
+  Placement after rotation. Region bounds and origin should match the preview.
+  Check invalid coordinates reject the whole import without creating an area.
+- Reconnect with rotated legacy LoadedSchematics.json entries and restore old
+  Coordinates.json bookmarks. Their minimum coordinates must remain unchanged.
+  Save new sessions, change a source's origin/dimensions, and use Reload or
+  reconnect: new records keep the world origin. Back up source/settings files.
+- Check origin controls at English/Chinese GUI scales 1-3, input focus, resize,
+  returning from another screen and changing worlds while the editor is open.
+  Hidden/disabled controls must not modify state. No native game tests have been
+  run by the agent; source and headless test checks do not replace these checks.

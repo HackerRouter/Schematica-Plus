@@ -263,6 +263,16 @@ public class RendererSchematicGlobal {
 
             }
 
+            if (area != null && area.manualOrigin() != null) {
+                area.manualOrigin().toVector3d(start).sub(extra);
+                end.set(start).add(1, 1, 1);
+                boolean selected = area.originSelected();
+                RenderHelper.drawCuboidOutline(start.toVector3f(), end.toVector3f(), RenderHelper.LINE_ALL,
+                    selected ? 0 : 1, selected ? 1 : 0x90 / 255f, selected ? 1 : 0x10 / 255f, 1);
+                if (selected) RenderHelper.drawCuboidSurface(start.toVector3f(), end.toVector3f(),
+                    RenderHelper.QUAD_ALL, 1, 0x90 / 255f, 0x10 / 255f, 0.4f);
+            }
+
             quadCount = RenderHelper.getQuadCount();
             lineCount = RenderHelper.getLineCount();
             if (quadCount > 0 || lineCount > 0) {

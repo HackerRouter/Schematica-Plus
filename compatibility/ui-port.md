@@ -685,3 +685,51 @@ Automated tests cover migration, atomic placement import, explicit box deselecti
 copy isolation, bounds/overlap/gaps, all six transforms, file conversion/round-trip,
 and skipping edit gaps before accessing the world. Full Forge world/client/GL
 integration requires the native checks in TESTING.md.
+
+
+## Phase 14: manual origins
+
+Normal mode now supports the upstream Manual Origin toggle, origin selection
+checkbox, XYZ fields, plus/minus icons and Move to player control. Enabling the
+origin starts it at the player's feet, matching upstream. Selecting its checkbox
+makes both tool clicks move the origin without modifying box corners. Selecting
+or adding a subregion returns tool targeting to the box. Disabling the manual
+origin uses the minimum corner of all boxes again. The origin can lie outside
+all boxes, within 1.7.10 world coordinate limits; it does not expand the captured
+bounding volume. It is shown with the upstream orange outline, or cyan outline
+and translucent orange sides when selected. The HUD and area browser show the
+actual origin. From Placement imports both current region bounds and world origin.
+
+AreaSelection.json writes version=4, adding nullable origin and originSelected.
+Versions 2 and 3 and unversioned selections migrate with automatic origins. Copy,
+restore, deselection and validation preserve independent origin state. An origin
+alone does not make an empty selection saveable. Queued captures use an immutable
+origin offset together with their region snapshot.
+
+The schematic API exposes immutable SchematicOrigin coordinates relative to its
+normalized minimum corner. Alpha stores nonzero offsets in the three-integer
+SchematicaPlusOrigin tag with SchematicaPlusOriginVersion=1. Such offsets require
+.schemplus even for a single box; a zero offset does not force an upgrade. Old
+files without the tag use zero. Malformed/incomplete/future origin tags fail
+loading rather than silently relocating the structure. Litematic import uses
+its original (0,0,0) reference, offset by the merged region minimum; it no longer
+loses that reference when regions extend into negative coordinates.
+
+Rotations/mirrors now preserve the world origin, including the legacy control
+screen. The dense minimum moves to compensate, and blocks, regions and entities
+keep using normalized coordinates internally. The Litematica placement editor
+shows the stored origin and checks the planned transform against coordinate
+limits. Move to player and look-target placement align this origin. The old
+control screen still displays the dense minimum. Existing Coordinates.json
+bookmarks retain their old minimum-corner meaning and apply it after transforms.
+LoadedSchematics.json adds a world-origin tuple; restoration uses it after the
+source transforms so an updated source origin does not move the world anchor.
+Entries lacking the tuple retain their saved minimum. Reload also keeps the
+world origin when the source dimensions or origin change.
+
+Automated coverage includes origin isolation/copy, targeted tool changes,
+version migration, out-of-box capture without volume growth, complete and mixed
+3D transforms, legacy/new placement coordinate meanings and file round-trips.
+Native GUI, rendering, modded block orientation and world placement are still
+manual checks. Simple-mode switching, expand/corner targeting, area analysis and
+independent transforms of placed subregions remain unported.

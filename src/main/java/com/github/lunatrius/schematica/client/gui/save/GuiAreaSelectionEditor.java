@@ -15,6 +15,7 @@ import com.github.lunatrius.schematica.client.gui.framework.UiBounds;
 import com.github.lunatrius.schematica.client.gui.framework.UiButton;
 import com.github.lunatrius.schematica.client.gui.framework.UiCheckBox;
 import com.github.lunatrius.schematica.client.gui.framework.UiDraw;
+import com.github.lunatrius.schematica.client.gui.framework.UiIntegerField;
 import com.github.lunatrius.schematica.client.gui.framework.UiLabel;
 import com.github.lunatrius.schematica.client.gui.framework.UiListModel;
 import com.github.lunatrius.schematica.client.gui.framework.UiPanel;
@@ -41,6 +42,13 @@ public final class GuiAreaSelectionEditor extends UiScreen {
     private UiCheckBox guide;
     private UiLabel count, status;
     private String message = "";
+    private UiPanel originControls;
+    private UiCheckBox originSelected;
+    private UiButton originToPlayer;
+    private final UiIntegerField[] originCoordinates = new UiIntegerField[3];
+    private final UiLabel[] originAxes = new UiLabel[3];
+    private final UiButton[] originNudges = new UiButton[3];
+    private boolean syncingOrigin;
 
     public GuiAreaSelectionEditor(GuiScreen parent) {
         super(parent, UiTranslations.format("litematica.gui.title.area_editor_normal"));
@@ -72,8 +80,10 @@ public final class GuiAreaSelectionEditor extends UiScreen {
             Vector3i point = GuiAreaSelectionManager.playerPoint();
             library.addBox(area, value, point, point);
         }));
-        origin = unavailable(root.add(new UiButton(() -> UiTranslations.format("litematica.gui.button.area_editor.origin_enabled",
-            "\u00a7c" + UiTranslations.format("options.off")), button -> {})));
+        origin = root.add(new UiButton(() -> UiTranslations.format("litematica.gui.button.area_editor.origin_enabled",
+            (manualOrigin() ? "\u00a7a" : "\u00a7c") + UiTranslations.format(manualOrigin() ? "options.on" : "options.off")),
+            button -> { if (button == 0) change(() -> library.setOrigin(area, manualOrigin() ? null : GuiAreaSelectionManager.playerPoint())); }));
+        origin.setTooltip(UiTranslations.format("schematica.ui.area.origin_hint"));
         save = action("litematica.gui.button.area_editor.create_schematic", () -> mc.displayGuiScreen(new GuiSchematicSave(this, area.name())));
         count = root.add(new UiLabel(() -> UiTranslations.format("litematica.gui.label.area_editor.sub_regions", area == null ? 0 : area.boxes().size())));
         guide = root.add(new UiCheckBox(() -> UiTranslations.format("schematica.ui.save.guide"), () -> area != null && area.guide(),
@@ -84,6 +94,47 @@ public final class GuiAreaSelectionEditor extends UiScreen {
         analyze = unavailable(addButton("litematica.gui.button.area_editor.analyze_area", () -> {}));
         main = addButton("litematica.gui.button.change_menu.to_main_menu", () -> mc.displayGuiScreen(new GuiSchematicMainMenu(this)));
         status = root.add(new UiLabel(this::statusText, 0xFFFFA0A0));
+        createOriginControls();
+    }
+
+    private boolean manualOrigin() { return area != null && area.manualOrigin() != null; }
+
+    private void createOriginControls() {
+        originControls = root.add(new UiPanel());
+        originSelected = originControls.add(new UiCheckBox(() -> UiTranslations.format("litematica.gui.label.area_editor.origin"),
+            () -> area != null && area.originSelected(), value -> change(() -> library.selectOrigin(area, value))));
+        originSelected.setTooltip(UiTranslations.format("schematica.ui.area.origin_hint"));
+        for (int axis = 0; axis < 3; axis++) {
+            final int component = axis;
+            originAxes[axis] = originControls.add(new UiLabel(() -> "XYZ".charAt(component) + ":"));
+            UiIntegerField field = originControls.add(new UiIntegerField(fontRendererObj, 0,
+                axis == 1 ? 0 : -30000000, axis == 1 ? 255 : 29999999, value -> {
+                    if (syncingOrigin || !manualOrigin()) return;
+                    change(() -> {
+                        Vector3i point = area.manualOrigin();
+                        if (component == 0) point.x = value;
+                        else if (component == 1) point.y = value;
+                        else point.z = value;
+                        library.setOrigin(area, point);
+                    });
+                }));
+            originCoordinates[axis] = field;
+            originNudges[axis] = originControls.add(new UiButton(() -> "", button -> field.setValue((long) field.value() + (button == 0 ? 1 : -1)))
+                .setSprite(UiSprite.PLUS_MINUS).setBackground(false));
+            originNudges[axis].setTooltip(UiTranslations.format("schematica.ui.save.coordinate_hint"));
+        }
+        originToPlayer = originControls.add(new UiButton(() -> UiTranslations.format("litematica.gui.button.move_to_player"),
+            button -> { if (button == 0) change(() -> library.setOrigin(area, GuiAreaSelectionManager.playerPoint())); }));
+    }
+
+    private void syncOrigin() {
+        syncingOrigin = true;
+        try {
+            Vector3i point = area == null ? new Vector3i() : area.origin();
+            originCoordinates[0].setValue(point.x);
+            originCoordinates[1].setValue(point.y);
+            originCoordinates[2].setValue(point.z);
+        } finally { syncingOrigin = false; }
     }
 
     private void change(Runnable action) {
@@ -99,6 +150,7 @@ public final class GuiAreaSelectionEditor extends UiScreen {
         AreaSelections.apply();
         AreaSelections.saveCurrent();
         message = "";
+        syncOrigin();
         refresh();
         layoutWidgets();
     }
@@ -119,6 +171,7 @@ public final class GuiAreaSelectionEditor extends UiScreen {
     @Override protected void opened() {
         if (available()) AreaSelections.capture();
         name.setText(area == null ? "" : area.name());
+        syncOrigin();
         refresh();
     }
     @Override protected void closed() { if (available()) AreaSelections.saveCurrent(); }
@@ -132,6 +185,8 @@ public final class GuiAreaSelectionEditor extends UiScreen {
         for (UiButton button : actions) button.setEnabled(enabled);
         save.setEnabled(enabled && !area.boxes().isEmpty());
         name.setEnabled(enabled); guide.setEnabled(enabled); list.setEnabled(enabled);
+        origin.setEnabled(enabled);
+        originControls.setEnabled(enabled && manualOrigin());
         status.setTooltip(statusText());
     }
 
@@ -142,20 +197,34 @@ public final class GuiAreaSelectionEditor extends UiScreen {
     }
     @Override protected void layoutWidgets() {
         int x = place(mode, 10, 24, false);
-        place(corners, x, 24, false);
+        int originX = place(corners, x, 24, false);
         x = place(create, 10, 81, false);
         x = place(origin, x, 81, false);
-        place(save, x, 81, false);
+        x = place(save, x, 81, false);
+        originX = Math.max(originX, Math.max(x, setName.bounds().right() + 15));
+        originControls.setVisible(manualOrigin());
+        originControls.setBounds(originX, 5, Math.max(100, fontRendererObj.getStringWidth(originToPlayer.label()) + 20), 96);
+        originSelected.setBounds(originX, 8, 100, 11);
+        for (int axis = 0; axis < 3; axis++) {
+            originAxes[axis].setBounds(originX, 19 + axis * 20, 12, 20);
+            originCoordinates[axis].setBounds(originX + 12, 21 + axis * 20, 68, 16);
+            originNudges[axis].setBounds(originX + 84, 21 + axis * 20, 16, 16);
+        }
+        originToPlayer.setBounds(originX + 10, 81, fontRendererObj.getStringWidth(originToPlayer.label()) + 10, 20);
         String label = UiTranslations.format("litematica.gui.label.area_editor.sub_regions", area == null ? 0 : area.boxes().size());
         int countWidth = fontRendererObj.getStringWidth(label) + 4;
         count.setBounds(12, 104, countWidth, 12);
         guide.setBounds(24 + countWidth, 104, 150, 11);
         list.setBounds(8, 116, width - 20, Math.max(0, height - 146));
         int statusX = setName.bounds().right() + 10;
-        status.setBounds(statusX, 59, Math.max(0, width - statusX - 12), 16);
+        status.setBounds(statusX, 59, Math.max(0, (manualOrigin() ? originX : width) - statusX - 12), 16);
         x = place(browser, 12, height - 26, true);
         place(analyze, x, height - 26, false);
         place(main, width - fontRendererObj.getStringWidth(main.label()) - 20, height - 26, false);
+    }
+
+    @Override protected int titleRightMargin() {
+        return manualOrigin() && originControls != null ? Math.max(30, width - originControls.bounds().x + 8) : 30;
     }
 
     private final class Entry extends UiPanel {
