@@ -20,7 +20,7 @@ public final class Names {
         public static final String SHOW_DEBUG_INFO = "showDebugInfo";
         public static final String SHOW_DEBUG_INFO_DESC = "Display extra information on the debug screen (F3).";
         public static final String EXTENDED_ID_FORMAT = "useSchematicplusFormat";
-        public static final String EXTENDED_ID_FORMAT_DESC = "Save and load schematics with a different format that supports a much higher number of block ids. Only schematics in schemplus format will be loaded.";
+        public static final String EXTENDED_ID_FORMAT_DESC = "Prefer .schemplus when saving. Blocks that require it use this format automatically. Both .schematic and .schemplus files can be loaded.";
         public static final String ALPHA_ENABLED = "alphaEnabled";
         public static final String ALPHA_ENABLED_DESC = "Enable transparent textures.";
         public static final String ALPHA = "alpha";
@@ -100,6 +100,7 @@ public final class Names {
                 public static final String PLAYERS_ONLY = "schematica.command.save.playersOnly";
                 public static final String SAVE_STARTED = "schematica.command.save.started";
                 public static final String SAVE_SUCCESSFUL = "schematica.command.save.saveSucceeded";
+                public static final String SAVE_EXTENDED = "schematica.command.save.saveExtended";
                 public static final String SAVE_FAILED = "schematica.command.save.saveFailed";
                 public static final String QUOTA_EXCEEDED = "schematica.command.save.quotaExceeded";
                 public static final String PLAYER_SCHEMATIC_DIR_UNAVAILABLE = "schematica.command.save.playerSchematicDirUnavailable";

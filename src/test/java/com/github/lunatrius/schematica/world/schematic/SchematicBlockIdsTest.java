@@ -46,8 +46,10 @@ public class SchematicBlockIdsTest {
         SchematicBlockIds.read(tag, 2);
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void rejectsIdsThatCannotFitStandardFormat() {
-        SchematicBlockIds.write(new NBTTagCompound(), new byte[] {0}, new byte[] {16}, false);
+    @Test public void promotesIdsThatCannotFitStandardFormat() {
+        NBTTagCompound tag = tag(new byte[] {0}, new byte[0]);
+        SchematicBlockIds.write(tag, new byte[] {0}, new byte[] {16}, false);
+        assertEquals(SchematicBlockIds.EXTENDED, tag.getString(SchematicBlockIds.ENCODING));
+        assertArrayEquals(new int[] {4096}, SchematicBlockIds.read(tag, 1));
     }
 }

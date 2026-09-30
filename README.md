@@ -39,7 +39,9 @@ maximum nesting depth of 64. World edits and captures must stay within Y=0..255.
 Only one save per player and four queued saves globally are accepted at a time.
 
 Both `.schematic` and `.schemplus` can be loaded regardless of the save-format
-preference. Standard files use 12-bit block IDs; use `.schemplus` for IDs above 4095.
+preference. Standard files use 12-bit block IDs. Captures containing IDs above 4095
+automatically save as `.schemplus`, with the actual filename shown in chat. An
+automatic format change adds a numeric suffix if its new filename already exists.
 Singleplayer captures use the integrated server's world. Remote client captures
 include only synchronized data; GregTech pipe connections are preserved, but
 unsynchronized inventories and machine data still require a server-side save.

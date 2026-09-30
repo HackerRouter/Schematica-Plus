@@ -58,6 +58,9 @@ final class SchematicBlockIds {
     }
 
     static void write(NBTTagCompound tag, byte[] low, byte[] high, boolean extended) {
+        for (byte value : high) {
+            if ((value & 255) > 15) { extended = true; break; }
+        }
         tag.setString(ENCODING, extended ? EXTENDED : STANDARD);
         tag.setByteArray(Names.NBT.BLOCKS, low);
         if (extended) {
@@ -66,7 +69,6 @@ final class SchematicBlockIds {
             byte[] packed = new byte[(high.length + 1) / 2];
             for (int i = 0; i < high.length; i++) {
                 int value = high[i] & 255;
-                if (value > 15) throw new IllegalArgumentException("Block IDs above 4095 require .schemplus");
                 packed[i / 2] |= (byte) (value << ((i & 1) * 4));
             }
             tag.setByteArray(Names.NBT.ADD_BLOCKS, packed);

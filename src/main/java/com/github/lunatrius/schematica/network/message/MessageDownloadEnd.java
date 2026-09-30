@@ -39,13 +39,13 @@ public class MessageDownloadEnd implements IMessage, IMessageHandler<MessageDown
     @Override
     public IMessage onMessage(MessageDownloadEnd message, MessageContext ctx) {
         File directory = Schematica.proxy.getPlayerSchematicDirectory(null, true);
-        boolean success = DownloadHandler.INSTANCE.isDownloadComplete() && SchematicFormat
-            .writeToFile(directory, message.name, DownloadHandler.INSTANCE.schematic, null, true, true);
+        File saved = DownloadHandler.INSTANCE.isDownloadComplete() ? SchematicFormat
+            .saveToFile(directory, message.name, DownloadHandler.INSTANCE.schematic, null, true, true) : null;
 
         if (Minecraft.getMinecraft().thePlayer != null) {
             Minecraft.getMinecraft().thePlayer.addChatMessage(
-                new ChatComponentTranslation(success ? Names.Command.Download.Message.DOWNLOAD_SUCCEEDED
-                    : Names.Command.Download.Message.DOWNLOAD_FAILED, message.name));
+                new ChatComponentTranslation(saved != null ? Names.Command.Download.Message.DOWNLOAD_SUCCEEDED
+                    : Names.Command.Download.Message.DOWNLOAD_FAILED, saved != null ? saved.getName() : message.name));
         }
 
         DownloadHandler.INSTANCE.beginDownload(null);

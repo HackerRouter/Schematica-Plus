@@ -87,11 +87,14 @@ public class QueueTickHandler {
                 }
             }
 
-            final boolean success = SchematicFormat.writeToFile(container.file, container.schematic, container.world,
+            final java.io.File saved = SchematicFormat.saveToFile(container.file, container.schematic, container.world,
                 container.includeNBT, container.includeEntities);
-            final String message = success ? Names.Command.Save.Message.SAVE_SUCCESSFUL
+            final boolean renamed = saved != null && !saved.getName().equals(container.file.getName());
+            final String message = saved != null ? (renamed ? Names.Command.Save.Message.SAVE_EXTENDED
+                : Names.Command.Save.Message.SAVE_SUCCESSFUL)
                 : Names.Command.Save.Message.SAVE_FAILED;
-            container.player.addChatMessage(new ChatComponentTranslation(message, container.file.getName()));
+            container.player.addChatMessage(new ChatComponentTranslation(message,
+                saved != null ? saved.getName() : container.file.getName()));
         }
     }
 

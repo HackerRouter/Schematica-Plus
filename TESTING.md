@@ -50,6 +50,11 @@ Before a release, use a disposable 1.7.10 world to check:
   them after changing the format preference and verify names and metadata. Import
   a WorldEdit schematic, including one with an odd block count. Check old files
   made with reversed nibbles against their saved name mappings.
+- With the extended-format preference off, save blocks with IDs above 4095 from
+  the GUI and save command, and download them from a server. The output must use
+  `.schemplus` and the completion message must show its actual filename. Repeat
+  with an existing `.schemplus` of the same name: keep that file and use a numbered
+  name. Selections containing only IDs up to 4095 must keep `.schematic`.
 - With NBT saving enabled, save GregTech pipes/cables with bends and junctions,
   plus ProjectRed full lamps and multipart lights with microblocks. Compare local
   and remote-server saves, then reload the files and check connections, colors,

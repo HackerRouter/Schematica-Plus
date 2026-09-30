@@ -1,15 +1,9 @@
 package com.github.lunatrius.schematica.world.schematic;
 
 import java.io.File;
-import java.io.FileOutputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
-import java.nio.file.AtomicMoveNotSupportedException;
 import java.util.HashMap;
 import java.util.Map;
 
-import net.minecraft.nbt.CompressedStreamTools;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.world.World;
 import net.minecraftforge.common.MinecraftForge;
@@ -90,9 +84,13 @@ public abstract class SchematicFormat {
 
     public static boolean writeToFile(File file, ISchematic schematic, World backupWorld,
         boolean includeNBT, boolean includeEntities) {
-        Path temporary = null;
+        return saveToFile(file, schematic, backupWorld, includeNBT, includeEntities) != null;
+    }
+
+    public static File saveToFile(File file, ISchematic schematic, World backupWorld,
+        boolean includeNBT, boolean includeEntities) {
         try {
-            if (schematic == null) return false;
+            if (schematic == null) return null;
             final PostSchematicCaptureEvent event = new PostSchematicCaptureEvent(schematic);
             MinecraftForge.EVENT_BUS.post(event);
 
@@ -103,35 +101,12 @@ public abstract class SchematicFormat {
                 ? ((SchematicAlpha) format).writeToNBT(tagCompound, schematic, backupWorld, includeNBT, includeEntities,
                     file.getName().toLowerCase(java.util.Locale.ROOT).endsWith(".schemplus"))
                 : format.writeToNBT(tagCompound, schematic, backupWorld, includeNBT, includeEntities);
-            if (!written) return false;
-
-            // Use CompressedStreamTools.writeCompressed which writes using the new NBT
-            // format (func_152446_a). This matches what readCompressed (func_152456_a)
-            // expects on the read side. The old func_150298_a wrote using the legacy
-            // format which is incompatible with readCompressed, causing NPE.
-            Path target = file.toPath().toAbsolutePath();
-            temporary = Files.createTempFile(target.getParent(), ".schematica-", ".tmp");
-            try (FileOutputStream output = new FileOutputStream(temporary.toFile())) {
-                CompressedStreamTools.writeCompressed(tagCompound, output);
-            }
-            try {
-                Files.move(temporary, target, StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);
-            } catch (AtomicMoveNotSupportedException e) {
-                Files.move(temporary, target, StandardCopyOption.REPLACE_EXISTING);
-            }
-
-            return true;
+            if (!written) return null;
+            return SchematicFileWriter.write(file, tagCompound);
         } catch (Exception ex) {
             Reference.logger.error("Failed to write schematic!", ex);
-        } finally {
-            if (temporary != null) {
-                try { Files.deleteIfExists(temporary); } catch (java.io.IOException e) {
-                    Reference.logger.warn("Could not remove temporary schematic", e);
-                }
-            }
         }
-
-        return false;
+        return null;
     }
 
     public static boolean writeToFile(File directory, String filename, ISchematic schematic, World backupWorld) {
@@ -140,12 +115,17 @@ public abstract class SchematicFormat {
 
     public static boolean writeToFile(File directory, String filename, ISchematic schematic, World backupWorld,
         boolean includeNBT, boolean includeEntities) {
+        return saveToFile(directory, filename, schematic, backupWorld, includeNBT, includeEntities) != null;
+    }
+
+    public static File saveToFile(File directory, String filename, ISchematic schematic, World backupWorld,
+        boolean includeNBT, boolean includeEntities) {
         try {
-            return writeToFile(com.github.lunatrius.schematica.util.FileUtils.resolveSchematicFile(directory, filename),
+            return saveToFile(com.github.lunatrius.schematica.util.FileUtils.resolveSchematicFile(directory, filename),
                 schematic, backupWorld, includeNBT, includeEntities);
         } catch (java.io.IOException e) {
             Reference.logger.warn("Rejected schematic filename", e);
-            return false;
+            return null;
         }
     }
 

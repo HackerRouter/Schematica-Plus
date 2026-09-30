@@ -104,7 +104,7 @@ accepted merely because they contain or interact with fluid.
 ## Verification
 
 `gradlew build --offline --no-daemon` compiles, reobfuscates, runs Checkstyle and
-executes 59 unit tests. The tests cover bounded codecs, field restoration,
+executes the unit tests. The tests cover bounded codecs, field restoration,
 client/server distinctions, snapshot isolation, stream framing and transformations.
 Small test fixtures do not reproduce entire upstream mods and are not packaged.
 
