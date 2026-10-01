@@ -71,7 +71,7 @@ public class InputHandler {
             case "pickBlockLast":
                 if (!Hotkeys.boundOnlyTo("pickBlockLast", minecraft.gameSettings.keyBindUseItem.getKeyCode())) pickBlock(false);
                 return false;
-            case "pickBlockToggle": ToolManager.toggleConfig("pickBlockEnabled"); break;
+            case "pickBlockToggle": ToolManager.toggleConfig("pickBlockEnabled", true); break;
             case "schematicEditReplaceSelection": return com.github.lunatrius.schematica.tool.SchematicRebuild.replaceSelection();
             case "cloneSelection": return com.github.lunatrius.schematica.tool.PlacementActions.cloneSelection();
             case "saveAreaAsInMemorySchematic": return com.github.lunatrius.schematica.tool.PlacementActions.saveInMemory();
@@ -89,9 +89,8 @@ public class InputHandler {
             case "toggleInfoOverlayRendering": VisualSettings.toggle(VisualSettings.Toggle.INFO_OVERLAY); break;
             case "toggleVerifierOverlayRendering": VisualSettings.toggle(VisualSettings.Toggle.VERIFIER_OVERLAY); break;
             case "executeOperation":
-                if (!com.github.lunatrius.schematica.handler.ConfigurationHandler.executeRequireTool || ToolManager.toolActive()) ToolHandler.onExecute(minecraft.thePlayer);
-                else return false;
-                break;
+                return (!com.github.lunatrius.schematica.handler.ConfigurationHandler.executeRequireTool || ToolManager.toolActive())
+                    && ToolHandler.onExecute(minecraft.thePlayer);
             default: return ToolManager.hotkey(key.id);
         }
         return true;

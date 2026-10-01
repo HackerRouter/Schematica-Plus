@@ -1049,3 +1049,22 @@ These checks supersede Phase 12's Simple-editor and bounding-box expectations.
   block in the empty space against its face. Bound to the use key, it picks before
   the vanilla use action. Both are off while holding the tool or when rendering
   or schematic rendering is disabled.
+
+## Tool behavior parity (Execute, scroll, selection mode)
+
+- A second Execute while an edit runs reports busy and does not cancel it; remove
+  the task in the Task Manager instead. Fill without a picked block and Replace
+  without both blocks do nothing. With a selected box, Fill/Replace/Delete affect
+  only that box; otherwise all boxes. The integrated-server message is the
+  upstream "scheduled task added".
+- selectionModeCycle (Ctrl+M): area modes cycle Corners/Expand; in Delete it
+  switches the target between the area and the selected placement (Tool HUD shows
+  "Delete target mode"; tool clicks then move placements); in Paste it toggles the
+  replace mode None/All (Tool HUD "Replace blocks").
+- Grow modifier + wheel always consumes the scroll and reports missing area/box;
+  nudge modifier + wheel only consumes it when something moved; mode change
+  modifier + wheel honors reverseOperationModeDirection.
+- addSelectionBox selects the new box's first corner and prints the position;
+  deleteSelectionBox removes a selected manual origin first, otherwise the selected
+  box, with the upstream messages. toolEnabledToggle and pickBlockToggle print the
+  toggle message.

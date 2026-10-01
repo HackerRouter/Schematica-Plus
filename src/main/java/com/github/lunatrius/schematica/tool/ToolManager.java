@@ -53,16 +53,20 @@ public final class ToolManager {
     public static boolean currentModeUsesSchematic() { return currentMode.getUsesSchematic(); }
     public static boolean currentModeUsesAreaSelection() { return currentMode.getUsesAreaSelection(); }
 
-    public static void toggleConfig(String name) {
-        net.minecraftforge.common.config.Property p = ConfigurationHandler.configuration.get("tool", name, true);
-        p.set(!p.getBoolean(true)); ConfigurationHandler.configuration.save();
-        if (name.equals("toolItemEnabled")) ConfigurationHandler.toolItemEnabled = p.getBoolean(true);
-        if (name.equals("pickBlockEnabled")) ConfigurationHandler.pickBlockEnabled = p.getBoolean(true);
+    /** Flips a boolean option of the tool category, as KeyCallbackToggleBooleanConfigWithMessage when message is set. */
+    public static boolean toggleConfig(String name, boolean message) {
+        net.minecraftforge.common.config.Property p = ConfigurationHandler.configuration.getCategory("tool").get(name);
+        boolean value = !p.getBoolean();
+        p.set(value);
+        ConfigurationHandler.loadConfiguration();
+        ConfigurationHandler.configuration.save();
+        if (message) VisualSettings.printToggle(VisualSettings.prettyName("generic", name), value);
+        return value;
     }
 
     public static boolean hotkey(String id) {
         if (mc().thePlayer == null) return false;
-        if (id.equals("toolEnabledToggle")) { toggleConfig("toolItemEnabled"); return true; }
+        if (id.equals("toolEnabledToggle")) { toggleConfig("toolItemEnabled", true); return true; }
         if (id.equals("toolSelectElements") && ConfigurationHandler.toolItemEnabled) {
             if (currentMode.getUsesBlockPrimary() && Hotkeys.held("toolSelectModifierBlock1")) { pickState(true); return true; }
             if (currentMode.getUsesBlockSecondary() && Hotkeys.held("toolSelectModifierBlock2")) { pickState(false); return true; }
@@ -95,14 +99,16 @@ public final class ToolManager {
                 WorldMoveController.moveTo(target); return true;
             }
         }
-        if (Hotkeys.held("selectionGrowModifier") && currentMode.getUsesAreaSelection()) {
-            if (area != null && area.selectedBox() != null) {
-                AreaSelections.capture(); AreaSelections.library().growSelected(area, amount); saveArea();
+        if (Hotkeys.held("selectionGrowModifier")) {
+            if (currentMode.getUsesAreaSelection()) {
+                if (area == null) message("litematica.message.error.no_area_selected");
+                else if (area.selectedBox() == null) message("litematica.error.area_selection.grow.no_sub_region_selected");
+                else { AreaSelections.capture(); AreaSelections.library().growSelected(area, amount); saveArea(); }
             }
             return true;
         }
-        if (Hotkeys.held("selectionNudgeModifier")) { nudge(amount); return true; }
-        if (Hotkeys.held("operationModeChangeModifier")) { cycleMode(amount < 0); return true; }
+        if (Hotkeys.held("selectionNudgeModifier")) return nudge(amount);
+        if (Hotkeys.held("operationModeChangeModifier")) { cycleMode(amount < 0 != ConfigurationHandler.reverseOperationModeDirection); return true; }
         return false;
     }
 
@@ -113,19 +119,26 @@ public final class ToolManager {
         return x >= z ? new Vector3i(look.xCoord < 0 ? -amount : amount, 0, 0) : new Vector3i(0, 0, look.zCoord < 0 ? -amount : amount);
     }
     public static void nudgeArea(EntityPlayer player, int amount) { nudge(amount); }
-    static void nudge(int amount) {
+    /** Litematica's nudgeSelection: returns false when an area mode has no selected element to move. */
+    static boolean nudge(int amount) {
         Vector3i delta = direction(amount);
         if (currentMode.getUsesAreaSelection()) {
             Area area = AreaSelections.library().selected();
-            if (area == null || !SchematicaPlus.proxy.isSaveEnabled || !area.originSelected() && area.selectedBox() == null) return;
+            if (area == null || !SchematicaPlus.proxy.isSaveEnabled || !area.originSelected() && area.selectedBox() == null) return false;
             AreaSelections.capture(); AreaSelections.library().moveSelected(area, delta.x, delta.y, delta.z); saveArea();
         } else {
             SchematicWorld world = ClientProxy.schematic;
-            if (world == null) return;
+            if (world == null) return true;
             String region = world.subregions() == null ? null : world.subregions().selected;
             SchematicOrigin origin = region == null ? world.originPosition() : world.subregionPosition(region);
             movePlacement(new Vector3i(Math.addExact(origin.x, delta.x), Math.addExact(origin.y, delta.y), Math.addExact(origin.z, delta.z)));
         }
+        return true;
+    }
+
+    private static void message(String key) {
+        if (mc().thePlayer != null) mc().thePlayer.addChatMessage(new net.minecraft.util.ChatComponentText(
+            net.minecraft.util.EnumChatFormatting.RED + com.github.lunatrius.schematica.client.gui.framework.UiTranslations.format(key)));
     }
     static void moveEntire(Area area, Vector3i delta) {
         if (!SchematicaPlus.proxy.isSaveEnabled) return;

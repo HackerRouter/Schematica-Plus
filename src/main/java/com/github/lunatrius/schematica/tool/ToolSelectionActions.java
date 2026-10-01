@@ -5,6 +5,7 @@ package com.github.lunatrius.schematica.tool;
 import net.minecraft.client.Minecraft;
 
 import com.github.lunatrius.schematica.SchematicaPlus;
+import com.github.lunatrius.schematica.client.gui.framework.UiTranslations;
 import com.github.lunatrius.schematica.client.selection.AreaSelectionLibrary;
 import com.github.lunatrius.schematica.client.selection.AreaSelectionLibrary.Area;
 import com.github.lunatrius.schematica.client.selection.AreaSelections;
@@ -13,22 +14,39 @@ import com.github.lunatrius.schematica.internal.lunatriuscore.util.vector.Vector
 final class ToolSelectionActions {
     private ToolSelectionActions() {}
     static boolean hotkey(String id) {
-        if (id.equals("selectionModeCycle")) { AreaSelections.switchMode(); return true; }
+        if (id.equals("selectionModeCycle")) { cycleMode(); return true; }
         if (!SchematicaPlus.proxy.isSaveEnabled) return false;
         AreaSelectionLibrary library = AreaSelections.library(); Area area = library.selected();
         if (area == null) return false;
         Vector3i point = ToolManager.playerPosition();
         switch (id) {
-            case "addSelectionBox":
-                if (library.mode() != AreaSelectionLibrary.Mode.NORMAL) return true;
+            case "addSelectionBox": {
+                if (!ToolManager.currentModeUsesAreaSelection() || library.mode() != AreaSelectionLibrary.Mode.NORMAL) return false;
                 AreaSelections.capture();
                 String name = area.name(); int i = 1;
                 while (hasBox(area, name)) name = area.name() + " " + i++;
-                library.addBox(area, name, point, point); library.setGuide(area, true);
+                AreaSelectionLibrary.Box box = library.addBox(area, name, point, point);
+                library.selectCorner(area, box, AreaSelectionLibrary.Corner.FIRST);
+                library.setGuide(area, true);
+                PlacementActions.actionBar(UiTranslations.format("litematica.message.added_selection_box",
+                    String.format("x: %d, y: %d, z: %d", point.x, point.y, point.z)));
                 break;
-            case "deleteSelectionBox":
-                if (library.mode() != AreaSelectionLibrary.Mode.NORMAL || area.selectedBox() == null) return true;
-                AreaSelections.capture(); library.removeBox(area, area.selectedBox()); break;
+            }
+            case "deleteSelectionBox": {
+                if (!ToolManager.currentModeUsesAreaSelection()) return false;
+                AreaSelections.capture();
+                if (area.originSelected()) {
+                    library.setOrigin(area, null);
+                    PlacementActions.actionBar(UiTranslations.format("litematica.message.removed_area_origin"));
+                    ToolManager.saveArea();
+                    return false;
+                }
+                AreaSelectionLibrary.Box box = area.selectedBox();
+                if (box == null || library.mode() != AreaSelectionLibrary.Mode.NORMAL) return false;
+                library.removeBox(area, box);
+                PlacementActions.actionBar(UiTranslations.format("litematica.message.removed_selection_box", box.name()));
+                break;
+            }
             case "setAreaOrigin": AreaSelections.capture(); library.setOrigin(area, point); break;
             case "setSelectionBoxPosition1":
             case "setSelectionBoxPosition2":
@@ -47,6 +65,19 @@ final class ToolSelectionActions {
         }
         ToolManager.saveArea(); return true;
     }
+    /** Litematica's selectionModeCycle: Delete target, paste replace behavior, or the area corner mode. */
+    private static void cycleMode() {
+        ToolMode mode = ToolManager.getCurrentMode();
+        if (mode == ToolMode.DELETE) ToolMode.deleteUsesPlacement = !ToolMode.deleteUsesPlacement;
+        else if (mode == ToolMode.PASTE_SCHEMATIC) ToolManager.toggleConfig(com.github.lunatrius.schematica.reference.Names.Config.PASTE_ONLY_AIR, false);
+        else if (mode.getUsesAreaSelection()) {
+            AreaSelectionLibrary library = AreaSelections.library();
+            library.setCornerMode(library.cornerMode() == AreaSelectionLibrary.CornerMode.CORNERS
+                ? AreaSelectionLibrary.CornerMode.EXPAND : AreaSelectionLibrary.CornerMode.CORNERS);
+            AreaSelections.saveCurrent();
+        }
+    }
+
     private static boolean hasBox(Area area, String name) {
         for (AreaSelectionLibrary.Box box : area.boxes()) if (box.name().equalsIgnoreCase(name)) return true;
         return false;

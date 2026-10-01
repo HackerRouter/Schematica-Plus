@@ -37,11 +37,7 @@ public final class VisualSettings {
             this.category = category; this.key = key; this.group = group; this.upstream = upstream;
         }
 
-        public String prettyName() {
-            String key = "litematica.config." + group + ".prettyName." + upstream;
-            String text = UiTranslations.format(key);
-            return text.equals(key) ? upstream : text;
-        }
+        public String prettyName() { return VisualSettings.prettyName(group, upstream); }
     }
 
     private VisualSettings() {}
@@ -95,12 +91,22 @@ public final class VisualSettings {
         property.set(value);
         ConfigurationHandler.loadConfiguration();
         config.save();
-        Minecraft mc = Minecraft.getMinecraft();
-        if (mc.ingameGUI != null) {
-            String state = (value ? EnumChatFormatting.GREEN : EnumChatFormatting.RED) + UiTranslations.format("malilib.message.value." + (value ? "on" : "off"))
-                + EnumChatFormatting.RESET;
-            mc.ingameGUI.func_110326_a(UiTranslations.format("malilib.message.toggled", toggle.prettyName(), state), false);
-        }
+        printToggle(toggle.prettyName(), value);
         return value;
+    }
+
+    public static String prettyName(String group, String name) {
+        String key = "litematica.config." + group + ".prettyName." + name;
+        String text = UiTranslations.format(key);
+        return text.equals(key) ? name : text;
+    }
+
+    /** MaLiLib's printBooleanConfigToggleMessage on the action bar. */
+    public static void printToggle(String prettyName, boolean value) {
+        Minecraft mc = Minecraft.getMinecraft();
+        if (mc.ingameGUI == null) return;
+        String state = (value ? EnumChatFormatting.GREEN : EnumChatFormatting.RED) + UiTranslations.format("malilib.message.value." + (value ? "on" : "off"))
+            + EnumChatFormatting.RESET;
+        mc.ingameGUI.func_110326_a(UiTranslations.format("malilib.message.toggled", prettyName, state), false);
     }
 }

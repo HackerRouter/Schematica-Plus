@@ -47,12 +47,15 @@ public enum ToolMode {
         return this.creativeOnly;
     }
 
+    /** ToolModeData.DELETE usePlacement: Delete targets the selected placement instead of the area selection. */
+    public static boolean deleteUsesPlacement;
+
     public boolean getUsesSchematic() {
-        return this.usesSchematic;
+        return this == DELETE && deleteUsesPlacement || this.usesSchematic;
     }
 
     public boolean getUsesAreaSelection() {
-        return !this.usesSchematic;
+        return !getUsesSchematic();
     }
 
     public boolean getUsesBlockPrimary() {

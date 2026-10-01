@@ -21,26 +21,47 @@ public class ToolHandler {
 
     private ToolHandler() {}
 
-    public static void onExecute(EntityPlayer player) {
-        if (player == null) return;
+    /** Litematica's executeOperation: returns whether the key was used. A second press does not cancel a running edit. */
+    public static boolean onExecute(EntityPlayer player) {
+        if (player == null) return false;
         ToolMode mode = ToolManager.getCurrentMode();
         if (mode != ToolMode.PASTE_SCHEMATIC && mode != ToolMode.DELETE
-            && mode != ToolMode.FILL && mode != ToolMode.REPLACE_BLOCK) return;
+            && !(mode == ToolMode.FILL && mode.getPrimaryBlock() != null)
+            && !(mode == ToolMode.REPLACE_BLOCK && mode.getPrimaryBlock() != null && mode.getSecondaryBlock() != null)) return false;
         try {
-            if (com.github.lunatrius.schematica.handler.WorldEditQueue.INSTANCE.cancel(player.getUniqueID())
-                || com.github.lunatrius.schematica.handler.client.CommandEditQueue.INSTANCE.cancel()) {
-                sendChat(player, UiTranslations.format("schematica.message.edit.cancel_requested"));
-                return;
-            }
             if (!player.capabilities.isCreativeMode) throw new MessageException("litematica.error.generic.creative_mode_only");
             queueEdit(player, mode);
         } catch (Exception e) {
-            Reference.logger.warn("Could not start schematic edit", e);
+            if (!(e instanceof MessageException)) Reference.logger.warn("Could not start schematic edit", e);
             sendChat(player, EnumChatFormatting.RED + (e instanceof MessageException
                 ? UiTranslations.format(((MessageException) e).key(), ((MessageException) e).arguments())
                 : UiTranslations.format("schematica.message.edit.start_failed")));
         }
+        return true;
     }
+
+    /** World boxes of an operation: the selected box only, else every box (AreaSelection.getSelectedSubRegionBox). */
+    private static java.util.List<com.github.lunatrius.schematica.api.SchematicRegion> targetBoxes(ToolMode mode) {
+        java.util.List<com.github.lunatrius.schematica.api.SchematicRegion> boxes = new java.util.ArrayList<>();
+        if (mode == ToolMode.DELETE && ToolMode.deleteUsesPlacement) {
+            SchematicWorld placement = ClientProxy.schematic;
+            if (placement == null) throw new MessageException("litematica.message.error.no_area_selected");
+            if (placement.subregions() != null) for (com.github.lunatrius.schematica.client.world.SubRegionPlacements.Region region : placement.subregions().regions()) {
+                if (region.enabled) boxes.add(placement.subregionBounds(region.name()));
+            }
+            if (boxes.isEmpty()) throw new MessageException("litematica.message.error.empty_area_selection");
+            return boxes;
+        }
+        com.github.lunatrius.schematica.client.selection.AreaSelectionLibrary.Area area = AreaSelections.library().selected();
+        if (area == null) throw new MessageException("litematica.message.error.no_area_selected");
+        AreaSelections.capture();
+        java.util.List<com.github.lunatrius.schematica.api.SchematicRegion> regions = area.regions();
+        if (regions.isEmpty()) throw new MessageException("litematica.message.error.empty_area_selection");
+        String selected = area.selectedBox() == null ? null : area.boxName();
+        if (selected != null) for (com.github.lunatrius.schematica.api.SchematicRegion region : regions) if (region.name.equals(selected)) boxes.add(region);
+        return boxes.isEmpty() ? regions : boxes;
+    }
+
     private static void queueEdit(EntityPlayer player, ToolMode mode) {
         WorldEditJob job;
         if (mode == ToolMode.PASTE_SCHEMATIC) {
@@ -55,20 +76,12 @@ public class ToolHandler {
                 com.github.lunatrius.schematica.handler.ConfigurationHandler.pasteOnlyAir);
             job.capture(schematic.getSchematic(), schematic.isPastingBlockNBT, schematic.isRenderingEntities);
         } else {
-            if (AreaSelections.library().selected() == null) {
-                throw new MessageException("litematica.message.error.no_area_selected");
-            }
-            AreaSelections.capture();
             com.github.lunatrius.schematica.world.storage.RegionSelection selection =
-                new com.github.lunatrius.schematica.world.storage.RegionSelection(AreaSelections.library().selected().regions());
+                new com.github.lunatrius.schematica.world.storage.RegionSelection(targetBoxes(mode));
             Vector3i min = new Vector3i(selection.minX, selection.minY, selection.minZ);
             Vector3i max = new Vector3i(selection.maxX, selection.maxY, selection.maxZ);
             Block replacement = mode == ToolMode.DELETE ? Blocks.air : mode.getPrimaryBlock();
-            if (replacement == null) throw new MessageException("schematica.message.tool.pick_target");
             Block target = mode.getSecondaryBlock();
-            if (mode == ToolMode.REPLACE_BLOCK && target == null) {
-                throw new MessageException("schematica.message.tool.pick_target");
-            }
             job = new WorldEditJob(player.getUniqueID(), player.dimension,
                 mode == ToolMode.REPLACE_BLOCK ? WorldEditJob.Kind.REPLACE : WorldEditJob.Kind.FILL,
                 min.x, min.y, min.z,
@@ -83,7 +96,7 @@ public class ToolHandler {
             if (!com.github.lunatrius.schematica.handler.WorldEditQueue.INSTANCE.submit(server, job)) {
                 throw new MessageException("schematica.message.edit.busy");
             }
-            sendChat(player, UiTranslations.format("schematica.message.edit.queued"));
+            sendChat(player, UiTranslations.format("litematica.message.scheduled_task_added"));
         } else {
             com.github.lunatrius.schematica.handler.client.CommandEditQueue.INSTANCE.submit(job, player.worldObj);
             sendChat(player, UiTranslations.format("schematica.message.edit.commands_queued"));

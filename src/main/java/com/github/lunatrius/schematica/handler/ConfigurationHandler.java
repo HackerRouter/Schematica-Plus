@@ -82,7 +82,7 @@ public class ConfigurationHandler {
     public static String[] extraAirBlocks = EXTRA_AIR_BLOCKS_DEFAULT;
     public static String sortType = SORT_TYPE_DEFAULT;
     public static String toolItem = TOOL_ITEM_DEFAULT;
-    public static boolean toolItemEnabled = true, executeRequireTool = true, pickBlockEnabled = true, cloneAtOriginalPosition;
+    public static boolean toolItemEnabled = true, executeRequireTool = true, pickBlockEnabled = true, cloneAtOriginalPosition, reverseOperationModeDirection;
     public static boolean pasteWithoutUpdates = PASTE_WITHOUT_UPDATES_DEFAULT;
     public static boolean pasteOnlyAir = PASTE_ONLY_AIR_DEFAULT;
     public static boolean printerEnabled = PRINTER_ENABLED_DEFAULT;
@@ -340,6 +340,9 @@ public class ConfigurationHandler {
         Property cloneAtOrigin = configuration.get(Names.Config.Category.TOOL, "cloneAtOriginalPosition", false);
         cloneAtOrigin.setLanguageKey("litematica.config.generic.name.cloneAtOriginalPosition");
         cloneAtOriginalPosition = cloneAtOrigin.getBoolean(false);
+        Property reverseModes = configuration.get(Names.Config.Category.TOOL, "reverseOperationModeDirection", false);
+        reverseModes.setLanguageKey("litematica.config.generic.name.reverseOperationModeDirection");
+        reverseOperationModeDirection = reverseModes.getBoolean(false);
 
         propPasteWithoutUpdates = configuration.get(Names.Config.Category.TOOL, Names.Config.PASTE_WITHOUT_UPDATES,
             PASTE_WITHOUT_UPDATES_DEFAULT, Names.Config.PASTE_WITHOUT_UPDATES_DESC);

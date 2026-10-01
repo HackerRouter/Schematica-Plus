@@ -87,6 +87,11 @@ public class OverlayHandler {
         // Line 1: Mode
         lines.add(EnumChatFormatting.GOLD + "[" + Reference.NAME + "] " + EnumChatFormatting.WHITE + mode.getDisplayName());
 
+        if (mode == ToolMode.DELETE) {
+            lines.add(UiTranslations.format("litematica.hud.delete.target_mode", EnumChatFormatting.GREEN + UiTranslations.format(ToolMode.deleteUsesPlacement
+                ? "litematica.hud.delete.target_mode.placement" : "litematica.hud.delete.target_mode.area") + EnumChatFormatting.RESET));
+        }
+
         // Line 2: Schematic file name + dimensions (if loaded)
         final SchematicWorld schematic = ClientProxy.schematic;
         if (schematic != null) {
@@ -103,8 +108,14 @@ public class OverlayHandler {
             }
         }
 
+        if (mode == ToolMode.PASTE_SCHEMATIC) {
+            boolean none = ConfigurationHandler.pasteOnlyAir;
+            lines.add(UiTranslations.format("litematica.hud.misc.schematic_paste.replace_mode", (none ? EnumChatFormatting.RED : EnumChatFormatting.GOLD)
+                + UiTranslations.format(none ? "litematica.gui.label.replace_behavior.none" : "litematica.gui.label.replace_behavior.all") + EnumChatFormatting.RESET));
+        }
+
         // Line 3: Selection coords (for area-related modes)
-        if (mode.getUsesAreaSelection() || mode == ToolMode.FILL || mode == ToolMode.REPLACE_BLOCK || mode == ToolMode.DELETE) {
+        if (mode.getUsesAreaSelection()) {
             Area area = AreaSelections.library().selected();
             if (area == null) {
                 lines.add(UiTranslations.format("litematica.message.error.no_area_selected"));
