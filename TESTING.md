@@ -971,3 +971,33 @@ These checks supersede Phase 12's Simple-editor and bounding-box expectations.
   on cancellation/failure; normal shutdown drains rollback before saving. Runtime
   mod callbacks, entities, abrupt process termination and crash recovery still
   require native testing; no disk-backed transaction log is provided.
+
+## Edit Schematic (REBUILD) tool mode
+
+- Select Edit Schematic with Ctrl+wheel while holding the tool. Without the tool,
+  left-click a rendered schematic block that is nearer than any real block: it is
+  removed from the schematic only. Right-click places the held block item against
+  the targeted face (stairs/logs/pistons/furnaces orientation, slabs, GT machines and
+  other mod ItemBlocks with their placement data); with an empty hand the picked
+  primary block (Alt+middle) is used. Non-block items, misses and nearer real blocks
+  must fall through to vanilla. The real world must never change.
+- Bind the six schematicEdit* modifiers. Check break/place/replace in the targeted
+  direction (center quarter = into the block for break/replace), break/replace all
+  identical, break all except the targeted state, replace block type (metadata kept)
+  and fill air. Bulk edits need the targeted placement selected (or one of its
+  subregions selected) and stay inside the render layer range; otherwise the
+  original warning appears.
+- Repeat with rotated/mirrored placements, rotated subregions, signed anchors,
+  overlapping and disabled/hidden subregions, independent .litematic regions, flat
+  .schematic sources and several placements of one source: every placement of the
+  source must update consistently, other sources must not. Edits over 4096 cells
+  recompose the placements instead of patching cells; check selection, layers,
+  verifier and material list afterwards.
+- schematicEditReplaceSelection copies loaded real blocks that differ inside the
+  area selection (at most 1,048,576 cells) into the schematic(s) shown there.
+- Edited sources show an orange name and notice icon in Loaded Schematics until
+  saved; Save writes a new .schemplus file (the original file is untouched),
+  overlapping independent regions are refused, and Reload/Unload ask before
+  discarding unsaved edits. Edits are memory-only and are lost when the world is
+  left without saving. Tile entities of newly placed blocks are default instances;
+  real-world tile data is not copied.

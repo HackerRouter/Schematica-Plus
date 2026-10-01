@@ -3,7 +3,9 @@
 package com.github.lunatrius.schematica.client.gui.placement;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import net.minecraft.client.gui.GuiScreen;
@@ -43,8 +45,8 @@ public final class GuiSchematicLoadedList extends GuiSchematicList<Source<Schema
         Entry(Source<SchematicSourceData> source, int index) {
             this.source = source;
             this.index = index;
-            button("unload", () -> { ClientProxy.unloadSource(source); refresh(); });
-            reload = button("reload", () -> {
+            button("unload", () -> discarding(() -> { ClientProxy.unloadSource(source); refresh(); }));
+            reload = button("reload", () -> discarding(() -> {
                 try {
                     ClientProxy.reloadSource(source);
                     message(UiTranslations.format("litematica.message.schematic_read_from_file_success", source.name()));
@@ -52,7 +54,7 @@ public final class GuiSchematicLoadedList extends GuiSchematicList<Source<Schema
                     Reference.logger.warn("Schematic source reload failed", e);
                     message(UiTranslations.format("litematica.error.schematic_read_from_file_failed.exception", source.name()));
                 }
-            });
+            }));
             button("save_to_file", () -> mc.displayGuiScreen(new GuiSchematicSourceSave(GuiSchematicLoadedList.this, source)));
             create = button("create_placement", () -> {
                 try {
@@ -71,6 +73,12 @@ public final class GuiSchematicLoadedList extends GuiSchematicList<Source<Schema
             tick();
         }
 
+        private void discarding(Runnable action) {
+            if (!source.data().unsaved()) { action.run(); return; }
+            confirm(UiTranslations.format("schematica.ui.source.unsaved_title"),
+                UiTranslations.format("schematica.ui.source.unsaved", source.name()), () -> { if (entries().contains(source)) action.run(); });
+        }
+
         private UiButton button(String name, Runnable action) {
             UiButton button = add(new UiButton(() -> UiTranslations.format("litematica.gui.button." + name), mouse -> {
                 if (mouse == 0 && entries().contains(source)) action.run();
@@ -87,8 +95,10 @@ public final class GuiSchematicLoadedList extends GuiSchematicList<Source<Schema
             reload.setEnabled(canPlace && source.file().isFile());
             int count = 0;
             for (SchematicWorld world : ClientProxy.loadedSchematics) if (ClientProxy.SCHEMATICS.sourceOf(world) == source) count++;
-            setTooltip(source.file().getAbsolutePath(), UiTranslations.format("schematica.ui.source.details",
-                source.data().width, source.data().height, source.data().length, count));
+            String details = UiTranslations.format("schematica.ui.source.details", source.data().width, source.data().height, source.data().length, count);
+            if (source.data().unsaved()) setTooltip(source.file().getAbsolutePath(), details, UiTranslations.format("litematica.gui.label.loaded_schematic.modified_on",
+                new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date(source.data().modifiedTime()))));
+            else setTooltip(source.file().getAbsolutePath(), details);
             super.tick();
         }
 
@@ -106,7 +116,9 @@ public final class GuiSchematicLoadedList extends GuiSchematicList<Source<Schema
             boolean hover = containsVisible(mouseX, mouseY);
             draw.fill(bounds(), hover || model.selected() == source ? 0x70FFFFFF : index % 2 == 1 ? 0x20FFFFFF : 0x50FFFFFF);
             UiSprite.schematicFile(source.file().getName()).draw(draw, bounds().x + 2, bounds().y + 5, false, false);
-            draw.text(draw.trim(source.name(), buttonsStart - bounds().x - 24), bounds().x + 20, bounds().y + 7, 0xFFFFFFFF);
+            boolean unsaved = source.data().unsaved();
+            draw.text(draw.trim(source.name(), buttonsStart - bounds().x - (unsaved ? 38 : 24)), bounds().x + 20, bounds().y + 7, unsaved ? 0xFFFF9010 : 0xFFFFFFFF);
+            if (unsaved) UiSprite.NOTICE.draw(draw, buttonsStart - 13, bounds().y + 6, false, false);
             super.draw(draw, mouseX, mouseY);
         }
 

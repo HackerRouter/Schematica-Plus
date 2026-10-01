@@ -205,6 +205,10 @@ Earlier implemented portions include internal LunatriusCore utilities; bounded s
 
 ## 5. Interrupted REBUILD work: exact scope and next actions
 
+> **Cloud continuation update (2026-10-01, branch `claude/pensive-darwin-kdveqy`).** The embedded WIP was applied and completed in three commits on top of `1c7413e`: editable sources + placement patching, REBUILD input/operations, and save/unsaved UX. Status is now `IMPLEMENTED_HEADLESS` (build + Checkstyle + 343 JUnit tests, 0 failures); no native game run was possible. Implemented: in-memory working copy per source (`SchematicSourceData.editable/changed/unsaved`), source cells for flat and independent regions with composite mirroring (`SourceEditor`), inverse/forward placement mapping with last-enabled-region ownership (`SourceBlockPosition`), state transforms through the same `PlacementState` path as composition (`CellState`), per-cell patching of all placements of the source (<= 4096 cells) or recomposition via `ClientProxy.refreshSource`, all upstream attack/use operations and the six modifiers plus `schematicEditReplaceSelection` (`tool/SchematicRebuild`), held `ItemBlock` placement simulated in a detached one-block world (`CellState.Scratch`), `.schemplus` save of edited sources (overlapping independent regions refused), orange name/notice icon and discard confirmation in Loaded Schematics. `GRID_PASTE` is not in the selectable mode list (`UPSTREAM_PLACEHOLDER`).
+> Still `OPEN` for REBUILD: the three rebuild targeting overlays and their `RenderColors` rows; spreading very large bulk edits over ticks (they run synchronously, bounded by the 16,777,216-cell source limit); persisting unsaved edits across sessions (they are memory-only); copying real-world tile NBT in replace-selection (default tile entities are created). Deliberate deviation: when a schematic block is targeted, attack is consumed even if the edit is refused (upstream lets vanilla act), so real blocks behind the preview are not broken.
+> Cloud build notes: Maven Central returned HTTP 429 through the session proxy; a user-level init script `~/.gradle/init.d/central-mirror.gradle` pointing at `https://maven-central.storage-download.googleapis.com/maven2/` was used (not committed). Tests with CJK file names need a UTF-8 locale (`LC_ALL=C.UTF-8`); without it 6 tests fail with `InvalidPathException`.
+
 Status: `WIP_UNWIRED`, **no build or test was run after these edits**. Seven modified tracked files and two new files were present. Complete patch is embedded at the end. Existing local source files remain untouched by handoff creation.
 
 | File relative to Java package | Partial implementation / risk |
@@ -239,7 +243,7 @@ This is the reconciled known backlog, not a promise that every upstream Configs 
 
 ### P1: Finish the active tool/input objective
 
-- `OPEN`: Finish REBUILD and its rendering overlays, edited source lifecycle, directional/bulk operations and save integration (section 5).
+- `IMPLEMENTED_HEADLESS` / partly `OPEN`: REBUILD operations, edited source lifecycle and save integration are done (see the section 5 update); rebuild targeting overlays and tick-budgeted bulk edits remain.
 - `OPEN`: Connect missing original hotkeys listed in the generated appendix. Some depend on entirely unported features; registering their IDs alone is insufficient.
 - `OPEN`: Global rendering gates/toggles, held ghost/overlay inversion and overlay-through-blocks semantics. Differentiate schematic block rendering, overlay faces/lines, placement boxes, area boxes, Info HUD and verifier overlays. Existing visibility flags are not a substitute for all original controls.
 - `PARITY_AUDIT`: Tool scroll precedence, reverse cycling settings, change-selected-corner settings, key conflict behavior, action contexts, pickBlockFirst/Last, outside-tool state selection and all nine mode semantics. Keep creative filtering/default order matching upstream. Tool HUD still needs a full content/layout/config comparison.

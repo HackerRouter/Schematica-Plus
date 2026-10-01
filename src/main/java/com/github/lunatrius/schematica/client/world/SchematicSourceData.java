@@ -21,6 +21,8 @@ public final class SchematicSourceData {
     public final int length;
     private Schematic edited;
     private int revision;
+    private int savedRevision;
+    private long modifiedTime;
 
     private SchematicSourceData(SchematicFileSnapshot snapshot, ISchematic data) {
         this.snapshot = snapshot;
@@ -41,6 +43,9 @@ public final class SchematicSourceData {
 
     public boolean modified() { return revision > 0; }
     public int revision() { return revision; }
+    /** Whether edits exist that were not written to any file yet. */
+    public boolean unsaved() { return revision != savedRevision; }
+    public long modifiedTime() { return modifiedTime; }
     public String saveExtension() { return modified() ? ".schemplus" : snapshot.extension(); }
 
     /** The in-memory working copy edited by the rebuild tool; the original file snapshot is never changed. */
@@ -52,12 +57,16 @@ public final class SchematicSourceData {
         return edited;
     }
 
-    public void changed() { revision++; }
+    public void changed() {
+        revision++;
+        modifiedTime = System.currentTimeMillis();
+    }
 
     public void save(File file, boolean replace) throws IOException {
         if (!modified()) { snapshot.write(file, replace); return; }
         if (SchematicCopies.independent(edited) && overlapping(edited.getRegions())) throw new MessageException("schematica.message.rebuild.save_overlapping");
         SchematicFileSnapshot.capture(edited).write(file, replace);
+        savedRevision = revision;
     }
 
     static boolean overlapping(List<SchematicRegion> regions) {
