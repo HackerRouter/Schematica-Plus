@@ -242,10 +242,14 @@ public class SchematicWorld extends World {
     }
 
     public net.minecraft.util.MovingObjectPosition rayTraceRendered(net.minecraft.util.Vec3 start, net.minecraft.util.Vec3 end) {
+        return rayTraceRendered(start, end, false);
+    }
+
+    public net.minecraft.util.MovingObjectPosition rayTraceRendered(net.minecraft.util.Vec3 start, net.minecraft.util.Vec3 end, boolean fluids) {
         if (!isRenderingEnabled()) return null;
         boolean previous = tracingRenderedBlocks;
         tracingRenderedBlocks = true;
-        try { return func_147447_a(start, end, false, false, false); }
+        try { return func_147447_a(start, end, fluids, false, false); }
         finally { tracingRenderedBlocks = previous; }
     }
 

@@ -986,7 +986,9 @@ These checks supersede Phase 12's Simple-editor and bounding-box expectations.
   identical, break all except the targeted state, replace block type (metadata kept)
   and fill air. Bulk edits need the targeted placement selected (or one of its
   subregions selected) and stay inside the render layer range; otherwise the
-  original warning appears.
+  original warning appears and, as in Litematica, the click falls through to
+  vanilla (a real block behind the preview within reach is attacked/used).
+  Successful edits consume the click; refused ones never do.
 - Repeat with rotated/mirrored placements, rotated subregions, signed anchors,
   overlapping and disabled/hidden subregions, independent .litematic regions, flat
   .schematic sources and several placements of one source: every placement of the

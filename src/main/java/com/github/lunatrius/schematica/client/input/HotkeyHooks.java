@@ -96,7 +96,7 @@ public final class HotkeyHooks {
         try { return click.click(attack); }
         catch (RuntimeException error) {
             Reference.logger.error("Schematic edit failed", error);
-            return true;
+            return false;
         }
     }
 

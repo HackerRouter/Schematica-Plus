@@ -84,6 +84,7 @@ public final class SchematicRebuild {
 
     private static Minecraft mc() { return Minecraft.getMinecraft(); }
 
+    /** Returns whether the press is consumed; like Litematica, only an edit that was carried out consumes it. */
     public static boolean click(boolean attack) {
         if (ToolManager.getCurrentMode() != ToolMode.REBUILD || ClientProxy.loadedSchematics.isEmpty()) return false;
         try {
@@ -91,7 +92,7 @@ public final class SchematicRebuild {
         } catch (IOException error) {
             Reference.logger.error("Could not edit the schematic source", error);
             message(EnumChatFormatting.RED, "schematica.message.rebuild.failed");
-            return true;
+            return false;
         }
     }
 
@@ -99,21 +100,21 @@ public final class SchematicRebuild {
         boolean direction = Hotkeys.held("schematicEditBreakPlaceDirection");
         boolean except = !direction && Hotkeys.held("schematicEditBreakAllExcept");
         boolean all = !direction && !except && Hotkeys.held("schematicEditBreakPlaceAll");
-        Target target = trace(direction || except || all ? RANGE : mc().playerController.getBlockReachDistance());
+        Target target = trace(direction || except || all ? RANGE : mc().playerController.getBlockReachDistance() + 1);
         if (target == null) return false;
         Owner owner = owner(target.world, target.x, target.y, target.z);
-        if (owner == null) return true;
+        if (owner == null) return false;
         CellState targeted = composed(owner.world, target.x, target.y, target.z);
-        if (direction) setRun(owner, target.x, target.y, target.z, directionAway(target), CellState.AIR);
-        else if (except) bulk(owner, rule -> {
+        if (direction) return setRun(owner, target.x, target.y, target.z, directionAway(target), CellState.AIR);
+        if (except) return bulk(owner, rule -> {
             CellState keep = untransformed(targeted, rule.operations);
             return (block, meta) -> block != CellState.AIR.block && (block != keep.block || meta != keep.meta) ? CellState.AIR : null;
         });
-        else if (all) bulk(owner, rule -> {
+        if (all) return bulk(owner, rule -> {
             CellState original = untransformed(targeted, rule.operations);
             return (block, meta) -> block == original.block && meta == original.meta ? CellState.AIR : null;
         });
-        else apply(owner.source, single(owner.cell, CellState.AIR));
+        apply(owner.source, single(owner.cell, CellState.AIR));
         return true;
     }
 
@@ -122,47 +123,53 @@ public final class SchematicRebuild {
         if (target == null) return false;
         CellState placed = heldState(target);
         if (placed == null) return false;
-        Owner owner = owner(target.world, target.x, target.y, target.z);
-        if (owner == null) return true;
-        CellState targeted = composed(owner.world, target.x, target.y, target.z);
         int[] next = target.adjacent();
         if (Hotkeys.held("schematicEditReplaceDirection")) {
-            setRun(owner, target.x, target.y, target.z, directionAway(target), placed);
-        } else if (Hotkeys.held("schematicEditReplaceAll")) {
-            bulk(owner, rule -> {
+            Owner owner = owner(target.world, target.x, target.y, target.z);
+            return owner != null && setRun(owner, target.x, target.y, target.z, directionAway(target), placed);
+        }
+        if (Hotkeys.held("schematicEditReplaceAll")) {
+            Owner owner = owner(target.world, target.x, target.y, target.z);
+            if (owner == null) return false;
+            CellState targeted = composed(owner.world, target.x, target.y, target.z);
+            return bulk(owner, rule -> {
                 CellState original = untransformed(targeted, rule.operations), replacement = untransformed(placed, rule.operations);
                 return (block, meta) -> block == original.block && meta == original.meta ? replacement : null;
             });
-        } else if (Hotkeys.held("schematicEditReplaceBlock")) {
-            if (placed.block == targeted.block) return true;
+        }
+        if (Hotkeys.held("schematicEditReplaceBlock")) {
+            Owner owner = owner(target.world, target.x, target.y, target.z);
+            if (owner == null) return false;
+            CellState targeted = composed(owner.world, target.x, target.y, target.z);
+            if (placed.same(targeted)) return false;
             Map<Integer, CellState> states = new HashMap<>();
-            bulk(owner, rule -> (block, meta) -> block == targeted.block ? states.computeIfAbsent(meta, value -> CellState.of(placed.block, value)) : null);
-        } else if (Hotkeys.held("schematicEditBreakPlaceDirection")) {
+            return bulk(owner, rule -> (block, meta) -> block == targeted.block && placed.block != targeted.block
+                ? states.computeIfAbsent(meta, value -> CellState.of(placed.block, value)) : null);
+        }
+        if (Hotkeys.held("schematicEditBreakPlaceDirection")) {
             Owner start = owner(target.world, next[0], next[1], next[2]);
-            if (start != null && composed(start.world, next[0], next[1], next[2]).isAir() && inRange(next[0], next[1], next[2])) {
-                setRun(start, next[0], next[1], next[2], RebuildDirection.targeted(target.face(), facing(), target.hitX - target.x,
+            return start != null && composed(start.world, next[0], next[1], next[2]).isAir()
+                && setRun(start, next[0], next[1], next[2], RebuildDirection.targeted(target.face(), facing(), target.hitX - target.x,
                     target.hitY - target.y, target.hitZ - target.z), placed);
-            }
-        } else if (Hotkeys.held("schematicEditBreakPlaceAll")) {
+        }
+        if (Hotkeys.held("schematicEditBreakPlaceAll")) {
             Owner start = owner(target.world, next[0], next[1], next[2]);
-            if (start != null && composed(start.world, next[0], next[1], next[2]).isAir()) bulk(start, rule -> {
+            return start != null && composed(start.world, next[0], next[1], next[2]).isAir() && bulk(start, rule -> {
                 CellState replacement = untransformed(placed, rule.operations);
                 return (block, meta) -> block == CellState.AIR.block ? replacement : null;
             });
-        } else if (inRange(next[0], next[1], next[2])) {
-            Owner start = owner(target.world, next[0], next[1], next[2]);
-            if (start != null) apply(start.source, single(start.cell, untransformed(placed, start.operations())));
         }
+        if (!inRange(next[0], next[1], next[2])) return false;
+        Owner start = owner(target.world, next[0], next[1], next[2]);
+        if (start == null) return false;
+        apply(start.source, single(start.cell, untransformed(placed, start.operations())));
         return true;
     }
 
     /** Copies differing real-world blocks inside the current area selection into the schematic(s) shown there. */
     public static boolean replaceSelection() {
         Area area = AreaSelections.library().selected();
-        if (area == null || area.boxes().isEmpty() || mc().theWorld == null) {
-            message(EnumChatFormatting.RED, "litematica.message.error.no_area_selected");
-            return true;
-        }
+        if (area == null || area.boxes().isEmpty() || mc().theWorld == null || ClientProxy.loadedSchematics.isEmpty()) return false;
         try {
             new RegionSelection(area.regions());
             long volume = 0;
@@ -201,14 +208,14 @@ public final class SchematicRebuild {
         if (camera == null || mc.theWorld == null) return null;
         Vec3 eye = camera.getPosition(1), look = camera.getLook(1);
         double limit = range;
-        MovingObjectPosition real = mc.theWorld.rayTraceBlocks(copy(eye, 0, 0, 0), eye.addVector(look.xCoord * range, look.yCoord * range, look.zCoord * range));
+        MovingObjectPosition real = mc.theWorld.rayTraceBlocks(copy(eye, 0, 0, 0), eye.addVector(look.xCoord * range, look.yCoord * range, look.zCoord * range), true);
         if (real != null && real.typeOfHit == MovingObjectPosition.MovingObjectType.BLOCK) limit = eye.distanceTo(real.hitVec);
         Target best = null;
         for (SchematicWorld world : ClientProxy.loadedSchematics) {
             if (!world.isRenderingEnabled()) continue;
             Vec3 start = copy(eye, -world.position.x, -world.position.y, -world.position.z);
             MovingObjectPosition hit = world.rayTraceRendered(copy(start, 0, 0, 0),
-                start.addVector(look.xCoord * range, look.yCoord * range, look.zCoord * range));
+                start.addVector(look.xCoord * range, look.yCoord * range, look.zCoord * range), true);
             if (hit == null || hit.typeOfHit != MovingObjectPosition.MovingObjectType.BLOCK) continue;
             double distance = start.distanceTo(hit.hitVec);
             if (distance <= limit + 1.0E-7 && (best == null || distance < best.distance)) best = new Target(world, hit, distance);
@@ -269,7 +276,7 @@ public final class SchematicRebuild {
     }
 
     /** Sets a straight run of identical cells, stopping at a different state, region, layer range or the run limit. */
-    private static void setRun(Owner start, int x, int y, int z, ForgeDirection direction, CellState state) throws IOException {
+    private static boolean setRun(Owner start, int x, int y, int z, ForgeDirection direction, CellState state) throws IOException {
         CellState first = composed(start.world, x, y, z);
         Map<Cell, CellState> changes = new LinkedHashMap<>();
         Map<String, CellState> cache = new HashMap<>();
@@ -282,6 +289,7 @@ public final class SchematicRebuild {
             changes.put(next.cell, state.transform(SourceBlockPosition.inverse(next.operations()), cache));
         }
         apply(start.source, changes);
+        return true;
     }
 
     interface CellRule { CellState apply(Block block, int meta); }
@@ -295,14 +303,14 @@ public final class SchematicRebuild {
     }
 
     /** Applies a rule to every cell of the selected subregion, or of the whole selected placement, inside the layer range. */
-    private static void bulk(Owner owner, RegionRule factory) throws IOException {
+    private static boolean bulk(Owner owner, RegionRule factory) throws IOException {
         SubRegionPlacements regions = owner.world.subregions();
         List<SubRegionPlacements.Region> scope = new ArrayList<>();
         if (regions.selected != null) scope.add(regions.get(regions.selected));
         else if (ClientProxy.schematic == owner.world) scope.addAll(regions.regions());
         else {
             message(EnumChatFormatting.GOLD, "litematica.message.warn.schematic_rebuild_placement_not_selected");
-            return;
+            return false;
         }
         ISchematic source = owner.source.data().editable();
         SchematicOrigin origin = owner.world.originPosition();
@@ -326,6 +334,7 @@ public final class SchematicRebuild {
             }
         }
         apply(owner.source, changes);
+        return true;
     }
 
     private static Map<Cell, CellState> single(Cell cell, CellState state) {
