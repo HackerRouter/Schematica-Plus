@@ -99,10 +99,4 @@ public class SourceBlockPositionTest {
         }
         assertEquals(Arrays.asList("Y", "Y", "Y", "x"), SourceBlockPosition.inverse(Arrays.asList("x", "Y")));
     }
-
-    @Test public void onlyOverlappingIndependentRegionsBlockFlatSaving() {
-        assertFalse(SchematicSourceData.overlapping(Arrays.asList(new SchematicRegion("A", 0, 0, 0, 2, 2, 2), new SchematicRegion("B", 3, 0, 0, 4, 2, 2))));
-        assertTrue(SchematicSourceData.overlapping(Arrays.asList(new SchematicRegion("A", 0, 0, 0, 2, 2, 2), new SchematicRegion("B", 2, 2, 2, 4, 4, 4))));
-        assertFalse(SchematicSourceData.overlapping(Collections.<SchematicRegion>emptyList()));
-    }
 }

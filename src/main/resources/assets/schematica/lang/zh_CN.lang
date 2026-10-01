@@ -159,7 +159,6 @@ schematica.ui.files.error.index=无法安全更新 LoadedSchematics.json，请�
 schematica.ui.files.error.io=文件操作失败。请检查文件是否存在、是否可读写，详情见日志。
 
 schematica.ui.source.create_failed=无法创建放置，详情见日志。
-schematica.message.rebuild.save_overlapping=此已编辑的源包含相互重叠的独立子区域，.schemplus 目前无法分别保存它们。未保存任何内容。
 schematica.message.rebuild.failed=无法编辑原理图，详情请查看日志。
 schematica.ui.source.unsaved_title=放弃原理图修改？
 schematica.ui.source.unsaved=%s 有尚未保存到文件的“编辑原理图”修改。继续操作将丢弃这些修改。

@@ -1266,3 +1266,12 @@ compare with a server that does not have the mod and with each server option off
 - Hotkey openPlacementGridSettingsScreen (unbound by default) opens the screen for the selected
   placement.
 
+## Independent overlapping regions in .schemplus and downloads
+
+- Load a .litematic with two overlapping regions of different blocks, edit a block in each with the
+  rebuild tool and save the source as .schemplus: the save succeeds; reload it and check both regions
+  keep their own blocks, chests and entities, and moving one sub-region shows the other's blocks.
+- Old Schematica / Plus builds load the same .schemplus as one flat schematic.
+- Server download (/schematicaDownload) of such a file from a dedicated server to this client: the
+  saved file restores both regions. An older Plus client gets the update-client message.
+

@@ -37,5 +37,7 @@ public class PacketHandler {
             com.github.lunatrius.schematica.network.message.MessageEditStatus.class, 10, Side.CLIENT);
         INSTANCE.registerMessage(com.github.lunatrius.schematica.network.message.MessagePlacementIntent.class,
             com.github.lunatrius.schematica.network.message.MessagePlacementIntent.class, 11, Side.SERVER);
+        INSTANCE.registerMessage(com.github.lunatrius.schematica.network.message.MessageDownloadRegions.class,
+            com.github.lunatrius.schematica.network.message.MessageDownloadRegions.class, 12, Side.CLIENT);
     }
 }

@@ -39,6 +39,11 @@ public class SchematicTransfer {
     public int retries = 0;
     public volatile boolean cancelled;
 
+    /** The client can restore independent regions; their payload is sent after the chunks. */
+    public boolean regionSupport;
+    public byte[] regionPayload;
+    public int regionSent;
+
     public int baseX = 0;
     public int baseY = 0;
     public int baseZ = 0;
@@ -54,6 +59,13 @@ public class SchematicTransfer {
 
     public boolean acceptGeometrySupport(boolean supported) {
         if (!supported && DownloadGeometry.of(this.schematic).requiresSupport()) this.cancelled = true;
+        return !this.cancelled;
+    }
+
+    /** Older Plus clients cannot restore independent (overlapping) regions; they get the update message. */
+    public boolean acceptRegionSupport(boolean supported) {
+        regionSupport = supported;
+        if (!supported && com.github.lunatrius.schematica.world.storage.SchematicCopies.independent(this.schematic)) this.cancelled = true;
         return !this.cancelled;
     }
 

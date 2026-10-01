@@ -67,16 +67,7 @@ public final class SchematicSourceData {
 
     public void save(File file, boolean replace) throws IOException {
         if (!modified()) { snapshot.write(file, replace); return; }
-        if (SchematicCopies.independent(edited) && overlapping(edited.getRegions())) throw new MessageException("schematica.message.rebuild.save_overlapping");
         SchematicFileSnapshot.capture(edited).write(file, replace);
         savedRevision = revision;
-    }
-
-    static boolean overlapping(List<SchematicRegion> regions) {
-        for (int i = 0; i < regions.size(); i++) for (int j = i + 1; j < regions.size(); j++) {
-            SchematicRegion a = regions.get(i), b = regions.get(j);
-            if (a.minX <= b.maxX && b.minX <= a.maxX && a.minY <= b.maxY && b.minY <= a.maxY && a.minZ <= b.maxZ && b.minZ <= a.maxZ) return true;
-        }
-        return false;
     }
 }

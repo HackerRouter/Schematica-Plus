@@ -159,7 +159,6 @@ schematica.ui.files.error.index=Could not safely update LoadedSchematics.json. C
 schematica.ui.files.error.io=File operation failed. Check that the file still exists and is writable; see the log for details.
 
 schematica.ui.source.create_failed=Could not create the placement. See the log for details.
-schematica.message.rebuild.save_overlapping=This edited source has overlapping independent regions, which .schemplus cannot store separately yet. Nothing was saved.
 schematica.message.rebuild.failed=Could not edit the schematic. See the log for details.
 schematica.ui.source.unsaved_title=Discard schematic edits?
 schematica.ui.source.unsaved=%s has Edit Schematic changes that were not saved to a file. Continuing discards them.

@@ -39,8 +39,13 @@ public class MessageDownloadEnd implements IMessage, IMessageHandler<MessageDown
     @Override
     public IMessage onMessage(MessageDownloadEnd message, MessageContext ctx) {
         File directory = SchematicaPlus.proxy.getPlayerSchematicDirectory(null, true);
-        File saved = DownloadHandler.INSTANCE.isDownloadComplete() ? SchematicFormat
-            .saveToFile(directory, message.name, DownloadHandler.INSTANCE.schematic, null, true, true) : null;
+        File saved = null;
+        try {
+            com.github.lunatrius.schematica.api.ISchematic downloaded = DownloadHandler.INSTANCE.completedSchematic();
+            if (downloaded != null) saved = SchematicFormat.saveToFile(directory, message.name, downloaded, null, true, true);
+        } catch (java.io.IOException | RuntimeException e) {
+            com.github.lunatrius.schematica.reference.Reference.logger.warn("Could not restore the downloaded regions", e);
+        }
 
         if (Minecraft.getMinecraft().thePlayer != null) {
             Minecraft.getMinecraft().thePlayer.addChatMessage(

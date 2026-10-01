@@ -23,10 +23,46 @@ public class DownloadHandler {
 
     public ISchematic schematic = null;
     private final java.util.BitSet receivedChunks = new java.util.BitSet();
+    private static final int MAX_REGION_BYTES = 32 * 1024 * 1024;
+    private byte[][] regionParts;
+    private int regionReceived, regionBytes;
+    private boolean regionFailed;
 
-    public void beginDownload(ISchematic schematic) {
+    public synchronized void beginDownload(ISchematic schematic) {
         this.schematic = schematic;
         receivedChunks.clear();
+        regionParts = null;
+        regionReceived = regionBytes = 0;
+        regionFailed = false;
+    }
+
+    /** Client: one slice of the independent region contents, sent after the block chunks. */
+    public synchronized void receivedRegions(com.github.lunatrius.schematica.network.message.MessageDownloadRegions message) {
+        if (schematic == null || regionFailed) return;
+        if (regionParts == null) {
+            if ((long) message.count * com.github.lunatrius.schematica.network.message.MessageDownloadRegions.CHUNK_SIZE > MAX_REGION_BYTES + 30000L) {
+                regionFailed = true;
+                return;
+            }
+            regionParts = new byte[message.count][];
+        }
+        if (message.count != regionParts.length || regionParts[message.index] != null
+            || (regionBytes += message.data.length) > MAX_REGION_BYTES) {
+            regionFailed = true;
+            return;
+        }
+        regionParts[message.index] = message.data;
+        regionReceived++;
+    }
+
+    /** Client, at the end: the downloaded schematic, with independent regions when they were sent; null when incomplete. */
+    public synchronized ISchematic completedSchematic() throws java.io.IOException {
+        if (!isDownloadComplete() || regionFailed) return null;
+        if (regionParts == null) return schematic;
+        if (regionReceived != regionParts.length) return null;
+        java.io.ByteArrayOutputStream payload = new java.io.ByteArrayOutputStream(regionBytes);
+        for (byte[] part : regionParts) payload.write(part);
+        return com.github.lunatrius.schematica.world.schematic.SchematicAlpha.withRegionPayload(schematic, payload.toByteArray());
     }
 
     public boolean validChunk(int x, int y, int z) {
@@ -99,6 +135,10 @@ public class DownloadHandler {
         } else if (transfer.state == SchematicTransfer.State.CHUNK_WAIT) {
             sendChunk(player, transfer);
         } else if (transfer.state == SchematicTransfer.State.END_WAIT) {
+            if (sendRegions(player, transfer)) {
+                this.transferMap.put(player, transfer);
+                return;
+            }
             sendEnd(player, transfer);
             return;
         }
@@ -123,6 +163,28 @@ public class DownloadHandler {
             transfer.baseY,
             transfer.baseZ);
         PacketHandler.INSTANCE.sendTo(message, player);
+    }
+
+    /** Sends up to eight slices of the independent region payload; returns whether slices remain to be sent. */
+    private boolean sendRegions(EntityPlayerMP player, SchematicTransfer transfer) {
+        if (!transfer.regionSupport) return false;
+        if (transfer.regionPayload == null) {
+            try {
+                transfer.regionPayload = com.github.lunatrius.schematica.world.schematic.SchematicAlpha.regionPayload(transfer.schematic);
+            } catch (java.io.IOException | RuntimeException e) {
+                Reference.logger.warn("Could not encode the regions of {}", transfer.name, e);
+                transfer.regionPayload = new byte[0];
+            }
+        }
+        byte[] payload = transfer.regionPayload;
+        int size = com.github.lunatrius.schematica.network.message.MessageDownloadRegions.CHUNK_SIZE;
+        int count = (payload.length + size - 1) / size;
+        for (int i = 0; i < 8 && transfer.regionSent < count; i++, transfer.regionSent++) {
+            int from = transfer.regionSent * size;
+            PacketHandler.INSTANCE.sendTo(new com.github.lunatrius.schematica.network.message.MessageDownloadRegions(transfer.regionSent, count,
+                java.util.Arrays.copyOfRange(payload, from, Math.min(payload.length, from + size))), player);
+        }
+        return transfer.regionSent < count;
     }
 
     private void sendEnd(EntityPlayerMP player, SchematicTransfer transfer) {

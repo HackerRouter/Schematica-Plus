@@ -51,6 +51,7 @@ public class SchematicAlpha extends SchematicFormat {
                 mapping.put(names.getShort(name) & 65535, block == null ? Blocks.air : block);
             }
         }
+        if (tagCompound.hasKey(REGION_DATA)) return readIndependent(tagCompound, icon, width, height, length);
         Schematic schematic = new Schematic(icon, width, height, length);
         schematic.setRegions(SchematicRegions.read(tagCompound, width, height, length));
         schematic.setOrigin(SchematicOrigins.read(tagCompound));
@@ -92,6 +93,70 @@ public class SchematicAlpha extends SchematicFormat {
         return schematic;
     }
 
+    /** Independent (possibly overlapping) region contents of a .schemplus, each as a nested Alpha schematic. */
+    static final String REGION_DATA = "SchematicaPlusRegionData";
+
+    private ISchematic readIndependent(NBTTagCompound tag, ItemStack icon, int width, int height, int length) {
+        if (tag.getInteger(REGION_DATA + "Version") != 1) throw new IllegalArgumentException("Unsupported region data");
+        return independent(icon, width, height, length, SchematicOrigins.read(tag), SchematicRegions.read(tag, width, height, length),
+            tag.getTagList(REGION_DATA, Constants.NBT.TAG_COMPOUND));
+    }
+
+    /** A multi-region schematic built from the region entries ({Name, Schematic}) in region order. */
+    private ISchematic independent(ItemStack icon, int width, int height, int length,
+        com.github.lunatrius.schematica.api.SchematicOrigin origin, List<com.github.lunatrius.schematica.api.SchematicRegion> regions, NBTTagList entries) {
+        if (regions.isEmpty() || entries.tagCount() != regions.size()) throw new IllegalArgumentException("Invalid region data");
+        com.github.lunatrius.schematica.world.storage.MultiRegionSchematic schematic =
+            new com.github.lunatrius.schematica.world.storage.MultiRegionSchematic(icon, width, height, length);
+        schematic.setOrigin(origin);
+        schematic.setRegions(regions);
+        for (int i = 0; i < entries.tagCount(); i++) {
+            NBTTagCompound entry = entries.getCompoundTagAt(i);
+            com.github.lunatrius.schematica.api.SchematicRegion region = regions.get(i);
+            if (!region.name.equals(entry.getString("Name")) || entry.getCompoundTag("Schematic").hasKey(REGION_DATA)) {
+                throw new IllegalArgumentException("Invalid region data");
+            }
+            schematic.addRegion(region, readFromNBT(entry.getCompoundTag("Schematic")));
+        }
+        return schematic;
+    }
+
+    /** The region entries of a schematic with independent region contents, or null when it has none. */
+    NBTTagList regionEntries(ISchematic schematic, World backupWorld, boolean includeNBT, boolean includeEntities) {
+        if (!com.github.lunatrius.schematica.world.storage.SchematicCopies.independent(schematic)) return null;
+        NBTTagList entries = new NBTTagList();
+        for (com.github.lunatrius.schematica.api.SchematicRegion region : schematic.getRegions()) {
+            ISchematic part = schematic.getRegionSchematic(region.name);
+            if (part == null) part = com.github.lunatrius.schematica.world.storage.SchematicCopies.extract(schematic, region);
+            NBTTagCompound nested = new NBTTagCompound();
+            if (!writeToNBT(nested, part, backupWorld, includeNBT, includeEntities, true)) throw new IllegalStateException("Region write failed");
+            NBTTagCompound entry = new NBTTagCompound();
+            entry.setString("Name", region.name);
+            entry.setTag("Schematic", nested);
+            entries.appendTag(entry);
+        }
+        return entries;
+    }
+
+    /** Download payload of the independent regions (compressed), or null for schematics without them. */
+    public static byte[] regionPayload(ISchematic schematic) throws java.io.IOException {
+        NBTTagList entries = new SchematicAlpha().regionEntries(schematic, null, true, true);
+        if (entries == null) return null;
+        NBTTagCompound tag = new NBTTagCompound();
+        tag.setInteger("Version", 1);
+        tag.setTag("Regions", entries);
+        return net.minecraft.nbt.CompressedStreamTools.compress(tag);
+    }
+
+    /** The downloaded flat schematic with its independent regions restored from a region payload. */
+    public static ISchematic withRegionPayload(ISchematic merged, byte[] payload) throws java.io.IOException {
+        NBTTagCompound tag = LitematicaNBTReader.readFromStream(new java.io.ByteArrayInputStream(payload));
+        LitematicaNBTReader.clearLongArrayStore();
+        if (tag.getInteger("Version") != 1) throw new java.io.IOException("Unsupported region payload");
+        return new SchematicAlpha().independent(merged.getIcon(), merged.getWidth(), merged.getHeight(), merged.getLength(),
+            merged.getOrigin(), merged.getRegions(), tag.getTagList("Regions", Constants.NBT.TAG_COMPOUND));
+    }
+
     @Override
     public boolean writeToNBT(NBTTagCompound tagCompound, ISchematic schematic, World backupWorld) {
         return writeToNBT(tagCompound, schematic, backupWorld, SchematicFormat.saveNBT, SchematicFormat.saveEntities);
@@ -106,10 +171,12 @@ public class SchematicAlpha extends SchematicFormat {
 
     boolean writeToNBT(NBTTagCompound tagCompound, ISchematic schematic, World backupWorld,
         boolean includeNBT, boolean includeEntities, boolean extended) {
-        NBTTagCompound tagCompoundIcon = new NBTTagCompound();
         ItemStack icon = schematic.getIcon();
-        icon.writeToNBT(tagCompoundIcon);
-        tagCompound.setTag(Names.NBT.ICON, tagCompoundIcon);
+        if (icon != null) {
+            NBTTagCompound tagCompoundIcon = new NBTTagCompound();
+            icon.writeToNBT(tagCompoundIcon);
+            tagCompound.setTag(Names.NBT.ICON, tagCompoundIcon);
+        }
 
         tagCompound.setShort(Names.NBT.WIDTH, (short) schematic.getWidth());
         tagCompound.setShort(Names.NBT.LENGTH, (short) schematic.getLength());
@@ -187,13 +254,19 @@ public class SchematicAlpha extends SchematicFormat {
         }
 
         tagCompound.setString(Names.NBT.MATERIALS, Names.NBT.FORMAT_ALPHA);
-        SchematicBlockIds.write(tagCompound, localBlocks, extraBlocks, extended || SchematicRegions.requiresExtended(schematic) || !schematic.getOrigin().isZero());
+        SchematicBlockIds.write(tagCompound, localBlocks, extraBlocks, extended || SchematicRegions.requiresExtended(schematic)
+            || !schematic.getOrigin().isZero() || com.github.lunatrius.schematica.world.storage.SchematicCopies.independent(schematic));
         SchematicRegions.write(tagCompound, schematic);
         SchematicOrigins.write(tagCompound, schematic.getOrigin());
         tagCompound.setByteArray(Names.NBT.DATA, localMetadata);
         tagCompound.setTag(Names.NBT.ENTITIES, entityList);
         tagCompound.setTag(Names.NBT.TILE_ENTITIES, tileEntitiesList);
         tagCompound.setTag(Names.NBT.MAPPING_SCHEMATICA, nbtMapping);
+        NBTTagList regionEntries = regionEntries(schematic, backupWorld, includeNBT, includeEntities);
+        if (regionEntries != null) {
+            tagCompound.setInteger(REGION_DATA + "Version", 1);
+            tagCompound.setTag(REGION_DATA, regionEntries);
+        }
         final NBTTagCompound extendedMetadata = event.extendedMetadata;
         if (!extendedMetadata.hasNoTags()) {
             tagCompound.setTag(Names.NBT.EXTENDED_METADATA, extendedMetadata);
