@@ -74,6 +74,9 @@ public class ClientProxy extends CommonProxy {
     @Override public void remoteEditStatus(com.github.lunatrius.schematica.network.message.MessageEditStatus status) {
         MINECRAFT.func_152344_a(() -> com.github.lunatrius.schematica.handler.client.RemoteEditClient.INSTANCE.status(status));
     }
+    @Override public void runSaveCallback(Runnable callback) {
+        MINECRAFT.func_152344_a(callback);
+    }
     public static ForgeDirection orientation = ForgeDirection.UNKNOWN;
     public static int rotationRender = 0;
     /** The currently active/selected schematic (for tools, printer, control GUI). */

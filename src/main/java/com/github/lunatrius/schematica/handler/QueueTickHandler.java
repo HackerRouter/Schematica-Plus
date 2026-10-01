@@ -3,7 +3,6 @@ package com.github.lunatrius.schematica.handler;
 import java.util.ArrayDeque;
 import java.util.Queue;
 
-import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.server.MinecraftServer;
@@ -11,6 +10,7 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ChatComponentTranslation;
 import net.minecraft.world.World;
 
+import com.github.lunatrius.schematica.SchematicaPlus;
 import com.github.lunatrius.schematica.reference.Names;
 import com.github.lunatrius.schematica.reference.Reference;
 import com.github.lunatrius.schematica.task.TaskRegistry;
@@ -45,11 +45,8 @@ public class QueueTickHandler {
         clientPending = serverPending = false;
     }
 
-    @SubscribeEvent
-    public void onClientTick(TickEvent.ClientTickEvent event) {
-        if (event.phase != TickEvent.Phase.END || !clientPending) return;
-        Minecraft mc = Minecraft.getMinecraft();
-        processQueue(true, mc.theWorld, mc.thePlayer);
+    public void clientTick(World world, EntityPlayer player) {
+        if (clientPending) processQueue(true, world, player);
     }
 
     @SubscribeEvent
@@ -104,7 +101,7 @@ public class QueueTickHandler {
                 com.github.lunatrius.schematica.world.schematic.SchematicFileSnapshot snapshot =
                     com.github.lunatrius.schematica.world.schematic.SchematicFileSnapshot.capture(container.schematic);
                 java.util.function.Consumer<com.github.lunatrius.schematica.world.schematic.SchematicFileSnapshot> memory = container.memory;
-                Minecraft.getMinecraft().func_152344_a(() -> memory.accept(snapshot));
+                SchematicaPlus.proxy.runSaveCallback(() -> memory.accept(snapshot));
                 return;
             }
             java.io.File saved = SchematicFormat.saveToFile(container.file, container.schematic, container.world,
@@ -131,7 +128,7 @@ public class QueueTickHandler {
                 if (container.completed != null) {
                     java.util.function.Consumer<java.io.File> completed = container.completed;
                     java.io.File result = written;
-                    Minecraft.getMinecraft().func_152344_a(() -> completed.accept(result));
+                    SchematicaPlus.proxy.runSaveCallback(() -> completed.accept(result));
                 }
             }
             updatePending();

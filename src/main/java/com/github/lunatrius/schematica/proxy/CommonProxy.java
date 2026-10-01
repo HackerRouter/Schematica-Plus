@@ -52,6 +52,8 @@ public abstract class CommonProxy {
 
     public void remoteEditStatus(com.github.lunatrius.schematica.network.message.MessageEditStatus status) {}
 
+    public void runSaveCallback(Runnable callback) { callback.run(); }
+
     public void preInit(FMLPreInitializationEvent event) {
         GTNH = Loader.isModLoaded("dreamcraft");
         Reference.logger = event.getModLog();

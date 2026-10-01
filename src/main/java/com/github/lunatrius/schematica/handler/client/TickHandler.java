@@ -51,6 +51,7 @@ public class TickHandler {
                 ClientProxy.isPendingReset = false;
             }
             WorldHandler.INSTANCE.updateWorld(this.minecraft);
+            com.github.lunatrius.schematica.handler.QueueTickHandler.INSTANCE.clientTick(this.minecraft.theWorld, this.minecraft.thePlayer);
             com.github.lunatrius.schematica.client.world.GridPlacements.INSTANCE.tick(this.minecraft);
             com.github.lunatrius.schematica.client.verifier.VerificationManager.INSTANCE.tick(this.minecraft);
             com.github.lunatrius.schematica.client.gui.material.MaterialLists.tick();
