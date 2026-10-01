@@ -29,6 +29,7 @@ public class SchematicUpdater implements IWorldAccess {
     private void markBlocksForUpdate(final int x0, final int y0, final int z0, final int x1, final int y1,
         final int z1) {
         RendererSchematicGlobal.INSTANCE.markDirtyAllSchematics(x0, y0, z0, x1, y1, z1);
+        com.github.lunatrius.schematica.client.verifier.VerificationManager.INSTANCE.changed(x0, y0, z0, x1, y1, z1);
     }
 
     @Override

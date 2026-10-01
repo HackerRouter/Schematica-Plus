@@ -404,6 +404,7 @@ public class ClientProxy extends CommonProxy {
     }
 
     public static void clearWorldState() {
+        com.github.lunatrius.schematica.client.verifier.VerificationManager.INSTANCE.clear();
         com.github.lunatrius.schematica.client.renderer.hud.BlockInfoHud.INSTANCE.clear();
         AreaSelections.clear();
         RenderLayerSettings.RANGE.load(null);

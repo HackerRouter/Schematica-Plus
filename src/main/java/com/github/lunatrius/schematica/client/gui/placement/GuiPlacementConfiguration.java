@@ -154,7 +154,8 @@ public final class GuiPlacementConfiguration extends UiScreen {
             mouse -> { if (orientation != null) transform(orientation.cycleMirror(mouse == 1)); });
         reset = button("litematica.gui.button.schematic_placement.reset_sub_region_placements", () -> updateRegions(() -> placement.resetSubregions(null)));
         materials = button("litematica.gui.button.material_list", () -> mc.displayGuiScreen(new GuiSchematicMaterials(this, placement)));
-        verifier = unavailable(button("litematica.gui.button.schematic_verifier", () -> {}));
+        verifier = button("litematica.gui.button.schematic_verifier", () -> mc.displayGuiScreen(
+            new com.github.lunatrius.schematica.client.gui.GuiSchematicVerifier(this, placement)));
         placements = addButton("litematica.gui.button.change_menu.show_schematic_placements", this::closeScreen);
         list = controls.add(new UiRowList<>(regions, (entry, index) -> new RegionRow(entry.name(), index), 11));
         search = controls.add(new UiTextField(fontRendererObj, 256, text -> { regions.setQuery(text); list.sync(); }));

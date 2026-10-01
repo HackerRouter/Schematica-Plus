@@ -54,6 +54,7 @@ public class SchematicWorld extends World {
     private SubRegionPlacements subregions;
     private java.util.BitSet visibleRegionBlocks;
     private int placementRevision;
+    private int contentRevision;
     private PlacementSettings placementSettings = PlacementSettings.DEFAULT;
 
     public PlacementSettings placementSettings() { return placementSettings; }
@@ -71,6 +72,7 @@ public class SchematicWorld extends World {
 
     public SubRegionPlacements subregions() { return subregions; }
     public int placementRevision() { return placementRevision; }
+    public int contentRevision() { return contentRevision; }
     public boolean hasEnabledRegions() { return subregions == null || subregions.hasEnabled(); }
 
     public void selectSubregion(String name) {
@@ -247,7 +249,10 @@ public class SchematicWorld extends World {
 
     @Override
     public boolean setBlock(int x, int y, int z, Block block, int metadata, int flags) {
-        return this.schematic.setBlock(x, y, z, block, metadata);
+        boolean different = this.schematic.getBlock(x, y, z) != block || this.schematic.getBlockMetadata(x, y, z) != metadata;
+        boolean changed = this.schematic.setBlock(x, y, z, block, metadata);
+        if (changed && different) { placementRevision++; contentRevision++; }
+        return changed;
     }
 
     @Override

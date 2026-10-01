@@ -425,3 +425,15 @@ schematica.ui.task.cancel_save=Stop reading before the file is written. Final fi
 schematica.ui.task.cancel_commands=Stop sending commands. Commands already sent cannot be recalled; server execution is not confirmed.
 schematica.ui.task.cancel_edit=Stop placing blocks and entities, then finish updates for blocks already placed. Existing changes remain.
 schematica.message.save.cancelled=Cancelled saving %s; no file was written.
+
+schematica.ui.verifier.ready=Start verification to compare this placement with the client world.
+schematica.ui.verifier.paused=Paused: %s / %s positions checked
+schematica.ui.verifier.skipped=Unreadable positions: %s (incomplete)
+schematica.ui.verifier.changed=Placement or range changed. Start verification again.
+schematica.ui.verifier.unavailable=Load and enable the placement in a world before verifying.
+schematica.ui.verifier.bounds=The verification range must fit within world bounds (Y 0..255) and the 16,777,216-block limit.
+schematica.ui.verifier.failed=Verification stopped after an error. See the log.
+schematica.ui.verifier.comparison=Compares block registry IDs and metadata; tile NBT and entities are not compared. Unloaded chunks wait for loading. World updates trigger rechecks.
+schematica.ui.task.backend.analysis=Client-side verification
+schematica.ui.task.stage.verify=Checking chunks
+schematica.ui.task.cancel_verifier=Pause verification and keep its results. Resume from the placement's verifier screen.

@@ -394,7 +394,7 @@ public class GuiModConfig extends UiScreen {
                     panel.layout(root.bounds());
                     input.pushModal(panel);
                 }));
-            } else if (entry.draft.property.getName().equals("blockInfoLinesAlignment")
+            } else if ((entry.draft.property.getName().equals("blockInfoLinesAlignment") || entry.draft.property.getName().equals("infoHudAlignment"))
                 && BlockInfoHudSettings.CATEGORY.equals(entry.category)) {
                 editor = add(new UiButton(() -> UiTranslations.format(HudAlignment.parse(entry.draft.text()).translationKey()),
                     button -> {

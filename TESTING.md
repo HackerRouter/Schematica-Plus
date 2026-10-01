@@ -788,10 +788,58 @@ These checks supersede Phase 12's Simple-editor and bounding-box expectations.
   disconnect during capture/editing; old jobs must disappear and release their
   world references. Other players' tasks must not appear in this player's list.
   Client and integrated-server capture must run on their owning tick thread.
-- Scope: this page tracks queued area saves and world edits in this process.
+- Scope: this page tracks queued area saves, world edits and verifier scans in this process.
   It does not query tasks on a remote server. Material scans still belong to
   their material screen; synchronous source-file saves are not queued tasks.
 - Automated tests cover immutable progress publication, owner/dimension filters,
   stale handles, cancellation/write races, edit phases, command preflight/busy
   rejection and queue cleanup. Native GUI, actual world writes and save-file
   cancellation checks above remain unexecuted by the agent.
+
+
+## Schematic verifier: backend and results UI
+
+- Reference: Litematica GuiSchematicVerifier, WidgetListSchematicVerificationResults,
+  WidgetSchematicVerificationResult and SchematicVerifier. Open a placement's
+  configuration, then Schematic Verifier. Compare the two control rows, category
+  colors, 22-pixel rows, expected/found item columns, count sorting and Ignore.
+  Narrow screens wrap controls; row text clips and full IDs/metadata appear in
+  tooltips. Shared labels and HUD options use the upstream translation keys.
+- Start with a small blueprint containing correct, missing, extra, wrong-block
+  and wrong-metadata positions. Air/air must not count as correct material. All
+  shows non-ignored errors; each filter shows its own category. Click the three
+  headers to sort and reverse. Ignore one exact expected/found pair; another
+  metadata pair remains visible. Reset ignored must restore current results.
+- Scan a large placement, close the screen and open Task Manager. Work continues
+  on client ticks with a shared 4 ms budget. Remove pauses verification while
+  retaining its data. Reopen the verifier and Resume; no double counts. Reset
+  data removes the task and releases the scan. Completed scans leave Task Manager.
+- Use shifted/rotated/mirrored placements, negative coordinates, overlapping and
+  disabled subregions, and separated regions with unloaded chunks in the gaps.
+  Check All and Render Layers for X/Y/Z and the legacy placement layer. Only
+  included cells require loaded chunks. No client chunk should be force-loaded;
+  unloaded included cells remain pending, not missing or correct.
+- Load an empty real chunk and an unloaded one. The former is valid air data;
+  the latter must wait for actual data. A block whose read hook fails increments
+  the unreadable/incomplete count and logs at most three details per scan.
+- Fix errors while scanning and after completion. Client world update events
+  queue affected chunks for bounded rechecks; old counts are replaced, including
+  unreadable positions that become readable. Pause, change blocks and Resume.
+- Move, rotate, reload, disable or edit the placement, or change its layer range.
+  Old results must be cleared with a restart notice. Unload the placement, change
+  dimensions and disconnect; tasks/results must not survive into another world.
+- Lock/unlock a placement or select a different subregion without modifying it;
+  these UI operations must preserve verification data.
+- Toggle Info HUD. It defaults to bottom right, scale 1, offsets 1/1. Configure
+  infoHudAlignment/Scale/OffsetX/OffsetY in Info Overlays, restart and verify they
+  persist. Check F1, open menus and all GUI scales; other HUD/GL state must remain
+  intact. The existing top-right Block Info Lines settings remain independent.
+- Scope: compares registry IDs and metadata. Tile NBT, entity contents and modern
+  block-tag equivalence are not compared. This phase includes a status HUD; 3D
+  error markers, selected-position overlays and marker hover panels remain future
+  work. Results update from client world notifications, not server NBT queries.
+- Automated coverage checks classifications, exact-pair ignores, cropped bounds,
+  negative/chunk coordinates, finite work budgets, unloaded chunks and gaps,
+  replacement counting, updates during partial scans, failed reads, allocation
+  limits and HUD configuration/translation persistence. Native GUI, lifecycle
+  integration and GTNH in-game checks above remain unexecuted by the agent.

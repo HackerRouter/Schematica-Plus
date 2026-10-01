@@ -48,6 +48,7 @@ public class TickHandler {
                 ClientProxy.isPendingReset = false;
             }
             WorldHandler.INSTANCE.updateWorld(this.minecraft);
+            com.github.lunatrius.schematica.client.verifier.VerificationManager.INSTANCE.tick(this.minecraft);
             SchematicWorld schematic = ClientProxy.schematic;
             if (this.minecraft.thePlayer != null && schematic != null && schematic.isRenderingEnabled()) {
                 this.minecraft.mcProfiler.startSection("printer");
