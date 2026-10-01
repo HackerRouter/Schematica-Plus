@@ -1168,3 +1168,17 @@ These checks supersede Phase 12's Simple-editor and bounding-box expectations.
   singleplayer and a server with command permission.
 - Version placements are not written to LoadedSchematics.json; a schematic file that was
   already loaded by the user stays loaded when the project closes.
+
+## VCS follow-ups: origin outline, multi-line description, entity deletion
+
+- With a project open, turn off area selection box rendering: the magenta 4 px project
+  origin outline stays visible (depth tested). Area box lines are thicker in project mode
+  and thinner (1.5 px) outside it.
+- Save Version description box: type several lines with Enter, wrap long text, scroll with
+  the wheel, select with mouse drag / Shift+arrows, Ctrl+A/C/X/V, Ctrl+Backspace/Delete,
+  Home/End and Ctrl+Home/End, Page Up/Down. More than 8 lines or 512 characters is refused.
+  The saved description keeps its line breaks in the version hover and the info panel.
+- Singleplayer: Delete tool (area and placement target), VCS Delete Area, Entire Volume
+  pasting and delete-by-placement remove mobs, items, item frames, paintings and minecarts
+  inside the deleted boxes but never players; Fill and Replace keep entities. On a server
+  using commands, the chat says entities are kept.

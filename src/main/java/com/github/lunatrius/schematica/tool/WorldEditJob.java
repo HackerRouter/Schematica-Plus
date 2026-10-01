@@ -35,6 +35,8 @@ public final class WorldEditJob extends WorldEditTask {
     public final ReplaceBehavior replace;
     /** For DELETE_PLACEMENT: which non-air world blocks inside the placement are removed. */
     public PlacementDeletionMode deletion = PlacementDeletionMode.ENTIRE_VOLUME;
+    private List<com.github.lunatrius.schematica.api.SchematicRegion> entityRemoval = new ArrayList<>();
+    private boolean entitiesRemoved;
     private final Block replacement, target;
     private final int replacementMeta, targetMeta;
     private short[] blocks;
@@ -134,6 +136,21 @@ public final class WorldEditJob extends WorldEditTask {
         return deletion.deletes(schematicAir, existing == schematic && world.getBlockMetadata(wx, wy, wz) == (metadata[index] & 15));
     }
 
+    /** TaskFillArea.directRemoveEntities: non-player entities inside these world boxes are removed before deleting. */
+    public void removeEntitiesIn(List<com.github.lunatrius.schematica.api.SchematicRegion> boxes) { entityRemoval = new ArrayList<>(boxes); }
+
+    public boolean removesEntities() { return !entityRemoval.isEmpty(); }
+
+    private void removeEntities(WorldServer world) {
+        for (com.github.lunatrius.schematica.api.SchematicRegion box : entityRemoval) {
+            net.minecraft.util.AxisAlignedBB bounds = net.minecraft.util.AxisAlignedBB.getBoundingBox(box.minX, box.minY, box.minZ,
+                box.maxX + 1, box.maxY + 1, box.maxZ + 1);
+            for (Object found : world.getEntitiesWithinAABBExcludingEntity(null, bounds)) {
+                if (!(found instanceof net.minecraft.entity.player.EntityPlayer)) ((Entity) found).setDead();
+            }
+        }
+    }
+
     public interface CellFilter { boolean keep(int x, int y, int z); }
 
     /** Drops world positions the filter rejects, such as those outside the render layer range. */
@@ -186,6 +203,10 @@ public final class WorldEditJob extends WorldEditTask {
     /** Process one cell/entity, returning true only when all phases are finished. */
     public boolean step(WorldServer world) {
         if (cancelled && phase < 2) { phase = 2; cursor = 0; }
+        if (!entitiesRemoved) {
+            entitiesRemoved = true;
+            if (!cancelled) removeEntities(world);
+        }
         if (phase < 3) {
             if (cursor == volume) { cursor = 0; phase++; return false; }
             int index = cursor++;

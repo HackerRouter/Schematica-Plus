@@ -7,6 +7,7 @@ import net.minecraft.client.gui.GuiScreen;
 import com.github.lunatrius.schematica.client.gui.framework.UiButton;
 import com.github.lunatrius.schematica.client.gui.framework.UiLabel;
 import com.github.lunatrius.schematica.client.gui.framework.UiScreen;
+import com.github.lunatrius.schematica.client.gui.framework.UiTextArea;
 import com.github.lunatrius.schematica.client.gui.framework.UiTextField;
 import com.github.lunatrius.schematica.client.gui.framework.UiTranslations;
 import com.github.lunatrius.schematica.client.projects.SchematicProject;
@@ -17,7 +18,8 @@ import com.github.lunatrius.schematica.client.projects.SchematicVersion;
 public final class GuiVersionPrompt extends UiScreen {
     private final SchematicProject project;
     private UiLabel nameLabel, descriptionLabel;
-    private UiTextField name, description;
+    private UiTextField name;
+    private UiTextArea description;
     private UiButton ok, reset, cancel;
 
     public GuiVersionPrompt(GuiScreen parent, SchematicProject project) {
@@ -30,7 +32,7 @@ public final class GuiVersionPrompt extends UiScreen {
         nameLabel = root.add(new UiLabel(() -> UiTranslations.format("litematica.gui.label.schematic_projects.version_name")));
         name = root.add(new UiTextField(fontRendererObj, SchematicVersion.MAX_DESCRIPTION_LENGTH, value -> {}));
         descriptionLabel = root.add(new UiLabel(() -> UiTranslations.format("litematica.gui.label.schematic_projects.version_description")));
-        description = root.add(new UiTextField(fontRendererObj, SchematicVersion.MAX_DESCRIPTION_LENGTH, value -> {}));
+        description = root.add(new UiTextArea(fontRendererObj, SchematicVersion.MAX_DESCRIPTION_LENGTH, 8, value -> {}));
         ok = addButton("malilib.gui.button.ok", this::submit);
         reset = addButton("malilib.gui.button.reset", this::fill);
         cancel = addButton("malilib.gui.button.cancel", this::closeScreen);
@@ -56,11 +58,11 @@ public final class GuiVersionPrompt extends UiScreen {
         nameLabel.setBounds(x, y, w, 12);
         name.setBounds(x, y + 12, w, 20);
         descriptionLabel.setBounds(x, y + 38, w, 12);
-        description.setBounds(x, y + 50, w, 20);
+        description.setBounds(x, y + 50, w, 40);
         int bx = x;
         for (UiButton button : new UiButton[] {ok, reset, cancel}) {
             int bw = Math.max(40, fontRendererObj.getStringWidth(button.label()) + 10);
-            button.setBounds(bx, y + 80, bw, 20);
+            button.setBounds(bx, y + 100, bw, 20);
             bx += bw + 2;
         }
     }

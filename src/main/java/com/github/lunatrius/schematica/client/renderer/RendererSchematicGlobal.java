@@ -236,7 +236,7 @@ public class RendererSchematicGlobal {
             int lineCount = RenderHelper.getLineCount();
             if (quadCount > 0 || lineCount > 0) {
                 GL11.glDisable(GL11.GL_TEXTURE_2D);
-                GL11.glLineWidth(3.0f);
+                GL11.glLineWidth(com.github.lunatrius.schematica.client.projects.SchematicProjects.hasProjectOpen() ? 3.0f : 1.5f);
                 GL11.glEnableClientState(GL11.GL_VERTEX_ARRAY);
                 GL11.glEnableClientState(GL11.GL_COLOR_ARRAY);
                 if (quadCount > 0) {
@@ -273,13 +273,6 @@ public class RendererSchematicGlobal {
                     RenderHelper.drawCuboidOutline(start.toVector3f(), end.toVector3f(), RenderHelper.LINE_ALL, r, g, b, selected ? 1 : 0.5f);
                     RenderHelper.drawCuboidSurface(start.toVector3f(), end.toVector3f(), RenderHelper.QUAD_ALL, r, g, b, selected ? 0.4f : 0.25f);
                 }
-            }
-
-            com.github.lunatrius.schematica.client.projects.SchematicProject project = com.github.lunatrius.schematica.client.projects.SchematicProjects.current();
-            if (project != null) {
-                project.origin().toVector3d(start).sub(extra);
-                end.set(start).add(1, 1, 1);
-                RenderHelper.drawCuboidOutline(start.toVector3f(), end.toVector3f(), RenderHelper.LINE_ALL, 1, 0.0625f, 1, 1);
             }
 
             if (area != null && area.manualOrigin() != null) {
@@ -322,10 +315,42 @@ public class RendererSchematicGlobal {
             GL11.glPopMatrix();
         }
 
+        this.profiler.endStartSection("projects");
+        renderProjectOrigin();
         this.profiler.endSection();
 
         GL11.glDisable(GL11.GL_BLEND);
         GL11.glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+        GL11.glPopMatrix();
+    }
+
+    /** OverlayRenderer render_projects: the open project's origin, whether or not area boxes are shown. */
+    private void renderProjectOrigin() {
+        com.github.lunatrius.schematica.client.projects.SchematicProject project = com.github.lunatrius.schematica.client.projects.SchematicProjects.current();
+        if (project == null) return;
+        GL11.glEnable(GL11.GL_BLEND);
+        GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
+        GL11.glDisable(GL11.GL_LIGHTING);
+        GL11.glPushMatrix();
+        GL11.glTranslated(-this.cameraPosition.x, -this.cameraPosition.y, -this.cameraPosition.z);
+        RenderHelper.createBuffers();
+        Vector3d start = new Vector3d(), end = new Vector3d();
+        project.origin().toVector3d(start).sub(0.001, 0.001, 0.001);
+        end.set(start).add(1.002, 1.002, 1.002);
+        RenderHelper.drawCuboidOutline(start.toVector3f(), end.toVector3f(), RenderHelper.LINE_ALL, 1, 0.0625f, 1, 1);
+        int lineCount = RenderHelper.getLineCount();
+        if (lineCount > 0) {
+            GL11.glDisable(GL11.GL_TEXTURE_2D);
+            GL11.glLineWidth(4.0f);
+            GL11.glEnableClientState(GL11.GL_VERTEX_ARRAY);
+            GL11.glEnableClientState(GL11.GL_COLOR_ARRAY);
+            GL11.glVertexPointer(3, 0, RenderHelper.getLineVertexBuffer());
+            GL11.glColorPointer(4, 0, RenderHelper.getLineColorBuffer());
+            GL11.glDrawArrays(GL11.GL_LINES, 0, lineCount);
+            GL11.glDisableClientState(GL11.GL_COLOR_ARRAY);
+            GL11.glDisableClientState(GL11.GL_VERTEX_ARRAY);
+            GL11.glEnable(GL11.GL_TEXTURE_2D);
+        }
         GL11.glPopMatrix();
     }
 

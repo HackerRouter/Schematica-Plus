@@ -97,6 +97,18 @@ public class SchematicWorld extends World {
         return relative.atMinimum(origin.x, origin.y, origin.z);
     }
 
+    /** AreaSelection.fromPlacement: the world boxes of the enabled sub-regions, or the whole placement. */
+    public java.util.List<com.github.lunatrius.schematica.api.SchematicRegion> enabledRegionBounds() {
+        java.util.List<com.github.lunatrius.schematica.api.SchematicRegion> boxes = new java.util.ArrayList<>();
+        if (subregions == null) {
+            boxes.add(new com.github.lunatrius.schematica.api.SchematicRegion(name, position.x, position.y, position.z,
+                position.x + getWidth() - 1, position.y + getHeight() - 1, position.z + getLength() - 1));
+        } else {
+            for (SubRegionPlacements.Region region : subregions.regions()) if (region.enabled) boxes.add(subregionBounds(region.name()));
+        }
+        return boxes;
+    }
+
     public com.github.lunatrius.schematica.api.SchematicRegion subregionBounds(String name) {
         com.github.lunatrius.schematica.api.SchematicRegion box = subregions.get(name).bounds();
         com.github.lunatrius.schematica.api.SchematicOrigin origin = originPosition();

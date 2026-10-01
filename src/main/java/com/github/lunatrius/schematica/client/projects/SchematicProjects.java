@@ -7,7 +7,6 @@ import java.io.IOException;
 import java.io.Reader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.util.ArrayList;
 import java.util.List;
 
 import net.minecraft.client.Minecraft;
@@ -27,7 +26,6 @@ import com.github.lunatrius.schematica.client.selection.AreaSelections;
 import com.github.lunatrius.schematica.client.world.SchematicLibrary;
 import com.github.lunatrius.schematica.client.world.SchematicSourceData;
 import com.github.lunatrius.schematica.client.world.SchematicWorld;
-import com.github.lunatrius.schematica.client.world.SubRegionPlacements;
 import com.github.lunatrius.schematica.handler.ConfigurationHandler;
 import com.github.lunatrius.schematica.internal.lunatriuscore.util.vector.Vector3i;
 import com.github.lunatrius.schematica.proxy.ClientProxy;
@@ -292,19 +290,7 @@ public final class SchematicProjects {
         SchematicPrinter.INSTANCE.refresh();
     }
 
-    /** AreaSelection.fromPlacement: the world boxes of a placement's enabled sub-regions. */
-    static List<SchematicRegion> boxes(SchematicWorld world) {
-        List<SchematicRegion> boxes = new ArrayList<>();
-        if (world.subregions() != null) {
-            for (SubRegionPlacements.Region region : world.subregions().regions()) {
-                if (region.enabled) boxes.add(world.subregionBounds(region.name()));
-            }
-        } else {
-            boxes.add(new SchematicRegion(world.name, world.position.x, world.position.y, world.position.z,
-                world.position.x + world.getWidth() - 1, world.position.y + world.getHeight() - 1, world.position.z + world.getLength() - 1));
-        }
-        return boxes;
-    }
+    static List<SchematicRegion> boxes(SchematicWorld world) { return world.enabledRegionBounds(); }
 
     // --- Session: the open project per world, like the per-world schematic_projects_manager data.
 

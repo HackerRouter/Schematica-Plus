@@ -35,6 +35,9 @@ public final class CommandEditQueue {
     public synchronized void submit(WorldEditJob next, World targetWorld) {
         if (job != null) throw new MessageException("schematica.message.edit.busy");
         next.validateCommandFallback(); // Preflight before sending the first command.
+        if (next.removesEntities() && Minecraft.getMinecraft().thePlayer != null) {
+            Minecraft.getMinecraft().thePlayer.addChatMessage(new ChatComponentTranslation("schematica.message.edit.entities_require_singleplayer"));
+        }
         task = TaskRegistry.INSTANCE.start(next.player, next.dimension, next.taskKind(), TaskRegistry.Backend.COMMANDS,
             next.x + ", " + next.y + ", " + next.z);
         job = next; world = targetWorld; cursor = 0; sent = 0; delay = 0;

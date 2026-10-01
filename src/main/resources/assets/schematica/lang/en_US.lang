@@ -191,6 +191,7 @@ schematica.message.edit.permissions=[Schematica Plus] Editing requires creative 
 schematica.message.edit.updates_require_singleplayer=Pasting without block updates requires singleplayer. Minecraft 1.7.10 server commands cannot suppress updates.
 schematica.message.edit.nbt_requires_singleplayer=1.7.10 chat commands cannot safely transfer schematic NBT. Use singleplayer, or disable block NBT and entities before pasting.
 schematica.message.edit.command_too_long=The block name exceeds the Minecraft 1.7.10 command length limit.
+schematica.message.edit.entities_require_singleplayer=1.7.10 commands cannot remove entities, so entities in the deleted area are kept. Use singleplayer to remove them.
 schematica.message.edit.tile_failed=Cannot create the tile entity at %s, %s, %s.
 schematica.message.printer.finished=[Schematica Plus] Printing complete. Printer stopped.
 schematica.message.transform.hanging_entities=Cannot rotate wall-mounted entities onto a floor or ceiling.

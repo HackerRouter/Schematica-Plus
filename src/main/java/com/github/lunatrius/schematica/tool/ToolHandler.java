@@ -66,8 +66,11 @@ public class ToolHandler {
             return;
         }
         Block replacement = mode == ToolMode.DELETE ? Blocks.air : mode.getPrimaryBlock();
-        submit(player, areaJob(player, mode == ToolMode.REPLACE_BLOCK ? WorldEditJob.Kind.REPLACE : WorldEditJob.Kind.FILL, targetBoxes(mode),
-            replacement, mode == ToolMode.DELETE ? 0 : mode.getPrimaryMeta(), mode.getSecondaryBlock(), mode.getSecondaryMeta()), null);
+        java.util.List<com.github.lunatrius.schematica.api.SchematicRegion> boxes = targetBoxes(mode);
+        WorldEditJob job = areaJob(player, mode == ToolMode.REPLACE_BLOCK ? WorldEditJob.Kind.REPLACE : WorldEditJob.Kind.FILL, boxes,
+            replacement, mode == ToolMode.DELETE ? 0 : mode.getPrimaryMeta(), mode.getSecondaryBlock(), mode.getSecondaryMeta());
+        if (mode == ToolMode.DELETE) job.removeEntitiesIn(boxes);
+        submit(player, job, null);
     }
 
     private static WorldEditJob pasteJob(EntityPlayer player, SchematicWorld schematic) {
@@ -128,6 +131,21 @@ public class ToolHandler {
         }
     }
 
+    /** PositionUtils.getClampedBox: the parts of the boxes inside the render layer range and world height. */
+    static java.util.List<com.github.lunatrius.schematica.api.SchematicRegion> clampToLayers(java.util.List<com.github.lunatrius.schematica.api.SchematicRegion> boxes) {
+        com.github.lunatrius.schematica.client.world.RenderLayerRange range = com.github.lunatrius.schematica.client.world.RenderLayerSettings.RANGE;
+        java.util.List<com.github.lunatrius.schematica.api.SchematicRegion> clamped = new java.util.ArrayList<>();
+        for (com.github.lunatrius.schematica.api.SchematicRegion box : boxes) {
+            long[] min = {box.minX, Math.max(0, box.minY), box.minZ}, max = {box.maxX, Math.min(255, box.maxY), box.maxZ};
+            int axis = range.axis().ordinal();
+            min[axis] = Math.max(min[axis], range.minimum());
+            max[axis] = Math.min(max[axis], range.maximum());
+            if (min[0] > max[0] || min[1] > max[1] || min[2] > max[2]) continue;
+            clamped.add(new com.github.lunatrius.schematica.api.SchematicRegion(box.name, (int) min[0], (int) min[1], (int) min[2], (int) max[0], (int) max[1], (int) max[2]));
+        }
+        return clamped;
+    }
+
     /** Pastes a placement, as pastePlacementToWorld. */
     public static boolean paste(EntityPlayer player, SchematicWorld placement, Runnable onSuccess) {
         return request(player, TaskRegistry.Kind.PASTE, p -> submit(p, pasteJob(p, placement), onSuccess));
@@ -136,7 +154,11 @@ public class ToolHandler {
     /** Clears whole boxes, as deleteSelectionVolumes. */
     public static boolean deleteBoxes(EntityPlayer player, java.util.List<com.github.lunatrius.schematica.api.SchematicRegion> boxes, Runnable onSuccess) {
         return request(player, TaskRegistry.Kind.DELETE,
-            p -> submit(p, areaJob(p, WorldEditJob.Kind.FILL, boxes, Blocks.air, 0, null, 0), onSuccess));
+            p -> {
+                WorldEditJob job = areaJob(p, WorldEditJob.Kind.FILL, boxes, Blocks.air, 0, null, 0);
+                job.removeEntitiesIn(boxes);
+                submit(p, job, onSuccess);
+            });
     }
 
     /** Removes world blocks inside a placement by mode, within the render layer range (deleteBlocksByPlacement). */
@@ -149,6 +171,7 @@ public class ToolHandler {
             job.capture(placement.getSchematic(), false, false);
             job.deletion = mode;
             job.restrict((x, y, z) -> y >= 0 && y < 256 && com.github.lunatrius.schematica.client.world.RenderLayerSettings.RANGE.contains(x, y, z));
+            job.removeEntitiesIn(clampToLayers(placement.enabledRegionBounds()));
             submit(p, job, null);
         });
     }

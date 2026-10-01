@@ -191,6 +191,7 @@ schematica.message.edit.permissions=[Schematica Plus] 编辑需要创造模式�
 schematica.message.edit.updates_require_singleplayer=不发送方块更新的粘贴需要单人游戏。Minecraft 1.7.10 的服务器命令无法禁止这些更新。
 schematica.message.edit.nbt_requires_singleplayer=1.7.10 聊天命令无法安全传输原理图 NBT。请使用单人游戏，或在粘贴前关闭方块 NBT 和实体。
 schematica.message.edit.command_too_long=方块注册名超出了 Minecraft 1.7.10 的命令长度限制。
+schematica.message.edit.entities_require_singleplayer=1.7.10 的命令无法移除实体，删除区域内的实体会保留。需要移除实体请在单人游戏中操作。
 schematica.message.edit.tile_failed=无法在 %s, %s, %s 创建方块实体。
 schematica.message.printer.finished=[Schematica Plus] 打印已完成，打印机已停止。
 schematica.message.transform.hanging_entities=无法将壁挂实体旋转到地板或天花板上。
