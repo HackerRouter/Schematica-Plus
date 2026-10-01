@@ -279,7 +279,7 @@ public class SchematicPrinter {
         return true;
     }
 
-    private ForgeDirection[] getSolidSides(World world, int x, int y, int z) {
+    ForgeDirection[] getSolidSides(World world, int x, int y, int z) {
         List<ForgeDirection> list = new ArrayList<>();
 
         for (ForgeDirection side : ForgeDirection.VALID_DIRECTIONS) {
@@ -334,7 +334,7 @@ public class SchematicPrinter {
         return false;
     }
 
-    private boolean isBlacklisted(Block block, ItemStack itemStack) {
+    boolean isBlacklisted(Block block, ItemStack itemStack) {
         if (block instanceof IFluidBlock || block instanceof BlockLiquid) {
             return true;
         }
@@ -413,7 +413,7 @@ public class SchematicPrinter {
         return success;
     }
 
-    private boolean placeBlock(World world, EntityPlayer player, ItemStack itemStack, int x, int y, int z, int side,
+    boolean placeBlock(World world, EntityPlayer player, ItemStack itemStack, int x, int y, int z, int side,
         Vec3 hitVec) {
         boolean success = !ForgeEventFactory.onPlayerInteract(player, Action.RIGHT_CLICK_BLOCK, x, y, z, side, world)
             .isCanceled();
@@ -428,7 +428,7 @@ public class SchematicPrinter {
         return success;
     }
 
-    private void syncSneaking(EntityClientPlayerMP player, boolean isSneaking) {
+    void syncSneaking(EntityClientPlayerMP player, boolean isSneaking) {
         player.setSneaking(isSneaking);
         player.sendQueue.addToSendQueue(new C0BPacketEntityAction(player, isSneaking ? 1 : 2));
     }
@@ -441,7 +441,7 @@ public class SchematicPrinter {
         return swapToItem(inventory, itemStack, swapSlots, false);
     }
 
-    private boolean swapToItem(InventoryPlayer inventory, ItemStack itemStack, boolean swapSlots, boolean matchNBT) {
+    boolean swapToItem(InventoryPlayer inventory, ItemStack itemStack, boolean swapSlots, boolean matchNBT) {
         int slot = getInventorySlotWithItem(inventory, itemStack, matchNBT);
 
         if (this.minecraft.playerController.isInCreativeMode()

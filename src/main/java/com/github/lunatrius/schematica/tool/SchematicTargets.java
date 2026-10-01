@@ -122,6 +122,19 @@ public final class SchematicTargets {
         return null;
     }
 
+    /** The real world block trace from the camera (RayTraceUtils.getRayTraceFromEntity). */
+    public static MovingObjectPosition vanilla(double range, boolean fluids) {
+        EntityLivingBase camera = camera();
+        if (camera == null || Minecraft.getMinecraft().theWorld == null) return null;
+        Vec3 eye = camera.getPosition(1), look = camera.getLook(1);
+        return Minecraft.getMinecraft().theWorld.rayTraceBlocks(copy(eye, 0, 0, 0), eye.addVector(look.xCoord * range, look.yCoord * range, look.zCoord * range), fluids);
+    }
+
+    /** Litematica's WorldUtils.getValidBlockRange: reach + 1 unless easyPlaceVanillaReach is set. */
+    public static double validBlockRange() {
+        return Minecraft.getMinecraft().playerController.getBlockReachDistance() + (com.github.lunatrius.schematica.handler.ConfigurationHandler.easyPlaceVanillaReach ? 0 : 1);
+    }
+
     public static ForgeDirection facing() {
         switch (MathHelper.floor_double(Minecraft.getMinecraft().thePlayer.rotationYaw * 4.0F / 360.0F + 0.5D) & 3) {
             case 0: return ForgeDirection.SOUTH;

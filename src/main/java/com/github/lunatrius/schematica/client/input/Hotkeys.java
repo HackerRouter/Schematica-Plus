@@ -69,6 +69,11 @@ public final class Hotkeys {
             "toggleOverlayOutlineRendering", "toggleOverlaySideRendering", "togglePlacementBoxesRendering", "toggleSchematicBlockRendering",
             "toggleTranslucentRendering", "toggleVerifierOverlayRendering", "invertGhostBlockRenderState", "invertOverlayRenderState"}) add(id, normal());
         add("renderOverlayThroughBlocks", extra(), Keyboard.KEY_RCONTROL);
+        add("easyPlaceUseKey", extra(), -99);
+        add("easyPlaceFirst", normal());
+        add("easyPlaceToggle", normal());
+        add("togglePlacementRestriction", normal());
+        add("toggleSignTextPaste", normal());
         add("cloneSelection", normal());
         add("saveAreaAsInMemorySchematic", normal());
         add("schematicPlacementRotation", modifier());

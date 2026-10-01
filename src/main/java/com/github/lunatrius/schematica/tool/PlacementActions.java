@@ -142,7 +142,7 @@ public final class PlacementActions {
 
     /** Litematica's RayTraceUtils.getTargetedPosition (sneak for the adjacent position), or the player position. */
     static Vector3i targetedPosition() {
-        double range = mc().playerController.getBlockReachDistance() + 1;
+        double range = SchematicTargets.validBlockRange();
         MovingObjectPosition hit = ToolManager.trace(range);
         if (hit != null && hit.typeOfHit == MovingObjectPosition.MovingObjectType.BLOCK) {
             Vector3i point = new Vector3i(hit.blockX, hit.blockY, hit.blockZ);

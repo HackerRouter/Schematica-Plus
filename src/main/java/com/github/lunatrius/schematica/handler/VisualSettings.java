@@ -92,6 +92,7 @@ public final class VisualSettings {
         ConfigurationHandler.loadConfiguration();
         config.save();
         printToggle(toggle.prettyName(), value);
+        com.github.lunatrius.schematica.client.renderer.hud.StatusInfoHud.startOverride();
         return value;
     }
 

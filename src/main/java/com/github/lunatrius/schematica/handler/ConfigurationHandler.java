@@ -83,6 +83,11 @@ public class ConfigurationHandler {
     public static String sortType = SORT_TYPE_DEFAULT;
     public static String toolItem = TOOL_ITEM_DEFAULT;
     public static boolean toolItemEnabled = true, executeRequireTool = true, pickBlockEnabled = true, cloneAtOriginalPosition, reverseOperationModeDirection;
+    public static boolean easyPlaceMode, easyPlaceHoldEnabled = true, easyPlaceFirst = true, easyPlaceSwingHand = true, easyPlaceVanillaReach;
+    public static boolean placementRestriction, signTextPaste = true, statusInfoHud, statusInfoHudAuto = true;
+    public static int easyPlaceSwapInterval;
+    /** MaLiLib MessageOutputType for Easy Place and Placement Restriction warnings: none, message or actionbar. */
+    public static String placementRestrictionWarn = "actionbar";
     public static boolean pasteWithoutUpdates = PASTE_WITHOUT_UPDATES_DEFAULT;
     public static boolean pasteOnlyAir = PASTE_ONLY_AIR_DEFAULT;
     public static boolean printerEnabled = PRINTER_ENABLED_DEFAULT;
@@ -340,6 +345,28 @@ public class ConfigurationHandler {
         Property cloneAtOrigin = configuration.get(Names.Config.Category.TOOL, "cloneAtOriginalPosition", false);
         cloneAtOrigin.setLanguageKey("litematica.config.generic.name.cloneAtOriginalPosition");
         cloneAtOriginalPosition = cloneAtOrigin.getBoolean(false);
+        easyPlaceMode = toolFlag("easyPlaceMode", false);
+        easyPlaceHoldEnabled = toolFlag("easyPlaceHoldEnabled", true);
+        easyPlaceFirst = toolFlag("easyPlaceFirst", true);
+        easyPlaceSwingHand = toolFlag("easyPlaceSwingHand", true);
+        easyPlaceVanillaReach = toolFlag("easyPlaceVanillaReach", false);
+        placementRestriction = toolFlag("placementRestriction", false);
+        signTextPaste = toolFlag("signTextPaste", true);
+        Property swapInterval = configuration.get(Names.Config.Category.TOOL, "easyPlaceSwapInterval", 0);
+        swapInterval.setLanguageKey("litematica.config.generic.name.easyPlaceSwapInterval");
+        swapInterval.setMinValue(0).setMaxValue(10000);
+        easyPlaceSwapInterval = Math.max(0, Math.min(10000, swapInterval.getInt(0)));
+        Property warn = configuration.get(Names.Config.Category.TOOL, "placementRestrictionWarn", "actionbar");
+        warn.setLanguageKey("litematica.config.generic.name.placementRestrictionWarn");
+        warn.setValidValues(new String[] {"none", "message", "actionbar"});
+        placementRestrictionWarn = java.util.Arrays.asList("none", "message", "actionbar").contains(warn.getString()) ? warn.getString() : "actionbar";
+        warn.set(placementRestrictionWarn);
+        Property status = configuration.get(BlockInfoHudSettings.CATEGORY, "statusInfoHud", false);
+        status.setLanguageKey("litematica.config.info_overlays.name.statusInfoHud");
+        statusInfoHud = status.getBoolean(false);
+        Property statusAuto = configuration.get(BlockInfoHudSettings.CATEGORY, "statusInfoHudAuto", true);
+        statusAuto.setLanguageKey("litematica.config.info_overlays.name.statusInfoHudAuto");
+        statusInfoHudAuto = statusAuto.getBoolean(true);
         Property reverseModes = configuration.get(Names.Config.Category.TOOL, "reverseOperationModeDirection", false);
         reverseModes.setLanguageKey("litematica.config.generic.name.reverseOperationModeDirection");
         reverseOperationModeDirection = reverseModes.getBoolean(false);
@@ -407,6 +434,12 @@ public class ConfigurationHandler {
      * Server-safe: does not reference any client-only classes.
      * Supports formats: "minecraft:stick", "minecraft:dye@4"
      */
+    private static boolean toolFlag(String name, boolean fallback) {
+        Property property = configuration.get(Names.Config.Category.TOOL, name, fallback);
+        property.setLanguageKey("litematica.config.generic.name." + name);
+        return property.getBoolean(fallback);
+    }
+
     private static boolean toolBoolean(String name) {
         Property property = configuration.get(Names.Config.Category.TOOL, name, true);
         property.setLanguageKey("litematica.config.generic.name." + name);

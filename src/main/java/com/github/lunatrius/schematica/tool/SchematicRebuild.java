@@ -61,10 +61,12 @@ public final class SchematicRebuild {
     /** Returns whether the press is consumed; like Litematica, only an edit that was carried out consumes it. */
     public static boolean click(boolean attack) {
         if (ToolManager.getCurrentMode() != ToolMode.REBUILD) {
-            if (!attack && Hotkeys.boundOnlyTo("pickBlockLast", mc().gameSettings.keyBindUseItem.getKeyCode())) {
+            if (attack) return false;
+            if (Hotkeys.boundOnlyTo("pickBlockLast", mc().gameSettings.keyBindUseItem.getKeyCode())) {
                 com.github.lunatrius.schematica.handler.client.InputHandler.INSTANCE.pickBlock(false);
             }
-            return false;
+            return com.github.lunatrius.schematica.handler.ConfigurationHandler.placementRestriction
+                && com.github.lunatrius.schematica.client.printer.PlacementRestriction.handle(mc());
         }
         if (ClientProxy.loadedSchematics.isEmpty()) return false;
         try {
@@ -80,7 +82,7 @@ public final class SchematicRebuild {
         boolean direction = Hotkeys.held("schematicEditBreakPlaceDirection");
         boolean except = !direction && Hotkeys.held("schematicEditBreakAllExcept");
         boolean all = !direction && !except && Hotkeys.held("schematicEditBreakPlaceAll");
-        SchematicTargets.Hit target = SchematicTargets.closest(direction || except || all ? RANGE : mc().playerController.getBlockReachDistance() + 1, true);
+        SchematicTargets.Hit target = SchematicTargets.closest(direction || except || all ? RANGE : SchematicTargets.validBlockRange(), true);
         if (target == null) return false;
         Owner owner = owner(target.world, target.x, target.y, target.z);
         if (owner == null) return false;
@@ -255,21 +257,28 @@ public final class SchematicRebuild {
             Block primary = ToolMode.REBUILD.getPrimaryBlock();
             return primary == null ? null : CellState.of(primary, ToolMode.REBUILD.getPrimaryMeta());
         }
+        int[] at = target.adjacent();
+        return simulate(player, stack, target.side, (float) (target.hitX - target.x), (float) (target.hitY - target.y), (float) (target.hitZ - target.z), at[0], at[1], at[2]);
+    }
+
+    /**
+     * The block a block item would place at the given position when clicking a face with the given hit offsets,
+     * simulated in a detached one-block world; null for items that do not place blocks.
+     */
+    public static CellState simulate(EntityPlayer player, ItemStack stack, int side, float hx, float hy, float hz, int x, int y, int z) {
         if (!(stack.getItem() instanceof ItemBlock)) return null;
         ItemBlock item = (ItemBlock) stack.getItem();
-        int[] at = target.adjacent();
-        float hx = (float) (target.hitX - target.x), hy = (float) (target.hitY - target.y), hz = (float) (target.hitZ - target.z);
         int meta = item.getMetadata(stack.getItemDamage());
         CellState.Scratch world = CellState.Scratch.create();
         double px = player.posX, py = player.posY, pz = player.posZ;
         try {
-            meta = item.field_150939_a.onBlockPlaced(world, 0, 0, 0, target.side, hx, hy, hz, meta);
-            player.posX = px - at[0]; player.posY = py - at[1]; player.posZ = pz - at[2];
-            if (!item.placeBlockAt(stack.copy(), player, world, 0, 0, 0, target.side, hx, hy, hz, meta)) return CellState.of(item.field_150939_a, meta);
+            meta = item.field_150939_a.onBlockPlaced(world, 0, 0, 0, side, hx, hy, hz, meta);
+            player.posX = px - x; player.posY = py - y; player.posZ = pz - z;
+            if (!item.placeBlockAt(stack.copy(), player, world, 0, 0, 0, side, hx, hy, hz, meta)) return CellState.of(item.field_150939_a, meta);
             CellState state = world.state();
             return state.isAir() ? CellState.of(item.field_150939_a, meta) : state;
         } catch (RuntimeException | LinkageError error) {
-            Reference.logger.warn("Could not simulate placing {} into the schematic", item.field_150939_a, error);
+            Reference.logger.warn("Could not simulate placing {}", item.field_150939_a, error);
             return CellState.of(item.field_150939_a, meta);
         } finally {
             player.posX = px; player.posY = py; player.posZ = pz;

@@ -348,6 +348,7 @@ public class ClientProxy extends CommonProxy {
         MinecraftForge.EVENT_BUS.register(new OverlayHandler());
         MinecraftForge.EVENT_BUS.register(new com.github.lunatrius.schematica.handler.client.ModInfoHandler());
         MinecraftForge.EVENT_BUS.register(WorldHandler.INSTANCE);
+        MinecraftForge.EVENT_BUS.register(com.github.lunatrius.schematica.client.printer.SignTextPaste.INSTANCE);
     }
 
     @Override
@@ -467,6 +468,7 @@ public class ClientProxy extends CommonProxy {
         java.util.Set<String> names = new java.util.HashSet<>();
         for (SchematicWorld other : loadedSchematics) if (other != world) names.add(other.name);
         while (names.contains(world.name)) world.name = base + " #" + suffix++;
+        com.github.lunatrius.schematica.client.renderer.hud.StatusInfoHud.startOverride();
         return world;
     }
 

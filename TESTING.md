@@ -1068,3 +1068,28 @@ These checks supersede Phase 12's Simple-editor and bounding-box expectations.
   deleteSelectionBox removes a selected manual origin first, otherwise the selected
   box, with the upstream messages. toolEnabledToggle and pickBlockToggle print the
   toggle message.
+
+## Easy Place, Placement Restriction, Sign Text Paste and Status Info HUD
+
+- easyPlaceToggle (or the Generic config) enables Easy Place. Right click
+  (easyPlaceUseKey) on a schematic block picks its item (hotbar/inventory swap, or
+  set in creative) and places it at that position; holding the key places every
+  block the crosshair moves over. easyPlaceFirst (hotkey toggle) places the nearest
+  schematic block; off, the farthest one before the real block (layers "at once").
+  Real blocks in front, occupied positions, wrong items and repeated clicks within
+  2 s show "Action prevented by the Easy Place mode" per placementRestrictionWarn.
+- Check torches/levers/ladders (need a solid side; refused otherwise), logs, slabs
+  (upper/lower and completing a double slab), stairs, repeaters (extra clicks),
+  doors, carpets, GT/mod blocks, signs, buckets/cells for fluids, survival and
+  creative, easyPlaceSwapInterval with high ping, easyPlaceVanillaReach on servers.
+  Facing-based blocks (furnaces, stairs, pistons) take the player's facing: there is
+  no accurate placement protocol on 1.7.10 servers.
+- togglePlacementRestriction: using items is blocked where the schematic has air
+  near its regions, outside the layer range, into occupied positions, with the
+  wrong item, or (for blocks with known orientation rules) with the wrong
+  orientation; the warning follows placementRestrictionWarn.
+- toggleSignTextPaste: placing a sign on a schematic sign opens the editor filled
+  with the schematic text (first 15 characters per line); closing sends it.
+- statusInfoHud shows Easy Place / restriction state, layer mode and renderer
+  switches at the bottom left; with statusInfoHudAuto it appears for 10 s after
+  creating a placement or toggling a render switch while something is hidden.

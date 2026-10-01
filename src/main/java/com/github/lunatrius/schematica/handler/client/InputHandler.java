@@ -73,6 +73,11 @@ public class InputHandler {
                 return false;
             case "pickBlockToggle": ToolManager.toggleConfig("pickBlockEnabled", true); break;
             case "schematicEditReplaceSelection": return com.github.lunatrius.schematica.tool.SchematicRebuild.replaceSelection();
+            case "easyPlaceUseKey": return com.github.lunatrius.schematica.client.printer.EasyPlace.handle();
+            case "easyPlaceFirst": ToolManager.toggleConfig("easyPlaceFirst", true); break;
+            case "easyPlaceToggle": ToolManager.toggleConfig("easyPlaceMode", true); break;
+            case "togglePlacementRestriction": ToolManager.toggleConfig("placementRestriction", true); break;
+            case "toggleSignTextPaste": ToolManager.toggleConfig("signTextPaste", true); break;
             case "cloneSelection": return com.github.lunatrius.schematica.tool.PlacementActions.cloneSelection();
             case "saveAreaAsInMemorySchematic": return com.github.lunatrius.schematica.tool.PlacementActions.saveInMemory();
             case "schematicPlacementRotation": return com.github.lunatrius.schematica.tool.PlacementActions.rotate();
@@ -142,7 +147,7 @@ public class InputHandler {
     public boolean pickBlock(boolean closest) {
         if (minecraft.thePlayer == null || !shouldPickBlock()) return false;
         try {
-            double range = minecraft.playerController.getBlockReachDistance() + 1;
+            double range = SchematicTargets.validBlockRange();
             SchematicTargets.Hit hit = closest ? SchematicTargets.closest(range, false) : SchematicTargets.furthestBeforeVanilla(range);
             return hit != null && pickBlock(hit);
         } catch (Exception error) {
