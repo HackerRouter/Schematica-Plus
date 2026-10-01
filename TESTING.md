@@ -993,6 +993,10 @@ These checks supersede Phase 12's Simple-editor and bounding-box expectations.
   source must update consistently, other sources must not. Edits over 4096 cells
   recompose the placements instead of patching cells; check selection, layers,
   verifier and material list afterwards.
+- While a modifier is held, the targeted schematic face shows the upstream overlay
+  (break/place green, break-except red, replace orange; editable in Colors). The
+  directional overlay highlights the center/edge zone that decides the direction,
+  for all six faces and all four player facings, through blocks.
 - schematicEditReplaceSelection copies loaded real blocks that differ inside the
   area selection (at most 1,048,576 cells) into the schematic(s) shown there.
 - Edited sources show an orange name and notice icon in Loaded Schematics until

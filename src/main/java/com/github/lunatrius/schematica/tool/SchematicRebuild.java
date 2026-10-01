@@ -52,10 +52,10 @@ public final class SchematicRebuild {
 
     private SchematicRebuild() {}
 
-    static final class Target {
-        final SchematicWorld world;
-        final int x, y, z, side;
-        final double hitX, hitY, hitZ, distance;
+    public static final class Target {
+        public final SchematicWorld world;
+        public final int x, y, z, side;
+        public final double hitX, hitY, hitZ, distance;
 
         Target(SchematicWorld world, MovingObjectPosition hit, double distance) {
             this.world = world;
@@ -65,7 +65,7 @@ public final class SchematicRebuild {
             this.distance = distance;
         }
 
-        ForgeDirection face() { return ForgeDirection.getOrientation(side); }
+        public ForgeDirection face() { return ForgeDirection.getOrientation(side); }
         int[] adjacent() { ForgeDirection d = face(); return new int[] {x + d.offsetX, y + d.offsetY, z + d.offsetZ}; }
     }
 
@@ -195,7 +195,7 @@ public final class SchematicRebuild {
         return true;
     }
 
-    static Target trace(double range) {
+    public static Target trace(double range) {
         Minecraft mc = mc();
         EntityLivingBase camera = mc.renderViewEntity == null ? mc.thePlayer : mc.renderViewEntity;
         if (camera == null || mc.theWorld == null) return null;
@@ -254,7 +254,7 @@ public final class SchematicRebuild {
 
     private static boolean inRange(int x, int y, int z) { return RenderLayerSettings.RANGE.contains(x, y, z); }
 
-    private static ForgeDirection facing() {
+    public static ForgeDirection facing() {
         switch (MathHelper.floor_double(mc().thePlayer.rotationYaw * 4.0F / 360.0F + 0.5D) & 3) {
             case 0: return ForgeDirection.SOUTH;
             case 1: return ForgeDirection.WEST;
