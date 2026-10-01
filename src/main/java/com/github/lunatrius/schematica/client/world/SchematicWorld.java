@@ -236,7 +236,7 @@ public class SchematicWorld extends World {
     public SchematicWorld(ISchematic schematic, String filename) {
         this(schematic);
         // Strip any known schematic extension from the display name
-        this.name = filename.replaceAll("(?i)\\.(schematic|litematic|schemplus)$", "");
+        this.name = filename.replaceAll("(?i)\\.(schematic|litematic|schemplus|nbt)$", "");
     }
 
     private boolean tracingRenderedBlocks;

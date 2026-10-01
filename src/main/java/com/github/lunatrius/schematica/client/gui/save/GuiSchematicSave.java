@@ -40,6 +40,8 @@ public final class GuiSchematicSave extends GuiSchematicBrowser {
     private UiButton save;
     private UiButton options;
     private final UiCheckBox[] checkboxes = new UiCheckBox[4];
+    /** Save from schematic world, visible blocks only, include support blocks (index 0 is Ignore entities). */
+    private final boolean[] captureFlags = new boolean[4];
     private String problem = "";
 
     public GuiSchematicSave(GuiScreen parent) { this(parent, AreaSelections.library().selected() == null ? "" : AreaSelections.library().selected().name()); }
@@ -68,10 +70,11 @@ public final class GuiSchematicSave extends GuiSchematicBrowser {
         for (int i = 0; i < keys.length; i++) {
             final int index = i;
             checkboxes[i] = root.add(new UiCheckBox(() -> UiTranslations.format("litematica.gui.label.schematic_save.checkbox." + keys[index]),
-                () -> index == 0 && !SchematicFormat.saveEntities,
-                value -> { if (index == 0) SchematicFormat.saveEntities = !value; }));
-            if (i != 0) unavailable(checkboxes[i]);
+                () -> index == 0 ? !SchematicFormat.saveEntities : captureFlags[index],
+                value -> { if (index == 0) SchematicFormat.saveEntities = !value; else captureFlags[index] = value; }));
         }
+        checkboxes[1].setTooltip(UiTranslations.format("litematica.gui.label.schematic_save.hover_info.save_from_schematic_world").split("\n"));
+        checkboxes[3].setTooltip(UiTranslations.format("litematica.gui.label.schematic_save.hover_info.support_blocks").split("\n"));
     }
 
     @Override
@@ -154,7 +157,10 @@ public final class GuiSchematicSave extends GuiSchematicBrowser {
             setStatus(UiTranslations.format("schematica.ui.save.disabled"));
             return;
         }
-        if (SchematicaPlus.proxy.saveSchematic(mc.thePlayer, file.getParentFile(), file.getName(), world, selection)) {
+        com.github.lunatrius.schematica.world.chunk.SchematicContainer.Options capture = new com.github.lunatrius.schematica.world.chunk.SchematicContainer.Options(
+            captureFlags[1] ? new com.github.lunatrius.schematica.client.world.PlacementCaptureSource(ClientProxy.loadedSchematics) : null,
+            captureFlags[2], captureFlags[3]);
+        if (SchematicaPlus.proxy.saveSchematic(mc.thePlayer, file.getParentFile(), file.getName(), world, selection, null, capture)) {
             WorldHandler.INSTANCE.saveSession();
             setStatus(UiTranslations.format("litematica.message.schematic_save_task_created"));
         } else {

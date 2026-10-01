@@ -55,6 +55,9 @@ public class GuiSchematicMaterials extends UiScreen {
     private static final String[] HEADERS = { "item", "total", "missing", "available" };
     private final SchematicWorld schematic;
     private final Area area;
+    /** A schematic file that is not placed: its name and the sub-regions to count (all when empty). */
+    private final String fileName;
+    private final List<com.github.lunatrius.schematica.api.SchematicRegion> fileRegions;
     private final AreaSelectionLibrary library;
     private final WorldClient openedWorld;
     private final MaterialListModel<MaterialItemKey> materials = new MaterialListModel<>();
@@ -95,6 +98,21 @@ public class GuiSchematicMaterials extends UiScreen {
         super(parent, UiTranslations.format("litematica.gui.title.material_list.placement", schematic == null ? "-" : schematic.name));
         this.schematic = schematic;
         area = null; library = null;
+        fileName = null; fileRegions = null;
+        openedWorld = Minecraft.getMinecraft().theWorld;
+        materials.restoreSort(ConfigurationHandler.sortType);
+    }
+
+    /** MaterialListSchematic: the items of a loaded schematic file, without comparing against the world. */
+    public GuiSchematicMaterials(GuiScreen parent, SchematicWorld schematic, String name,
+        List<com.github.lunatrius.schematica.api.SchematicRegion> regions) {
+        super(parent, UiTranslations.format("litematica.gui.title.material_list.schematic", name,
+            regions.isEmpty() ? Math.max(1, schematic.getSchematic().getRegions().size()) : regions.size(),
+            Math.max(1, schematic.getSchematic().getRegions().size())));
+        this.schematic = schematic;
+        area = null; library = null;
+        fileName = name;
+        fileRegions = new ArrayList<>(regions);
         openedWorld = Minecraft.getMinecraft().theWorld;
         materials.restoreSort(ConfigurationHandler.sortType);
     }
@@ -104,6 +122,7 @@ public class GuiSchematicMaterials extends UiScreen {
         this.area = area;
         library = AreaSelections.library();
         schematic = null;
+        fileName = null; fileRegions = null;
         openedWorld = Minecraft.getMinecraft().theWorld;
         materials.restoreSort(ConfigurationHandler.sortType);
     }
@@ -118,6 +137,7 @@ public class GuiSchematicMaterials extends UiScreen {
                 layoutWidgets();
             }));
         scope.setTooltip(UiTranslations.format(area == null ? "schematica.ui.material.scope" : "schematica.ui.area.analysis_scope"));
+        scope.setVisible(fileName == null);
         UiButton hide = root.add(new UiButton(() -> toggleLabel("hide_available", materials.hideAvailable()), button -> {
             materials.setHideAvailable(!materials.hideAvailable());
             refreshRows();
@@ -164,6 +184,7 @@ public class GuiSchematicMaterials extends UiScreen {
 
     private boolean validContext() {
         if (openedWorld == null || mc.theWorld != openedWorld || mc.thePlayer == null) return false;
+        if (fileName != null) return true;
         return area != null ? AreaSelections.available(library) && library.contains(area) && SchematicaPlus.proxy.isSaveEnabled
             : schematic != null && ClientProxy.loadedSchematics.contains(schematic);
     }
@@ -192,6 +213,7 @@ public class GuiSchematicMaterials extends UiScreen {
     private long layerRevision;
 
     private boolean geometryChanged() {
+        if (fileName != null) return false;
         if (renderLayers && layerRevision != RenderLayerSettings.RANGE.revision()) return true;
         if (area != null) return !Arrays.equals(geometry, geometry());
         return placementEnabled != schematic.isEnabled() || !Arrays.equals(geometry, geometry()) || source != schematic.getSchematic()
@@ -206,6 +228,11 @@ public class GuiSchematicMaterials extends UiScreen {
         materials.setEntries(Collections.emptyList());
         refreshRows();
         if (validContext()) {
+            if (fileName != null) {
+                scan = new com.github.lunatrius.schematica.client.gui.material.SchematicFileMaterialScan(schematic, fileRegions, mc.thePlayer);
+                updateButtons();
+                return;
+            }
             geometry = geometry();
             layerRevision = RenderLayerSettings.RANGE.revision();
             if (area != null) {
@@ -291,13 +318,14 @@ public class GuiSchematicMaterials extends UiScreen {
         multiplier.setBounds(width - 52, 26, 40, 16);
         info.setBounds(width - 23, 10, 11, 11);
         int total = multiplierWidth + 130;
-        for (UiButton button : primary) total += button == primary.get(2) || button == primary.get(3)
+        for (UiButton button : primary) if (button.isVisible()) total += button == primary.get(2) || button == primary.get(3)
             ? buttonWidth(button) : fontRendererObj.getStringWidth(button.label());
         for (UiButton button : secondary) total += fontRendererObj.getStringWidth(button.label());
         boolean narrow = width < total;
         int x = 12;
         int y = 24;
         for (UiButton button : primary) {
+            if (!button.isVisible()) continue;
             int w = buttonWidth(button);
             int right = y == 24 ? multiplierX - 4 : width - 12;
             if (x > 12 && x + w > right) { x = 12; y += 22; }
@@ -379,7 +407,7 @@ public class GuiSchematicMaterials extends UiScreen {
         if (System.nanoTime() < noticeUntil) return notice;
         long[] counts = materials.progress();
         if (counts[4] > 0 || unverified > 0 || skipped > 0) return incompleteText();
-        if (area != null) return UiTranslations.format(LABEL + "total", counts[0]);
+        if (area != null || fileName != null) return UiTranslations.format(LABEL + "total", counts[0]);
         if (counts[0] == 0) return UiTranslations.format(LABEL + "total", 0);
         String done = UiTranslations.format(LABEL + "progress.done", percent(counts[1], counts[0]));
         String missing = UiTranslations.format(LABEL + "progress.missing", percent(counts[2], counts[0]));
@@ -402,7 +430,7 @@ public class GuiSchematicMaterials extends UiScreen {
             ? MaterialListExport.Format.JSON
             : isShiftKeyDown() ? MaterialListExport.Format.CSV : MaterialListExport.Format.TXT;
         try {
-            String title = (area == null ? schematic.name : area.name()) + " (" + UiTranslations.format(renderLayers
+            String title = fileName != null ? fileName : (area == null ? schematic.name : area.name()) + " (" + UiTranslations.format(renderLayers
                 ? "litematica.gui.label.block_info_list_type.render_layers" : "litematica.gui.label.block_info_list_type.all") + ")";
             String text = MaterialListExport.format(materials, title, format, key -> {
                 NBTTagCompound tag = new NBTTagCompound();

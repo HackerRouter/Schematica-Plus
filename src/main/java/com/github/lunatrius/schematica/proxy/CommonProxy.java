@@ -146,11 +146,13 @@ public abstract class CommonProxy {
         return world;
     }
 
-    public void copyChunkToSchematic(final ISchematic schematic, final World world, final int chunkX, final int chunkZ,
-        final int minX, final int maxX, final int minY, final int maxY, final int minZ, final int maxZ) {
-        // Try to use the server-side world for tile entity data, since client-side TEs
-        // often lack full NBT (e.g. inventories are not synced to the client).
-        final World serverWorld = getServerWorld(world);
+    public void copyChunkToSchematic(final SchematicContainer container, final int chunkX, final int chunkZ) {
+        final ISchematic schematic = container.schematic;
+        final int minX = container.minX, maxX = container.maxX, minY = container.minY, maxY = container.maxY;
+        final int minZ = container.minZ, maxZ = container.maxZ;
+        // Block entities come from the server world when possible, since client-side ones often lack full NBT.
+        final com.github.lunatrius.schematica.world.chunk.CaptureSource source = container.source != null ? container.source
+            : new com.github.lunatrius.schematica.world.chunk.WorldCaptureSource(container.world, getServerWorld(container.world));
 
         final int localMinX = minX < (chunkX << 4) ? 0 : (minX & 15);
         final int localMaxX = maxX > ((chunkX << 4) + 15) ? 15 : (maxX & 15);
@@ -170,25 +172,20 @@ public abstract class CommonProxy {
                     if (!schematic.containsBlock(localX, localY, localZ)) continue;
 
                     try {
-                        final Block block = world.getBlock(x, y, z);
-                        final int metadata = world.getBlockMetadata(x, y, z);
+                        if (container.visibleOnly && !com.github.lunatrius.schematica.world.chunk.CaptureSource.exposed(source, x, y, z)
+                            && !(container.supportBlocks && com.github.lunatrius.schematica.world.chunk.CaptureSource.support(source, x, y, z))) {
+                            continue;
+                        }
+                        final Block block = source.block(x, y, z);
+                        final int metadata = source.meta(x, y, z);
                         final boolean success = schematic.setBlock(localX, localY, localZ, block, metadata);
 
                         if (success && block.hasTileEntity(metadata)) {
-                            // Prefer server-side TE for full NBT data (inventories, etc.)
-                            TileEntity tileEntity = serverWorld.getTileEntity(x, y, z);
-                            if (tileEntity == null) {
-                                tileEntity = world.getTileEntity(x, y, z);
-                            }
-                            if (tileEntity != null) {
-                                try {
-                                    final TileEntity reloadedTileEntity = NBTHelper
-                                        .reloadTileEntity(tileEntity, minX, minY, minZ);
-                                    schematic.setTileEntity(localX, localY, localZ, reloadedTileEntity);
-                                } catch (NBTConversionException nce) {
-                                    Reference.logger
-                                        .error("Error while trying to save tile entity '{}'!", tileEntity, nce);
-                                }
+                            try {
+                                final TileEntity tileEntity = source.tile(x, y, z, minX, minY, minZ);
+                                if (tileEntity != null) schematic.setTileEntity(localX, localY, localZ, tileEntity);
+                            } catch (Exception e) {
+                                Reference.logger.error("Error while trying to save tile entity at {} {} {}!", x, y, z, e);
                             }
                         }
                     } catch (Exception e) {
@@ -203,22 +200,16 @@ public abstract class CommonProxy {
         final int maxX1 = localMaxX | (chunkX << 4);
         final int maxZ1 = localMaxZ | (chunkZ << 4);
         final AxisAlignedBB bb = AxisAlignedBB.getBoundingBox(minX1, minY, minZ1, maxX1 + 1, maxY + 1, maxZ1 + 1);
-        final List<Entity> entities = world.getEntitiesWithinAABB(Entity.class, bb);
-        for (Entity entity : entities) {
-            if (!schematic.containsBlock((int) Math.floor(entity.posX) - minX,
-                (int) Math.floor(entity.posY) - minY, (int) Math.floor(entity.posZ) - minZ)) continue;
-            try {
-                final Entity reloadedEntity = NBTHelper.reloadEntity(entity, minX, minY, minZ);
-                schematic.addEntity(reloadedEntity);
-            } catch (NBTConversionException nce) {
-                Reference.logger.error("Error while trying to save entity '{}'!", entity, nce);
+        for (Entity entity : source.entities(bb, minX, minY, minZ)) {
+            if (schematic.containsBlock((int) Math.floor(entity.posX), (int) Math.floor(entity.posY), (int) Math.floor(entity.posZ))) {
+                schematic.addEntity(entity);
             }
         }
     }
 
     public boolean saveSchematic(EntityPlayer player, File directory, String filename, World world, Vector3i from,
         Vector3i to) {
-        return saveSchematic(player, directory, filename, world, from, to, java.util.Collections.emptyList(), com.github.lunatrius.schematica.api.SchematicOrigin.ZERO, null, null);
+        return saveSchematic(player, directory, filename, world, from, to, java.util.Collections.emptyList(), com.github.lunatrius.schematica.api.SchematicOrigin.ZERO, null, null, null);
     }
 
     public boolean saveSchematic(EntityPlayer player, File directory, String filename, World world,
@@ -229,9 +220,16 @@ public abstract class CommonProxy {
     /** Saves the selection; completed later receives the written file, or null when the save failed or was cancelled. */
     public boolean saveSchematic(EntityPlayer player, File directory, String filename, World world,
         com.github.lunatrius.schematica.world.storage.RegionSelection selection, java.util.function.Consumer<File> completed) {
+        return saveSchematic(player, directory, filename, world, selection, completed, null);
+    }
+
+    /** As above, reading through the given options (block source, visible blocks only, support blocks) when not null. */
+    public boolean saveSchematic(EntityPlayer player, File directory, String filename, World world,
+        com.github.lunatrius.schematica.world.storage.RegionSelection selection, java.util.function.Consumer<File> completed,
+        com.github.lunatrius.schematica.world.chunk.SchematicContainer.Options options) {
         return saveSchematic(player, directory, filename, world,
             new Vector3i(selection.minX, selection.minY, selection.minZ), new Vector3i(selection.maxX, selection.maxY, selection.maxZ), selection.localRegions, selection.localOrigin,
-            null, completed);
+            null, completed, options);
     }
 
     /** Captures the selection like a save, but hands the encoded schematic to the client instead of writing a file. */
@@ -239,13 +237,13 @@ public abstract class CommonProxy {
         java.util.function.Consumer<com.github.lunatrius.schematica.world.schematic.SchematicFileSnapshot> memory) {
         return saveSchematic(player, null, name, world,
             new Vector3i(selection.minX, selection.minY, selection.minZ), new Vector3i(selection.maxX, selection.maxY, selection.maxZ), selection.localRegions, selection.localOrigin,
-            java.util.Objects.requireNonNull(memory), null);
+            java.util.Objects.requireNonNull(memory), null, null);
     }
 
     private boolean saveSchematic(EntityPlayer player, File directory, String filename, World world, Vector3i from,
         Vector3i to, java.util.List<com.github.lunatrius.schematica.api.SchematicRegion> regions, com.github.lunatrius.schematica.api.SchematicOrigin origin,
         java.util.function.Consumer<com.github.lunatrius.schematica.world.schematic.SchematicFileSnapshot> memory,
-        java.util.function.Consumer<File> completed) {
+        java.util.function.Consumer<File> completed, com.github.lunatrius.schematica.world.chunk.SchematicContainer.Options options) {
         synchronized (QueueTickHandler.INSTANCE) {
         try {
             if (!QueueTickHandler.INSTANCE.canQueue(player)) {
@@ -282,7 +280,7 @@ public abstract class CommonProxy {
             final SchematicContainer container = new SchematicContainer(
                 schematic,
                 player,
-                getServerWorld(world),
+                options != null && options.source != null ? world : getServerWorld(world),
                 file,
                 minX,
                 maxX,
@@ -292,6 +290,11 @@ public abstract class CommonProxy {
                 maxZ);
             container.memory = memory;
             container.completed = completed;
+            if (options != null) {
+                container.source = options.source;
+                container.visibleOnly = options.visibleOnly;
+                container.supportBlocks = options.supportBlocks;
+            }
             QueueTickHandler.INSTANCE.queueSchematic(container);
 
             return true;

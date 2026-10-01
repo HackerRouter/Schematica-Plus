@@ -11,6 +11,18 @@ import com.github.lunatrius.schematica.reference.Reference;
 
 public class SchematicContainer {
 
+    /** How a save reads blocks: from a source other than the world, only visible blocks, with support blocks. */
+    public static final class Options {
+        public final CaptureSource source;
+        public final boolean visibleOnly, supportBlocks;
+
+        public Options(CaptureSource source, boolean visibleOnly, boolean supportBlocks) {
+            this.source = source;
+            this.visibleOnly = visibleOnly;
+            this.supportBlocks = supportBlocks;
+        }
+    }
+
     public final ISchematic schematic;
     public final EntityPlayer player;
     public final World world;
@@ -20,6 +32,10 @@ public class SchematicContainer {
     public java.util.function.Consumer<com.github.lunatrius.schematica.world.schematic.SchematicFileSnapshot> memory;
     /** Runs on the client thread with the written file, or null if the save failed or was cancelled. */
     public java.util.function.Consumer<File> completed;
+    /** Where blocks are read from; the world unless saving from the schematic placements. */
+    public CaptureSource source;
+    /** Upstream "Visible blocks only" (only blocks with an uncovered face) and "Include support blocks". */
+    public boolean visibleOnly, supportBlocks;
 
     public final int minX;
     public final int maxX;
@@ -72,17 +88,7 @@ public class SchematicContainer {
         }
 
         Reference.logger.debug("Copying chunk at [{},{}] into {}", this.curChunkX, this.curChunkZ, this.file.getName());
-        SchematicaPlus.proxy.copyChunkToSchematic(
-            this.schematic,
-            this.world,
-            this.curChunkX,
-            this.curChunkZ,
-            this.minX,
-            this.maxX,
-            this.minY,
-            this.maxY,
-            this.minZ,
-            this.maxZ);
+        SchematicaPlus.proxy.copyChunkToSchematic(this, this.curChunkX, this.curChunkZ);
 
         this.processedChunks++;
         this.curChunkX++;

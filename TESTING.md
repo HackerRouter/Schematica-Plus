@@ -1237,3 +1237,15 @@ compare with a server that does not have the mod and with each server option off
 - The info panel shows Litematic Version / Vanilla Structure and the Minecraft version from the data
   version for .litematic and .nbt files; other files keep the name, size and date view.
 
+## Load browser material list and save options
+
+- Load screen: Material List on a file opens "Material List for schematic '<name>' (n of m regions)"
+  without loading it; totals equal Missing, Available follows the inventory. Shift+click on a
+  multi-region file asks for the sub-regions first (OK disabled until one is ticked). Rename Schematic
+  changes the .litematic name shown in the info panel; other file types show the edit error.
+- Save Area as Schematic: Save from schematic world with one or two placements overlapping the area
+  saves the placement blocks, chests with contents and entities instead of the world (also with the
+  real world empty there). Visible blocks only on a solid 5x5x5 cube saves only the shell; with
+  Include support blocks, blocks under hidden repeaters/carpets/snow and under visible sand/gravel
+  columns are kept too. Check all three with .schematic, .schemplus and .litematic outputs.
+

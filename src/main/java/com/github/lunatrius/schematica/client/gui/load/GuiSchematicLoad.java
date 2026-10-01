@@ -4,6 +4,10 @@ package com.github.lunatrius.schematica.client.gui.load;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Locale;
 
 import net.minecraft.client.gui.GuiScreen;
 
@@ -15,11 +19,21 @@ import com.github.lunatrius.schematica.client.gui.placement.GuiSchematicLoadedLi
 import com.github.lunatrius.schematica.client.gui.framework.UiCheckBox;
 import com.github.lunatrius.schematica.client.gui.framework.UiSprite;
 import com.github.lunatrius.schematica.client.gui.framework.UiButton;
+import com.github.lunatrius.schematica.api.ISchematic;
+import com.github.lunatrius.schematica.api.SchematicRegion;
+import com.github.lunatrius.schematica.client.gui.GuiStringListSelection;
+import com.github.lunatrius.schematica.client.gui.control.GuiSchematicMaterials;
+import com.github.lunatrius.schematica.client.world.SchematicWorld;
+import com.github.lunatrius.schematica.reference.Reference;
+import com.github.lunatrius.schematica.world.schematic.SchematicFiles;
+import com.github.lunatrius.schematica.world.schematic.SchematicFormat;
 
 public final class GuiSchematicLoad extends GuiSchematicBrowser {
 
     private UiButton load;
     private UiButton renameFile;
+    private UiButton materialList;
+    private UiButton renameSchematic;
     private UiCheckBox createPlacement;
     private boolean placeOnLoad = true;
 
@@ -33,8 +47,9 @@ public final class GuiSchematicLoad extends GuiSchematicBrowser {
             SchematicBrowserModel.Entry entry = selection();
             if (entry != null) activateFile(entry);
         });
-        unavailable(addAction("litematica.gui.button.material_list", () -> {}));
-        unavailable(addAction("litematica.gui.button.rename_schematic", () -> {}));
+        materialList = addAction("litematica.gui.button.material_list", this::materialList);
+        materialList.setTooltip(UiTranslations.format("litematica.gui.button.hover.material_list_shift_to_select_sub_regions"));
+        renameSchematic = addAction("litematica.gui.button.rename_schematic", this::renameSchematic);
         renameFile = addAction("litematica.gui.button.rename_file", this::renameSelectedFile);
         addAction("litematica.gui.button.change_menu.show_loaded_schematics",
             () -> mc.displayGuiScreen(new GuiSchematicLoadedList(this))).setSprite(UiSprite.LOADED_SCHEMATICS);
@@ -65,11 +80,79 @@ public final class GuiSchematicLoad extends GuiSchematicBrowser {
         tickScreen();
     }
 
+    private File selectedFile() {
+        SchematicBrowserModel.Entry entry = selection();
+        if (entry == null || entry.directory) {
+            setStatus(UiTranslations.format("litematica.error.schematic_load.no_schematic_selected"));
+            return null;
+        }
+        try {
+            return browser.readableFile(entry);
+        } catch (IOException e) {
+            fail("litematica.error.schematic_load.cant_read_file", e, entry.name());
+            return null;
+        }
+    }
+
+    /** The items of the selected file without placing it; Shift picks the sub-regions first. */
+    private void materialList() {
+        File file = selectedFile();
+        if (file == null) return;
+        ISchematic schematic = SchematicFormat.readFromFile(file);
+        if (schematic == null) {
+            setStatus(UiTranslations.format("litematica.error.schematic_read_from_file_failed.exception", file.getName()));
+            return;
+        }
+        String name = file.getName().substring(0, file.getName().lastIndexOf('.'));
+        SchematicWorld world = new SchematicWorld(schematic, file.getName());
+        List<SchematicRegion> regions = schematic.getRegions();
+        if (isShiftKeyDown() && regions.size() > 1) {
+            List<String> names = new ArrayList<>();
+            for (SchematicRegion region : regions) names.add(region.name);
+            mc.displayGuiScreen(new GuiStringListSelection(this,
+                UiTranslations.format("litematica.gui.title.material_list.select_schematic_regions", name), names, chosen -> {
+                    List<SchematicRegion> selected = new ArrayList<>();
+                    for (SchematicRegion region : regions) if (chosen.contains(region.name)) selected.add(region);
+                    mc.displayGuiScreen(new GuiSchematicMaterials(this, world, name, selected));
+                }));
+        } else {
+            mc.displayGuiScreen(new GuiSchematicMaterials(this, world, name, Collections.<SchematicRegion>emptyList()));
+        }
+    }
+
+    private void renameSchematic() {
+        File file = selectedFile();
+        if (file == null) return;
+        if (!file.getName().toLowerCase(Locale.ROOT).endsWith(".litematic")) {
+            setStatus(UiTranslations.format("litematica.error.schematic_manager.schematic_edit.unsupported_type"));
+            return;
+        }
+        SchematicFiles.Info info;
+        try {
+            info = SchematicFiles.info(file);
+        } catch (IOException e) {
+            fail("litematica.error.schematic_load.cant_read_file", e, file.getName());
+            return;
+        }
+        prompt(UiTranslations.format("litematica.gui.title.rename_schematic"), info == null ? "" : info.name, value -> {
+            try {
+                SchematicFiles.editLitematicMetadata(file, metadata -> metadata.setString("Name", value));
+                refreshFiles();
+                return null;
+            } catch (IOException e) {
+                Reference.logger.warn("Could not rename the schematic", e);
+                return UiTranslations.format("litematica.error.schematic_load.cant_read_file", file.getName());
+            }
+        });
+    }
+
     @Override
     protected void tickScreen() {
         super.tickScreen();
         SchematicBrowserModel.Entry entry = selection();
         load.setEnabled(SchematicaPlus.proxy.isLoadEnabled && mc.theWorld != null && entry != null && !entry.directory);
         renameFile.setEnabled(entry != null && !entry.directory);
+        materialList.setEnabled(entry != null && !entry.directory && mc.theWorld != null);
+        renameSchematic.setEnabled(entry != null && !entry.directory);
     }
 }
