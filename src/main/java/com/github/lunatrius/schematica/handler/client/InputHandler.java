@@ -11,6 +11,7 @@ import net.minecraftforge.common.ForgeHooks;
 
 
 import com.github.lunatrius.schematica.client.world.RenderLayerSettings;
+import com.github.lunatrius.schematica.handler.VisualSettings;
 import com.github.lunatrius.schematica.client.world.RenderLayerRange;
 import com.github.lunatrius.schematica.SchematicaPlus;
 import com.github.lunatrius.schematica.client.gui.UiDemoScreen;
@@ -67,6 +68,17 @@ public class InputHandler {
             case "pickBlockFirst": return pickBlock();
             case "pickBlockToggle": ToolManager.toggleConfig("pickBlockEnabled"); break;
             case "schematicEditReplaceSelection": return com.github.lunatrius.schematica.tool.SchematicRebuild.replaceSelection();
+            case "toggleAllRendering": renderToggle(VisualSettings.Toggle.ALL, false); break;
+            case "toggleSchematicRendering": renderToggle(VisualSettings.Toggle.SCHEMATIC, false); break;
+            case "toggleSchematicBlockRendering": VisualSettings.toggle(VisualSettings.Toggle.BLOCKS); break;
+            case "toggleOverlayRendering": renderToggle(VisualSettings.Toggle.OVERLAY, true); break;
+            case "toggleOverlayOutlineRendering": renderToggle(VisualSettings.Toggle.OVERLAY_OUTLINES, true); break;
+            case "toggleOverlaySideRendering": renderToggle(VisualSettings.Toggle.OVERLAY_SIDES, true); break;
+            case "toggleTranslucentRendering": renderToggle(VisualSettings.Toggle.TRANSLUCENT, false); break;
+            case "toggleAreaSelectionBoxesRendering": VisualSettings.toggle(VisualSettings.Toggle.AREA_BOXES); break;
+            case "togglePlacementBoxesRendering": VisualSettings.toggle(VisualSettings.Toggle.PLACEMENT_BOXES); break;
+            case "toggleInfoOverlayRendering": VisualSettings.toggle(VisualSettings.Toggle.INFO_OVERLAY); break;
+            case "toggleVerifierOverlayRendering": VisualSettings.toggle(VisualSettings.Toggle.VERIFIER_OVERLAY); break;
             case "executeOperation":
                 if (!com.github.lunatrius.schematica.handler.ConfigurationHandler.executeRequireTool || ToolManager.toolActive()) ToolHandler.onExecute(minecraft.thePlayer);
                 else return false;
@@ -74,6 +86,11 @@ public class InputHandler {
             default: return ToolManager.hotkey(key.id);
         }
         return true;
+    }
+
+    /** Litematica's RenderToggle: rebuilds schematic geometry when turned on, or on every change for geometry baked into chunks. */
+    private void renderToggle(VisualSettings.Toggle toggle, boolean baked) {
+        if (VisualSettings.toggle(toggle) || baked) com.github.lunatrius.schematica.client.renderer.RendererSchematicGlobal.INSTANCE.refresh();
     }
 
     private double layerCoordinate() {
@@ -110,7 +127,7 @@ public class InputHandler {
         if (!com.github.lunatrius.schematica.handler.ConfigurationHandler.pickBlockEnabled) return false;
         try {
             SchematicWorld schematic = ClientProxy.schematic;
-            return schematic != null && schematic.isRenderingEnabled() && minecraft.thePlayer != null
+            return schematic != null && schematic.isRenderingEnabled() && VisualSettings.schematicVisible() && minecraft.thePlayer != null
                 && pickBlock(schematic, RenderTickHandler.INSTANCE.rayTrace(schematic, 1));
         } catch (Exception error) {
             Reference.logger.error("Could not pick block!", error);

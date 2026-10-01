@@ -1011,3 +1011,22 @@ These checks supersede Phase 12's Simple-editor and bounding-box expectations.
   discarding unsaved edits. Edits are memory-only and are lost when the world is
   left without saving. Tile entities of newly placed blocks are default instances;
   real-world tile data is not copied.
+
+## Rendering toggles and render-state hotkeys
+
+- M+R toggles all rendering (schematics, overlays, placement/area boxes, verifier
+  markers, rebuild overlay, HUDs and tool use) and M+G schematic rendering; the
+  action bar prints "Toggled <name> ON/OFF". Bind and test the other toggles:
+  schematic blocks (tile entities/entities stay), overlay, overlay outlines,
+  overlay sides, translucent blocks, area selection boxes, placement boxes,
+  block info overlay and verifier overlay. Each change is saved to the config
+  and visible in the Visuals/Info Overlays tabs.
+- Hold invertGhostBlockRenderState / invertOverlayRenderState: schematic
+  blocks/overlay flip visibility only while held, and schematic blocks cannot be
+  targeted (pick block, Edit Schematic, info lines) while hidden.
+- Hold Right Ctrl (renderOverlayThroughBlocks) or enable
+  schematicOverlayRenderThroughBlocks: overlay faces/lines draw through terrain.
+- Hold I without a verifier marker under the crosshair: the block info overlay
+  shows the client block, the schematic block, or both side by side when they
+  differ, at the configured overlay alignment/offset. Inventory previews are not
+  ported.

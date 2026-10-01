@@ -37,6 +37,7 @@ import com.github.lunatrius.schematica.client.world.SourceBlockPosition;
 import com.github.lunatrius.schematica.client.world.SourceEditor;
 import com.github.lunatrius.schematica.client.world.SourceEditor.Cell;
 import com.github.lunatrius.schematica.client.world.SubRegionPlacements;
+import com.github.lunatrius.schematica.handler.VisualSettings;
 import com.github.lunatrius.schematica.proxy.ClientProxy;
 import com.github.lunatrius.schematica.reference.Reference;
 
@@ -173,7 +174,7 @@ public final class SchematicRebuild {
     public static Target trace(double range) {
         Minecraft mc = mc();
         EntityLivingBase camera = mc.renderViewEntity == null ? mc.thePlayer : mc.renderViewEntity;
-        if (camera == null || mc.theWorld == null) return null;
+        if (camera == null || mc.theWorld == null || !VisualSettings.schematicVisible()) return null;
         Vec3 eye = camera.getPosition(1), look = camera.getLook(1);
         double limit = range;
         MovingObjectPosition real = mc.theWorld.rayTraceBlocks(copy(eye, 0, 0, 0), eye.addVector(look.xCoord * range, look.yCoord * range, look.zCoord * range), true);

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: LGPL-3.0-only
-// Litematica Block Info Lines, adapted for 1.7.10 by HackerRouter, 2026.
+// Litematica Block Info Lines and Block Info Overlay, adapted for 1.7.10 by HackerRouter, 2026.
 package com.github.lunatrius.schematica.client.renderer.hud;
 
 import java.util.ArrayList;
@@ -16,9 +16,14 @@ import net.minecraft.world.World;
 import net.minecraftforge.fluids.IFluidBlock;
 import org.lwjgl.opengl.GL11;
 
+import com.github.lunatrius.schematica.client.gui.VerifierBlockInfo;
 import com.github.lunatrius.schematica.client.gui.framework.UiTranslations;
+import com.github.lunatrius.schematica.client.input.Hotkeys;
+import com.github.lunatrius.schematica.client.verifier.VerificationScan;
+import com.github.lunatrius.schematica.client.verifier.VerificationScan.Pair;
 import com.github.lunatrius.schematica.client.world.SchematicWorld;
 import com.github.lunatrius.schematica.handler.BlockInfoHudSettings;
+import com.github.lunatrius.schematica.handler.VisualSettings;
 import com.github.lunatrius.schematica.proxy.ClientProxy;
 import com.github.lunatrius.schematica.reference.Reference;
 import com.github.lunatrius.schematica.util.VoxelRayTrace;
@@ -27,6 +32,8 @@ import cpw.mods.fml.common.registry.GameData;
 public final class BlockInfoHud {
     public static final BlockInfoHud INSTANCE = new BlockInfoHud();
     private final List<String> lines = new ArrayList<>();
+    private BlockInfoTarget target;
+    private VerifierBlockInfo panel;
     private World world;
     private EntityLivingBase camera;
     private long nextUpdate;
@@ -36,15 +43,20 @@ public final class BlockInfoHud {
 
     public void clear() {
         lines.clear();
+        target = null;
+        panel = null;
         nextUpdate = 0;
         world = null;
         camera = null;
         errorLogged = false;
     }
 
-    public void render(Minecraft mc, float partialTicks) {
+    /** Renders the block info lines and, while the info overlay key is held, the block info overlay panel. */
+    public void render(Minecraft mc, float partialTicks, boolean overlayAllowed) {
+        boolean showLines = BlockInfoHudSettings.enabled && BlockInfoHudSettings.scale >= 0.0125;
+        boolean showOverlay = overlayAllowed && VisualSettings.blockInfoOverlay && Hotkeys.held("renderInfoOverlay");
         if (mc.theWorld == null || mc.thePlayer == null || mc.renderViewEntity == null || mc.currentScreen != null
-            || mc.gameSettings.hideGUI || !BlockInfoHudSettings.enabled || BlockInfoHudSettings.scale < 0.0125) {
+            || mc.gameSettings.hideGUI || !showLines && !showOverlay) {
             clear();
             return;
         }
@@ -58,27 +70,45 @@ public final class BlockInfoHud {
         if (nextUpdate == 0 || now - nextUpdate >= 0) {
             nextUpdate = now + 50_000_000L;
             lines.clear();
+            panel = null;
             try { update(partialTicks); }
             catch (RuntimeException error) {
                 lines.clear();
+                target = null;
                 if (!errorLogged) Reference.logger.warn("Could not read the targeted block for the info HUD", error);
                 errorLogged = true;
             }
         }
-        if (!lines.isEmpty()) draw(mc);
+        if (showLines && !lines.isEmpty()) draw(mc);
+        if (showOverlay && target != null) {
+            if (panel == null) panel = panel(target);
+            if (panel != null) VerifierHud.drawPanel(mc, panel);
+        }
     }
 
+    private static VerifierBlockInfo panel(BlockInfoTarget target) {
+        if (target.showComparison()) return new VerifierBlockInfo(new Pair(state(target.schematic), state(target.client)));
+        if (!target.schematicHit && target.client != null) return new VerifierBlockInfo(state(target.client), "litematica.gui.label.block_info.state_client");
+        if (target.schematicHit && target.schematic != null) return new VerifierBlockInfo(state(target.schematic), "litematica.gui.label.block_info.state_schematic");
+        return null;
+    }
+
+    private static VerificationScan.State state(BlockInfoTarget.State state) { return new VerificationScan.State(state.registryName, state.metadata); }
+
     private void update(float partialTicks) {
+        target = null;
         List<WorldLayer> placements = new ArrayList<>();
-        if (ClientProxy.schematic != null && ClientProxy.schematic.isRenderingEnabled()) placements.add(new WorldLayer(ClientProxy.schematic));
-        for (SchematicWorld placement : ClientProxy.loadedSchematics) {
-            if (placement != ClientProxy.schematic && placement.isRenderingEnabled()) placements.add(new WorldLayer(placement));
+        if (VisualSettings.schematicVisible()) {
+            if (ClientProxy.schematic != null && ClientProxy.schematic.isRenderingEnabled()) placements.add(new WorldLayer(ClientProxy.schematic));
+            for (SchematicWorld placement : ClientProxy.loadedSchematics) {
+                if (placement != ClientProxy.schematic && placement.isRenderingEnabled()) placements.add(new WorldLayer(placement));
+            }
         }
-        if (placements.isEmpty()) return;
+        if (placements.isEmpty() && !(VisualSettings.blockInfoOverlay && Hotkeys.held("renderInfoOverlay"))) return;
         Vec3 start = camera.getPosition(partialTicks);
         Vec3 direction = camera.getLook(partialTicks);
         Vec3 end = start.addVector(direction.xCoord * 10, direction.yCoord * 10, direction.zCoord * 10);
-        BlockInfoTarget target = BlockInfoTarget.trace(new WorldLayer(world), placements, start, end, BlockInfoHudSettings.targetFluids);
+        target = BlockInfoTarget.trace(new WorldLayer(world), placements, start, end, BlockInfoHudSettings.targetFluids);
         if (target == null || !target.showSchematic()) return;
         add("litematica.gui.label.block_info.state_schematic", target.schematic);
         if (target.showComparison()) {

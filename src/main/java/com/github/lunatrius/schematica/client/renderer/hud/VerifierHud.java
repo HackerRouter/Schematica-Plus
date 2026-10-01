@@ -22,13 +22,14 @@ public final class VerifierHud {
     private static VerifierBlockInfo info;
     private VerifierHud() {}
 
-    public static void render(Minecraft mc, float partialTicks) {
+    /** Returns whether the verifier block overlay was drawn, which suppresses the generic block info overlay. */
+    public static boolean render(Minecraft mc, float partialTicks) {
         VerificationManager.Session session = VerificationManager.INSTANCE.overlay(mc);
         if (mc.theWorld == null || mc.thePlayer == null || mc.currentScreen != null || mc.gameSettings.hideGUI
-            || session == null) { pair = null; info = null; return; }
+            || session == null) { pair = null; info = null; return false; }
         ScaledResolution screen = new ScaledResolution(mc, mc.displayWidth, mc.displayHeight);
-        overlay(mc, session, partialTicks, screen);
-        if (!session.hud) return;
+        boolean drawn = overlay(mc, session, partialTicks, screen);
+        if (!session.hud) return drawn;
         List<String> lines = new ArrayList<>();
         lines.add("§l" + UiTranslations.format("litematica.gui.title.schematic_verifier", session.placement.name));
         lines.add(session.progressText());
@@ -58,17 +59,30 @@ public final class VerifierHud {
                 y += lineHeight;
             }
         }
+        return drawn;
     }
 
-    private static void overlay(Minecraft mc, VerificationManager.Session session, float partialTicks, ScaledResolution screen) {
+    private static boolean overlay(Minecraft mc, VerificationManager.Session session, float partialTicks, ScaledResolution screen) {
         boolean held = com.github.lunatrius.schematica.client.input.Hotkeys.held("renderInfoOverlay");
         Marker marker = held && VerifierOverlaySettings.enabled ? VerifierOverlayRenderer.target(mc, session, partialTicks) : null;
-        if (marker == null) { pair = null; info = null; return; }
+        if (marker == null) { pair = null; info = null; return false; }
         if (!marker.group.pair.equals(pair)) { pair = marker.group.pair; info = new VerifierBlockInfo(pair); }
         try (MinecraftUiDraw draw = new MinecraftUiDraw(mc)) {
             int width = info.width(draw, Math.max(0, screen.getScaledWidth() - 8));
             int y = ("center".equals(VerifierOverlaySettings.alignment) ? screen.getScaledHeight() / 2 : 0) + VerifierOverlaySettings.offsetY;
             info.draw(draw, (screen.getScaledWidth() - width) / 2,
+                Math.max(4, Math.min(y, screen.getScaledHeight() - VerifierBlockInfo.HEIGHT - 4)), width);
+        }
+        return true;
+    }
+
+    /** Draws a block info panel at the configured block info overlay position. */
+    public static void drawPanel(Minecraft mc, VerifierBlockInfo panel) {
+        ScaledResolution screen = new ScaledResolution(mc, mc.displayWidth, mc.displayHeight);
+        try (MinecraftUiDraw draw = new MinecraftUiDraw(mc)) {
+            int width = panel.width(draw, Math.max(0, screen.getScaledWidth() - 8));
+            int y = ("center".equals(VerifierOverlaySettings.alignment) ? screen.getScaledHeight() / 2 : 0) + VerifierOverlaySettings.offsetY;
+            panel.draw(draw, (screen.getScaledWidth() - width) / 2,
                 Math.max(4, Math.min(y, screen.getScaledHeight() - VerifierBlockInfo.HEIGHT - 4)), width);
         }
     }

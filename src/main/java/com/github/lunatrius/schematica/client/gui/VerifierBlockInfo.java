@@ -16,9 +16,20 @@ import com.github.lunatrius.schematica.reference.Reference;
 public final class VerifierBlockInfo {
     public static final int HEIGHT = 71;
     private final Pair pair;
+    private final State single;
+    private final String title;
     private final Visual expected, found;
 
-    public VerifierBlockInfo(Pair pair) { this.pair = pair; expected = new Visual(pair.expected); found = new Visual(pair.found); }
+    public VerifierBlockInfo(Pair pair) {
+        this.pair = pair; single = null; title = null;
+        expected = new Visual(pair.expected); found = new Visual(pair.found);
+    }
+
+    /** A single block state panel with the given title, as Litematica's BlockInfo. */
+    public VerifierBlockInfo(State state, String titleKey) {
+        pair = null; single = state; title = titleKey;
+        expected = new Visual(state); found = null;
+    }
 
     private int columnWidth(UiDraw draw, Visual visual, State state, String label) {
         return Math.max(draw.textWidth(label), Math.max(draw.textWidth(visual.name) + 24, Math.max(draw.textWidth(state.block), draw.textWidth(metadata(state)))));
@@ -27,7 +38,9 @@ public final class VerifierBlockInfo {
     private String metadata(State state) { return UiTranslations.format("schematica.ui.verifier.metadata", state.metadata); }
     private String expectedLabel() { return "§l" + UiTranslations.format("litematica.gui.label.schematic_verifier.expected"); }
     private String foundLabel() { return "§l" + UiTranslations.format("litematica.gui.label.schematic_verifier.found"); }
+    private String singleLabel() { return "§l" + UiTranslations.format(title); }
     public int width(UiDraw draw, int max) {
+        if (single != null) return Math.min(max, columnWidth(draw, expected, single, singleLabel()) + 20);
         return Math.min(max, columnWidth(draw, expected, pair.expected, expectedLabel()) + columnWidth(draw, found, pair.found, foundLabel()) + 40);
     }
 
@@ -35,6 +48,10 @@ public final class VerifierBlockInfo {
         UiBounds bounds = new UiBounds(x, y, width, HEIGHT);
         draw.fill(bounds, 0xFF000000);
         draw.border(bounds, 0xFFC0C0C0);
+        if (single != null) {
+            column(draw, expected, single, singleLabel(), x + 10, y, Math.max(0, width - 20));
+            return;
+        }
         int usable = Math.max(0, width - 40);
         int left = columnWidth(draw, expected, pair.expected, expectedLabel());
         if (left + columnWidth(draw, found, pair.found, foundLabel()) > usable) left = usable / 2;

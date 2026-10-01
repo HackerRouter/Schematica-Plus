@@ -24,6 +24,7 @@ import org.lwjgl.opengl.GL11;
 import com.github.lunatrius.schematica.internal.lunatriuscore.util.vector.Vector3d;
 import com.github.lunatrius.schematica.client.world.SchematicWorld;
 import com.github.lunatrius.schematica.handler.RenderColors;
+import com.github.lunatrius.schematica.handler.VisualSettings;
 import com.github.lunatrius.schematica.proxy.ClientProxy;
 import com.github.lunatrius.schematica.nbt.TileEntitySnapshots;
 import com.github.lunatrius.schematica.reference.Constants;
@@ -79,7 +80,8 @@ public class RendererSchematicGlobal {
                 }
             }
 
-            if (anyRendering || ClientProxy.isRenderingGuide) {
+            if (VisualSettings.rendering && (anyRendering || ClientProxy.isRenderingGuide)) {
+                VisualSettings.beginFrame();
                 EntityLivingBase camera = this.minecraft.renderViewEntity;
                 if (camera == null) camera = player;
                 this.cameraPosition.set(
@@ -140,7 +142,7 @@ public class RendererSchematicGlobal {
             }
 
             // Render entities if enabled
-            if (sw.isRenderingEnabled() && sw.isRenderingEntities) {
+            if (sw.isRenderingEnabled() && sw.isRenderingEntities && VisualSettings.frameSchematic) {
                 renderEntities(sw);
             }
 
@@ -150,13 +152,14 @@ public class RendererSchematicGlobal {
             float r = isActive ? 0.75f : 0.25f;
             float g = isActive ? 0.0f : 0.5f;
             float b = isActive ? 0.75f : 0.25f;
-            if (sw.placementSettings().enclosingBox && sw.hasEnabledRegions()) RenderHelper.drawCuboidOutline(
+            boolean boxes = VisualSettings.placementBoxes;
+            if (boxes && sw.placementSettings().enclosingBox && sw.hasEnabledRegions()) RenderHelper.drawCuboidOutline(
                 RenderHelper.VEC_ZERO,
                 sw.dimensions(),
                 RenderHelper.LINE_ALL,
                 r, g, b, 0.5f);
 
-            if (sw.subregions() != null) for (com.github.lunatrius.schematica.client.world.SubRegionPlacements.Region region : sw.subregions().regions()) {
+            if (boxes && sw.subregions() != null) for (com.github.lunatrius.schematica.client.world.SubRegionPlacements.Region region : sw.subregions().regions()) {
                 boolean selected = isActive && region.name().equals(sw.subregions().selected);
                 if (!selected && (!region.enabled || !region.rendering)) continue;
                 com.github.lunatrius.schematica.api.SchematicRegion bounds = sw.subregionBounds(region.name()).offset(-sw.position.x, -sw.position.y, -sw.position.z);
@@ -193,7 +196,7 @@ public class RendererSchematicGlobal {
         this.profiler.endStartSection("guide");
 
         // Render guide overlay (selection box)
-        if (ClientProxy.isRenderingGuide) {
+        if (ClientProxy.isRenderingGuide && VisualSettings.areaBoxes) {
             // Re-establish GL state after schematic chunk/entity rendering may have changed it
             GL11.glEnable(GL11.GL_BLEND);
             GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);

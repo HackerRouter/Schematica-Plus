@@ -62,6 +62,12 @@ public final class Hotkeys {
         for (String id : new String[] {"schematicEditBreakAllExcept", "schematicEditBreakPlaceAll", "schematicEditBreakPlaceDirection",
             "schematicEditReplaceAll", "schematicEditReplaceBlock", "schematicEditReplaceDirection"}) add(id, modifier());
         add("schematicEditReplaceSelection", normal());
+        add("toggleAllRendering", normal(), Keyboard.KEY_M, Keyboard.KEY_R);
+        add("toggleSchematicRendering", normal(), Keyboard.KEY_M, Keyboard.KEY_G);
+        for (String id : new String[] {"toggleAreaSelectionBoxesRendering", "toggleInfoOverlayRendering", "toggleOverlayRendering",
+            "toggleOverlayOutlineRendering", "toggleOverlaySideRendering", "togglePlacementBoxesRendering", "toggleSchematicBlockRendering",
+            "toggleTranslucentRendering", "toggleVerifierOverlayRendering", "invertGhostBlockRenderState", "invertOverlayRenderState"}) add(id, normal());
+        add("renderOverlayThroughBlocks", extra(), Keyboard.KEY_RCONTROL);
         ALL = Collections.unmodifiableList(new ArrayList<>(BY_ID.values()));
     }
 

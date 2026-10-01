@@ -62,8 +62,12 @@ public class OverlayHandler {
             return;
         }
 
-        com.github.lunatrius.schematica.client.renderer.hud.BlockInfoHud.INSTANCE.render(this.minecraft, event.partialTicks);
-        com.github.lunatrius.schematica.client.renderer.hud.VerifierHud.render(this.minecraft, event.partialTicks);
+        if (!com.github.lunatrius.schematica.handler.VisualSettings.rendering) {
+            com.github.lunatrius.schematica.client.renderer.hud.BlockInfoHud.INSTANCE.clear();
+            return;
+        }
+        boolean verifier = com.github.lunatrius.schematica.client.renderer.hud.VerifierHud.render(this.minecraft, event.partialTicks);
+        com.github.lunatrius.schematica.client.renderer.hud.BlockInfoHud.INSTANCE.render(this.minecraft, event.partialTicks, !verifier);
 
         if (this.minecraft.currentScreen != null || !ToolManager.toolActive()) {
             return;

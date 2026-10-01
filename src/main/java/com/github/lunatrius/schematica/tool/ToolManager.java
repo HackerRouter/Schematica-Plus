@@ -24,6 +24,7 @@ import com.github.lunatrius.schematica.client.selection.SelectionRayTrace;
 import com.github.lunatrius.schematica.client.world.SchematicWorld;
 import com.github.lunatrius.schematica.client.world.SubRegionPlacements;
 import com.github.lunatrius.schematica.handler.ConfigurationHandler;
+import com.github.lunatrius.schematica.handler.VisualSettings;
 import com.github.lunatrius.schematica.handler.client.WorldHandler;
 import com.github.lunatrius.schematica.internal.lunatriuscore.util.vector.Vector3i;
 import com.github.lunatrius.schematica.proxy.ClientProxy;
@@ -44,7 +45,7 @@ public final class ToolManager {
         return held != null && held.getItem() == ConfigurationHandler.toolItemType
             && (ConfigurationHandler.toolItemMeta < 0 || held.getItemDamage() == ConfigurationHandler.toolItemMeta);
     }
-    public static boolean toolActive() { return ConfigurationHandler.toolItemEnabled && isHoldingToolItem(); }
+    public static boolean toolActive() { return VisualSettings.rendering && ConfigurationHandler.toolItemEnabled && isHoldingToolItem(); }
     public static ToolMode getCurrentMode() { return currentMode; }
     public static void setCurrentMode(ToolMode mode) { releaseGrab(); currentMode = mode == null ? ToolMode.AREA_SELECTION : mode; }
     public void cycleMode() { cycleMode(true); }
@@ -222,7 +223,7 @@ public final class ToolManager {
         Vec3 eye = camera().getPosition(1), look = camera().getLook(1);
         double distance = hit == null ? 200 : eye.distanceTo(hit.hitVec);
         if (hit != null) { block = mc().theWorld.getBlock(hit.blockX, hit.blockY, hit.blockZ); meta = mc().theWorld.getBlockMetadata(hit.blockX, hit.blockY, hit.blockZ); }
-        for (SchematicWorld world : ClientProxy.loadedSchematics) {
+        if (VisualSettings.schematicVisible()) for (SchematicWorld world : ClientProxy.loadedSchematics) {
             if (!world.isRenderingEnabled()) continue;
             Vec3 start = eye.addVector(-world.position.x, -world.position.y, -world.position.z);
             MovingObjectPosition candidate = world.rayTraceRendered(start, start.addVector(look.xCoord * distance, look.yCoord * distance, look.zCoord * distance));

@@ -25,6 +25,7 @@ import com.github.lunatrius.schematica.internal.lunatriuscore.util.vector.Vector
 import com.github.lunatrius.schematica.client.renderer.shader.ShaderProgram;
 import com.github.lunatrius.schematica.client.world.SchematicWorld;
 import com.github.lunatrius.schematica.handler.ConfigurationHandler;
+import com.github.lunatrius.schematica.handler.VisualSettings;
 import com.github.lunatrius.schematica.handler.RenderColors;
 import com.github.lunatrius.schematica.reference.Constants;
 import com.github.lunatrius.schematica.reference.Reference;
@@ -207,18 +208,24 @@ public class RendererSchematicChunk {
             GL11.glDepthMask(renderPass == 0 && (!alpha || ConfigurationHandler.alpha >= 1));
             GL11.glAlphaFunc(GL11.GL_GREATER, 0.001f);
             this.minecraft.renderEngine.bindTexture(TextureMap.locationBlocksTexture);
-            if (alpha) {
-                GL20.glUseProgram(SHADER_ALPHA.getProgram());
-                GL20.glUniform1f(GL20.glGetUniformLocation(SHADER_ALPHA.getProgram(), "alpha_multiplier"),
-                    ConfigurationHandler.alpha);
+            if (VisualSettings.frameBlocks) {
+                if (alpha) {
+                    GL20.glUseProgram(SHADER_ALPHA.getProgram());
+                    GL20.glUniform1f(GL20.glGetUniformLocation(SHADER_ALPHA.getProgram(), "alpha_multiplier"),
+                        ConfigurationHandler.alpha);
+                }
+                GL11.glCallList(this.glList + renderPass);
+                if (alpha) GL20.glUseProgram(previousProgram);
             }
-            GL11.glCallList(this.glList + renderPass);
-            if (alpha) GL20.glUseProgram(previousProgram);
             this.profiler.endStartSection("highlight");
             GL11.glDepthMask(false);
-            GL11.glCallList(this.glListHighlight + renderPass);
+            if (VisualSettings.frameOverlay) {
+                if (VisualSettings.frameThrough) GL11.glDisable(GL11.GL_DEPTH_TEST);
+                GL11.glCallList(this.glListHighlight + renderPass);
+                GL11.glEnable(GL11.GL_DEPTH_TEST);
+            }
             this.profiler.endStartSection("tileEntities");
-            renderTileEntities(renderPass, partialTicks);
+            if (VisualSettings.frameSchematic) renderTileEntities(renderPass, partialTicks);
         } finally {
             if (OpenGlHelper.shadersSupported) GL20.glUseProgram(previousProgram);
             GL11.glPopAttrib();
