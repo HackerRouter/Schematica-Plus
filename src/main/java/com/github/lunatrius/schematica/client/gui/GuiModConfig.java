@@ -10,7 +10,10 @@ import java.util.Map;
 
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.settings.GameSettings;
-import net.minecraft.client.settings.KeyBinding;
+import com.github.lunatrius.schematica.client.input.Hotkey;
+import com.github.lunatrius.schematica.client.input.Hotkeys;
+import com.github.lunatrius.schematica.client.input.HotkeyHooks;
+import com.github.lunatrius.schematica.client.gui.config.HotkeySettingsPanel;
 import net.minecraftforge.common.config.ConfigCategory;
 import net.minecraftforge.common.config.Property;
 
@@ -41,7 +44,6 @@ import com.github.lunatrius.schematica.client.renderer.RendererSchematicGlobal;
 import com.github.lunatrius.schematica.handler.ConfigurationHandler;
 import com.github.lunatrius.schematica.handler.BlockInfoHudSettings;
 import com.github.lunatrius.schematica.util.HudAlignment;
-import com.github.lunatrius.schematica.handler.client.InputHandler;
 import com.github.lunatrius.schematica.reference.Names;
 import com.github.lunatrius.schematica.client.gui.config.ConfigTranslations;
 import com.github.lunatrius.schematica.reference.Reference;
@@ -50,7 +52,7 @@ import cpw.mods.fml.client.event.ConfigChangedEvent;
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.eventhandler.Event;
 
-public class GuiModConfig extends UiScreen {
+public class GuiModConfig extends UiScreen implements HotkeyHooks.Capture {
     private enum Tab {
         ALL("malilib.gui.title.all", 204),
         GENERIC("litematica.gui.button.config_gui.generic", 180),
@@ -83,7 +85,8 @@ public class GuiModConfig extends UiScreen {
     private int labelWidth;
     private Tab tab = lastTab;
     private UiButton capturingButton;
-    private KeyBinding capturingKey;
+    private Hotkey capturingKey;
+    private boolean captureFirst;
 
     public GuiModConfig(GuiScreen parent) {
         super(parent, Reference.NAME + " v" + Reference.VERSION + " - " + UiTranslations.format("litematica.gui.button.change_menu.configuration_menu"));
@@ -97,7 +100,7 @@ public class GuiModConfig extends UiScreen {
                 if (property.showInGui()) entries.add(new Entry(categoryName, property));
             }
         }
-        for (KeyBinding key : InputHandler.KEY_BINDINGS) entries.add(new Entry(key));
+        for (Hotkey key : Hotkeys.ALL) entries.add(new Entry(key));
         entries.sort(Comparator.comparing(Entry::name, String.CASE_INSENSITIVE_ORDER));
         for (Tab value : Tab.values()) {
             UiButton button = addButton(value.key, () -> changeTab(value));
@@ -141,7 +144,7 @@ public class GuiModConfig extends UiScreen {
         for (Entry entry : entries) {
             if (tab != Tab.ALL && tab != entry.tab()) continue;
             if (searchOpen && tab.keySearch() && keyFilter != 0
-                && (entry.key == null || entry.key.getKeyCode() != keyFilter)) continue;
+                && (entry.key == null || !entry.key.keys().contains(keyFilter))) continue;
             visible.add(entry);
         }
         if (tab == Tab.COLORS) visible.sort(Comparator.comparingInt(entry -> entry.color.ordinal()));
@@ -190,15 +193,11 @@ public class GuiModConfig extends UiScreen {
 
     @Override
     protected void tickScreen() {
-        if (capturingButton != null && input.focused() != capturingButton) capturingButton = null;
+        if (capturingButton != null && (input.focused() != capturingButton || !org.lwjgl.opengl.Display.isActive())) capturingButton = null;
     }
 
     @Override
     protected boolean interceptKey(char character, int code) {
-        if (capturingButton != null && input.focused() == capturingButton) {
-            if (!Keyboard.isRepeatEvent()) assignKey(code == Keyboard.KEY_ESCAPE ? 0 : code);
-            return true;
-        }
         if (Keyboard.isRepeatEvent() && input.focused() instanceof UiButton) return true;
         if (!input.modalPanels().isEmpty()) return false;
         if (code == Keyboard.KEY_ESCAPE && searchOpen && !isShiftKeyDown()) {
@@ -208,13 +207,6 @@ public class GuiModConfig extends UiScreen {
             return true;
         }
         return false;
-    }
-
-    @Override
-    protected boolean interceptMouse(int x, int y, int button) {
-        if (capturingButton == null || input.focused() != capturingButton) return false;
-        assignKey(button - 100);
-        return true;
     }
 
     @Override
@@ -229,40 +221,56 @@ public class GuiModConfig extends UiScreen {
         return true;
     }
 
-    private void beginCapture(KeyBinding key, UiButton button) {
-        capturingKey = key;
-        capturingButton = button;
-        input.focus(button);
+    private void beginCapture(Hotkey key, UiButton button) {
+        capturingKey = key; capturingButton = button; captureFirst = true;
+        input.focus(button); HotkeyHooks.reset();
     }
 
-    private void assignKey(int code) {
-        if (capturingKey == null) keyFilter = code;
-        else setKey(capturingKey, code);
-        capturingButton = null;
-        refreshEntries();
+    @Override public boolean capturingHotkey() { return capturingButton != null; }
+
+    @Override public boolean captureHotkey(int code, boolean down) {
+        if (!down) return true;
+        if (code < 0) {
+            int x = org.lwjgl.input.Mouse.getEventX() * width / mc.displayWidth;
+            int y = height - org.lwjgl.input.Mouse.getEventY() * height / mc.displayHeight - 1;
+            if (!capturingButton.bounds().contains(x, y)) { endCapture(); return false; }
+        }
+        if (code == Keyboard.KEY_ESCAPE) {
+            if (captureFirst) {
+                if (capturingKey == null) keyFilter = 0;
+                else { capturingKey.setKeys(java.util.Collections.emptyList()); keysChanged = true; }
+            }
+            endCapture(); return true;
+        }
+        if (capturingKey == null) { keyFilter = code; endCapture(); return true; }
+        List<Integer> codes = captureFirst ? new ArrayList<>() : new ArrayList<>(capturingKey.keys());
+        if (!codes.contains(code) && codes.size() < 16) codes.add(code);
+        capturingKey.setKeys(codes); captureFirst = false; keysChanged = true;
+        return true;
     }
 
-    private void setKey(KeyBinding key, int code) {
-        if (key.getKeyCode() == code) return;
-        key.setKeyCode(code);
-        KeyBinding.resetKeyBindingArrayAndHash();
-        keysChanged = true;
+    private void endCapture() { capturingButton = null; HotkeyHooks.reset(); refreshEntries(); }
+    private String captureLabel() {
+        return "§e> " + (capturingKey == null ? UiTranslations.format("schematica.ui.config.press_key") : chordLabel(capturingKey)) + " <§r";
     }
-
-    private String captureLabel() { return "§e> " + UiTranslations.format("schematica.ui.config.press_key") + " <§r"; }
-
     private String keyLabel(int code) {
         return code == 0 ? UiTranslations.format("malilib.gui.button.empty_keybind") : GameSettings.getKeyDisplayString(code);
     }
-
-    private String bindingLabel(KeyBinding key) {
+    private String chordLabel(Hotkey key) {
+        if (key.keys().isEmpty()) return keyLabel(0);
+        List<String> labels = new ArrayList<>();
+        for (int code : key.keys()) labels.add(keyLabel(code));
+        return String.join(" + ", labels);
+    }
+    private String bindingLabel(Hotkey key) {
         if (capturingButton != null && capturingKey == key) return captureLabel();
-        if (key.getKeyCode() != 0) {
-            for (KeyBinding other : mc.gameSettings.keyBindings) {
-                if (other != key && other.getKeyCode() == key.getKeyCode()) return "§c" + keyLabel(key.getKeyCode());
-            }
+        for (Hotkey other : Hotkeys.ALL) {
+            if (other != key && !key.keys().isEmpty() && key.keys().equals(other.keys())
+                && key.settings.cancel && other.settings.cancel
+                && (key.settings.context == other.settings.context || key.settings.context == Hotkey.Context.ANY || other.settings.context == Hotkey.Context.ANY))
+                return "§6" + chordLabel(key);
         }
-        return keyLabel(key.getKeyCode());
+        return chordLabel(key);
     }
 
     private String statusText() {
@@ -294,7 +302,7 @@ public class GuiModConfig extends UiScreen {
             RendererSchematicGlobal.INSTANCE.refresh();
         }
         if (keysChanged) {
-            mc.gameSettings.saveOptions();
+            Hotkeys.save();
             keysChanged = false;
         }
     }
@@ -302,7 +310,7 @@ public class GuiModConfig extends UiScreen {
     private final class Entry {
         final String category;
         final ConfigPropertyDraft draft;
-        final KeyBinding key;
+        final Hotkey key;
         final RenderColors color;
 
         Entry(String category, Property property) {
@@ -312,7 +320,7 @@ public class GuiModConfig extends UiScreen {
             key = null;
         }
 
-        Entry(KeyBinding key) {
+        Entry(Hotkey key) {
             category = "hotkeys";
             draft = null;
             this.key = key;
@@ -328,10 +336,10 @@ public class GuiModConfig extends UiScreen {
             }
         }
 
-        String name() { return key == null ? draft.property.getName() : key.getKeyDescription(); }
-        String label() { return UiTranslations.format(ConfigTranslations.label(key == null ? draft.property.getLanguageKey() : key.getKeyDescription())); }
+        String name() { return key == null ? draft.property.getName() : key.translationKey(); }
+        String label() { return UiTranslations.format(ConfigTranslations.label(key == null ? draft.property.getLanguageKey() : key.translationKey())); }
         String searchText() { return name() + " " + label() + " " + category + (modified() ? " modified" : ""); }
-        boolean modified() { return key == null ? draft.modified() : key.getKeyCode() != key.getKeyCodeDefault(); }
+        boolean modified() { return key == null ? draft.modified() : key.modified(); }
         Tab tab() {
             if (key != null) return Tab.HOTKEYS;
             if (color != null) return Tab.COLORS;
@@ -340,7 +348,7 @@ public class GuiModConfig extends UiScreen {
             return Names.Config.Category.DEBUG.equals(category) ? Tab.INFO_OVERLAYS : Tab.GENERIC;
         }
         String description() {
-            if (key != null) return UiTranslations.format("schematica.ui.config.key_hint");
+            if (key != null) return UiTranslations.format("litematica.config.hotkeys.comment." + key.id);
             if (color != null) {
                 String description = UiTranslations.format("litematica.config.colors.comment." + color.key);
                 if (!color.available) description += "\n" + UiTranslations.format("schematica.ui.color.pending");
@@ -376,18 +384,25 @@ public class GuiModConfig extends UiScreen {
             if (entry.key != null) {
                 editor = add(new UiButton(() -> bindingLabel(entry.key), button -> captureEntry()));
                 editor.setTooltip(UiTranslations.format("schematica.ui.config.key_hint"));
-                keySettings = add(new UiWidget() {
+                keySettings = add(new UiButton(() -> "", button -> {
+                    if (button == 1) { entry.key.resetSettings(); HotkeyHooks.reset(); keysChanged = true; }
+                    else {
+                        HotkeySettingsPanel panel = new HotkeySettingsPanel(fontRendererObj, entry.key, () -> keysChanged = true);
+                        panel.layout(root.bounds()); input.pushModal(panel);
+                    }
+                }) {
                     @Override public void draw(UiDraw draw, int mouseX, int mouseY) {
                         draw.fill(bounds(), 0xFF000000);
-                        draw.border(bounds(), 0xFF808080);
-                        for (int u = 0; u <= 72; u += 18) {
-                            draw.texture("schematica_plus:textures/gui/malilib_widgets.png",
-                                new UiBounds(bounds().x + 1, bounds().y + 1, 18, 18), u, 0, 18, 18, 256, 256);
-                        }
+                        draw.border(bounds(), entry.key.settingsModified() ? 0xFFFFBB33 : 0xFFFFFFFF);
+                        Hotkey.Settings s = entry.key.settings;
+                        int[] v = {s.action.ordinal() * 18, s.allowExtra ? 0 : 18, s.ordered ? 18 : 0, s.exclusive ? 18 : 0, s.cancel ? 18 : 0};
+                        for (int i = 0; i < v.length; i++) draw.texture("schematica_plus:textures/gui/malilib_widgets.png",
+                            new UiBounds(bounds().x + 1, bounds().y + 1, 18, 18), i * 18, v[i], 18, 18, 256, 256);
+                        if (bounds().contains(mouseX, mouseY)) draw.border(bounds(), 0xFFFFFF55);
                     }
                 });
-                keySettings.setEnabled(false);
-                keySettings.setTooltip(UiTranslations.format("schematica.ui.config.key_settings"));
+                keySettings.setTooltip(UiTranslations.format("malilib.gui.label.keybind_settings.title_advanced_keybind_settings"),
+                    UiTranslations.format("malilib.gui.label.keybind_settings.tips"));
             } else if (entry.draft.property.isList()) {
                 editor = add(new UiButton(() -> "[ " + String.join(", ", entry.draft.values()) + " ]", button -> {
                     ConfigStringListPanel panel = new ConfigStringListPanel(fontRendererObj, entry.draft);
@@ -448,7 +463,7 @@ public class GuiModConfig extends UiScreen {
         }
 
         private void reset() {
-            if (entry.key != null) setKey(entry.key, entry.key.getKeyCodeDefault());
+            if (entry.key != null) { entry.key.reset(); HotkeyHooks.reset(); keysChanged = true; }
             else {
                 entry.draft.reset();
                 if (text != null) text.setText(entry.draft.text());

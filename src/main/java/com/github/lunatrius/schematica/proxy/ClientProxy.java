@@ -16,7 +16,6 @@ import java.util.List;
 import java.util.Map;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.MathHelper;
 import net.minecraft.util.MovingObjectPosition;
@@ -40,11 +39,9 @@ import com.github.lunatrius.schematica.compat.ILOTRPresent;
 import com.github.lunatrius.schematica.compat.NoLOTRProxy;
 import com.github.lunatrius.schematica.handler.ConfigurationHandler;
 import com.github.lunatrius.schematica.handler.client.ChatEventHandler;
-import com.github.lunatrius.schematica.handler.client.InputHandler;
 import com.github.lunatrius.schematica.handler.client.OverlayHandler;
 import com.github.lunatrius.schematica.handler.client.RenderTickHandler;
 import com.github.lunatrius.schematica.handler.client.TickHandler;
-import com.github.lunatrius.schematica.handler.client.ToolItemHandler;
 import com.github.lunatrius.schematica.reference.Constants;
 import com.github.lunatrius.schematica.reference.Reference;
 import com.github.lunatrius.schematica.util.Coordinates;
@@ -55,7 +52,6 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 
 import cpw.mods.fml.client.config.GuiConfigEntries;
-import cpw.mods.fml.client.registry.ClientRegistry;
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.Loader;
 import cpw.mods.fml.common.event.FMLInitializationEvent;
@@ -320,9 +316,8 @@ public class ClientProxy extends CommonProxy {
             prop.setConfigEntryClass(GuiConfigEntries.NumberSliderEntry.class);
         }
 
-        for (KeyBinding keyBinding : InputHandler.KEY_BINDINGS) {
-            ClientRegistry.registerKeyBinding(keyBinding);
-        }
+        com.github.lunatrius.schematica.client.input.Hotkeys.initialize(
+            event.getModConfigurationDirectory().toPath(), Minecraft.getMinecraft().mcDataDir.toPath());
     }
 
     @Override
@@ -335,9 +330,6 @@ public class ClientProxy extends CommonProxy {
         // Register client-side commands
         net.minecraftforge.client.ClientCommandHandler.instance.registerCommand(new CommandSchematicaSetBlock());
 
-        FMLCommonHandler.instance()
-            .bus()
-            .register(InputHandler.INSTANCE);
         FMLCommonHandler.instance()
             .bus()
             .register(TickHandler.INSTANCE);
@@ -353,7 +345,6 @@ public class ClientProxy extends CommonProxy {
         MinecraftForge.EVENT_BUS.register(new OverlayHandler());
         MinecraftForge.EVENT_BUS.register(new com.github.lunatrius.schematica.handler.client.ModInfoHandler());
         MinecraftForge.EVENT_BUS.register(WorldHandler.INSTANCE);
-        MinecraftForge.EVENT_BUS.register(ToolItemHandler.INSTANCE);
     }
 
     @Override

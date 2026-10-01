@@ -923,3 +923,30 @@ These checks supersede Phase 12's Simple-editor and bounding-box expectations.
 - Automated regressions cover input replay, failed/throwing picks, misses, nearest
   world/schematic/entity targets, negative offsets and coincident blocks. Native
   Forge Mods UI, creative inventory and Freecam checks remain unexecuted here.
+
+
+## Advanced hotkeys and tool input
+
+- Release M to open the menu; M+C/M+S/M+P/M+L/M+V opens the corresponding screen
+  without opening the menu after releasing the chord. Ctrl+Alt+S opens Save.
+  Execute Operation is unbound by default. Modified legacy single-key bindings
+  migrate once from options.txt into config/schematica_plus_hotkeys.json.
+- Hotkey rows capture ordered keyboard/mouse combinations. Escape clears an
+  untouched binding or finishes an edited chord; clicking outside also finishes.
+  Advanced settings use the original MaLiLib seven-option dialog and icons;
+  right-click its icon to restore settings. Check persistence and reset.
+- Exercise PRESS/RELEASE/BOTH, INGAME/GUI/ANY, order, extras, exclusive and cancel.
+  Test focus loss, opening/closing GUIs with keys held, mouse releases outside
+  the window, OS repeat and conflicts with vanilla controls. Empty modifiers
+  are active only when Allow Empty is explicitly enabled.
+- Hold the tool: Ctrl+wheel cycles modes; Alt+wheel nudges the selected element.
+  Left/right position corners or placement origins. Area clicks offset when
+  sneaking; placement clicks offset when not sneaking. Middle selects; configured
+  grab modifier + middle grabs/releases an area element or selects a placement
+  subregion. Grab+wheel changes distance. Alt/Shift+middle select primary/secondary
+  block state for modes that use it, including schematic states and air.
+- Verify normal middle-click still picks real blocks outside/closer than the
+  schematic; check custom keyboard bindings, disabled tools and pick toggle.
+- Test an installed JAR: its FMLCorePlugin manifest entry must load InputPlugin.
+  Only Minecraft and GuiScreen LWJGL next() calls are redirected. Native game
+  interaction has not been exercised by the headless test suite.

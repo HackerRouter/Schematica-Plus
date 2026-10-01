@@ -218,6 +218,36 @@ public final class AreaSelectionLibrary {
         return new Vector3i(Math.addExact(point.x, x), Math.addExact(point.y, y), Math.addExact(point.z, z));
     }
 
+    public void moveEntire(Area area, int x, int y, int z) {
+        require(area);
+        List<Vector3i> points = new ArrayList<>();
+        for (Box box : area.boxes) {
+            Vector3i a = offset(box.first, x, y, z), b = offset(box.second, x, y, z);
+            checkPoint(a); checkPoint(b); points.add(a); points.add(b);
+        }
+        Vector3i origin = area.manualOrigin == null ? null : offset(area.manualOrigin, x, y, z);
+        if (origin != null) checkPoint(origin);
+        for (int i = 0; i < area.boxes.size(); i++) {
+            area.boxes.get(i).first.set(points.get(i * 2)); area.boxes.get(i).second.set(points.get(i * 2 + 1));
+        }
+        area.manualOrigin = origin;
+    }
+
+    public void growSelected(Area area, int amount) {
+        require(area); requireBox(area, area.selectedBox);
+        Vector3i a = area.first(), b = area.second();
+        int[] first = {a.x, a.y, a.z}, second = {b.x, b.y, b.z};
+        for (int axis = 0; axis < 3; axis++) {
+            long min = Math.min(first[axis], second[axis]), max = Math.max(first[axis], second[axis]);
+            long lower = min - amount, upper = max + amount;
+            if (lower > upper) lower = upper = (min + max) >> 1;
+            boolean ascending = first[axis] <= second[axis];
+            first[axis] = Math.toIntExact(ascending ? lower : upper);
+            second[axis] = Math.toIntExact(ascending ? upper : lower);
+        }
+        setPoints(area, new Vector3i(first[0], first[1], first[2]), new Vector3i(second[0], second[1], second[2]));
+    }
+
     private void requireBox(Area area, Box box) {
         require(area);
         if (!area.boxes.contains(box)) throw new IllegalArgumentException("Subregion is no longer in this selection");

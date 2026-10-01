@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: LGPL-3.0-only
+// Litematica tool modes, adapted for 1.7.10 by HackerRouter, 2026.
 package com.github.lunatrius.schematica.tool;
 
 import net.minecraft.block.Block;
@@ -7,27 +9,15 @@ import com.github.lunatrius.schematica.client.gui.framework.UiTranslations;
 
 import cpw.mods.fml.common.registry.GameData;
 
-/**
- * Tool modes ported from Litematica's ToolMode concept, adapted for Schematica's 1.7.10 architecture.
- * <p>
- * Provides a cycleable mode system that controls which operations are active and
- * what the schematic tool item does when used. Integrates with the existing
- * SchematicPrinter, area selection (pointA/pointB), and placement systems.
- * <p>
- * Each mode can optionally store a primaryBlock and secondaryBlock for
- * fill/replace operations (picked via crosshair, Litematica-style).
- *
- * @author HackerRouter (ported from Litematica by masa)
- */
 public enum ToolMode {
 
     AREA_SELECTION("litematica.tool_mode.name.area_selection", false, false, false, false),
     SCHEMATIC_PLACEMENT("litematica.tool_mode.name.schematic_placement", false, true, false, false),
-    PASTE_SCHEMATIC("litematica.tool_mode.name.paste_schematic", true, true, false, false),
-    MOVE("litematica.tool_mode.name.move", false, true, false, false),
-    DELETE("litematica.tool_mode.name.delete", true, false, false, false),
     FILL("litematica.tool_mode.name.fill", true, false, true, false),
-    REPLACE_BLOCK("litematica.tool_mode.name.replace_block", true, false, true, true);
+    REPLACE_BLOCK("litematica.tool_mode.name.replace_block", true, false, true, true),
+    PASTE_SCHEMATIC("litematica.tool_mode.name.paste_schematic", true, true, false, false),
+    MOVE("litematica.tool_mode.name.move", true, false, false, false),
+    DELETE("litematica.tool_mode.name.delete", true, false, false, false);
 
     private final String translationKey;
     private final boolean creativeOnly;
@@ -35,11 +25,9 @@ public enum ToolMode {
     private final boolean usesBlockPrimary;
     private final boolean usesBlockSecondary;
 
-    /** Picked primary block (e.g. the block to fill with). */
     private Block primaryBlock = null;
     private int primaryMeta = 0;
 
-    /** Picked secondary block (e.g. the block to be replaced). */
     private Block secondaryBlock = null;
     private int secondaryMeta = 0;
 
@@ -66,12 +54,10 @@ public enum ToolMode {
         return !this.usesSchematic;
     }
 
-    /** Whether this mode uses a primary block (picked via crosshair). */
     public boolean getUsesBlockPrimary() {
         return this.usesBlockPrimary;
     }
 
-    /** Whether this mode uses a secondary block (picked via crosshair). */
     public boolean getUsesBlockSecondary() {
         return this.usesBlockSecondary;
     }
@@ -102,14 +88,12 @@ public enum ToolMode {
         this.secondaryMeta = meta;
     }
 
-    /** Returns a display string for the primary block, or null if not set. */
     public String getPrimaryBlockName() {
         if (this.primaryBlock == null) return null;
         String name = GameData.getBlockRegistry().getNameForObject(this.primaryBlock);
         return name + ":" + this.primaryMeta;
     }
 
-    /** Returns a display string for the secondary block, or null if not set. */
     public String getSecondaryBlockName() {
         if (this.secondaryBlock == null) return null;
         String name = GameData.getBlockRegistry().getNameForObject(this.secondaryBlock);
@@ -120,9 +104,6 @@ public enum ToolMode {
         return UiTranslations.format(this.translationKey);
     }
 
-    /**
-     * Cycles to the next available tool mode, skipping creative-only modes when not in creative.
-     */
     public ToolMode cycle(boolean forward) {
         boolean isCreative = Minecraft.getMinecraft().thePlayer != null
             && Minecraft.getMinecraft().thePlayer.capabilities.isCreativeMode;

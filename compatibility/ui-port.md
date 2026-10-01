@@ -934,3 +934,23 @@ size limits, X/Z filters and partial-export metadata. The full build, Checkstyle
 mod-specific pick-block behavior and visual layout still need Minecraft testing.
 Simple mode uses upstream's compact editor without the Normal browser footer,
 avoiding its overlap with Save/Analyze at short GUI heights.
+
+
+## Advanced input and tool alignment
+
+The client now uses a MaLiLib-style chord engine and original Litematica defaults.
+It stores keys and seven advanced settings in a versioned JSON file, preserving
+unknown hotkeys and refusing to overwrite unreadable files. Vanilla options.txt
+customizations migrate once. The config screen enables the upstream settings
+widget/dialog, captures keyboard/mouse combinations and resets settings separately.
+A small Forge loading plugin redirects LWJGL polling in Minecraft and GuiScreen;
+no mixin dependency or patches to other mods are needed. Context/focus changes
+block held keys until release, and consumed presses cannot leave vanilla keys held.
+
+Existing tool actions now use configurable hotkeys: corner/placement positioning,
+selection, primary/secondary state picking, nudge, grab, resize and selection
+shortcuts. Placement selection supports loaded instances and subregions. MOVE is
+classified as a creative area operation, matching upstream; its world-edit backend
+and the remaining edit modes are the next implementation portion. This portion
+passes the full build, Checkstyle and 327 headless tests. Native input remains to
+be tested in the game.

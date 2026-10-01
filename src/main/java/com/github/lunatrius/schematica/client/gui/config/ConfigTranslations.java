@@ -25,7 +25,7 @@ public final class ConfigTranslations {
 
     public static String comment(String key) {
         String label = label(key);
-        return label.startsWith("litematica.config.visuals.name.") || label.startsWith("litematica.config.info_overlays.name.")
+        return label.startsWith("litematica.config.generic.name.") || label.startsWith("litematica.config.visuals.name.") || label.startsWith("litematica.config.info_overlays.name.")
             ? label.replace(".name.", ".comment.") : key + ".tooltip";
     }
 }

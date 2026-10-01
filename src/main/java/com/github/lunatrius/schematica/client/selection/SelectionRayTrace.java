@@ -49,6 +49,10 @@ public final class SelectionRayTrace {
         return near;
     }
 
+    public static double boxDistance(double x, double y, double z, double dx, double dy, double dz, Vector3i a, Vector3i b, double distance) {
+        return intersect(new double[] {x, y, z}, new double[] {dx, dy, dz}, a, b, distance);
+    }
+
     public static final class Hit {
         public final Box box;
         public final Corner corner;

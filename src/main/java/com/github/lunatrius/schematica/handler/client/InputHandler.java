@@ -3,109 +3,88 @@ package com.github.lunatrius.schematica.handler.client;
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityClientPlayerMP;
-import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.MathHelper;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraftforge.common.ForgeHooks;
 
-import org.lwjgl.input.Keyboard;
 
 import com.github.lunatrius.schematica.client.world.RenderLayerSettings;
 import com.github.lunatrius.schematica.client.world.RenderLayerRange;
 import com.github.lunatrius.schematica.SchematicaPlus;
 import com.github.lunatrius.schematica.client.gui.UiDemoScreen;
 import com.github.lunatrius.schematica.client.gui.GuiSchematicMainMenu;
-import com.github.lunatrius.schematica.client.gui.load.GuiSchematicLoad;
-import com.github.lunatrius.schematica.client.gui.control.GuiSchematicControl;
 import com.github.lunatrius.schematica.client.gui.save.GuiSchematicSave;
 import com.github.lunatrius.schematica.client.world.SchematicWorld;
 import com.github.lunatrius.schematica.proxy.ClientProxy;
-import com.github.lunatrius.schematica.reference.Names;
 import com.github.lunatrius.schematica.reference.Reference;
 import com.github.lunatrius.schematica.tool.ToolHandler;
 import com.github.lunatrius.schematica.tool.ToolManager;
 
-import cpw.mods.fml.common.eventhandler.SubscribeEvent;
-import cpw.mods.fml.common.gameevent.InputEvent;
 
 public class InputHandler {
 
     public static final InputHandler INSTANCE = new InputHandler();
 
-    private static final KeyBinding KEY_BINDING_SAVE = new KeyBinding(
-        Names.Keys.SAVE,
-        Keyboard.KEY_N,
-        Names.Keys.CATEGORY);
-    private static final KeyBinding KEY_BINDING_CONTROL = new KeyBinding(
-        Names.Keys.CONTROL,
-        Keyboard.KEY_M,
-        Names.Keys.CATEGORY);
-    private static final KeyBinding KEY_BINDING_LAYER_INC = new KeyBinding(
-        Names.Keys.LAYER_INC,
-        Keyboard.KEY_NONE,
-        Names.Keys.CATEGORY);
-    private static final KeyBinding KEY_BINDING_LAYER_DEC = new KeyBinding(
-        Names.Keys.LAYER_DEC,
-        Keyboard.KEY_NONE,
-        Names.Keys.CATEGORY);
-    private static final KeyBinding KEY_BINDING_EXECUTE = new KeyBinding(
-        Names.Keys.EXECUTE,
-        Keyboard.KEY_RETURN,
-        Names.Keys.CATEGORY);
-    private static final KeyBinding KEY_BINDING_UI_DEMO = new KeyBinding(
-        Names.Keys.UI_DEMO,
-        Keyboard.KEY_NONE,
-        Names.Keys.CATEGORY);
-    private static final KeyBinding KEY_BINDING_LOAD = new KeyBinding(Names.Keys.LOAD, Keyboard.KEY_NONE, Names.Keys.CATEGORY);
-    private static final KeyBinding KEY_BINDING_MANIPULATE = new KeyBinding(Names.Keys.MANIPULATE, Keyboard.KEY_NONE, Names.Keys.CATEGORY);
-    public static final KeyBinding RENDER_INFO_OVERLAY = new KeyBinding("litematica.config.hotkeys.name.renderInfoOverlay", Keyboard.KEY_I, Names.Keys.CATEGORY);
-
-    public static final KeyBinding[] KEY_BINDINGS = new KeyBinding[] { KEY_BINDING_SAVE,
-        KEY_BINDING_CONTROL, KEY_BINDING_LAYER_INC, KEY_BINDING_LAYER_DEC,
-        KEY_BINDING_EXECUTE, KEY_BINDING_UI_DEMO, KEY_BINDING_LOAD, KEY_BINDING_MANIPULATE, RENDER_INFO_OVERLAY };
-
     private final Minecraft minecraft = Minecraft.getMinecraft();
 
     private InputHandler() {}
 
-    @SubscribeEvent
-    public void onKeyInput(InputEvent event) {
-        if (this.minecraft.currentScreen == null) {
-            if (KEY_BINDING_UI_DEMO.isPressed()) {
-                this.minecraft.displayGuiScreen(new UiDemoScreen(null));
-                return;
-            }
-            if (KEY_BINDING_SAVE.isPressed()) {
-                this.minecraft.displayGuiScreen(new GuiSchematicSave(this.minecraft.currentScreen));
-                return;
-            }
-
-            if (KEY_BINDING_CONTROL.isPressed()) {
-                this.minecraft.displayGuiScreen(new GuiSchematicMainMenu(null));
-                return;
-            }
-            if (KEY_BINDING_LOAD.isPressed()) {
-                this.minecraft.displayGuiScreen(new GuiSchematicLoad(null));
-                return;
-            }
-            if (KEY_BINDING_MANIPULATE.isPressed()) {
-                this.minecraft.displayGuiScreen(new GuiSchematicControl(this.minecraft.currentScreen));
-                return;
-            }
-
-            if (KEY_BINDING_LAYER_INC.isPressed()) moveLayer(1);
-            if (KEY_BINDING_LAYER_DEC.isPressed()) moveLayer(-1);
-
-            if (KEY_BINDING_EXECUTE.isPressed()) {
-                if (ToolManager.isHoldingToolItem()) {
-                    ToolHandler.onExecute(this.minecraft.thePlayer);
-                }
-            }
-
-            handlePickBlock();
+    public boolean onHotkey(com.github.lunatrius.schematica.client.input.Hotkey key,
+                            com.github.lunatrius.schematica.client.input.Hotkey.Action action) {
+        net.minecraft.client.gui.GuiScreen parent = minecraft.currentScreen;
+        SchematicWorld placement = ClientProxy.schematic;
+        switch (key.id) {
+            case "openGuiMainMenu": minecraft.displayGuiScreen(new GuiSchematicMainMenu(parent)); return true;
+            case "openGuiSettings": minecraft.displayGuiScreen(new com.github.lunatrius.schematica.client.gui.GuiModConfig(parent)); return true;
+            case "uiDemo": minecraft.displayGuiScreen(new UiDemoScreen(parent)); return true;
+            default: break;
         }
+        if (minecraft.thePlayer == null || minecraft.theWorld == null) return false;
+        switch (key.id) {
+            case "openGuiLoadedSchematics": minecraft.displayGuiScreen(new com.github.lunatrius.schematica.client.gui.placement.GuiSchematicLoadedList(parent)); break;
+            case "openGuiSchematicPlacements": minecraft.displayGuiScreen(new com.github.lunatrius.schematica.client.gui.placement.GuiSchematicPlacementsList(parent)); break;
+            case "openGuiSelectionManager": minecraft.displayGuiScreen(new com.github.lunatrius.schematica.client.gui.save.GuiAreaSelectionManager(parent)); break;
+            case "openGuiAreaSettings": minecraft.displayGuiScreen(new com.github.lunatrius.schematica.client.gui.save.GuiAreaSelectionEditor(parent)); break;
+            case "openGuiPlacementSettings":
+                if (placement != null) minecraft.displayGuiScreen(new com.github.lunatrius.schematica.client.gui.placement.GuiPlacementConfiguration(parent, placement));
+                break;
+            case "openGuiMaterialList":
+                if (placement != null) minecraft.displayGuiScreen(new com.github.lunatrius.schematica.client.gui.control.GuiSchematicMaterials(parent, placement));
+                break;
+            case "openGuiSchematicVerifier":
+                if (placement != null) minecraft.displayGuiScreen(new com.github.lunatrius.schematica.client.gui.GuiSchematicVerifier(parent, placement));
+                break;
+            case "saveAreaAsSchematicToFile": minecraft.displayGuiScreen(new GuiSchematicSave(parent)); break;
+            case "layerNext": moveLayer(1); break;
+            case "layerPrevious": moveLayer(-1); break;
+            case "layerModeNext": cycleLayer(1); break;
+            case "layerModePrevious": cycleLayer(-1); break;
+            case "layerSetHere": RenderLayerSettings.RANGE.setValue(false, MathHelper.floor_double(layerCoordinate())); break;
+            case "rerenderSchematic": com.github.lunatrius.schematica.client.renderer.RendererSchematicGlobal.INSTANCE.refresh(); break;
+            case "unloadCurrentSchematic": SchematicaPlus.proxy.unloadSchematic(); break;
+            case "pickBlockFirst": return pickBlock();
+            case "pickBlockToggle": ToolManager.toggleConfig("pickBlockEnabled"); break;
+            case "executeOperation":
+                if (!com.github.lunatrius.schematica.handler.ConfigurationHandler.executeRequireTool || ToolManager.toolActive()) ToolHandler.onExecute(minecraft.thePlayer);
+                else return false;
+                break;
+            default: return ToolManager.hotkey(key.id);
+        }
+        return true;
+    }
+
+    private double layerCoordinate() {
+        net.minecraft.entity.Entity camera = minecraft.renderViewEntity;
+        if (camera == null) return 0;
+        return RenderLayerSettings.RANGE.axis() == RenderLayerRange.Axis.X ? camera.posX
+            : RenderLayerSettings.RANGE.axis() == RenderLayerRange.Axis.Y ? camera.posY - camera.yOffset : camera.posZ;
+    }
+
+    private void cycleLayer(int direction) {
+        RenderLayerRange.Mode[] modes = RenderLayerRange.Mode.values();
+        RenderLayerSettings.RANGE.setMode(modes[Math.floorMod(RenderLayerSettings.RANGE.mode().ordinal() + direction, modes.length)]);
     }
 
     private void moveLayer(int amount) {
@@ -126,15 +105,15 @@ public class InputHandler {
         }
     }
 
-    private void handlePickBlock() {
+    private boolean pickBlock() {
+        if (!com.github.lunatrius.schematica.handler.ConfigurationHandler.pickBlockEnabled) return false;
         try {
-            PickBlockInput.dispatch(this.minecraft.gameSettings.keyBindPickBlock, () -> {
-                SchematicWorld schematic = ClientProxy.schematic;
-                return schematic != null && schematic.isRenderingEnabled() && this.minecraft.thePlayer != null
-                    && pickBlock(schematic, RenderTickHandler.INSTANCE.rayTrace(schematic, 1));
-            });
+            SchematicWorld schematic = ClientProxy.schematic;
+            return schematic != null && schematic.isRenderingEnabled() && minecraft.thePlayer != null
+                && pickBlock(schematic, RenderTickHandler.INSTANCE.rayTrace(schematic, 1));
         } catch (Exception error) {
             Reference.logger.error("Could not pick block!", error);
+            return false;
         }
     }
 

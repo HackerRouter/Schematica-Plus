@@ -42,6 +42,8 @@ public class TickHandler {
     @SubscribeEvent
     public void onClientTick(TickEvent.ClientTickEvent event) {
         if (event.phase == TickEvent.Phase.END) {
+            com.github.lunatrius.schematica.client.input.HotkeyHooks.tick();
+            com.github.lunatrius.schematica.tool.ToolManager.tick();
             this.minecraft.mcProfiler.startSection("schematica");
             if (ClientProxy.isPendingReset) {
                 SchematicaPlus.proxy.resetSettings();

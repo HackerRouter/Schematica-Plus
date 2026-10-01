@@ -10,15 +10,12 @@ import com.github.lunatrius.schematica.client.gui.framework.UiTranslations;
 import com.github.lunatrius.schematica.client.verifier.VerificationManager;
 import com.github.lunatrius.schematica.handler.InfoHudSettings;
 import com.github.lunatrius.schematica.handler.VerifierOverlaySettings;
-import com.github.lunatrius.schematica.handler.client.InputHandler;
 import com.github.lunatrius.schematica.client.gui.VerifierBlockInfo;
 import com.github.lunatrius.schematica.client.renderer.VerifierOverlayRenderer;
 import com.github.lunatrius.schematica.client.verifier.VerificationScan.Marker;
 import com.github.lunatrius.schematica.client.verifier.VerificationScan.Pair;
 import java.util.ArrayList;
 import java.util.List;
-import org.lwjgl.input.Keyboard;
-import org.lwjgl.input.Mouse;
 
 public final class VerifierHud {
     private static Pair pair;
@@ -64,9 +61,7 @@ public final class VerifierHud {
     }
 
     private static void overlay(Minecraft mc, VerificationManager.Session session, float partialTicks, ScaledResolution screen) {
-        int key = InputHandler.RENDER_INFO_OVERLAY.getKeyCode();
-        boolean held = key > 0 && key < Keyboard.KEYBOARD_SIZE ? Keyboard.isKeyDown(key)
-            : key < 0 && key + 100 >= 0 && key + 100 < Mouse.getButtonCount() && Mouse.isButtonDown(key + 100);
+        boolean held = com.github.lunatrius.schematica.client.input.Hotkeys.held("renderInfoOverlay");
         Marker marker = held && VerifierOverlaySettings.enabled ? VerifierOverlayRenderer.target(mc, session, partialTicks) : null;
         if (marker == null) { pair = null; info = null; return; }
         if (!marker.group.pair.equals(pair)) { pair = marker.group.pair; info = new VerifierBlockInfo(pair); }

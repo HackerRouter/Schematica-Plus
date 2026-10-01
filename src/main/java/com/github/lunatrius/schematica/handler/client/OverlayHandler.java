@@ -65,7 +65,7 @@ public class OverlayHandler {
         com.github.lunatrius.schematica.client.renderer.hud.BlockInfoHud.INSTANCE.render(this.minecraft, event.partialTicks);
         com.github.lunatrius.schematica.client.renderer.hud.VerifierHud.render(this.minecraft, event.partialTicks);
 
-        if (this.minecraft.currentScreen != null || !ToolManager.isHoldingToolItem()) {
+        if (this.minecraft.currentScreen != null || !ToolManager.toolActive()) {
             return;
         }
 

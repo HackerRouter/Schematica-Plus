@@ -82,6 +82,7 @@ public class ConfigurationHandler {
     public static String[] extraAirBlocks = EXTRA_AIR_BLOCKS_DEFAULT;
     public static String sortType = SORT_TYPE_DEFAULT;
     public static String toolItem = TOOL_ITEM_DEFAULT;
+    public static boolean toolItemEnabled = true, executeRequireTool = true, pickBlockEnabled = true;
     public static boolean pasteWithoutUpdates = PASTE_WITHOUT_UPDATES_DEFAULT;
     public static boolean pasteOnlyAir = PASTE_ONLY_AIR_DEFAULT;
     public static boolean printerEnabled = PRINTER_ENABLED_DEFAULT;
@@ -332,6 +333,9 @@ public class ConfigurationHandler {
         propToolItem.setLanguageKey(Names.Config.LANG_PREFIX + "." + Names.Config.TOOL_ITEM);
         toolItem = propToolItem.getString();
         parseToolItem(toolItem);
+        toolItemEnabled = toolBoolean("toolItemEnabled");
+        executeRequireTool = toolBoolean("executeRequireHoldingTool");
+        pickBlockEnabled = toolBoolean("pickBlockEnabled");
 
         propPasteWithoutUpdates = configuration.get(Names.Config.Category.TOOL, Names.Config.PASTE_WITHOUT_UPDATES,
             PASTE_WITHOUT_UPDATES_DEFAULT, Names.Config.PASTE_WITHOUT_UPDATES_DESC);
@@ -396,6 +400,12 @@ public class ConfigurationHandler {
      * Server-safe: does not reference any client-only classes.
      * Supports formats: "minecraft:stick", "minecraft:dye@4"
      */
+    private static boolean toolBoolean(String name) {
+        Property property = configuration.get(Names.Config.Category.TOOL, name, true);
+        property.setLanguageKey("litematica.config.generic.name." + name);
+        return property.getBoolean(true);
+    }
+
     public static void parseToolItem(String itemStr) {
         toolItemType = null;
         toolItemMeta = -1;
