@@ -4,13 +4,26 @@
 
 ## TL;DR:
 
-## It is now a 95% [Litematica](https://modrinth.com/mod/litematica) import for 1.7.10.
+## It is now a 95% [Litematica](https://modrinth.com/mod/litematica) backport for 1.7.10.
 
 ## NO MORE PREREQUISTE MOD.
 
 ## It is currently a CLIENT mod. The SERVER mod DEVELOPMENT will be finished soon.
 
 ## For tutorials, check the description of [Litematica](https://modrinth.com/mod/litematica)
+
+## Requirements
+
+- Minecraft 1.7.10
+- Minecraft Forge
+
+## Installation
+
+Drop the mod jar into your `mods` folder.
+
+If you are playing GTNH, replace the existing `Schematica-1.12.6-GTNH.jar` with this mod.
+
+## It is NOT COMPATIBLE with the original [Schematica](https://legacy.curseforge.com/minecraft/mc-mods/schematica) and [Schematica-GTNH](https://github.com/GTNewHorizons/Schematica)
 
 ------
 
@@ -25,7 +38,7 @@ And we DO NOT NEED ANY PREREQUISTE MOD now!
 ![](images/en_US.png)
 
 AND SUPPORTS UP TO 13 LANGUAGES!
-*includes 文言 (華夏) and 繁體中文 (台灣)*
+*including 文言 (華夏) and 繁體中文 (台灣)*
 
 ![](images/1_zh_cn.png)
 
