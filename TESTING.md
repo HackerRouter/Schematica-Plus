@@ -1,5 +1,18 @@
 # Verification
 
+## Dedicated-server save queue and release gate
+
+- `ServerSaveQueueLoadingTest` loads the shared save queue with Minecraft client,
+  Plus client and LWJGL classes unavailable, including event-method reflection.
+- Start `gradlew runServer` in a fresh test directory with the EULA accepted.
+  Require the normal `Done (...)!` startup message and clean shutdown after `stop`.
+  Initialization must not load EntityClientPlayerMP, WorldClient or Minecraft.
+- On a dedicated server, run a server-side schematic save with a player connected.
+  In singleplayer, save an area, clone it to memory and save a project version;
+  client callbacks must still run on the client thread after capture completes.
+- The tag release workflow runs the same build/tests/server smoke check before
+  publishing. Keep that gate enabled and publish only the main runtime JAR.
+
 Run `gradlew build` for compilation, packaging, Checkstyle and unit tests. The tests
 exercise bounded file/NBT inputs and pure transformation logic without starting
 Minecraft. Forge world initialization requires LaunchWrapper and is not exercised

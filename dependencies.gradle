@@ -4,3 +4,12 @@ dependencies {
     testImplementation('junit:junit:4.13.2')
     compileOnly rfg.deobf('curse.maven:lotr-423748:4091561')
 }
+
+// Forge's legacy Scala module coordinates predate their Maven Central group.
+configurations.configureEach {
+    resolutionStrategy.dependencySubstitution {
+        substitute module('org.scala-lang:scala-parser-combinators_2.11:1.0.1') using module('org.scala-lang.modules:scala-parser-combinators_2.11:1.0.1')
+        substitute module('org.scala-lang:scala-swing_2.11:1.0.1') using module('org.scala-lang.modules:scala-swing_2.11:1.0.1')
+        substitute module('org.scala-lang:scala-xml_2.11:1.0.2') using module('org.scala-lang.modules:scala-xml_2.11:1.0.2')
+    }
+}
