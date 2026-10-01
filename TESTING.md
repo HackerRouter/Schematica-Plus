@@ -1030,3 +1030,22 @@ These checks supersede Phase 12's Simple-editor and bounding-box expectations.
   shows the client block, the schematic block, or both side by side when they
   differ, at the configured overlay alignment/offset. Inventory previews are not
   ported.
+
+## Clone, in-memory schematics, placement rotation/mirror and pick block
+
+- cloneSelection captures the selected area (same capture task as Save, so a
+  pending save blocks it) into an in-memory schematic, creates and selects a
+  placement at the targeted block (adjacent face unless sneaking), or at the area
+  origin with cloneAtOriginalPosition, and switches creative players to Paste.
+- saveAreaAsInMemorySchematic asks for a name and adds an in-memory source without
+  a placement. In-memory sources show "IN-MEMORY ONLY" in Loaded Schematics, cannot
+  be reloaded, are not restored in the next session, and can be saved to a file.
+- schematicPlacementRotation / schematicPlacementMirror rotate the selected
+  placement clockwise / cycle its mirror with the upstream action bar message;
+  locked placements show the locked message.
+- pickBlockFirst (middle click) picks the nearest rendered schematic block of any
+  placement when it is not farther than the real block; pickBlockLast picks the
+  farthest schematic block in front of the targeted real block, or the schematic
+  block in the empty space against its face. Bound to the use key, it picks before
+  the vanilla use action. Both are off while holding the tool or when rendering
+  or schematic rendering is disabled.

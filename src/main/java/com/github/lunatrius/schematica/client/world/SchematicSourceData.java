@@ -33,7 +33,10 @@ public final class SchematicSourceData {
     }
 
     public static SchematicSourceData read(File file) throws IOException {
-        SchematicFileSnapshot snapshot = SchematicFileSnapshot.read(file);
+        return of(SchematicFileSnapshot.read(file));
+    }
+
+    public static SchematicSourceData of(SchematicFileSnapshot snapshot) throws IOException {
         return new SchematicSourceData(snapshot, SchematicFormat.readFromSnapshot(snapshot));
     }
 

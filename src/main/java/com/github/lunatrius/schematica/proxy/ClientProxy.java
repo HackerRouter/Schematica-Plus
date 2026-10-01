@@ -444,6 +444,13 @@ public class ClientProxy extends CommonProxy {
         return SCHEMATICS.load(file);
     }
 
+    /** Registers a captured schematic that has no file; it is not restored in later sessions. */
+    public static SchematicLibrary.Source<SchematicSourceData> addMemorySource(String name,
+        com.github.lunatrius.schematica.world.schematic.SchematicFileSnapshot snapshot) throws IOException {
+        String safe = name.replaceAll("[\\\\/:*?\"<>|]", "_").trim();
+        return SCHEMATICS.addMemory(new File("<memory>", (safe.isEmpty() ? "schematic" : safe) + ".schemplus"), SchematicSourceData.of(snapshot));
+    }
+
     private static SchematicWorld instantiate(SchematicLibrary.Source<SchematicSourceData> source, SchematicSourceData data) throws IOException {
         SchematicWorld world = new SchematicWorld(data.instantiate(), source.file().getName());
         world.setPlacementSource(data);
@@ -561,6 +568,7 @@ public class ClientProxy extends CommonProxy {
 
             List<LoadedSchematicEntry> entries = new ArrayList<>();
             for (SchematicWorld sw : loadedSchematics) {
+                if (SCHEMATICS.sourceOf(sw).memory()) continue;
                 LoadedSchematicEntry entry = new LoadedSchematicEntry();
                 entry.displayName = sw.name;
                 entry.filename = sw.sourceFilename;
@@ -589,7 +597,7 @@ public class ClientProxy extends CommonProxy {
             for (SchematicLibrary.Source<SchematicSourceData> source : SCHEMATICS.sources()) {
                 boolean placed = false;
                 for (SchematicWorld world : loadedSchematics) if (SCHEMATICS.sourceOf(world) == source) placed = true;
-                if (placed) continue;
+                if (placed || source.memory()) continue;
                 LoadedSchematicEntry entry = new LoadedSchematicEntry();
                 entry.filename = source.file().getName();
                 entry.directory = source.file().getParentFile().getAbsolutePath();

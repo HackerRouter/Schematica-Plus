@@ -99,6 +99,13 @@ public class QueueTickHandler {
             for (TileEntity entity : container.schematic.getTileEntities()) {
                 if (!entity.hasWorldObj()) entity.setWorldObj(container.world);
             }
+            if (container.memory != null) {
+                com.github.lunatrius.schematica.world.schematic.SchematicFileSnapshot snapshot =
+                    com.github.lunatrius.schematica.world.schematic.SchematicFileSnapshot.capture(container.schematic);
+                java.util.function.Consumer<com.github.lunatrius.schematica.world.schematic.SchematicFileSnapshot> memory = container.memory;
+                Minecraft.getMinecraft().func_152344_a(() -> memory.accept(snapshot));
+                return;
+            }
             java.io.File saved = SchematicFormat.saveToFile(container.file, container.schematic, container.world,
                 container.includeNBT, container.includeEntities);
             boolean renamed = saved != null && !saved.getName().equals(container.file.getName());

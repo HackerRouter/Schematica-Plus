@@ -169,4 +169,20 @@ public class SchematicLibraryTest {
         assertSame(source, library.sourceOf(changes.get(second)));
         assertNull(library.sourceOf(first));
     }
+
+    @Test public void memorySourcesAreNeverMatchedOrRenamedAsFiles() throws IOException {
+        SchematicLibrary<byte[], byte[]> library = library();
+        File file = source("a.schematic", 1);
+        SchematicLibrary.Source<byte[]> memory = library.addMemory(file, new byte[] {9});
+        assertTrue(memory.memory());
+        SchematicLibrary.Source<byte[]> loaded = library.load(file);
+        assertNotSame(memory, loaded);
+        assertFalse(loaded.memory());
+        assertEquals(1, loaded.data()[0]);
+        File renamed = new File(temporary.getRoot(), "b.schematic");
+        library.renamed(file.getCanonicalFile(), renamed);
+        assertEquals(renamed.getCanonicalFile(), loaded.file());
+        assertEquals(file.getAbsoluteFile(), memory.file());
+        assertEquals(2, library.sources().size());
+    }
 }

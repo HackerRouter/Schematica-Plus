@@ -11,15 +11,11 @@ import java.util.Map;
 
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
-import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.ChatComponentTranslation;
 import net.minecraft.util.EnumChatFormatting;
-import net.minecraft.util.MathHelper;
-import net.minecraft.util.MovingObjectPosition;
-import net.minecraft.util.Vec3;
 import net.minecraftforge.common.util.ForgeDirection;
 
 import com.github.lunatrius.schematica.api.ISchematic;
@@ -37,7 +33,6 @@ import com.github.lunatrius.schematica.client.world.SourceBlockPosition;
 import com.github.lunatrius.schematica.client.world.SourceEditor;
 import com.github.lunatrius.schematica.client.world.SourceEditor.Cell;
 import com.github.lunatrius.schematica.client.world.SubRegionPlacements;
-import com.github.lunatrius.schematica.handler.VisualSettings;
 import com.github.lunatrius.schematica.proxy.ClientProxy;
 import com.github.lunatrius.schematica.reference.Reference;
 
@@ -47,23 +42,6 @@ public final class SchematicRebuild {
     private static final int MAX_RUN = 10000;
 
     private SchematicRebuild() {}
-
-    public static final class Target {
-        public final SchematicWorld world;
-        public final int x, y, z, side;
-        public final double hitX, hitY, hitZ, distance;
-
-        Target(SchematicWorld world, MovingObjectPosition hit, double distance) {
-            this.world = world;
-            x = hit.blockX + world.position.x; y = hit.blockY + world.position.y; z = hit.blockZ + world.position.z;
-            side = hit.sideHit;
-            hitX = hit.hitVec.xCoord + world.position.x; hitY = hit.hitVec.yCoord + world.position.y; hitZ = hit.hitVec.zCoord + world.position.z;
-            this.distance = distance;
-        }
-
-        public ForgeDirection face() { return ForgeDirection.getOrientation(side); }
-        int[] adjacent() { ForgeDirection d = face(); return new int[] {x + d.offsetX, y + d.offsetY, z + d.offsetZ}; }
-    }
 
     static final class Owner {
         final SchematicLibrary.Source<SchematicSourceData> source;
@@ -82,7 +60,13 @@ public final class SchematicRebuild {
 
     /** Returns whether the press is consumed; like Litematica, only an edit that was carried out consumes it. */
     public static boolean click(boolean attack) {
-        if (ToolManager.getCurrentMode() != ToolMode.REBUILD || ClientProxy.loadedSchematics.isEmpty()) return false;
+        if (ToolManager.getCurrentMode() != ToolMode.REBUILD) {
+            if (!attack && Hotkeys.boundOnlyTo("pickBlockLast", mc().gameSettings.keyBindUseItem.getKeyCode())) {
+                com.github.lunatrius.schematica.handler.client.InputHandler.INSTANCE.pickBlock(false);
+            }
+            return false;
+        }
+        if (ClientProxy.loadedSchematics.isEmpty()) return false;
         try {
             return attack ? attack() : use();
         } catch (IOException error) {
@@ -96,7 +80,7 @@ public final class SchematicRebuild {
         boolean direction = Hotkeys.held("schematicEditBreakPlaceDirection");
         boolean except = !direction && Hotkeys.held("schematicEditBreakAllExcept");
         boolean all = !direction && !except && Hotkeys.held("schematicEditBreakPlaceAll");
-        Target target = trace(direction || except || all ? RANGE : mc().playerController.getBlockReachDistance() + 1);
+        SchematicTargets.Hit target = SchematicTargets.closest(direction || except || all ? RANGE : mc().playerController.getBlockReachDistance() + 1, true);
         if (target == null) return false;
         Owner owner = owner(target.world, target.x, target.y, target.z);
         if (owner == null) return false;
@@ -115,7 +99,7 @@ public final class SchematicRebuild {
     }
 
     private static boolean use() throws IOException {
-        Target target = trace(RANGE);
+        SchematicTargets.Hit target = SchematicTargets.closest(RANGE, true);
         if (target == null) return false;
         CellState placed = heldState(target);
         if (placed == null) return false;
@@ -145,7 +129,7 @@ public final class SchematicRebuild {
         if (Hotkeys.held("schematicEditBreakPlaceDirection")) {
             Owner start = owner(target.world, next[0], next[1], next[2]);
             return start != null && composed(start.world, next[0], next[1], next[2]).isAir()
-                && setRun(start, next[0], next[1], next[2], RebuildDirection.targeted(target.face(), facing(), target.hitX - target.x,
+                && setRun(start, next[0], next[1], next[2], RebuildDirection.targeted(target.face(), SchematicTargets.facing(), target.hitX - target.x,
                     target.hitY - target.y, target.hitZ - target.z), placed);
         }
         if (Hotkeys.held("schematicEditBreakPlaceAll")) {
@@ -169,31 +153,6 @@ public final class SchematicRebuild {
         com.github.lunatrius.schematica.internal.lunatriuscore.util.vector.Vector3i origin = area.origin();
         return RebuildJobs.start(new RebuildJobs.Selection(mc().theWorld, area.regions(), area.name(),
             String.format("x: %d, y: %d, z: %d", origin.x, origin.y, origin.z)));
-    }
-
-    public static Target trace(double range) {
-        Minecraft mc = mc();
-        EntityLivingBase camera = mc.renderViewEntity == null ? mc.thePlayer : mc.renderViewEntity;
-        if (camera == null || mc.theWorld == null || !VisualSettings.schematicVisible()) return null;
-        Vec3 eye = camera.getPosition(1), look = camera.getLook(1);
-        double limit = range;
-        MovingObjectPosition real = mc.theWorld.rayTraceBlocks(copy(eye, 0, 0, 0), eye.addVector(look.xCoord * range, look.yCoord * range, look.zCoord * range), true);
-        if (real != null && real.typeOfHit == MovingObjectPosition.MovingObjectType.BLOCK) limit = eye.distanceTo(real.hitVec);
-        Target best = null;
-        for (SchematicWorld world : ClientProxy.loadedSchematics) {
-            if (!world.isRenderingEnabled()) continue;
-            Vec3 start = copy(eye, -world.position.x, -world.position.y, -world.position.z);
-            MovingObjectPosition hit = world.rayTraceRendered(copy(start, 0, 0, 0),
-                start.addVector(look.xCoord * range, look.yCoord * range, look.zCoord * range), true);
-            if (hit == null || hit.typeOfHit != MovingObjectPosition.MovingObjectType.BLOCK) continue;
-            double distance = start.distanceTo(hit.hitVec);
-            if (distance <= limit + 1.0E-7 && (best == null || distance < best.distance)) best = new Target(world, hit, distance);
-        }
-        return best;
-    }
-
-    private static Vec3 copy(Vec3 vector, double x, double y, double z) {
-        return Vec3.createVectorHelper(vector.xCoord + x, vector.yCoord + y, vector.zCoord + z);
     }
 
     /** The placement and source cell shown at a world position, preferring the given placement. */
@@ -230,17 +189,8 @@ public final class SchematicRebuild {
 
     static boolean inRange(int x, int y, int z) { return RenderLayerSettings.RANGE.contains(x, y, z); }
 
-    public static ForgeDirection facing() {
-        switch (MathHelper.floor_double(mc().thePlayer.rotationYaw * 4.0F / 360.0F + 0.5D) & 3) {
-            case 0: return ForgeDirection.SOUTH;
-            case 1: return ForgeDirection.WEST;
-            case 2: return ForgeDirection.NORTH;
-            default: return ForgeDirection.EAST;
-        }
-    }
-
-    private static ForgeDirection directionAway(Target target) {
-        ForgeDirection direction = RebuildDirection.targeted(target.face(), facing(), target.hitX - target.x, target.hitY - target.y, target.hitZ - target.z);
+    private static ForgeDirection directionAway(SchematicTargets.Hit target) {
+        ForgeDirection direction = RebuildDirection.targeted(target.face(), SchematicTargets.facing(), target.hitX - target.x, target.hitY - target.y, target.hitZ - target.z);
         return direction == target.face() ? direction.getOpposite() : direction;
     }
 
@@ -298,7 +248,7 @@ public final class SchematicRebuild {
     }
 
     /** The state the held block item would place against the targeted face, or the picked primary block with an empty hand. */
-    static CellState heldState(Target target) {
+    static CellState heldState(SchematicTargets.Hit target) {
         EntityPlayer player = mc().thePlayer;
         ItemStack stack = player.getHeldItem();
         if (stack == null) {

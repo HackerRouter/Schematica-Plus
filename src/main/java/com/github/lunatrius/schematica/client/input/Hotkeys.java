@@ -46,6 +46,7 @@ public final class Hotkeys {
         add("toolSelectModifierBlock2", modifier(), Keyboard.KEY_LSHIFT);
         add("toolEnabledToggle", normal(), Keyboard.KEY_M, Keyboard.KEY_T);
         add("pickBlockFirst", extra(), -98);
+        add("pickBlockLast", modifier());
         add("pickBlockToggle", normal(), Keyboard.KEY_M, -98);
         add("renderInfoOverlay", extra(), Keyboard.KEY_I);
         add("rerenderSchematic", normal(), Keyboard.KEY_F3, Keyboard.KEY_M);
@@ -68,12 +69,18 @@ public final class Hotkeys {
             "toggleOverlayOutlineRendering", "toggleOverlaySideRendering", "togglePlacementBoxesRendering", "toggleSchematicBlockRendering",
             "toggleTranslucentRendering", "toggleVerifierOverlayRendering", "invertGhostBlockRenderState", "invertOverlayRenderState"}) add(id, normal());
         add("renderOverlayThroughBlocks", extra(), Keyboard.KEY_RCONTROL);
+        add("cloneSelection", normal());
+        add("saveAreaAsInMemorySchematic", normal());
+        add("schematicPlacementRotation", modifier());
+        add("schematicPlacementMirror", modifier());
         ALL = Collections.unmodifiableList(new ArrayList<>(BY_ID.values()));
     }
 
     private Hotkeys() {}
     public static Hotkey get(String id) { return BY_ID.get(id); }
     public static boolean held(String id) { return HotkeyHooks.held(get(id)); }
+    /** Whether the hotkey is bound to exactly this one key, as KeybindMulti.hotkeyMatchesKeybind for a single vanilla key. */
+    public static boolean boundOnlyTo(String id, int code) { return get(id).keys().size() == 1 && get(id).keys().get(0) == code; }
     private static Hotkey.Settings normal() { return new Hotkey.Settings(); }
     private static Hotkey.Settings extra() { Hotkey.Settings s = normal(); s.allowExtra = true; return s; }
     private static Hotkey.Settings modifier() { Hotkey.Settings s = extra(); s.ordered = false; s.cancel = false; return s; }

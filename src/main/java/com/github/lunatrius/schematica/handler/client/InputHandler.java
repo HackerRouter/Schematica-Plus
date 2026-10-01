@@ -21,7 +21,9 @@ import com.github.lunatrius.schematica.client.world.SchematicWorld;
 import com.github.lunatrius.schematica.proxy.ClientProxy;
 import com.github.lunatrius.schematica.reference.Reference;
 import com.github.lunatrius.schematica.tool.ToolHandler;
+import com.github.lunatrius.schematica.tool.SchematicTargets;
 import com.github.lunatrius.schematica.tool.ToolManager;
+import com.github.lunatrius.schematica.client.input.Hotkeys;
 
 
 public class InputHandler {
@@ -65,9 +67,16 @@ public class InputHandler {
             case "layerSetHere": RenderLayerSettings.RANGE.setValue(false, MathHelper.floor_double(layerCoordinate())); break;
             case "rerenderSchematic": com.github.lunatrius.schematica.client.renderer.RendererSchematicGlobal.INSTANCE.refresh(); break;
             case "unloadCurrentSchematic": SchematicaPlus.proxy.unloadSchematic(); break;
-            case "pickBlockFirst": return pickBlock();
+            case "pickBlockFirst": return pickBlock(true);
+            case "pickBlockLast":
+                if (!Hotkeys.boundOnlyTo("pickBlockLast", minecraft.gameSettings.keyBindUseItem.getKeyCode())) pickBlock(false);
+                return false;
             case "pickBlockToggle": ToolManager.toggleConfig("pickBlockEnabled"); break;
             case "schematicEditReplaceSelection": return com.github.lunatrius.schematica.tool.SchematicRebuild.replaceSelection();
+            case "cloneSelection": return com.github.lunatrius.schematica.tool.PlacementActions.cloneSelection();
+            case "saveAreaAsInMemorySchematic": return com.github.lunatrius.schematica.tool.PlacementActions.saveInMemory();
+            case "schematicPlacementRotation": return com.github.lunatrius.schematica.tool.PlacementActions.rotate();
+            case "schematicPlacementMirror": return com.github.lunatrius.schematica.tool.PlacementActions.mirror();
             case "toggleAllRendering": renderToggle(VisualSettings.Toggle.ALL, false); break;
             case "toggleSchematicRendering": renderToggle(VisualSettings.Toggle.SCHEMATIC, false); break;
             case "toggleSchematicBlockRendering": VisualSettings.toggle(VisualSettings.Toggle.BLOCKS); break;
@@ -123,28 +132,36 @@ public class InputHandler {
         }
     }
 
-    private boolean pickBlock() {
-        if (!com.github.lunatrius.schematica.handler.ConfigurationHandler.pickBlockEnabled) return false;
+    /** Litematica's EntityUtils.shouldPickBlock. */
+    public static boolean shouldPickBlock() {
+        return com.github.lunatrius.schematica.handler.ConfigurationHandler.pickBlockEnabled
+            && (!com.github.lunatrius.schematica.handler.ConfigurationHandler.toolItemEnabled || !ToolManager.isHoldingToolItem())
+            && VisualSettings.rendering && VisualSettings.schematic;
+    }
+
+    /** Litematica's doSchematicWorldPickBlock: the closest schematic block, or the farthest one before the targeted real block. */
+    public boolean pickBlock(boolean closest) {
+        if (minecraft.thePlayer == null || !shouldPickBlock()) return false;
         try {
-            SchematicWorld schematic = ClientProxy.schematic;
-            return schematic != null && schematic.isRenderingEnabled() && VisualSettings.schematicVisible() && minecraft.thePlayer != null
-                && pickBlock(schematic, RenderTickHandler.INSTANCE.rayTrace(schematic, 1));
+            double range = minecraft.playerController.getBlockReachDistance() + 1;
+            SchematicTargets.Hit hit = closest ? SchematicTargets.closest(range, false) : SchematicTargets.furthestBeforeVanilla(range);
+            return hit != null && pickBlock(hit);
         } catch (Exception error) {
             Reference.logger.error("Could not pick block!", error);
             return false;
         }
     }
 
-    private boolean pickBlock(final SchematicWorld schematic, final MovingObjectPosition hit) {
-        net.minecraft.entity.EntityLivingBase camera = this.minecraft.renderViewEntity;
-        if (!PickBlockInput.schematicFirst(hit, this.minecraft.objectMouseOver, camera == null ? null : camera.getPosition(1),
-            schematic.position.x, schematic.position.y, schematic.position.z)
-            || !schematic.isBlockRendered(hit.blockX, hit.blockY, hit.blockZ)) return false;
+    private boolean pickBlock(SchematicTargets.Hit target) {
+        SchematicWorld schematic = target.world;
+        int x = target.localX(), y = target.localY(), z = target.localZ();
+        MovingObjectPosition hit = new MovingObjectPosition(x, y, z, target.side, net.minecraft.util.Vec3.createVectorHelper(
+            target.hitX - schematic.position.x, target.hitY - schematic.position.y, target.hitZ - schematic.position.z));
         final EntityClientPlayerMP player = this.minecraft.thePlayer;
         if (!ForgeHooks.onPickBlock(hit, player, schematic)) return false;
         if (player.capabilities.isCreativeMode) {
-            final Block block = schematic.getBlock(hit.blockX, hit.blockY, hit.blockZ);
-            final int metadata = schematic.getBlockMetadata(hit.blockX, hit.blockY, hit.blockZ);
+            final Block block = schematic.getBlock(x, y, z);
+            final int metadata = schematic.getBlockMetadata(x, y, z);
             if (block == Blocks.double_stone_slab || block == Blocks.double_wooden_slab || block == Blocks.snow_layer) {
                 player.inventory.setInventorySlotContents(player.inventory.currentItem, new ItemStack(block, 1, metadata & 0xF));
             }

@@ -96,9 +96,10 @@ public final class GuiSchematicLoadedList extends GuiSchematicList<Source<Schema
             int count = 0;
             for (SchematicWorld world : ClientProxy.loadedSchematics) if (ClientProxy.SCHEMATICS.sourceOf(world) == source) count++;
             String details = UiTranslations.format("schematica.ui.source.details", source.data().width, source.data().height, source.data().length, count);
-            if (source.data().unsaved()) setTooltip(source.file().getAbsolutePath(), details, UiTranslations.format("litematica.gui.label.loaded_schematic.modified_on",
+            String location = source.memory() ? UiTranslations.format("litematica.gui.label.schematic_placement.in_memory") : source.file().getAbsolutePath();
+            if (source.data().unsaved()) setTooltip(location, details, UiTranslations.format("litematica.gui.label.loaded_schematic.modified_on",
                 new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date(source.data().modifiedTime()))));
-            else setTooltip(source.file().getAbsolutePath(), details);
+            else setTooltip(location, details);
             super.tick();
         }
 

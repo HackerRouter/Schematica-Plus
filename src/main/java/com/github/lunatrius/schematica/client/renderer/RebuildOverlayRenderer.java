@@ -10,7 +10,7 @@ import org.lwjgl.opengl.GL11;
 import com.github.lunatrius.schematica.client.input.Hotkeys;
 import com.github.lunatrius.schematica.handler.RenderColors;
 import com.github.lunatrius.schematica.tool.RebuildDirection;
-import com.github.lunatrius.schematica.tool.SchematicRebuild;
+import com.github.lunatrius.schematica.tool.SchematicTargets;
 import com.github.lunatrius.schematica.tool.ToolManager;
 import com.github.lunatrius.schematica.tool.ToolMode;
 
@@ -35,9 +35,9 @@ public final class RebuildOverlayRenderer {
         else if (Hotkeys.held("schematicEditReplaceAll") || Hotkeys.held("schematicEditReplaceBlock")) color = RenderColors.REBUILD_REPLACE;
         else if (Hotkeys.held("schematicEditReplaceDirection")) { color = RenderColors.REBUILD_REPLACE; direction = true; }
         else return;
-        SchematicRebuild.Target target = SchematicRebuild.trace(20);
+        SchematicTargets.Hit target = SchematicTargets.closest(20, true);
         if (target == null) return;
-        ForgeDirection side = target.face(), facing = SchematicRebuild.facing();
+        ForgeDirection side = target.face(), facing = SchematicTargets.facing();
         double ox = target.x - cameraX, oy = target.y - cameraY, oz = target.z - cameraZ;
         int argb = color.color();
         GL11.glPushAttrib(GL11.GL_ALL_ATTRIB_BITS);

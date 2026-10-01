@@ -26,8 +26,16 @@ public final class SchematicLibrary<D, P> {
 
     public Source<D> load(File file) throws IOException {
         File canonical = file.getCanonicalFile();
-        for (Source<D> source : sources) if (source.file.equals(canonical)) return source;
+        for (Source<D> source : sources) if (!source.memory && source.file.equals(canonical)) return source;
         Source<D> source = new Source<>(canonical, reader.read(canonical));
+        sources.add(source);
+        return source;
+    }
+
+    /** Adds a source that exists only in memory; its file names it and is never read. */
+    public Source<D> addMemory(File file, D data) {
+        Source<D> source = new Source<>(file.getAbsoluteFile(), data);
+        source.memory = true;
         sources.add(source);
         return source;
     }
@@ -98,13 +106,13 @@ public final class SchematicLibrary<D, P> {
     public void renamed(File previous, File next) throws IOException {
         checkRename(previous, next);
         File canonical = next.getCanonicalFile();
-        for (Source<D> source : sources) if (source.file.equals(previous)) source.file = canonical;
+        for (Source<D> source : sources) if (!source.memory && source.file.equals(previous)) source.file = canonical;
     }
 
     public void checkRename(File previous, File next) throws IOException {
         File canonical = next.getCanonicalFile();
         for (Source<D> source : sources) {
-            if (source.file.equals(canonical) && !source.file.equals(previous)) {
+            if (!source.memory && source.file.equals(canonical) && !source.file.equals(previous)) {
                 throw new java.nio.file.FileAlreadyExistsException("A source is already loaded under this name: " + canonical);
             }
         }
@@ -123,10 +131,12 @@ public final class SchematicLibrary<D, P> {
     public static final class Source<D> {
         private File file;
         private D data;
+        private boolean memory;
 
         private Source(File file, D data) { this.file = file; this.data = data; }
 
         public File file() { return file; }
+        public boolean memory() { return memory; }
         public D data() { return data; }
         public String name() { return file.getName().replaceAll("(?i)\\.(schematic|litematic|schemplus)$", ""); }
     }

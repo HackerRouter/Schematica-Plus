@@ -16,6 +16,8 @@ public class SchematicContainer {
     public final World world;
     public final File file;
     public final boolean includeNBT, includeEntities;
+    /** When set, the captured schematic is encoded and handed to this consumer instead of being written to {@link #file}. */
+    public java.util.function.Consumer<com.github.lunatrius.schematica.world.schematic.SchematicFileSnapshot> memory;
 
     public final int minX;
     public final int maxX;
