@@ -34,8 +34,21 @@ import com.github.lunatrius.schematica.proxy.ClientProxy;
 public final class GuiAreaSelectionManager extends UiScreen {
     private final AreaSelectionLibrary library = AreaSelections.library();
     private final World world = Minecraft.getMinecraft().theWorld;
-    private final UiListModel<Area> model = new UiListModel<>(22, area -> area.name() + " " + area.boxes().stream().map(box -> box.name()).collect(java.util.stream.Collectors.joining(" ")));
-    private UiRowList<Area> list;
+    /** A browser row: a folder of the current folder, or a selection in it. */
+    private static final class Row {
+        final String folder;
+        final Area area;
+
+        Row(String folder, Area area) { this.folder = folder; this.area = area; }
+
+        String name() { return area != null ? area.name() : folder.substring(folder.lastIndexOf('/') + 1); }
+    }
+
+    private final UiListModel<Row> model = new UiListModel<>(22, row -> row.area == null ? row.name()
+        : row.name() + " " + row.area.boxes().stream().map(box -> box.name()).collect(java.util.stream.Collectors.joining(" ")));
+    private UiRowList<Row> list;
+    private UiButton home, up, createFolder;
+    private UiLabel path;
     private UiTextField search;
     private UiButton searchButton;
     private UiButton editor;
@@ -69,12 +82,18 @@ public final class GuiAreaSelectionManager extends UiScreen {
         searchButton = root.add(new UiButton(() -> "", button -> {
             searching = !searching;
             search.setVisible(searching);
+            path.setVisible(!searching);
             if (searching) input.focus(search);
             else search.setText("");
         }).setSprite(UiSprite.SEARCH).setBackground(false));
         search = root.add(new UiTextField(fontRendererObj, 200, text -> { model.setQuery(text); list.sync(); }));
         search.setVisible(false);
-        list = root.add(new UiRowList<>(model, Entry::new));
+        home = icon(UiSprite.ROOT, "malilib.gui.button.hover.directory_widget.root", () -> navigate(""));
+        up = icon(UiSprite.UP, "malilib.gui.button.hover.directory_widget.up",
+            () -> navigate(AreaSelectionLibrary.parentFolder(library.targetFolder())));
+        createFolder = icon(UiSprite.CREATE_DIRECTORY, "malilib.gui.button.hover.directory_widget.create_directory", this::createFolder);
+        path = root.add(new UiLabel(() -> "/" + library.targetFolder()));
+        list = root.add(new UiRowList<>(model, (row, index) -> row.area == null ? new FolderEntry(row, index) : new Entry(row.area, index)));
         status = root.add(new UiLabel(this::statusText));
     }
 
@@ -85,8 +104,45 @@ public final class GuiAreaSelectionManager extends UiScreen {
 
     @Override protected void closed() { if (available()) AreaSelections.saveCurrent(); }
 
+    private UiButton icon(UiSprite sprite, String key, Runnable action) {
+        UiButton button = root.add(new UiButton(() -> "", mouse -> { if (mouse == 0 && available()) action.run(); })
+            .setSprite(sprite).setBackground(false));
+        button.setTooltip(UiTranslations.format(key));
+        return button;
+    }
+
+    private void navigate(String folder) {
+        library.setTargetFolder(folder);
+        search.setText("");
+        refresh();
+    }
+
+    private void createFolder() {
+        prompt(UiTranslations.format("malilib.gui.title.create_directory"), "", name -> {
+            if (!available()) return UiTranslations.format("schematica.ui.area.context");
+            try {
+                library.createFolder(library.targetFolder(), name);
+                AreaSelections.saveCurrent();
+                refresh();
+                return null;
+            } catch (AreaSelectionLibrary.NameConflictException e) {
+                return UiTranslations.format("malilib.message.error.file_or_directory_already_exists", name);
+            } catch (IllegalArgumentException e) {
+                return UiTranslations.format("malilib.message.error.illegal_characters_in_file_name", name);
+            }
+        });
+    }
+
+    /** The folders directly below the current folder, then its selections. */
     private void refresh() {
-        model.setEntries(library.areas());
+        List<Row> rows = new ArrayList<>();
+        String current = library.targetFolder();
+        if (!current.isEmpty() && !library.folders().contains(current)) library.setTargetFolder(current = "");
+        for (String folder : library.folders()) {
+            if (AreaSelectionLibrary.parentFolder(folder).equals(current)) rows.add(new Row(folder, null));
+        }
+        for (Area area : library.areas()) if (area.folder().equals(current)) rows.add(new Row(null, area));
+        model.setEntries(rows);
         list.sync();
     }
 
@@ -163,6 +219,9 @@ public final class GuiAreaSelectionManager extends UiScreen {
         fromPlacement.setEnabled(available && ClientProxy.schematic != null);
         create.setEnabled(available);
         list.setEnabled(available);
+        home.setEnabled(available && !library.targetFolder().isEmpty());
+        up.setEnabled(available && !library.targetFolder().isEmpty());
+        createFolder.setEnabled(available);
         status.setTooltip(statusText());
     }
 
@@ -174,8 +233,13 @@ public final class GuiAreaSelectionManager extends UiScreen {
             right -= w + 2;
             button.setBounds(right, 24, w, 20);
         }
-        searchButton.setBounds(14, 54, 12, 12);
-        search.setBounds(30, 53, Math.max(0, width - 52), 16);
+        home.setBounds(14, 54, 12, 12);
+        up.setBounds(28, 54, 12, 12);
+        createFolder.setBounds(42, 54, 12, 12);
+        path.setBounds(58, 53, Math.max(0, width - 96), 14);
+        path.setVisible(!searching);
+        searchButton.setBounds(width - 26, 54, 12, 12);
+        search.setBounds(58, 53, Math.max(0, width - 96), 16);
         list.setBounds(10, 72, width - 20, Math.max(0, height - 90));
         status.setBounds(10, height - 15, width - 20, 14);
     }
@@ -261,6 +325,31 @@ public final class GuiAreaSelectionManager extends UiScreen {
         @Override public boolean keyTyped(char character, int keyCode) {
             if (keyCode != Keyboard.KEY_RETURN && keyCode != Keyboard.KEY_SPACE) return false;
             select();
+            return true;
+        }
+    }
+
+    private final class FolderEntry extends UiPanel {
+        private final Row row;
+        private final int index;
+
+        FolderEntry(Row row, int index) { this.row = row; this.index = index; }
+
+        @Override public void draw(UiDraw draw, int mouseX, int mouseY) {
+            draw.fill(bounds(), containsVisible(mouseX, mouseY) ? 0xA0707070 : index % 2 == 1 ? 0xA0101010 : 0xA0303030);
+            UiSprite.DIRECTORY.draw(draw, bounds().x + 2, bounds().y + 5, false, false);
+            draw.text(draw.trim(row.name(), bounds().width - 24), bounds().x + 20, bounds().y + 7, 0xFFFFFFFF);
+        }
+
+        @Override public boolean isFocusable() { return true; }
+        @Override public boolean mouseDown(int x, int y, int button) {
+            if (button != 0 || !available()) return false;
+            navigate(row.folder);
+            return true;
+        }
+        @Override public boolean keyTyped(char character, int keyCode) {
+            if (keyCode != Keyboard.KEY_RETURN && keyCode != Keyboard.KEY_SPACE) return false;
+            if (available()) navigate(row.folder);
             return true;
         }
     }

@@ -1275,3 +1275,15 @@ compare with a server that does not have the mod and with each server option off
 - Server download (/schematicaDownload) of such a file from a dedicated server to this client: the
   saved file restores both regions. An older Plus client gets the update-client message.
 
+## File-based area selections (selection manager folders)
+
+- First join of a world that had selections: they appear unchanged; after saving, each is a JSON file
+  in schematics/area_selections_per_world/<world>/area_selections and AreaSelection.json no longer lists
+  them. The selected selection, simple mode and corner mode are kept per dimension.
+- Selection manager: create a directory, enter it (click), create / copy / rename / remove selections
+  there; root and up buttons return. Files and folders appear on disk accordingly; renaming renames the
+  file. Copy a Litematica area selection .json into the folder (F5 not needed after reopening): it loads
+  with its boxes, current box and origin. Copy a Plus file into Litematica's area_selections: it loads.
+- areaSelectionsPerWorld off: all worlds share schematics/area_selections after reconnecting.
+- Schematic projects still keep their own selections (the manager stays disabled in project mode).
+

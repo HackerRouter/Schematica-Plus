@@ -90,6 +90,8 @@ public class ConfigurationHandler {
     public static String placementRestrictionWarn = "actionbar";
     public static boolean pasteWithoutUpdates = PASTE_WITHOUT_UPDATES_DEFAULT;
     public static ReplaceBehavior pasteReplaceBehavior = ReplaceBehavior.NONE;
+    /** Area selection files per world (area_selections_per_world/<world>/area_selections) or shared. */
+    public static boolean areaSelectionsPerWorld = true;
     public static boolean unhideSchematicVCS;
     public static com.github.lunatrius.schematica.tool.PlacementDeletionMode schematicVcsDeleteMode = com.github.lunatrius.schematica.tool.PlacementDeletionMode.MATCHING_BLOCK;
     public static boolean printerEnabled = PRINTER_ENABLED_DEFAULT;
@@ -357,6 +359,7 @@ public class ConfigurationHandler {
         placementRestriction = toolFlag("placementRestriction", false);
         signTextPaste = toolFlag("signTextPaste", true);
         unhideSchematicVCS = toolFlag("unhideSchematicVCS", false);
+        areaSelectionsPerWorld = toolFlag("areaSelectionsPerWorld", true);
         Property protocol = configuration.get(Names.Config.Category.TOOL, "easyPlaceProtocolVersion", "auto");
         protocol.setLanguageKey("litematica.config.generic.name.easyPlaceProtocolVersion");
         protocol.setValidValues(new String[] {"auto", "v3", "v2", "slabs_only", "none"});

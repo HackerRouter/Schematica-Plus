@@ -20,6 +20,9 @@ public final class AreaSelectionLibrary {
     private Mode mode = Mode.NORMAL;
     private CornerMode cornerMode = CornerMode.CORNERS;
     private JsonObject extra = new JsonObject();
+    /** The browser directory new selections go to ("" is the root, segments joined by '/'). */
+    private String targetFolder = "";
+    private final java.util.Set<String> folders = new java.util.TreeSet<>();
 
     public enum Mode { NORMAL, SIMPLE }
     public enum CornerMode { CORNERS, EXPAND }
@@ -43,12 +46,67 @@ public final class AreaSelectionLibrary {
     public void setCornerMode(CornerMode value) { cornerMode = java.util.Objects.requireNonNull(value); }
     public boolean contains(Area area) { return area == simple || areas.contains(area); }
 
+    public String targetFolder() { return targetFolder; }
+    public void setTargetFolder(String folder) { targetFolder = validFolder(folder); }
+
+    /** Every folder holding selections or created in the browser, with their parents. */
+    public java.util.SortedSet<String> folders() {
+        java.util.SortedSet<String> result = new java.util.TreeSet<>();
+        List<String> all = new ArrayList<>(folders);
+        for (Area area : areas) all.add(area.folder);
+        for (String folder : all) {
+            for (String path = folder; !path.isEmpty(); path = parentFolder(path)) result.add(path);
+        }
+        return result;
+    }
+
+    /** Creates an empty folder below parent and returns its path. */
+    public String createFolder(String parent, String name) {
+        String folder = validFolder(validFolder(parent).isEmpty() ? name : parent + "/" + name);
+        if (folders().contains(folder)) throw new NameConflictException(name, false);
+        folders.add(folder);
+        return folder;
+    }
+
+    public static String parentFolder(String folder) {
+        int slash = folder.lastIndexOf('/');
+        return slash < 0 ? "" : folder.substring(0, slash);
+    }
+
+    /** A folder path of file-name-safe segments, without '.' or '..'. */
+    public static String validFolder(String folder) {
+        if (folder == null || folder.isEmpty()) return "";
+        if (folder.length() > 400) throw new IllegalArgumentException("Invalid folder");
+        StringBuilder result = new StringBuilder();
+        for (String segment : folder.split("/")) {
+            String name = segment.trim();
+            if (name.isEmpty() || name.equals(".") || name.equals("..") || !name.equals(safeFileName(name))) throw new IllegalArgumentException("Invalid folder");
+            if (result.length() > 0) result.append('/');
+            result.append(name);
+        }
+        return result.toString();
+    }
+
+    /** FileNameUtils.generateSafeFileName: characters Windows and Linux file names cannot hold become '_'. */
+    public static String safeFileName(String name) {
+        StringBuilder result = new StringBuilder(name.length());
+        for (int i = 0; i < name.length(); i++) {
+            char c = name.charAt(i);
+            result.append(c < 32 || "<>:\"/\\|?*".indexOf(c) >= 0 ? '_' : c);
+        }
+        String value = result.toString().trim();
+        while (value.endsWith(".")) value = value.substring(0, value.length() - 1);
+        if (value.split("\\.", 2)[0].toUpperCase(java.util.Locale.ROOT).matches("CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9]")) value = "_" + value;
+        return value;
+    }
+
     public Area create(String name, Vector3i first, Vector3i second) {
         if (areas.size() >= 4096) throw new IllegalArgumentException("Too many selections");
-        String checked = uniqueName(name, null);
+        String checked = uniqueName(name, null, targetFolder);
         checkPoint(first);
         checkPoint(second);
         Area area = new Area(UUID.randomUUID().toString(), checked);
+        area.folder = targetFolder;
         Box box = new Box(checked, first, second);
         area.boxes.add(box);
         area.selectedBox = box;
@@ -59,7 +117,8 @@ public final class AreaSelectionLibrary {
     public Area copy(Area source, String name) {
         require(source);
         if (areas.size() >= 4096) throw new IllegalArgumentException("Too many selections");
-        Area area = new Area(UUID.randomUUID().toString(), uniqueName(name, null));
+        Area area = new Area(UUID.randomUUID().toString(), uniqueName(name, null, source.folder));
+        area.folder = source.folder;
         for (Box box : source.boxes) {
             Box copy = new Box(box.name, box.first, box.second);
             copy.extra = copyJson(box.extra);
@@ -82,7 +141,8 @@ public final class AreaSelectionLibrary {
     public Area createFromRegions(String name, List<com.github.lunatrius.schematica.api.SchematicRegion> regions, Vector3i origin) {
         if (origin != null) checkPoint(origin);
         if (areas.size() >= 4096 || regions.isEmpty() || regions.size() > 256) throw new IllegalArgumentException("Invalid selection size");
-        Area area = new Area(UUID.randomUUID().toString(), uniqueName(name, null));
+        Area area = new Area(UUID.randomUUID().toString(), uniqueName(name, null, targetFolder));
+        area.folder = targetFolder;
         for (com.github.lunatrius.schematica.api.SchematicRegion region : regions) {
             Vector3i first = new Vector3i(region.minX, region.minY, region.minZ);
             Vector3i second = new Vector3i(region.maxX, region.maxY, region.maxZ);
@@ -110,7 +170,7 @@ public final class AreaSelectionLibrary {
 
     public void rename(Area area, String name) {
         require(area);
-        String checked = area == simple ? validName(name) : uniqueName(name, area);
+        String checked = area == simple ? validName(name) : uniqueName(name, area, area.folder);
         if (area.boxes.size() == 1 && area.boxes.get(0).name.equals(area.name)) area.boxes.get(0).name = checked;
         area.name = checked;
     }
@@ -268,12 +328,26 @@ public final class AreaSelectionLibrary {
         if (!contains(area)) throw new IllegalArgumentException("Selection is no longer in this session");
     }
 
-    private String uniqueName(String name, Area except) {
+    /** Selection names are unique within a folder, as file names are within a directory. */
+    private String uniqueName(String name, Area except, String folder) {
         String checked = validName(name);
         for (Area area : areas) {
-            if (area != except && area.name.equalsIgnoreCase(checked)) throw new NameConflictException(checked, false);
+            if (area != except && area.folder.equals(folder) && area.name.equalsIgnoreCase(checked)) throw new NameConflictException(checked, false);
         }
         return checked;
+    }
+
+    /** The name, or the name with " 1", " 2"... when the folder already has it (SelectionManager.createNewSelection). */
+    private String freeName(String name, String folder) {
+        String candidate = validName(name);
+        for (int i = 1; i < 10000; i++) {
+            try {
+                return uniqueName(candidate, null, folder);
+            } catch (NameConflictException e) {
+                candidate = validName(name) + " " + i;
+            }
+        }
+        throw new NameConflictException(name, false);
     }
 
     private static String validName(String value) {
@@ -306,6 +380,8 @@ public final class AreaSelectionLibrary {
         JsonObject entry = copyJson(area.extra);
         entry.addProperty("id", area.id);
         entry.addProperty("name", area.name);
+        if (area.folder.isEmpty()) entry.remove("folder");
+        else entry.addProperty("folder", area.folder);
         JsonArray boxes = new JsonArray();
         for (Box box : area.boxes) {
             JsonObject value = copyJson(box.extra);
@@ -326,6 +402,124 @@ public final class AreaSelectionLibrary {
         entry.addProperty("originSelected", area.originSelected);
         entry.addProperty("selectedCorner", area.corner.name());
         return entry;
+    }
+
+    /** The world settings stored beside the selection files: modes, the simple selection and the selected file. */
+    public JsonObject stateJson(String selectedFile) {
+        JsonObject data = copyJson(extra);
+        data.remove("selections");
+        data.addProperty("version", 6);
+        data.addProperty("mode", mode.name());
+        data.addProperty("cornerMode", cornerMode.name());
+        data.add("simple", writeArea(simple));
+        data.add("selected", selectedFile == null ? JsonNull.INSTANCE : new com.google.gson.JsonPrimitive(selectedFile));
+        return data;
+    }
+
+    /** Restores the settings written by stateJson; the selected area is resolved by the caller. */
+    public void restoreState(JsonObject data, Area selectedArea) {
+        if (integer(data, "version") != 6) throw new IllegalArgumentException("Unsupported selection settings version");
+        extra = copyJson(data);
+        simple = readArea(data.getAsJsonObject("simple"), 5);
+        if (simple.boxes.size() != 1 || simple.selectedBox == null) throw new IllegalArgumentException("Invalid simple selection");
+        mode = Mode.valueOf(data.get("mode").getAsString());
+        cornerMode = CornerMode.valueOf(data.get("cornerMode").getAsString());
+        selected = selectedArea != null && areas.contains(selectedArea) ? selectedArea : null;
+    }
+
+    /** Takes over the modes, simple selection, unknown settings and selection of an older per-world library. */
+    public void adoptSettings(AreaSelectionLibrary legacy, Area selectedArea) {
+        extra = copyJson(legacy.extra);
+        extra.remove("selections");
+        simple = legacy.simple;
+        mode = legacy.mode;
+        cornerMode = legacy.cornerMode;
+        selected = selectedArea != null && areas.contains(selectedArea) ? selectedArea : null;
+    }
+
+    /** Adds a selection of another library to the root folder, renamed when the name is taken there. */
+    public Area adopt(Area area) {
+        if (areas.size() >= 4096) throw new IllegalArgumentException("Too many selections");
+        area.folder = "";
+        area.name = freeName(area.name, "");
+        areas.add(area);
+        return area;
+    }
+
+    private static JsonArray position(Vector3i point) {
+        JsonArray array = new JsonArray();
+        array.add(new com.google.gson.JsonPrimitive(point.x));
+        array.add(new com.google.gson.JsonPrimitive(point.y));
+        array.add(new com.google.gson.JsonPrimitive(point.z));
+        return array;
+    }
+
+    private static Vector3i position(JsonElement element) {
+        JsonArray array = element.getAsJsonArray();
+        if (array.size() != 3) throw new IllegalArgumentException("Invalid position");
+        Vector3i point = new Vector3i(array.get(0).getAsBigDecimal().intValueExact(), array.get(1).getAsBigDecimal().intValueExact(),
+            array.get(2).getAsBigDecimal().intValueExact());
+        checkPoint(point);
+        return point;
+    }
+
+    /** AreaSelection.toJson: one selection file (name, current, boxes with pos1/pos2, explicit origin) plus Plus state. */
+    public static JsonObject toFile(Area area) {
+        JsonObject data = copyJson(area.extra);
+        for (String key : new String[] {"id", "folder", "selectedBox", "renderingGuide", "originSelected", "selectedCorner", "boxName",
+            "ax", "ay", "az", "bx", "by", "bz", "current", "origin"}) data.remove(key);
+        data.addProperty("name", area.name);
+        if (area.selectedBox != null) data.addProperty("current", area.selectedBox.name);
+        JsonArray boxes = new JsonArray();
+        for (Box box : area.boxes) {
+            JsonObject value = copyJson(box.extra);
+            for (String key : new String[] {"ax", "ay", "az", "bx", "by", "bz"}) value.remove(key);
+            value.addProperty("name", box.name);
+            value.add("pos1", position(box.first));
+            value.add("pos2", position(box.second));
+            boxes.add(value);
+        }
+        data.add("boxes", boxes);
+        if (area.manualOrigin != null) data.add("origin", position(area.manualOrigin));
+        JsonObject plus = new JsonObject();
+        plus.addProperty("id", area.id);
+        plus.addProperty("renderingGuide", area.guide);
+        plus.addProperty("originSelected", area.originSelected);
+        plus.addProperty("selectedCorner", area.corner.name());
+        data.add("schematica_plus", plus);
+        return data;
+    }
+
+    /** AreaSelection.fromJson for a selection file in the given folder; the name gets a suffix when the folder has it. */
+    public Area addFromFile(JsonObject data, String folder, String fallbackName) {
+        if (areas.size() >= 4096) throw new IllegalArgumentException("Too many selections");
+        String checkedFolder = validFolder(folder);
+        JsonObject plus = data.has("schematica_plus") && data.get("schematica_plus").isJsonObject() ? data.getAsJsonObject("schematica_plus") : new JsonObject();
+        String id = plus.has("id") ? UUID.fromString(plus.get("id").getAsString()).toString() : UUID.randomUUID().toString();
+        for (Area existing : areas) if (existing.id.equals(id)) id = UUID.randomUUID().toString();
+        Area area = new Area(id, freeName(data.has("name") ? data.get("name").getAsString() : fallbackName, checkedFolder));
+        area.folder = checkedFolder;
+        if (data.has("boxes")) {
+            for (JsonElement element : data.getAsJsonArray("boxes")) {
+                if (area.boxes.size() >= 256) throw new IllegalArgumentException("Too many subregions");
+                JsonObject value = element.getAsJsonObject();
+                if (!value.has("pos1") || !value.has("pos2")) continue;
+                Box box = new Box(uniqueBoxName(area, value.has("name") ? value.get("name").getAsString() : area.name, null),
+                    position(value.get("pos1")), position(value.get("pos2")));
+                box.extra = copyJson(value);
+                area.boxes.add(box);
+            }
+        }
+        if (data.has("current")) {
+            for (Box box : area.boxes) if (box.name.equals(data.get("current").getAsString())) area.selectedBox = box;
+        }
+        if (data.has("origin")) area.manualOrigin = position(data.get("origin"));
+        area.guide = !plus.has("renderingGuide") || plus.get("renderingGuide").getAsBoolean();
+        area.originSelected = area.manualOrigin != null && plus.has("originSelected") && plus.get("originSelected").getAsBoolean();
+        if (plus.has("selectedCorner") && area.selectedBox != null && !area.originSelected) area.corner = Corner.valueOf(plus.get("selectedCorner").getAsString());
+        area.extra = copyJson(data);
+        areas.add(area);
+        return area;
     }
 
     public static AreaSelectionLibrary fromJson(JsonObject data) {
@@ -349,7 +543,7 @@ public final class AreaSelectionLibrary {
         for (JsonElement element : data.getAsJsonArray("selections")) {
             if (library.areas.size() >= 4096) throw new IllegalArgumentException("Too many selections");
             Area checked = readArea(element.getAsJsonObject(), version);
-            library.uniqueName(checked.name, null);
+            library.uniqueName(checked.name, null, checked.folder);
             for (Area area : library.areas) if (area.id.equals(checked.id)) throw new IllegalArgumentException("Duplicate selection ID");
             library.areas.add(checked);
         }
@@ -396,6 +590,7 @@ public final class AreaSelectionLibrary {
         }
         area.guide = guide(entry);
         area.extra = copyJson(entry);
+        if (entry.has("folder")) area.folder = validFolder(entry.get("folder").getAsString());
         if (version >= 5) readCorner(area, entry);
         return area;
     }
@@ -438,10 +633,12 @@ public final class AreaSelectionLibrary {
         private boolean originSelected;
         private Corner corner = Corner.NONE;
         private JsonObject extra = new JsonObject();
+        private String folder = "";
 
         private Area(String id, String name) { this.id = id; this.name = name; }
 
         public String name() { return name; }
+        public String folder() { return folder; }
         public List<Box> boxes() { return Collections.unmodifiableList(boxes); }
         public Box selectedBox() { return selectedBox; }
         public String boxName() { return selectedBox == null ? "" : selectedBox.name(); }

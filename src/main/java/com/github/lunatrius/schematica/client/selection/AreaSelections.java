@@ -86,7 +86,7 @@ public final class AreaSelections {
         clear();
         if (key == null || key.isEmpty()) return;
         try {
-            store = new AreaSelectionStore(new File(ConfigurationHandler.schematicDirectory, "AreaSelection.json"), key);
+            store = new AreaSelectionStore(new File(ConfigurationHandler.schematicDirectory, "AreaSelection.json"), directory(key), key);
             library = store.library();
         } catch (Exception e) {
             saveFailed = true;
@@ -94,6 +94,20 @@ public final class AreaSelections {
         }
         apply();
     }
+
+    /** DataManager.getAreaSelectionsBaseDirectory: per world or server (without the dimension), or shared. */
+    static File directory(String key) {
+        if (!ConfigurationHandler.areaSelectionsPerWorld) return new File(ConfigurationHandler.schematicDirectory, "area_selections");
+        String world = key.contains("|") ? key.substring(0, key.lastIndexOf('|')) : key;
+        if (world.startsWith("save:")) world = world.substring(5);
+        else if (world.startsWith("server:")) world = world.substring(7);
+        String name = AreaSelectionLibrary.safeFileName(world);
+        return new File(new File(new File(ConfigurationHandler.schematicDirectory, "area_selections_per_world"),
+            name.isEmpty() ? "_" : name), "area_selections");
+    }
+
+    /** The selection files' directory of the current world, or null without a world. */
+    public static File directory() { return store == null ? null : store.directory(); }
 
     public static boolean saveCurrent() {
         if (override != null) {
