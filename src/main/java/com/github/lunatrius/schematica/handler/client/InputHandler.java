@@ -127,69 +127,33 @@ public class InputHandler {
     }
 
     private void handlePickBlock() {
-        final KeyBinding keyPickBlock = this.minecraft.gameSettings.keyBindPickBlock;
-        if (keyPickBlock.isPressed()) {
-            try {
-                final SchematicWorld schematic = ClientProxy.schematic;
-                boolean revert = true;
-
-                if (schematic != null && schematic.isRenderingEnabled()) {
-                    revert = pickBlock(schematic, ClientProxy.movingObjectPosition);
-                }
-
-                if (revert) {
-                    KeyBinding.onTick(keyPickBlock.getKeyCode());
-                }
-            } catch (Exception e) {
-                Reference.logger.error("Could not pick block!", e);
-            }
+        try {
+            PickBlockInput.dispatch(this.minecraft.gameSettings.keyBindPickBlock, () -> {
+                SchematicWorld schematic = ClientProxy.schematic;
+                return schematic != null && schematic.isRenderingEnabled() && this.minecraft.thePlayer != null
+                    && pickBlock(schematic, RenderTickHandler.INSTANCE.rayTrace(schematic, 1));
+            });
+        } catch (Exception error) {
+            Reference.logger.error("Could not pick block!", error);
         }
     }
 
-    private boolean pickBlock(final SchematicWorld schematic, final MovingObjectPosition objectMouseOver) {
-        boolean revert = false;
-
-        // Minecraft.func_147112_ai
-        if (objectMouseOver != null) {
-            final EntityClientPlayerMP player = this.minecraft.thePlayer;
-
-            if (objectMouseOver.typeOfHit == MovingObjectPosition.MovingObjectType.MISS) {
-                revert = true;
+    private boolean pickBlock(final SchematicWorld schematic, final MovingObjectPosition hit) {
+        net.minecraft.entity.EntityLivingBase camera = this.minecraft.renderViewEntity;
+        if (!PickBlockInput.schematicFirst(hit, this.minecraft.objectMouseOver, camera == null ? null : camera.getPosition(1),
+            schematic.position.x, schematic.position.y, schematic.position.z)
+            || !schematic.isBlockRendered(hit.blockX, hit.blockY, hit.blockZ)) return false;
+        final EntityClientPlayerMP player = this.minecraft.thePlayer;
+        if (!ForgeHooks.onPickBlock(hit, player, schematic)) return false;
+        if (player.capabilities.isCreativeMode) {
+            final Block block = schematic.getBlock(hit.blockX, hit.blockY, hit.blockZ);
+            final int metadata = schematic.getBlockMetadata(hit.blockX, hit.blockY, hit.blockZ);
+            if (block == Blocks.double_stone_slab || block == Blocks.double_wooden_slab || block == Blocks.snow_layer) {
+                player.inventory.setInventorySlotContents(player.inventory.currentItem, new ItemStack(block, 1, metadata & 0xF));
             }
-
-            final MovingObjectPosition mcObjectMouseOver = this.minecraft.objectMouseOver;
-            if (mcObjectMouseOver != null
-                && mcObjectMouseOver.typeOfHit == MovingObjectPosition.MovingObjectType.BLOCK) {
-                final int x = mcObjectMouseOver.blockX - schematic.position.x;
-                final int y = mcObjectMouseOver.blockY - schematic.position.y;
-                final int z = mcObjectMouseOver.blockZ - schematic.position.z;
-                if (x == objectMouseOver.blockX && y == objectMouseOver.blockY && z == objectMouseOver.blockZ) {
-                    return true;
-                }
-            }
-
-            if (!ForgeHooks.onPickBlock(objectMouseOver, player, schematic)) {
-                return revert;
-            }
-
-            if (player.capabilities.isCreativeMode) {
-                final Block block = schematic
-                    .getBlock(objectMouseOver.blockX, objectMouseOver.blockY, objectMouseOver.blockZ);
-                final int metadata = schematic
-                    .getBlockMetadata(objectMouseOver.blockX, objectMouseOver.blockY, objectMouseOver.blockZ);
-                if (block == Blocks.double_stone_slab || block == Blocks.double_wooden_slab
-                    || block == Blocks.snow_layer) {
-                    player.inventory.setInventorySlotContents(
-                        player.inventory.currentItem,
-                        new ItemStack(block, 1, metadata & 0xF));
-                }
-
-                final int slot = player.inventoryContainer.inventorySlots.size() - 9 + player.inventory.currentItem;
-                this.minecraft.playerController
-                    .sendSlotPacket(player.inventory.getStackInSlot(player.inventory.currentItem), slot);
-            }
+            final int slot = player.inventoryContainer.inventorySlots.size() - 9 + player.inventory.currentItem;
+            this.minecraft.playerController.sendSlotPacket(player.inventory.getStackInSlot(player.inventory.currentItem), slot);
         }
-
-        return revert;
+        return true;
     }
 }

@@ -1,10 +1,44 @@
 import argparse
 import json
+import re
 from pathlib import Path
 
 
 VERSIONS = {"litematica": "26.1.2-0.27.8", "malilib": "26.1.2-0.28.8"}
 OUTPUT = Path(__file__).resolve().parents[1] / "src/main/resources/assets/schematica_plus_litematica/lang"
+BRAND_KEYS = {
+    "litematica.config.generic.comment.debugHudMode",
+    "litematica.config.generic.comment.easyPlaceProtocolVersion",
+    "litematica.config.generic.comment.easyPlaceSinglePlayerHandling",
+    "litematica.config.generic.comment.translationLanguage",
+    "litematica.config.generic.comment.translationTryBaseLanguage",
+    "litematica.config.generic.comment.toolItem",
+    "litematica.config.generic.comment.toolItemEnabled",
+    "litematica.config.hotkeys.comment.openGuiMainMenu",
+    "litematica.config.visuals.comment.enableRendering",
+    "litematica.gui.button.change_menu.to_main_menu",
+    "litematica.gui.title.configs",
+    "litematica.gui.title.litematica_main_menu",
+}
+PASTE_MODE_NAMES = (
+    "Paste mode in Litematica", "modo Pegar en Litematica", "mode Coller dans Litematica",
+    "modalità Incolla in Litematica", "Litematicaの貼り付けモード", "라이트매티카의 붙여넣기 모드",
+    "режима вставки в Litematica", "Paste-läget i Litematica", "режиму вставки в Litematica",
+    "Litematica 的貼上模式",
+)
+
+
+def display_brand(key, value):
+    if key in BRAND_KEYS:
+        value = re.sub(r"litematica|라이트매티카|ライトマティカ|清影", "Schematica+", value, flags=re.IGNORECASE)
+        if key.startswith("litematica.gui.title."):
+            value = value.replace("投影(Schematica+)", "Schematica+").replace("投影", "Schematica+")
+        if key == "litematica.gui.button.change_menu.to_main_menu":
+            value = value.replace("投影選單", "Schematica+ 選單")
+    elif key == "litematica.message.warn.schematic_load_non_litematica":
+        for phrase in PASTE_MODE_NAMES:
+            value = value.replace(phrase, phrase.replace("Litematica", "Schematica+").replace("라이트매티카", "Schematica+"))
+    return value
 
 
 def unique_entries(pairs):
@@ -40,10 +74,11 @@ def convert(roots):
             for key, value in entries.items():
                 if key in locale:
                     raise ValueError(f"Unexpected or conflicting key in {file}: {key}")
-                locale[key] = value
+                locale[key] = display_brand(key, value)
     header = "# SPDX-License-Identifier: LGPL-3.0-only\n"
     header += "# " + "; ".join(f"{mod} {version}" for mod, version in VERSIONS.items()) + ".\n"
     header += "# Converted for Minecraft 1.7.10 by HackerRouter, 2026. Regenerate with tools/import_translations.py.\n"
+    header += "# UI branding adapted to Schematica+; upstream keys, format names and attribution retained.\n"
     return {
         code + ".lang": (header + "".join(f"{key}={escape(value)}\n" for key, value in sorted(entries.items()))).encode("utf-8")
         for code, entries in sorted(locales.items())

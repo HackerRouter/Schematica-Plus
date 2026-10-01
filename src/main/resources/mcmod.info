@@ -10,7 +10,7 @@
 	"dependencies": [ ],
 	"parent": "",
 	"requiredMods": [ ],
-	"logoFile": "/assets/schematica/logo.png",
+	"logoFile": "assets/schematica/logo.png",
 	"screenshots": [  ],
 	"updateUrl": "",
 	"url": "https://github.com/HackerRouter/Schematica-Plus",

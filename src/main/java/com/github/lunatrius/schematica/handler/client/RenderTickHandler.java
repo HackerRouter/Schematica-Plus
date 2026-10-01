@@ -26,7 +26,7 @@ public class RenderTickHandler {
         ClientProxy.movingObjectPosition = schematic != null ? rayTrace(schematic, 1.0f) : null;
     }
 
-    private MovingObjectPosition rayTrace(final SchematicWorld schematic, final float partialTicks) {
+    MovingObjectPosition rayTrace(final SchematicWorld schematic, final float partialTicks) {
         final EntityLivingBase renderViewEntity = this.minecraft.renderViewEntity;
         if (renderViewEntity == null) {
             return null;

@@ -891,3 +891,35 @@ These checks supersede Phase 12's Simple-editor and bounding-box expectations.
   changes, world-scan replacement, immutable output and selected-cell ray hits.
   Config defaults, normalization, persistence and dynamic upstream keys are also
   tested. Native OpenGL, GUI and GTNH/Freecam checks remain unexecuted by the agent.
+
+
+## Branding, Forge logo and pick-block fallback
+
+- Switch between all shipped languages. The English main-menu button reads
+  "Schematica+ menu"; menu/config titles and functional descriptions use the
+  local Schematica+ branding. Upstream translation keys, .litematic format names,
+  file conversion messages and attribution remain intact. Regenerating with
+  tools/import_translations.py must preserve these display adaptations.
+- Open Forge's Mods screen from an installed release JAR and select Schematica
+  Plus. The existing schematic preview logo should appear. mcmod.info.logoFile
+  must exactly match its JAR entry, without a leading slash: FMLFileResourcePack
+  passes this value directly to ZipFile.getEntry.
+- In creative, select an enabled schematic. Middle-click a real block outside
+  it, a real block closer than a ghost block, a ghost block closer than the real
+  block, and a real block occupying the same position as the schematic block.
+  Vanilla handles real targets; the schematic only consumes successful picks.
+  Try actual entities, misses, disabled rendering/subregions and render layers.
+  Move/rotate/switch the placement immediately before picking to check that the
+  handler traces current geometry rather than using the previous rendered frame.
+- Repeat with negative placement coordinates, Freecam and a keyboard binding for
+  pick block. A mod hook that returns false or throws must leave one pending
+  vanilla action, not swallow or duplicate the click. Existing survival behavior
+  should be preserved. Check slab/snow special handling and modded pick hooks.
+- Source references: generated Forge 1.7.10 / 10.13.4.1614 sources, MCP stable 12:
+  Minecraft.runTick and func_147112_ai, FMLFileResourcePack.getPackImage and
+  FileResourcePack.getInputStreamByName. Upstream Litematica 0.27.8 (MC 26.1.2)
+  WorldUtils.doSchematicWorldPickBlock returns false for no schematic target and
+  uses RayTraceUtils.getSchematicWorldTraceIfClosestNoFluids for nearest picking.
+- Automated regressions cover input replay, failed/throwing picks, misses, nearest
+  world/schematic/entity targets, negative offsets and coincident blocks. Native
+  Forge Mods UI, creative inventory and Freecam checks remain unexecuted here.
