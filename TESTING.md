@@ -763,3 +763,35 @@ These checks supersede Phase 12's Simple-editor and bounding-box expectations.
   placements, coordinate translation, mutable trace inputs, state comparison,
   configuration persistence/validation and scaled alignment. Native visual and
   mod-compatibility checks above remain unexecuted by the agent.
+
+## Task manager
+
+- Reference: Litematica GuiTaskManager, WidgetListTasks and WidgetTaskEntry.
+  Open Main Menu > Task Manager. Check the 22-pixel alternating rows, hover
+  background, right-aligned Remove buttons and bottom-right Main Menu button.
+  Escape returns to the parent; Tab/Enter and button sounds remain available.
+- Start a large area save, reopen the menu and check the filename in its tooltip,
+  capture progress and automatic removal on completion. Cancel during capture:
+  no new file should appear and an existing destination must remain unchanged.
+  Once writing begins, Remove is disabled until the task completes or fails.
+- Start singleplayer paste, fill, replace and delete operations. Check task names,
+  phase-local progress, coordinates and affected block/entity counts. Removing a
+  task stops placement, finishes the update pass and preserves changes already
+  made. Repeated tool-key cancellation must not start a replacement job.
+- Test normal and no-update paste, multi-region gaps and entity placement. Cancel
+  early and during the update pass; no-update paste must still honor its setting.
+  An old row/button reference must never cancel a newly submitted task.
+- On multiplayer, command jobs show scanned positions and commands sent, without
+  claiming server execution. Remove stops further sends, including during the
+  send delay. Permission/syntax errors, disconnects and world changes clear them.
+- Cancel, finish and fail saves/edits, then start another. Change dimension or
+  disconnect during capture/editing; old jobs must disappear and release their
+  world references. Other players' tasks must not appear in this player's list.
+  Client and integrated-server capture must run on their owning tick thread.
+- Scope: this page tracks queued area saves and world edits in this process.
+  It does not query tasks on a remote server. Material scans still belong to
+  their material screen; synchronous source-file saves are not queued tasks.
+- Automated tests cover immutable progress publication, owner/dimension filters,
+  stale handles, cancellation/write races, edit phases, command preflight/busy
+  rejection and queue cleanup. Native GUI, actual world writes and save-file
+  cancellation checks above remain unexecuted by the agent.

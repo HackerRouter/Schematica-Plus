@@ -8,6 +8,31 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 public class WorldEditJobTest {
+    @Test public void taskProgressTracksEachPassAndCancelledJobsFinishTheUpdatePass() {
+        com.github.lunatrius.schematica.task.TaskRegistry registry = new com.github.lunatrius.schematica.task.TaskRegistry();
+        WorldEditJob job = job(WorldEditJob.Kind.FILL, false, false);
+        com.github.lunatrius.schematica.task.TaskRegistry.Task task = registry.start(job.player, job.dimension, job.taskKind(),
+            com.github.lunatrius.schematica.task.TaskRegistry.Backend.SERVER, "");
+        job.publishProgress(task);
+        assertEquals(com.github.lunatrius.schematica.task.TaskRegistry.Stage.STRUCTURE, task.progress().stage);
+        assertFalse(job.step(null));
+        job.publishProgress(task);
+        assertEquals(1, task.progress().completed);
+        assertEquals(1, task.progress().total);
+        assertFalse(job.step(null));
+        job.publishProgress(task);
+        assertEquals(com.github.lunatrius.schematica.task.TaskRegistry.Stage.DECORATIONS, task.progress().stage);
+        job.cancelled = true;
+        assertFalse(job.step(null));
+        job.publishProgress(task);
+        assertEquals(com.github.lunatrius.schematica.task.TaskRegistry.Stage.UPDATES, task.progress().stage);
+        assertFalse(job.step(null));
+        assertTrue(job.step(null));
+        job.publishProgress(task);
+        assertEquals(com.github.lunatrius.schematica.task.TaskRegistry.Stage.ENTITIES, task.progress().stage);
+        task.finish();
+    }
+
     @Test public void editsSkipUnselectedGapsBeforeReadingOrWritingTheWorld() {
         for (WorldEditJob.Kind kind : WorldEditJob.Kind.values()) {
             WorldEditJob job = new WorldEditJob(UUID.randomUUID(), 0, kind, 0, 64, 0, 3, 1, 1, null, 0, null, 0);

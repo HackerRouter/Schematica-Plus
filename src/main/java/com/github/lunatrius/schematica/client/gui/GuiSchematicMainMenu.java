@@ -55,7 +55,7 @@ public final class GuiSchematicMainMenu extends UiScreen {
         config = menu("configuration_menu", UiSprite.CONFIGURATION, () -> mc.displayGuiScreen(new GuiModConfig(this)));
         manager = menu("schematic_manager", UiSprite.SCHEMATIC_MANAGER,
             () -> mc.displayGuiScreen(new GuiSchematicManager(this)));
-        tasks = unavailable(menu("task_manager", UiSprite.TASK_MANAGER, () -> {}));
+        tasks = menu("task_manager", UiSprite.TASK_MANAGER, () -> mc.displayGuiScreen(new GuiTaskManager(this)));
         mode = root.add(new UiButton(() -> UiTranslations.format("litematica.gui.button.tool_mode", ToolManager.getCurrentMode().getDisplayName()),
             button -> { ToolManager.cycleMode(button == 0); layoutWidgets(); }));
         mode.setTooltip(UiTranslations.format("schematica.ui.menu.mode_hint"));

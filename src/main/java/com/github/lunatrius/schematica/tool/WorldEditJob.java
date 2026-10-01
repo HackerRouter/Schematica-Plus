@@ -23,6 +23,7 @@ import com.github.lunatrius.schematica.api.ISchematic;
 import com.github.lunatrius.schematica.nbt.ForgeMultipart;
 import com.github.lunatrius.schematica.nbt.NBTHelper;
 import com.github.lunatrius.schematica.util.SchematicLimits;
+import com.github.lunatrius.schematica.task.TaskRegistry;
 import cpw.mods.fml.common.registry.GameData;
 
 /** A snapshot of an edit. Only the server tick queue advances its mutable cursor. */
@@ -133,6 +134,18 @@ public final class WorldEditJob {
 
     public void flushBlockChanges(WorldServer world) {
         if (silentPlacement != null) silentPlacement.flush(world);
+    }
+
+    public TaskRegistry.Kind taskKind() {
+        if (kind == Kind.PASTE) return TaskRegistry.Kind.PASTE;
+        if (kind == Kind.REPLACE) return TaskRegistry.Kind.REPLACE;
+        return replacement != null && replacement == Blocks.air ? TaskRegistry.Kind.DELETE : TaskRegistry.Kind.FILL;
+    }
+
+    public void publishProgress(TaskRegistry.Task task) {
+        TaskRegistry.Stage stage = phase == 0 ? TaskRegistry.Stage.STRUCTURE : phase == 1
+            ? TaskRegistry.Stage.DECORATIONS : phase == 2 ? TaskRegistry.Stage.UPDATES : TaskRegistry.Stage.ENTITIES;
+        task.update(stage, phase < 3 ? cursor : entityCursor, phase < 3 ? volume : entities.size(), blockCount, entityCount);
     }
 
     /** Process one cell/entity, returning true only when all phases are finished. */
