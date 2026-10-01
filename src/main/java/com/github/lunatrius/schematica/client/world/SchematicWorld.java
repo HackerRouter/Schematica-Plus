@@ -71,6 +71,17 @@ public class SchematicWorld extends World {
     }
 
     public SubRegionPlacements subregions() { return subregions; }
+    public SchematicSourceData sourceData() { return placementSource; }
+
+    /** Replaces one composed cell after its source cell was edited; the placement geometry stays unchanged. */
+    public void writeCell(int x, int y, int z, CellState state) {
+        if (!schematic.containsBlock(x, y, z)) return;
+        Block previous = schematic.getBlock(x, y, z);
+        setBlock(x, y, z, state.block, state.meta, 0);
+        if (state.tile != null) setTileEntity(x, y, z, com.github.lunatrius.schematica.world.storage.SchematicCopies.tile(state.tile, -x, -y, -z));
+        else if (previous != state.block || state.isAir()) removeTileEntity(x, y, z);
+        contentRevision++;
+    }
     public int placementRevision() { return placementRevision; }
     public int contentRevision() { return contentRevision; }
     public boolean hasEnabledRegions() { return subregions == null || subregions.hasEnabled(); }

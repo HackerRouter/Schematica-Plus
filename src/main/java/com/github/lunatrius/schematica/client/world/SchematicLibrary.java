@@ -43,7 +43,16 @@ public final class SchematicLibrary<D, P> {
 
     public Map<P, P> reload(Source<D> source, Factory<D, P> factory) throws IOException {
         require(source);
-        D replacement = reader.read(source.file);
+        return replace(source, reader.read(source.file), factory);
+    }
+
+    /** Recreates every placement of a source from its current in-memory data. */
+    public Map<P, P> refresh(Source<D> source, Factory<D, P> factory) throws IOException {
+        require(source);
+        return replace(source, source.data, factory);
+    }
+
+    private Map<P, P> replace(Source<D> source, D replacement, Factory<D, P> factory) throws IOException {
         Map<P, P> changes = new IdentityHashMap<>();
         Map<P, Boolean> staged = new IdentityHashMap<>();
         for (P placement : placements) {

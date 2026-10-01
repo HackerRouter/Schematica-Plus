@@ -1,14 +1,36 @@
 package com.github.lunatrius.schematica.world.storage;
 
 import net.minecraft.entity.Entity;
+import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 
 import com.github.lunatrius.schematica.api.ISchematic;
+import com.github.lunatrius.schematica.api.SchematicRegion;
 import com.github.lunatrius.schematica.nbt.NBTConversionException;
 import com.github.lunatrius.schematica.nbt.NBTHelper;
 
 public final class SchematicCopies {
     private SchematicCopies() {}
+
+    public static boolean independent(ISchematic source) {
+        for (SchematicRegion region : source.getRegions()) if (source.getRegionSchematic(region.name) != null) return true;
+        return false;
+    }
+
+    public static Schematic copy(ISchematic source) {
+        boolean independent = independent(source);
+        ItemStack icon = source.getIcon() == null ? null : source.getIcon().copy();
+        Schematic result = independent ? new MultiRegionSchematic(icon, source.getWidth(), source.getHeight(), source.getLength())
+            : new Schematic(icon, source.getWidth(), source.getHeight(), source.getLength());
+        result.setOrigin(source.getOrigin());
+        result.setRegions(source.getRegions());
+        overlay(source, result, 0, 0, 0, true);
+        if (independent) for (SchematicRegion region : source.getRegions()) {
+            ISchematic contents = source.getRegionSchematic(region.name);
+            if (contents != null) ((MultiRegionSchematic) result).addRegion(region, copy(contents));
+        }
+        return result;
+    }
 
     public static void overlay(ISchematic source, ISchematic target, int dx, int dy, int dz, boolean entities) {
         if (source == target || dx < 0 || dy < 0 || dz < 0

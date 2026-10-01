@@ -10,8 +10,10 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.Locale;
 
+import net.minecraft.nbt.CompressedStreamTools;
 import net.minecraft.nbt.NBTTagCompound;
 
+import com.github.lunatrius.schematica.api.ISchematic;
 import com.github.lunatrius.schematica.util.SchematicLimits;
 
 public final class SchematicFileSnapshot {
@@ -45,6 +47,14 @@ public final class SchematicFileSnapshot {
     }
 
     public String extension() { return extension; }
+    public static SchematicFileSnapshot capture(ISchematic schematic) throws IOException {
+        NBTTagCompound tag = new NBTTagCompound();
+        if (!new SchematicAlpha().writeToNBT(tag, schematic, null, true, true, true)) throw new IOException("Unable to encode edited schematic");
+        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+        CompressedStreamTools.writeCompressed(tag, bytes);
+        if (bytes.size() > SchematicLimits.MAX_NBT_BYTES) throw new IOException("Edited schematic exceeds file limit");
+        return new SchematicFileSnapshot(bytes.toByteArray(), ".schemplus");
+    }
     public int size() { return bytes.length; }
 
     public NBTTagCompound readNBT() throws IOException {

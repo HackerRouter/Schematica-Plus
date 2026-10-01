@@ -464,16 +464,26 @@ public class ClientProxy extends CommonProxy {
     }
 
     public static void reloadSource(SchematicLibrary.Source<SchematicSourceData> source) throws IOException {
+        replaceSource(source, false);
+    }
+
+    /** Recomposes all placements of a source from its edited in-memory data. */
+    public static void refreshSource(SchematicLibrary.Source<SchematicSourceData> source) throws IOException {
+        replaceSource(source, true);
+    }
+
+    private static void replaceSource(SchematicLibrary.Source<SchematicSourceData> source, boolean memory) throws IOException {
         List<SchematicWorld> prepared = new ArrayList<>();
         Map<SchematicWorld, SchematicWorld> changes;
         try {
-            changes = SCHEMATICS.reload(source, (data, previous) -> {
+            SchematicLibrary.Factory<SchematicSourceData, SchematicWorld> factory = (data, previous) -> {
                 SchematicWorld next = instantiate(source, data);
                 PlacementState.copy(previous, next);
                 prepared.add(next);
                 RendererSchematicGlobal.INSTANCE.createRendererSchematicChunks(next);
                 return next;
-            });
+            };
+            changes = memory ? SCHEMATICS.refresh(source, factory) : SCHEMATICS.reload(source, factory);
         } catch (IOException | RuntimeException e) {
             for (SchematicWorld world : prepared) RendererSchematicGlobal.INSTANCE.removeRendererSchematicChunks(world);
             throw e;

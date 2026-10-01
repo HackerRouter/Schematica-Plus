@@ -148,4 +148,25 @@ public class SchematicLibraryTest {
         library.unload(second);
         library.checkRename(original, second.file());
     }
+
+    @Test public void refreshRecreatesPlacementsFromMemoryWithoutRereadingTheFile() throws IOException {
+        SchematicLibrary<byte[], byte[]> library = library();
+        File file = source("a.schematic", 1);
+        SchematicLibrary.Source<byte[]> source = library.load(file);
+        SchematicLibrary.Source<byte[]> other = library.load(source("b.schematic", 9));
+        byte[] first = library.create(source, (data, previous) -> data.clone());
+        byte[] unrelated = library.create(other, (data, previous) -> data.clone());
+        byte[] second = library.create(source, (data, previous) -> data.clone());
+        source.data()[0] = 5;
+        Files.write(file.toPath(), new byte[] {7});
+        Map<byte[], byte[]> changes = library.refresh(source, (data, previous) -> data.clone());
+        assertEquals(2, changes.size());
+        assertEquals(5, changes.get(first)[0]);
+        assertSame(changes.get(first), library.placements().get(0));
+        assertSame(unrelated, library.placements().get(1));
+        assertSame(changes.get(second), library.placements().get(2));
+        assertEquals(5, source.data()[0]);
+        assertSame(source, library.sourceOf(changes.get(second)));
+        assertNull(library.sourceOf(first));
+    }
 }

@@ -38,7 +38,7 @@ public final class GuiSchematicSourceSave extends GuiSchematicBrowser {
         name.setText(source.name());
         save = addButton("litematica.gui.button.save_to_file", this::save);
         save.setTooltip(UiTranslations.format("schematica.ui.source.save_hint"));
-        format = root.add(new UiLabel(() -> source.data().snapshot.extension()));
+        format = root.add(new UiLabel(() -> source.data().saveExtension()));
         format.setTooltip(UiTranslations.format("schematica.ui.source.save_hint"));
     }
 
@@ -54,7 +54,7 @@ public final class GuiSchematicSourceSave extends GuiSchematicBrowser {
     private void save() {
         if (browser == null || !ClientProxy.SCHEMATICS.sources().contains(source)) return;
         try {
-            File file = SchematicSaveTarget.sourceCopy(browser.root(), browser.directory(), name.text(), source.data().snapshot.extension());
+            File file = SchematicSaveTarget.sourceCopy(browser.root(), browser.directory(), name.text(), source.data().saveExtension());
             if (file.exists()) confirm(UiTranslations.format("schematica.ui.save.overwrite_title"),
                 UiTranslations.format("schematica.ui.save.overwrite", file.getName()), () -> write(file, true));
             else write(file, false);
@@ -69,10 +69,12 @@ public final class GuiSchematicSourceSave extends GuiSchematicBrowser {
             return;
         }
         try {
-            File checked = SchematicSaveTarget.sourceCopy(browser.root(), file.getParentFile(), file.getName(), source.data().snapshot.extension());
-            source.data().snapshot.write(checked, replace);
+            File checked = SchematicSaveTarget.sourceCopy(browser.root(), file.getParentFile(), file.getName(), source.data().saveExtension());
+            source.data().save(checked, replace);
             refreshFiles();
             setStatus(UiTranslations.format("litematica.message.schematic_saved_as", file.getName()));
+        } catch (com.github.lunatrius.schematica.util.MessageException e) {
+            setStatus(UiTranslations.format(e.key(), e.arguments()));
         } catch (IOException | IllegalArgumentException e) {
             fail("schematica.ui.source.save_failed", e);
         }
