@@ -954,3 +954,18 @@ classified as a creative area operation, matching upstream; its world-edit backe
 and the remaining edit modes are the next implementation portion. This portion
 passes the full build, Checkstyle and 327 headless tests. Native input remains to
 be tested in the game.
+
+
+### World-move backend
+
+MOVE now operates on world selections through the existing budgeted server-edit
+queue. Source and destination cells are captured before writes, including server
+NBT. Overlap and disjoint boxes use a snapshot mask. Cancellation/write failure
+attempts restoration; disconnect/permission loss triggers rollback and normal
+server shutdown drains it. Existing entity instances are relocated after block
+success, with hanging anchors adjusted. A bounded request/result protocol advertises
+capability separately from old servers and checks creative/command permissions
+on the server tick. Client selection coordinates update only after success and
+only while their original geometry remains unchanged. Unmodded servers cannot
+safely supply complete NBT and are refused for MOVE. Native mod interactions and
+abrupt-crash recovery are not covered by the headless checks.

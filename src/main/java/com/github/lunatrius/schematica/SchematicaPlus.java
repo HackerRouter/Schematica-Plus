@@ -92,6 +92,11 @@ public class SchematicaPlus {
     }
 
     @EventHandler
+    public void serverStopping(cpw.mods.fml.common.event.FMLServerStoppingEvent event) {
+        com.github.lunatrius.schematica.handler.WorldEditQueue.INSTANCE.rollbackBeforeShutdown(net.minecraft.server.MinecraftServer.getServer());
+    }
+
+    @EventHandler
     public void serverStopped(cpw.mods.fml.common.event.FMLServerStoppedEvent event) {
         com.github.lunatrius.schematica.handler.WorldEditQueue.INSTANCE.clear();
         com.github.lunatrius.schematica.handler.QueueTickHandler.INSTANCE.clear();

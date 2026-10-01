@@ -8,7 +8,7 @@ import net.minecraft.util.ChatComponentTranslation;
 import com.github.lunatrius.schematica.util.MessageException;
 import net.minecraft.world.WorldServer;
 import com.github.lunatrius.schematica.reference.Reference;
-import com.github.lunatrius.schematica.tool.WorldEditJob;
+import com.github.lunatrius.schematica.tool.WorldEditTask;
 import com.github.lunatrius.schematica.task.TaskRegistry;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.gameevent.TickEvent;
@@ -17,13 +17,16 @@ import cpw.mods.fml.common.gameevent.TickEvent;
 public final class WorldEditQueue {
     public static final WorldEditQueue INSTANCE = new WorldEditQueue();
     private final AtomicReference<Edit> pending = new AtomicReference<>();
+    private final java.util.concurrent.ArrayBlockingQueue<Runnable> requests = new java.util.concurrent.ArrayBlockingQueue<>(16);
+
+    public boolean enqueue(Runnable request) { return requests.offer(request); }
 
     private static final class Edit {
         final MinecraftServer server;
-        final WorldEditJob job;
+        final WorldEditTask job;
         final TaskRegistry.Task task;
 
-        Edit(MinecraftServer server, WorldEditJob job) {
+        Edit(MinecraftServer server, WorldEditTask job) {
             this.server = server;
             this.job = job;
             this.task = TaskRegistry.INSTANCE.start(job.player, job.dimension, job.taskKind(), TaskRegistry.Backend.SERVER,
@@ -32,6 +35,7 @@ public final class WorldEditQueue {
     }
 
     public synchronized void clear() {
+        requests.clear();
         Edit edit = pending.getAndSet(null);
         if (edit != null) {
             edit.job.cancelled = true;
@@ -47,7 +51,7 @@ public final class WorldEditQueue {
         return true;
     }
 
-    public synchronized boolean submit(MinecraftServer server, WorldEditJob job) {
+    public synchronized boolean submit(MinecraftServer server, WorldEditTask job) {
         Edit edit = pending.get();
         if (edit != null && edit.server != server) clear();
         if (pending.get() != null) return false;
@@ -55,28 +59,40 @@ public final class WorldEditQueue {
         return true;
     }
 
-    private void finish(Edit edit) {
-        pending.compareAndSet(edit, null);
-        edit.task.finish();
+    private void finish(Edit edit) { finish(edit, false); }
+    private void finish(Edit edit, boolean success) {
+        pending.compareAndSet(edit, null); edit.task.finish(); edit.job.completion.accept(success);
+    }
+
+    public void rollbackBeforeShutdown(MinecraftServer server) {
+        Edit edit = pending.get();
+        if (edit == null || edit.server != server || !edit.job.needsRollback()) return;
+        edit.job.cancelled = true;
+        WorldServer world = server.worldServerForDimension(edit.job.dimension);
+        try { while (!edit.job.step(world)) {} }
+        finally { edit.job.flushBlockChanges(world); finish(edit); }
     }
 
     @SubscribeEvent
     public void onTick(TickEvent.ServerTickEvent event) {
         if (event.phase != TickEvent.Phase.END) return;
+        Runnable request = requests.poll();
+        if (request != null) request.run();
         Edit edit = pending.get();
         if (edit == null) return;
-        WorldEditJob job = edit.job;
+        WorldEditTask job = edit.job;
         MinecraftServer server = MinecraftServer.getServer();
         if (server != edit.server || server == null) { finish(edit); return; }
         EntityPlayerMP player = null;
         for (EntityPlayerMP candidate : server.getConfigurationManager().playerEntityList) {
             if (candidate.getUniqueID().equals(job.player)) { player = candidate; break; }
         }
-        if (player == null || player.dimension != job.dimension) { finish(edit); return; }
-        if (!player.capabilities.isCreativeMode || !player.canCommandSenderUseCommand(2, "setblock")) {
-            player.addChatMessage(new ChatComponentTranslation("schematica.message.edit.permissions"));
-            finish(edit);
-            return;
+        boolean authorized = player != null && player.dimension == job.dimension && player.capabilities.isCreativeMode
+            && player.canCommandSenderUseCommand(2, "setblock");
+        if (!authorized) {
+            if (player != null && !job.cancelled) player.addChatMessage(new ChatComponentTranslation("schematica.message.edit.permissions"));
+            job.cancelled = true;
+            if (!job.needsRollback()) { finish(edit); return; }
         }
         WorldServer world = server.worldServerForDimension(job.dimension);
         try {
@@ -92,13 +108,15 @@ public final class WorldEditQueue {
             }
             job.publishProgress(edit.task);
             if (done) {
-                player.addChatMessage(new ChatComponentTranslation(job.cancelled
-                    ? "schematica.message.edit.cancelled" : "schematica.message.edit.finished", job.blockCount, job.entityCount));
-                finish(edit);
+                boolean success = !job.cancelled && job.failure() == null;
+                if (job.failure() != null) Reference.logger.error("World move restored after failure", job.failure());
+                if (player != null) player.addChatMessage(new ChatComponentTranslation(success
+                    ? "schematica.message.edit.finished" : "schematica.message.edit.cancelled", job.blockCount, job.entityCount));
+                finish(edit, success);
             }
         } catch (Exception e) {
             Reference.logger.error("World edit stopped after partial completion", e);
-            player.addChatMessage(new ChatComponentTranslation("schematica.message.edit.stopped", e instanceof MessageException
+            if (player != null) player.addChatMessage(new ChatComponentTranslation("schematica.message.edit.stopped", e instanceof MessageException
                 ? new ChatComponentTranslation(((MessageException) e).key(), ((MessageException) e).arguments())
                 : new ChatComponentTranslation("schematica.message.edit.see_log")));
             finish(edit);

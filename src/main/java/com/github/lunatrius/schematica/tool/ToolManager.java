@@ -89,6 +89,10 @@ public final class ToolManager {
         if (Hotkeys.held("selectionGrabModifier") && currentMode.getUsesAreaSelection()) {
             if (grabbed != null) { grabDistance = Math.max(0, grabDistance + amount); tick(); return true; }
             if (area != null && area.originSelected()) { moveEntire(area, direction(amount)); return true; }
+            if (currentMode == ToolMode.MOVE && area != null) {
+                Vector3i target = area.origin(), offset = direction(amount); target.add(offset.x, offset.y, offset.z);
+                WorldMoveController.moveTo(target); return true;
+            }
         }
         if (Hotkeys.held("selectionGrowModifier") && currentMode.getUsesAreaSelection()) {
             if (area != null && area.selectedBox() != null) {
@@ -142,6 +146,11 @@ public final class ToolManager {
         return point;
     }
     private static void placeCorner(boolean first) {
+        if (currentMode == ToolMode.MOVE && Hotkeys.held("selectionGrabModifier")) {
+            Vector3i point = target(false);
+            if (point != null) WorldMoveController.moveTo(point);
+            return;
+        }
         Vector3i point = target(currentMode.getUsesAreaSelection());
         if (point == null) return;
         if (currentMode.getUsesAreaSelection()) {
@@ -238,6 +247,7 @@ public final class ToolManager {
     }
     private static void releaseGrab() { if (grabbed != null && grabWorld == mc().theWorld) AreaSelections.saveCurrent(); grabbed = null; grabWorld = null; grabPoint = null; }
     public static void tick() {
+        WorldMoveController.tick();
         if (grabbed == null) return;
         if (mc().theWorld != grabWorld || mc().currentScreen != null || !toolActive() || grabbed != AreaSelections.library().selected() || !org.lwjgl.opengl.Display.isActive()) { releaseGrab(); return; }
         Vector3i next = grabPosition();

@@ -441,3 +441,6 @@ schematica.ui.task.cancel_verifier=Pause verification and keep its results. Resu
 schematica.ui.verifier.metadata=Metadata = %s
 schematica.ui.verifier.select_markers=Click to toggle error markers for this category or entry.\nSelect the placement, then hold the renderInfoOverlay key (default I) while looking at a marker to compare blocks.
 schematica.ui.verifier.overlay_disabled=Verifier overlays are disabled. Enable %s -> %s.
+
+schematica.message.move.server_required=Moving world blocks requires Schematica Plus on the server so complete block data can be preserved.
+schematica.message.move.failed=World move was rejected, cancelled or failed. The area selection was not moved.

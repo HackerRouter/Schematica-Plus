@@ -25,5 +25,9 @@ public class PacketHandler {
         INSTANCE.registerMessage(MessageDownloadChunk.class, MessageDownloadChunk.class, 3, Side.CLIENT);
         INSTANCE.registerMessage(MessageDownloadChunkAck.class, MessageDownloadChunkAck.class, 4, Side.SERVER);
         INSTANCE.registerMessage(MessageDownloadEnd.class, MessageDownloadEnd.class, 5, Side.CLIENT);
+        INSTANCE.registerMessage(com.github.lunatrius.schematica.network.message.MessageMoveRequest.class,
+            com.github.lunatrius.schematica.network.message.MessageMoveRequest.class, 6, Side.SERVER);
+        INSTANCE.registerMessage(com.github.lunatrius.schematica.network.message.MessageMoveResult.class,
+            com.github.lunatrius.schematica.network.message.MessageMoveResult.class, 7, Side.CLIENT);
     }
 }

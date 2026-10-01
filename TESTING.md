@@ -950,3 +950,24 @@ These checks supersede Phase 12's Simple-editor and bounding-box expectations.
 - Test an installed JAR: its FMLCorePlugin manifest entry must load InputPlugin.
   Only Minecraft and GuiScreen LWJGL next() calls are redirected. Native game
   interaction has not been exercised by the headless test suite.
+
+
+## World move tool
+
+- In creative MOVE mode, bind selectionGrabModifier. Modifier + either corner
+  key moves the selected world area to the targeted adjacent face (sneak: inside).
+  Modifier + wheel moves by one block along the camera direction when no origin
+  is selected/grabbed. Move Entire Selection uses player position.
+- Test singleplayer and a dedicated server with this version on both sides.
+  Require creative and permission level 2. Old/unmodded servers are refused;
+  no client-NBT copy/delete fallback is attempted. Select at most 1,048,576 cells
+  in the enclosing box and load source and target chunks before moving.
+- Include overlapping source/target, multiple boxes with gaps, chests/inventory,
+  GT pipe NBT, redstone, entities/paintings, negative coordinates and height edges.
+  Check that successful completion moves the area coordinates only if the area
+  still exists and its geometry was not edited while the job ran.
+- Cancel before capture, during clear, placement or updates; disconnect/change
+  dimension and stop the server mid-move. Changed block snapshots should restore
+  on cancellation/failure; normal shutdown drains rollback before saving. Runtime
+  mod callbacks, entities, abrupt process termination and crash recovery still
+  require native testing; no disk-backed transaction log is provided.

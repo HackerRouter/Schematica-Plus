@@ -15,6 +15,7 @@ public class MessageCapabilities implements IMessage, IMessageHandler<MessageCap
     public boolean isPrinterEnabled;
     public boolean isSaveEnabled;
     public boolean isLoadEnabled;
+    public boolean supportsWorldMove = true;
 
     public MessageCapabilities() {
         this(false, false, false);
@@ -31,6 +32,7 @@ public class MessageCapabilities implements IMessage, IMessageHandler<MessageCap
         this.isPrinterEnabled = buf.readBoolean();
         this.isSaveEnabled = buf.readBoolean();
         this.isLoadEnabled = buf.readBoolean();
+        supportsWorldMove = buf.isReadable() && buf.readBoolean();
     }
 
     @Override
@@ -38,6 +40,7 @@ public class MessageCapabilities implements IMessage, IMessageHandler<MessageCap
         buf.writeBoolean(this.isPrinterEnabled);
         buf.writeBoolean(this.isSaveEnabled);
         buf.writeBoolean(this.isLoadEnabled);
+        buf.writeBoolean(supportsWorldMove);
     }
 
     @Override
@@ -50,6 +53,7 @@ public class MessageCapabilities implements IMessage, IMessageHandler<MessageCap
         SchematicPrinter.INSTANCE.setEnabled(message.isPrinterEnabled);
         SchematicaPlus.proxy.isSaveEnabled = message.isSaveEnabled;
         SchematicaPlus.proxy.isLoadEnabled = message.isLoadEnabled;
+        SchematicaPlus.proxy.supportsWorldMove = message.supportsWorldMove;
 
         Reference.logger.info(
             "Server capabilities{printer={}, save={}, load={}}",

@@ -68,6 +68,9 @@ public class ClientProxy extends CommonProxy {
     private static final Minecraft MINECRAFT = Minecraft.getMinecraft();
     public static boolean isRenderingGuide = false;
     public static boolean isPendingReset = false;
+    @Override public void worldMoveFinished(long id, boolean success) {
+        com.github.lunatrius.schematica.tool.WorldMoveController.finished(id, success);
+    }
     public static ForgeDirection orientation = ForgeDirection.UNKNOWN;
     public static int rotationRender = 0;
     /** The currently active/selected schematic (for tools, printer, control GUI). */

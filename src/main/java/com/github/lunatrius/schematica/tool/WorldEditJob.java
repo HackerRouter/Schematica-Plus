@@ -27,13 +27,11 @@ import com.github.lunatrius.schematica.task.TaskRegistry;
 import cpw.mods.fml.common.registry.GameData;
 
 /** A snapshot of an edit. Only the server tick queue advances its mutable cursor. */
-public final class WorldEditJob {
+public final class WorldEditJob extends WorldEditTask {
     public enum Kind { PASTE, FILL, REPLACE }
-    public final UUID player;
-    public final int dimension, x, y, z, width, height, length, volume;
+    public final int width, height, length, volume;
     public final Kind kind;
     public final boolean pasteWithoutUpdates, pasteOnlyAir;
-    public volatile boolean cancelled;
     private final Block replacement, target;
     private final int replacementMeta, targetMeta;
     private short[] blocks;
@@ -44,7 +42,6 @@ public final class WorldEditJob {
     private BitSet selected;
     private final SilentBlockPlacement silentPlacement;
     private int cursor, phase, entityCursor;
-    public int blockCount, entityCount;
 
     public WorldEditJob(UUID player, int dimension, Kind kind, int x, int y, int z,
         int width, int height, int length, Block replacement, int replacementMeta, Block target, int targetMeta) {
@@ -54,9 +51,9 @@ public final class WorldEditJob {
     public WorldEditJob(UUID player, int dimension, Kind kind, int x, int y, int z,
         int width, int height, int length, Block replacement, int replacementMeta, Block target, int targetMeta,
         boolean pasteWithoutUpdates, boolean pasteOnlyAir) {
+        super(player, dimension, x, y, z);
         SchematicLimits.worldBounds(x, y, z, (long) x + width - 1, (long) y + height - 1, (long) z + length - 1);
-        this.player = player; this.dimension = dimension; this.kind = kind;
-        this.x = x; this.y = y; this.z = z;
+        this.kind = kind;
         this.width = width; this.height = height; this.length = length;
         this.volume = SchematicLimits.volume(width, height, length);
         this.replacement = replacement; this.replacementMeta = replacementMeta;

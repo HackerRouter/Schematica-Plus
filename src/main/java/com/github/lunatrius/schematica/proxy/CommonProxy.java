@@ -43,6 +43,8 @@ public abstract class CommonProxy {
     public boolean isSaveEnabled = true;
     public boolean isLoadEnabled = true;
     public boolean GTNH = false;
+    public volatile boolean supportsWorldMove;
+    public void worldMoveFinished(long id, boolean success) {}
 
     public void preInit(FMLPreInitializationEvent event) {
         GTNH = Loader.isModLoaded("dreamcraft");
@@ -106,6 +108,7 @@ public abstract class CommonProxy {
     }
 
     public void resetSettings() {
+        supportsWorldMove = false;
         this.isSaveEnabled = true;
         this.isLoadEnabled = true;
     }

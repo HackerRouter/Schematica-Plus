@@ -13,6 +13,7 @@ public final class TaskRegistry {
         FILL("litematica.gui.label.task_name.fill"),
         DELETE("litematica.gui.label.task_name.delete"),
         REPLACE("litematica.tool_mode.name.replace_block"),
+        MOVE("litematica.tool_mode.name.move"),
         VERIFIER("litematica.gui.label.task_name.verifier");
 
         public final String key;

@@ -36,6 +36,7 @@ final class ToolSelectionActions {
                 AreaSelections.capture(); library.setPoints(area, id.endsWith("1") ? point : area.first(), id.endsWith("2") ? point : area.second());
                 break;
             case "moveEntireSelection":
+                if (ToolManager.getCurrentMode() == ToolMode.MOVE) { WorldMoveController.moveTo(point); return true; }
                 AreaSelections.capture(); Vector3i old = area.origin();
                 library.moveEntire(area, point.x - old.x, point.y - old.y, point.z - old.z); break;
             case "selectionGrow":

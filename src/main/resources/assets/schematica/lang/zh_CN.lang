@@ -441,3 +441,6 @@ schematica.ui.task.cancel_verifier=暂停验证并保留结果，可在该放置
 schematica.ui.verifier.metadata=元数据 = %s
 schematica.ui.verifier.select_markers=点击选择或取消此类别／条目的错误标记。\n选中该放置实例后，瞄准标记并按住 renderInfoOverlay 键（默认 I）查看方块对比。
 schematica.ui.verifier.overlay_disabled=验证器标记已关闭，请开启 %s -> %s。
+
+schematica.message.move.server_required=移动世界方块需要服务端安装 Schematica Plus，以保留完整方块数据。
+schematica.message.move.failed=世界移动被拒绝、取消或失败，选区坐标未移动。
