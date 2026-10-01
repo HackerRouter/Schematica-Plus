@@ -20,15 +20,14 @@ Just take a look, after 2 day's hardwork.
 
 Schematica Plus now has 95% functions from [Litematica](https://modrinth.com/mod/litematica),
 
-And we DOES NOT NEED ANY PREREQUISTE MOD now!
+And we DO NOT NEED ANY PREREQUISTE MOD now!
 
-![](images/1_zh_cn.png)
-
+![](images/en_US.png)
 
 AND SUPPORTS UP TO 13 LANGUAGES!
 *includes 文言 (華夏) and 繁體中文 (台灣)*
 
-![](images/en_US.png)
+![](images/1_zh_cn.png)
 
 ![](images/es_ES.png)
 
