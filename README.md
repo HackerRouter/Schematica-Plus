@@ -2,6 +2,53 @@
 
 **Beta 1.0** (`1.0.0-beta.1`) for **Minecraft 1.7.10 / Forge 10.13.4.1614**.
 
+## TL;DR:
+
+## It is now a 95% [Litematica](https://modrinth.com/mod/litematica) import for 1.7.10.
+
+## NO MORE PREREQUISTE MOD.
+
+## It is currently a CLIENT mod. The SERVER mod DEVELOPMENT will be finished soon.
+
+## For tutorials, check the description of [Litematica](https://modrinth.com/mod/litematica)
+
+------
+
+Okay gud, I guess you guys all have learnt how to use [Litematica](https://modrinth.com/mod/litematica) right?
+
+Just take a look, after 2 day's hardwork.
+
+Schematica Plus now has 95% functions from [Litematica](https://modrinth.com/mod/litematica),
+
+And we DOES NOT NEED ANY PREREQUISTE MOD now!
+
+![](images/1_zh_cn.png)
+
+
+AND SUPPORTS UP TO 13 LANGUAGES!
+*includes 文言 (華夏) and 繁體中文 (台灣)*
+
+![](images/en_US.png)
+
+![](images/es_ES.png)
+
+![](images/ru_RU.png)
+
+![](images/ja_JP.png)
+
+
+Yipee! No excuses to stop playing GTNH with Schematica Plus!
+
+------
+
+You have been **warned**:
+
+**Down here are all AI SLOPS.**
+
+It's **GPT**/**Claude**'s turn. **HackerRouter**'s out.
+
+------
+
 Schematica Plus saves, previews, edits and places schematics, with Litematica-style
 interfaces and tools adapted to 1.7.10. It supports multiple placements, area
 selections, material lists, verification, creative world edits and a survival
