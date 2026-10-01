@@ -51,7 +51,7 @@ public final class GuiPlacementConfiguration extends UiScreen {
     private UiTextField name;
     private UiTextField search;
     private UiButton searchButton, rename, allOn, allOff, enabled, rendering, locked, box, entities;
-    private UiButton move, rotation, mirror, reset, materials, verifier, placements;
+    private UiButton move, rotation, mirror, reset, grid, materials, verifier, placements;
     private UiLabel count, originLabel, feedback;
     private PlacementTransform.Orientation orientation;
     private int[] origin = new int[3];
@@ -151,6 +151,14 @@ public final class GuiPlacementConfiguration extends UiScreen {
         mirror = button(() -> UiTranslations.format("litematica.gui.button.mirror_value", orientation == null ? UiTranslations.format("schematica.ui.placement.custom") : orientation.mirrorName()),
             mouse -> { if (orientation != null) transform(orientation.cycleMirror(mouse == 1)); });
         reset = button("litematica.gui.button.schematic_placement.reset_sub_region_placements", () -> updateRegions(() -> placement.resetSubregions(null)));
+        grid = button(() -> GuiPlacementGridSettings.toggleLabel(placement), mouse -> {
+            if (mouse != 0) return;
+            if (isShiftKeyDown()) {
+                placement.grid.toggleEnabled();
+                WorldHandler.INSTANCE.saveSession();
+            } else mc.displayGuiScreen(new GuiPlacementGridSettings(this, placement));
+        });
+        grid.setTooltip(UiTranslations.format("schematica.ui.placement.grid_settings.hover"));
         materials = button("litematica.gui.button.material_list", () -> mc.displayGuiScreen(new GuiSchematicMaterials(this, placement)));
         verifier = button("litematica.gui.button.schematic_verifier", () -> mc.displayGuiScreen(
             new com.github.lunatrius.schematica.client.gui.GuiSchematicVerifier(this, placement)));
@@ -351,14 +359,15 @@ public final class GuiPlacementConfiguration extends UiScreen {
         rotation.setBounds(x, 176, 120, 20);
         mirror.setBounds(x, 197, 120, 20);
         reset.setBounds(x, 218, 120, 20);
-        if (height < 328) {
+        grid.setBounds(x, 239, 120, 20);
+        if (height < 349) {
             materials.setBounds(10, height - 22, textWidth(materials), 20);
             verifier.setBounds(materials.bounds().right() + 1, height - 22, textWidth(verifier), 20);
             placements.setBounds(verifier.bounds().right() + 1, height - 22, textWidth(placements), 20);
         } else {
-            materials.setBounds(x, 250, 120, 20);
-            verifier.setBounds(x, 271, 120, 20);
-            placements.setBounds(width - textWidth(placements) - 9, 303, textWidth(placements), 20);
+            materials.setBounds(x, 271, 120, 20);
+            verifier.setBounds(x, 292, 120, 20);
+            placements.setBounds(width - textWidth(placements) - 9, 324, textWidth(placements), 20);
         }
         searchButton.setBounds(12, 67, 12, 12);
         search.setBounds(28, 66, width - 192, 14);

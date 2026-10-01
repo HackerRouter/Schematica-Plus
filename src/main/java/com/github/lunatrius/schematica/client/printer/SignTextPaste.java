@@ -39,7 +39,7 @@ public final class SignTextPaste {
     }
 
     private static String[] schematicText(int x, int y, int z) {
-        for (SchematicWorld world : ClientProxy.loadedSchematics) {
+        for (SchematicWorld world : ClientProxy.visiblePlacements()) {
             if (!world.isEnabled()) continue;
             int lx = x - world.position.x, ly = y - world.position.y, lz = z - world.position.z;
             if (!world.getSchematic().containsBlock(lx, ly, lz)) continue;

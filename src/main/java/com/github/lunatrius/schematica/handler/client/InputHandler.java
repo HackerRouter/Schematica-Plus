@@ -58,6 +58,10 @@ public class InputHandler {
             case "openGuiPlacementSettings":
                 if (placement != null) minecraft.displayGuiScreen(new com.github.lunatrius.schematica.client.gui.placement.GuiPlacementConfiguration(parent, placement));
                 break;
+            case "openPlacementGridSettingsScreen":
+                if (placement != null) minecraft.displayGuiScreen(new com.github.lunatrius.schematica.client.gui.placement.GuiPlacementGridSettings(parent, placement));
+                else minecraft.thePlayer.addChatMessage(new net.minecraft.util.ChatComponentTranslation("litematica.message.error.no_placement_selected"));
+                break;
             case "openGuiMaterialList":
                 if (placement != null) minecraft.displayGuiScreen(new com.github.lunatrius.schematica.client.gui.control.GuiSchematicMaterials(parent, placement));
                 break;

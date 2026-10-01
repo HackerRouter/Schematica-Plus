@@ -100,7 +100,7 @@ public final class BlockInfoHud {
         List<WorldLayer> placements = new ArrayList<>();
         if (VisualSettings.schematicVisible()) {
             if (ClientProxy.schematic != null && ClientProxy.schematic.isRenderingEnabled()) placements.add(new WorldLayer(ClientProxy.schematic));
-            for (SchematicWorld placement : ClientProxy.loadedSchematics) {
+            for (SchematicWorld placement : ClientProxy.visiblePlacements()) {
                 if (placement != ClientProxy.schematic && placement.isRenderingEnabled()) placements.add(new WorldLayer(placement));
             }
         }

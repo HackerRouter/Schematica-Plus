@@ -73,7 +73,7 @@ public class RendererSchematicGlobal {
             this.profiler.startSection("schematica");
 
             boolean anyRendering = false;
-            for (SchematicWorld sw : ClientProxy.loadedSchematics) {
+            for (SchematicWorld sw : ClientProxy.visiblePlacements()) {
                 if (sw.isEnabled()) {
                     anyRendering = true;
                     break;
@@ -112,14 +112,14 @@ public class RendererSchematicGlobal {
 
         this.profiler.startSection("schematic");
 
-        for (SchematicWorld sw : ClientProxy.loadedSchematics) {
+        for (SchematicWorld sw : ClientProxy.visiblePlacements()) {
             sw.setWorldTime(this.minecraft.theWorld.getWorldTime());
             sw.func_82738_a(this.minecraft.theWorld.getTotalWorldTime());
         }
         updateRenderers();
 
         // Render each loaded schematic
-        for (SchematicWorld sw : ClientProxy.loadedSchematics) {
+        for (SchematicWorld sw : ClientProxy.visiblePlacements()) {
             if (!sw.isEnabled()) continue;
 
             SchematicRenderData data = renderDataMap.get(sw);
@@ -356,7 +356,7 @@ public class RendererSchematicGlobal {
 
     private void updateRenderers() {
         List<List<RendererSchematicChunk>> groups = new ArrayList<>();
-        for (SchematicWorld schematic : ClientProxy.loadedSchematics) {
+        for (SchematicWorld schematic : ClientProxy.visiblePlacements()) {
             if (!schematic.isRenderingEnabled()) continue;
             SchematicRenderData data = renderDataMap.get(schematic);
             if (data == null) continue;

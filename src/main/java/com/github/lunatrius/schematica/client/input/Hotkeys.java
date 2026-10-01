@@ -32,6 +32,7 @@ public final class Hotkeys {
         add("openGuiSelectionManager", normal(), Keyboard.KEY_M, Keyboard.KEY_S);
         add("openGuiAreaSettings", normal(), Keyboard.KEY_MULTIPLY);
         add("openGuiPlacementSettings", normal(), Keyboard.KEY_SUBTRACT);
+        add("openPlacementGridSettingsScreen", normal());
         add("openGuiLoadedSchematics", normal());
         add("saveAreaAsSchematicToFile", normal(), Keyboard.KEY_LCONTROL, Keyboard.KEY_LMENU, Keyboard.KEY_S);
         add("executeOperation", normal());

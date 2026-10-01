@@ -34,5 +34,6 @@ public final class PlacementState {
         next.isRenderingLayer = previous.isRenderingLayer;
         next.renderingLayer = Math.max(0, Math.min(previous.renderingLayer, next.getHeight() - 1));
         next.setPlacementSettings(previous.placementSettings());
+        next.grid.copyFrom(previous.grid);
     }
 }

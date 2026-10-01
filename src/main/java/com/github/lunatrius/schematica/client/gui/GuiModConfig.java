@@ -346,7 +346,7 @@ public class GuiModConfig extends UiScreen implements HotkeyHooks.Capture {
             return Names.Config.Category.DEBUG.equals(category) ? Tab.INFO_OVERLAYS : Tab.GENERIC;
         }
         String description() {
-            if (key != null) return UiTranslations.format("litematica.config.hotkeys.comment." + key.id);
+            if (key != null) return UiTranslations.format(key.commentKey());
             if (color != null) {
                 String description = UiTranslations.format("litematica.config.colors.comment." + color.key);
                 if (!color.available) description += "\n" + UiTranslations.format("schematica.ui.color.pending");

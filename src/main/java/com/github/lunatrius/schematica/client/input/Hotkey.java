@@ -56,5 +56,10 @@ public final class Hotkey {
     public boolean settingsModified() { return !settings.equals(defaultSettings); }
     public void reset() { keys = defaults; resetSettings(); }
     public void resetSettings() { settings = defaultSettings.copy(); held = false; }
-    public String translationKey() { return id.equals("uiDemo") ? "schematica.key.uiDemo" : "litematica.config.hotkeys.name." + id; }
+    public String translationKey() {
+        return id.equals("uiDemo") ? "schematica.key.uiDemo" : plusOnly() ? "schematica.key." + id : "litematica.config.hotkeys.name." + id;
+    }
+    public String commentKey() { return plusOnly() ? "schematica.key." + id + ".comment" : "litematica.config.hotkeys.comment." + id; }
+    /** Hotkeys of the 1.12.2 Litematica that the 26.1.2 catalog has no text for. */
+    private boolean plusOnly() { return id.equals("openPlacementGridSettingsScreen"); }
 }

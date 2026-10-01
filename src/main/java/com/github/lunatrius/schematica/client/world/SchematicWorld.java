@@ -193,6 +193,44 @@ public class SchematicWorld extends World {
     }
 
     public final Vector3i position = new Vector3i();
+    /** Grid/repeat settings of a normal placement (GridSettings of the 1.12.2 Litematica). */
+    public final GridSettings grid = new GridSettings();
+    /** For a repeated grid copy, its base placement; null for normal placements. */
+    public final SchematicWorld gridBase;
+
+    public boolean isRepeatedPlacement() { return gridBase != null; }
+
+    /** SchematicPlacement.createRepeatedCopy: shares the blocks, region state and settings, at the given position. */
+    public static SchematicWorld repeatedCopy(SchematicWorld base, int x, int y, int z) {
+        SchematicWorld copy = new SchematicWorld(base.schematic, base);
+        copy.name = base.name;
+        copy.placementSource = base.placementSource;
+        copy.subregions = base.subregions;
+        copy.visibleRegionBlocks = base.visibleRegionBlocks;
+        copy.transformOperations.addAll(base.transformOperations);
+        copy.placementSettings = base.placementSettings;
+        copy.isRendering = base.isRendering;
+        copy.isRenderingEntities = base.isRenderingEntities;
+        copy.isRenderingLayer = base.isRenderingLayer;
+        copy.renderingLayer = base.renderingLayer;
+        copy.isPastingBlockNBT = base.isPastingBlockNBT;
+        copy.sourceDirectory = base.sourceDirectory;
+        copy.sourceFilename = base.sourceFilename;
+        copy.position.set(x, y, z);
+        return copy;
+    }
+
+    /** The world box around the enabled sub-regions (or the whole placement): {minX, minY, minZ, maxX, maxY, maxZ}. */
+    public int[] enclosingBox() {
+        int[] box = {Integer.MAX_VALUE, Integer.MAX_VALUE, Integer.MAX_VALUE, Integer.MIN_VALUE, Integer.MIN_VALUE, Integer.MIN_VALUE};
+        for (com.github.lunatrius.schematica.api.SchematicRegion region : enabledRegionBounds()) {
+            box[0] = Math.min(box[0], region.minX); box[1] = Math.min(box[1], region.minY); box[2] = Math.min(box[2], region.minZ);
+            box[3] = Math.max(box[3], region.maxX); box[4] = Math.max(box[4], region.maxY); box[5] = Math.max(box[5], region.maxZ);
+        }
+        if (box[0] > box[3]) return new int[] {position.x, position.y, position.z,
+            position.x + getWidth() - 1, position.y + getHeight() - 1, position.z + getLength() - 1};
+        return box;
+    }
     public boolean isRendering;
     public boolean isRenderingLayer;
     public int renderingLayer;
@@ -215,9 +253,16 @@ public class SchematicWorld extends World {
     public boolean projectVersion;
 
     public SchematicWorld(ISchematic schematic) {
+        this(schematic, (SchematicWorld) null);
+    }
+
+    /** gridBase: the placement this is a grid copy of; copies share its blocks and keep its block entities bound to it. */
+    private SchematicWorld(ISchematic schematic, SchematicWorld gridBase) {
         super(new SaveHandlerSchematic(), "Schematica", WORLD_SETTINGS, null, new Profiler());
         this.schematic = schematic;
         this.isRemote = true;
+        this.gridBase = gridBase;
+        if (gridBase != null) return;
 
         for (TileEntity tileEntity : schematic.getTileEntities()) bindTileEntity(tileEntity);
         for (TileEntity tileEntity : schematic.getTileEntities()) validateTileEntity(tileEntity);

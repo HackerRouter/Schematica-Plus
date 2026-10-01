@@ -80,6 +80,16 @@ public class ClientProxy extends CommonProxy {
     public static SchematicWorld schematic = null;
     public static final SchematicLibrary<SchematicSourceData, SchematicWorld> SCHEMATICS = new SchematicLibrary<>(SchematicSourceData::read);
     public static final List<SchematicWorld> loadedSchematics = SCHEMATICS.placements();
+
+    /** The placements and their grid copies, for rendering and targeting (the visible placements upstream). */
+    public static List<SchematicWorld> visiblePlacements() {
+        List<SchematicWorld> copies = com.github.lunatrius.schematica.client.world.GridPlacements.INSTANCE.copies();
+        if (copies.isEmpty()) return loadedSchematics;
+        List<SchematicWorld> all = new ArrayList<>(loadedSchematics.size() + copies.size());
+        all.addAll(loadedSchematics);
+        all.addAll(copies);
+        return all;
+    }
     public static MovingObjectPosition movingObjectPosition = null;
     public static ILOTRPresent lotrProxy = null;
     /** Tracks the last known world/server name for reliable save on disconnect. */
@@ -198,6 +208,7 @@ public class ClientProxy extends CommonProxy {
         public int[] origin;
         public com.google.gson.JsonObject subregions;
         public com.google.gson.JsonObject placementSettings;
+        public com.google.gson.JsonObject grid;
 
         LoadedSchematicEntry() {}
     }
@@ -589,6 +600,7 @@ public class ClientProxy extends CommonProxy {
                 entry.origin = sw.originPosition().coordinates();
                 entry.subregions = sw.subregions() == null ? null : sw.subregions().toJson();
                 entry.placementSettings = sw.placementSettings().toJson();
+                entry.grid = sw.grid.isEnabled() || !sw.grid.isAtDefaultValues() ? sw.grid.toJson() : null;
                 entry.RotationX = sw.rotationStateX;
                 entry.RotationY = sw.rotationStateY;
                 entry.RotationZ = sw.rotationStateZ;
@@ -670,6 +682,7 @@ public class ClientProxy extends CommonProxy {
                         restored.isRenderingLayer = Boolean.TRUE.equals(entry.layerMode);
                         if (entry.layer != null) restored.renderingLayer = Math.max(0, Math.min(entry.layer, restored.getHeight() - 1));
                         restored.setPlacementSettings(com.github.lunatrius.schematica.client.world.PlacementSettings.fromJson(entry.placementSettings));
+                        restored.grid.fromJson(entry.grid);
                         return restored;
                     });
                     RendererSchematicGlobal.INSTANCE.createRendererSchematicChunks(world);

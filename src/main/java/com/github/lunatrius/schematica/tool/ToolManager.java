@@ -242,7 +242,7 @@ public final class ToolManager {
         Vec3 eye = camera().getPosition(1), look = camera().getLook(1);
         double distance = hit == null ? 200 : eye.distanceTo(hit.hitVec);
         if (hit != null) { block = mc().theWorld.getBlock(hit.blockX, hit.blockY, hit.blockZ); meta = mc().theWorld.getBlockMetadata(hit.blockX, hit.blockY, hit.blockZ); }
-        if (VisualSettings.schematicVisible()) for (SchematicWorld world : ClientProxy.loadedSchematics) {
+        if (VisualSettings.schematicVisible()) for (SchematicWorld world : ClientProxy.visiblePlacements()) {
             if (!world.isRenderingEnabled()) continue;
             Vec3 start = eye.addVector(-world.position.x, -world.position.y, -world.position.z);
             MovingObjectPosition candidate = world.rayTraceRendered(start, start.addVector(look.xCoord * distance, look.yCoord * distance, look.zCoord * distance));

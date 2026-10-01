@@ -1249,3 +1249,20 @@ compare with a server that does not have the mod and with each server option off
   Include support blocks, blocks under hidden repeaters/carpets/snow and under visible sand/gravel
   columns are kept too. Check all three with .schematic, .schemplus and .litematic outputs.
 
+## Grid / repeated placements (ported from 1.12.2 Litematica)
+
+- Placement configuration → Grid/Repeat button opens the grid screen; Shift+click only toggles.
+  Grid Size cannot go below the placement size; Reset Size restores it. Set repeat counts for
+  -x/+x/-z/+z (and Y) and enable: copies appear at size steps, rendered like the placement, with
+  correct missing/wrong-block overlays for their own positions and the render layer range.
+- Walk far away: copies outside render distance + 1 chunk disappear and new ones appear ahead.
+  Move, rotate, mirror or edit sub-regions of the base: copies follow. Disable the placement or
+  the grid, or remove the placement: copies vanish. Reconnect: grid settings are restored.
+- Copies are targetable by Easy Place, the block info overlay, pick block and placement
+  restriction, but are not listed in Loaded/Placements lists and are not selectable or saved.
+- Tool mode Grid Paste (creative): Execute pastes the base and every existing copy in turn (watch
+  the Task Manager); with the grid off it pastes only the placement and prints the note. The paste
+  replace mode is shown in the HUD and cycled with selectionModeCycle as for Paste.
+- Hotkey openPlacementGridSettingsScreen (unbound by default) opens the screen for the selected
+  placement.
+

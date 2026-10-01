@@ -139,7 +139,7 @@ public class OverlayHandler {
                 }
             }
 
-            if (mode == ToolMode.PASTE_SCHEMATIC) {
+            if (mode == ToolMode.PASTE_SCHEMATIC || mode == ToolMode.GRID_PASTE) {
                 ReplaceBehavior replace = ConfigurationHandler.pasteReplaceBehavior;
                 lines.add(UiTranslations.format("litematica.hud.misc.schematic_paste.replace_mode", (replace == ReplaceBehavior.NONE ? EnumChatFormatting.RED : EnumChatFormatting.GOLD)
                     + UiTranslations.format(replace.translationKey()) + EnumChatFormatting.RESET));

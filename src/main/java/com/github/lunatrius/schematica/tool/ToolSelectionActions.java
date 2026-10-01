@@ -70,7 +70,7 @@ final class ToolSelectionActions {
     private static void cycleMode() {
         ToolMode mode = ToolManager.getCurrentMode();
         if (mode == ToolMode.DELETE) ToolMode.deleteUsesPlacement = !ToolMode.deleteUsesPlacement;
-        else if (mode == ToolMode.PASTE_SCHEMATIC) {
+        else if (mode == ToolMode.PASTE_SCHEMATIC || mode == ToolMode.GRID_PASTE) {
             ConfigurationHandler.setPasteReplaceBehavior(ConfigurationHandler.pasteReplaceBehavior.cycle(false));
         }
         else if (mode.getUsesAreaSelection()) {

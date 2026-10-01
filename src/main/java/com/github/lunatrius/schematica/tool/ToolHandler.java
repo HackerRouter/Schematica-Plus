@@ -31,11 +31,11 @@ public class ToolHandler {
             return true;
         }
         ToolMode mode = ToolManager.getCurrentMode();
-        if (mode != ToolMode.PASTE_SCHEMATIC && mode != ToolMode.DELETE
+        if (mode != ToolMode.PASTE_SCHEMATIC && mode != ToolMode.GRID_PASTE && mode != ToolMode.DELETE
             && !(mode == ToolMode.FILL && mode.getPrimaryBlock() != null)
             && !(mode == ToolMode.REPLACE_BLOCK && mode.getPrimaryBlock() != null && mode.getSecondaryBlock() != null)) return false;
-        request(player, mode == ToolMode.PASTE_SCHEMATIC ? TaskRegistry.Kind.PASTE : mode == ToolMode.DELETE ? TaskRegistry.Kind.DELETE
-            : TaskRegistry.Kind.FILL, p -> queueEdit(p, mode));
+        request(player, mode == ToolMode.PASTE_SCHEMATIC || mode == ToolMode.GRID_PASTE ? TaskRegistry.Kind.PASTE
+            : mode == ToolMode.DELETE ? TaskRegistry.Kind.DELETE : TaskRegistry.Kind.FILL, p -> queueEdit(p, mode));
         return true;
     }
 
@@ -66,12 +66,44 @@ public class ToolHandler {
             submit(player, pasteJob(player, ClientProxy.schematic), null);
             return;
         }
+        if (mode == ToolMode.GRID_PASTE) {
+            gridPaste(player);
+            return;
+        }
         Block replacement = mode == ToolMode.DELETE ? Blocks.air : mode.getPrimaryBlock();
         java.util.List<com.github.lunatrius.schematica.api.SchematicRegion> boxes = targetBoxes(mode);
         WorldEditJob job = areaJob(player, mode == ToolMode.REPLACE_BLOCK ? WorldEditJob.Kind.REPLACE : WorldEditJob.Kind.FILL, boxes,
             replacement, mode == ToolMode.DELETE ? 0 : mode.getPrimaryMeta(), mode.getSecondaryBlock(), mode.getSecondaryMeta());
         if (mode == ToolMode.DELETE) job.removeEntitiesIn(boxes);
         submit(player, job, null);
+    }
+
+    /**
+     * SchematicPlacingUtils.gridPasteCurrentPlacementToWorld: the selected placement and its grid copies within the
+     * loaded area, one after another; without an enabled grid only the placement is pasted, with a note.
+     */
+    private static void gridPaste(EntityPlayer player) {
+        SchematicWorld base = ClientProxy.schematic;
+        if (base == null) throw new MessageException("litematica.message.error.no_placement_selected");
+        java.util.List<SchematicWorld> placements = new java.util.ArrayList<>();
+        placements.add(base);
+        if (base.grid.isEnabled()) {
+            placements.addAll(com.github.lunatrius.schematica.client.world.GridPlacements.INSTANCE.copiesOf(base));
+        } else {
+            sendChat(player, EnumChatFormatting.GOLD + UiTranslations.format("schematica.message.grid_paste.grid_disabled"));
+        }
+        java.util.List<WorldEditJob> jobs = new java.util.ArrayList<>();
+        for (SchematicWorld placement : placements) jobs.add(pasteJob(player, placement));
+        submitAll(player, jobs, 0);
+    }
+
+    /** Submits the jobs in order, each after the previous one finished successfully. */
+    private static void submitAll(EntityPlayer player, java.util.List<WorldEditJob> jobs, int index) {
+        if (index >= jobs.size()) return;
+        submit(player, jobs.get(index), index + 1 < jobs.size() ? () -> {
+            EntityPlayer current = Minecraft.getMinecraft().thePlayer;
+            if (current != null) request(current, TaskRegistry.Kind.PASTE, p -> submitAll(p, jobs, index + 1));
+        } : null);
     }
 
     private static WorldEditJob pasteJob(EntityPlayer player, SchematicWorld schematic) {

@@ -65,7 +65,7 @@ public final class PlacementRestriction {
 
     /** The enabled placement whose schematic has a non-air block at the world position, ignoring the layer range. */
     private static SchematicWorld schematicAt(int x, int y, int z) {
-        for (SchematicWorld world : ClientProxy.loadedSchematics) {
+        for (SchematicWorld world : ClientProxy.visiblePlacements()) {
             if (!world.isEnabled()) continue;
             int lx = x - world.position.x, ly = y - world.position.y, lz = z - world.position.z;
             if (!world.getSchematic().containsBlock(lx, ly, lz)) continue;
@@ -77,7 +77,7 @@ public final class PlacementRestriction {
 
     /** WorldUtils.isPositionWithinRangeOfSchematicRegions. */
     static boolean nearRegions(int x, int y, int z, int range) {
-        for (SchematicWorld world : ClientProxy.loadedSchematics) {
+        for (SchematicWorld world : ClientProxy.visiblePlacements()) {
             if (!world.isEnabled() || world.subregions() == null) continue;
             for (SubRegionPlacements.Region region : world.subregions().regions()) {
                 if (!region.enabled) continue;

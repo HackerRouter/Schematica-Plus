@@ -78,7 +78,7 @@ public final class EasyPlace {
         Minecraft mc = mc();
         EntityClientPlayerMP player = mc.thePlayer;
         World world = mc.theWorld;
-        if (player == null || world == null || ClientProxy.loadedSchematics.isEmpty()) return Result.PASS;
+        if (player == null || world == null || ClientProxy.visiblePlacements().isEmpty()) return Result.PASS;
         double range = SchematicTargets.validBlockRange();
         SchematicTargets.Hit hit = ConfigurationHandler.easyPlaceFirst ? SchematicTargets.closest(range, BlockInfoHudSettings.targetFluids)
             : SchematicTargets.furthestBeforeVanilla(range);

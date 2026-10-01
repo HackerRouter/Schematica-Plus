@@ -50,6 +50,7 @@ public class TickHandler {
                 ClientProxy.isPendingReset = false;
             }
             WorldHandler.INSTANCE.updateWorld(this.minecraft);
+            com.github.lunatrius.schematica.client.world.GridPlacements.INSTANCE.tick(this.minecraft);
             com.github.lunatrius.schematica.client.verifier.VerificationManager.INSTANCE.tick(this.minecraft);
             com.github.lunatrius.schematica.client.projects.SchematicProjects.syncSelections();
             com.github.lunatrius.schematica.tool.RebuildJobs.tick(this.minecraft);
