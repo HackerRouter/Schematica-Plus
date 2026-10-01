@@ -835,11 +835,59 @@ These checks supersede Phase 12's Simple-editor and bounding-box expectations.
   persist. Check F1, open menus and all GUI scales; other HUD/GL state must remain
   intact. The existing top-right Block Info Lines settings remain independent.
 - Scope: compares registry IDs and metadata. Tile NBT, entity contents and modern
-  block-tag equivalence are not compared. This phase includes a status HUD; 3D
-  error markers, selected-position overlays and marker hover panels remain future
-  work. Results update from client world notifications, not server NBT queries.
+  block-tag equivalence are not compared. Results and marker hover panels show registry IDs and metadata only.
+  Results update from client world notifications, not server NBT queries.
 - Automated coverage checks classifications, exact-pair ignores, cropped bounds,
   negative/chunk coordinates, finite work budgets, unloaded chunks and gaps,
   replacement counting, updates during partial scans, failed reads, allocation
   limits and HUD configuration/translation persistence. Native GUI, lifecycle
   integration and GTNH in-game checks above remain unexecuted by the agent.
+
+
+## Schematic verifier: selected markers and comparison overlays
+
+- Select the placement whose verification results should be displayed. In its
+  verifier, click a category to mark every non-ignored pair in that category, or
+  click individual rows to select several pairs. Selecting a category clears its
+  individual selections; selecting an individual clears that category selection.
+  Other categories stay selected. Correct-state rows cannot produce markers.
+  Filter/sort operations preserve selections. Ignore must not also select a row;
+  mouse release outside a row cancels the click. Tab/Enter/Space and click sounds
+  should follow the existing button behavior. Selected rows have a gray fill and
+  light border. Disabled overlays display a configuration hint on selection.
+- Close the GUI: missing/correctable errors have colored, through-wall outlines
+  and translucent faces. The nearest 1000 selected positions are shown by default.
+  `verifierErrorHilightMaxPositions` accepts 1..10000 in this 1.7.10 port.
+  Search work is incremental (up to 16384 cells / 1 ms per client tick), separate
+  from verification's 4 ms allowance. Already correct chunks are skipped, and
+  distant chunks are pruned once enough closer markers have been found.
+  Very large selections may take several ticks to refresh after camera movement.
+- Set renderErrorMarkerSides, renderErrorMarkerConnections and
+  verifierErrorHilightAlpha. Outlines remain visible when faces are disabled or
+  alpha is zero. Marker RGB follows the corresponding existing overlay colors.
+  Aim at a marker: its outline thickens. Hold renderInfoOverlay (default I) for
+  the Expected/Found item, registry ID and metadata comparison panel. Remap the
+  key to a mouse button and then unbind it; an unbound key disables the panel.
+  The panel does not query server NBT or preview inventory contents.
+- Hover a verifier result for the same comparison panel. Check long mod IDs,
+  blocks without items or broken item render hooks, both languages, all GUI
+  scales and narrow windows. Check blockInfoOverlayAlignment (top center/center)
+  and blockInfoOverlayOffsetY, including negative offsets. Info HUD toggling only
+  affects status/coordinate lines, not the marker hover panel. infoHudMaxLines
+  limits the nearby coordinate list; screen height additionally bounds it.
+- Move through negative coordinates and chunk boundaries, then enable Freecam.
+  Boxes must remain on world blocks; ray targeting and nearest ordering must
+  follow the camera. Test near large world coordinates for float jitter.
+  Switch selected placements; only the selected placement's markers/HUD appear.
+  Fix a marked block, ignore a pair, reset ignored, pause/resume the verifier,
+  move/rotate/unload a placement, change dimension, disconnect and reconnect.
+  Corrected/ignored/invalid results must not leave ghost markers or hover panels.
+- F1 hides markers and HUD. Menus hide the in-world comparison panel. Check
+  world translucency, other mods' overlays, lightmaps and item rendering afterward
+  for OpenGL state leaks. Keep the existing top-right Block Info Lines enabled.
+- Automated coverage: category/entry selection transitions, brute-force nearest
+  comparison across cropped negative chunks, deadlines/work caps, sparse results,
+  correction/ignore invalidation, changes during partial searches, camera/limit
+  changes, world-scan replacement, immutable output and selected-cell ray hits.
+  Config defaults, normalization, persistence and dynamic upstream keys are also
+  tested. Native OpenGL, GUI and GTNH/Freecam checks remain unexecuted by the agent.

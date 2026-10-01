@@ -60,10 +60,11 @@ public class InputHandler {
         Names.Keys.CATEGORY);
     private static final KeyBinding KEY_BINDING_LOAD = new KeyBinding(Names.Keys.LOAD, Keyboard.KEY_NONE, Names.Keys.CATEGORY);
     private static final KeyBinding KEY_BINDING_MANIPULATE = new KeyBinding(Names.Keys.MANIPULATE, Keyboard.KEY_NONE, Names.Keys.CATEGORY);
+    public static final KeyBinding RENDER_INFO_OVERLAY = new KeyBinding("litematica.config.hotkeys.name.renderInfoOverlay", Keyboard.KEY_I, Names.Keys.CATEGORY);
 
     public static final KeyBinding[] KEY_BINDINGS = new KeyBinding[] { KEY_BINDING_SAVE,
         KEY_BINDING_CONTROL, KEY_BINDING_LAYER_INC, KEY_BINDING_LAYER_DEC,
-        KEY_BINDING_EXECUTE, KEY_BINDING_UI_DEMO, KEY_BINDING_LOAD, KEY_BINDING_MANIPULATE };
+        KEY_BINDING_EXECUTE, KEY_BINDING_UI_DEMO, KEY_BINDING_LOAD, KEY_BINDING_MANIPULATE, RENDER_INFO_OVERLAY };
 
     private final Minecraft minecraft = Minecraft.getMinecraft();
 

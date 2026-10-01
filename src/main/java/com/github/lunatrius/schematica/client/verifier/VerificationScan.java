@@ -9,6 +9,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.BitSet;
+import java.util.Comparator;
+import java.util.PriorityQueue;
 
 import com.github.lunatrius.schematica.util.SchematicLimits;
 
@@ -150,9 +153,11 @@ public final class VerificationScan {
         if (old == 0) checked++;
         if (old == id) return;
         if (old > 0) groups.get(old).count--;
+        if (old > 0 && groups.get(old).type != Type.CORRECT) active.errors--;
         if (old == -2) skipped--;
         cells[index] = id;
         if (id > 0) groups.get(id).count++;
+        if (id > 0 && groups.get(id).type != Type.CORRECT) active.errors++;
         if (id == -2) skipped++;
         revision++;
     }
@@ -210,9 +215,92 @@ public final class VerificationScan {
         return count;
     }
 
+    public Group at(int worldX, int worldY, int worldZ) {
+        int sx = worldX - x, sy = worldY - y, sz = worldZ - z;
+        if (sx < bounds[0] || sy < bounds[1] || sz < bounds[2] || sx >= bounds[3] || sy >= bounds[4] || sz >= bounds[5]) return null;
+        int id = cells[sx - bounds[0] + width * (sz - bounds[2] + length * (sy - bounds[1]))];
+        return id > 0 ? groups.get(id) : null;
+    }
+
+    public static final class Marker {
+        public final int x, y, z;
+        public final Group group;
+        private final double distance;
+        private Marker(int x, int y, int z, Group group, double distance) {
+            this.x = x; this.y = y; this.z = z; this.group = group; this.distance = distance;
+        }
+    }
+
+    public MarkerSearch closest(VerificationSelection selection, double cx, double cy, double cz, int limit) {
+        return new MarkerSearch(selection, cx, cy, cz, limit);
+    }
+
+    public final class MarkerSearch {
+        private final double cx, cy, cz;
+        private final int limit;
+        private final BitSet selected = new BitSet();
+        private final Comparator<Marker> order = Comparator.comparingDouble((Marker m) -> m.distance)
+            .thenComparingInt(m -> m.x).thenComparingInt(m -> m.y).thenComparingInt(m -> m.z);
+        private final PriorityQueue<Marker> nearest = new PriorityQueue<>(order.reversed());
+        private final PriorityQueue<Work> remaining;
+        private Work chunk;
+        private int cursor;
+
+        private MarkerSearch(VerificationSelection selection, double cx, double cy, double cz, int limit) {
+            if (limit < 1 || !Double.isFinite(cx) || !Double.isFinite(cy) || !Double.isFinite(cz)) throw new IllegalArgumentException();
+            this.cx = cx; this.cy = cy; this.cz = cz; this.limit = limit;
+            for (int i = 1; i < groups.size(); i++) if (groups.get(i).count > 0 && selection.includes(groups.get(i)) && !ignored(groups.get(i))) selected.set(i);
+            remaining = new PriorityQueue<>(Comparator.comparingDouble(this::distance));
+            if (!selected.isEmpty()) for (Work work : chunks) if (work.errors > 0) remaining.add(work);
+        }
+
+        private double distance(Work work) {
+            double dx = gap(cx, x + work.minX + 0.5, x + work.minX + work.width - 0.5);
+            double dy = gap(cy, y + bounds[1] + 0.5, y + bounds[4] - 0.5);
+            double dz = gap(cz, z + work.minZ + 0.5, z + work.minZ + work.length - 0.5);
+            return dx * dx + dy * dy + dz * dz;
+        }
+
+        public boolean done() { return chunk == null && remaining.isEmpty(); }
+
+        public void step(int budget, long deadline) {
+            for (int n = 0; n < budget && System.nanoTime() < deadline; n++) {
+                if (chunk == null) {
+                    if (remaining.isEmpty()) return;
+                    chunk = remaining.remove(); cursor = 0;
+                    if (nearest.size() == limit && distance(chunk) > nearest.peek().distance) {
+                        chunk = null; remaining.clear(); return;
+                    }
+                }
+                int sx = chunk.minX + cursor % chunk.width;
+                int sz = chunk.minZ + cursor / chunk.width % chunk.length;
+                int sy = bounds[1] + cursor / (chunk.width * chunk.length);
+                int id = cells[sx - bounds[0] + width * (sz - bounds[2] + length * (sy - bounds[1]))];
+                if (id > 0 && selected.get(id)) {
+                    double dx = x + sx + 0.5 - cx, dy = y + sy + 0.5 - cy, dz = z + sz + 0.5 - cz;
+                    double distance = dx * dx + dy * dy + dz * dz;
+                    if (nearest.size() < limit || distance <= nearest.peek().distance) {
+                        Marker marker = new Marker(x + sx, y + sy, z + sz, groups.get(id), distance);
+                        if (nearest.size() < limit) nearest.add(marker);
+                        else if (order.compare(marker, nearest.peek()) < 0) { nearest.remove(); nearest.add(marker); }
+                    }
+                }
+                if (++cursor == chunk.volume) chunk = null;
+            }
+        }
+
+        public List<Marker> result() {
+            List<Marker> result = new ArrayList<>(nearest);
+            result.sort(order);
+            return Collections.unmodifiableList(result);
+        }
+    }
+
+    private static double gap(double value, double min, double max) { return Math.max(0, Math.max(min - value, value - max)); }
+
     private final class Work {
         final int chunkX, chunkZ, minX, minZ, width, length, volume;
-        int cursor;
+        int cursor, errors;
         boolean queued = true, again;
         Work(int cx, int cz) {
             chunkX = cx; chunkZ = cz;

@@ -394,6 +394,10 @@ public class GuiModConfig extends UiScreen {
                     panel.layout(root.bounds());
                     input.pushModal(panel);
                 }));
+            } else if (entry.draft.property.getName().equals("blockInfoOverlayAlignment") && BlockInfoHudSettings.CATEGORY.equals(entry.category)) {
+                editor = add(new UiButton(() -> UiTranslations.format("center".equals(entry.draft.text())
+                    ? "litematica.label.alignment.center" : "litematica.label.alignment.top_center"),
+                    button -> entry.draft.setText("center".equals(entry.draft.text()) ? "top_center" : "center")));
             } else if ((entry.draft.property.getName().equals("blockInfoLinesAlignment") || entry.draft.property.getName().equals("infoHudAlignment"))
                 && BlockInfoHudSettings.CATEGORY.equals(entry.category)) {
                 editor = add(new UiButton(() -> UiTranslations.format(HudAlignment.parse(entry.draft.text()).translationKey()),

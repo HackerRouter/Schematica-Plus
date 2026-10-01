@@ -9,9 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 
-import net.minecraft.block.Block;
 import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.item.ItemStack;
 
 import com.github.lunatrius.schematica.client.gui.framework.UiBounds;
 import com.github.lunatrius.schematica.client.gui.framework.UiButton;
@@ -29,9 +27,8 @@ import com.github.lunatrius.schematica.client.verifier.VerificationScan.Group;
 import com.github.lunatrius.schematica.client.verifier.VerificationScan.State;
 import com.github.lunatrius.schematica.client.verifier.VerificationScan.Type;
 import com.github.lunatrius.schematica.client.world.SchematicWorld;
-import com.github.lunatrius.schematica.reference.Reference;
+import com.github.lunatrius.schematica.client.gui.VerifierBlockInfo.Visual;
 import com.github.lunatrius.schematica.util.MessageException;
-import cpw.mods.fml.common.registry.GameData;
 
 public final class GuiSchematicVerifier extends UiScreen {
     private final VerificationManager.Session session;
@@ -192,8 +189,35 @@ public final class GuiSchematicVerifier extends UiScreen {
         private final Row row;
         private final int index;
         private UiButton ignore;
+        private final UiButton select;
+        private VerifierBlockInfo info;
         Entry(Row row, int index) {
             this.row = row; this.index = index;
+            select = add(new UiButton(() -> "", mouse -> {
+                if (mouse == 0 && session.scan() == previous) {
+                    if (row.group == null) session.markers.selection.toggle(row.type);
+                    else session.markers.selection.toggle(row.group);
+                    message = com.github.lunatrius.schematica.handler.VerifierOverlaySettings.enabled ? ""
+                        : UiTranslations.format("schematica.ui.verifier.overlay_disabled",
+                            UiTranslations.format("litematica.gui.button.config_gui.info_overlays"),
+                            UiTranslations.format("litematica.config.info_overlays.name.verifierOverlayEnabled"));
+                }
+            }) {
+                @Override public void draw(UiDraw draw, int mouseX, int mouseY) {
+                    if (isFocused()) draw.border(bounds(), 0xFFE0E0E0);
+                }
+                @Override public boolean drawTooltip(UiDraw draw, int mouseX, int mouseY, UiBounds screen) {
+                    if (row.group == null) return false;
+                    if (info == null) info = new VerifierBlockInfo(row.group.pair);
+                    int width = info.width(draw, Math.max(0, screen.width - 8));
+                    int x = Math.max(4, Math.min(mouseX + 10, screen.right() - width - 4));
+                    int y = Math.max(4, Math.min(mouseY + 10, screen.bottom() - VerifierBlockInfo.HEIGHT - 4));
+                    info.draw(draw, x, y, width);
+                    return true;
+                }
+            });
+            select.setEnabled(row.type != Type.CORRECT);
+            select.setTooltip(UiTranslations.format("schematica.ui.verifier.select_markers"));
             if (row.group != null) {
                 setTooltip(row.type.color + UiTranslations.format(row.type.key),
                     UiTranslations.format("litematica.gui.label.schematic_verifier.expected") + ": " + row.group.pair.expected,
@@ -204,13 +228,16 @@ public final class GuiSchematicVerifier extends UiScreen {
             }
         }
         @Override public void layout(UiBounds screen) {
+            select.setBounds(bounds().x, bounds().y, bounds().width, bounds().height);
             if (ignore != null) {
                 int w = fontRendererObj.getStringWidth(ignore.label()) + 10;
                 ignore.setBounds(bounds().right() - w - 2, bounds().y + 1, w, 20);
             }
         }
         @Override public void draw(UiDraw draw, int mouseX, int mouseY) {
-            draw.fill(bounds(), containsVisible(mouseX, mouseY) ? 0xA0505050 : index % 2 == 1 ? 0xA0101010 : 0xA0303030);
+            boolean selected = row.group == null ? session.markers.selection.category(row.type) : session.markers.selection.entry(row.group);
+            draw.fill(bounds(), selected ? 0xA0707070 : containsVisible(mouseX, mouseY) ? 0xA0505050 : index % 2 == 1 ? 0xA0101010 : 0xA0303030);
+            if (selected) draw.border(bounds(), 0xFFE0E0E0);
             int x = bounds().x + 4, y = bounds().y;
             if (row.group == null) draw.text(row.type.color + UiTranslations.format(row.type.key), x, y + 7, 0xFFFFFFFF);
             else {
@@ -222,27 +249,4 @@ public final class GuiSchematicVerifier extends UiScreen {
         }
     }
 
-    private static final class Visual {
-        final String name;
-        ItemStack icon;
-        Visual(State state) {
-            String label = state.block;
-            try {
-                Block block = GameData.getBlockRegistry().getObject(state.block);
-                if (block != null) {
-                    if (!state.air()) icon = new ItemStack(block, 1, state.metadata);
-                    label = icon == null || icon.getItem() == null ? block.getLocalizedName() : icon.getDisplayName();
-                    if (label == null || label.endsWith(".name")) label = state.block;
-                }
-            } catch (RuntimeException error) { icon = null; }
-            name = label + " [" + state.metadata + "]";
-        }
-        void draw(UiDraw draw, int x, int y, int width) {
-            if (width < 20) return;
-            draw.fill(new UiBounds(x, y + 3, 16, 16), 0x20FFFFFF);
-            if (icon != null) try { draw.item(icon, x, y + 3); }
-            catch (RuntimeException error) { icon = null; Reference.logger.debug("Could not draw verifier item", error); }
-            draw.text(draw.trim(name, Math.max(0, width - 24)), x + 20, y + 7, 0xFFFFFFFF);
-        }
-    }
 }

@@ -90,6 +90,7 @@ public class RendererSchematicGlobal {
                 captureMatrix(GL11.GL_MODELVIEW_MATRIX, this.modelView);
                 this.frustum.update(this.projection, this.modelView);
                 renderAll(event.partialTicks);
+                VerifierOverlayRenderer.render(this.minecraft, event.partialTicks, this.cameraPosition.x, this.cameraPosition.y, this.cameraPosition.z);
             }
 
             this.profiler.endSection();

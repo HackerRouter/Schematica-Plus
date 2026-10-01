@@ -437,3 +437,7 @@ schematica.ui.verifier.comparison=比较方块注册名和 metadata，不比较�
 schematica.ui.task.backend.analysis=客户端验证
 schematica.ui.task.stage.verify=核对区块
 schematica.ui.task.cancel_verifier=暂停验证并保留结果，可在该放置的验证器界面继续。
+
+schematica.ui.verifier.metadata=元数据 = %s
+schematica.ui.verifier.select_markers=点击选择或取消此类别／条目的错误标记。\n选中该放置实例后，瞄准标记并按住 renderInfoOverlay 键（默认 I）查看方块对比。
+schematica.ui.verifier.overlay_disabled=验证器标记已关闭，请开启 %s -> %s。

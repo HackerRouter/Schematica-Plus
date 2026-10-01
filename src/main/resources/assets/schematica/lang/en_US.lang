@@ -437,3 +437,7 @@ schematica.ui.verifier.comparison=Compares block registry IDs and metadata; tile
 schematica.ui.task.backend.analysis=Client-side verification
 schematica.ui.task.stage.verify=Checking chunks
 schematica.ui.task.cancel_verifier=Pause verification and keep its results. Resume from the placement's verifier screen.
+
+schematica.ui.verifier.metadata=Metadata = %s
+schematica.ui.verifier.select_markers=Click to toggle error markers for this category or entry.\nSelect the placement, then hold the renderInfoOverlay key (default I) while looking at a marker to compare blocks.
+schematica.ui.verifier.overlay_disabled=Verifier overlays are disabled. Enable %s -> %s.

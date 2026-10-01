@@ -141,6 +141,7 @@ public class ConfigurationHandler {
         RenderColors.load(configuration);
         BlockInfoHudSettings.load(configuration);
         InfoHudSettings.load(configuration);
+        VerifierOverlaySettings.load(configuration);
         propShowDebugInfo = configuration.get(
             Names.Config.Category.DEBUG,
             Names.Config.SHOW_DEBUG_INFO,

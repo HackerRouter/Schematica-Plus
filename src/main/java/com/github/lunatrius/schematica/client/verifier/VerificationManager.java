@@ -36,6 +36,10 @@ public final class VerificationManager {
     }
 
     public Session focused() { return focused; }
+    public Session overlay(Minecraft mc) {
+        Session selected = sessions.get(ClientProxy.schematic);
+        return selected != null && selected.scan != null && selected.valid(mc) ? selected : null;
+    }
 
     public void clear() {
         for (Session session : sessions.values()) session.reset();
@@ -76,6 +80,12 @@ public final class VerificationManager {
         long deadline = System.nanoTime() + 4_000_000L;
         for (int i = 0; i < pending.size(); i++) pending.get(Math.floorMod(next + i, pending.size())).step(mc, deadline);
         next = pending.isEmpty() ? 0 : Math.floorMod(next + 1, pending.size());
+        Session overlay = overlay(mc);
+        if (overlay != null && mc.renderViewEntity != null && com.github.lunatrius.schematica.handler.VerifierOverlaySettings.enabled) {
+            net.minecraft.util.Vec3 camera = mc.renderViewEntity.getPosition(1);
+            overlay.markers.update(overlay.scan, (int) Math.floor(camera.xCoord), (int) Math.floor(camera.yCoord), (int) Math.floor(camera.zCoord),
+                com.github.lunatrius.schematica.handler.VerifierOverlaySettings.maxPositions, 16384, System.nanoTime() + 1_000_000L);
+        }
     }
 
     public static final class Session {
@@ -89,6 +99,7 @@ public final class VerificationManager {
         private int[] bounds;
         private boolean running, layers;
         public boolean hud = true;
+        public final VerificationMarkers markers = new VerificationMarkers();
         public VerificationScan.Type filter = VerificationScan.Type.ALL;
         public int sortColumn = 2;
         public boolean reverse;
@@ -195,6 +206,7 @@ public final class VerificationManager {
         public void pause() { running = false; finishTask(); }
         public void reset() {
             pause(); scan = null; reader = null; world = null; source = null; bounds = null; notice = "";
+            markers.clear();
         }
 
         public String progressText() {
