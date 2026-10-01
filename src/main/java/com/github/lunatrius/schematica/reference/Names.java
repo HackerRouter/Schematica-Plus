@@ -75,6 +75,11 @@ public final class Names {
         public static final String SERVERSIDE_SCHEMATICS_ENABLED = "serversideSchematicsEnabled";
         public static final String SERVERSIDE_SCHEMATICS_ENABLED_DESC = "Allow players to save schematics serverside, download schematics and see serverside schematics";
 
+        public static final String REMOTE_EDITS_ENABLED = "remoteEditsEnabled";
+        public static final String REMOTE_EDITS_ENABLED_DESC = "Let players with creative mode and command permission paste, fill and delete with full NBT from their client.";
+        public static final String ACCURATE_PLACEMENT_ENABLED = "accuratePlacementEnabled";
+        public static final String ACCURATE_PLACEMENT_ENABLED_DESC = "Let Easy Place and the printer set the exact orientation metadata of blocks they place.";
+
         public static final String LANG_PREFIX = "schematica.config";
     }
 

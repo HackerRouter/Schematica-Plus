@@ -27,6 +27,7 @@ public final class ConfigTranslations {
             case "pasteReplaceBehavior": return "litematica.gui.label.replace_behavior." + value;
             case "placementRestrictionWarn": return "malilib.label.message_output_type." + value;
             case "schematicVcsDeleteMode": return "litematica.gui.label.placement_deletion_mode." + value;
+            case "easyPlaceProtocolVersion": return "litematica.gui.label.easy_place_protocol." + value;
             default: return null;
         }
     }

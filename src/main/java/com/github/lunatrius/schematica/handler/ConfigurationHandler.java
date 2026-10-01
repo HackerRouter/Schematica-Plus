@@ -93,6 +93,9 @@ public class ConfigurationHandler {
     public static boolean unhideSchematicVCS;
     public static com.github.lunatrius.schematica.tool.PlacementDeletionMode schematicVcsDeleteMode = com.github.lunatrius.schematica.tool.PlacementDeletionMode.MATCHING_BLOCK;
     public static boolean printerEnabled = PRINTER_ENABLED_DEFAULT;
+    public static boolean remoteEditsEnabled = true;
+    public static boolean accuratePlacementEnabled = true;
+    public static String easyPlaceProtocolVersion = "auto";
     public static boolean saveEnabled = SAVE_ENABLED_DEFAULT;
     public static boolean loadEnabled = LOAD_ENABLED_DEFAULT;
     public static int playerQuotaKilobytes = PLAYER_QUOTA_KILOBYTES_DEFAULT;
@@ -354,6 +357,11 @@ public class ConfigurationHandler {
         placementRestriction = toolFlag("placementRestriction", false);
         signTextPaste = toolFlag("signTextPaste", true);
         unhideSchematicVCS = toolFlag("unhideSchematicVCS", false);
+        Property protocol = configuration.get(Names.Config.Category.TOOL, "easyPlaceProtocolVersion", "auto");
+        protocol.setLanguageKey("litematica.config.generic.name.easyPlaceProtocolVersion");
+        protocol.setValidValues(new String[] {"auto", "v3", "v2", "slabs_only", "none"});
+        easyPlaceProtocolVersion = java.util.Arrays.asList(protocol.getValidValues()).contains(protocol.getString()) ? protocol.getString() : "auto";
+        protocol.set(easyPlaceProtocolVersion);
         Property vcsDelete = configuration.get(Names.Config.Category.TOOL, "schematicVcsDeleteMode", "matching_block");
         vcsDelete.setLanguageKey("litematica.config.generic.name.schematicVcsDeleteMode");
         vcsDelete.setValidValues(com.github.lunatrius.schematica.tool.PlacementDeletionMode.names());
@@ -392,6 +400,8 @@ public class ConfigurationHandler {
             Names.Config.PRINTER_ENABLED_DESC);
         propPrinterEnabled.setLanguageKey(Names.Config.LANG_PREFIX + "." + Names.Config.PRINTER_ENABLED);
         printerEnabled = propPrinterEnabled.getBoolean(PRINTER_ENABLED_DEFAULT);
+        remoteEditsEnabled = serverFlag(Names.Config.REMOTE_EDITS_ENABLED, Names.Config.REMOTE_EDITS_ENABLED_DESC);
+        accuratePlacementEnabled = serverFlag(Names.Config.ACCURATE_PLACEMENT_ENABLED, Names.Config.ACCURATE_PLACEMENT_ENABLED_DESC);
 
         propSaveEnabled = configuration.get(
             Names.Config.Category.SERVER,
@@ -431,6 +441,12 @@ public class ConfigurationHandler {
         if (configuration.hasChanged()) {
             configuration.save();
         }
+    }
+
+    private static boolean serverFlag(String name, String comment) {
+        Property property = configuration.get(Names.Config.Category.SERVER, name, true, comment);
+        property.setLanguageKey(Names.Config.LANG_PREFIX + "." + name);
+        return property.getBoolean(true);
     }
 
     private static boolean toolFlag(String name, boolean fallback) {

@@ -71,6 +71,9 @@ public class ClientProxy extends CommonProxy {
     @Override public void worldMoveFinished(long id, boolean success) {
         com.github.lunatrius.schematica.tool.WorldMoveController.finished(id, success);
     }
+    @Override public void remoteEditStatus(com.github.lunatrius.schematica.network.message.MessageEditStatus status) {
+        MINECRAFT.func_152344_a(() -> com.github.lunatrius.schematica.handler.client.RemoteEditClient.INSTANCE.status(status));
+    }
     public static ForgeDirection orientation = ForgeDirection.UNKNOWN;
     public static int rotationRender = 0;
     /** The currently active/selected schematic (for tools, printer, control GUI). */
@@ -329,6 +332,8 @@ public class ClientProxy extends CommonProxy {
         FMLCommonHandler.instance().bus().register(
             com.github.lunatrius.schematica.handler.client.CommandEditQueue.INSTANCE);
         MinecraftForge.EVENT_BUS.register(com.github.lunatrius.schematica.handler.client.CommandEditQueue.INSTANCE);
+        FMLCommonHandler.instance().bus().register(
+            com.github.lunatrius.schematica.handler.client.RemoteEditClient.INSTANCE);
 
         // Register client-side commands
         net.minecraftforge.client.ClientCommandHandler.instance.registerCommand(new CommandSchematicaSetBlock());

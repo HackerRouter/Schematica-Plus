@@ -33,8 +33,9 @@ import com.github.lunatrius.schematica.tool.ToolManager;
 import com.github.lunatrius.schematica.tool.ToolMode;
 
 /**
- * Places the targeted schematic block with the item it needs. 1.7.10 servers have no accurate placement protocol,
- * so orientation follows the clicked face, the hit height and the player's facing, as upstream with protocol "None".
+ * Places the targeted schematic block with the item it needs. On a Plus server with accurate placement the server sets
+ * the schematic's metadata, as upstream with protocol v3; otherwise orientation follows the clicked face, the hit
+ * height and the player's facing, as upstream with protocol "None".
  */
 public final class EasyPlace {
     public enum Result { PASS, SUCCESS, FAIL }
@@ -107,6 +108,7 @@ public final class EasyPlace {
         ItemStack held = player.getCurrentEquippedItem();
         if (held == null || !held.isItemEqual(stack)) return Result.FAIL;
 
+        boolean accurate = AccuratePlacementClient.active(block);
         int cx = x, cy = y, cz = z, side = hit.side, extraClicks = 0;
         Vec3 hitVec = Vec3.createVectorHelper(hit.hitX, hit.hitY, hit.hitZ);
         if (slab) {
@@ -115,13 +117,15 @@ public final class EasyPlace {
         } else {
             PlacementData data = PlacementRegistry.INSTANCE.getPlacementData(block, stack);
             if (data != null) {
-                ForgeDirection[] valid = data.getValidDirections(printer.getSolidSides(world, x, y, z), meta);
+                ForgeDirection[] solid = printer.getSolidSides(world, x, y, z);
+                ForgeDirection[] valid = data.getValidDirections(solid, meta);
+                if (valid.length == 0 && accurate) valid = solid;
                 if (valid.length > 0) {
                     ForgeDirection direction = valid[0];
                     cx = x + direction.offsetX; cy = y + direction.offsetY; cz = z + direction.offsetZ;
                     side = direction.getOpposite().ordinal();
                     hitVec = Vec3.createVectorHelper(cx, cy + data.getOffsetFromMetadata(meta), cz);
-                } else if (data.type == PlacementData.PlacementType.BLOCK && !data.mapping.isEmpty()) {
+                } else if (!accurate && data.type == PlacementData.PlacementType.BLOCK && !data.mapping.isEmpty()) {
                     return Result.FAIL;
                 } else {
                     side = ForgeDirection.NORTH.ordinal();
@@ -143,6 +147,7 @@ public final class EasyPlace {
         }
 
         cache(x, y, z);
+        if (accurate) AccuratePlacementClient.announce(x, y, z, block, meta);
         boolean sneaking = player.isSneaking();
         printer.syncSneaking(player, true);
         try {

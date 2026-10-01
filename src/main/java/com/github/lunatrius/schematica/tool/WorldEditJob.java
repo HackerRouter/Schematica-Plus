@@ -127,6 +127,130 @@ public final class WorldEditJob extends WorldEditTask {
         return blockCommand(wx, wy, wz, GameData.getBlockRegistry().getNameForObject(block), meta);
     }
 
+    /** Encodes the whole edit for the remote edit protocol; blocks are stored by registry name. */
+    public NBTTagCompound write() {
+        NBTTagCompound tag = new NBTTagCompound();
+        tag.setInteger("version", 1);
+        tag.setString("kind", kind.name());
+        tag.setIntArray("bounds", new int[] {x, y, z, width, height, length});
+        tag.setBoolean("updates", pasteWithoutUpdates);
+        tag.setString("replace", replace.value);
+        tag.setString("deletion", deletion.value);
+        if (replacement != null) { tag.setString("replacement", name(replacement)); tag.setByte("replacementMeta", (byte) replacementMeta); }
+        if (target != null) { tag.setString("target", name(target)); tag.setByte("targetMeta", (byte) targetMeta); }
+        if (selected != null) tag.setByteArray("mask", selected.toByteArray());
+        if (blocks != null) {
+            List<String> palette = new ArrayList<>();
+            Map<Short, Integer> indices = new HashMap<>();
+            byte[] cells = new byte[volume * 2];
+            for (int i = 0; i < volume; i++) {
+                Integer index = indices.get(blocks[i]);
+                if (index == null) {
+                    Block block = GameData.getBlockRegistry().getObjectById(blocks[i] & 0xffff);
+                    index = palette.size();
+                    palette.add(block == null ? "minecraft:air" : name(block));
+                    indices.put(blocks[i], index);
+                }
+                cells[i * 2] = (byte) (index >> 8);
+                cells[i * 2 + 1] = (byte) (int) index;
+            }
+            NBTTagList names = new NBTTagList();
+            for (String entry : palette) names.appendTag(new net.minecraft.nbt.NBTTagString(entry));
+            tag.setTag("palette", names);
+            tag.setByteArray("cells", cells);
+            tag.setByteArray("meta", metadata);
+        }
+        NBTTagList tileList = new NBTTagList();
+        for (Map.Entry<Integer, NBTTagCompound> entry : tiles.entrySet()) {
+            NBTTagCompound tile = new NBTTagCompound();
+            tile.setInteger("index", entry.getKey());
+            tile.setTag("data", entry.getValue());
+            tileList.appendTag(tile);
+        }
+        tag.setTag("tiles", tileList);
+        NBTTagList entityList = new NBTTagList();
+        for (NBTTagCompound entity : entities) entityList.appendTag(entity);
+        tag.setTag("entities", entityList);
+        NBTTagList removal = new NBTTagList();
+        for (com.github.lunatrius.schematica.api.SchematicRegion box : entityRemoval) {
+            NBTTagCompound entry = new NBTTagCompound();
+            entry.setIntArray("box", new int[] {box.minX, box.minY, box.minZ, box.maxX, box.maxY, box.maxZ});
+            removal.appendTag(entry);
+        }
+        tag.setTag("removeEntities", removal);
+        return tag;
+    }
+
+    private static String name(Block block) {
+        String name = GameData.getBlockRegistry().getNameForObject(block);
+        if (name == null) throw new IllegalArgumentException("Unregistered block");
+        return name;
+    }
+
+    private static Block block(String name) {
+        if (!GameData.getBlockRegistry().containsKey(name)) throw new IllegalArgumentException("Unknown block " + name);
+        return GameData.getBlockRegistry().getObject(name);
+    }
+
+    /** Decodes a remote edit, checking every size and reference against this server. */
+    public static WorldEditJob read(NBTTagCompound tag, UUID player, int dimension) {
+        if (tag.getInteger("version") != 1) throw new IllegalArgumentException("Unsupported edit version");
+        Kind kind = Kind.valueOf(tag.getString("kind"));
+        int[] bounds = tag.getIntArray("bounds");
+        if (bounds.length != 6) throw new IllegalArgumentException("Invalid edit bounds");
+        Block replacement = tag.hasKey("replacement", 8) ? block(tag.getString("replacement")) : null;
+        Block target = tag.hasKey("target", 8) ? block(tag.getString("target")) : null;
+        if ((kind == Kind.FILL || kind == Kind.REPLACE || kind == Kind.DELETE_PLACEMENT) && replacement == null) throw new IllegalArgumentException("Missing fill block");
+        if (kind == Kind.REPLACE && target == null) throw new IllegalArgumentException("Missing target block");
+        if (kind == Kind.DELETE_PLACEMENT && replacement != Blocks.air) throw new IllegalArgumentException("Deletion must place air");
+        WorldEditJob job = new WorldEditJob(player, dimension, kind, bounds[0], bounds[1], bounds[2], bounds[3], bounds[4], bounds[5],
+            replacement, tag.getByte("replacementMeta") & 15, target, tag.getByte("targetMeta") & 15,
+            tag.getBoolean("updates"), ReplaceBehavior.parse(tag.getString("replace")));
+        job.deletion = PlacementDeletionMode.parse(tag.getString("deletion"));
+        if (tag.hasKey("mask", 7)) {
+            BitSet mask = BitSet.valueOf(tag.getByteArray("mask"));
+            if (mask.length() > job.volume) throw new IllegalArgumentException("Invalid region mask");
+            job.selected = mask;
+        }
+        if (kind == Kind.PASTE || kind == Kind.DELETE_PLACEMENT) {
+            NBTTagList names = tag.getTagList("palette", 8);
+            byte[] cells = tag.getByteArray("cells"), meta = tag.getByteArray("meta");
+            if (names.tagCount() == 0 || names.tagCount() > 65536 || cells.length != job.volume * 2 || meta.length != job.volume) {
+                throw new IllegalArgumentException("Invalid edit blocks");
+            }
+            short[] ids = new short[names.tagCount()];
+            for (int i = 0; i < ids.length; i++) ids[i] = (short) GameData.getBlockRegistry().getId(block(names.getStringTagAt(i)));
+            job.blocks = new short[job.volume];
+            for (int i = 0; i < job.volume; i++) {
+                int index = (cells[i * 2] & 0xff) << 8 | cells[i * 2 + 1] & 0xff;
+                if (index >= ids.length) throw new IllegalArgumentException("Invalid palette index");
+                job.blocks[i] = ids[index];
+            }
+            job.metadata = meta.clone();
+        }
+        NBTTagList tileList = tag.getTagList("tiles", 10);
+        if (kind != Kind.PASTE && tileList.tagCount() > 0) throw new IllegalArgumentException("Tile data outside a paste");
+        for (int i = 0; i < tileList.tagCount(); i++) {
+            NBTTagCompound tile = tileList.getCompoundTagAt(i);
+            int index = tile.getInteger("index");
+            if (index < 0 || index >= job.volume || !tile.hasKey("data", 10)) throw new IllegalArgumentException("Invalid tile entry");
+            job.tiles.put(index, tile.getCompoundTag("data"));
+        }
+        NBTTagList entityList = tag.getTagList("entities", 10);
+        if (kind != Kind.PASTE && entityList.tagCount() > 0) throw new IllegalArgumentException("Entities outside a paste");
+        for (int i = 0; i < entityList.tagCount(); i++) job.entities.add(entityList.getCompoundTagAt(i));
+        NBTTagList removal = tag.getTagList("removeEntities", 10);
+        if (removal.tagCount() > 256) throw new IllegalArgumentException("Too many entity boxes");
+        for (int i = 0; i < removal.tagCount(); i++) {
+            int[] box = removal.getCompoundTagAt(i).getIntArray("box");
+            if (box.length != 6 || box[0] < job.x || box[1] < job.y || box[2] < job.z
+                || box[3] >= job.x + job.width || box[4] >= job.y + job.height || box[5] >= job.z + job.length
+                || box[0] > box[3] || box[1] > box[4] || box[2] > box[5]) throw new IllegalArgumentException("Invalid entity box");
+            job.entityRemoval.add(new com.github.lunatrius.schematica.api.SchematicRegion(Integer.toString(i), box[0], box[1], box[2], box[3], box[4], box[5]));
+        }
+        return job;
+    }
+
     /** TaskDeleteBlocksByPlacement: only non-air world blocks the deletion mode selects. */
     private boolean deletes(int index, net.minecraft.world.World world, int wx, int wy, int wz) {
         Block existing = world.getBlock(wx, wy, wz);

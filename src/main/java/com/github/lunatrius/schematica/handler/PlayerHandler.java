@@ -19,12 +19,13 @@ public class PlayerHandler {
     public void onPlayerLoggedIn(PlayerEvent.PlayerLoggedInEvent event) {
         if (event.player instanceof EntityPlayerMP) {
             try {
-                PacketHandler.INSTANCE.sendTo(
-                    new MessageCapabilities(
-                        ConfigurationHandler.printerEnabled,
-                        ConfigurationHandler.saveEnabled,
-                        ConfigurationHandler.loadEnabled),
-                    (EntityPlayerMP) event.player);
+                MessageCapabilities capabilities = new MessageCapabilities(
+                    ConfigurationHandler.printerEnabled,
+                    ConfigurationHandler.saveEnabled,
+                    ConfigurationHandler.loadEnabled);
+                capabilities.supportsRemoteEdit = ConfigurationHandler.remoteEditsEnabled;
+                capabilities.supportsAccuratePlacement = ConfigurationHandler.accuratePlacementEnabled;
+                PacketHandler.INSTANCE.sendTo(capabilities, (EntityPlayerMP) event.player);
             } catch (Exception ex) {
                 Reference.logger.error("Failed to send capabilities!", ex);
             }
@@ -35,6 +36,8 @@ public class PlayerHandler {
     public void onPlayerLoggedOut(PlayerEvent.PlayerLoggedOutEvent event) {
         if (event.player instanceof EntityPlayerMP) {
             DownloadHandler.INSTANCE.transferMap.remove(event.player);
+            AccuratePlacement.INSTANCE.forget(event.player);
+            RemoteEdits.INSTANCE.forget(event.player);
         }
     }
 }

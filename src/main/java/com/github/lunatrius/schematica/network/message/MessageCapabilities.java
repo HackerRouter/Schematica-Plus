@@ -16,6 +16,7 @@ public class MessageCapabilities implements IMessage, IMessageHandler<MessageCap
     public boolean isSaveEnabled;
     public boolean isLoadEnabled;
     public boolean supportsWorldMove = true;
+    public boolean supportsRemoteEdit, supportsAccuratePlacement;
 
     public MessageCapabilities() {
         this(false, false, false);
@@ -33,6 +34,8 @@ public class MessageCapabilities implements IMessage, IMessageHandler<MessageCap
         this.isSaveEnabled = buf.readBoolean();
         this.isLoadEnabled = buf.readBoolean();
         supportsWorldMove = buf.isReadable() && buf.readBoolean();
+        supportsRemoteEdit = buf.isReadable() && buf.readBoolean();
+        supportsAccuratePlacement = buf.isReadable() && buf.readBoolean();
     }
 
     @Override
@@ -41,6 +44,8 @@ public class MessageCapabilities implements IMessage, IMessageHandler<MessageCap
         buf.writeBoolean(this.isSaveEnabled);
         buf.writeBoolean(this.isLoadEnabled);
         buf.writeBoolean(supportsWorldMove);
+        buf.writeBoolean(supportsRemoteEdit);
+        buf.writeBoolean(supportsAccuratePlacement);
     }
 
     @Override
@@ -54,12 +59,16 @@ public class MessageCapabilities implements IMessage, IMessageHandler<MessageCap
         SchematicaPlus.proxy.isSaveEnabled = message.isSaveEnabled;
         SchematicaPlus.proxy.isLoadEnabled = message.isLoadEnabled;
         SchematicaPlus.proxy.supportsWorldMove = message.supportsWorldMove;
+        SchematicaPlus.proxy.supportsRemoteEdit = message.supportsRemoteEdit;
+        SchematicaPlus.proxy.supportsAccuratePlacement = message.supportsAccuratePlacement;
 
         Reference.logger.info(
-            "Server capabilities{printer={}, save={}, load={}}",
+            "Server capabilities{printer={}, save={}, load={}, remoteEdit={}, accuratePlacement={}}",
             message.isPrinterEnabled,
             message.isSaveEnabled,
-            message.isLoadEnabled);
+            message.isLoadEnabled,
+            message.supportsRemoteEdit,
+            message.supportsAccuratePlacement);
 
         return null;
     }

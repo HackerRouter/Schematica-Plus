@@ -1082,8 +1082,8 @@ These checks supersede Phase 12's Simple-editor and bounding-box expectations.
   (upper/lower and completing a double slab), stairs, repeaters (extra clicks),
   doors, carpets, GT/mod blocks, signs, buckets/cells for fluids, survival and
   creative, easyPlaceSwapInterval with high ping, easyPlaceVanillaReach on servers.
-  Facing-based blocks (furnaces, stairs, pistons) take the player's facing: there is
-  no accurate placement protocol on 1.7.10 servers.
+  Without a Plus server (or with easyPlaceProtocolVersion = None), facing-based blocks
+  (furnaces, stairs, pistons) take the player's facing.
 - togglePlacementRestriction: using items is blocked where the schematic has air
   near its regions, outside the layer range, into occupied positions, with the
   wrong item, or (for blocks with known orientation rules) with the wrong
@@ -1182,3 +1182,33 @@ These checks supersede Phase 12's Simple-editor and bounding-box expectations.
   pasting and delete-by-placement remove mobs, items, item frames, paintings and minecarts
   inside the deleted boxes but never players; Fill and Replace keep entities. On a server
   using commands, the chat says entities are kept.
+
+## Server protocols: accurate placement and remote full-NBT edits
+
+Needs a dedicated server (and a LAN-opened singleplayer world) running this build;
+compare with a server that does not have the mod and with each server option off.
+
+- Accurate placement: with easyPlaceProtocolVersion Auto/V3/V2, Easy Place and the
+  printer place stairs (all facings and upside down), slabs (top/bottom), logs/pillars
+  (all axes, quartz pillars), pistons/dispensers/droppers/hoppers (all six facings),
+  furnaces/chests/ender chests, ladders, torches, levers and buttons, fence gates and
+  trapdoors (open and top), rails (curves, slopes), repeaters (delay) and comparators
+  (subtract mode), pumpkins, anvils, cocoa, tripwire hooks, end portal frames and
+  standing signs exactly as in the schematic, whatever the player faces. Slabs Only:
+  only slabs are corrected. None: the old facing behavior. Powered levers/buttons,
+  lit/powered states, crop ages and portal frame eyes are not copied; doors and beds
+  keep vanilla orientation. In survival the item count and drops are unchanged.
+  Turn accuratePlacementEnabled off on the server: after reconnecting the client
+  falls back to the facing behavior. Check high ping and placeInstantly with several
+  blocks per tick.
+- Remote edits (creative + op): Paste on a remote Plus server keeps chest/furnace/sign/
+  spawner/GT machine NBT, pastes entities, honors pasteWithoutUpdates and
+  pasteReplaceBehavior, and Delete removes entities inside the boxes. Fill, Replace,
+  Delete, delete-by-placement and VCS Place to world/Delete Area run on the server too.
+  The Task Manager shows the Upload stage, then the server stages and counts; removing
+  the task during upload or the structure pass cancels it on the server. The chat shows
+  the Litematica finish message. Non-op or survival: "permissions" message, nothing
+  changes. remoteEditsEnabled off: rejection message; the client must not fall back to
+  commands silently. Large pastes (millions of blocks) upload without disconnect;
+  changing dimension or disconnecting during upload ends the task with the lost message.
+  A second edit while one runs (from this or another player) is refused as busy.

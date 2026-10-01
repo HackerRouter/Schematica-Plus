@@ -29,5 +29,13 @@ public class PacketHandler {
             com.github.lunatrius.schematica.network.message.MessageMoveRequest.class, 6, Side.SERVER);
         INSTANCE.registerMessage(com.github.lunatrius.schematica.network.message.MessageMoveResult.class,
             com.github.lunatrius.schematica.network.message.MessageMoveResult.class, 7, Side.CLIENT);
+        INSTANCE.registerMessage(com.github.lunatrius.schematica.network.message.MessageEditUpload.class,
+            com.github.lunatrius.schematica.network.message.MessageEditUpload.class, 8, Side.SERVER);
+        INSTANCE.registerMessage(com.github.lunatrius.schematica.network.message.MessageEditCancel.class,
+            com.github.lunatrius.schematica.network.message.MessageEditCancel.class, 9, Side.SERVER);
+        INSTANCE.registerMessage(com.github.lunatrius.schematica.network.message.MessageEditStatus.class,
+            com.github.lunatrius.schematica.network.message.MessageEditStatus.class, 10, Side.CLIENT);
+        INSTANCE.registerMessage(com.github.lunatrius.schematica.network.message.MessagePlacementIntent.class,
+            com.github.lunatrius.schematica.network.message.MessagePlacementIntent.class, 11, Side.SERVER);
     }
 }

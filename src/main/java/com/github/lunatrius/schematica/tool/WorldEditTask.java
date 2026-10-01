@@ -13,6 +13,8 @@ public abstract class WorldEditTask {
     public volatile boolean cancelled;
     public int blockCount, entityCount;
     public Consumer<Boolean> completion = success -> {};
+    /** Called on the server thread with each published progress, for remote clients. */
+    public Consumer<TaskRegistry.Progress> progress;
 
     protected WorldEditTask(UUID player, int dimension, int x, int y, int z) {
         this.player = player; this.dimension = dimension; this.x = x; this.y = y; this.z = z;

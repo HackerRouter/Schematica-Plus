@@ -300,7 +300,8 @@ public class SchematicPrinter {
 
         PlacementData data = PlacementRegistry.INSTANCE.getPlacementData(block, itemStack);
 
-        if (!isValidOrientation(player, x, y, z, data, metadata)) {
+        boolean accurate = AccuratePlacementClient.active(block);
+        if (!accurate && !isValidOrientation(player, x, y, z, data, metadata)) {
             return false;
         }
 
@@ -314,6 +315,8 @@ public class SchematicPrinter {
                 ForgeDirection[] validDirections = data.getValidDirections(solidSides, metadata);
                 if (validDirections.length > 0) {
                     direction = validDirections[0];
+                } else if (accurate) {
+                    direction = solidSides[0];
                 }
 
                 offsetY = data.getOffsetFromMetadata(metadata);
@@ -328,6 +331,9 @@ public class SchematicPrinter {
         }
 
         if (direction != ForgeDirection.UNKNOWN || !ConfigurationHandler.placeAdjacent) {
+            if (accurate) {
+                AccuratePlacementClient.announce(x, y, z, block, metadata);
+            }
             return placeBlock(world, player, x, y, z, direction, 0.0f, offsetY, 0.0f, extraClicks);
         }
 

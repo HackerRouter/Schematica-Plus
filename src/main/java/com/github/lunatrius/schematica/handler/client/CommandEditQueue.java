@@ -21,6 +21,8 @@ public final class CommandEditQueue {
 
     public synchronized boolean cancel() { return end(false); }
 
+    public synchronized boolean busy() { return job != null; }
+
     private boolean end(boolean success) {
         if (job == null) return false;
         WorldEditJob finished = job;

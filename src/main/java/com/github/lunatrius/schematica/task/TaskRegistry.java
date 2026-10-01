@@ -52,7 +52,8 @@ public final class TaskRegistry {
         ENTITIES("schematica.ui.task.stage.entities"),
         COMMANDS("schematica.ui.task.stage.commands"),
         VERIFY("schematica.ui.task.stage.verify"),
-        EDIT("schematica.ui.task.stage.edit");
+        EDIT("schematica.ui.task.stage.edit"),
+        UPLOAD("schematica.ui.task.stage.upload");
 
         public final String key;
         Stage(String key) { this.key = key; }

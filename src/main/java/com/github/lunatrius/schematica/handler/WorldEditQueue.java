@@ -107,6 +107,7 @@ public final class WorldEditQueue {
                 job.flushBlockChanges(world);
             }
             job.publishProgress(edit.task);
+            if (job.progress != null) job.progress.accept(edit.task.progress());
             if (done) {
                 boolean success = !job.cancelled && job.failure() == null;
                 if (job.failure() != null) Reference.logger.error("World move restored after failure", job.failure());

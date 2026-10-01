@@ -11,6 +11,7 @@ import net.minecraft.util.EnumChatFormatting;
 
 import com.github.lunatrius.schematica.internal.lunatriuscore.util.vector.Vector3i;
 import com.github.lunatrius.schematica.client.world.SchematicWorld;
+import com.github.lunatrius.schematica.SchematicaPlus;
 import com.github.lunatrius.schematica.proxy.ClientProxy;
 import com.github.lunatrius.schematica.client.selection.AreaSelections;
 import com.github.lunatrius.schematica.client.gui.framework.UiTranslations;
@@ -99,16 +100,28 @@ public class ToolHandler {
         return job;
     }
 
-    /** Queues the edit on the integrated server, or as commands on a remote server; onSuccess runs on the client thread. */
+    /**
+     * Queues the edit on the integrated server, uploads it to a Plus server with full NBT, or sends it as commands
+     * to any other server; onSuccess runs on the client thread.
+     */
     private static void submit(EntityPlayer player, WorldEditJob job, Runnable onSuccess) {
-        if (onSuccess != null) job.completion = success -> { if (success) Minecraft.getMinecraft().func_152344_a(onSuccess); };
         MinecraftServer server = Minecraft.getMinecraft().getIntegratedServer();
         if (server != null) {
+            if (onSuccess != null) job.completion = success -> { if (success) Minecraft.getMinecraft().func_152344_a(onSuccess); };
             if (!com.github.lunatrius.schematica.handler.WorldEditQueue.INSTANCE.submit(server, job)) {
                 throw new MessageException("schematica.message.edit.busy");
             }
         } else {
-            com.github.lunatrius.schematica.handler.client.CommandEditQueue.INSTANCE.submit(job, player.worldObj);
+            if (com.github.lunatrius.schematica.handler.client.RemoteEditClient.INSTANCE.busy()
+                || com.github.lunatrius.schematica.handler.client.CommandEditQueue.INSTANCE.busy()) {
+                throw new MessageException("schematica.message.edit.busy");
+            }
+            if (SchematicaPlus.proxy.supportsRemoteEdit) {
+                com.github.lunatrius.schematica.handler.client.RemoteEditClient.INSTANCE.submit(job, player.worldObj, onSuccess);
+            } else {
+                if (onSuccess != null) job.completion = success -> { if (success) Minecraft.getMinecraft().func_152344_a(onSuccess); };
+                com.github.lunatrius.schematica.handler.client.CommandEditQueue.INSTANCE.submit(job, player.worldObj);
+            }
         }
         sendChat(player, UiTranslations.format("litematica.message.scheduled_task_added"));
     }

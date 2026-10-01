@@ -44,7 +44,13 @@ public abstract class CommonProxy {
     public boolean isLoadEnabled = true;
     public boolean GTNH = false;
     public volatile boolean supportsWorldMove;
+    /** The server runs Plus and accepts uploaded full-NBT edits (remote edit protocol). */
+    public volatile boolean supportsRemoteEdit;
+    /** The server runs Plus and applies placement intents (accurate placement protocol). */
+    public volatile boolean supportsAccuratePlacement;
     public void worldMoveFinished(long id, boolean success) {}
+
+    public void remoteEditStatus(com.github.lunatrius.schematica.network.message.MessageEditStatus status) {}
 
     public void preInit(FMLPreInitializationEvent event) {
         GTNH = Loader.isModLoaded("dreamcraft");
@@ -55,6 +61,7 @@ public abstract class CommonProxy {
     public void init(FMLInitializationEvent event) {
         PacketHandler.init();
         FMLCommonHandler.instance().bus().register(com.github.lunatrius.schematica.handler.WorldEditQueue.INSTANCE);
+        net.minecraftforge.common.MinecraftForge.EVENT_BUS.register(com.github.lunatrius.schematica.handler.AccuratePlacement.INSTANCE);
 
         FMLCommonHandler.instance()
             .bus()
@@ -109,6 +116,8 @@ public abstract class CommonProxy {
 
     public void resetSettings() {
         supportsWorldMove = false;
+        supportsRemoteEdit = false;
+        supportsAccuratePlacement = false;
         this.isSaveEnabled = true;
         this.isLoadEnabled = true;
     }
