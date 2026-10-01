@@ -1,59 +1,6 @@
-# gui - general
-schematica.gui.openFolder=Open schematic folder
-schematica.gui.done=Done
-schematica.gui.title=Select schematic file
-schematica.gui.folderInfo=(Place schematic files here)
-schematica.gui.noschematic=-- No schematic --
-schematica.gui.increase=+
-schematica.gui.decrease=-
-schematica.gui.hide=Hide
-schematica.gui.all=ALL
-schematica.gui.show=Show
-schematica.gui.movehere=Move here
-schematica.gui.flip=Flip
-schematica.gui.rotate=Rotate
-schematica.gui.save=Save
-schematica.gui.moveschematic=Move schematic
-schematica.gui.layers=Layers
-schematica.gui.operations=Operations
-schematica.gui.point.red=Red point
-schematica.gui.point.blue=Blue point
-schematica.gui.saveselection=Save the selection as a schematic
-schematica.gui.on=ON
-schematica.gui.off=OFF
-schematica.gui.x=X:
-schematica.gui.y=Y:
-schematica.gui.z=Z:
-schematica.gui.materials=Materials
-schematica.gui.materialname=Material
-schematica.gui.materialamount=Amount
-schematica.gui.printer=Printer
-
-# gui - config - categories
-schematica.config.category.render=Rendering
-schematica.config.category.render.tooltip=Render related settings.
-schematica.config.category.printer=Printer
-schematica.config.category.printer.tooltip=Printer related settings.
-schematica.config.category.general=General
-schematica.config.category.general.tooltip=General settings.
-
-# gui - config - debug
-
 # gui - config - render
-schematica.config.alphaEnabled=Alpha Enabled
-schematica.config.alphaEnabled.tooltip=Enable transparent textures.
-schematica.config.alpha=Alpha
-schematica.config.alpha.tooltip=Alpha value used when rendering the schematic (1.0 = opaque, 0.5 = half transparent, 0.0 = transparent).
-schematica.config.highlight=Highlight Blocks
-schematica.config.highlight.tooltip=Highlight invalid placed blocks and to be placed blocks.
-schematica.config.highlightAir=Highlight Air
-schematica.config.highlightAir.tooltip=Highlight blocks that should be air.
 schematica.config.blockDelta=Block Delta
 schematica.config.blockDelta.tooltip=Delta value used for highlighting (if you experience z-fighting increase this).
-schematica.config.drawQuads=Draw Quads
-schematica.config.drawQuads.tooltip=Draw surface areas.
-schematica.config.drawLines=Draw Lines
-schematica.config.drawLines.tooltip=Draw outlines.
 
 # gui - config - printer
 schematica.config.placeDelay=Placement Delay
@@ -68,25 +15,3 @@ schematica.config.destroyInstantly=Destroy Instantly
 schematica.config.destroyInstantly.tooltip=Destroy all blocks that can be destroyed in one tick.
 schematica.config.placeAdjacent=Place Only Adjacent
 schematica.config.placeAdjacent.tooltip=Place blocks only if there is an adjacent block next to them.
-
-# gui - config - printer - swap slots
-
-# gui - config - general
-schematica.config.schematicDirectory=Schematic Directory
-schematica.config.schematicDirectory.tooltip=Schematic directory.
-
-# gui - config - server
-
-# keys
-schematica.key.category=Schematica
-schematica.key.load=Load schematic
-schematica.key.save=Save schematic
-schematica.key.control=Manipulate schematic
-
-# commands - save
-
-# commands - list
-
-# commands - remove
-
-# commands - download

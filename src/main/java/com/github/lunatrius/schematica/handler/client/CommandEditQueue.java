@@ -63,13 +63,14 @@ public final class CommandEditQueue {
             }
             task.update(TaskRegistry.Stage.COMMANDS, cursor, job.volume, sent, 0);
             if (cursor == job.volume) {
-                mc.thePlayer.addChatMessage(new ChatComponentTranslation("schematica.message.edit.commands_sent", sent));
+                mc.thePlayer.addChatMessage(job.kind == WorldEditJob.Kind.PASTE
+                    ? new ChatComponentTranslation("litematica.message.schematic_pasted_using_setblock", sent)
+                    : new ChatComponentTranslation(job.taskKind().finishedKey(true)));
                 cancel();
             }
         } catch (RuntimeException e) {
             Reference.logger.error("Command edit stopped after partial completion", e);
-            mc.thePlayer.addChatMessage(new ChatComponentTranslation("schematica.message.edit.stopped",
-                new ChatComponentTranslation("schematica.message.edit.see_log")));
+            mc.thePlayer.addChatMessage(new ChatComponentTranslation(job.taskKind().finishedKey(false)));
             cancel();
         }
     }

@@ -11,7 +11,6 @@ public final class Names {
             public static final String RENDER = "render";
             public static final String PRINTER = "printer";
             public static final String PRINTER_SWAPSLOTS = "printer.swapslots";
-            public static final String TOOLTIP = "tooltip";
             public static final String GENERAL = "general";
             public static final String SERVER = "server";
             public static final String TOOL = "tool";
@@ -51,13 +50,6 @@ public final class Names {
         public static final String SWAP_SLOT = "swapSlot";
         public static final String SWAP_SLOT_DESC = "Allow the printer to use this hotbar slot.";
 
-        public static final String TOOLTIP_ENABLED = "tooltipEnabled";
-        public static final String TOOLTIP_ENABLED_DESC = "Display a tooltip when hovering over blocks in a schematic.";
-        public static final String TOOLTIP_X = "tooltipX";
-        public static final String TOOLTIP_X_DESC = "Relative tooltip X.";
-        public static final String TOOLTIP_Y = "tooltipY";
-        public static final String TOOLTIP_Y_DESC = "Relative tooltip Y.";
-
         public static final String SCHEMATIC_DIRECTORY = "schematicDirectory";
         public static final String SCHEMATIC_DIRECTORY_DESC = "Schematic directory.";
         public static final String EXTRA_AIR_BLOCKS = "extraAirBlocks";
@@ -88,12 +80,6 @@ public final class Names {
         public static final String LANG_PREFIX = "schematica.config";
     }
 
-    public static final class Chat {
-
-        public static final String SAVE_COORDINATES_SUCCESS = "Schematica.chat.saveCoordinatesSuccess";
-        public static final String SAVE_COORDINATES_FAIL = "Schematica.chat.saveCoordinatesFail";
-    }
-
     public static final class Command {
 
         public static final class Save {
@@ -118,7 +104,6 @@ public final class Names {
             public static final class Message {
 
                 public static final String USAGE = "schematica.command.list.usage";
-                public static final String LIST_NOT_AVAILABLE = "schematica.command.list.notAvailable";
                 public static final String REMOVE = "litematica.gui.button.remove";
                 public static final String DOWNLOAD = "schematica.command.list.download";
                 public static final String PAGE_HEADER = "schematica.command.list.header";
@@ -159,90 +144,9 @@ public final class Names {
         }
     }
 
-    public static final class Gui {
-
-        public static final class Load {
-
-            public static final String TITLE = "litematica.gui.title.load_schematic";
-            public static final String FOLDER_INFO = "schematica.gui.folderInfo";
-            public static final String OPEN_FOLDER = "schematica.gui.openFolder";
-            public static final String NO_SCHEMATIC = "litematica.hud.misc.none_brackets";
-        }
-
-        public static final class Save {
-
-            public static final String POINT_RED = "litematica.gui.label.area_editor.corner_1";
-            public static final String POINT_BLUE = "litematica.gui.label.area_editor.corner_2";
-            public static final String SAVE = "litematica.gui.button.save_schematic";
-            public static final String SAVE_SELECTION = "litematica.gui.title.create_schematic_from_selection";
-            public static final String SAVE_NBT = "schematica.gui.savenbt";
-            public static final String SAVE_ENTITIES = "schematica.gui.saveentities";
-        }
-
-        public static final class Control {
-
-            public static final String SAVE_COORDINATES = "schematica.gui.savecoordinates";
-            public static final String MOVE_SCHEMATIC = "schematica.gui.moveschematic";
-            public static final String MATERIALS = "litematica.gui.button.material_list";
-            public static final String PRINTER = "schematica.gui.printer";
-            public static final String OPERATIONS = "schematica.gui.operations";
-
-            public static final String NAME = "litematica.gui.label.material_list.name";
-
-            public static final String UNLOAD = "litematica.gui.button.unload";
-            public static final String MODE_ALL = "malilib.gui.label.layer_mode.all";
-            public static final String MODE_LAYERS = "malilib.gui.label.layer_mode.single_layer";
-            public static final String HIDE = "schematica.gui.hide";
-            public static final String SHOW = "schematica.gui.show";
-            public static final String MOVE_HERE = "litematica.gui.button.move_to_player";
-            public static final String FLIP = "schematica.gui.flip";
-            public static final String ROTATE = "schematica.gui.rotate";
-            public static final String TRANSFORM_PREFIX = "schematica.gui.";
-
-            public static final String MATERIAL_NAME = "litematica.gui.label.material_list.title.item";
-            public static final String MATERIAL_AMOUNT = "litematica.gui.label.material_list.title.total";
-            public static final String MATERIAL_REQUIRED = "litematica.gui.label.material_list.title.missing";
-            public static final String MATERIAL_AVAILABLE = "litematica.gui.label.material_list.title.available";
-
-            public static final String SORT_PREFIX = "schematica.gui.material";
-            public static final String DUMP = "litematica.gui.button.save_to_file";
-        }
-
-        public static final class Instances {
-
-            public static final String TITLE = "litematica.gui.title.manage_schematic_placements";
-            public static final String SWITCH = "litematica.gui.button.schematic_placements.select";
-            public static final String TOGGLE_VISIBLE = "schematica.gui.instances.toggleVisible";
-            public static final String TOGGLE_ENTITIES = "schematica.gui.instances.toggleEntities";
-            public static final String TOGGLE_BLOCK_NBT = "schematica.gui.instances.toggleBlockNBT";
-            public static final String LOADED = "schematica.gui.instances.loaded";
-            public static final String INSTANCES = "litematica.gui.button.change_menu.show_schematic_placements";
-        }
-
-        public static final String X = "schematica.gui.x";
-        public static final String Y = "schematica.gui.y";
-        public static final String Z = "schematica.gui.z";
-        public static final String ON = "litematica.message.value.on";
-        public static final String OFF = "litematica.message.value.off";
-        public static final String DONE = "gui.done";
-    }
-
     public static final class ModId {
 
         public static final String MINECRAFT = "minecraft";
-    }
-
-    public static final class Keys {
-
-        public static final String CATEGORY = "schematica.key.category";
-        public static final String LOAD = "schematica.key.load";
-        public static final String SAVE = "schematica.key.save";
-        public static final String CONTROL = "schematica.key.control";
-        public static final String LAYER_INC = "schematica.key.layerInc";
-        public static final String LAYER_DEC = "schematica.key.layerDec";
-        public static final String EXECUTE = "schematica.key.execute";
-        public static final String UI_DEMO = "schematica.key.uiDemo";
-        public static final String MANIPULATE = "schematica.key.manipulate";
     }
 
     public static final class NBT {

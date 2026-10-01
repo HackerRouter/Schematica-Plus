@@ -121,7 +121,7 @@ public class QueueTickHandler {
             if (save.task.progress().cancelling) {
                 pending = false;
                 if (player != null) player.addChatMessage(new ChatComponentTranslation(
-                    "schematica.message.save.cancelled", container.file.getName()));
+                    "litematica.message.error.schematic_save_interrupted"));
             }
             if (pending) queue.offer(save);
             else save.task.finish();

@@ -35,7 +35,12 @@ public final class VerifierBlockInfo {
         return Math.max(draw.textWidth(label), Math.max(draw.textWidth(visual.name) + 24, Math.max(draw.textWidth(state.block), draw.textWidth(metadata(state)))));
     }
 
-    private String metadata(State state) { return UiTranslations.format("schematica.ui.verifier.metadata", state.metadata); }
+    private String metadata(State state) { return metadata(state.metadata, " = "); }
+
+    /** MaLiLib's integer block state property line, with 1.7.10 metadata as the only property. */
+    public static String metadata(int metadata, String separator) {
+        return UiTranslations.format("malilib.label.block_state_properties.integer", "metadata", separator, metadata);
+    }
     private String expectedLabel() { return "§l" + UiTranslations.format("litematica.gui.label.schematic_verifier.expected"); }
     private String foundLabel() { return "§l" + UiTranslations.format("litematica.gui.label.schematic_verifier.found"); }
     private String singleLabel() { return "§l" + UiTranslations.format(title); }

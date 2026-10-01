@@ -1093,3 +1093,34 @@ These checks supersede Phase 12's Simple-editor and bounding-box expectations.
 - statusInfoHud shows Easy Place / restriction state, layer mode and renderer
   switches at the bottom left; with statusInfoHudAuto it appears for 10 s after
   creating a placement or toggling a render switch while something is hidden.
+
+## Plus translation key audit (supersedes older confirm-dialog steps)
+
+- Save Area as schematic and Save loaded source: saving onto an existing name now
+  fails with the Litematica "file already exists" message; hold Shift while
+  clicking Save to overwrite (hover shows the Litematica hint). The old overwrite
+  confirmation dialogs (phases 3, 9, 10, 13) no longer exist.
+- Area Selection browser: the red "-" removes the selection immediately, as in
+  Litematica. Re-test that the removed selection does not return after reconnecting.
+- Area corner, origin and sub-region coordinate plus/minus buttons: right click
+  decreases, Shift ×8, Alt ×4, both ×32; hover shows the MaLiLib plus/minus tip.
+- File operations: an invalid name shows the MaLiLib illegal-characters message
+  with the name; an existing target shows the MaLiLib "already exists" message.
+  Multi-line MaLiLib messages appear on one status line and fully in its hover.
+- Paste/Fill/Delete/Replace finish messages are the Litematica ones (Schematic
+  pasted in world / Area filled / Area cleared, and the failure variants after a
+  cancel or error). Multiplayer paste by commands reports "pasted using N setblock
+  commands"; queueing in multiplayer shows "Scheduled task added...". A paste of a
+  disabled placement reports the Litematica rendering-disabled message.
+- Verifier: before starting or while paused the status line is empty (Litematica
+  shows nothing); counts appear only after a finished pass. Clicking an error
+  category with overlays off shows the Litematica warning naming Info Overlays,
+  the toggle hotkey and its keys. Metadata lines in the verifier and the block info
+  overlay use MaLiLib's integer property format (`metadata = 3` / `metadata: 3`).
+- Config: the search field hover is MaLiLib's search/hotkey hint; capturing a key
+  filter shows `> NONE <` until a key is pressed. Reset, slider and keybind buttons
+  have no hover text, as upstream.
+- Ukrainian: paste-by-command and data-restore HUD texts show their numbers
+  instead of "Format error".
+- Check the removed hint tooltips did not leave blank hover boxes (render layers,
+  main menu mode buttons, area editor, placement visibility/rotation, search icons).

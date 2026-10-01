@@ -107,12 +107,10 @@ public final class GuiPlacementConfiguration extends UiScreen {
         allOff = button("litematica.gui.button.schematic_placement.toggle_all_off", () -> updateRegions(placement.subregions().enabled(false)));
         enabled = toggle("litematica.gui.button.schematic_placements.placement_enabled", placement::isEnabled,
             () -> configure(placement.placementSettings().enabled(!placement.isEnabled())));
-        enabled.setTooltip(UiTranslations.format("schematica.ui.placement.visibility"));
         rendering = button(() -> (placement.isRendering ? "\u00a7a" : "\u00a7c")
             + UiTranslations.format("litematica.gui.button.schematic_placement.abbr.rendering"), mouse -> {
                 if (mouse == 0) { placement.toggleRendering(); WorldHandler.INSTANCE.saveSession(); }
             });
-        rendering.setTooltip(UiTranslations.format("schematica.ui.placement.rendering"));
         locked = toggle("litematica.gui.button.schematic_placements.locked", () -> placement.placementSettings().locked,
             () -> configure(placement.placementSettings().locked(!placement.placementSettings().locked)));
         locked.setTooltip(UiTranslations.format("litematica.gui.button.schematic_placement.hover.lock"));
@@ -166,7 +164,6 @@ public final class GuiPlacementConfiguration extends UiScreen {
             if (searching) input.focus(search);
             else search.setText("");
         }).setSprite(UiSprite.SEARCH).setBackground(false);
-        searchButton.setTooltip(UiTranslations.format("schematica.ui.browser.search_hint"));
         search.setVisible(false);
         feedback = root.add(new UiLabel(() -> status));
     }
@@ -298,7 +295,8 @@ public final class GuiPlacementConfiguration extends UiScreen {
         }
         rotation.setEnabled(!settings.locked && orientation != null);
         mirror.setEnabled(!settings.locked && orientation != null);
-        String tooltip = UiTranslations.format(settings.locked ? PlacementSettings.LOCKED_MESSAGE : orientation == null ? "schematica.ui.placement.custom_transform" : "schematica.ui.placement.transform_hint");
+        String key = settings.locked ? PlacementSettings.LOCKED_MESSAGE : orientation == null ? "schematica.ui.placement.custom_transform" : null;
+        String[] tooltip = key == null ? new String[0] : new String[] {UiTranslations.format(key)};
         rotation.setTooltip(tooltip);
         mirror.setTooltip(tooltip);
     }
@@ -309,11 +307,18 @@ public final class GuiPlacementConfiguration extends UiScreen {
         tickScreen();
     }
 
+    /** The upstream rendering toggle hover, with the colored ON/OFF value. */
+    static String[] renderingHover(boolean enabled) {
+        String value = (enabled ? "\u00a7a" : "\u00a7c") + UiTranslations.format("litematica.message.value." + (enabled ? "on" : "off")) + "\u00a7r";
+        return UiTranslations.format("litematica.gui.button.schematic_placement.hover.rendering", value).split("\n");
+    }
+
     @Override
     protected void tickScreen() {
         controls.setEnabled(available());
         feedback.setVisible(!status.isEmpty());
         if (!available()) { message("schematica.ui.placement.unloaded"); return; }
+        rendering.setTooltip(renderingHover(placement.isRendering));
         if (lastX != placement.position.x || lastY != placement.position.y || lastZ != placement.position.z
             || lastOperationCount != placement.transformOperations.size() || lastRevision != placement.placementRevision()) syncGeometry();
     }

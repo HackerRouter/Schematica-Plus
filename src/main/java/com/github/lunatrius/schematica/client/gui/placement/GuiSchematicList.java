@@ -58,7 +58,6 @@ abstract class GuiSchematicList<T> extends UiScreen {
             if (searching) input.focus(search);
             else search.setText("");
         }).setSprite(UiSprite.SEARCH).setBackground(false));
-        searchButton.setTooltip(UiTranslations.format("schematica.ui.browser.search_hint"));
         first = addButton("litematica.gui.button.change_menu." + (placements ? "show_loaded_schematics" : "load_schematics_to_memory"),
             () -> mc.displayGuiScreen(placements ? new GuiSchematicLoadedList(this) : new GuiSchematicLoad(this)))
             .setSprite(placements ? UiSprite.LOADED_SCHEMATICS : UiSprite.SCHEMATIC_BROWSER);

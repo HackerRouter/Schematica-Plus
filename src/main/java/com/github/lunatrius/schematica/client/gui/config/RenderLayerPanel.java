@@ -48,13 +48,10 @@ public final class RenderLayerPanel extends UiPanel {
             range.setAxis(axes[Math.floorMod(range.axis().ordinal() + (button == 0 ? 1 : -1), axes.length)]);
             sync(); layout(bounds());
         }));
-        axis.setTooltip(UiTranslations.format("schematica.ui.layers.cycle"));
         labelMin = add(new UiLabel(this::lowerLabel));
         labelMax = add(new UiLabel(() -> UiTranslations.format(LABEL + "layer_max") + ":"));
         minimum = add(new UiIntegerField(font, 0, Integer.MIN_VALUE, Integer.MAX_VALUE, value -> change(false, value)));
         maximum = add(new UiIntegerField(font, 0, Integer.MIN_VALUE, Integer.MAX_VALUE, value -> change(true, value)));
-        minimum.setTooltip(UiTranslations.format("schematica.ui.layers.coordinate"));
-        maximum.setTooltip(UiTranslations.format("schematica.ui.layers.coordinate"));
         adjustMin = adjust(false);
         adjustMax = adjust(true);
         hotkeyMin = hotkey(false);
@@ -70,7 +67,6 @@ public final class RenderLayerPanel extends UiPanel {
                 sync();
             }
         }));
-        here.setTooltip(UiTranslations.format("schematica.ui.layers.here"));
         sync();
     }
 
@@ -88,7 +84,6 @@ public final class RenderLayerPanel extends UiPanel {
             range.setValue(upper, (long) range.value(upper) + amount);
             sync();
         }).setSprite(UiSprite.PLUS_MINUS).setBackground(false));
-        button.setTooltip(tooltip("schematica.ui.layers.adjust"));
         return button;
     }
 

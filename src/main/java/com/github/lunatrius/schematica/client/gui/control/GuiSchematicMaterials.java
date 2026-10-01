@@ -73,7 +73,6 @@ public class GuiSchematicMaterials extends UiScreen {
     private UiButton menu;
     private UiWidget info;
     private UiLabel progress;
-    private UiLabel empty;
     private MaterialScanner scan;
     private boolean hasResult;
     private boolean searching;
@@ -127,18 +126,15 @@ public class GuiSchematicMaterials extends UiScreen {
         primary.addAll(Arrays.asList(refresh, scope, hide, hud));
         UiButton clearIgnored = action("clear_ignored", () -> { materials.clearIgnored(); refreshRows(); });
         UiButton cache = unavailable(action("clear_cache", () -> {}));
-        cache.setTooltip(UiTranslations.format("schematica.ui.material.cache_pending"));
         export = action("write_to_file", this::export);
-        export.setTooltip(UiTranslations.format("schematica.ui.material.export"));
+        export.setTooltip(UiTranslations.format("litematica.gui.button.hover.material_list.write_hold_shift_for_csv"));
         UiButton raw = unavailable(action("write_to_json", () -> {}));
-        raw.setTooltip(UiTranslations.format("schematica.ui.material.raw_pending"));
         secondary.addAll(Arrays.asList(clearIgnored, cache, export, raw));
         multiplierLabel = root.add(new UiLabel(() -> UiTranslations.format(LABEL + "multiplier"), 0xFFFFFFFF));
         multiplier = root.add(new UiIntegerField(fontRendererObj, 1, 1, Integer.MAX_VALUE, value -> {
             materials.setMultiplier(value);
             if (rows != null) { refreshRows(); layoutWidgets(); }
         }));
-        multiplier.setTooltip(UiTranslations.format("schematica.ui.material.multiplier"));
         info = root.add(new UiWidget() {
             @Override public void draw(UiDraw draw, int x, int y) {
                 UiSprite.INFO.draw(draw, bounds().x, bounds().y, true, containsVisible(x, y));
@@ -156,10 +152,8 @@ public class GuiSchematicMaterials extends UiScreen {
         }));
         searchButton = root.add(new UiButton(() -> "", button -> setSearching(!searching))
             .setSprite(UiSprite.SEARCH).setBackground(false));
-        searchButton.setTooltip(UiTranslations.format("schematica.ui.browser.search_hint"));
         menu = addButton("litematica.gui.button.change_menu.to_main_menu", this::mainMenu);
         progress = root.add(new UiLabel(this::progressText, 0xFFFFFFFF));
-        empty = root.add(new UiLabel(() -> UiTranslations.format("schematica.ui.material.empty"), 0xFFAAAAAA));
     }
 
     private UiButton action(String key, Runnable action) { return addButton(PREFIX + key, action); }
@@ -232,7 +226,6 @@ public class GuiSchematicMaterials extends UiScreen {
         rowsModel.setEntries(materials.visible());
         updateColumns();
         rows.sync();
-        if (empty != null) empty.setVisible(hasResult && rowsModel.entries().isEmpty());
     }
 
     private void updateColumns() {
@@ -346,8 +339,6 @@ public class GuiSchematicMaterials extends UiScreen {
         search.setVisible(searching);
         header.setVisible(!searching);
         rows.setBounds(12, browserY + 26, Math.max(0, width - 24), Math.max(0, footerY - browserY - 26));
-        empty.setBounds(16, browserY + 31, width - 40, 14);
-        empty.setVisible(hasResult && rowsModel.entries().isEmpty());
         updateColumns();
     }
 

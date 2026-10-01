@@ -84,11 +84,9 @@ public final class GuiAreaSelectionEditor extends UiScreen {
                 AreaSelections.switchMode();
                 mc.displayGuiScreen(new GuiAreaSelectionEditor(menuParent));
             }));
-        mode.setTooltip(UiTranslations.format("schematica.ui.area.modes_hint"));
         corners = root.add(new UiButton(() -> UiTranslations.format("litematica.gui.button.area_editor.change_corner_mode",
             UiTranslations.format(AreaSelections.cornerModeKey())), button -> change(() -> library.setCornerMode(
                 library.cornerMode() == AreaSelectionLibrary.CornerMode.CORNERS ? AreaSelectionLibrary.CornerMode.EXPAND : AreaSelectionLibrary.CornerMode.CORNERS))));
-        corners.setTooltip(UiTranslations.format("schematica.ui.area.tool_hint"));
         root.add(new UiLabel(() -> UiTranslations.format("litematica.gui.label.area_editor.selection_name"))).setBounds(12, 44, 202, 12);
         name = root.add(new UiTextField(fontRendererObj, 200, value -> {}));
         name.setBounds(12, 59, 202, 16);
@@ -105,7 +103,6 @@ public final class GuiAreaSelectionEditor extends UiScreen {
         origin = root.add(new UiButton(() -> UiTranslations.format("litematica.gui.button.area_editor.origin_enabled",
             (manualOrigin() ? "\u00a7a" : "\u00a7c") + UiTranslations.format(manualOrigin() ? "options.on" : "options.off")),
             button -> { if (button == 0) change(() -> library.setOrigin(area, manualOrigin() ? null : simple ? area.origin() : GuiAreaSelectionManager.playerPoint())); }));
-        origin.setTooltip(UiTranslations.format("schematica.ui.area.origin_hint"));
         save = action("litematica.gui.button.area_editor.create_schematic", () -> mc.displayGuiScreen(new GuiSchematicSave(this, area.name())));
         count = root.add(new UiLabel(() -> UiTranslations.format("litematica.gui.label.area_editor.sub_regions", area == null ? 0 : area.boxes().size())));
         guide = root.add(new UiCheckBox(() -> UiTranslations.format("schematica.ui.save.guide"), () -> area != null && area.guide(),
@@ -135,7 +132,6 @@ public final class GuiAreaSelectionEditor extends UiScreen {
         originControls = root.add(new UiPanel());
         originSelected = originControls.add(new UiCheckBox(() -> UiTranslations.format("litematica.gui.label.area_editor.origin"),
             () -> area != null && area.originSelected(), value -> change(() -> library.selectOrigin(area, value))));
-        originSelected.setTooltip(UiTranslations.format("schematica.ui.area.origin_hint"));
         for (int axis = 0; axis < 3; axis++) {
             final int component = axis;
             originAxes[axis] = originControls.add(new UiLabel(() -> "XYZ".charAt(component) + ":"));
@@ -151,9 +147,9 @@ public final class GuiAreaSelectionEditor extends UiScreen {
                     });
                 }));
             originCoordinates[axis] = field;
-            originNudges[axis] = originControls.add(new UiButton(() -> "", button -> field.setValue((long) field.value() + (button == 0 ? 1 : -1)))
+            originNudges[axis] = originControls.add(new UiButton(() -> "", button -> field.setValue((long) field.value() + AreaCornerControls.coordinateStep(button)))
                 .setSprite(UiSprite.PLUS_MINUS).setBackground(false));
-            originNudges[axis].setTooltip(UiTranslations.format("schematica.ui.save.coordinate_hint"));
+            originNudges[axis].setTooltip(AreaCornerControls.plusMinusTip());
         }
         originToPlayer = originControls.add(new UiButton(() -> UiTranslations.format("litematica.gui.button.move_to_player"),
             button -> { if (button == 0) change(() -> library.setOrigin(area, GuiAreaSelectionManager.playerPoint())); }));

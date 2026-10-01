@@ -110,15 +110,17 @@ public final class WorldEditQueue {
             if (done) {
                 boolean success = !job.cancelled && job.failure() == null;
                 if (job.failure() != null) Reference.logger.error("World move restored after failure", job.failure());
-                if (player != null) player.addChatMessage(new ChatComponentTranslation(success
-                    ? "schematica.message.edit.finished" : "schematica.message.edit.cancelled", job.blockCount, job.entityCount));
+                String key = job.taskKind().finishedKey(success);
+                if (player != null && key != null) player.addChatMessage(new ChatComponentTranslation(key));
                 finish(edit, success);
             }
         } catch (Exception e) {
             Reference.logger.error("World edit stopped after partial completion", e);
-            if (player != null) player.addChatMessage(new ChatComponentTranslation("schematica.message.edit.stopped", e instanceof MessageException
-                ? new ChatComponentTranslation(((MessageException) e).key(), ((MessageException) e).arguments())
-                : new ChatComponentTranslation("schematica.message.edit.see_log")));
+            String key = job.taskKind().finishedKey(false);
+            if (player != null && key != null) player.addChatMessage(new ChatComponentTranslation(key));
+            if (player != null && e instanceof MessageException) {
+                player.addChatMessage(new ChatComponentTranslation(((MessageException) e).key(), ((MessageException) e).arguments()));
+            }
             finish(edit);
         }
     }

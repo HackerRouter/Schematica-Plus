@@ -21,6 +21,7 @@ import com.github.lunatrius.schematica.client.gui.framework.UiRowList;
 import com.github.lunatrius.schematica.client.gui.framework.UiScreen;
 import com.github.lunatrius.schematica.client.gui.framework.UiSprite;
 import com.github.lunatrius.schematica.client.gui.framework.UiTranslations;
+import com.github.lunatrius.schematica.client.input.Hotkeys;
 import com.github.lunatrius.schematica.client.verifier.VerificationManager;
 import com.github.lunatrius.schematica.client.verifier.VerificationScan;
 import com.github.lunatrius.schematica.client.verifier.VerificationScan.Group;
@@ -28,6 +29,7 @@ import com.github.lunatrius.schematica.client.verifier.VerificationScan.State;
 import com.github.lunatrius.schematica.client.verifier.VerificationScan.Type;
 import com.github.lunatrius.schematica.client.world.SchematicWorld;
 import com.github.lunatrius.schematica.client.gui.VerifierBlockInfo.Visual;
+import com.github.lunatrius.schematica.handler.VisualSettings;
 import com.github.lunatrius.schematica.util.MessageException;
 
 public final class GuiSchematicVerifier extends UiScreen {
@@ -198,9 +200,10 @@ public final class GuiSchematicVerifier extends UiScreen {
                     if (row.group == null) session.markers.selection.toggle(row.type);
                     else session.markers.selection.toggle(row.group);
                     message = com.github.lunatrius.schematica.handler.VerifierOverlaySettings.enabled ? ""
-                        : UiTranslations.format("schematica.ui.verifier.overlay_disabled",
-                            UiTranslations.format("litematica.gui.button.config_gui.info_overlays"),
-                            UiTranslations.format("litematica.config.info_overlays.name.verifierOverlayEnabled"));
+                        : UiTranslations.format("litematica.message.warn.schematic_verifier.overlay_disabled",
+                            VisualSettings.prettyName("info_overlays", "verifierOverlayEnabled"),
+                            VisualSettings.prettyName("hotkeys", "toggleVerifierOverlayRendering"),
+                            GuiModConfig.chordLabel(Hotkeys.get("toggleVerifierOverlayRendering")));
                 }
             }) {
                 @Override public void draw(UiDraw draw, int mouseX, int mouseY) {
@@ -217,7 +220,6 @@ public final class GuiSchematicVerifier extends UiScreen {
                 }
             });
             select.setEnabled(row.type != Type.CORRECT);
-            select.setTooltip(UiTranslations.format("schematica.ui.verifier.select_markers"));
             if (row.group != null) {
                 setTooltip(row.type.color + UiTranslations.format(row.type.key),
                     UiTranslations.format("litematica.gui.label.schematic_verifier.expected") + ": " + row.group.pair.expected,

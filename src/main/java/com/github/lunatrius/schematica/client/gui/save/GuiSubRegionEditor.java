@@ -82,11 +82,11 @@ public final class GuiSubRegionEditor extends UiScreen {
                     }));
                 coordinates[point][axis] = field;
                 field.setBounds(x + 12, 73 + axis * 20, 68, 16);
-                UiButton nudge = root.add(new UiButton(() -> "", button -> field.setValue((long) field.value() + (button == 0 ? 1 : -1)))
+                UiButton nudge = root.add(new UiButton(() -> "", button -> field.setValue((long) field.value() + AreaCornerControls.coordinateStep(button)))
                     .setSprite(UiSprite.PLUS_MINUS).setBackground(false));
                 coordinateButtons.add(nudge);
                 nudge.setBounds(x + 84, 73 + axis * 20, 16, 16);
-                nudge.setTooltip(UiTranslations.format("schematica.ui.save.coordinate_hint"));
+                nudge.setTooltip(AreaCornerControls.plusMinusTip());
             }
             UiButton move = addButton("litematica.gui.button.move_to_player", () -> change(() -> {
                 Vector3i target = GuiAreaSelectionManager.playerPoint();

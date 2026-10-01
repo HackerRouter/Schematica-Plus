@@ -40,9 +40,7 @@ public final class GuiSchematicLoad extends GuiSchematicBrowser {
             () -> mc.displayGuiScreen(new GuiSchematicLoadedList(this))).setSprite(UiSprite.LOADED_SCHEMATICS);
         createPlacement = root.add(new UiCheckBox(() -> UiTranslations.format("litematica.gui.label.schematic_load.checkbox.create_placement"),
             () -> placeOnLoad, value -> placeOnLoad = value));
-        createPlacement.setTooltip(UiTranslations.format("schematica.ui.source.load_hint"),
-            UiTranslations.format("litematica.gui.label.schematic_placement.hoverinfo.hold_shift_to_create_as_disabled"));
-        load.setTooltip(UiTranslations.format("schematica.ui.load.hint"));
+        createPlacement.setTooltip(UiTranslations.format("litematica.gui.label.schematic_load.hoverinfo.create_placement").split("\n"));
     }
 
     @Override

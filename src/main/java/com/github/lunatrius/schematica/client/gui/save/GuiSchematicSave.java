@@ -122,8 +122,10 @@ public final class GuiSchematicSave extends GuiSchematicBrowser {
         super.tickScreen();
         problem = validateSelection();
         save.setEnabled(problem.isEmpty());
-        save.setTooltip(problem.isEmpty() ? UiTranslations.format(area.boxes().size() > 1 || !area.snapshot().localOrigin.isZero()
-            ? "schematica.ui.area.extended" : "litematica.gui.button.save_schematic") : problem);
+        if (!problem.isEmpty()) save.setTooltip(problem);
+        else if (area.boxes().size() > 1 || !area.snapshot().localOrigin.isZero()) {
+            save.setTooltip(UiTranslations.format("litematica.gui.label.schematic_save.hover_info.hold_shift_to_overwrite"), UiTranslations.format("schematica.ui.area.extended"));
+        } else save.setTooltip(UiTranslations.format("litematica.gui.label.schematic_save.hover_info.hold_shift_to_overwrite"));
     }
 
     private void saveSelection() {
@@ -138,11 +140,9 @@ public final class GuiSchematicSave extends GuiSchematicBrowser {
             World world = mc.theWorld;
             AreaSelections.capture();
             RegionSelection selection = area.snapshot();
-            Runnable submit = () -> submit(file, world, selection);
-            if (file.exists()) {
-                confirm(UiTranslations.format("schematica.ui.save.overwrite_title"),
-                    UiTranslations.format("schematica.ui.save.overwrite", file.getName()), submit);
-            } else submit.run();
+            if (file.exists() && !isShiftKeyDown()) {
+                setStatus(UiTranslations.format("litematica.error.schematic_write_to_file_failed.exists", file.getName()));
+            } else submit(file, world, selection);
         } catch (IOException | IllegalArgumentException e) {
             Reference.logger.error("Invalid schematic save target", e);
             setStatus(UiTranslations.format("schematica.ui.save.invalid_directory"));

@@ -158,21 +158,31 @@ public final class SchematicBrowserModel {
 
     private static void validateName(String name) throws IOException {
         if (name == null || name.trim().isEmpty() || name.length() > 255 || name.endsWith(".") || name.endsWith(" ")
-            || name.equals(".") || name.equals("..")) throw new FileOperationException("name");
+            || name.equals(".") || name.equals("..")) throw FileOperationException.name(name);
         for (int i = 0; i < name.length(); i++) {
             char c = name.charAt(i);
-            if (c < 32 || "<>:\"/\\|?*".indexOf(c) >= 0) throw new FileOperationException("name");
+            if (c < 32 || "<>:\"/\\|?*".indexOf(c) >= 0) throw FileOperationException.name(name);
         }
         String stem = name.split("\\.", 2)[0].toUpperCase(Locale.ROOT);
-        if (stem.matches("CON|PRN|AUX|NUL|COM[1-9¹²³]|LPT[1-9¹²³]")) throw new FileOperationException("name");
+        if (stem.matches("CON|PRN|AUX|NUL|COM[1-9¹²³]|LPT[1-9¹²³]")) throw FileOperationException.name(name);
     }
 
     public static final class FileOperationException extends IOException {
         public final String translationKey;
+        public final Object[] arguments;
 
         FileOperationException(String reason) {
+            this(reason, "schematica.ui.files.error." + reason);
+        }
+
+        private FileOperationException(String reason, String translationKey, Object... arguments) {
             super(reason);
-            translationKey = "schematica.ui.files.error." + reason;
+            this.translationKey = translationKey;
+            this.arguments = arguments;
+        }
+
+        static FileOperationException name(String name) {
+            return new FileOperationException("name", "malilib.message.error.illegal_characters_in_file_name", String.valueOf(name));
         }
     }
 

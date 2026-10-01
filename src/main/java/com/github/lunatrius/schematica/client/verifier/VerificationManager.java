@@ -211,8 +211,7 @@ public final class VerificationManager {
 
         public String progressText() {
             if (!notice.isEmpty()) return UiTranslations.format(notice);
-            if (scan == null) return UiTranslations.format("schematica.ui.verifier.ready");
-            if (!running) return UiTranslations.format("schematica.ui.verifier.paused", scan.checked(), scan.total());
+            if (scan == null || !running && !scan.done()) return "";
             if (!scan.done()) return UiTranslations.format("litematica.gui.label.schematic_verifier.status.verifying", scan.remainingChunks(), scan.totalChunks());
             return UiTranslations.format("litematica.gui.label.schematic_verifier.status.done_errors.no_diff",
                 scan.count(VerificationScan.Type.WRONG_BLOCK), scan.count(VerificationScan.Type.WRONG_STATE),
@@ -220,7 +219,7 @@ public final class VerificationManager {
         }
 
         public String countsText() {
-            if (scan == null) return "";
+            if (scan == null || !scan.done()) return "";
             String counts = UiTranslations.format("litematica.gui.label.schematic_verifier.status.done_correct_total",
                 scan.count(VerificationScan.Type.CORRECT), scan.expectedBlocks());
             return scan.skipped() == 0 ? counts : counts + "  " + UiTranslations.format("schematica.ui.verifier.skipped", scan.skipped());

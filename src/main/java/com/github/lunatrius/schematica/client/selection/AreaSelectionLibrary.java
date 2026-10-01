@@ -256,7 +256,7 @@ public final class AreaSelectionLibrary {
     private static String uniqueBoxName(Area area, String name, Box except) {
         String checked = validName(name);
         for (Box box : area.boxes) {
-            if (box != except && box.name.equalsIgnoreCase(checked)) throw new NameConflictException(checked);
+            if (box != except && box.name.equalsIgnoreCase(checked)) throw new NameConflictException(checked, true);
         }
         return checked;
     }
@@ -270,7 +270,7 @@ public final class AreaSelectionLibrary {
     private String uniqueName(String name, Area except) {
         String checked = validName(name);
         for (Area area : areas) {
-            if (area != except && area.name.equalsIgnoreCase(checked)) throw new NameConflictException(checked);
+            if (area != except && area.name.equalsIgnoreCase(checked)) throw new NameConflictException(checked, false);
         }
         return checked;
     }
@@ -488,6 +488,8 @@ public final class AreaSelectionLibrary {
     }
 
     public static final class NameConflictException extends IllegalArgumentException {
-        public NameConflictException(String name) { super(name); }
+        public final boolean subregion;
+
+        public NameConflictException(String name, boolean subregion) { super(name); this.subregion = subregion; }
     }
 }

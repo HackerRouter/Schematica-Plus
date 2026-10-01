@@ -42,8 +42,7 @@ public final class GuiSchematicPlacementsList extends GuiSchematicList<Schematic
             button("litematica.gui.button.schematic_placements.configure", () -> {
                 mc.displayGuiScreen(new GuiPlacementConfiguration(GuiSchematicPlacementsList.this, world));
             });
-            setTooltip(world.name, world.sourceFilename == null ? "" : world.sourceFilename,
-                UiTranslations.format("schematica.ui.source.placement_hint"));
+            setTooltip(world.name, world.sourceFilename == null ? "" : world.sourceFilename);
         }
 
         private UiButton button(String key, Runnable action) {

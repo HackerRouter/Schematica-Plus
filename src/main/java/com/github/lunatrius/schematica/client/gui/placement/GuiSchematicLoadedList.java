@@ -65,11 +65,9 @@ public final class GuiSchematicLoadedList extends GuiSchematicList<Source<Schema
                     message(UiTranslations.format("schematica.ui.source.create_failed"));
                 }
             });
-            buttons.get(0).setTooltip(UiTranslations.format("schematica.ui.source.unload_hint"));
-            reload.setTooltip(UiTranslations.format("schematica.ui.source.reload_hint"));
+            reload.setTooltip(UiTranslations.format("litematica.gui.button.hover.schematic_list.reload_schematic").split("\n"));
             buttons.get(2).setTooltip(UiTranslations.format("schematica.ui.source.save_hint"));
-            create.setTooltip(UiTranslations.format("schematica.ui.source.create_hint"),
-                UiTranslations.format("litematica.gui.label.schematic_placement.hoverinfo.hold_shift_to_create_as_disabled"));
+            create.setTooltip(UiTranslations.format("litematica.gui.label.schematic_placement.hoverinfo.hold_shift_to_create_as_disabled"));
             tick();
         }
 

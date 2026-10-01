@@ -69,7 +69,6 @@ public final class GuiSubRegionConfiguration extends UiScreen {
             mouse -> { if (mouse == 0) change(region -> region.enabled(!region.enabled)); });
         rendering = button(() -> (region().rendering ? "\u00a7a" : "\u00a7c") + UiTranslations.format("litematica.gui.button.schematic_placement.abbr.rendering"),
             mouse -> { if (mouse == 0) change(region -> region.rendering(!region.rendering)); });
-        rendering.setTooltip(UiTranslations.format("schematica.ui.placement.region_rendering"));
         entities = button(() -> UiTranslations.format("litematica.gui.button.schematic_placement.ignore_entities", value(region().ignoreEntities)),
             mouse -> { if (mouse == 0) change(region -> region.ignoreEntities(!region.ignoreEntities)); });
         position = controls.add(new UiLabel(() -> UiTranslations.format("litematica.gui.label.placement_sub.region_position"), 0xFFFFFFFF));
@@ -158,7 +157,8 @@ public final class GuiSubRegionConfiguration extends UiScreen {
     @Override protected void tickScreen() {
         controls.setEnabled(available());
         if (!available()) status = UiTranslations.format("schematica.ui.placement.unloaded");
-        else if (revision != placement.placementRevision() || !java.util.Arrays.equals(lastPosition.coordinates(), placement.subregionPosition(regionName).coordinates())) sync();
+        else rendering.setTooltip(GuiPlacementConfiguration.renderingHover(region().rendering));
+        if (available() && (revision != placement.placementRevision() || !java.util.Arrays.equals(lastPosition.coordinates(), placement.subregionPosition(regionName).coordinates()))) sync();
         feedback.setVisible(!status.isEmpty());
     }
 

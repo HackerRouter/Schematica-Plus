@@ -1,31 +1,28 @@
 package com.github.lunatrius.schematica.client.gui.config;
 
+import com.github.lunatrius.schematica.reference.Names;
+
 public final class ConfigTranslations {
     private ConfigTranslations() {}
 
     public static String label(String key) {
-        switch (key) {
-            case "schematica.config.alphaEnabled": return "litematica.config.visuals.name.renderBlocksAsTranslucent";
-            case "schematica.config.alpha": return "litematica.config.visuals.name.ghostBlockAlpha";
-            case "schematica.config.highlight": return "litematica.config.visuals.name.enableSchematicOverlay";
-            case "schematica.config.highlightAir": return "litematica.config.visuals.name.schematicOverlayTypeExtra";
-            case "schematica.config.drawQuads": return "litematica.config.visuals.name.schematicOverlayEnableSides";
-            case "schematica.config.drawLines": return "litematica.config.visuals.name.schematicOverlayEnableOutlines";
-            case "schematica.config.schematicDirectory": return "litematica.config.generic.name.customSchematicBaseDirectory";
-            case "schematica.config.toolItem": return "litematica.config.generic.name.toolItem";
-            case "schematica.key.load": return "litematica.gui.title.load_schematic";
-            case "schematica.key.save": return "litematica.config.hotkeys.name.saveAreaAsSchematicToFile";
-            case "schematica.key.control": return "litematica.config.hotkeys.name.openGuiMainMenu";
-            case "schematica.key.execute": return "litematica.config.hotkeys.name.executeOperation";
-            case "schematica.key.layerInc": return "litematica.config.hotkeys.name.layerNext";
-            case "schematica.key.layerDec": return "litematica.config.hotkeys.name.layerPrevious";
+        String prefix = Names.Config.LANG_PREFIX + ".";
+        if (!key.startsWith(prefix)) return key;
+        switch (key.substring(prefix.length())) {
+            case Names.Config.ALPHA_ENABLED: return "litematica.config.visuals.name.renderBlocksAsTranslucent";
+            case Names.Config.ALPHA: return "litematica.config.visuals.name.ghostBlockAlpha";
+            case Names.Config.HIGHLIGHT: return "litematica.config.visuals.name.enableSchematicOverlay";
+            case Names.Config.HIGHLIGHT_AIR: return "litematica.config.visuals.name.schematicOverlayTypeExtra";
+            case Names.Config.DRAW_QUADS: return "litematica.config.visuals.name.schematicOverlayEnableSides";
+            case Names.Config.DRAW_LINES: return "litematica.config.visuals.name.schematicOverlayEnableOutlines";
+            case Names.Config.SCHEMATIC_DIRECTORY: return "litematica.config.generic.name.customSchematicBaseDirectory";
+            case Names.Config.TOOL_ITEM: return "litematica.config.generic.name.toolItem";
             default: return key;
         }
     }
 
     public static String comment(String key) {
         String label = label(key);
-        return label.startsWith("litematica.config.generic.name.") || label.startsWith("litematica.config.visuals.name.") || label.startsWith("litematica.config.info_overlays.name.")
-            ? label.replace(".name.", ".comment.") : key + ".tooltip";
+        return label.startsWith("litematica.config.") && label.contains(".name.") ? label.replace(".name.", ".comment.") : key + ".tooltip";
     }
 }

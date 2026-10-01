@@ -10,7 +10,6 @@ import net.minecraft.client.gui.GuiScreen;
 import com.github.lunatrius.schematica.client.gui.framework.UiBounds;
 import com.github.lunatrius.schematica.client.gui.framework.UiButton;
 import com.github.lunatrius.schematica.client.gui.framework.UiDraw;
-import com.github.lunatrius.schematica.client.gui.framework.UiLabel;
 import com.github.lunatrius.schematica.client.gui.framework.UiListModel;
 import com.github.lunatrius.schematica.client.gui.framework.UiPanel;
 import com.github.lunatrius.schematica.client.gui.framework.UiRowList;
@@ -24,14 +23,12 @@ public final class GuiTaskManager extends UiScreen {
     private final UiListModel<Task> model = new UiListModel<>(22, task -> UiTranslations.format(task.kind.key));
     private List<Task> snapshot = Collections.emptyList();
     private UiRowList<Task> list;
-    private UiLabel empty;
     private UiButton menu;
 
     public GuiTaskManager(GuiScreen parent) { super(parent, UiTranslations.format("litematica.gui.title.task_manager")); }
 
     @Override protected void createWidgets() {
         list = root.add(new UiRowList<>(model, Entry::new));
-        empty = root.add(new UiLabel(() -> UiTranslations.format("schematica.ui.task.empty"), 0xFFB0B0B0));
         menu = addButton("litematica.gui.button.change_menu.to_main_menu", this::mainMenu);
     }
 
@@ -45,12 +42,10 @@ public final class GuiTaskManager extends UiScreen {
             model.setEntries(tasks);
             list.sync();
         }
-        empty.setVisible(tasks.isEmpty());
     }
 
     @Override protected void layoutWidgets() {
         list.setBounds(14, 32, Math.max(0, width - 24), Math.max(0, height - 68));
-        empty.setBounds(18, 38, Math.max(0, width - 36), 12);
         int w = fontRendererObj.getStringWidth(menu.label()) + 10;
         menu.setBounds(width - w - 10, height - 26, w, 20);
     }

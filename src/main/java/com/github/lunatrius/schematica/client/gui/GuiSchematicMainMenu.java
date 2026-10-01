@@ -51,14 +51,12 @@ public final class GuiSchematicMainMenu extends UiScreen {
         selections = menu("show_area_selections", UiSprite.AREA_SELECTION, () -> mc.displayGuiScreen(new GuiAreaSelectionManager(this)));
         selectionMode = root.add(new UiButton(() -> UiTranslations.format("litematica.gui.button.area_selection_mode",
             UiTranslations.format(AreaSelections.modeKey())), button -> { AreaSelections.switchMode(); layoutWidgets(); }));
-        selectionMode.setTooltip(UiTranslations.format("schematica.ui.area.modes_hint"));
         config = menu("configuration_menu", UiSprite.CONFIGURATION, () -> mc.displayGuiScreen(new GuiModConfig(this)));
         manager = menu("schematic_manager", UiSprite.SCHEMATIC_MANAGER,
             () -> mc.displayGuiScreen(new GuiSchematicManager(this)));
         tasks = menu("task_manager", UiSprite.TASK_MANAGER, () -> mc.displayGuiScreen(new GuiTaskManager(this)));
         mode = root.add(new UiButton(() -> UiTranslations.format("litematica.gui.button.tool_mode", ToolManager.getCurrentMode().getDisplayName()),
             button -> { ToolManager.cycleMode(button == 0); layoutWidgets(); }));
-        mode.setTooltip(UiTranslations.format("schematica.ui.menu.mode_hint"));
     }
 
     @Override

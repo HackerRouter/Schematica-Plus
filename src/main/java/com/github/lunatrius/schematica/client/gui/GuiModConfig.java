@@ -113,12 +113,10 @@ public class GuiModConfig extends UiScreen implements HotkeyHooks.Capture {
             layoutWidgets();
             if (searchOpen) input.focus(search);
         }).setSprite(UiSprite.CONFIG_SEARCH).setBackground(false));
-        searchButton.setTooltip(UiTranslations.format("schematica.ui.config.search"));
         search = root.add(new UiTextField(fontRendererObj, 256, text -> refreshEntries()));
-        search.setTooltip(UiTranslations.format("schematica.ui.config.search"));
+        search.setTooltip(UiTranslations.format("malilib.gui.button.hover.search_bar_hotkey"));
         keySearch = root.add(new UiButton(() -> capturingButton == keySearch ? captureLabel() : keyLabel(keyFilter),
             button -> beginCapture(null, keySearch)));
-        keySearch.setTooltip(UiTranslations.format("schematica.ui.config.key_search"));
         rows = root.add(new UiRowList<>(model, (entry, index) -> new ConfigRow(entry), 12));
         done = addButton("gui.done", this::closeScreen);
         status = root.add(new UiLabel(this::statusText, 0xFFFFA0A0));
@@ -251,12 +249,12 @@ public class GuiModConfig extends UiScreen implements HotkeyHooks.Capture {
 
     private void endCapture() { capturingButton = null; HotkeyHooks.reset(); refreshEntries(); }
     private String captureLabel() {
-        return "§e> " + (capturingKey == null ? UiTranslations.format("schematica.ui.config.press_key") : chordLabel(capturingKey)) + " <§r";
+        return "§e> " + (capturingKey == null ? keyLabel(keyFilter) : chordLabel(capturingKey)) + " <§r";
     }
-    private String keyLabel(int code) {
+    private static String keyLabel(int code) {
         return code == 0 ? UiTranslations.format("malilib.gui.button.empty_keybind") : GameSettings.getKeyDisplayString(code);
     }
-    private String chordLabel(Hotkey key) {
+    public static String chordLabel(Hotkey key) {
         if (key.keys().isEmpty()) return keyLabel(0);
         List<String> labels = new ArrayList<>();
         for (int code : key.keys()) labels.add(keyLabel(code));
@@ -380,10 +378,8 @@ public class GuiModConfig extends UiScreen implements HotkeyHooks.Capture {
             label = add(new UiLabel(entry::label, entry.available() ? 0xFFFFFFFF : 0xFF888888));
             label.setTooltip(entry.description().split("\n"));
             reset = add(new UiButton(() -> UiTranslations.format("malilib.gui.button.reset.caps"), button -> reset()));
-            reset.setTooltip(UiTranslations.format("schematica.ui.config.reset"));
             if (entry.key != null) {
                 editor = add(new UiButton(() -> bindingLabel(entry.key), button -> captureEntry()));
-                editor.setTooltip(UiTranslations.format("schematica.ui.config.key_hint"));
                 keySettings = add(new UiButton(() -> "", button -> {
                     if (button == 1) { entry.key.resetSettings(); HotkeyHooks.reset(); keysChanged = true; }
                     else {
@@ -455,7 +451,6 @@ public class GuiModConfig extends UiScreen implements HotkeyHooks.Capture {
                         if (!entry.draft.slider) text.setText(entry.draft.text());
                         layout(bounds());
                     }).setBackground(false));
-                    sliderToggle.setTooltip(UiTranslations.format("schematica.ui.config.slider"));
                 }
             }
             editor.setEnabled(entry.available());

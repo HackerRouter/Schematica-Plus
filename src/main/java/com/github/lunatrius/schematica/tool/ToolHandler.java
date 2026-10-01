@@ -15,6 +15,7 @@ import com.github.lunatrius.schematica.proxy.ClientProxy;
 import com.github.lunatrius.schematica.client.selection.AreaSelections;
 import com.github.lunatrius.schematica.client.gui.framework.UiTranslations;
 import com.github.lunatrius.schematica.reference.Reference;
+import com.github.lunatrius.schematica.task.TaskRegistry;
 import com.github.lunatrius.schematica.util.MessageException;
 
 public class ToolHandler {
@@ -35,7 +36,8 @@ public class ToolHandler {
             if (!(e instanceof MessageException)) Reference.logger.warn("Could not start schematic edit", e);
             sendChat(player, EnumChatFormatting.RED + (e instanceof MessageException
                 ? UiTranslations.format(((MessageException) e).key(), ((MessageException) e).arguments())
-                : UiTranslations.format("schematica.message.edit.start_failed")));
+                : UiTranslations.format((mode == ToolMode.PASTE_SCHEMATIC ? TaskRegistry.Kind.PASTE : mode == ToolMode.DELETE ? TaskRegistry.Kind.DELETE
+                    : TaskRegistry.Kind.FILL).finishedKey(false))));
         }
         return true;
     }
@@ -67,7 +69,7 @@ public class ToolHandler {
         if (mode == ToolMode.PASTE_SCHEMATIC) {
             SchematicWorld schematic = ClientProxy.schematic;
             if (schematic == null) throw new MessageException("litematica.message.error.no_placement_selected");
-            if (!schematic.isEnabled()) throw new MessageException("schematica.ui.placement.disabled");
+            if (!schematic.isEnabled()) throw new MessageException("litematica.message.error.placement_paste_rendering_disabled");
             if (!schematic.hasEnabledRegions()) throw new MessageException("schematica.ui.placement.no_regions");
             job = new WorldEditJob(player.getUniqueID(), player.dimension, WorldEditJob.Kind.PASTE,
                 schematic.position.x, schematic.position.y, schematic.position.z,
@@ -99,7 +101,7 @@ public class ToolHandler {
             sendChat(player, UiTranslations.format("litematica.message.scheduled_task_added"));
         } else {
             com.github.lunatrius.schematica.handler.client.CommandEditQueue.INSTANCE.submit(job, player.worldObj);
-            sendChat(player, UiTranslations.format("schematica.message.edit.commands_queued"));
+            sendChat(player, UiTranslations.format("litematica.message.scheduled_task_added"));
         }
     }
 

@@ -120,7 +120,7 @@ public final class BlockInfoHud {
     private void add(String title, BlockInfoTarget.State state) {
         lines.add("§n" + UiTranslations.format(title));
         lines.add(state.registryName);
-        lines.add(UiTranslations.format("schematica.hud.block_info.metadata", state.metadata));
+        lines.add(VerifierBlockInfo.metadata(state.metadata, ": "));
     }
 
     private void draw(Minecraft mc) {

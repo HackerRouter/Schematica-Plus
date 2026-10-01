@@ -70,14 +70,13 @@ public abstract class GuiSchematicBrowser extends UiScreen {
         home = icon(UiSprite.ROOT, "malilib.gui.button.hover.directory_widget.root", () -> navigate(browser.root()));
         createDirectory = icon(UiSprite.CREATE_DIRECTORY, "malilib.gui.button.hover.directory_widget.create_directory", this::createDirectory);
         search = root.add(new UiTextField(fontRendererObj, 256, files::setQuery));
-        search.setTooltip(UiTranslations.format("schematica.ui.browser.search_hint"));
-        searchButton = icon(UiSprite.SEARCH, "schematica.ui.browser.search", () -> {
+        searchButton = icon(UiSprite.SEARCH, null, () -> {
             searching = !searching;
             layoutWidgets();
             if (searching) input.focus(search);
             else search.setText("");
         });
-        list = root.add(new UiList<>(files, UiTranslations.format("schematica.ui.browser.empty"), this::activate));
+        list = root.add(new UiList<>(files, "", this::activate));
         list.setFileStyle(entry -> entry.directory ? UiSprite.DIRECTORY
             : UiSprite.schematicFile(entry.name()),
             entry -> entry.directory ? entry.name() : entry.name().substring(0, entry.name().lastIndexOf('.')));
@@ -94,7 +93,6 @@ public abstract class GuiSchematicBrowser extends UiScreen {
                 draw.text(FileUtils.humanReadableByteCount(entry.size), x, y + 36, 0xC0C0C0C0);
                 String date = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date(entry.modified));
                 draw.text(draw.trim(date, bounds().width - 6), x, y + 48, 0xC0C0C0C0);
-                draw.text(draw.trim(UiTranslations.format("schematica.ui.browser.file_info"), bounds().width - 6), x, y + 60, 0xC0C0C0C0);
             }
         });
         message = root.add(new UiLabel(() -> status));
@@ -106,7 +104,7 @@ public abstract class GuiSchematicBrowser extends UiScreen {
     private UiButton icon(UiSprite sprite, String key, Runnable action) {
         UiButton button = root.add(new UiButton(() -> "", mouse -> { if (mouse == 0) action.run(); })
             .setSprite(sprite).setBackground(false));
-        button.setTooltip(UiTranslations.format(key));
+        if (key != null) button.setTooltip(UiTranslations.format(key));
         return button;
     }
 
@@ -189,7 +187,7 @@ public abstract class GuiSchematicBrowser extends UiScreen {
         SchematicBrowserModel.Entry entry = selection();
         if (entry == null || entry.directory) return;
         confirm(UiTranslations.format("litematica.gui.title.confirm_file_deletion"),
-            UiTranslations.format("schematica.ui.files.delete_confirm", entry.name()), () -> {
+            UiTranslations.format("litematica.message.delete_confirm", entry.name()), () -> {
                 try {
                     browser.delete(entry);
                     refreshFiles();
@@ -214,11 +212,15 @@ public abstract class GuiSchematicBrowser extends UiScreen {
     }
 
     private String fileError(IOException error) {
-        String key = error instanceof SchematicBrowserModel.FileOperationException
-            ? ((SchematicBrowserModel.FileOperationException) error).translationKey
-            : error instanceof FileAlreadyExistsException ? "schematica.ui.files.error.exists" : "schematica.ui.files.error.io";
         Reference.logger.warn("Schematic file operation failed", error);
-        return UiTranslations.format(key);
+        if (error instanceof SchematicBrowserModel.FileOperationException) {
+            SchematicBrowserModel.FileOperationException failure = (SchematicBrowserModel.FileOperationException) error;
+            return UiTranslations.format(failure.translationKey, failure.arguments);
+        }
+        if (error instanceof FileAlreadyExistsException) {
+            return UiTranslations.format("malilib.message.error.file_or_directory_already_exists", new File(((FileAlreadyExistsException) error).getFile()).getName());
+        }
+        return UiTranslations.format("schematica.ui.files.error.io");
     }
 
     @Override
@@ -269,8 +271,8 @@ public abstract class GuiSchematicBrowser extends UiScreen {
     }
 
     protected final void setStatus(String status) {
-        this.status = status;
-        message.setTooltip(status);
+        this.status = status.replaceAll("\\s*\n\\s*", " ");
+        message.setTooltip(status.split("\n"));
     }
 
     protected final void fail(String key, Exception error, Object... arguments) {
@@ -284,7 +286,7 @@ public abstract class GuiSchematicBrowser extends UiScreen {
 
     private String selectionInfo() {
         SchematicBrowserModel.Entry entry = selection();
-        if (entry == null) return UiTranslations.format("schematica.ui.browser.entries", files.entries().size());
+        if (entry == null) return "";
         return entry.directory ? entry.name() + "/" : entry.name() + " | " + FileUtils.humanReadableByteCount(entry.size)
             + " | " + DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(new Date(entry.modified));
     }

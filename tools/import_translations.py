@@ -41,6 +41,10 @@ def display_brand(key, value):
     return value
 
 
+def repair_placeholders(value):
+    return re.sub(r"(?<!%)%(?=\u00a7|$)", "%s", value)
+
+
 def unique_entries(pairs):
     entries = {}
     for key, value in pairs:
@@ -74,7 +78,7 @@ def convert(roots):
             for key, value in entries.items():
                 if key in locale:
                     raise ValueError(f"Unexpected or conflicting key in {file}: {key}")
-                locale[key] = display_brand(key, value)
+                locale[key] = display_brand(key, repair_placeholders(value))
     header = "# SPDX-License-Identifier: LGPL-3.0-only\n"
     header += "# " + "; ".join(f"{mod} {version}" for mod, version in VERSIONS.items()) + ".\n"
     header += "# Converted for Minecraft 1.7.10 by HackerRouter, 2026. Regenerate with tools/import_translations.py.\n"

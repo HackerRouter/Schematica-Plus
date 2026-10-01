@@ -1,84 +1,13 @@
 # gui - general
-schematica.gui.openFolder=打开Schematic文件夹
-schematica.gui.done=完成
-schematica.gui.title=选择Schematic文件
-schematica.gui.folderInfo=(将Schematic文件夹放在此处)
-schematica.gui.noschematic=-- 没有Schematic文件 --
-schematica.gui.increase=+
-schematica.gui.decrease=-
-schematica.gui.hide=隐藏
-schematica.gui.all=全部
-schematica.gui.show=显示
-schematica.gui.movehere=移动到此处
-schematica.gui.flip=对称
-schematica.gui.rotate=旋转
-schematica.gui.save=保存
-schematica.gui.name=名称
-schematica.gui.savecoordinates=保存坐标
-schematica.gui.moveschematic=移动Schematic文件
-schematica.gui.layers=层
-schematica.gui.operations=操作
-schematica.gui.unload=卸载
-schematica.gui.point.red=红点
-schematica.gui.point.blue=蓝点   
-schematica.gui.saveselection=将选区保存为Schematic文件
 schematica.gui.savenbt=保存NBT
-schematica.gui.saveentities=保存实体
-schematica.gui.on=开
-schematica.gui.off=关
-schematica.gui.x=X:
-schematica.gui.y=Y:
-schematica.gui.z=Z:
-schematica.gui.materials=材料
-schematica.gui.materialname=材料
-schematica.gui.materialamount=数量
-schematica.gui.materialrequired=要求
-schematica.gui.materialavailable=可用
-schematica.gui.materialdump=保存到文件
-schematica.gui.printer=打印
-
-# gui - instances
-schematica.gui.instances.title=已加载的投影
-schematica.gui.instances.switch=切换
-schematica.gui.instances.toggleVisible=切换可见
-schematica.gui.instances.toggleEntities=切换实体
-schematica.gui.instances.toggleBlockNBT=方块NBT
-schematica.gui.instances.loaded=已加载
-schematica.gui.instances=实例管理
-
-# gui - config - categories
-schematica.config.category.debug=Debug
-schematica.config.category.debug.tooltip=Debug/开发者设置.\n如果你不清楚自己在做什么,请勿点击.
-schematica.config.category.render=渲染
-schematica.config.category.render.tooltip=渲染相关设置.
-schematica.config.category.printer=打印
-schematica.config.category.printer.tooltip=打印相关设置.
-schematica.config.category.printer.swapslots=快捷栏
-schematica.config.category.printer.swapslots.tooltip=允许打印使用非空快捷栏.
-schematica.config.category.general=常规
-schematica.config.category.general.tooltip=常规设置.
-schematica.config.category.server=服务端
-schematica.config.category.server.tooltip=服务端设置.
 
 # gui - config - debug
 schematica.config.showDebugInfo=显示Debug信息
 schematica.config.showDebugInfo.tooltip=在debug界面(F3)显示额外信息.
 
 # gui - config - render
-schematica.config.alphaEnabled=启用Alpha
-schematica.config.alphaEnabled.tooltip=启用透明材质.
-schematica.config.alpha=Alpha
-schematica.config.alpha.tooltip=渲染Schematic时的Alpha值(1.0 = 不透明, 0.5 = 半透明, 0.0 = 透明).
-schematica.config.highlight=高亮方块
-schematica.config.highlight.tooltip=高亮显示已放置的无效方块和要放置的方块.
-schematica.config.highlightAir=高亮空气
-schematica.config.highlightAir.tooltip=高亮显示必须留空的方块.
 schematica.config.blockDelta=方块Delta
 schematica.config.blockDelta.tooltip=高亮的Delta值(如果遇到了斑驳(z-fighting),请提升Delta值).
-schematica.config.drawQuads=绘制表面
-schematica.config.drawQuads.tooltip=绘制表面.
-schematica.config.drawLines=绘制轮廓
-schematica.config.drawLines.tooltip=绘制轮廓.
 
 # gui - config - printer
 schematica.config.placeDelay=放置延迟
@@ -115,14 +44,8 @@ schematica.config.swapSlot8=允许9号格
 schematica.config.swapSlot8.tooltip=允许投影使用快捷栏9号格.
 
 # gui - config - general
-schematica.config.schematicDirectory=Schematic目录
-schematica.config.schematicDirectory.tooltip=Schematic目录.
 schematica.config.extraAirBlocks=额外空气方块
 schematica.config.extraAirBlocks.tooltip=要视为空气的Schematic渲染额外方块.
-
-# chat
-Schematica.chat.saveCoordinatesSuccess=保存坐标成功
-Schematica.chat.saveCoordinatesFail=保存坐标失败
 
 # gui - config - server
 schematica.config.printerEnabled=启用投影
@@ -132,48 +55,22 @@ schematica.config.saveEnabled.tooltip=允许玩家保存schematics.
 schematica.config.loadEnabled=启用加载
 schematica.config.loadEnabled.tooltip=允许玩家加载schematics.
 
-# keys
-schematica.key.category=Schematica
-schematica.key.load=载入Schematic文件
-schematica.key.save=保存Schematic文件
-schematica.key.control=打开 Schematica Plus 主菜单
-schematica.key.layerInc=下一层
-schematica.key.layerDec=上一层
-schematica.key.execute=执行操作
-
 # gui - config - tool
-schematica.config.category.tool=工具
-schematica.config.category.tool.tooltip=工具物品相关设置.
-schematica.config.toolItem=工具物品
 schematica.config.pasteWithoutUpdates=粘贴时不发出方块更新
 schematica.config.pasteWithoutUpdates.tooltip=粘贴时跳过方块放置、移除回调和邻居更新。仅单人世界可用。画面、光照同步及方块自身运行仍会继续。
 schematica.config.pasteOnlyAir=粘贴时仅替换空气
 schematica.config.pasteOnlyAir.tooltip=仅在目标世界的空气位置放置蓝图方块，保留已有方块及其内容。
-schematica.config.toolItem.tooltip=用作Schematica工具的物品 (例如 minecraft:stick). 手持此物品以激活工具功能.
-
-# tool modes
-schematica.tool_mode.area_selection=区域选择
-schematica.tool_mode.schematic_placement=投影放置
-schematica.tool_mode.paste_schematic=粘贴投影
-schematica.tool_mode.move=移动
-schematica.tool_mode.delete=删除
-schematica.tool_mode.fill=填充
-schematica.tool_mode.replace_block=替换方块
 
 # commands - save
 schematica.command.save.usage=/schematicaSave <startX> <startY> <startZ> <endX> <endY> <endZ> <name>
 schematica.command.save.playersOnly=此指令只能由玩家使用.
 schematica.command.save.started=开始将 %d 区块保存至 %s.
-schematica.command.save.saveSucceeded=成功保存 %s.
 schematica.command.save.saveExtended=选区中的部分方块需要扩展格式，已保存为 %s。
-schematica.command.save.saveFailed=保存schematic %s 时遇到问题.
 schematica.command.save.quotaExceeded=你已经超出了服务器配额. 请使用/schematicaList 和/schematicaRemove 指令移除一些旧schematics.
 schematica.command.save.playerSchematicDirUnavailable=服务器遇到一个问题, 你的schematic未能保存. 请联系服务器管理员.
 
 # commands - list
 schematica.command.list.usage=/schematicaList [page]
-schematica.command.list.notAvailable=检索你的schematics列表时遇到问题.
-schematica.command.list.remove=移除
 schematica.command.list.download=下载
 schematica.command.list.header=--- 显示中schematics第%d页,共%d页 ---
 schematica.command.list.noSuchPage=无此页
@@ -208,164 +105,76 @@ schematica.ui.demo.confirm=清空搜索并重置数值？这只会更改测试�
 schematica.ui.demo.reset=示例已重置
 schematica.ui.demo.child=打开子页面
 
-schematica.key.manipulate=直接打开原理图操作界面
-schematica.ui.menu.load=加载原理图
-schematica.ui.menu.control=原理图操作
-schematica.ui.menu.save=区域选择 / 保存
-schematica.ui.menu.config=配置
-schematica.ui.menu.components=UI 控件测试
-schematica.ui.menu.active=当前原理图：%s
-schematica.ui.menu.no_active=未选中原理图
-schematica.ui.menu.mode=工具模式：%s
-schematica.ui.menu.mode_hint=左键切换到下一个模式，右键切换到上一个模式。
-schematica.ui.browser.up=上级目录
-schematica.ui.browser.root=根目录
-schematica.ui.browser.refresh=刷新
-schematica.ui.browser.search=搜索
-schematica.ui.browser.search_hint=按名称筛选当前目录下的文件和文件夹。
-schematica.ui.browser.empty=没有匹配的文件或文件夹
-schematica.ui.browser.entries=共 %s 项
 schematica.ui.browser.unreadable=无法读取目录，请检查原理图目录和访问权限。
-schematica.ui.browser.open_failed=无法在文件管理器中打开目录。
-schematica.ui.load.title=加载原理图
-schematica.ui.load.load=加载原理图
-schematica.ui.load.hint=加载选中的源文件；可同时创建放置并恢复其已保存的坐标。
-schematica.ui.load.success=已加载 %s（%s × %s × %s），Esc 返回。
 schematica.ui.load.disabled=当前世界不允许加载原理图。
-schematica.ui.load.failed=无法加载选中的原理图，请查看日志了解详情。
 
-schematica.ui.save.title=区域选择 / 保存原理图
 schematica.ui.save.directory_title=选择原理图保存目录
 schematica.ui.save.use_directory=使用当前目录
-schematica.ui.save.destination=保存目录：%s
-schematica.ui.save.point_here=%s：玩家处
-schematica.ui.save.coordinate_hint=回车或离开输入框时应用。Y 范围为 0..255，X/Z 范围为 -30000000..29999999。
 schematica.ui.save.guide=选区
-schematica.ui.save.guide_hint=显示选区轮廓，并允许保存该区域。
-schematica.ui.save.name_hint=输入文件名。已有的 .schematic 或 .schemplus 后缀会替换为所选格式。
 schematica.ui.save.format_hint=选择输出格式。方块 ID、子区域或原点偏移需要扩展信息时，旧版 .schematic 会自动升级为 .schemplus。
-schematica.ui.save.dimensions=选区尺寸：%s × %s × %s
 schematica.ui.save.disabled=当前世界不允许保存原理图。
 schematica.ui.save.enable_guide=请开启“选区”后保存。
 schematica.ui.save.invalid_selection=选区超出世界坐标范围或原理图大小限制。
-schematica.ui.save.enter_name=请输入文件名以保存选区。
 schematica.ui.save.invalid_name=文件名无效，请勿包含路径；暂不支持导出 .litematic。
 schematica.ui.save.invalid_directory=无法使用目标路径，请选择原理图根目录内的文件夹。
 schematica.ui.save.busy=已有保存任务正在进行或队列已满，请等待任务结束。
-schematica.ui.save.overwrite_title=覆盖已有原理图？
-schematica.ui.save.overwrite=用当前选区覆盖 %s？
-schematica.ui.save.queued=已提交 %s 的保存任务，最终文件名和结果将显示在聊天中。
 schematica.ui.save.failed=无法提交保存任务，请检查日志和正在进行的保存任务。
 
 schematica.ui.pending=此功能尚未移植。
 schematica.ui.save.options=选项
-schematica.ui.area.corners=角点
-schematica.ui.browser.create_directory=新建文件夹
-schematica.ui.browser.file_info=文件信息（元数据预览待移植）
 
 schematica.ui.placement.empty_name=请输入放置名称。
-schematica.ui.placement.merged_region=当前加载器会将子区域合并为一个区域，尚不支持独立编辑子区域。
-schematica.ui.placement.visibility=禁用放置后，不参与预览、打印、材料统计和粘贴。
 schematica.ui.placement.bounds=原点或原理图最小角超出了支持的坐标范围。
 schematica.ui.placement.custom_transform=此放置包含三维变换，请使用“直接打开控制界面”快捷键调整 X/Z 旋转或垂直镜像。
-schematica.ui.placement.transform_hint=左键正向循环，右键反向循环；旋转和镜像保持放置原点不动。
 schematica.ui.placement.transform_failed=变换失败，请检查日志和预览后再继续。
 schematica.ui.placement.unloaded=此放置已不在当前维度的已加载列表中。
 
-schematica.ui.config.title=配置
-schematica.ui.config.search=搜索名称或分类；输入 modified 查找已偏离默认值的设置。Esc 收起搜索，Shift+Esc 关闭页面。
-schematica.ui.config.key_search=按快捷键筛选。点击后按下键盘或鼠标按键，Esc 清除筛选。
-schematica.ui.config.press_key=请按键
-schematica.ui.config.key_hint=点击后按下一个键盘或鼠标按键；Esc 取消绑定。红色表示冲突，关闭页面时保存。
-schematica.ui.config.key_settings=组合键及高级触发设置尚未移植，目前使用 Minecraft 1.7.10 的单键绑定。
 schematica.ui.config.invalid_count=有 %s 项输入无效；这些设置将保留之前的值。
 schematica.ui.config.invalid=输入无效（范围 %s 至 %s），关闭时保留之前的值。
-schematica.ui.config.reset=恢复这一项的默认值。
 schematica.ui.config.server=这些是本地服务端设置，无法更改远程服务器的权限。
-schematica.ui.config.slider=切换文本输入与滑条。
-schematica.ui.config.list.add=插入一项（Esc 关闭列表编辑器）。
-schematica.ui.config.list.remove=删除这一项。
-schematica.ui.config.list.move_down=下移这一项。
-schematica.ui.config.list.move_up=上移这一项。
 
 schematica.ui.material.scope=全部统计完整蓝图；渲染层按全局世界坐标范围与旧版局部单层的交集统计。切换统计范围不会改变渲染设置。
-schematica.ui.material.cache_pending=尚未移植可复用的材料缓存；“刷新”会重新扫描此放置。
-schematica.ui.material.raw_pending=尚未移植按合成配方拆解原材料的功能。
-schematica.ui.material.export=以 UTF-8 文本导出当前显示的列表。按住 Shift 导出 CSV，Alt 导出 JSON。每次在 dumps 中生成新文件。
-schematica.ui.material.multiplier=倍率为 1 时，缺少数量会扣除已放置方块；倍率大于 1 时，缺少数量为多份蓝图的完整需求。
 schematica.ui.material.info=通过选取方块获取材料，每个蓝图位置计一件。已放置判定仅比较方块和元数据，不核验方块实体 NBT。背包匹配包含物品 NBT，不读取容器内部物品。这是材料估算，不是配方原料统计。
 schematica.ui.material.unverified=未核验位置：%s；未计入材料的方块：%s
-schematica.ui.material.empty=没有符合当前筛选条件的材料。
 schematica.ui.material.context=原来的世界或蓝图放置已不可用。
 schematica.ui.material.scanning=正在统计材料：%s%%
 schematica.ui.material.export_failed=材料列表导出失败，请查看日志。
 
 schematica.ui.layers.scope=世界坐标层范围作用于所有放置、材料列表的渲染层统计和打印机。\n旧控制页的局部单层与此范围取交集。\n粘贴仍使用完整蓝图。左键/右键切换模式。
-schematica.ui.layers.cycle=左键/右键在 X、Y、Z 轴间切换。
-schematica.ui.layers.coordinate=世界绝对坐标。按回车或离开输入框时应用。
-schematica.ui.layers.here=使用摄像机在所选轴上的位置；范围模式会同时设置两个边界。
-schematica.ui.layers.adjust=左键 +1，右键 -1。\nShift ×16，Ctrl ×64，同时按下 ×1024。
 
 schematica.ui.color.hex=输入 #AARRGGBB 或 #RRGGBB；AA 为不透明度（00-FF）。非法输入保留上一个有效颜色。
 schematica.ui.color.component=范围：0-%s。按回车或离开输入框时应用。
 schematica.ui.color.pending=对应功能尚未移植，此颜色设置暂不可用。
 schematica.ui.color.metadata=1.7.10 中此项比较方块 metadata，不比较方块实体 NBT。
 
-schematica.ui.files.operations_hint=执行右侧选中的文件操作。不会覆盖已有文件，请保留原扩展名。
 schematica.ui.files.option.rename=重命名选中文件，保留文件数据并更新已加载实例的来源引用。左/右键切换操作。
 schematica.ui.files.option.copy=按原始字节复制选中文件，不覆盖已有文件。左/右键切换操作。
-schematica.ui.files.option.delete=确认后删除选中文件。左/右键切换操作。
-schematica.ui.files.delete_confirm=永久删除 %s？已加载的预览会保留在内存中，但离开世界后将无法从此文件恢复。
-schematica.ui.files.deleted=已删除 %s
-schematica.ui.files.error.name=名称无效：请输入单个文件或目录名，不得含路径、保留字符或保留名称。
 schematica.ui.files.error.extension=请保留原文件扩展名；重命名不会转换文件格式。
-schematica.ui.files.error.exists=该名称已存在，请使用其他名称。
 schematica.ui.files.error.changed=选中文件已发生变化。请取消操作，按 F5 刷新后重新选择。
 schematica.ui.files.error.selection=选择已失效，请刷新后重新选择文件。
 schematica.ui.files.error.link=不支持对链接执行文件操作，请选择原始文件。
 schematica.ui.files.error.index=无法安全更新 LoadedSchematics.json，请检查该文件和日志后重试。
 schematica.ui.files.error.io=文件操作失败。请检查文件是否存在、是否可读写，详情见日志。
-schematica.ui.files.selector_hint=左/右键切换显示的选项。
 
-schematica.ui.source.load_hint=勾选时同时创建放置；取消勾选时仅加载，不改变当前放置选择。重复加载会复用内存中的源数据。
-schematica.ui.source.placement_hint=此放置拥有独立的变换和预览数据；移除它会保留已加载的源数据。
-schematica.ui.source.reloaded=已重新加载 %s 及其放置
-schematica.ui.source.reload_failed=重新加载失败，详情见日志。
-schematica.ui.source.placement_created=已为 %s 创建放置
 schematica.ui.source.create_failed=无法创建放置，详情见日志。
-schematica.ui.source.unload_hint=卸载此源数据，同时移除它的所有放置。
-schematica.ui.source.reload_hint=重新读取源文件并重建其放置，保留各自名称、原点、变换和显隐设置。放置数据会被文件内容替换，未保存的“编辑原理图”修改将被丢弃。
 schematica.message.rebuild.save_overlapping=此已编辑的源包含相互重叠的独立子区域，.schemplus 目前无法分别保存它们。未保存任何内容。
 schematica.message.rebuild.failed=无法编辑原理图，详情请查看日志。
 schematica.ui.source.unsaved_title=放弃原理图修改？
 schematica.ui.source.unsaved=%s 有尚未保存到文件的“编辑原理图”修改。继续操作将丢弃这些修改。
 schematica.ui.source.save_hint=按原格式另存内存中的源文件，保留原始 NBT、实体和元数据，不包含放置的变换。经“编辑原理图”修改过的源会另存为新的 .schemplus 文件，原文件不会被改动。
-schematica.ui.source.create_hint=从内存源数据在玩家位置创建独立放置，即使磁盘文件已删除也可使用。
 schematica.ui.source.details=%s × %s × %s | 放置数：%s
-schematica.ui.source.save_title=另存已加载的原理图源文件
 schematica.ui.source.save_failed=另存失败，请检查名称、原扩展名及目录写入权限，详情见日志。
 schematica.ui.source.unloaded=此源数据已被卸载。
-schematica.ui.source.saved=已将内存源文件另存为 %s
 
 schematica.ui.area.persistence_failed=无法读取或保存选区，磁盘原数据已保留。请检查日志；内存中的修改可能无法在离开世界后保留。
-schematica.ui.area.from_placement=从所选放置实例创建选区，保留原点、已有子区域边界、旋转和位置。没有子区域信息的文件会创建一个完整方框。
-schematica.ui.area.search=搜索当前世界和维度中的选区名称和方框名称。
 schematica.ui.area.context=此选区会话已不可用，请在当前世界重新打开选区浏览器。
-schematica.ui.area.name_exists=已有名为“%s”的选区或子区域。
 schematica.ui.area.invalid=名称须唯一、非空且不超过200个字符；坐标须在1.7.10世界范围内，选区须仍属于当前会话。
-schematica.ui.area.delete=删除选区“%s”？这会移除保存的选区数据，不影响世界方块和原理图文件。
-schematica.ui.area.multi_box=普通模式支持多个子区域和手动原点。工具操作当前子区域或原点；保存和区域编辑包含所有子区域。简单模式保留独立的单个选框。
 schematica.ui.area.extended=子区域或原点偏移需要 .schemplus。选择 .schematic 时会自动保存为 .schemplus，以保留这些信息。
-schematica.ui.area.origin_hint=开启后在玩家位置设置手动原点，可输入坐标调整。勾选“原点”后可用工具点击移动它。关闭后使用全部选框的最小角作为原点。原点不会扩大保存范围。
 
 schematica.ui.placement.region_hint=选中一行后，移动工具只移动该子区域；再次点击取消选中，改为移动整个放置。配置仅影响当前放置，不修改源文件。
 schematica.ui.placement.region_failed=子区域修改失败，请检查坐标、尺寸限制及日志。
-schematica.ui.placement.region_rendering=控制此区域的预览与打印机可见性。粘贴和材料统计仍包含已启用的区域。
 schematica.ui.placement.no_regions=请先启用至少一个子区域。
 schematica.ui.placement.disabled=此放置已禁用。
-schematica.ui.placement.rendering=控制预览与打印。已启用的放置仍可用于材料统计和粘贴，区域边框保持显示。
-schematica.ui.area.modes_hint=普通模式管理多个命名选区；简单模式保留一个独立选框。
-schematica.ui.area.tool_hint=角点模式：左/右键设置角点1/2。扩展模式：左键扩展，右键重置。中键选择；Alt＋滚轮移动选中的角点、选框或原点。潜行时选取相邻方块。
 schematica.ui.area.analysis_scope=统计整个选区，或仅统计当前世界渲染层范围内的方块。
 schematica.ui.area.analysis_info=分析客户端已加载的实际方块，重叠选框只计一次。材料使用方块的选取物品，包括元数据和物品NBT。分析已有区域不比较放置内容，因此缺失数为零。
 schematica.ui.area.analysis_incomplete=未加载位置：%s；无法转换为物品或读取失败的方块：%s。加载区域后请刷新统计。
@@ -376,25 +185,11 @@ schematica.config.playerQuotaKilobytes=每位玩家的服务器存储配额（Ki
 schematica.config.playerQuotaKilobytes.tooltip=服务器为每位玩家提供的原理图存储空间，单位为 KiB。
 schematica.config.serversideSchematicsEnabled=服务器原理图
 schematica.config.serversideSchematicsEnabled.tooltip=允许玩家保存、下载和查看此服务器上的原理图。
-schematica.config.sortType=材料排序
-schematica.config.sortType.tooltip=材料列表的默认排序方式。
 schematica.command.setblock.usage=/sblock <primary|target> <方块注册名> [元数据]
-schematica.message.tool.no_block=未指向方块。
-schematica.message.tool.air=无法选取空气。
-schematica.message.tool.pick_target=请先选取要替换的目标方块。
 schematica.message.tool.primary_set=[Schematica Plus] 已将主方块设为 %s:%s（模式：%s）。
 schematica.message.tool.target_set=[Schematica Plus] 已将目标方块设为 %s:%s（模式：%s）。
-schematica.message.edit.cancel_requested=已请求取消编辑。已经完成的改动会保留。
 schematica.message.edit.busy=另一个世界编辑任务仍在运行。
-schematica.message.edit.queued=编辑任务已加入服务器队列。再次按下执行操作键可取消。
-schematica.message.edit.commands_queued=命令编辑任务已加入队列，需要服务器命令权限。再次按下执行操作键可取消。
-schematica.message.edit.start_failed=无法开始编辑。请检查选区、尺寸限制和日志。
 schematica.message.edit.permissions=[Schematica Plus] 编辑需要创造模式和命令权限。
-schematica.message.edit.cancelled=[Schematica Plus] 编辑已取消：%s 个方块，%s 个实体。已经完成的改动会保留。
-schematica.message.edit.finished=[Schematica Plus] 编辑已完成：%s 个方块，%s 个实体。
-schematica.message.edit.stopped=[Schematica Plus] 编辑已停止：%s 已经完成的改动会保留。
-schematica.message.edit.see_log=请查看日志了解详情。
-schematica.message.edit.commands_sent=[Schematica Plus] 已发送 %s 条编辑命令。执行结果请以服务器回复为准。
 schematica.message.edit.updates_require_singleplayer=不发送方块更新的粘贴需要单人游戏。Minecraft 1.7.10 的服务器命令无法禁止这些更新。
 schematica.message.edit.nbt_requires_singleplayer=1.7.10 聊天命令无法安全传输原理图 NBT。请使用单人游戏，或在粘贴前关闭方块 NBT 和实体。
 schematica.message.edit.command_too_long=方块注册名超出了 Minecraft 1.7.10 的命令长度限制。
@@ -407,9 +202,7 @@ schematica.ui.conflict.title=Schematica Plus：不兼容的模组
 schematica.ui.conflict.message=Schematica Plus（schematica_plus）无法与 %s 同时加载。请移除原版/GTNH 版 Schematica 的 jar 文件，或移除 Schematica Plus。
 schematica.message.download.update_client=Schematica Plus：请更新客户端以下载包含子区域或自定义原点的原理图。
 schematica.ui.placement.custom=自定义
-schematica.hud.block_info.metadata=元数据：§a%s
 
-schematica.ui.task.empty=当前维度没有正在运行的任务
 schematica.ui.task.backend.client=客户端采集
 schematica.ui.task.backend.server=服务端任务
 schematica.ui.task.backend.commands=多人服务器命令（无法确认执行结果）
@@ -428,10 +221,7 @@ schematica.ui.task.changed=已修改方块：%s；已放置实体：%s
 schematica.ui.task.cancel_save=在写入文件前停止读取。进入最终文件写入阶段后不能取消。
 schematica.ui.task.cancel_commands=停止发送命令。已发送的命令无法撤回，也无法确认服务器的执行结果。
 schematica.ui.task.cancel_edit=停止放置方块和实体，并完成已放置方块的更新。已有修改会保留。
-schematica.message.save.cancelled=已取消保存 %s，未写入文件。
 
-schematica.ui.verifier.ready=开始验证以对比当前放置与客户端世界。
-schematica.ui.verifier.paused=已暂停：已检查 %s / %s 个位置
 schematica.ui.verifier.skipped=无法读取的位置：%s（结果不完整）
 schematica.ui.verifier.changed=放置或验证范围已改变，请重新开始验证。
 schematica.ui.verifier.unavailable=请先进入世界、加载并启用此放置。
@@ -446,10 +236,6 @@ schematica.ui.task.stage.edit=已检查方块
 schematica.ui.task.schematic_changed=原理图中已修改方块：%s
 schematica.ui.task.cancel_rebuild=停止编辑。内存原理图中已修改的方块保持修改，放置会随之刷新。
 schematica.message.rebuild.busy=另一项原理图编辑仍在进行。请等待其完成，或在任务管理器中移除。
-
-schematica.ui.verifier.metadata=元数据 = %s
-schematica.ui.verifier.select_markers=点击选择或取消此类别／条目的错误标记。\n选中该放置实例后，瞄准标记并按住 renderInfoOverlay 键（默认 I）查看方块对比。
-schematica.ui.verifier.overlay_disabled=验证器标记已关闭，请开启 %s -> %s。
 
 schematica.message.move.server_required=移动世界方块需要服务端安装 Schematica Plus，以保留完整方块数据。
 schematica.message.move.failed=世界移动被拒绝、取消或失败，选区坐标未移动。

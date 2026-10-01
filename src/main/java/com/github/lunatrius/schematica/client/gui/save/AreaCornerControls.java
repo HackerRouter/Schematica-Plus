@@ -2,6 +2,8 @@ package com.github.lunatrius.schematica.client.gui.save;
 
 import java.util.function.Consumer;
 import net.minecraft.client.gui.FontRenderer;
+import net.minecraft.client.gui.GuiScreen;
+import org.lwjgl.input.Keyboard;
 import com.github.lunatrius.schematica.client.gui.framework.UiBounds;
 import com.github.lunatrius.schematica.client.gui.framework.UiButton;
 import com.github.lunatrius.schematica.client.gui.framework.UiCheckBox;
@@ -45,9 +47,9 @@ final class AreaCornerControls extends UiPanel {
                 });
             }));
             coordinates[axis] = field;
-            nudges[axis] = add(new UiButton(() -> "", button -> field.setValue((long) field.value() + (button == 0 ? 1 : -1)))
+            nudges[axis] = add(new UiButton(() -> "", button -> field.setValue((long) field.value() + AreaCornerControls.coordinateStep(button)))
                 .setSprite(UiSprite.PLUS_MINUS).setBackground(false));
-            nudges[axis].setTooltip(UiTranslations.format("schematica.ui.save.coordinate_hint"));
+            nudges[axis].setTooltip(AreaCornerControls.plusMinusTip());
         }
         move = add(new UiButton(() -> UiTranslations.format("litematica.gui.button.move_to_player"), button -> {
             if (button == 0) {
@@ -59,6 +61,16 @@ final class AreaCornerControls extends UiPanel {
             }
         }));
     }
+
+    /** MaLiLib's coordinate plus/minus step: right click decreases, Shift multiplies by 8 and Alt by 4. */
+    static int coordinateStep(int button) {
+        int amount = button == 1 ? -1 : 1;
+        if (GuiScreen.isShiftKeyDown()) amount *= 8;
+        if (Keyboard.isKeyDown(Keyboard.KEY_LMENU) || Keyboard.isKeyDown(Keyboard.KEY_RMENU)) amount *= 4;
+        return amount;
+    }
+
+    static String[] plusMinusTip() { return UiTranslations.format("malilib.gui.button.hover.plus_minus_tip").split("\n"); }
 
     private Vector3i point() { return corner == Corner.FIRST ? box.first() : box.second(); }
 

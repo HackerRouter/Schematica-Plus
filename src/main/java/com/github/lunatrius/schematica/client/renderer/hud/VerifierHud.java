@@ -32,8 +32,7 @@ public final class VerifierHud {
         if (!session.hud) return drawn;
         List<String> lines = new ArrayList<>();
         lines.add("§l" + UiTranslations.format("litematica.gui.title.schematic_verifier", session.placement.name));
-        lines.add(session.progressText());
-        lines.add(session.countsText());
+        for (String line : new String[] {session.progressText(), session.countsText()}) if (!line.isEmpty()) lines.add(line);
         if (VerifierOverlaySettings.enabled && !session.markers.markers().isEmpty()) {
             lines.add("§l" + UiTranslations.format("litematica.gui.title.schematic_verifier_errors"));
             int count = 0;

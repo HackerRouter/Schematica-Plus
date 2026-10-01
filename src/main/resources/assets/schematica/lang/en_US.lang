@@ -1,84 +1,13 @@
 # gui - general
-schematica.gui.openFolder=Open schematic folder
-schematica.gui.done=Done
-schematica.gui.title=Select schematic file
-schematica.gui.folderInfo=(Place schematic files here)
-schematica.gui.noschematic=-- No schematic --
-schematica.gui.increase=+
-schematica.gui.decrease=-
-schematica.gui.hide=Hide
-schematica.gui.all=ALL
-schematica.gui.show=Show
-schematica.gui.movehere=Move here
-schematica.gui.flip=Flip
-schematica.gui.rotate=Rotate
-schematica.gui.save=Save
-schematica.gui.name=Name
-schematica.gui.savecoordinates=Save Coordinates
-schematica.gui.moveschematic=Move schematic
-schematica.gui.layers=Layers
-schematica.gui.operations=Operations
-schematica.gui.unload=Unload
-schematica.gui.point.red=Red point
-schematica.gui.point.blue=Blue point
-schematica.gui.saveselection=Save the selection as a schematic
 schematica.gui.savenbt=Save NBT
-schematica.gui.saveentities=Save Entities
-schematica.gui.on=ON
-schematica.gui.off=OFF
-schematica.gui.x=X:
-schematica.gui.y=Y:
-schematica.gui.z=Z:
-schematica.gui.materials=Materials
-schematica.gui.materialname=Material
-schematica.gui.materialamount=Amount
-schematica.gui.materialrequired=Required
-schematica.gui.materialavailable=Available
-schematica.gui.materialdump=Save to file
-schematica.gui.printer=Printer
-
-# gui - instances
-schematica.gui.instances.title=Loaded Schematics
-schematica.gui.instances.switch=Switch
-schematica.gui.instances.toggleVisible=Toggle Visible
-schematica.gui.instances.toggleEntities=Toggle Entities
-schematica.gui.instances.toggleBlockNBT=Block NBT
-schematica.gui.instances.loaded=loaded
-schematica.gui.instances=Instances
-
-# gui - config - categories
-schematica.config.category.debug=Debug
-schematica.config.category.debug.tooltip=Debug/developer settings.\nDon't touch unless you know what you're doing.
-schematica.config.category.render=Rendering
-schematica.config.category.render.tooltip=Render related settings.
-schematica.config.category.printer=Printer
-schematica.config.category.printer.tooltip=Printer related settings.
-schematica.config.category.printer.swapslots=Hotbar Slots
-schematica.config.category.printer.swapslots.tooltip=Allow the printer to use non empty hotbar slots.
-schematica.config.category.general=General
-schematica.config.category.general.tooltip=General settings.
-schematica.config.category.server=Server
-schematica.config.category.server.tooltip=Server-side settings.
 
 # gui - config - debug
 schematica.config.showDebugInfo=Show Debug Info
 schematica.config.showDebugInfo.tooltip=Display extra information on the debug screen (F3).
 
 # gui - config - render
-schematica.config.alphaEnabled=Alpha Enabled
-schematica.config.alphaEnabled.tooltip=Enable transparent textures.
-schematica.config.alpha=Alpha
-schematica.config.alpha.tooltip=Alpha value used when rendering the schematic (1.0 = opaque, 0.5 = half transparent, 0.0 = transparent).
-schematica.config.highlight=Highlight Blocks
-schematica.config.highlight.tooltip=Highlight invalid placed blocks and to be placed blocks.
-schematica.config.highlightAir=Highlight Air
-schematica.config.highlightAir.tooltip=Highlight blocks that should be air.
 schematica.config.blockDelta=Block Delta
 schematica.config.blockDelta.tooltip=Delta value used for highlighting (if you experience z-fighting increase this).
-schematica.config.drawQuads=Draw Quads
-schematica.config.drawQuads.tooltip=Draw surface areas.
-schematica.config.drawLines=Draw Lines
-schematica.config.drawLines.tooltip=Draw outlines.
 
 # gui - config - printer
 schematica.config.placeDelay=Placement Delay
@@ -115,14 +44,8 @@ schematica.config.swapSlot8=Allow Slot 9
 schematica.config.swapSlot8.tooltip=Allow the printer to use the hotbar slot 9.
 
 # gui - config - general
-schematica.config.schematicDirectory=Schematic Directory
-schematica.config.schematicDirectory.tooltip=Schematic directory.
 schematica.config.extraAirBlocks=Extra Air Blocks
 schematica.config.extraAirBlocks.tooltip=Extra blocks to consider as air for the schematic renderer.
-
-# chat
-Schematica.chat.saveCoordinatesSuccess=Successfully saved coordinates
-Schematica.chat.saveCoordinatesFail=Failed to save coordinates
 
 # gui - config - server
 schematica.config.printerEnabled=Allow Printer
@@ -132,48 +55,22 @@ schematica.config.saveEnabled.tooltip=Allow players to save schematics.
 schematica.config.loadEnabled=Allow Loading
 schematica.config.loadEnabled.tooltip=Allow players to load schematics.
 
-# keys
-schematica.key.category=Schematica
-schematica.key.load=Load schematic
-schematica.key.save=Save schematic
-schematica.key.control=Open Schematica Plus menu
-schematica.key.layerInc=Next Layer
-schematica.key.layerDec=Previous layer
-schematica.key.execute=Execute Operation
-
 # gui - config - tool
-schematica.config.category.tool=Tool
-schematica.config.category.tool.tooltip=Tool item related settings.
-schematica.config.toolItem=Tool Item
 schematica.config.pasteWithoutUpdates=Paste Without Block Updates
 schematica.config.pasteWithoutUpdates.tooltip=Skip placement/removal block callbacks and neighbor notifications when pasting. Singleplayer only. Lighting, display synchronization and normal game ticks remain active.
 schematica.config.pasteOnlyAir=Paste Only Into Air
 schematica.config.pasteOnlyAir.tooltip=Place schematic blocks only where the world contains air. Keep existing blocks and their contents.
-schematica.config.toolItem.tooltip=The item to use as the schematica tool (e.g. minecraft:stick). Hold this item to activate tool functions.
-
-# tool modes
-schematica.tool_mode.area_selection=Area Selection
-schematica.tool_mode.schematic_placement=Schematic Placement
-schematica.tool_mode.paste_schematic=Paste Schematic
-schematica.tool_mode.move=Move
-schematica.tool_mode.delete=Delete
-schematica.tool_mode.fill=Fill
-schematica.tool_mode.replace_block=Replace Block
 
 # commands - save
 schematica.command.save.usage=/schematicaSave <startX> <startY> <startZ> <endX> <endY> <endZ> <name>
 schematica.command.save.playersOnly=This command can only be used by players.
 schematica.command.save.started=Started saving %d chunks into %s.
-schematica.command.save.saveSucceeded=Successfully saved %s.
 schematica.command.save.saveExtended=Saved as %s because some selected blocks require the extended format.
-schematica.command.save.saveFailed=There was a problem saving the schematic %s.
 schematica.command.save.quotaExceeded=You have exceeded your quota on the server. Please use /schematicaList and /schematicaRemove to remove some old schematics.
 schematica.command.save.playerSchematicDirUnavailable=There was a problem on the server and your schematic was not saved. Please contact the server administrator.
 
 # commands - list
 schematica.command.list.usage=/schematicaList [page]
-schematica.command.list.notAvailable=There was a problem retrieving your list of schematics.
-schematica.command.list.remove=Remove
 schematica.command.list.download=Download
 schematica.command.list.header=--- Showing schematics page %d of %d ---
 schematica.command.list.noSuchPage=No such page
@@ -208,164 +105,76 @@ schematica.ui.demo.confirm=Clear the search and reset the number? This only chan
 schematica.ui.demo.reset=Example reset
 schematica.ui.demo.child=Open child page
 
-schematica.key.manipulate=Manipulate schematic directly
-schematica.ui.menu.load=Load schematics
-schematica.ui.menu.control=Schematic controls
-schematica.ui.menu.save=Area selection / Save
-schematica.ui.menu.config=Configuration
-schematica.ui.menu.components=UI component test
-schematica.ui.menu.active=Active schematic: %s
-schematica.ui.menu.no_active=No active schematic
-schematica.ui.menu.mode=Tool mode: %s
-schematica.ui.menu.mode_hint=Left click: next mode. Right click: previous mode.
-schematica.ui.browser.up=Parent folder
-schematica.ui.browser.root=Root folder
-schematica.ui.browser.refresh=Refresh
-schematica.ui.browser.search=Search
-schematica.ui.browser.search_hint=Filter names in the current folder.
-schematica.ui.browser.empty=No matching files or folders
-schematica.ui.browser.entries=%s entries
 schematica.ui.browser.unreadable=Cannot read this folder. Check the schematic directory and permissions.
-schematica.ui.browser.open_failed=Could not open the folder in your file manager.
-schematica.ui.load.title=Load schematic
-schematica.ui.load.load=Load schematic
-schematica.ui.load.hint=Load the selected source; optionally create a placement and restore its saved coordinates.
-schematica.ui.load.success=Loaded %s (%s x %s x %s). Esc returns.
 schematica.ui.load.disabled=Schematic loading is unavailable in this world.
-schematica.ui.load.failed=Could not load the selected schematic. See the log for details.
 
-schematica.ui.save.title=Area selection / Save schematic
 schematica.ui.save.directory_title=Choose schematic output folder
 schematica.ui.save.use_directory=Use this folder
-schematica.ui.save.destination=Output folder: %s
-schematica.ui.save.point_here=%s: player
-schematica.ui.save.coordinate_hint=Enter or leave the field to apply. Y must be 0..255; X/Z must be -30000000..29999999.
 schematica.ui.save.guide=Selection
-schematica.ui.save.guide_hint=Show the selection outline and enable saving the selected area.
-schematica.ui.save.name_hint=Enter a filename. A .schematic or .schemplus suffix is replaced by the selected format.
 schematica.ui.save.format_hint=Choose the output format. Legacy .schematic automatically upgrades to .schemplus when block IDs, subregions or origin offsets require it.
-schematica.ui.save.dimensions=Selection: %s x %s x %s
 schematica.ui.save.disabled=Schematic saving is unavailable in this world.
 schematica.ui.save.enable_guide=Enable Selection to save this area.
 schematica.ui.save.invalid_selection=Selection is outside world bounds or exceeds the schematic size limit.
-schematica.ui.save.enter_name=Enter a filename to save the selection.
 schematica.ui.save.invalid_name=Invalid filename. Use a file name without a path; .litematic export is not supported.
 schematica.ui.save.invalid_directory=Cannot use the output path. Choose a folder inside the schematic directory.
 schematica.ui.save.busy=A save is pending or the save queue is full. Try again after it finishes.
-schematica.ui.save.overwrite_title=Replace existing schematic?
-schematica.ui.save.overwrite=Replace %s with the selected area?
-schematica.ui.save.queued=Queued %s. The final filename and result will appear in chat.
 schematica.ui.save.failed=Could not queue the save. Check the log and any pending saves.
 
 schematica.ui.pending=This feature has not been ported yet.
 schematica.ui.save.options=Options
-schematica.ui.area.corners=Corners
-schematica.ui.browser.create_directory=Create directory
-schematica.ui.browser.file_info=File information (metadata pending)
 
 schematica.ui.placement.empty_name=Enter a placement name.
-schematica.ui.placement.merged_region=This loader merges sub-regions into one region. Independent sub-region editing is not available yet.
-schematica.ui.placement.visibility=Disabled placements are excluded from preview, printing, material counts and paste.
 schematica.ui.placement.bounds=The origin or schematic minimum corner is outside the supported coordinate limits.
 schematica.ui.placement.custom_transform=This placement has a 3D transform. Use the direct Controls key binding for X/Z rotation or vertical mirroring.
-schematica.ui.placement.transform_hint=Left/right click to cycle forward/backward. Rotation and mirroring keep the placement origin fixed.
 schematica.ui.placement.transform_failed=The transform failed. Check the log and preview before continuing.
 schematica.ui.placement.unloaded=This placement is no longer loaded in the current world.
 
-schematica.ui.config.title=Configuration
-schematica.ui.config.search=Search names or categories; type modified to find changed defaults. Escape hides search; Shift+Escape closes the screen.
-schematica.ui.config.key_search=Filter by key. Click, then press a key or mouse button. Escape clears the filter.
-schematica.ui.config.press_key=Press a key
-schematica.ui.config.key_hint=Click, then press one key or mouse button. Escape unbinds. Red indicates a conflict. Changes are saved when this screen closes.
-schematica.ui.config.key_settings=Advanced key combinations and activation settings have not been ported. Uses Minecraft 1.7.10 single-key bindings.
 schematica.ui.config.invalid_count=%s invalid value(s); those settings will keep their previous values.
 schematica.ui.config.invalid=Invalid value (range %s to %s). Closing keeps the previous value.
-schematica.ui.config.reset=Reset this setting to its default.
 schematica.ui.config.server=These are local server settings; they do not change a remote server permission.
-schematica.ui.config.slider=Switch between text input and slider.
-schematica.ui.config.list.add=Insert entry (Escape closes the list editor).
-schematica.ui.config.list.remove=Remove entry.
-schematica.ui.config.list.move_down=Move entry down.
-schematica.ui.config.list.move_up=Move entry up.
 
 schematica.ui.material.scope=All counts the whole placement. Render layers uses the global world-coordinate range intersected with any legacy local layer; counting scope does not change rendering.
-schematica.ui.material.cache_pending=A reusable material cache has not been ported; Refresh rescans this placement.
-schematica.ui.material.raw_pending=Recipe-based raw material breakdown has not been ported.
-schematica.ui.material.export=Write the displayed list as UTF-8 text. Hold Shift for CSV or Alt for JSON. Each export creates a new file in dumps.
-schematica.ui.material.multiplier=At x1, Missing accounts for existing blocks. At x2 or more, Missing is the full requirement for that many copies.
 schematica.ui.material.info=Counts use pick-block items, one per schematic position. Placed blocks are compared by block and metadata, not tile NBT. Inventory matching includes item NBT and excludes container contents. These are material estimates, not recipe totals.
 schematica.ui.material.unverified=Unverified positions: %s; blocks without counted items: %s
-schematica.ui.material.empty=No materials match the current list filters.
 schematica.ui.material.context=The original world or placement is no longer available.
 schematica.ui.material.scanning=Scanning materials: %s%%
 schematica.ui.material.export_failed=Could not export the material list; see the log.
 
 schematica.ui.layers.scope=World-coordinate layers apply to all placements, material render-layer scope and the printer.\nLegacy per-placement layers intersect this range.\nPaste operations still use the whole placement. Left/right click cycles modes.
-schematica.ui.layers.cycle=Left/right click cycles X, Y and Z.
-schematica.ui.layers.coordinate=Absolute world coordinate. Enter or leaving the field applies the value.
-schematica.ui.layers.here=Set to the camera position on the selected axis. Range mode sets both boundaries.
-schematica.ui.layers.adjust=Left click +1; right click -1.\nShift x16; Ctrl x64; both x1024.
 
 schematica.ui.color.hex=Enter #AARRGGBB or #RRGGBB. AA is opacity (00-FF). Invalid text keeps the last valid color.
 schematica.ui.color.component=Value: 0-%s. Enter or leaving the field applies the value.
 schematica.ui.color.pending=This feature has not been ported yet; its color setting is unavailable.
 schematica.ui.color.metadata=In 1.7.10 this compares block metadata, not tile entity NBT.
 
-schematica.ui.files.operations_hint=Run the selected file operation. Existing files are never overwritten; keep the original extension.
 schematica.ui.files.option.rename=Rename the selected file, preserving its data and loaded instance references. Left/right click to cycle.
 schematica.ui.files.option.copy=Copy the selected file byte for byte. Existing files are never overwritten. Left/right click to cycle.
-schematica.ui.files.option.delete=Delete the selected file after confirmation. Left/right click to cycle.
-schematica.ui.files.delete_confirm=Permanently delete %s? Loaded previews stay in memory, but cannot be restored from this file after leaving the world.
-schematica.ui.files.deleted=Deleted %s
-schematica.ui.files.error.name=Invalid name. Use one file or folder name without paths or reserved characters.
 schematica.ui.files.error.extension=Keep the original file extension. Renaming is not format conversion.
-schematica.ui.files.error.exists=That name already exists. Choose a different name.
 schematica.ui.files.error.changed=The selected file changed. Cancel, refresh with F5 and select it again.
 schematica.ui.files.error.selection=The selection is no longer valid. Refresh and select a file again.
 schematica.ui.files.error.link=File operations on links are unavailable. Select the original file.
 schematica.ui.files.error.index=Could not safely update LoadedSchematics.json. Check the file and log before retrying.
 schematica.ui.files.error.io=File operation failed. Check that the file still exists and is writable; see the log for details.
-schematica.ui.files.selector_hint=Left/right click to cycle the displayed option.
 
-schematica.ui.source.load_hint=Checked: also create a placement. Unchecked: load only; the active placement stays selected. Repeated loading reuses the cached source.
-schematica.ui.source.placement_hint=This placement has independent transforms and preview data. Removing it keeps its source loaded.
-schematica.ui.source.reloaded=Reloaded %s and its placements
-schematica.ui.source.reload_failed=Reload failed. See the log for details.
-schematica.ui.source.placement_created=Created a placement of %s
 schematica.ui.source.create_failed=Could not create the placement. See the log for details.
-schematica.ui.source.unload_hint=Unload this source and remove all its placements.
-schematica.ui.source.reload_hint=Read the source file again and rebuild its placements, keeping their names, origins, transforms and visibility. Replaces placement data with the file contents and discards unsaved Edit Schematic changes.
 schematica.message.rebuild.save_overlapping=This edited source has overlapping independent regions, which .schemplus cannot store separately yet. Nothing was saved.
 schematica.message.rebuild.failed=Could not edit the schematic. See the log for details.
 schematica.ui.source.unsaved_title=Discard schematic edits?
 schematica.ui.source.unsaved=%s has Edit Schematic changes that were not saved to a file. Continuing discards them.
 schematica.ui.source.save_hint=Save the cached source bytes in their original format, including original NBT, entities and metadata; excludes placement transforms. A source changed by Edit Schematic is saved as a new .schemplus file instead; its original file is not modified.
-schematica.ui.source.create_hint=Create an independent placement at the player from the cached source, even if the file was deleted.
 schematica.ui.source.details=%s x %s x %s | Placements: %s
-schematica.ui.source.save_title=Save loaded schematic source
 schematica.ui.source.save_failed=Save failed. Check the name, original extension and output permissions; see the log.
 schematica.ui.source.unloaded=This source is no longer loaded.
-schematica.ui.source.saved=Saved cached source to %s
 
 schematica.ui.area.persistence_failed=Could not read or save area selections. Existing disk data is preserved; check the log. In-memory changes may not survive leaving this world.
-schematica.ui.area.from_placement=Create an area selection from the selected placement, preserving its origin, available subregion bounds, rotation and position. Files without subregion data create one full box.
-schematica.ui.area.search=Search selection and box names in this world and dimension.
 schematica.ui.area.context=This selection session is unavailable. Reopen the area browser in the current world.
-schematica.ui.area.name_exists=A selection or subregion named '%s' already exists.
 schematica.ui.area.invalid=Use a unique, non-empty name of at most 200 characters and coordinates within the 1.7.10 world limits. The selection must still belong to this session.
-schematica.ui.area.delete=Delete selection '%s'? This removes its saved selection data; world blocks and schematic files are unaffected.
-schematica.ui.area.multi_box=Normal mode supports multiple subregions and a manual origin. Tools edit the selected subregion or origin; saving and area edits include all subregions. Simple mode keeps an independent single box.
 schematica.ui.area.extended=Subregions or an origin offset require .schemplus. Choosing .schematic automatically saves a .schemplus file to preserve them.
-schematica.ui.area.origin_hint=Enable a manual origin at your position, then edit its coordinates. Select the Origin checkbox to move it with tool clicks. Turning it off uses the minimum corner of all boxes. The origin does not expand the saved area.
 
 schematica.ui.placement.region_hint=Select a row to target that region with the Move tool. Click it again to target the whole placement. Configure changes only this placement; the source file stays unchanged.
 schematica.ui.placement.region_failed=The sub-region change failed. Check coordinate/size limits and the log.
-schematica.ui.placement.region_rendering=Controls preview and printer visibility for this region. Pasting and material counts still include enabled regions.
 schematica.ui.placement.no_regions=Enable at least one sub-region first.
 schematica.ui.placement.disabled=This placement is disabled.
-schematica.ui.placement.rendering=Controls preview and printing. Enabled placements remain available for material counts and paste; placement outlines remain visible.
-schematica.ui.area.modes_hint=Normal stores multiple named selections. Simple keeps a separate single box.
-schematica.ui.area.tool_hint=Corners: left/right click sets corner 1/2. Expand: left click expands, right click resets. Middle click selects; Alt + wheel moves the selected corner, box or origin. Sneak to target the adjacent block.
 schematica.ui.area.analysis_scope=Count all selected blocks, or only blocks inside the current world render-layer range.
 schematica.ui.area.analysis_info=Analyze loaded client-world blocks. Overlapping boxes count once. Materials use each block's picked item, including metadata and item NBT. Missing is zero because this is an existing area, not a placement comparison.
 schematica.ui.area.analysis_incomplete=Unloaded positions: %s; blocks without a usable item or with read errors: %s. Refresh after loading the area.
@@ -376,25 +185,11 @@ schematica.config.playerQuotaKilobytes=Server storage per player (KiB)
 schematica.config.playerQuotaKilobytes.tooltip=Amount of server storage provided per player for schematics, in KiB.
 schematica.config.serversideSchematicsEnabled=Server schematics
 schematica.config.serversideSchematicsEnabled.tooltip=Allow players to save, download and view schematics stored on this server.
-schematica.config.sortType=Material sorting
-schematica.config.sortType.tooltip=Default sort order for the material list.
 schematica.command.setblock.usage=/sblock <primary|target> <block_name> [meta]
-schematica.message.tool.no_block=No block targeted.
-schematica.message.tool.air=Cannot pick air.
-schematica.message.tool.pick_target=Pick the target block before replacing.
 schematica.message.tool.primary_set=[Schematica Plus] Primary block set to %s:%s (mode: %s).
 schematica.message.tool.target_set=[Schematica Plus] Target block set to %s:%s (mode: %s).
-schematica.message.edit.cancel_requested=Edit cancellation requested. Changes already made are retained.
 schematica.message.edit.busy=Another world edit is still running.
-schematica.message.edit.queued=Edit queued for the server. Press Execute again to cancel.
-schematica.message.edit.commands_queued=Command edit queued. Server permission is required. Press Execute again to cancel.
-schematica.message.edit.start_failed=Could not start the edit. Check the selection, size limits and log.
 schematica.message.edit.permissions=[Schematica Plus] Editing requires creative mode and command permission.
-schematica.message.edit.cancelled=[Schematica Plus] Edit cancelled: %s blocks, %s entities. Changes already made are retained.
-schematica.message.edit.finished=[Schematica Plus] Edit finished: %s blocks, %s entities.
-schematica.message.edit.stopped=[Schematica Plus] Edit stopped: %s Changes already made are retained.
-schematica.message.edit.see_log=See the log for details.
-schematica.message.edit.commands_sent=[Schematica Plus] Sent %s edit commands. Check server replies for execution results.
 schematica.message.edit.updates_require_singleplayer=Pasting without block updates requires singleplayer. Minecraft 1.7.10 server commands cannot suppress updates.
 schematica.message.edit.nbt_requires_singleplayer=1.7.10 chat commands cannot safely transfer schematic NBT. Use singleplayer, or disable block NBT and entities before pasting.
 schematica.message.edit.command_too_long=The block name exceeds the Minecraft 1.7.10 command length limit.
@@ -407,9 +202,7 @@ schematica.ui.conflict.title=Schematica Plus: incompatible mods
 schematica.ui.conflict.message=Schematica Plus (schematica_plus) cannot load alongside %s. Remove the original/GTNH Schematica jar, or remove Schematica Plus.
 schematica.message.download.update_client=Schematica Plus: update the client to download schematics with subregions or custom origins.
 schematica.ui.placement.custom=Custom
-schematica.hud.block_info.metadata=Metadata: §a%s
 
-schematica.ui.task.empty=No running tasks in this dimension
 schematica.ui.task.backend.client=Client-side capture
 schematica.ui.task.backend.server=Server-side task
 schematica.ui.task.backend.commands=Multiplayer commands (execution is not confirmed)
@@ -428,10 +221,7 @@ schematica.ui.task.changed=Blocks changed: %s; entities placed: %s
 schematica.ui.task.cancel_save=Stop reading before the file is written. Final file writing cannot be cancelled.
 schematica.ui.task.cancel_commands=Stop sending commands. Commands already sent cannot be recalled; server execution is not confirmed.
 schematica.ui.task.cancel_edit=Stop placing blocks and entities, then finish updates for blocks already placed. Existing changes remain.
-schematica.message.save.cancelled=Cancelled saving %s; no file was written.
 
-schematica.ui.verifier.ready=Start verification to compare this placement with the client world.
-schematica.ui.verifier.paused=Paused: %s / %s positions checked
 schematica.ui.verifier.skipped=Unreadable positions: %s (incomplete)
 schematica.ui.verifier.changed=Placement or range changed. Start verification again.
 schematica.ui.verifier.unavailable=Load and enable the placement in a world before verifying.
@@ -446,10 +236,6 @@ schematica.ui.task.stage.edit=Checked blocks
 schematica.ui.task.schematic_changed=Schematic blocks changed: %s
 schematica.ui.task.cancel_rebuild=Stop editing. Blocks already changed in the in-memory schematic remain changed; placements are refreshed.
 schematica.message.rebuild.busy=Another schematic edit is still running. Wait for it or remove it in the Task Manager.
-
-schematica.ui.verifier.metadata=Metadata = %s
-schematica.ui.verifier.select_markers=Click to toggle error markers for this category or entry.\nSelect the placement, then hold the renderInfoOverlay key (default I) while looking at a marker to compare blocks.
-schematica.ui.verifier.overlay_disabled=Verifier overlays are disabled. Enable %s -> %s.
 
 schematica.message.move.server_required=Moving world blocks requires Schematica Plus on the server so complete block data can be preserved.
 schematica.message.move.failed=World move was rejected, cancelled or failed. The area selection was not moved.

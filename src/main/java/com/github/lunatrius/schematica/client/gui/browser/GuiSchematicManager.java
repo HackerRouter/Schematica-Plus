@@ -38,8 +38,7 @@ public final class GuiSchematicManager extends GuiSchematicBrowser {
                 default: break;
             }
         });
-        operations.setTooltip(UiTranslations.format("litematica.gui.button.schematic_manager.file_ops.hover"),
-            UiTranslations.format("schematica.ui.files.operations_hint"));
+        operations.setTooltip(UiTranslations.format("litematica.gui.button.schematic_manager.file_ops.hover"));
         groups.add(new UiButton[] {edit, selector(0)});
         groups.add(new UiButton[] {importFile});
         groups.add(new UiButton[] {export, selector(1)});
@@ -75,8 +74,7 @@ public final class GuiSchematicManager extends GuiSchematicBrowser {
                 selector.setTooltip(UiTranslations.format(option.equals("delete")
                     ? "litematica.gui.label.schematic_manager.file_op_type.delete.hover" : "schematica.ui.files.option." + option));
             } else {
-                selector.setTooltip(UiTranslations.format("schematica.ui.pending"), UiTranslations.format(optionKey(type)),
-                    UiTranslations.format("schematica.ui.files.selector_hint"));
+                selector.setTooltip(UiTranslations.format("schematica.ui.pending"), UiTranslations.format(optionKey(type) + ".hover"));
             }
         }
     }

@@ -59,7 +59,6 @@ public final class GuiAreaSelectionManager extends UiScreen {
         unselect = addButton("litematica.gui.button.area_selections.unselect", () -> { if (available()) AreaSelections.select(null); });
         unselect.setTooltip(UiTranslations.format("litematica.gui.button.hover.area_selections.unselect"));
         fromPlacement = addButton("litematica.gui.button.area_selections.create_selection_from_placement", this::fromPlacement);
-        fromPlacement.setTooltip(UiTranslations.format("schematica.ui.area.from_placement"));
         create = addButton("litematica.gui.button.area_selections.create_new_selection", () -> {
             if (!available()) return;
             promptName("litematica.gui.title.create_area_selection", "", name -> {
@@ -73,10 +72,8 @@ public final class GuiAreaSelectionManager extends UiScreen {
             if (searching) input.focus(search);
             else search.setText("");
         }).setSprite(UiSprite.SEARCH).setBackground(false));
-        searchButton.setTooltip(UiTranslations.format("schematica.ui.area.search"));
         search = root.add(new UiTextField(fontRendererObj, 200, text -> { model.setQuery(text); list.sync(); }));
         search.setVisible(false);
-        search.setTooltip(UiTranslations.format("schematica.ui.area.search"));
         list = root.add(new UiRowList<>(model, Entry::new));
         status = root.add(new UiLabel(this::statusText));
     }
@@ -146,9 +143,9 @@ public final class GuiAreaSelectionManager extends UiScreen {
     }
 
     static String error(RuntimeException error) {
-        return error instanceof AreaSelectionLibrary.NameConflictException
-            ? UiTranslations.format("schematica.ui.area.name_exists", error.getMessage())
-            : UiTranslations.format("schematica.ui.area.invalid");
+        if (!(error instanceof AreaSelectionLibrary.NameConflictException)) return UiTranslations.format("schematica.ui.area.invalid");
+        return UiTranslations.format(((AreaSelectionLibrary.NameConflictException) error).subregion
+            ? "litematica.error.area_editor.create_sub_region.exists" : "litematica.error.area_selection.rename.already_exists", error.getMessage());
     }
 
     private String statusText() {
@@ -166,7 +163,7 @@ public final class GuiAreaSelectionManager extends UiScreen {
         fromPlacement.setEnabled(available && ClientProxy.schematic != null);
         create.setEnabled(available);
         list.setEnabled(available);
-        status.setTooltip(statusText(), UiTranslations.format("schematica.ui.area.multi_box"));
+        status.setTooltip(statusText());
     }
 
     @Override protected void layoutWidgets() {
@@ -194,15 +191,11 @@ public final class GuiAreaSelectionManager extends UiScreen {
             this.index = index;
             UiButton remove = add(new UiButton(() -> "\u00a7c-", button -> {
                 if (button == 0 && available() && library.contains(area)) {
-                    confirm(UiTranslations.format("litematica.gui.title.schematic_projects.confirm_delete_area"),
-                        UiTranslations.format("schematica.ui.area.delete", area.name()), () -> {
-                            if (!available() || !library.contains(area)) return;
-                            AreaSelections.capture();
-                            library.remove(area);
-                            AreaSelections.apply();
-                            AreaSelections.saveCurrent();
-                            refresh();
-                        });
+                    AreaSelections.capture();
+                    library.remove(area);
+                    AreaSelections.apply();
+                    AreaSelections.saveCurrent();
+                    refresh();
                 }
             }));
             remove.setTooltip(UiTranslations.format("litematica.gui.button.remove"));

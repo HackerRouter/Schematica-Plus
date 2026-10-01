@@ -37,7 +37,7 @@ public final class GuiSchematicSourceSave extends GuiSchematicBrowser {
         name = root.add(new UiTextField(fontRendererObj, 210, text -> {}));
         name.setText(source.name());
         save = addButton("litematica.gui.button.save_to_file", this::save);
-        save.setTooltip(UiTranslations.format("schematica.ui.source.save_hint"));
+        save.setTooltip(UiTranslations.format("litematica.gui.label.schematic_save.hover_info.hold_shift_to_overwrite"));
         format = root.add(new UiLabel(() -> source.data().saveExtension()));
         format.setTooltip(UiTranslations.format("schematica.ui.source.save_hint"));
     }
@@ -55,9 +55,9 @@ public final class GuiSchematicSourceSave extends GuiSchematicBrowser {
         if (browser == null || !ClientProxy.SCHEMATICS.sources().contains(source)) return;
         try {
             File file = SchematicSaveTarget.sourceCopy(browser.root(), browser.directory(), name.text(), source.data().saveExtension());
-            if (file.exists()) confirm(UiTranslations.format("schematica.ui.save.overwrite_title"),
-                UiTranslations.format("schematica.ui.save.overwrite", file.getName()), () -> write(file, true));
-            else write(file, false);
+            if (file.exists() && !isShiftKeyDown()) {
+                setStatus(UiTranslations.format("litematica.error.schematic_write_to_file_failed.exists", file.getName()));
+            } else write(file, file.exists());
         } catch (IOException | IllegalArgumentException e) {
             fail("schematica.ui.source.save_failed", e);
         }

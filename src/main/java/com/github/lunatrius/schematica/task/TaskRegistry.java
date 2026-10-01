@@ -19,6 +19,16 @@ public final class TaskRegistry {
 
         public final String key;
         Kind(String key) { this.key = key; }
+
+        /** The upstream task completion message for world edits, or null when upstream shows none. */
+        public String finishedKey(boolean success) {
+            switch (this) {
+                case PASTE: return success ? "litematica.message.schematic_pasted" : "litematica.message.error.schematic_paste_failed";
+                case FILL: case REPLACE: return success ? "litematica.message.area_filled" : "litematica.message.area_fill_fail";
+                case DELETE: return success ? "litematica.message.area_cleared" : "litematica.message.area_clear_fail";
+                default: return null;
+            }
+        }
     }
 
     public enum Backend {
