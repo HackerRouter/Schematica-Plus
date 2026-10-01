@@ -30,7 +30,7 @@ public final class SchematicFileSnapshot {
         String name = file.getName().toLowerCase(Locale.ROOT);
         int dot = name.lastIndexOf('.');
         String extension = dot < 0 ? "" : name.substring(dot);
-        if (!extension.equals(".schematic") && !extension.equals(".schemplus") && !extension.equals(".litematic")) {
+        if (!extension.equals(".schematic") && !extension.equals(".schemplus") && !extension.equals(".litematic") && !extension.equals(".nbt")) {
             throw new IOException("Unsupported source extension");
         }
         if (Files.size(file.toPath()) > SchematicLimits.MAX_NBT_BYTES) throw new IOException("Source file exceeds memory limit");

@@ -31,7 +31,7 @@ import com.github.lunatrius.schematica.world.schematic.SchematicFormat;
 
 public final class GuiSchematicSave extends GuiSchematicBrowser {
 
-    private boolean extended = ConfigurationHandler.useSchematicplusFormat;
+    private String format = ConfigurationHandler.useSchematicplusFormat ? ".schemplus" : ".schematic";
     private final String initialName;
     private final AreaSelectionLibrary library = AreaSelections.library();
     private final Area area = library.selected();
@@ -103,7 +103,7 @@ public final class GuiSchematicSave extends GuiSchematicBrowser {
         }
         if (name.text().trim().isEmpty()) return UiTranslations.format("litematica.error.schematic_save.invalid_schematic_name", name.text());
         try {
-            SchematicSaveTarget.filename(name.text(), extended);
+            SchematicSaveTarget.filename(name.text(), format);
         } catch (IllegalArgumentException e) {
             return UiTranslations.format("schematica.ui.save.invalid_name");
         }
@@ -136,7 +136,7 @@ public final class GuiSchematicSave extends GuiSchematicBrowser {
             return;
         }
         try {
-            File file = SchematicSaveTarget.resolve(ConfigurationHandler.schematicDirectory, directory(), name.text(), extended);
+            File file = SchematicSaveTarget.resolve(ConfigurationHandler.schematicDirectory, directory(), name.text(), format);
             World world = mc.theWorld;
             AreaSelections.capture();
             RegionSelection selection = area.snapshot();
@@ -173,7 +173,7 @@ public final class GuiSchematicSave extends GuiSchematicBrowser {
     }
 
     private final class SaveOptions extends UiScreen {
-        private UiButton format;
+        private UiButton formatButton;
         private UiToggleButton nbt;
         private UiToggleButton guide;
         private UiButton back;
@@ -182,8 +182,11 @@ public final class GuiSchematicSave extends GuiSchematicBrowser {
 
         @Override
         protected void createWidgets() {
-            format = root.add(new UiButton(() -> extended ? ".schemplus" : ".schematic", button -> extended = !extended));
-            format.setTooltip(UiTranslations.format("schematica.ui.save.format_hint"));
+            formatButton = root.add(new UiButton(() -> format, button -> {
+                java.util.List<String> formats = java.util.Arrays.asList(SchematicSaveTarget.FORMATS);
+                format = formats.get(Math.floorMod(formats.indexOf(format) + (button == 0 ? 1 : -1), formats.size()));
+            }));
+            formatButton.setTooltip(UiTranslations.format("schematica.ui.save.format_hint"));
             nbt = root.add(new UiToggleButton(() -> UiTranslations.format("schematica.gui.savenbt"), () -> SchematicFormat.saveNBT,
                 value -> SchematicFormat.saveNBT = value));
             guide = root.add(new UiToggleButton(() -> UiTranslations.format("schematica.ui.save.guide"), () -> ClientProxy.isRenderingGuide,
@@ -193,7 +196,7 @@ public final class GuiSchematicSave extends GuiSchematicBrowser {
 
         @Override
         protected void layoutWidgets() {
-            format.setBounds(12, 30, 160, 20);
+            formatButton.setBounds(12, 30, 160, 20);
             nbt.setBounds(12, 52, 160, 20);
             guide.setBounds(12, 74, 160, 20);
             back.setBounds(12, height - 26, 80, 20);

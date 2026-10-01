@@ -51,6 +51,8 @@ public abstract class GuiSchematicBrowser extends UiScreen {
     private final List<UiButton> actions = new ArrayList<>();
     private String status = "";
     private SchematicBrowserModel.Entry lastSelection;
+    private final SchematicInfoCache infoCache = new SchematicInfoCache();
+    private static final java.text.SimpleDateFormat DATE_FORMAT = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
     protected GuiSchematicBrowser(GuiScreen parent, String title, boolean directoriesOnly) {
         super(parent, title);
@@ -93,14 +95,57 @@ public abstract class GuiSchematicBrowser extends UiScreen {
             directoriesOnly ? this::closeScreen : this::mainMenu);
     }
 
-    /** Draws the info panel for the selected entry. */
+    /** Draws the info panel for the selected entry: Litematica metadata and preview for .litematic and .nbt files. */
     protected void drawInfo(UiDraw draw, int x, int y, int width, SchematicBrowserModel.Entry entry) {
         if (entry == null || entry.directory) return;
-        draw.text(UiTranslations.format("litematica.gui.label.schematic_info.name"), x, y, 0xC0C0C0C0);
-        draw.text(draw.trim(entry.name(), width - 10), x + 4, y + 12, 0xFFFFFFFF);
-        draw.text(FileUtils.humanReadableByteCount(entry.size), x, y + 36, 0xC0C0C0C0);
-        String date = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date(entry.modified));
-        draw.text(draw.trim(date, width - 6), x, y + 48, 0xC0C0C0C0);
+        com.github.lunatrius.schematica.world.schematic.SchematicFiles.Info meta = infoCache.get(entry.file);
+        if (meta == null) {
+            draw.text(UiTranslations.format("litematica.gui.label.schematic_info.name"), x, y, 0xC0C0C0C0);
+            draw.text(draw.trim(entry.name(), width - 10), x + 4, y + 12, 0xFFFFFFFF);
+            draw.text(FileUtils.humanReadableByteCount(entry.size), x, y + 36, 0xC0C0C0C0);
+            draw.text(draw.trim(DATE_FORMAT.format(new Date(entry.modified)), width - 6), x, y + 48, 0xC0C0C0C0);
+            return;
+        }
+        int text = 0xC0C0C0C0, value = 0xFFFFFFFF, limit = width - 8;
+        draw.text(UiTranslations.format("litematica.gui.label.schematic_info.name"), x, y, text);
+        draw.text(draw.trim(meta.name, limit - 4), x + 4, y += 12, value);
+        draw.text(draw.trim(UiTranslations.format("litematica.gui.label.schematic_info.schematic_author", meta.author), limit), x, y += 12, text);
+        draw.text(draw.trim(UiTranslations.format("litematica.gui.label.schematic_info.time_created",
+            DATE_FORMAT.format(new Date(meta.created))), limit), x, y += 12, text);
+        if (meta.hasBeenModified()) {
+            draw.text(draw.trim(UiTranslations.format("litematica.gui.label.schematic_info.time_modified",
+                DATE_FORMAT.format(new Date(meta.modified))), limit), x, y += 12, text);
+        }
+        draw.text(UiTranslations.format("litematica.gui.label.schematic_info.region_count", meta.regions), x, y += 12, text);
+        String size = String.format("%d x %d x %d", meta.sizeX, meta.sizeY, meta.sizeZ);
+        if (height >= 340) {
+            draw.text(UiTranslations.format("litematica.gui.label.schematic_info.total_volume", meta.volume), x, y += 12, text);
+            if (meta.blocks > 0) draw.text(UiTranslations.format("litematica.gui.label.schematic_info.total_blocks", meta.blocks), x, y += 12, text);
+            draw.text(UiTranslations.format("litematica.gui.label.schematic_info.enclosing_size"), x, y += 12, text);
+            draw.text(size, x + 4, y += 12, value);
+        } else {
+            draw.text(draw.trim(meta.blocks > 0
+                ? UiTranslations.format("litematica.gui.label.schematic_info.total_blocks_and_volume", meta.blocks, meta.volume)
+                : UiTranslations.format("litematica.gui.label.schematic_info.total_volume", meta.volume), limit), x, y += 12, text);
+            draw.text(UiTranslations.format("litematica.gui.label.schematic_info.enclosing_size_value", size), x, y += 12, text);
+        }
+        draw.text(meta.litematic ? UiTranslations.format("litematica.gui.label.schematic_info.version", meta.version)
+            : UiTranslations.format("litematica.gui.label.schematic_info.vanilla_version"), x, y += 12, text);
+        String schema = meta.dataVersion < 0 ? null : com.github.lunatrius.schematica.world.schematic.DataVersions.name(meta.dataVersion);
+        if (schema != null) {
+            draw.text(draw.trim(UiTranslations.format("litematica.gui.label.schematic_info.schema", schema, meta.dataVersion), limit), x, y += 12, text);
+        }
+        net.minecraft.util.ResourceLocation preview = infoCache.preview(entry.file, meta);
+        if (preview != null) {
+            y += 24;
+            int iconSize = Math.min(SchematicPreview.SIZE, Math.min(width - 14, info.bounds().bottom() - y - 30));
+            if (iconSize > 8) {
+                UiBounds box = new UiBounds(x + 4, y, iconSize, iconSize);
+                draw.fill(box, 0xA0000000);
+                draw.texture(preview.toString(), box, 0, 0, 1, 1, 1, 1);
+                draw.border(new UiBounds(box.x - 1, box.y - 1, iconSize + 2, iconSize + 2), 0xFF999999);
+            }
+        }
     }
 
     protected SchematicBrowserModel createModel() throws IOException {
@@ -132,6 +177,9 @@ public abstract class GuiSchematicBrowser extends UiScreen {
         refreshFiles();
         tickScreen();
     }
+
+    @Override
+    protected void closed() { infoCache.clear(); }
 
     protected boolean accept(SchematicBrowserModel.Entry entry) {
         return !directoriesOnly || entry.directory;
@@ -257,6 +305,7 @@ public abstract class GuiSchematicBrowser extends UiScreen {
     }
 
     protected final void refreshFiles() {
+        infoCache.clear();
         try {
             if (browser == null) browser = createModel();
             browser.refresh();

@@ -82,4 +82,19 @@ public final class LitematicBitArray {
     public static int getRequiredBits(int paletteSize) {
         return Math.max(2, Integer.SIZE - Integer.numberOfLeadingZeros(paletteSize - 1));
     }
+
+    /** Packs values of the given width tightly, entries crossing long boundaries, as LitematicaBitArray.setAt does. */
+    public static long[] pack(int[] values, int bitsPerEntry) {
+        long[] data = new long[(int) (((long) values.length * bitsPerEntry + 63) / 64)];
+        long mask = (1L << bitsPerEntry) - 1L;
+        for (int index = 0; index < values.length; index++) {
+            long value = values[index] & mask;
+            long startOffset = (long) index * bitsPerEntry;
+            int start = (int) (startOffset >> 6), end = (int) (((index + 1L) * bitsPerEntry - 1L) >> 6);
+            int bit = (int) (startOffset & 0x3F);
+            data[start] |= value << bit;
+            if (start != end) data[end] |= value >>> (64 - bit);
+        }
+        return data;
+    }
 }

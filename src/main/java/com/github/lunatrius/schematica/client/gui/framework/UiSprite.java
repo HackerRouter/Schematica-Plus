@@ -17,6 +17,7 @@ public enum UiSprite {
     TASK_MANAGER(102, 112, 14, 14, true),
     FILE(144, 0, 12, 12, false),
     SCHEMATIC(144, 12, 12, 12, false),
+    VANILLA(144, 36, 12, 12, false),
     SCHEMPLUS(0, 0, 12, 12, false),
     MEMORY(186, 0, 12, 12, false),
     JSON(144, 44, 12, 12, false),
@@ -74,6 +75,7 @@ public enum UiSprite {
         if (filename.endsWith(".litematic")) return FILE;
         if (filename.endsWith(".schemplus")) return SCHEMPLUS;
         if (filename.endsWith(".json")) return JSON;
+        if (filename.endsWith(".nbt")) return VANILLA;
         return SCHEMATIC;
     }
 }

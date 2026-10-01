@@ -113,7 +113,7 @@ schematica.ui.load.disabled=当前世界不允许加载原理图。
 schematica.ui.save.directory_title=选择原理图保存目录
 schematica.ui.save.use_directory=使用当前目录
 schematica.ui.save.guide=选区
-schematica.ui.save.format_hint=选择输出格式。方块 ID、子区域或原点偏移需要扩展信息时，旧版 .schematic 会自动升级为 .schemplus。
+schematica.ui.save.format_hint=选择输出格式。方块 ID、子区域或原点偏移需要扩展信息时，旧版 .schematic 会自动升级为 .schemplus。.litematic 按 Minecraft 1.12.2 的 Litematica 格式（第 4 版）写出，1.12.2 及更新版本的 Litematica 都能读取。
 schematica.ui.save.disabled=当前世界不允许保存原理图。
 schematica.ui.save.enable_guide=请开启“选区”后保存。
 schematica.ui.save.invalid_selection=选区超出世界坐标范围或原理图大小限制。
@@ -247,3 +247,6 @@ schematica.message.rebuild.busy=另一项原理图编辑仍在进行。请等待
 
 schematica.message.move.server_required=移动世界方块需要服务端安装 Schematica Plus，以保留完整方块数据。
 schematica.message.move.failed=世界移动被拒绝、取消或失败，选区坐标未移动。
+schematica.ui.files.export_type.litematic_v4=V4 (1.12.2) Litematic
+schematica.ui.files.export_type.litematic_v4.hover=将所选 litematic 导出为新的 litematic，\n使用 §e1.12.2 (V4)§r 格式，1.12.2 及更新版本的\nLitematica 都能读取\n§b点击此按钮切换选项
+schematica.ui.files.edit_schematic.hover=点击执行所选的原理图编辑操作\n§e只修改元数据，方块和 litematic 版本保持不变

@@ -15,6 +15,28 @@ import net.minecraft.nbt.NBTTagCompound;
 final class SchematicFileWriter {
     private SchematicFileWriter() {}
 
+    static File write(File requested, LitematicExport.Document document) throws IOException {
+        Path target = requested.toPath().toAbsolutePath();
+        Path temporary = Files.createTempFile(target.getParent(), ".schematica-", ".tmp");
+        try {
+            try (FileOutputStream output = new FileOutputStream(temporary.toFile())) {
+                LitematicaNBTWriter.writeCompressed(document.root, document.longArrays, output);
+            }
+            replace(temporary, target);
+            return target.toFile();
+        } finally {
+            Files.deleteIfExists(temporary);
+        }
+    }
+
+    private static void replace(Path temporary, Path target) throws IOException {
+        try {
+            Files.move(temporary, target, StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);
+        } catch (AtomicMoveNotSupportedException e) {
+            Files.move(temporary, target, StandardCopyOption.REPLACE_EXISTING);
+        }
+    }
+
     static File write(File requested, NBTTagCompound tag) throws IOException {
         Path target = requested.toPath().toAbsolutePath();
         String name = target.getFileName().toString();
@@ -36,11 +58,7 @@ final class SchematicFileWriter {
                 }
                 throw new IOException("No unused extended schematic filename available");
             }
-            try {
-                Files.move(temporary, target, StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);
-            } catch (AtomicMoveNotSupportedException e) {
-                Files.move(temporary, target, StandardCopyOption.REPLACE_EXISTING);
-            }
+            replace(temporary, target);
             return target.toFile();
         } finally {
             Files.deleteIfExists(temporary);

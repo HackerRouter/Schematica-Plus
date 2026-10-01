@@ -334,6 +334,8 @@ public class ClientProxy extends CommonProxy {
         MinecraftForge.EVENT_BUS.register(com.github.lunatrius.schematica.handler.client.CommandEditQueue.INSTANCE);
         FMLCommonHandler.instance().bus().register(
             com.github.lunatrius.schematica.handler.client.RemoteEditClient.INSTANCE);
+        FMLCommonHandler.instance().bus().register(
+            com.github.lunatrius.schematica.client.gui.browser.SchematicPreview.INSTANCE);
 
         // Register client-side commands
         net.minecraftforge.client.ClientCommandHandler.instance.registerCommand(new CommandSchematicaSetBlock());

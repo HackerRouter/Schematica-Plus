@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityList;
 import net.minecraft.entity.EntityLivingBase;
@@ -30,6 +31,8 @@ import com.github.lunatrius.schematica.api.SchematicRegion;
 import com.github.lunatrius.schematica.api.SchematicOrigin;
 import com.github.lunatrius.schematica.world.storage.MultiRegionSchematic;
 
+import cpw.mods.fml.common.registry.GameData;
+
 public class SchematicLitematica extends SchematicFormat {
 
     @Override
@@ -42,9 +45,9 @@ public class SchematicLitematica extends SchematicFormat {
         }
     }
 
+    /** .litematic files need long arrays, so they are written by SchematicFormat.saveToFile through LitematicExport. */
     @Override
     public boolean writeToNBT(NBTTagCompound tagCompound, ISchematic schematic, World backupWorld) {
-        Reference.logger.warn("Writing .litematic format is not supported.");
         return false;
     }
 
@@ -57,16 +60,50 @@ public class SchematicLitematica extends SchematicFormat {
         for (LitematicRegions.Region region : document.regions) bounds.add(region.box.offset(-min.x, -min.y, -min.z));
         schematic.setRegions(bounds);
         BlockStateTranslator translator = BlockStateTranslator.instance();
+        boolean legacy = isLegacy(root);
         for (LitematicRegions.Region region : document.regions) {
             Schematic part = new Schematic(schematic.getIcon(), region.width, region.height, region.length);
             part.setOrigin(region.origin);
-            readRegion(region, part, translator);
+            readRegion(region, part, translator, legacy);
             schematic.addRegion(region.box.offset(-min.x, -min.y, -min.z), part);
         }
         return schematic;
     }
 
-    private void readRegion(LitematicRegions.Region rd, ISchematic schematic, BlockStateTranslator translator) {
+    /** Files before version 5 (or data version 1631, 1.13.2) hold 1.12 block states, as in Litematica's own check. */
+    static boolean isLegacy(NBTTagCompound root) {
+        int dataVersion = root.getInteger("MinecraftDataVersion");
+        return root.getInteger("Version") < 5 || dataVersion > 0 && dataVersion < 1631;
+    }
+
+    private static Block registered(String name) {
+        return GameData.getBlockRegistry().containsKey(name) ? GameData.getBlockRegistry().getObject(name) : null;
+    }
+
+    /** 1.12 metadata values that 1.7.10 does not have: polished stones and the wet sponge. */
+    private static boolean newerVariant(String name, int meta) {
+        return name.equals("minecraft:stone") && meta != 0 || name.equals("minecraft:sponge") && meta != 0;
+    }
+
+    /** A 1.12 palette entry: vanilla states by the 1.12 table, other blocks by name and SchematicaPlusMeta. */
+    static BlockMapping legacyMapping(NBTTagCompound entry, BlockStateTranslator translator) {
+        String state = LegacyBlockStates.state(entry);
+        LegacyBlockStates.Entry known = LegacyBlockStates.entry(state);
+        if (known != null) {
+            Block block = registered(known.name);
+            if (block != null && !newerVariant(known.name, known.meta())) return new BlockMapping(block, known.meta());
+            return translator.translate(known.modern);
+        }
+        Block block = registered(entry.getString("Name"));
+        if (block == null) return translator.translate(state);
+        if (entry.hasKey(LitematicExport.META_KEY) || !entry.hasKey("Properties")) {
+            return new BlockMapping(block, entry.getInteger(LitematicExport.META_KEY) & 15);
+        }
+        BlockMapping translated = translator.translate(state);
+        return translated.block == block ? translated : new BlockMapping(block, 0);
+    }
+
+    private void readRegion(LitematicRegions.Region rd, ISchematic schematic, BlockStateTranslator translator, boolean legacy) {
         int absSizeX = rd.width, absSizeY = rd.height, absSizeZ = rd.length;
         NBTTagList paletteList = rd.palette;
         int paletteSize = paletteList.tagCount();
@@ -84,7 +121,7 @@ public class SchematicLitematica extends SchematicFormat {
             }
 
             String fullState = propsString.isEmpty() ? blockName : blockName + "[" + propsString + "]";
-            palette[i] = translator.translate(fullState);
+            palette[i] = legacy ? legacyMapping(entry, translator) : translator.translate(fullState);
             paletteStateStrings[i] = fullState;
         }
 
@@ -135,7 +172,9 @@ public class SchematicLitematica extends SchematicFormat {
                         String blockStateStr = posToBlockState.get(posKey);
 
                         String originalId = teTag.hasKey("id") ? teTag.getString("id") : "unknown";
-                        if (!teTranslator.translate(teTag, blockStateStr)) {
+                        if (legacy) {
+                            teTag = LegacyNbt.tileFrom112(teTag);
+                        } else if (!teTranslator.translate(teTag, blockStateStr)) {
                             Reference.logger.debug("TileEntity '{}' could not be translated, skipping", originalId);
                             teSkipped++;
                             continue;
@@ -164,7 +203,7 @@ public class SchematicLitematica extends SchematicFormat {
         int synthCount = 0;
         for (Map.Entry<Long, String> entry : posToBlockState.entrySet()) {
             String stateStr = entry.getValue();
-            if (teTranslator.isPottedPlant(stateStr) && !existingTEPositions.contains(entry.getKey())) {
+            if (!legacy && teTranslator.isPottedPlant(stateStr) && !existingTEPositions.contains(entry.getKey())) {
                 long posKey = entry.getKey();
                 int px = (int) (posKey & 0xFFFFL);
                 int py = (int) ((posKey >> 16) & 0xFFFFL);
@@ -191,31 +230,16 @@ public class SchematicLitematica extends SchematicFormat {
                     NBTTagCompound entityTag = entitiesList.getCompoundTagAt(i);
 
                     String originalId = entityTag.hasKey("id") ? entityTag.getString("id") : "unknown";
-                    if (!entityTranslator.translate(entityTag)) {
+                    if (legacy) {
+                        entityTag = LegacyNbt.entityFrom112(entityTag);
+                    } else if (!entityTranslator.translate(entityTag)) {
                         Reference.logger.debug("Entity '{}' could not be translated, skipping", originalId);
                         entSkipped++;
                         continue;
                     }
 
-                    Entity entity = EntityList.createEntityFromNBT(entityTag, WorldDummy.instance());
+                    Entity entity = createEntity(entityTag);
                     if (entity != null) {
-                        entity.prevRotationYaw = entity.rotationYaw;
-                        entity.prevRotationPitch = entity.rotationPitch;
-                        entity.prevPosX = entity.posX;
-                        entity.prevPosY = entity.posY;
-                        entity.prevPosZ = entity.posZ;
-                        entity.lastTickPosX = entity.posX;
-                        entity.lastTickPosY = entity.posY;
-                        entity.lastTickPosZ = entity.posZ;
-
-                        if (entity instanceof EntityLivingBase) {
-                            EntityLivingBase living = (EntityLivingBase) entity;
-                            living.renderYawOffset = entity.rotationYaw;
-                            living.prevRenderYawOffset = entity.rotationYaw;
-                            living.rotationYawHead = entity.rotationYaw;
-                            living.prevRotationYawHead = entity.rotationYaw;
-                        }
-
                         schematic.addEntity(entity);
                         entLoaded++;
                     } else {
@@ -233,6 +257,28 @@ public class SchematicLitematica extends SchematicFormat {
 
         Reference.logger.info("Region '{}': {}x{}x{}, palette size {}, loaded successfully",
             rd.box.name, absSizeX, absSizeY, absSizeZ, paletteSize);
+    }
+
+    /** An entity from NBT with its previous position and rotation equal to the current ones, for still rendering. */
+    static Entity createEntity(NBTTagCompound entityTag) {
+        Entity entity = EntityList.createEntityFromNBT(entityTag, WorldDummy.instance());
+        if (entity == null) return null;
+        entity.prevRotationYaw = entity.rotationYaw;
+        entity.prevRotationPitch = entity.rotationPitch;
+        entity.prevPosX = entity.posX;
+        entity.prevPosY = entity.posY;
+        entity.prevPosZ = entity.posZ;
+        entity.lastTickPosX = entity.posX;
+        entity.lastTickPosY = entity.posY;
+        entity.lastTickPosZ = entity.posZ;
+        if (entity instanceof EntityLivingBase) {
+            EntityLivingBase living = (EntityLivingBase) entity;
+            living.renderYawOffset = entity.rotationYaw;
+            living.prevRenderYawOffset = entity.rotationYaw;
+            living.rotationYawHead = entity.rotationYaw;
+            living.prevRotationYawHead = entity.rotationYaw;
+        }
+        return entity;
     }
 
     /**

@@ -58,6 +58,7 @@ public abstract class SchematicFormat {
     private static ISchematic decode(NBTTagCompound tag, String filename) {
         String name = filename.toLowerCase(java.util.Locale.ROOT);
         if (name.endsWith(".litematic")) return FORMATS.get("Litematica").readFromNBT(tag);
+        if (name.endsWith(".nbt")) return FORMATS.get("Structure").readFromNBT(tag);
         if (name.endsWith(".schemplus") && !tag.hasKey(SchematicBlockIds.ENCODING)) {
             tag.setString(SchematicBlockIds.ENCODING, SchematicBlockIds.EXTENDED);
         }
@@ -82,10 +83,26 @@ public abstract class SchematicFormat {
 
     public static File saveToFile(File file, ISchematic schematic, World backupWorld,
         boolean includeNBT, boolean includeEntities) {
+        return saveToFile(file, schematic, backupWorld, includeNBT, includeEntities, "");
+    }
+
+    /** Writes by extension: .litematic and .nbt in their Minecraft 1.12.2 layouts (with the author), else Alpha/.schemplus. */
+    public static File saveToFile(File file, ISchematic schematic, World backupWorld,
+        boolean includeNBT, boolean includeEntities, String author) {
         try {
             if (schematic == null) return null;
             final PostSchematicCaptureEvent event = new PostSchematicCaptureEvent(schematic);
             MinecraftForge.EVENT_BUS.post(event);
+
+            String fileName = file.getName();
+            if (fileName.toLowerCase(java.util.Locale.ROOT).endsWith(".litematic")) {
+                LitematicExport.Document document = LitematicExport.encode(schematic, backupWorld, includeNBT, includeEntities,
+                    fileName.substring(0, fileName.length() - ".litematic".length()), author, System.currentTimeMillis());
+                return SchematicFileWriter.write(file, document);
+            }
+            if (fileName.toLowerCase(java.util.Locale.ROOT).endsWith(".nbt")) {
+                return SchematicFileWriter.write(file, VanillaStructure.encode(schematic, backupWorld, includeEntities, author));
+            }
 
             NBTTagCompound tagCompound = new NBTTagCompound();
 
@@ -125,6 +142,7 @@ public abstract class SchematicFormat {
     static {
         FORMATS.put(Names.NBT.FORMAT_ALPHA, new SchematicAlpha());
         FORMATS.put("Litematica", new SchematicLitematica());
+        FORMATS.put("Structure", new VanillaStructure());
 
         FORMAT_DEFAULT = Names.NBT.FORMAT_ALPHA;
     }

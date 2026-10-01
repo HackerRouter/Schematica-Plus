@@ -30,6 +30,7 @@ import com.github.lunatrius.schematica.util.SchematicLimits;
 public final class LitematicaNBTReader {
     private static final ThreadLocal<Map<NBTTagCompound, Map<String, long[]>>> LONG_ARRAY_STORE =
         ThreadLocal.withInitial(IdentityHashMap::new);
+    private static final ThreadLocal<Boolean> DROPPED = ThreadLocal.withInitial(() -> false);
 
     private LitematicaNBTReader() {}
 
@@ -56,7 +57,16 @@ public final class LitematicaNBTReader {
         }
     }
 
-    public static void clearLongArrayStore() { LONG_ARRAY_STORE.remove(); }
+    public static void clearLongArrayStore() {
+        LONG_ARRAY_STORE.remove();
+        DROPPED.remove();
+    }
+
+    /** The long arrays of the last read on this thread, keyed by their parent compound, for writing the tree back. */
+    public static Map<NBTTagCompound, Map<String, long[]>> longArrays() { return LONG_ARRAY_STORE.get(); }
+
+    /** Whether the last read skipped long arrays inside lists, which a rewrite would lose. */
+    public static boolean droppedData() { return DROPPED.get(); }
 
     public static long[] getLongArray(NBTTagCompound compound, String key) {
         Map<String, long[]> arrays = LONG_ARRAY_STORE.get().get(compound);
@@ -128,7 +138,10 @@ public final class LitematicaNBTReader {
                     }
                     NBTTagList list = new NBTTagList();
                     for (int i = 0; i < size; i++) {
-                        if (elementType == 12) longArray();
+                        if (elementType == 12) {
+                            longArray();
+                            DROPPED.set(true);
+                        }
                         else list.appendTag(tag(elementType, depth + 1));
                     }
                     return list;

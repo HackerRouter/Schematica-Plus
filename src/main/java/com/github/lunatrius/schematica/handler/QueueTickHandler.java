@@ -108,7 +108,7 @@ public class QueueTickHandler {
                 return;
             }
             java.io.File saved = SchematicFormat.saveToFile(container.file, container.schematic, container.world,
-                container.includeNBT, container.includeEntities);
+                container.includeNBT, container.includeEntities, player.getCommandSenderName());
             written = saved;
             boolean renamed = saved != null && !saved.getName().equals(container.file.getName());
             String message = saved != null ? (renamed ? Names.Command.Save.Message.SAVE_EXTENDED

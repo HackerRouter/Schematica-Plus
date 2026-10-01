@@ -19,11 +19,13 @@ public class SchematicSaveTargetTest {
         assertEquals("Test.schemplus", SchematicSaveTarget.filename("Test.SCHEMATIC", true));
         assertEquals("Test.schematic", SchematicSaveTarget.filename("Test.SCHEMPLUS", false));
         assertEquals("rev.2.schematic", SchematicSaveTarget.filename("rev.2", false));
+        assertEquals("World.litematic", SchematicSaveTarget.filename("World.schematic", ".litematic"));
+        assertEquals("World.schemplus", SchematicSaveTarget.filename("World.LITEMATIC", true));
     }
 
-    @Test public void rejectsPathsIconSyntaxReservedNamesAndUnsupportedExport() {
+    @Test public void rejectsPathsIconSyntaxAndReservedNames() {
         for (String input : new String[] {"", "..", ".schematic", "../secret", "C:\\target", "a/b", "a\\b",
-            "CON", "aux.txt", "LPT1", "file.", "a?b", "a\nb\nc", "icon;file", "world.litematic"}) {
+            "CON", "aux.txt", "LPT1", "file.", "a?b", "a\nb\nc", "icon;file", ".litematic"}) {
             try {
                 SchematicSaveTarget.filename(input, true);
                 fail("Accepted " + input);

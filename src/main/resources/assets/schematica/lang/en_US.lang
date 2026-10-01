@@ -113,7 +113,7 @@ schematica.ui.load.disabled=Schematic loading is unavailable in this world.
 schematica.ui.save.directory_title=Choose schematic output folder
 schematica.ui.save.use_directory=Use this folder
 schematica.ui.save.guide=Selection
-schematica.ui.save.format_hint=Choose the output format. Legacy .schematic automatically upgrades to .schemplus when block IDs, subregions or origin offsets require it.
+schematica.ui.save.format_hint=Choose the output format. Legacy .schematic automatically upgrades to .schemplus when block IDs, subregions or origin offsets require it. .litematic is written in the Minecraft 1.12.2 Litematica format (version 4), which 1.12.2 and newer Litematica versions can load.
 schematica.ui.save.disabled=Schematic saving is unavailable in this world.
 schematica.ui.save.enable_guide=Enable Selection to save this area.
 schematica.ui.save.invalid_selection=Selection is outside world bounds or exceeds the schematic size limit.
@@ -247,3 +247,6 @@ schematica.message.rebuild.busy=Another schematic edit is still running. Wait fo
 
 schematica.message.move.server_required=Moving world blocks requires Schematica Plus on the server so complete block data can be preserved.
 schematica.message.move.failed=World move was rejected, cancelled or failed. The area selection was not moved.
+schematica.ui.files.export_type.litematic_v4=V4 (1.12.2) Litematic
+schematica.ui.files.export_type.litematic_v4.hover=Export the selected litematic to a new litematic\nin the §e1.12.2 (V4)§r format, which 1.12.2 and newer\nLitematica versions can load\n§bClick this button to cycle this option
+schematica.ui.files.edit_schematic.hover=Click to execute the selected Schematic Edit Operation\n§eOnly the metadata changes; blocks and the litematic version stay as they are

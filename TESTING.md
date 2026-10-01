@@ -1212,3 +1212,28 @@ compare with a server that does not have the mod and with each server option off
   commands silently. Large pastes (millions of blocks) upload without disconnect;
   changing dimension or disconnecting during upload ends the task with the lost message.
   A second edit while one runs (from this or another player) is refused as busy.
+
+## .litematic export (1.12.2 format), import/export and schematic metadata
+
+- Save Area as Schematic → Options: the format button cycles .schematic / .schemplus / .litematic.
+  Save a mixed build (logs in all axes, stairs, slabs top/bottom, doors, fences, rails, redstone,
+  chests with items, signs with text, a spawner, item frames with items, a horse/donkey/mule, a wither
+  skeleton, armour stands are not in 1.7.10) as .litematic and load it back: blocks, orientations, chest
+  items, sign text, spawner mob and entities must match. Repeat with GT/modded blocks and machines.
+- Copy the .litematic into Minecraft 1.12.2 with Litematica (LiteLoader) and into a modern Litematica
+  (1.20+/26.x): it must load with the same vanilla blocks and orientations (modern Litematica converts
+  1.12 states). Check stairs shapes, fence/pane connections, double plants, doors, chests with items,
+  signs, the spawner and entities. Modded blocks are expected to be missing in other packs.
+- Load a .litematic made by 1.12.2 Litematica and one made by modern Litematica in Plus.
+- Schematic Manager on a .litematic: Schematic Edit → Rename Schematic / Change Author update the info
+  panel (name, author, Modified time) without changing blocks or the version line; Set Preview closes
+  the GUI, the next screenshot key sets the preview (chat success), right click on the Edit button
+  cancels a pending preview, Ctrl+Alt+Shift click uses thumb.png from the same folder. The preview
+  appears in the browser info panels (manager and load screen), scaled down on small windows.
+- Import on .schematic / .schemplus / .litematic / .nbt files: saves a .litematic (Ignore entities
+  works; existing name refused unless Shift is held). Export As on a .litematic: Schematic
+  (.schematic, or .schemplus when IDs/regions need it), V4 (1.12.2) Litematic, Vanilla Structure (.nbt).
+  Load the exported .nbt in Plus and in 1.12.2 with a structure block.
+- The info panel shows Litematic Version / Vanilla Structure and the Minecraft version from the data
+  version for .litematic and .nbt files; other files keep the name, size and date view.
+
