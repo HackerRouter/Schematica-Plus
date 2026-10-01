@@ -21,9 +21,15 @@ public final class HotkeyHooks {
         boolean captureHotkey(int code, boolean down);
     }
 
+    /** Receives vanilla attack/use presses that no hotkey consumed; returning true cancels them. */
+    public interface Click {
+        boolean click(boolean attack);
+    }
+
     private static HotkeyEngine engine;
     private static BiPredicate<Hotkey, Hotkey.Action> callback;
     private static IntPredicate scroll;
+    private static Click click;
     private static final Set<Integer> consumed = new HashSet<>();
 
     private HotkeyHooks() {}
@@ -31,6 +37,7 @@ public final class HotkeyHooks {
     public static void initialize(List<Hotkey> bindings, BiPredicate<Hotkey, Hotkey.Action> action, IntPredicate wheel) {
         engine = new HotkeyEngine(bindings); callback = action; scroll = wheel;
     }
+    public static void click(Click handler) { click = handler; }
     public static boolean held(Hotkey key) { return engine != null && key != null && engine.held(key); }
     public static void reset() { if (engine != null) engine.reset(); }
 
@@ -71,6 +78,7 @@ public final class HotkeyHooks {
                 return true;
             }
         });
+        if (!cancel && !capturing && down && !repeat) cancel = vanillaClick(mc, code);
         if (capturing) {
             cancel = repeat || capture.captureHotkey(code, down);
         }
@@ -79,6 +87,17 @@ public final class HotkeyHooks {
         if (!down && consumed.remove(code)) cancel = true;
         if (cancel) KeyBinding.setKeyBindState(code, false);
         return cancel;
+    }
+
+    private static boolean vanillaClick(Minecraft mc, int code) {
+        if (click == null || mc.currentScreen != null || mc.theWorld == null || mc.thePlayer == null || !mc.inGameHasFocus) return false;
+        boolean attack = code == mc.gameSettings.keyBindAttack.getKeyCode();
+        if (!attack && code != mc.gameSettings.keyBindUseItem.getKeyCode()) return false;
+        try { return click.click(attack); }
+        catch (RuntimeException error) {
+            Reference.logger.error("Schematic edit failed", error);
+            return true;
+        }
     }
 
     public static boolean nextKeyboard() {

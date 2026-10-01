@@ -36,10 +36,10 @@ public final class SchematicSourceData {
     }
 
     public ISchematic instantiate() throws IOException {
-        return edited == null ? SchematicFormat.readFromSnapshot(snapshot) : SchematicCopies.copy(edited);
+        return !modified() ? SchematicFormat.readFromSnapshot(snapshot) : SchematicCopies.copy(edited);
     }
 
-    public boolean modified() { return edited != null; }
+    public boolean modified() { return revision > 0; }
     public int revision() { return revision; }
     public String saveExtension() { return modified() ? ".schemplus" : snapshot.extension(); }
 
@@ -55,7 +55,7 @@ public final class SchematicSourceData {
     public void changed() { revision++; }
 
     public void save(File file, boolean replace) throws IOException {
-        if (edited == null) { snapshot.write(file, replace); return; }
+        if (!modified()) { snapshot.write(file, replace); return; }
         if (SchematicCopies.independent(edited) && overlapping(edited.getRegions())) throw new MessageException("schematica.message.rebuild.save_overlapping");
         SchematicFileSnapshot.capture(edited).write(file, replace);
     }

@@ -17,7 +17,8 @@ public enum ToolMode {
     REPLACE_BLOCK("litematica.tool_mode.name.replace_block", true, false, true, true),
     PASTE_SCHEMATIC("litematica.tool_mode.name.paste_schematic", true, true, false, false),
     MOVE("litematica.tool_mode.name.move", true, false, false, false),
-    DELETE("litematica.tool_mode.name.delete", true, false, false, false);
+    DELETE("litematica.tool_mode.name.delete", true, false, false, false),
+    REBUILD("litematica.tool_mode.name.rebuild", false, true, true, false);
 
     private final String translationKey;
     private final boolean creativeOnly;

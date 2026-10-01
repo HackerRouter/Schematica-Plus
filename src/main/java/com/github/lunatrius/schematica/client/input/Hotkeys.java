@@ -59,6 +59,9 @@ public final class Hotkeys {
         for (String id : new String[] {"nudgeSelectionPositive", "nudgeSelectionNegative", "moveEntireSelection",
             "selectionGrow", "selectionShrink", "deleteSelectionBox", "setAreaOrigin", "setSelectionBoxPosition1",
             "setSelectionBoxPosition2", "unloadCurrentSchematic", "uiDemo"}) add(id, normal());
+        for (String id : new String[] {"schematicEditBreakAllExcept", "schematicEditBreakPlaceAll", "schematicEditBreakPlaceDirection",
+            "schematicEditReplaceAll", "schematicEditReplaceBlock", "schematicEditReplaceDirection"}) add(id, modifier());
+        add("schematicEditReplaceSelection", normal());
         ALL = Collections.unmodifiableList(new ArrayList<>(BY_ID.values()));
     }
 
@@ -77,6 +80,7 @@ public final class Hotkeys {
             if (!store.load(ALL)) { migrate(gameDirectory.resolve("options.txt")); store.save(ALL); }
         } catch (IOException error) { Reference.logger.error("Could not load hotkeys; keeping the original configuration file", error); }
         HotkeyHooks.initialize(ALL, InputHandler.INSTANCE::onHotkey, ToolManager::scroll);
+        HotkeyHooks.click(com.github.lunatrius.schematica.tool.SchematicRebuild::click);
     }
     public static void save() {
         if (store == null) return;

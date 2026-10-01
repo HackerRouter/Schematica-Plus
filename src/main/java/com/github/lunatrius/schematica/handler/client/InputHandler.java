@@ -66,6 +66,7 @@ public class InputHandler {
             case "unloadCurrentSchematic": SchematicaPlus.proxy.unloadSchematic(); break;
             case "pickBlockFirst": return pickBlock();
             case "pickBlockToggle": ToolManager.toggleConfig("pickBlockEnabled"); break;
+            case "schematicEditReplaceSelection": return com.github.lunatrius.schematica.tool.SchematicRebuild.replaceSelection();
             case "executeOperation":
                 if (!com.github.lunatrius.schematica.handler.ConfigurationHandler.executeRequireTool || ToolManager.toolActive()) ToolHandler.onExecute(minecraft.thePlayer);
                 else return false;
