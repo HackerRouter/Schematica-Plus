@@ -61,8 +61,6 @@ public final class Names {
         public static final String TOOL_ITEM_DESC = "Item to use as the schematic tool. Format: modid:name or modid:name@meta (e.g. minecraft:stick). Hold this item to activate tool functions.";
         public static final String PASTE_WITHOUT_UPDATES = "pasteWithoutUpdates";
         public static final String PASTE_WITHOUT_UPDATES_DESC = "Paste without block placement/removal callbacks or neighbor notifications. Singleplayer only; lighting, client synchronization and normal game ticks remain active.";
-        public static final String PASTE_ONLY_AIR = "pasteOnlyAir";
-        public static final String PASTE_ONLY_AIR_DESC = "Paste only into air. Existing blocks and their tile entity data are left untouched.";
 
         public static final String PRINTER_ENABLED = "printerEnabled";
         public static final String PRINTER_ENABLED_DESC = "Allow players to use the printer.";

@@ -58,8 +58,6 @@ schematica.config.loadEnabled.tooltip=允许玩家加载schematics.
 # gui - config - tool
 schematica.config.pasteWithoutUpdates=粘贴时不发出方块更新
 schematica.config.pasteWithoutUpdates.tooltip=粘贴时跳过方块放置、移除回调和邻居更新。仅单人世界可用。画面、光照同步及方块自身运行仍会继续。
-schematica.config.pasteOnlyAir=粘贴时仅替换空气
-schematica.config.pasteOnlyAir.tooltip=仅在目标世界的空气位置放置蓝图方块，保留已有方块及其内容。
 
 # commands - save
 schematica.command.save.usage=/schematicaSave <startX> <startY> <startZ> <endX> <endY> <endZ> <name>

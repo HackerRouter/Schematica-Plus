@@ -18,6 +18,7 @@ import com.github.lunatrius.schematica.reference.Reference;
 import com.github.lunatrius.schematica.client.selection.AreaSelections;
 import com.github.lunatrius.schematica.client.selection.AreaSelectionLibrary.Area;
 import com.github.lunatrius.schematica.client.gui.framework.UiTranslations;
+import com.github.lunatrius.schematica.tool.ReplaceBehavior;
 import com.github.lunatrius.schematica.tool.ToolManager;
 import com.github.lunatrius.schematica.tool.ToolMode;
 
@@ -112,9 +113,9 @@ public class OverlayHandler {
             }
 
             if (mode == ToolMode.PASTE_SCHEMATIC) {
-                boolean none = ConfigurationHandler.pasteOnlyAir;
-                lines.add(UiTranslations.format("litematica.hud.misc.schematic_paste.replace_mode", (none ? EnumChatFormatting.RED : EnumChatFormatting.GOLD)
-                    + UiTranslations.format(none ? "litematica.gui.label.replace_behavior.none" : "litematica.gui.label.replace_behavior.all") + EnumChatFormatting.RESET));
+                ReplaceBehavior replace = ConfigurationHandler.pasteReplaceBehavior;
+                lines.add(UiTranslations.format("litematica.hud.misc.schematic_paste.replace_mode", (replace == ReplaceBehavior.NONE ? EnumChatFormatting.RED : EnumChatFormatting.GOLD)
+                    + UiTranslations.format(replace.translationKey()) + EnumChatFormatting.RESET));
             }
 
             // Line 3: Selection coords (for area-related modes)

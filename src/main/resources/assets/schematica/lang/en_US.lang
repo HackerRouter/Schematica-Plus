@@ -58,8 +58,6 @@ schematica.config.loadEnabled.tooltip=Allow players to load schematics.
 # gui - config - tool
 schematica.config.pasteWithoutUpdates=Paste Without Block Updates
 schematica.config.pasteWithoutUpdates.tooltip=Skip placement/removal block callbacks and neighbor notifications when pasting. Singleplayer only. Lighting, display synchronization and normal game ticks remain active.
-schematica.config.pasteOnlyAir=Paste Only Into Air
-schematica.config.pasteOnlyAir.tooltip=Place schematic blocks only where the world contains air. Keep existing blocks and their contents.
 
 # commands - save
 schematica.command.save.usage=/schematicaSave <startX> <startY> <startZ> <endX> <endY> <endZ> <name>

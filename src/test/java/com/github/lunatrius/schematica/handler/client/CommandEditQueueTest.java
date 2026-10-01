@@ -46,7 +46,7 @@ public class CommandEditQueueTest {
 
     @Test public void failedPreflightCreatesNoTaskAndClearingAllowsAnotherJob() {
         WorldEditJob silent = new WorldEditJob(owner, 0, WorldEditJob.Kind.PASTE, 0, 64, 0,
-            1, 1, 1, null, 0, null, 0, true, false);
+            1, 1, 1, null, 0, null, 0, true, com.github.lunatrius.schematica.tool.ReplaceBehavior.ALL);
         assertThrows(MessageException.class, () -> queue.submit(silent, null));
         assertTrue(TaskRegistry.INSTANCE.tasks(owner, 0).isEmpty());
         queue.submit(job(), null);

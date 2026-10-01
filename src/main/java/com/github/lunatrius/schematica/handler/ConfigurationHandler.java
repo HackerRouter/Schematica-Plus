@@ -16,6 +16,7 @@ import net.minecraftforge.common.config.Property;
 import com.github.lunatrius.schematica.SchematicaPlus;
 import com.github.lunatrius.schematica.reference.Names;
 import com.github.lunatrius.schematica.reference.Reference;
+import com.github.lunatrius.schematica.tool.ReplaceBehavior;
 
 import cpw.mods.fml.client.event.ConfigChangedEvent;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
@@ -54,7 +55,6 @@ public class ConfigurationHandler {
     public static final String SORT_TYPE_DEFAULT = "";
     public static final String TOOL_ITEM_DEFAULT = "minecraft:stick";
     public static final boolean PASTE_WITHOUT_UPDATES_DEFAULT = false;
-    public static final boolean PASTE_ONLY_AIR_DEFAULT = false;
     public static final boolean PRINTER_ENABLED_DEFAULT = true;
     public static final boolean SAVE_ENABLED_DEFAULT = true;
     public static final boolean LOAD_ENABLED_DEFAULT = true;
@@ -89,7 +89,7 @@ public class ConfigurationHandler {
     /** MaLiLib MessageOutputType for Easy Place and Placement Restriction warnings: none, message or actionbar. */
     public static String placementRestrictionWarn = "actionbar";
     public static boolean pasteWithoutUpdates = PASTE_WITHOUT_UPDATES_DEFAULT;
-    public static boolean pasteOnlyAir = PASTE_ONLY_AIR_DEFAULT;
+    public static ReplaceBehavior pasteReplaceBehavior = ReplaceBehavior.NONE;
     public static boolean printerEnabled = PRINTER_ENABLED_DEFAULT;
     public static boolean saveEnabled = SAVE_ENABLED_DEFAULT;
     public static boolean loadEnabled = LOAD_ENABLED_DEFAULT;
@@ -117,7 +117,6 @@ public class ConfigurationHandler {
     public static Property propSortType = null;
     public static Property propToolItem = null;
     public static Property propPasteWithoutUpdates = null;
-    public static Property propPasteOnlyAir = null;
     public static Property propPrinterEnabled = null;
     public static Property propSaveEnabled = null;
     public static Property propLoadEnabled = null;
@@ -376,10 +375,7 @@ public class ConfigurationHandler {
         propPasteWithoutUpdates.setLanguageKey(Names.Config.LANG_PREFIX + "." + Names.Config.PASTE_WITHOUT_UPDATES);
         pasteWithoutUpdates = propPasteWithoutUpdates.getBoolean(PASTE_WITHOUT_UPDATES_DEFAULT);
 
-        propPasteOnlyAir = configuration.get(Names.Config.Category.TOOL, Names.Config.PASTE_ONLY_AIR,
-            PASTE_ONLY_AIR_DEFAULT, Names.Config.PASTE_ONLY_AIR_DESC);
-        propPasteOnlyAir.setLanguageKey(Names.Config.LANG_PREFIX + "." + Names.Config.PASTE_ONLY_AIR);
-        pasteOnlyAir = propPasteOnlyAir.getBoolean(PASTE_ONLY_AIR_DEFAULT);
+        pasteReplaceBehavior = loadPasteReplaceBehavior(configuration);
 
         propPrinterEnabled = configuration.get(
             Names.Config.Category.SERVER,
@@ -429,11 +425,6 @@ public class ConfigurationHandler {
         }
     }
 
-    /**
-     * Parses the tool item config string and caches the result.
-     * Server-safe: does not reference any client-only classes.
-     * Supports formats: "minecraft:stick", "minecraft:dye@4"
-     */
     private static boolean toolFlag(String name, boolean fallback) {
         Property property = configuration.get(Names.Config.Category.TOOL, name, fallback);
         property.setLanguageKey("litematica.config.generic.name." + name);
@@ -446,6 +437,35 @@ public class ConfigurationHandler {
         return property.getBoolean(true);
     }
 
+    /**
+     * Litematica's pasteReplaceBehavior. A legacy pasteOnlyAir setting is converted once: only-air becomes None and
+     * the old default, which pasted non-air blocks over anything, becomes With non-air.
+     */
+    static ReplaceBehavior loadPasteReplaceBehavior(Configuration config) {
+        net.minecraftforge.common.config.ConfigCategory tool = config.getCategory(Names.Config.Category.TOOL);
+        Property legacy = tool.get("pasteOnlyAir");
+        boolean migrate = legacy != null && !tool.containsKey("pasteReplaceBehavior");
+        Property property = config.get(Names.Config.Category.TOOL, "pasteReplaceBehavior", ReplaceBehavior.NONE.value);
+        property.setLanguageKey("litematica.config.generic.name.pasteReplaceBehavior");
+        property.setValidValues(ReplaceBehavior.names());
+        if (migrate) property.set((legacy.getBoolean(false) ? ReplaceBehavior.NONE : ReplaceBehavior.WITH_NON_AIR).value);
+        if (legacy != null) tool.remove("pasteOnlyAir");
+        ReplaceBehavior behavior = ReplaceBehavior.parse(property.getString());
+        property.set(behavior.value);
+        return behavior;
+    }
+
+    public static void setPasteReplaceBehavior(ReplaceBehavior behavior) {
+        configuration.getCategory(Names.Config.Category.TOOL).get("pasteReplaceBehavior").set(behavior.value);
+        loadConfiguration();
+        configuration.save();
+    }
+
+    /**
+     * Parses the tool item config string and caches the result.
+     * Server-safe: does not reference any client-only classes.
+     * Supports formats: "minecraft:stick", "minecraft:dye@4"
+     */
     public static void parseToolItem(String itemStr) {
         toolItemType = null;
         toolItemMeta = -1;

@@ -21,6 +21,15 @@ public final class ConfigTranslations {
         }
     }
 
+    /** The upstream option-list label key for an enumerated config value, or null when the property has none. */
+    public static String optionKey(String name, String value) {
+        switch (name) {
+            case "pasteReplaceBehavior": return "litematica.gui.label.replace_behavior." + value;
+            case "placementRestrictionWarn": return "malilib.label.message_output_type." + value;
+            default: return null;
+        }
+    }
+
     public static String comment(String key) {
         String label = label(key);
         return label.startsWith("litematica.config.") && label.contains(".name.") ? label.replace(".name.", ".comment.") : key + ".tooltip";

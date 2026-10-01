@@ -31,7 +31,8 @@ public final class WorldEditJob extends WorldEditTask {
     public enum Kind { PASTE, FILL, REPLACE }
     public final int width, height, length, volume;
     public final Kind kind;
-    public final boolean pasteWithoutUpdates, pasteOnlyAir;
+    public final boolean pasteWithoutUpdates;
+    public final ReplaceBehavior replace;
     private final Block replacement, target;
     private final int replacementMeta, targetMeta;
     private short[] blocks;
@@ -45,12 +46,12 @@ public final class WorldEditJob extends WorldEditTask {
 
     public WorldEditJob(UUID player, int dimension, Kind kind, int x, int y, int z,
         int width, int height, int length, Block replacement, int replacementMeta, Block target, int targetMeta) {
-        this(player, dimension, kind, x, y, z, width, height, length, replacement, replacementMeta, target, targetMeta, false, false);
+        this(player, dimension, kind, x, y, z, width, height, length, replacement, replacementMeta, target, targetMeta, false, ReplaceBehavior.ALL);
     }
 
     public WorldEditJob(UUID player, int dimension, Kind kind, int x, int y, int z,
         int width, int height, int length, Block replacement, int replacementMeta, Block target, int targetMeta,
-        boolean pasteWithoutUpdates, boolean pasteOnlyAir) {
+        boolean pasteWithoutUpdates, ReplaceBehavior replace) {
         super(player, dimension, x, y, z);
         SchematicLimits.worldBounds(x, y, z, (long) x + width - 1, (long) y + height - 1, (long) z + length - 1);
         this.kind = kind;
@@ -59,7 +60,7 @@ public final class WorldEditJob extends WorldEditTask {
         this.replacement = replacement; this.replacementMeta = replacementMeta;
         this.target = target; this.targetMeta = targetMeta;
         this.pasteWithoutUpdates = kind == Kind.PASTE && pasteWithoutUpdates;
-        this.pasteOnlyAir = kind == Kind.PASTE && pasteOnlyAir;
+        this.replace = kind == Kind.PASTE ? replace : ReplaceBehavior.ALL;
         this.silentPlacement = this.pasteWithoutUpdates ? new SilentBlockPlacement() : null;
     }
 
@@ -114,15 +115,21 @@ public final class WorldEditJob extends WorldEditTask {
         int wx = x + index % width, wz = z + index / width % length, wy = y + index / width / length;
         if (kind == Kind.REPLACE && (world.getBlock(wx, wy, wz) != target
             || world.getBlockMetadata(wx, wy, wz) != targetMeta)) return null;
-        if (pasteOnlyAir && !world.isAirBlock(wx, wy, wz)) return null;
         Block block = kind == Kind.PASTE ? GameData.getBlockRegistry().getObjectById(blocks[index] & 0xffff) : replacement;
-        if (block == null || (kind == Kind.PASTE && block == Blocks.air)) return null;
+        if (block == null || !pastes(block, world.isAirBlock(wx, wy, wz))) return null;
         int meta = kind == Kind.PASTE ? metadata[index] & 15 : replacementMeta;
         return blockCommand(wx, wy, wz, GameData.getBlockRegistry().getNameForObject(block), meta);
     }
 
+    /** Paste skips per the replace behavior, and never writes air over air; fills and deletes always apply. */
+    private boolean pastes(Block block, boolean worldAir) {
+        if (kind != Kind.PASTE) return true;
+        boolean air = block == Blocks.air;
+        return !(air && worldAir) && replace.places(worldAir, air);
+    }
+
     String blockCommand(int x, int y, int z, String block, int metadata) {
-        return "/setblock " + x + " " + y + " " + z + " " + block + " " + metadata + (pasteOnlyAir ? " keep" : " replace");
+        return "/setblock " + x + " " + y + " " + z + " " + block + " " + metadata + (replace == ReplaceBehavior.NONE ? " keep" : " replace");
     }
 
     public void setRegions(List<com.github.lunatrius.schematica.api.SchematicRegion> regions) {
@@ -155,7 +162,7 @@ public final class WorldEditJob extends WorldEditTask {
             int wx = x + index % width, wz = z + index / width % length, wy = y + index / width / length;
             Block block = kind == Kind.PASTE ? GameData.getBlockRegistry().getObjectById(blocks[index] & 0xffff) : replacement;
             int meta = kind == Kind.PASTE ? metadata[index] & 15 : replacementMeta;
-            if (block == null || (kind == Kind.PASTE && block == Blocks.air)) return false;
+            if (block == null) return false;
             if (phase == 2) {
                 if (!placed.get(index) || pasteWithoutUpdates) return false;
                 world.markBlockForUpdate(wx, wy, wz);
@@ -167,7 +174,7 @@ public final class WorldEditJob extends WorldEditTask {
             if ((phase == 0) != structural) return false;
             if (kind == Kind.REPLACE && (world.getBlock(wx, wy, wz) != target
                 || world.getBlockMetadata(wx, wy, wz) != targetMeta)) return false;
-            if (pasteOnlyAir && !world.isAirBlock(wx, wy, wz)) return false;
+            if (!pastes(block, world.isAirBlock(wx, wy, wz))) return false;
             if (silentPlacement != null) {
                 silentPlacement.setBlock(world, wx, wy, wz, block, meta);
             } else {

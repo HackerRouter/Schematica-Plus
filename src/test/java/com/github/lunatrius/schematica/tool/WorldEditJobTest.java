@@ -46,16 +46,28 @@ public class WorldEditJobTest {
         WorldEditJob defaults = new WorldEditJob(UUID.randomUUID(), 0, WorldEditJob.Kind.PASTE, 0, 0, 0,
             1, 1, 1, null, 0, null, 0);
         assertFalse(defaults.pasteWithoutUpdates);
-        assertFalse(defaults.pasteOnlyAir);
+        assertEquals(ReplaceBehavior.ALL, defaults.replace);
         WorldEditJob fill = job(WorldEditJob.Kind.FILL, true, true);
         assertFalse(fill.pasteWithoutUpdates);
-        assertFalse(fill.pasteOnlyAir);
+        assertEquals(ReplaceBehavior.ALL, fill.replace);
         assertTrue(fill.blockCommand(1, 2, 3, "minecraft:stone", 0).endsWith(" replace"));
     }
 
     @Test public void airOnlyCommandsRequireTheServerToRecheckTheTarget() {
         WorldEditJob job = job(WorldEditJob.Kind.PASTE, false, true);
         assertEquals("/setblock -1 64 2 minecraft:stone 3 keep", job.blockCommand(-1, 64, 2, "minecraft:stone", 3));
+    }
+
+    @Test public void replaceBehaviorFollowsLitematicaPasteRules() {
+        assertTrue(ReplaceBehavior.NONE.places(true, false));
+        assertFalse(ReplaceBehavior.NONE.places(false, false));
+        assertTrue(ReplaceBehavior.ALL.places(false, true));
+        assertTrue(ReplaceBehavior.WITH_NON_AIR.places(false, false));
+        assertFalse(ReplaceBehavior.WITH_NON_AIR.places(false, true));
+        assertEquals(ReplaceBehavior.ALL, ReplaceBehavior.NONE.cycle(false));
+        assertEquals(ReplaceBehavior.WITH_NON_AIR, ReplaceBehavior.NONE.cycle(true));
+        assertEquals(ReplaceBehavior.NONE, ReplaceBehavior.parse("unknown"));
+        assertEquals(ReplaceBehavior.WITH_NON_AIR, ReplaceBehavior.parse("with_non_air"));
     }
 
     @Test public void silentPasteRejectsCommandFallbackBeforeSendingAnyCommands() {
@@ -66,7 +78,7 @@ public class WorldEditJobTest {
     }
 
     private static WorldEditJob job(WorldEditJob.Kind kind, boolean silent, boolean air) {
-        return new WorldEditJob(UUID.randomUUID(), 0, kind, 0, 0, 0, 1, 1, 1, null, 0, null, 0, silent, air);
+        return new WorldEditJob(UUID.randomUUID(), 0, kind, 0, 0, 0, 1, 1, 1, null, 0, null, 0, silent, air ? ReplaceBehavior.NONE : ReplaceBehavior.ALL);
     }
 
     @Test public void rejectsOutOfWorldPasteBeforeCapturingData() {

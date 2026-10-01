@@ -417,6 +417,14 @@ public class GuiModConfig extends UiScreen implements HotkeyHooks.Capture {
                         int current = HudAlignment.parse(entry.draft.text()).ordinal();
                         entry.draft.setText(values[Math.floorMod(current + (button == 1 ? -1 : 1), values.length)].value());
                     }));
+            } else if (ConfigTranslations.optionKey(entry.draft.property.getName(), "") != null
+                && entry.draft.property.getValidValues() != null && entry.draft.property.getValidValues().length > 0) {
+                String[] values = entry.draft.property.getValidValues();
+                editor = add(new UiButton(() -> UiTranslations.format(ConfigTranslations.optionKey(entry.draft.property.getName(), entry.draft.text())),
+                    button -> {
+                        int current = java.util.Arrays.asList(values).indexOf(entry.draft.text());
+                        entry.draft.setText(values[Math.floorMod(current + (button == 1 ? -1 : 1), values.length)]);
+                    }));
             } else if (entry.draft.property.getType() == Property.Type.BOOLEAN) {
                 editor = add(new UiButton(() -> UiTranslations.format(Boolean.parseBoolean(entry.draft.text())
                     ? "malilib.gui.button.true" : "malilib.gui.button.false"),

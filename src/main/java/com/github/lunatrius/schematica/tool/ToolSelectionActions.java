@@ -9,6 +9,7 @@ import com.github.lunatrius.schematica.client.gui.framework.UiTranslations;
 import com.github.lunatrius.schematica.client.selection.AreaSelectionLibrary;
 import com.github.lunatrius.schematica.client.selection.AreaSelectionLibrary.Area;
 import com.github.lunatrius.schematica.client.selection.AreaSelections;
+import com.github.lunatrius.schematica.handler.ConfigurationHandler;
 import com.github.lunatrius.schematica.internal.lunatriuscore.util.vector.Vector3i;
 
 final class ToolSelectionActions {
@@ -69,7 +70,9 @@ final class ToolSelectionActions {
     private static void cycleMode() {
         ToolMode mode = ToolManager.getCurrentMode();
         if (mode == ToolMode.DELETE) ToolMode.deleteUsesPlacement = !ToolMode.deleteUsesPlacement;
-        else if (mode == ToolMode.PASTE_SCHEMATIC) ToolManager.toggleConfig(com.github.lunatrius.schematica.reference.Names.Config.PASTE_ONLY_AIR, false);
+        else if (mode == ToolMode.PASTE_SCHEMATIC) {
+            ConfigurationHandler.setPasteReplaceBehavior(ConfigurationHandler.pasteReplaceBehavior.cycle(false));
+        }
         else if (mode.getUsesAreaSelection()) {
             AreaSelectionLibrary library = AreaSelections.library();
             library.setCornerMode(library.cornerMode() == AreaSelectionLibrary.CornerMode.CORNERS

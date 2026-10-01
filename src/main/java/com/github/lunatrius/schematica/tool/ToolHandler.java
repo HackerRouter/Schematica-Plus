@@ -75,7 +75,7 @@ public class ToolHandler {
                 schematic.position.x, schematic.position.y, schematic.position.z,
                 schematic.getWidth(), schematic.getHeight(), schematic.getLength(), null, 0, null, 0,
                 com.github.lunatrius.schematica.handler.ConfigurationHandler.pasteWithoutUpdates,
-                com.github.lunatrius.schematica.handler.ConfigurationHandler.pasteOnlyAir);
+                com.github.lunatrius.schematica.handler.ConfigurationHandler.pasteReplaceBehavior);
             job.capture(schematic.getSchematic(), schematic.isPastingBlockNBT, schematic.isRenderingEntities);
         } else {
             com.github.lunatrius.schematica.world.storage.RegionSelection selection =

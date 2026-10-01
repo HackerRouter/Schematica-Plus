@@ -1124,3 +1124,17 @@ These checks supersede Phase 12's Simple-editor and bounding-box expectations.
   instead of "Format error".
 - Check the removed hint tooltips did not leave blank hover boxes (render layers,
   main menu mode buttons, area editor, placement visibility/rotation, search icons).
+
+## Paste replace behavior
+
+- Existing config with `pasteOnlyAir=true` loads as None, `false` as With non-air;
+  the old key disappears from the file. A fresh config starts at None.
+- With selectionModeCycle in Paste mode, the HUD cycles None (red) → All → With
+  non-air (orange); the Generic config row shows the same names and cycles on click.
+- Paste a schematic with air pockets over stone in each mode, singleplayer and on a
+  server via commands: None fills only air, All replaces everything and clears
+  stone where the schematic is air (only inside enabled sub-regions), With non-air
+  replaces with the schematic's blocks but keeps world blocks under schematic air.
+  Clearing must drop no items from replaced chests and keep neighbor updates and
+  "Paste without block updates" behavior.
+- placementRestrictionWarn also shows as a cycling None/Message/Actionbar button.
