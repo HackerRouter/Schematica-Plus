@@ -83,10 +83,12 @@ public final class GuiTaskManager extends UiScreen {
             remove.setEnabled(progress.cancellable);
             String hint = UiTranslations.format(task.kind == TaskRegistry.Kind.VERIFIER ? "schematica.ui.task.cancel_verifier"
                 : task.kind == TaskRegistry.Kind.SAVE ? "schematica.ui.task.cancel_save"
+                : task.kind == TaskRegistry.Kind.REBUILD ? "schematica.ui.task.cancel_rebuild"
                 : task.backend == TaskRegistry.Backend.COMMANDS ? "schematica.ui.task.cancel_commands" : "schematica.ui.task.cancel_edit");
             remove.setTooltip(hint);
             String count = task.backend == TaskRegistry.Backend.COMMANDS
                 ? UiTranslations.format("schematica.ui.task.sent", progress.affected)
+                : task.kind == TaskRegistry.Kind.REBUILD ? UiTranslations.format("schematica.ui.task.schematic_changed", progress.affected)
                 : UiTranslations.format("schematica.ui.task.changed", progress.affected, progress.entities);
             if (task.kind == TaskRegistry.Kind.SAVE || task.kind == TaskRegistry.Kind.VERIFIER) setTooltip(UiTranslations.format(task.kind.key), task.detail,
                 UiTranslations.format(task.backend.key), status(progress), hint);

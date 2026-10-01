@@ -337,7 +337,6 @@ schematica.ui.source.unload_hint=卸载此源数据，同时移除它的所有�
 schematica.ui.source.reload_hint=重新读取源文件并重建其放置，保留各自名称、原点、变换和显隐设置。放置数据会被文件内容替换，未保存的“编辑原理图”修改将被丢弃。
 schematica.message.rebuild.save_overlapping=此已编辑的源包含相互重叠的独立子区域，.schemplus 目前无法分别保存它们。未保存任何内容。
 schematica.message.rebuild.failed=无法编辑原理图，详情请查看日志。
-schematica.message.rebuild.selection_too_large=选区过大，无法复制到原理图中（最多 1,048,576 个方块）。
 schematica.ui.source.unsaved_title=放弃原理图修改？
 schematica.ui.source.unsaved=%s 有尚未保存到文件的“编辑原理图”修改。继续操作将丢弃这些修改。
 schematica.ui.source.save_hint=按原格式另存内存中的源文件，保留原始 NBT、实体和元数据，不包含放置的变换。经“编辑原理图”修改过的源会另存为新的 .schemplus 文件，原文件不会被改动。
@@ -442,6 +441,11 @@ schematica.ui.verifier.comparison=比较方块注册名和 metadata，不比较�
 schematica.ui.task.backend.analysis=客户端验证
 schematica.ui.task.stage.verify=核对区块
 schematica.ui.task.cancel_verifier=暂停验证并保留结果，可在该放置的验证器界面继续。
+schematica.ui.task.backend.memory=内存中的原理图编辑
+schematica.ui.task.stage.edit=已检查方块
+schematica.ui.task.schematic_changed=原理图中已修改方块：%s
+schematica.ui.task.cancel_rebuild=停止编辑。内存原理图中已修改的方块保持修改，放置会随之刷新。
+schematica.message.rebuild.busy=另一项原理图编辑仍在进行。请等待其完成，或在任务管理器中移除。
 
 schematica.ui.verifier.metadata=元数据 = %s
 schematica.ui.verifier.select_markers=点击选择或取消此类别／条目的错误标记。\n选中该放置实例后，瞄准标记并按住 renderInfoOverlay 键（默认 I）查看方块对比。

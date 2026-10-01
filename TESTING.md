@@ -992,7 +992,10 @@ These checks supersede Phase 12's Simple-editor and bounding-box expectations.
 - Repeat with rotated/mirrored placements, rotated subregions, signed anchors,
   overlapping and disabled/hidden subregions, independent .litematic regions, flat
   .schematic sources and several placements of one source: every placement of the
-  source must update consistently, other sources must not. Edits over 4096 cells
+  source must update consistently, other sources must not. Bulk edits on large
+  sources continue over several ticks without freezing the client, appear in the
+  Task Manager and can be removed there (changes made so far remain); a second
+  bulk edit while one runs is refused. Edits over 4096 cells
   recompose the placements instead of patching cells; check selection, layers,
   verifier and material list afterwards.
 - While a modifier is held, the targeted schematic face shows the upstream overlay
@@ -1000,7 +1003,8 @@ These checks supersede Phase 12's Simple-editor and bounding-box expectations.
   directional overlay highlights the center/edge zone that decides the direction,
   for all six faces and all four player facings, through blocks.
 - schematicEditReplaceSelection copies loaded real blocks that differ inside the
-  area selection (at most 1,048,576 cells) into the schematic(s) shown there.
+  area selection (no size limit; large selections run as a task) into the
+  schematic(s) shown there; the success message appears when the task completes.
 - Edited sources show an orange name and notice icon in Loaded Schematics until
   saved; Save writes a new .schemplus file (the original file is untouched),
   overlapping independent regions are refused, and Reload/Unload ask before

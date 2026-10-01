@@ -14,7 +14,8 @@ public final class TaskRegistry {
         DELETE("litematica.gui.label.task_name.delete"),
         REPLACE("litematica.tool_mode.name.replace_block"),
         MOVE("litematica.tool_mode.name.move"),
-        VERIFIER("litematica.gui.label.task_name.verifier");
+        VERIFIER("litematica.gui.label.task_name.verifier"),
+        REBUILD("litematica.tool_mode.name.rebuild");
 
         public final String key;
         Kind(String key) { this.key = key; }
@@ -24,7 +25,8 @@ public final class TaskRegistry {
         CLIENT("schematica.ui.task.backend.client"),
         SERVER("schematica.ui.task.backend.server"),
         COMMANDS("schematica.ui.task.backend.commands"),
-        ANALYSIS("schematica.ui.task.backend.analysis");
+        ANALYSIS("schematica.ui.task.backend.analysis"),
+        MEMORY("schematica.ui.task.backend.memory");
 
         public final String key;
         Backend(String key) { this.key = key; }
@@ -39,7 +41,8 @@ public final class TaskRegistry {
         UPDATES("schematica.ui.task.stage.updates"),
         ENTITIES("schematica.ui.task.stage.entities"),
         COMMANDS("schematica.ui.task.stage.commands"),
-        VERIFY("schematica.ui.task.stage.verify");
+        VERIFY("schematica.ui.task.stage.verify"),
+        EDIT("schematica.ui.task.stage.edit");
 
         public final String key;
         Stage(String key) { this.key = key; }

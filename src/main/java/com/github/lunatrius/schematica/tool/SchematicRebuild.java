@@ -5,7 +5,6 @@ package com.github.lunatrius.schematica.tool;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -25,9 +24,7 @@ import net.minecraftforge.common.util.ForgeDirection;
 
 import com.github.lunatrius.schematica.api.ISchematic;
 import com.github.lunatrius.schematica.api.SchematicOrigin;
-import com.github.lunatrius.schematica.api.SchematicRegion;
 import com.github.lunatrius.schematica.client.input.Hotkeys;
-import com.github.lunatrius.schematica.client.renderer.RendererSchematicGlobal;
 import com.github.lunatrius.schematica.client.selection.AreaSelectionLibrary.Area;
 import com.github.lunatrius.schematica.client.selection.AreaSelections;
 import com.github.lunatrius.schematica.client.world.CellState;
@@ -42,13 +39,11 @@ import com.github.lunatrius.schematica.client.world.SourceEditor.Cell;
 import com.github.lunatrius.schematica.client.world.SubRegionPlacements;
 import com.github.lunatrius.schematica.proxy.ClientProxy;
 import com.github.lunatrius.schematica.reference.Reference;
-import com.github.lunatrius.schematica.world.storage.RegionSelection;
 
 /** Edits loaded schematic sources in memory; the real world is never changed. */
 public final class SchematicRebuild {
     private static final double RANGE = 10;
     private static final int MAX_RUN = 10000;
-    private static final long MAX_SELECTION = 1024L * 1024;
 
     private SchematicRebuild() {}
 
@@ -170,36 +165,9 @@ public final class SchematicRebuild {
     public static boolean replaceSelection() {
         Area area = AreaSelections.library().selected();
         if (area == null || area.boxes().isEmpty() || mc().theWorld == null || ClientProxy.loadedSchematics.isEmpty()) return false;
-        try {
-            new RegionSelection(area.regions());
-            long volume = 0;
-            for (SchematicRegion box : area.regions()) volume += (long) (box.maxX - box.minX + 1) * (box.maxY - box.minY + 1) * (box.maxZ - box.minZ + 1);
-            if (volume > MAX_SELECTION) throw new IllegalArgumentException("Selection too large");
-            Map<SchematicLibrary.Source<SchematicSourceData>, Map<Cell, CellState>> changes = new IdentityHashMap<>();
-            Map<String, CellState> states = new HashMap<>(), cache = new HashMap<>();
-            for (SchematicRegion box : area.regions()) {
-                for (int y = box.minY; y <= box.maxY; y++) for (int z = box.minZ; z <= box.maxZ; z++) for (int x = box.minX; x <= box.maxX; x++) {
-                    if (!mc().theWorld.blockExists(x, y, z)) continue;
-                    Owner owner = owner(ClientProxy.schematic, x, y, z);
-                    if (owner == null) continue;
-                    Block block = mc().theWorld.getBlock(x, y, z);
-                    int meta = mc().theWorld.getBlockMetadata(x, y, z);
-                    if (composed(owner.world, x, y, z).same(new CellState(block, meta, null))) continue;
-                    CellState state = states.computeIfAbsent(Block.getIdFromBlock(block) + ":" + meta, key -> CellState.of(block, meta));
-                    changes.computeIfAbsent(owner.source, key -> new LinkedHashMap<>()).put(owner.cell, state.transform(SourceBlockPosition.inverse(owner.operations()), cache));
-                }
-            }
-            for (Map.Entry<SchematicLibrary.Source<SchematicSourceData>, Map<Cell, CellState>> entry : changes.entrySet()) apply(entry.getKey(), entry.getValue());
-            com.github.lunatrius.schematica.internal.lunatriuscore.util.vector.Vector3i origin = area.origin();
-            message(EnumChatFormatting.GREEN, "litematica.message.schematic_edit_replace_selection",
-                String.format("x: %d, y: %d, z: %d", origin.x, origin.y, origin.z));
-        } catch (IOException error) {
-            Reference.logger.error("Could not copy the selection into the schematic", error);
-            message(EnumChatFormatting.RED, "schematica.message.rebuild.failed");
-        } catch (IllegalArgumentException | ArithmeticException error) {
-            message(EnumChatFormatting.RED, "schematica.message.rebuild.selection_too_large");
-        }
-        return true;
+        com.github.lunatrius.schematica.internal.lunatriuscore.util.vector.Vector3i origin = area.origin();
+        return RebuildJobs.start(new RebuildJobs.Selection(mc().theWorld, area.regions(), area.name(),
+            String.format("x: %d, y: %d, z: %d", origin.x, origin.y, origin.z)));
     }
 
     public static Target trace(double range) {
@@ -249,7 +217,7 @@ public final class SchematicRebuild {
         return null;
     }
 
-    private static CellState composed(SchematicWorld world, int x, int y, int z) {
+    static CellState composed(SchematicWorld world, int x, int y, int z) {
         int lx = x - world.position.x, ly = y - world.position.y, lz = z - world.position.z;
         ISchematic schematic = world.getSchematic();
         return new CellState(schematic.getBlock(lx, ly, lz), schematic.getBlockMetadata(lx, ly, lz), null);
@@ -259,7 +227,7 @@ public final class SchematicRebuild {
         return state.transform(SourceBlockPosition.inverse(operations), new HashMap<>());
     }
 
-    private static boolean inRange(int x, int y, int z) { return RenderLayerSettings.RANGE.contains(x, y, z); }
+    static boolean inRange(int x, int y, int z) { return RenderLayerSettings.RANGE.contains(x, y, z); }
 
     public static ForgeDirection facing() {
         switch (MathHelper.floor_double(mc().thePlayer.rotationYaw * 4.0F / 360.0F + 0.5D) & 3) {
@@ -312,29 +280,7 @@ public final class SchematicRebuild {
             message(EnumChatFormatting.GOLD, "litematica.message.warn.schematic_rebuild_placement_not_selected");
             return false;
         }
-        ISchematic source = owner.source.data().editable();
-        SchematicOrigin origin = owner.world.originPosition();
-        boolean limited = RenderLayerSettings.RANGE.mode() != RenderLayerRange.Mode.ALL;
-        Map<Cell, CellState> changes = new LinkedHashMap<>();
-        for (SubRegionPlacements.Region region : scope) {
-            if (!region.enabled) continue;
-            CellRule rule = factory.create(new RegionScope(region, SourceBlockPosition.combined(region, owner.world.transformOperations)));
-            SchematicRegion box = region.box;
-            boolean independent = source.getRegionSchematic(region.name()) != null;
-            ISchematic container = independent ? source.getRegionSchematic(region.name()) : source;
-            for (int y = 0; y <= box.maxY - box.minY; y++) for (int z = 0; z <= box.maxZ - box.minZ; z++) for (int x = 0; x <= box.maxX - box.minX; x++) {
-                int cx = independent ? x : box.minX + x, cy = independent ? y : box.minY + y, cz = independent ? z : box.minZ + z;
-                if (!container.containsBlock(cx, cy, cz)) continue;
-                if (limited) {
-                    SchematicOrigin world = SourceBlockPosition.world(region, new SchematicOrigin(x, y, z), origin, owner.world.transformOperations);
-                    if (!inRange(world.x, world.y, world.z)) continue;
-                }
-                CellState next = rule.apply(container.getBlock(cx, cy, cz), container.getBlockMetadata(cx, cy, cz));
-                if (next != null) changes.put(new Cell(independent ? region.name() : null, cx, cy, cz), next);
-            }
-        }
-        apply(owner.source, changes);
-        return true;
+        return RebuildJobs.start(new RebuildJobs.Bulk(owner, scope, factory, RenderLayerSettings.RANGE.mode() != RenderLayerRange.Mode.ALL));
     }
 
     private static Map<Cell, CellState> single(Cell cell, CellState state) {
@@ -344,21 +290,10 @@ public final class SchematicRebuild {
     }
 
     private static void apply(SchematicLibrary.Source<SchematicSourceData> source, Map<Cell, CellState> changes) throws IOException {
-        if (changes.isEmpty()) return;
-        SchematicSourceData data = source.data();
-        List<Cell> applied = SourceEditor.apply(data, changes);
-        if (applied.isEmpty()) return;
-        if (applied.size() > SourceEditor.PATCH_LIMIT) {
-            ClientProxy.refreshSource(source);
-            return;
-        }
-        Map<String, CellState> cache = new HashMap<>();
-        for (SchematicWorld world : new ArrayList<>(ClientProxy.loadedSchematics)) {
-            if (ClientProxy.SCHEMATICS.sourceOf(world) != source) continue;
-            int[] bounds = SourceEditor.patch(world, data.editable(), applied, cache);
-            if (bounds != null) RendererSchematicGlobal.INSTANCE.markDirtyAllSchematics(bounds[0] - 1, bounds[1] - 1, bounds[2] - 1,
-                bounds[3] + 1, bounds[4] + 1, bounds[5] + 1);
-        }
+        RebuildJobs.Edits edits = new RebuildJobs.Edits();
+        for (Map.Entry<Cell, CellState> entry : changes.entrySet()) edits.put(source, entry.getKey(), entry.getValue());
+        edits.flush(true);
+        edits.publish();
     }
 
     /** The state the held block item would place against the targeted face, or the picked primary block with an empty hand. */
@@ -390,7 +325,7 @@ public final class SchematicRebuild {
         }
     }
 
-    private static void message(EnumChatFormatting color, String key, Object... arguments) {
+    static void message(EnumChatFormatting color, String key, Object... arguments) {
         if (mc().thePlayer == null) return;
         ChatComponentTranslation text = new ChatComponentTranslation(key, arguments);
         text.getChatStyle().setColor(color);
