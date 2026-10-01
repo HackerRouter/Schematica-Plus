@@ -159,7 +159,13 @@ public final class GuiPlacementConfiguration extends UiScreen {
             } else mc.displayGuiScreen(new GuiPlacementGridSettings(this, placement));
         });
         grid.setTooltip(UiTranslations.format("schematica.ui.placement.grid_settings.hover"));
-        materials = button("litematica.gui.button.material_list", () -> mc.displayGuiScreen(new GuiSchematicMaterials(this, placement)));
+        materials = button("litematica.gui.button.material_list", () -> {
+            com.github.lunatrius.schematica.client.gui.material.MaterialList list = com.github.lunatrius.schematica.client.gui.material.MaterialList.placement(placement);
+            list.refresh();
+            // Remember the last opened material list for the hotkey to (re-) open it
+            com.github.lunatrius.schematica.client.gui.material.MaterialLists.setCurrent(list);
+            mc.displayGuiScreen(new GuiSchematicMaterials(this, list));
+        });
         verifier = button("litematica.gui.button.schematic_verifier", () -> mc.displayGuiScreen(
             new com.github.lunatrius.schematica.client.gui.GuiSchematicVerifier(this, placement)));
         placements = addButton("litematica.gui.button.change_menu.show_schematic_placements", this::closeScreen);

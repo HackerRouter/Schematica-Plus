@@ -20,10 +20,15 @@ import java.util.List;
 public final class VerifierHud {
     private static Pair pair;
     private static VerifierBlockInfo info;
+    private static int textHeight;
     private VerifierHud() {}
 
     /** Returns whether the verifier block overlay was drawn, which suppresses the generic block info overlay. */
+    /** The height of the verifier lines of the info HUD drawn last frame, for the material list HUD below them. */
+    public static int textHeight() { return textHeight; }
+
     public static boolean render(Minecraft mc, float partialTicks) {
+        textHeight = 0;
         VerificationManager.Session session = VerificationManager.INSTANCE.overlay(mc);
         if (mc.theWorld == null || mc.thePlayer == null || mc.currentScreen != null || mc.gameSettings.hideGUI
             || session == null) { pair = null; info = null; return false; }
@@ -46,6 +51,7 @@ public final class VerifierHud {
         int maxLines = Math.max(1, (int) (screen.getScaledHeight() / scale - 4) / lineHeight);
         if (lines.size() > maxLines) lines = lines.subList(0, maxLines);
         int y = InfoHudSettings.alignment.y(screen.getScaledHeight(), lines.size() * lineHeight, scale, InfoHudSettings.offsetY);
+        textHeight = (int) Math.ceil(lines.size() * lineHeight * scale);
         int maxWidth = Math.max(0, (int) (screen.getScaledWidth() / scale) - 8);
         try (MinecraftUiDraw draw = new MinecraftUiDraw(mc)) {
             GL11.glScalef((float) scale, (float) scale, 1);

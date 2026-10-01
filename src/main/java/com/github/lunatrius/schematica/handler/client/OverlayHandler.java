@@ -82,6 +82,17 @@ public class OverlayHandler {
         if (!com.github.lunatrius.schematica.client.renderer.hud.StatusInfoHud.visible()) lines.add(UiTranslations.format("litematica.hud.schematic_projects_mode"));
     }
 
+    /** The material list HUD inside GUIs (renderMaterialListInGuis) and the looked at block in inventories. */
+    @SubscribeEvent
+    public void onDrawScreen(net.minecraftforge.client.event.GuiScreenEvent.DrawScreenEvent.Post event) {
+        if (this.minecraft.theWorld == null || !com.github.lunatrius.schematica.handler.VisualSettings.rendering) return;
+        if (event.gui instanceof net.minecraft.client.gui.inventory.GuiContainer) {
+            com.github.lunatrius.schematica.client.renderer.hud.MaterialListHud.highlightInventory(this.minecraft,
+                (net.minecraft.client.gui.inventory.GuiContainer) event.gui);
+        }
+        com.github.lunatrius.schematica.client.renderer.hud.MaterialListHud.render(this.minecraft, 0, true);
+    }
+
     @SubscribeEvent
     public void onRenderOverlay(RenderGameOverlayEvent.Post event) {
         if (event.type != RenderGameOverlayEvent.ElementType.ALL) {
@@ -94,6 +105,10 @@ public class OverlayHandler {
         }
         boolean verifier = com.github.lunatrius.schematica.client.renderer.hud.VerifierHud.render(this.minecraft, event.partialTicks);
         com.github.lunatrius.schematica.client.renderer.hud.BlockInfoHud.INSTANCE.render(this.minecraft, event.partialTicks, !verifier);
+        if (this.minecraft.currentScreen == null && !this.minecraft.gameSettings.hideGUI) {
+            com.github.lunatrius.schematica.client.renderer.hud.MaterialListHud.render(this.minecraft,
+                com.github.lunatrius.schematica.client.renderer.hud.VerifierHud.textHeight(), false);
+        }
 
         boolean tool = ToolManager.toolActive();
         java.util.List<String> status = com.github.lunatrius.schematica.client.renderer.hud.StatusInfoHud.lines();

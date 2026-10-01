@@ -209,6 +209,7 @@ public class ClientProxy extends CommonProxy {
         public com.google.gson.JsonObject subregions;
         public com.google.gson.JsonObject placementSettings;
         public com.google.gson.JsonObject grid;
+        public com.google.gson.JsonObject materialList;
 
         LoadedSchematicEntry() {}
     }
@@ -417,6 +418,7 @@ public class ClientProxy extends CommonProxy {
     }
 
     public static void clearWorldState() {
+        com.github.lunatrius.schematica.client.gui.material.MaterialLists.clear();
         com.github.lunatrius.schematica.client.verifier.VerificationManager.INSTANCE.clear();
         com.github.lunatrius.schematica.client.renderer.hud.BlockInfoHud.INSTANCE.clear();
         AreaSelections.clear();
@@ -520,7 +522,7 @@ public class ClientProxy extends CommonProxy {
         for (Map.Entry<SchematicWorld, SchematicWorld> entry : changes.entrySet()) {
             RendererSchematicGlobal.INSTANCE.removeRendererSchematicChunks(entry.getKey());
         }
-        if (selected != schematic) selectSchematic(selected);
+        if (selected != schematic) select(selected);
         WorldHandler.INSTANCE.saveSession();
     }
 
@@ -549,6 +551,12 @@ public class ClientProxy extends CommonProxy {
 
     /** Selects a schematic as the active one for tools/printer/control. */
     public static void selectSchematic(SchematicWorld world) {
+        // Forget the last viewed material list when changing the placement selection
+        if (world != schematic) com.github.lunatrius.schematica.client.gui.material.MaterialLists.clear();
+        select(world);
+    }
+
+    private static void select(SchematicWorld world) {
         ClientProxy.schematic = world;
         RendererSchematicGlobal.INSTANCE.selectSchematic(world);
         SchematicPrinter.INSTANCE.setSchematic(world);
@@ -601,6 +609,7 @@ public class ClientProxy extends CommonProxy {
                 entry.subregions = sw.subregions() == null ? null : sw.subregions().toJson();
                 entry.placementSettings = sw.placementSettings().toJson();
                 entry.grid = sw.grid.isEnabled() || !sw.grid.isAtDefaultValues() ? sw.grid.toJson() : null;
+                entry.materialList = sw.materialList != null ? sw.materialList.toJson() : sw.materialListData;
                 entry.RotationX = sw.rotationStateX;
                 entry.RotationY = sw.rotationStateY;
                 entry.RotationZ = sw.rotationStateZ;
@@ -683,6 +692,7 @@ public class ClientProxy extends CommonProxy {
                         if (entry.layer != null) restored.renderingLayer = Math.max(0, Math.min(entry.layer, restored.getHeight() - 1));
                         restored.setPlacementSettings(com.github.lunatrius.schematica.client.world.PlacementSettings.fromJson(entry.placementSettings));
                         restored.grid.fromJson(entry.grid);
+                        restored.materialListData = entry.materialList;
                         return restored;
                     });
                     RendererSchematicGlobal.INSTANCE.createRendererSchematicChunks(world);

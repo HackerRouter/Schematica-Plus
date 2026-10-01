@@ -1287,3 +1287,26 @@ compare with a server that does not have the mod and with each server option off
 - areaSelectionsPerWorld off: all worlds share schematics/area_selections after reconnecting.
 - Schematic projects still keep their own selections (the manager stays disabled in project mode).
 
+
+## Material list HUD, cache and Raw Materials
+
+- Placement configuration → Material List; close it; the Material List hotkey reopens the same list
+  (ignored entries, multiplier and Hide available kept). Select another placement: the hotkey now opens
+  that placement's list (recounted). Load browser Material List and Analyze Area also become the list
+  the hotkey opens. Reconnect: multiplier, sort, Hide available and Show (render layers) are restored.
+- Info HUD: ON draws "Material List" with the missing items at the info HUD corner (default bottom
+  right), below verifier HUD lines if those are shown. Counts drop by what is in the inventory within
+  2 seconds; covered items disappear. Multiplier 2 shows the doubled totals. materialListHudMaxLines,
+  materialListHudScale and materialListHudItemCountsColor change it; renderMaterialListInGuis off
+  hides it in the inventory and other screens. Turning on the HUD of another list turns this one off.
+- Counts: a door, bed, tall flower, double slab, 4-layer snow, still water/lava source and a flower pot
+  with a flower count 1 door, 1 bed, 1 flower, 2 slabs, 4 snow, 1 bucket each, pot + flower; flowing
+  water, piston heads and portals count nothing. GregTech machines and AE2 cables keep their own items.
+  materialListIgnoreState on: rotated stairs in the world count as done.
+- Clear cache shows "Material Cache cleared" and the next refresh still counts the same items.
+- highlightBlockInInventory on: look at a schematic block, open the inventory or a chest: slots with
+  that item are tinted in hightlightBlockInInventoryColor.
+- Raw Materials writes three JSON files to the dumps folder (two with materialListRecipeDetails off):
+  a ladder/planks build resolves to logs; iron bars to iron ingots, packed into blocks plus remainder in
+  the simplified file; glass to sand via smelting. Shift writes the _missing_only files for items not yet
+  in the inventory. Check a GTNH build to see that it finishes and that the chosen recipes are sensible.

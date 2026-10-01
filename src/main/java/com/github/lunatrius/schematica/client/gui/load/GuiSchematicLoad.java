@@ -113,11 +113,18 @@ public final class GuiSchematicLoad extends GuiSchematicBrowser {
                 UiTranslations.format("litematica.gui.title.material_list.select_schematic_regions", name), names, chosen -> {
                     List<SchematicRegion> selected = new ArrayList<>();
                     for (SchematicRegion region : regions) if (chosen.contains(region.name)) selected.add(region);
-                    mc.displayGuiScreen(new GuiSchematicMaterials(this, world, name, selected));
+                    openMaterials(world, name, selected);
                 }));
         } else {
-            mc.displayGuiScreen(new GuiSchematicMaterials(this, world, name, Collections.<SchematicRegion>emptyList()));
+            openMaterials(world, name, Collections.<SchematicRegion>emptyList());
         }
+    }
+
+    private void openMaterials(SchematicWorld world, String name, List<SchematicRegion> regions) {
+        com.github.lunatrius.schematica.client.gui.material.MaterialList list = com.github.lunatrius.schematica.client.gui.material.MaterialList.schematic(world, name, regions);
+        // Remember the last opened material list for the hotkey to (re-) open it
+        com.github.lunatrius.schematica.client.gui.material.MaterialLists.setCurrent(list);
+        mc.displayGuiScreen(new GuiSchematicMaterials(this, list));
     }
 
     private void renameSchematic() {

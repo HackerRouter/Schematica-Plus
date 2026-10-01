@@ -93,6 +93,9 @@ public class ConfigurationHandler {
     /** Area selection files per world (area_selections_per_world/<world>/area_selections) or shared. */
     public static boolean areaSelectionsPerWorld = true;
     public static boolean unhideSchematicVCS;
+    public static boolean materialListIgnoreState, materialListRecipeDetails = true, renderMaterialListInGuis = true, highlightBlockInInventory;
+    public static int materialListHudMaxLines = 10;
+    public static double materialListHudScale = 1;
     public static com.github.lunatrius.schematica.tool.PlacementDeletionMode schematicVcsDeleteMode = com.github.lunatrius.schematica.tool.PlacementDeletionMode.MATCHING_BLOCK;
     public static boolean printerEnabled = PRINTER_ENABLED_DEFAULT;
     public static boolean remoteEditsEnabled = true;
@@ -360,6 +363,19 @@ public class ConfigurationHandler {
         signTextPaste = toolFlag("signTextPaste", true);
         unhideSchematicVCS = toolFlag("unhideSchematicVCS", false);
         areaSelectionsPerWorld = toolFlag("areaSelectionsPerWorld", true);
+        materialListIgnoreState = toolFlag("materialListIgnoreState", false);
+        materialListRecipeDetails = toolFlag("materialListRecipeDetails", true);
+        renderMaterialListInGuis = toolFlag("renderMaterialListInGuis", true);
+        highlightBlockInInventory = toolFlag("highlightBlockInInventory", false);
+        Property hudLines = configuration.get(BlockInfoHudSettings.CATEGORY, "materialListHudMaxLines", 10);
+        hudLines.setLanguageKey("litematica.config.info_overlays.name.materialListHudMaxLines");
+        hudLines.setMinValue(1).setMaxValue(128);
+        materialListHudMaxLines = Math.max(1, Math.min(128, hudLines.getInt(10)));
+        Property hudScale = configuration.get(BlockInfoHudSettings.CATEGORY, "materialListHudScale", 1.0);
+        hudScale.setLanguageKey("litematica.config.info_overlays.name.materialListHudScale");
+        hudScale.setMinValue(0.1).setMaxValue(4.0);
+        materialListHudScale = hudScale.getDouble(1.0);
+        if (!Double.isFinite(materialListHudScale) || materialListHudScale < 0.1 || materialListHudScale > 4) materialListHudScale = 1;
         Property protocol = configuration.get(Names.Config.Category.TOOL, "easyPlaceProtocolVersion", "auto");
         protocol.setLanguageKey("litematica.config.generic.name.easyPlaceProtocolVersion");
         protocol.setValidValues(new String[] {"auto", "v3", "v2", "slabs_only", "none"});

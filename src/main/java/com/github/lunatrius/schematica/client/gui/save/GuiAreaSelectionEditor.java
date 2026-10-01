@@ -121,7 +121,9 @@ public final class GuiAreaSelectionEditor extends UiScreen {
         }
         analyze = action("litematica.gui.button.area_editor.analyze_area", () -> {
             AreaSelections.capture();
-            mc.displayGuiScreen(new com.github.lunatrius.schematica.client.gui.control.GuiSchematicMaterials(this, area));
+            com.github.lunatrius.schematica.client.gui.material.MaterialList list = com.github.lunatrius.schematica.client.gui.material.MaterialList.area(area);
+            com.github.lunatrius.schematica.client.gui.material.MaterialLists.setCurrent(list);
+            mc.displayGuiScreen(new com.github.lunatrius.schematica.client.gui.control.GuiSchematicMaterials(this, list));
         });
         main = addButton("litematica.gui.button.change_menu.to_main_menu", () -> mc.displayGuiScreen(new GuiSchematicMainMenu(this)));
         status = root.add(new UiLabel(this::statusText, 0xFFFFA0A0));

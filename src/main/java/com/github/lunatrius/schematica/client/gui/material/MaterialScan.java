@@ -10,7 +10,6 @@ import net.minecraft.block.Block;
 import net.minecraft.client.multiplayer.WorldClient;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.world.chunk.Chunk;
 
 import com.github.lunatrius.schematica.client.world.SchematicWorld;
@@ -26,6 +25,7 @@ public final class MaterialScan implements MaterialScanner {
     private final int[] bounds;
     private final int width, length;
     private final long volume;
+    private final boolean ignoreState = com.github.lunatrius.schematica.handler.ConfigurationHandler.materialListIgnoreState;
     private long cursor;
     private int skipped;
 
@@ -63,24 +63,26 @@ public final class MaterialScan implements MaterialScanner {
         try {
             if (schematic.isAirBlock(x, y, z)) return;
             Block block = schematic.getBlock(x, y, z);
-            MovingObjectPosition target = new MovingObjectPosition(x, y, z, 1,
-                net.minecraft.util.Vec3.createVectorHelper(x + 0.5, y + 0.5, z + 0.5));
-            ItemStack stack = block.getPickBlock(target, schematic, x, y, z, player);
-            if (stack == null || stack.getItem() == null) { skipped++; return; }
-            MaterialItemKey key = new MaterialItemKey(stack);
+            int meta = schematic.getBlockMetadata(x, y, z);
+            MaterialCache.BuildItems items = MaterialCache.INSTANCE.items(schematic, x, y, z, block, meta, player);
+            if (items == null) { skipped++; return; }
+            if (items.isEmpty()) return;
             int wx = schematic.position.x + x;
             int wy = schematic.position.y + y;
             int wz = schematic.position.z + z;
             Chunk chunk = world.getChunkFromChunkCoords(wx >> 4, wz >> 4);
             boolean unknown = !verifiedChunk(chunk, wy);
-            boolean missing = unknown || world.getBlock(wx, wy, wz) != block
-                || world.getBlockMetadata(wx, wy, wz) != schematic.getBlockMetadata(x, y, z);
+            Block real = unknown ? null : world.getBlock(wx, wy, wz);
+            boolean missing = unknown || real != block || !ignoreState && world.getBlockMetadata(wx, wy, wz) != meta;
             boolean mismatched = missing && !unknown && !world.isAirBlock(wx, wy, wz);
-            int[] count = counts.computeIfAbsent(key, ignored -> new int[4]);
-            count[0]++;
-            if (missing) count[1]++;
-            if (mismatched) count[2]++;
-            if (unknown) count[3]++;
+            for (int i = 0; i < items.size(); i++) {
+                int amount = items.count(i);
+                int[] count = counts.computeIfAbsent(items.key(i), ignored -> new int[4]);
+                count[0] += amount;
+                if (missing) count[1] += amount;
+                if (mismatched) count[2] += amount;
+                if (unknown) count[3] += amount;
+            }
         } catch (Exception e) {
             skipped++;
             if (skipped <= 3) Reference.logger.debug("Could not count schematic material at {}, {}, {}", x, y, z, e);

@@ -195,6 +195,9 @@ public class SchematicWorld extends World {
     public final Vector3i position = new Vector3i();
     /** Grid/repeat settings of a normal placement (GridSettings of the 1.12.2 Litematica). */
     public final GridSettings grid = new GridSettings();
+    /** The placement's material list and its saved settings (SchematicPlacement material_list). */
+    public com.github.lunatrius.schematica.client.gui.material.MaterialList materialList;
+    public com.google.gson.JsonObject materialListData;
     /** For a repeated grid copy, its base placement; null for normal placements. */
     public final SchematicWorld gridBase;
 

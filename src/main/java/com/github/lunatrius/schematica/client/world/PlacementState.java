@@ -35,5 +35,8 @@ public final class PlacementState {
         next.renderingLayer = Math.max(0, Math.min(previous.renderingLayer, next.getHeight() - 1));
         next.setPlacementSettings(previous.placementSettings());
         next.grid.copyFrom(previous.grid);
+        next.materialListData = previous.materialList != null ? previous.materialList.toJson() : previous.materialListData;
+        next.materialList = previous.materialList;
+        if (next.materialList != null) next.materialList.rebind(next);
     }
 }

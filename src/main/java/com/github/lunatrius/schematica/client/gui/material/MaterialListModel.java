@@ -59,6 +59,11 @@ public final class MaterialListModel<T> {
         this.sort = sort;
     }
 
+    public void setSort(Sort sort, boolean descending) {
+        this.sort = sort;
+        this.descending = descending;
+    }
+
     public void restoreSort(String value) {
         try {
             if (value.startsWith("MATERIAL_")) {
@@ -96,6 +101,24 @@ public final class MaterialListModel<T> {
             if (!ignored.contains(entry.key) && (!hideAvailable || entry.available < missing(entry))
                 && (entry.name + " " + entry.registryName).toLowerCase(Locale.ROOT).contains(query)) result.add(entry);
         }
+        result.sort(comparator());
+        return result;
+    }
+
+    /** getMaterialsMissingOnly: the entries that are not ignored and not yet covered by the inventory, for the info HUD. */
+    public List<Entry<T>> missingOnly() {
+        List<Entry<T>> result = new ArrayList<>();
+        for (Entry<T> entry : entries) if (!ignored.contains(entry.key) && entry.available < missing(entry)) result.add(entry);
+        result.sort(comparator());
+        return result;
+    }
+
+    /** The count the info HUD shows: what is still needed beyond the inventory, or the multiplied total. */
+    public long hudCount(Entry<T> entry) {
+        return multiplier == 1 ? Math.max(0, entry.missing - entry.available) : total(entry);
+    }
+
+    private Comparator<Entry<T>> comparator() {
         Comparator<Entry<T>> comparator;
         switch (sort) {
             case TOTAL: comparator = Comparator.comparingLong(this::total); break;
@@ -104,8 +127,7 @@ public final class MaterialListModel<T> {
             default: comparator = Comparator.comparing(entry -> entry.name, String.CASE_INSENSITIVE_ORDER);
         }
         if (descending) comparator = comparator.reversed();
-        result.sort(comparator.thenComparing(entry -> entry.name).thenComparing(entry -> entry.registryName));
-        return result;
+        return comparator.thenComparing(entry -> entry.name).thenComparing(entry -> entry.registryName);
     }
 
     public long[] progress() {

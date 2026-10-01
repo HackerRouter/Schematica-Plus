@@ -9,8 +9,8 @@ import com.github.lunatrius.schematica.util.ColorValue;
 
 public enum RenderColors {
     AREA_SIDES("areaSelectionBoxSideColor", 0x30FFFFFF, true),
-    INVENTORY("hightlightBlockInInventoryColor", 0x30FF30FF, false),
-    MATERIAL_HUD("materialListHudItemCountsColor", 0xFFFFAA00, false),
+    INVENTORY("hightlightBlockInInventoryColor", 0x30FF30FF, true),
+    MATERIAL_HUD("materialListHudItemCountsColor", 0xFFFFAA00, true),
     REBUILD_BREAK("schematicRebuildBreakPlaceOverlayColor", 0x4C33CC33, true),
     REBUILD_EXCEPT("schematicRebuildBreakExceptPlaceOverlayColor", 0x4CF03030, true),
     REBUILD_REPLACE("schematicRebuildReplaceOverlayColor", 0x4CF0A010, true),

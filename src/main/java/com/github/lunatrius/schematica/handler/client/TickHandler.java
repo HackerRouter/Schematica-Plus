@@ -41,6 +41,7 @@ public class TickHandler {
 
     @SubscribeEvent
     public void onClientTick(TickEvent.ClientTickEvent event) {
+        if (event.phase == TickEvent.Phase.START) com.github.lunatrius.schematica.client.gui.material.MaterialLists.startTick();
         if (event.phase == TickEvent.Phase.END) {
             com.github.lunatrius.schematica.client.input.HotkeyHooks.tick();
             com.github.lunatrius.schematica.tool.ToolManager.tick();
@@ -52,6 +53,7 @@ public class TickHandler {
             WorldHandler.INSTANCE.updateWorld(this.minecraft);
             com.github.lunatrius.schematica.client.world.GridPlacements.INSTANCE.tick(this.minecraft);
             com.github.lunatrius.schematica.client.verifier.VerificationManager.INSTANCE.tick(this.minecraft);
+            com.github.lunatrius.schematica.client.gui.material.MaterialLists.tick();
             com.github.lunatrius.schematica.client.projects.SchematicProjects.syncSelections();
             com.github.lunatrius.schematica.tool.RebuildJobs.tick(this.minecraft);
             com.github.lunatrius.schematica.client.printer.EasyPlace.tick(this.minecraft);

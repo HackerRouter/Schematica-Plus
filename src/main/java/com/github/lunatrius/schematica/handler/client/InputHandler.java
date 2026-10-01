@@ -63,7 +63,7 @@ public class InputHandler {
                 else minecraft.thePlayer.addChatMessage(new net.minecraft.util.ChatComponentTranslation("litematica.message.error.no_placement_selected"));
                 break;
             case "openGuiMaterialList":
-                if (placement != null) minecraft.displayGuiScreen(new com.github.lunatrius.schematica.client.gui.control.GuiSchematicMaterials(parent, placement));
+                openMaterialList(minecraft, parent, placement);
                 break;
             case "openGuiSchematicVerifier":
                 if (placement != null) minecraft.displayGuiScreen(new com.github.lunatrius.schematica.client.gui.GuiSchematicVerifier(parent, placement));
@@ -137,6 +137,20 @@ public class InputHandler {
     private void cycleLayer(int direction) {
         RenderLayerRange.Mode[] modes = RenderLayerRange.Mode.values();
         RenderLayerSettings.RANGE.setMode(modes[Math.floorMod(RenderLayerSettings.RANGE.mode().ordinal() + direction, modes.length)]);
+    }
+
+    private static void openMaterialList(Minecraft minecraft, net.minecraft.client.gui.GuiScreen parent, SchematicWorld placement) {
+        com.github.lunatrius.schematica.client.gui.material.MaterialList list = com.github.lunatrius.schematica.client.gui.material.MaterialLists.current();
+        // No last-viewed material list currently stored, try to get one for the currently selected placement, if any
+        if (list == null) {
+            if (placement == null) {
+                minecraft.thePlayer.addChatMessage(new net.minecraft.util.ChatComponentTranslation("litematica.message.error.no_placement_selected"));
+                return;
+            }
+            list = com.github.lunatrius.schematica.client.gui.material.MaterialList.placement(placement);
+            list.refresh();
+        }
+        minecraft.displayGuiScreen(new com.github.lunatrius.schematica.client.gui.control.GuiSchematicMaterials(parent, list));
     }
 
     private void moveLayer(int amount) {

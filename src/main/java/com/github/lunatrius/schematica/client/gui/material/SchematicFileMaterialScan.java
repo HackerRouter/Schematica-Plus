@@ -11,8 +11,6 @@ import java.util.Map;
 import net.minecraft.block.Block;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.MovingObjectPosition;
-import net.minecraft.util.Vec3;
 
 import com.github.lunatrius.schematica.api.SchematicRegion;
 import com.github.lunatrius.schematica.client.world.SchematicWorld;
@@ -70,11 +68,9 @@ public final class SchematicFileMaterialScan implements MaterialScanner {
         try {
             if (schematic.isAirBlock(x, y, z)) return;
             Block block = schematic.getBlock(x, y, z);
-            MovingObjectPosition target = new MovingObjectPosition(x, y, z, 1, Vec3.createVectorHelper(x + 0.5, y + 0.5, z + 0.5));
-            ItemStack stack = block.getPickBlock(target, schematic, x, y, z, player);
-            if (stack == null || stack.getItem() == null) { skipped++; return; }
-            int[] count = counts.computeIfAbsent(new MaterialItemKey(stack), ignored -> new int[1]);
-            count[0]++;
+            MaterialCache.BuildItems items = MaterialCache.INSTANCE.items(schematic, x, y, z, block, schematic.getBlockMetadata(x, y, z), player);
+            if (items == null) { skipped++; return; }
+            for (int i = 0; i < items.size(); i++) counts.computeIfAbsent(items.key(i), ignored -> new int[1])[0] += items.count(i);
         } catch (Exception e) {
             skipped++;
             if (skipped <= 3) Reference.logger.debug("Could not count schematic material at {}, {}, {}", x, y, z, e);
