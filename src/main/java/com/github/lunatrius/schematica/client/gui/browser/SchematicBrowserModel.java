@@ -19,10 +19,17 @@ import java.util.Objects;
 public final class SchematicBrowserModel {
 
     private final Path root;
+    private final java.util.function.Predicate<String> filter;
     private Path directory;
     private List<Entry> entries = Collections.emptyList();
 
     public SchematicBrowserModel(File root) throws IOException {
+        this(root, SchematicBrowserModel::supported);
+    }
+
+    /** A browser listing directories and the files whose names the filter accepts. */
+    public SchematicBrowserModel(File root, java.util.function.Predicate<String> filter) throws IOException {
+        this.filter = filter;
         this.root = root.getCanonicalFile().toPath();
         this.directory = this.root;
     }
@@ -56,7 +63,7 @@ public final class SchematicBrowserModel {
                 try {
                     Path resolved = checked(path);
                     BasicFileAttributes attributes = Files.readAttributes(resolved, BasicFileAttributes.class);
-                    if (attributes.isDirectory() || attributes.isRegularFile() && supported(path.getFileName().toString())) {
+                    if (attributes.isDirectory() || attributes.isRegularFile() && filter.test(path.getFileName().toString())) {
                         found.add(new Entry(path.toFile(), attributes));
                     }
                 } catch (IOException ignored) {}
@@ -156,7 +163,7 @@ public final class SchematicBrowserModel {
         if (Files.exists(target, LinkOption.NOFOLLOW_LINKS)) throw new FileAlreadyExistsException(target.toString());
     }
 
-    private static void validateName(String name) throws IOException {
+    public static void validateName(String name) throws IOException {
         if (name == null || name.trim().isEmpty() || name.length() > 255 || name.endsWith(".") || name.endsWith(" ")
             || name.equals(".") || name.equals("..")) throw FileOperationException.name(name);
         for (int i = 0; i < name.length(); i++) {

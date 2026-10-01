@@ -209,13 +209,20 @@ public abstract class CommonProxy {
 
     public boolean saveSchematic(EntityPlayer player, File directory, String filename, World world, Vector3i from,
         Vector3i to) {
-        return saveSchematic(player, directory, filename, world, from, to, java.util.Collections.emptyList(), com.github.lunatrius.schematica.api.SchematicOrigin.ZERO, null);
+        return saveSchematic(player, directory, filename, world, from, to, java.util.Collections.emptyList(), com.github.lunatrius.schematica.api.SchematicOrigin.ZERO, null, null);
     }
 
     public boolean saveSchematic(EntityPlayer player, File directory, String filename, World world,
         com.github.lunatrius.schematica.world.storage.RegionSelection selection) {
+        return saveSchematic(player, directory, filename, world, selection, null);
+    }
+
+    /** Saves the selection; completed later receives the written file, or null when the save failed or was cancelled. */
+    public boolean saveSchematic(EntityPlayer player, File directory, String filename, World world,
+        com.github.lunatrius.schematica.world.storage.RegionSelection selection, java.util.function.Consumer<File> completed) {
         return saveSchematic(player, directory, filename, world,
-            new Vector3i(selection.minX, selection.minY, selection.minZ), new Vector3i(selection.maxX, selection.maxY, selection.maxZ), selection.localRegions, selection.localOrigin, null);
+            new Vector3i(selection.minX, selection.minY, selection.minZ), new Vector3i(selection.maxX, selection.maxY, selection.maxZ), selection.localRegions, selection.localOrigin,
+            null, completed);
     }
 
     /** Captures the selection like a save, but hands the encoded schematic to the client instead of writing a file. */
@@ -223,12 +230,13 @@ public abstract class CommonProxy {
         java.util.function.Consumer<com.github.lunatrius.schematica.world.schematic.SchematicFileSnapshot> memory) {
         return saveSchematic(player, null, name, world,
             new Vector3i(selection.minX, selection.minY, selection.minZ), new Vector3i(selection.maxX, selection.maxY, selection.maxZ), selection.localRegions, selection.localOrigin,
-            java.util.Objects.requireNonNull(memory));
+            java.util.Objects.requireNonNull(memory), null);
     }
 
     private boolean saveSchematic(EntityPlayer player, File directory, String filename, World world, Vector3i from,
         Vector3i to, java.util.List<com.github.lunatrius.schematica.api.SchematicRegion> regions, com.github.lunatrius.schematica.api.SchematicOrigin origin,
-        java.util.function.Consumer<com.github.lunatrius.schematica.world.schematic.SchematicFileSnapshot> memory) {
+        java.util.function.Consumer<com.github.lunatrius.schematica.world.schematic.SchematicFileSnapshot> memory,
+        java.util.function.Consumer<File> completed) {
         synchronized (QueueTickHandler.INSTANCE) {
         try {
             if (!QueueTickHandler.INSTANCE.canQueue(player)) {
@@ -274,6 +282,7 @@ public abstract class CommonProxy {
                 minZ,
                 maxZ);
             container.memory = memory;
+            container.completed = completed;
             QueueTickHandler.INSTANCE.queueSchematic(container);
 
             return true;

@@ -21,6 +21,11 @@ public final class UiList<T> extends UiWidget {
     private Function<T, UiSprite> icons;
     private Function<T, String> displayName;
 
+    private Function<T, List<String>> entryTooltip;
+
+    /** Replaces the label tooltip of hovered entries. */
+    public void setEntryTooltip(Function<T, List<String>> tooltip) { this.entryTooltip = tooltip; }
+
     public void setFileStyle(Function<T, UiSprite> icons, Function<T, String> displayName) {
         this.icons = icons;
         this.displayName = displayName;
@@ -101,7 +106,8 @@ public final class UiList<T> extends UiWidget {
     public List<String> tooltip(int x, int y) {
         int index = model.indexAt(y - content().y);
         if (index >= 0 && x < content().right() - 7) {
-            return Collections.singletonList(model.label(model.entries().get(index)));
+            T entry = model.entries().get(index);
+            return entryTooltip != null ? entryTooltip.apply(entry) : Collections.singletonList(model.label(entry));
         }
         return super.tooltip(x, y);
     }

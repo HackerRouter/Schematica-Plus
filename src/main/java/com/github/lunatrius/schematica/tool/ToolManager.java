@@ -109,6 +109,12 @@ public final class ToolManager {
         }
         if (Hotkeys.held("selectionNudgeModifier")) return nudge(amount);
         if (Hotkeys.held("operationModeChangeModifier")) { cycleMode(amount < 0 != ConfigurationHandler.reverseOperationModeDirection); return true; }
+        if (Hotkeys.held("schematicVersionCycleModifier")) {
+            if (com.github.lunatrius.schematica.client.projects.SchematicProjects.hasProjectOpen()) {
+                com.github.lunatrius.schematica.client.projects.SchematicProjects.cycleVersion(-amount);
+            }
+            return true;
+        }
         return false;
     }
 

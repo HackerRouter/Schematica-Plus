@@ -275,6 +275,13 @@ public class RendererSchematicGlobal {
                 }
             }
 
+            com.github.lunatrius.schematica.client.projects.SchematicProject project = com.github.lunatrius.schematica.client.projects.SchematicProjects.current();
+            if (project != null) {
+                project.origin().toVector3d(start).sub(extra);
+                end.set(start).add(1, 1, 1);
+                RenderHelper.drawCuboidOutline(start.toVector3f(), end.toVector3f(), RenderHelper.LINE_ALL, 1, 0.0625f, 1, 1);
+            }
+
             if (area != null && area.manualOrigin() != null) {
                 area.manualOrigin().toVector3d(start).sub(extra);
                 end.set(start).add(1, 1, 1);

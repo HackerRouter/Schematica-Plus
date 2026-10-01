@@ -18,6 +18,8 @@ public class SchematicContainer {
     public final boolean includeNBT, includeEntities;
     /** When set, the captured schematic is encoded and handed to this consumer instead of being written to {@link #file}. */
     public java.util.function.Consumer<com.github.lunatrius.schematica.world.schematic.SchematicFileSnapshot> memory;
+    /** Runs on the client thread with the written file, or null if the save failed or was cancelled. */
+    public java.util.function.Consumer<File> completed;
 
     public final int minX;
     public final int maxX;

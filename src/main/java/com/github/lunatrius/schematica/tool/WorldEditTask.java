@@ -23,4 +23,10 @@ public abstract class WorldEditTask {
     public abstract void publishProgress(TaskRegistry.Task task);
     public boolean needsRollback() { return false; }
     public RuntimeException failure() { return null; }
+
+    /** The upstream task end message for this edit, or null when upstream shows none. */
+    public net.minecraft.util.IChatComponent finishedMessage(boolean success) {
+        String key = taskKind().finishedKey(success);
+        return key == null ? null : new net.minecraft.util.ChatComponentTranslation(key);
+    }
 }

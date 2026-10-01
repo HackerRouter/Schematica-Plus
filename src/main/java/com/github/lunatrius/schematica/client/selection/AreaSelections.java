@@ -12,23 +12,39 @@ public final class AreaSelections {
     private static AreaSelectionLibrary library = new AreaSelectionLibrary();
     private static AreaSelectionStore store;
     private static boolean saveFailed;
+    private static AreaSelectionLibrary override;
+    private static java.util.function.BooleanSupplier overrideSave;
 
     private AreaSelections() {}
 
-    public static AreaSelectionLibrary library() { return library; }
+    /** The selections tools and screens edit: an open schematic project's own, else the world's. */
+    public static AreaSelectionLibrary library() { return override != null ? override : library; }
+
+    /** Swaps in a schematic project's selections (null restores the world's), keeping the edit points consistent. */
+    public static void setOverride(AreaSelectionLibrary selections, java.util.function.BooleanSupplier save) {
+        if (selections == override) return;
+        capture();
+        override = selections;
+        overrideSave = selections == null ? null : save;
+        apply();
+    }
+
+    public static boolean overridden() { return override != null; }
     public static boolean saveFailed() { return saveFailed; }
 
     public static void switchMode() {
         capture();
+        AreaSelectionLibrary library = library();
         library.setMode(library.mode() == AreaSelectionLibrary.Mode.NORMAL ? AreaSelectionLibrary.Mode.SIMPLE : AreaSelectionLibrary.Mode.NORMAL);
         apply();
         saveCurrent();
     }
 
-    public static String modeKey() { return "litematica.gui.label.area_selection.mode." + library.mode().name().toLowerCase(java.util.Locale.ROOT); }
-    public static String cornerModeKey() { return "litematica.hud.area_selection.mode." + library.cornerMode().name().toLowerCase(java.util.Locale.ROOT); }
+    public static String modeKey() { return "litematica.gui.label.area_selection.mode." + library().mode().name().toLowerCase(java.util.Locale.ROOT); }
+    public static String cornerModeKey() { return "litematica.hud.area_selection.mode." + library().cornerMode().name().toLowerCase(java.util.Locale.ROOT); }
 
     public static void capture() {
+        AreaSelectionLibrary library = library();
         Area area = library.selected();
         if (area != null) {
             if (area.selectedBox() != null) library.setPoints(area, ClientProxy.pointA, ClientProxy.pointB);
@@ -37,7 +53,7 @@ public final class AreaSelections {
     }
 
     public static void apply() {
-        Area area = library.selected();
+        Area area = library().selected();
         ClientProxy.pointA.set(area == null ? new Vector3i() : area.first());
         ClientProxy.pointB.set(area == null ? new Vector3i() : area.second());
         ClientProxy.isRenderingGuide = area != null && area.guide();
@@ -46,20 +62,22 @@ public final class AreaSelections {
 
     public static void select(Area area) {
         capture();
-        library.select(area);
+        library().select(area);
         apply();
         saveCurrent();
     }
 
     public static void selectBox(AreaSelectionLibrary.Box box) {
         capture();
-        library.selectBox(library.selected(), box);
+        library().selectBox(library().selected(), box);
         apply();
         saveCurrent();
     }
 
     public static void clear() {
         library = new AreaSelectionLibrary();
+        override = null;
+        overrideSave = null;
         store = null;
         saveFailed = false;
     }
@@ -78,6 +96,11 @@ public final class AreaSelections {
     }
 
     public static boolean saveCurrent() {
+        if (override != null) {
+            capture();
+            saveFailed = !overrideSave.getAsBoolean();
+            return !saveFailed;
+        }
         if (store == null) return false;
         try {
             capture();
@@ -95,5 +118,5 @@ public final class AreaSelections {
         if (store != null && store.key().equals(key)) saveCurrent();
     }
 
-    public static boolean available(AreaSelectionLibrary expected) { return store != null && expected == library; }
+    public static boolean available(AreaSelectionLibrary expected) { return (store != null || override != null) && expected == library(); }
 }

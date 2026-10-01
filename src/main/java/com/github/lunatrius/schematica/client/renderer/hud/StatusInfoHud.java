@@ -50,6 +50,7 @@ public final class StatusInfoHud {
         }
         lines.add(UiTranslations.format("litematica.hud.misc.renderer_status", state(VisualSettings.rendering), state(VisualSettings.schematic),
             state(VisualSettings.blocks), state(ConfigurationHandler.highlight), state(VisualSettings.areaBoxes)));
+        if (com.github.lunatrius.schematica.client.projects.SchematicProjects.hasProjectOpen()) lines.add(UiTranslations.format("litematica.hud.schematic_projects_mode"));
         return lines;
     }
 

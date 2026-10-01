@@ -15,7 +15,9 @@ import com.github.lunatrius.schematica.client.gui.placement.GuiSchematicLoadedLi
 import com.github.lunatrius.schematica.client.gui.placement.GuiSchematicPlacementsList;
 import com.github.lunatrius.schematica.client.gui.save.GuiAreaSelectionEditor;
 import com.github.lunatrius.schematica.client.gui.save.GuiAreaSelectionManager;
+import com.github.lunatrius.schematica.client.projects.SchematicProjects;
 import com.github.lunatrius.schematica.client.selection.AreaSelections;
+import com.github.lunatrius.schematica.handler.ConfigurationHandler;
 import com.github.lunatrius.schematica.reference.Reference;
 import com.github.lunatrius.schematica.tool.ToolManager;
 
@@ -29,6 +31,7 @@ public final class GuiSchematicMainMenu extends UiScreen {
     private UiButton config;
     private UiButton manager;
     private UiButton tasks;
+    private UiButton projects;
     private UiButton mode;
 
     public GuiSchematicMainMenu(GuiScreen parent) {
@@ -55,6 +58,8 @@ public final class GuiSchematicMainMenu extends UiScreen {
         manager = menu("schematic_manager", UiSprite.SCHEMATIC_MANAGER,
             () -> mc.displayGuiScreen(new GuiSchematicManager(this)));
         tasks = menu("task_manager", UiSprite.TASK_MANAGER, () -> mc.displayGuiScreen(new GuiTaskManager(this)));
+        projects = menu("schematic_projects_manager", UiSprite.SCHEMATIC_PROJECTS, () -> SchematicProjects.openGui(this));
+        projects.setTooltip(UiTranslations.format("litematica.gui.button.hover.schematic_projects.menu_warning").split("\n"));
         mode = root.add(new UiButton(() -> UiTranslations.format("litematica.gui.button.tool_mode", ToolManager.getCurrentMode().getDisplayName()),
             button -> { ToolManager.cycleMode(button == 0); layoutWidgets(); }));
     }
@@ -64,7 +69,12 @@ public final class GuiSchematicMainMenu extends UiScreen {
         boolean world = mc.theWorld != null && mc.thePlayer != null;
         load.setEnabled(world && SchematicaPlus.proxy.isLoadEnabled);
         area.setEnabled(world && SchematicaPlus.proxy.isSaveEnabled && AreaSelections.library().selected() != null);
-        selections.setEnabled(world && SchematicaPlus.proxy.isSaveEnabled);
+        boolean projectOpen = SchematicProjects.hasProjectOpen();
+        selections.setEnabled(world && SchematicaPlus.proxy.isSaveEnabled && !projectOpen);
+        if (projectOpen) selections.setTooltip(UiTranslations.format("litematica.gui.button.hover.schematic_projects.area_browser_disabled_currently_in_projects_mode").split("\n"));
+        else selections.setTooltip();
+        projects.setVisible(ConfigurationHandler.unhideSchematicVCS);
+        projects.setEnabled(world);
         mode.setEnabled(world);
         selectionMode.setEnabled(world && SchematicaPlus.proxy.isSaveEnabled && AreaSelections.available(AreaSelections.library()));
     }
@@ -87,6 +97,7 @@ public final class GuiSchematicMainMenu extends UiScreen {
         config.setBounds(32 + column, 30, column, 20);
         manager.setBounds(32 + column, 118, column, 20);
         tasks.setBounds(32 + column, 140, column, 20);
+        projects.setBounds(32 + column, 162, column, 20);
         mode.setBounds(12, height - 26, fontRendererObj.getStringWidth(mode.label()) + 10, 20);
     }
 }

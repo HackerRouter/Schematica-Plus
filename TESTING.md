@@ -1138,3 +1138,33 @@ These checks supersede Phase 12's Simple-editor and bounding-box expectations.
   Clearing must drop no items from replaced chests and keep neighbor updates and
   "Paste without block updates" behavior.
 - placementRestrictionWarn also shows as a cycling None/Message/Actionbar button.
+
+## Schematic VCS (projects)
+
+- With `unhideSchematicVCS` off, the projects hotkey prints the hidden warning and the
+  main menu has no Schematic VCS button. Turn it on; the button shows the upstream warning.
+- Projects browser: create a project (illegal and existing names are refused), see it in
+  the list with the project info panel, load it, close it, delete a project JSON (the open
+  project closes first). Reconnect: the open project and its current version return.
+- While a project is open: the area browser button/hotkey is disabled with the upstream
+  hover/message, the area editor title and its save button change to the project ones,
+  tool clicks edit the project area in every tool mode, switching Normal/Simple works,
+  and closing the project brings back the world's selections unchanged.
+- Save Version (manager, area editor or saveAreaAsSchematicToFile): enter name and
+  description; a numbered `<project>_00001.schemplus` appears beside the project JSON, the
+  version is checked out as a placement at origin + area offset, and the chat shows the
+  version message. A second save while one is pending is refused. A cancelled or failed save
+  re-allows saving.
+- Version list: click versions to switch the placement; hover shows number, name,
+  timestamp and description. schematicVersionCycleNext/Previous and the cycle modifier +
+  scroll switch versions; the Tool HUD shows project, version, date and origin.
+- Move to player moves the origin outline, both selections and the current placement.
+- Place to world / Execute (creative): with schematicVcsDeleteMode Entire Volume the
+  current version's area is cleared first and then pasted; other modes paste directly and
+  print the upstream "No previous pasted version known" note on the first paste.
+- Delete Area clears the last seen area. schematicVCSDeleteBlockByPlacement removes
+  matching / non-matching / any / no-schematic / all world blocks inside the current version
+  placement within the render layer range and reports "Deleted N blocks". Test both
+  singleplayer and a server with command permission.
+- Version placements are not written to LoadedSchematics.json; a schematic file that was
+  already loaded by the user stays loaded when the project closes.

@@ -36,6 +36,7 @@ public final class AreaSelectionLibrary {
     public List<Area> areas() { return Collections.unmodifiableList(areas); }
     public Area selected() { return mode == Mode.SIMPLE ? simple : selected; }
     public Area normalSelection() { return selected; }
+    public Area simpleSelection() { return simple; }
     public Mode mode() { return mode; }
     public CornerMode cornerMode() { return cornerMode; }
     public void setMode(Mode value) { mode = java.util.Objects.requireNonNull(value); }

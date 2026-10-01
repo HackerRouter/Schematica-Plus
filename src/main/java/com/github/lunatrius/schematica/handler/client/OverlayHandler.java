@@ -57,6 +57,31 @@ public class OverlayHandler {
      * Shows: current mode, schematic file name + dimensions, selection coords, primary/secondary block.
      * Automatically adjusts position upward to avoid overlapping the hotbar.
      */
+    /** ToolHud in Schematic VCS mode: the project, its current version and the area selection state. */
+    private static void projectLines(java.util.List<String> lines) {
+        com.github.lunatrius.schematica.client.projects.SchematicProject project = com.github.lunatrius.schematica.client.projects.SchematicProjects.current();
+        String green = EnumChatFormatting.GREEN.toString(), rst = EnumChatFormatting.RESET.toString();
+        lines.add(UiTranslations.format("litematica.hud.schematic_projects.project_name", green + project.name() + rst));
+        com.github.lunatrius.schematica.client.projects.SchematicVersion version = project.currentVersion();
+        if (version != null) {
+            lines.add(UiTranslations.format("litematica.hud.schematic_projects.current_version", green + version.version + rst,
+                green + project.versionCount() + rst, green + version.name + rst));
+            lines.add(UiTranslations.format("litematica.hud.schematic_projects.current_version_date",
+                green + new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new java.util.Date(version.timeStamp)) + rst));
+            Vector3i o = project.origin();
+            lines.add(UiTranslations.format("litematica.hud.schematic_projects.origin", green + o.x + ", " + o.y + ", " + o.z + rst));
+        } else {
+            lines.add(UiTranslations.format("litematica.hud.schematic_projects.no_versions"));
+        }
+        Area area = AreaSelections.library().selected();
+        if (area != null && AreaSelections.library().mode() == com.github.lunatrius.schematica.client.selection.AreaSelectionLibrary.Mode.NORMAL
+            && area.selectedBox() != null) {
+            lines.add(UiTranslations.format("litematica.hud.area_selection.selected_sub_region", green + area.boxName() + rst));
+        }
+        lines.add(UiTranslations.format("litematica.hud.area_selection.selection_corners_mode", green + UiTranslations.format(AreaSelections.cornerModeKey()) + rst));
+        if (!com.github.lunatrius.schematica.client.renderer.hud.StatusInfoHud.visible()) lines.add(UiTranslations.format("litematica.hud.schematic_projects_mode"));
+    }
+
     @SubscribeEvent
     public void onRenderOverlay(RenderGameOverlayEvent.Post event) {
         if (event.type != RenderGameOverlayEvent.ElementType.ALL) {
@@ -87,7 +112,9 @@ public class OverlayHandler {
         // Build lines
         java.util.List<String> lines = new java.util.ArrayList<>();
 
-        if (tool) {
+        if (tool && com.github.lunatrius.schematica.client.projects.SchematicProjects.hasProjectOpen()) {
+            projectLines(lines);
+        } else if (tool) {
             // Line 1: Mode
             lines.add(EnumChatFormatting.GOLD + "[" + Reference.NAME + "] " + EnumChatFormatting.WHITE + mode.getDisplayName());
 

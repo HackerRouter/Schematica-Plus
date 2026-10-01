@@ -199,6 +199,8 @@ public class SchematicWorld extends World {
     public File sourceDirectory;
     /** The filename this schematic was loaded from (for persistence). */
     public String sourceFilename;
+    /** A schematic project's checked-out version, which the world session does not save. */
+    public boolean projectVersion;
 
     public SchematicWorld(ISchematic schematic) {
         super(new SaveHandlerSchematic(), "Schematica", WORLD_SETTINGS, null, new Profiler());

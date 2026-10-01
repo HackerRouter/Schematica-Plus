@@ -13,11 +13,13 @@ public enum UiSprite {
     SCHEMATIC_BROWSER(102, 28, 14, 14, true),
     SCHEMATIC_MANAGER(102, 56, 14, 14, true),
     SCHEMATIC_PLACEMENTS(102, 42, 14, 14, true),
+    SCHEMATIC_PROJECTS(102, 98, 14, 14, true),
     TASK_MANAGER(102, 112, 14, 14, true),
     FILE(144, 0, 12, 12, false),
     SCHEMATIC(144, 12, 12, 12, false),
     SCHEMPLUS(0, 0, 12, 12, false),
     MEMORY(186, 0, 12, 12, false),
+    JSON(144, 44, 12, 12, false),
     DIRECTORY(156, 0, 12, 12, false),
     UP(156, 12, 12, 12, false),
     ROOT(156, 24, 12, 12, false),
@@ -71,6 +73,7 @@ public enum UiSprite {
         String filename = name.toLowerCase(java.util.Locale.ROOT);
         if (filename.endsWith(".litematic")) return FILE;
         if (filename.endsWith(".schemplus")) return SCHEMPLUS;
+        if (filename.endsWith(".json")) return JSON;
         return SCHEMATIC;
     }
 }

@@ -402,6 +402,7 @@ public class ClientProxy extends CommonProxy {
         com.github.lunatrius.schematica.client.verifier.VerificationManager.INSTANCE.clear();
         com.github.lunatrius.schematica.client.renderer.hud.BlockInfoHud.INSTANCE.clear();
         AreaSelections.clear();
+        com.github.lunatrius.schematica.client.projects.SchematicProjects.clear();
         RenderLayerSettings.RANGE.load(null);
         unloadAllSchematics();
         lastWorldServerName = null;
@@ -570,7 +571,7 @@ public class ClientProxy extends CommonProxy {
 
             List<LoadedSchematicEntry> entries = new ArrayList<>();
             for (SchematicWorld sw : loadedSchematics) {
-                if (SCHEMATICS.sourceOf(sw).memory()) continue;
+                if (SCHEMATICS.sourceOf(sw).memory() || sw.projectVersion) continue;
                 LoadedSchematicEntry entry = new LoadedSchematicEntry();
                 entry.displayName = sw.name;
                 entry.filename = sw.sourceFilename;

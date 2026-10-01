@@ -55,7 +55,7 @@ public enum ToolMode {
     }
 
     public boolean getUsesAreaSelection() {
-        return !getUsesSchematic();
+        return !getUsesSchematic() || com.github.lunatrius.schematica.client.projects.SchematicProjects.hasProjectOpen();
     }
 
     public boolean getUsesBlockPrimary() {

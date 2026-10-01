@@ -27,6 +27,7 @@ import com.github.lunatrius.schematica.client.gui.framework.UiTranslations;
 import com.github.lunatrius.schematica.client.selection.AreaSelectionLibrary;
 import com.github.lunatrius.schematica.client.selection.AreaSelectionLibrary.Area;
 import com.github.lunatrius.schematica.client.selection.AreaSelectionLibrary.Box;
+import com.github.lunatrius.schematica.client.projects.SchematicProjects;
 import com.github.lunatrius.schematica.client.selection.AreaSelections;
 import com.github.lunatrius.schematica.internal.lunatriuscore.util.vector.Vector3i;
 
@@ -57,8 +58,8 @@ public final class GuiAreaSelectionEditor extends UiScreen {
     private final AreaCornerControls[] cornerControls = new AreaCornerControls[2];
 
     public GuiAreaSelectionEditor(GuiScreen parent) {
-        super(parent, UiTranslations.format(AreaSelections.library().mode() == AreaSelectionLibrary.Mode.SIMPLE
-            ? "litematica.gui.title.area_editor_simple" : "litematica.gui.title.area_editor_normal"));
+        super(parent, UiTranslations.format(SchematicProjects.hasProjectOpen() ? "litematica.gui.title.area_editor_normal_schematic_projects"
+            : AreaSelections.library().mode() == AreaSelectionLibrary.Mode.SIMPLE ? "litematica.gui.title.area_editor_simple" : "litematica.gui.title.area_editor_normal"));
         menuParent = parent;
     }
 
@@ -103,13 +104,21 @@ public final class GuiAreaSelectionEditor extends UiScreen {
         origin = root.add(new UiButton(() -> UiTranslations.format("litematica.gui.button.area_editor.origin_enabled",
             (manualOrigin() ? "\u00a7a" : "\u00a7c") + UiTranslations.format(manualOrigin() ? "options.on" : "options.off")),
             button -> { if (button == 0) change(() -> library.setOrigin(area, manualOrigin() ? null : simple ? area.origin() : GuiAreaSelectionManager.playerPoint())); }));
-        save = action("litematica.gui.button.area_editor.create_schematic", () -> mc.displayGuiScreen(new GuiSchematicSave(this, area.name())));
+        save = SchematicProjects.hasProjectOpen()
+            ? action("litematica.gui.button.save_new_schematic_version", () -> {
+                if (SchematicProjects.current() != null) mc.displayGuiScreen(new com.github.lunatrius.schematica.client.gui.projects.GuiVersionPrompt(this, SchematicProjects.current()));
+            })
+            : action("litematica.gui.button.area_editor.create_schematic", () -> mc.displayGuiScreen(new GuiSchematicSave(this, area.name())));
         count = root.add(new UiLabel(() -> UiTranslations.format("litematica.gui.label.area_editor.sub_regions", area == null ? 0 : area.boxes().size())));
         guide = root.add(new UiCheckBox(() -> UiTranslations.format("schematica.ui.save.guide"), () -> area != null && area.guide(),
             value -> change(() -> library.setGuide(area, value))));
         list = root.add(new UiRowList<>(model, Entry::new));
-        browser = addButton("litematica.gui.button.change_menu.show_area_selections", () -> mc.displayGuiScreen(new GuiAreaSelectionManager(this)))
-            .setSprite(UiSprite.AREA_SELECTION);
+        browser = addButton("litematica.gui.button.change_menu.show_area_selections", () -> {
+            if (!SchematicProjects.hasProjectOpen()) mc.displayGuiScreen(new GuiAreaSelectionManager(this));
+        }).setSprite(UiSprite.AREA_SELECTION);
+        if (SchematicProjects.hasProjectOpen()) {
+            browser.setTooltip(UiTranslations.format("litematica.gui.button.hover.schematic_projects.area_browser_disabled_currently_in_projects_mode").split("\n"));
+        }
         analyze = action("litematica.gui.button.area_editor.analyze_area", () -> {
             AreaSelections.capture();
             mc.displayGuiScreen(new com.github.lunatrius.schematica.client.gui.control.GuiSchematicMaterials(this, area));
@@ -222,6 +231,7 @@ public final class GuiAreaSelectionEditor extends UiScreen {
             for (AreaCornerControls controls : cornerControls) controls.setEnabled(enabled);
         }
         originControls.setEnabled(enabled && manualOrigin());
+        browser.setEnabled(!SchematicProjects.hasProjectOpen());
         status.setTooltip(statusText());
     }
 

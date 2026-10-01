@@ -28,11 +28,13 @@ import cpw.mods.fml.common.registry.GameData;
 
 /** A snapshot of an edit. Only the server tick queue advances its mutable cursor. */
 public final class WorldEditJob extends WorldEditTask {
-    public enum Kind { PASTE, FILL, REPLACE }
+    public enum Kind { PASTE, FILL, REPLACE, DELETE_PLACEMENT }
     public final int width, height, length, volume;
     public final Kind kind;
     public final boolean pasteWithoutUpdates;
     public final ReplaceBehavior replace;
+    /** For DELETE_PLACEMENT: which non-air world blocks inside the placement are removed. */
+    public PlacementDeletionMode deletion = PlacementDeletionMode.ENTIRE_VOLUME;
     private final Block replacement, target;
     private final int replacementMeta, targetMeta;
     private short[] blocks;
@@ -99,6 +101,7 @@ public final class WorldEditJob extends WorldEditTask {
             throw new MessageException("schematica.message.edit.nbt_requires_singleplayer");
         }
         java.util.Set<Block> checked = new java.util.HashSet<>();
+        if (kind == Kind.DELETE_PLACEMENT) checked.add(replacement);
         for (int i = 0; i < (kind == Kind.PASTE ? volume : 1); i++) {
             Block block = kind == Kind.PASTE ? GameData.getBlockRegistry().getObjectById(blocks[i] & 0xffff) : replacement;
             if (block != null && checked.add(block)) {
@@ -115,10 +118,32 @@ public final class WorldEditJob extends WorldEditTask {
         int wx = x + index % width, wz = z + index / width % length, wy = y + index / width / length;
         if (kind == Kind.REPLACE && (world.getBlock(wx, wy, wz) != target
             || world.getBlockMetadata(wx, wy, wz) != targetMeta)) return null;
+        if (kind == Kind.DELETE_PLACEMENT && !deletes(index, world, wx, wy, wz)) return null;
         Block block = kind == Kind.PASTE ? GameData.getBlockRegistry().getObjectById(blocks[index] & 0xffff) : replacement;
         if (block == null || !pastes(block, world.isAirBlock(wx, wy, wz))) return null;
         int meta = kind == Kind.PASTE ? metadata[index] & 15 : replacementMeta;
         return blockCommand(wx, wy, wz, GameData.getBlockRegistry().getNameForObject(block), meta);
+    }
+
+    /** TaskDeleteBlocksByPlacement: only non-air world blocks the deletion mode selects. */
+    private boolean deletes(int index, net.minecraft.world.World world, int wx, int wy, int wz) {
+        Block existing = world.getBlock(wx, wy, wz);
+        if (existing.isAir(world, wx, wy, wz)) return false;
+        Block schematic = GameData.getBlockRegistry().getObjectById(blocks[index] & 0xffff);
+        boolean schematicAir = schematic == null || schematic == Blocks.air;
+        return deletion.deletes(schematicAir, existing == schematic && world.getBlockMetadata(wx, wy, wz) == (metadata[index] & 15));
+    }
+
+    public interface CellFilter { boolean keep(int x, int y, int z); }
+
+    /** Drops world positions the filter rejects, such as those outside the render layer range. */
+    public void restrict(CellFilter filter) {
+        BitSet next = selected == null ? new BitSet(volume) : (BitSet) selected.clone();
+        if (selected == null) next.set(0, volume);
+        for (int index = next.nextSetBit(0); index >= 0; index = next.nextSetBit(index + 1)) {
+            if (!filter.keep(x + index % width, y + index / width / length, z + index / width % length)) next.clear(index);
+        }
+        selected = next;
     }
 
     /** Paste skips per the replace behavior, and never writes air over air; fills and deletes always apply. */
@@ -138,6 +163,12 @@ public final class WorldEditJob extends WorldEditTask {
 
     public void flushBlockChanges(WorldServer world) {
         if (silentPlacement != null) silentPlacement.flush(world);
+    }
+
+    @Override
+    public net.minecraft.util.IChatComponent finishedMessage(boolean success) {
+        if (kind != Kind.DELETE_PLACEMENT) return super.finishedMessage(success);
+        return new net.minecraft.util.ChatComponentText(success ? String.format("Deleted %d blocks", blockCount) : "Deletion task failed");
     }
 
     public TaskRegistry.Kind taskKind() {
@@ -174,6 +205,7 @@ public final class WorldEditJob extends WorldEditTask {
             if ((phase == 0) != structural) return false;
             if (kind == Kind.REPLACE && (world.getBlock(wx, wy, wz) != target
                 || world.getBlockMetadata(wx, wy, wz) != targetMeta)) return false;
+            if (kind == Kind.DELETE_PLACEMENT && !deletes(index, world, wx, wy, wz)) return false;
             if (!pastes(block, world.isAirBlock(wx, wy, wz))) return false;
             if (silentPlacement != null) {
                 silentPlacement.setBlock(world, wx, wy, wz, block, meta);

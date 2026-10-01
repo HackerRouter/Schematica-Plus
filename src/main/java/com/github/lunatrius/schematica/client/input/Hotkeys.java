@@ -78,6 +78,11 @@ public final class Hotkeys {
         add("saveAreaAsInMemorySchematic", normal());
         add("schematicPlacementRotation", modifier());
         add("schematicPlacementMirror", modifier());
+        add("openGuiSchematicProjects", normal());
+        add("schematicVCSDeleteBlockByPlacement", normal());
+        add("schematicVersionCycleModifier", modifier());
+        add("schematicVersionCycleNext", normal());
+        add("schematicVersionCyclePrevious", normal());
         ALL = Collections.unmodifiableList(new ArrayList<>(BY_ID.values()));
     }
 

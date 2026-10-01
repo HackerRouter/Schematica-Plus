@@ -90,6 +90,8 @@ public class ConfigurationHandler {
     public static String placementRestrictionWarn = "actionbar";
     public static boolean pasteWithoutUpdates = PASTE_WITHOUT_UPDATES_DEFAULT;
     public static ReplaceBehavior pasteReplaceBehavior = ReplaceBehavior.NONE;
+    public static boolean unhideSchematicVCS;
+    public static com.github.lunatrius.schematica.tool.PlacementDeletionMode schematicVcsDeleteMode = com.github.lunatrius.schematica.tool.PlacementDeletionMode.MATCHING_BLOCK;
     public static boolean printerEnabled = PRINTER_ENABLED_DEFAULT;
     public static boolean saveEnabled = SAVE_ENABLED_DEFAULT;
     public static boolean loadEnabled = LOAD_ENABLED_DEFAULT;
@@ -351,6 +353,12 @@ public class ConfigurationHandler {
         easyPlaceVanillaReach = toolFlag("easyPlaceVanillaReach", false);
         placementRestriction = toolFlag("placementRestriction", false);
         signTextPaste = toolFlag("signTextPaste", true);
+        unhideSchematicVCS = toolFlag("unhideSchematicVCS", false);
+        Property vcsDelete = configuration.get(Names.Config.Category.TOOL, "schematicVcsDeleteMode", "matching_block");
+        vcsDelete.setLanguageKey("litematica.config.generic.name.schematicVcsDeleteMode");
+        vcsDelete.setValidValues(com.github.lunatrius.schematica.tool.PlacementDeletionMode.names());
+        schematicVcsDeleteMode = com.github.lunatrius.schematica.tool.PlacementDeletionMode.parse(vcsDelete.getString());
+        vcsDelete.set(schematicVcsDeleteMode.value);
         Property swapInterval = configuration.get(Names.Config.Category.TOOL, "easyPlaceSwapInterval", 0);
         swapInterval.setLanguageKey("litematica.config.generic.name.easyPlaceSwapInterval");
         swapInterval.setMinValue(0).setMaxValue(10000);

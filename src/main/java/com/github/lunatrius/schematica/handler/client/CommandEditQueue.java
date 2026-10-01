@@ -19,12 +19,16 @@ public final class CommandEditQueue {
     private TaskRegistry.Task task;
     private int cursor, sent, delay;
 
-    public synchronized boolean cancel() {
+    public synchronized boolean cancel() { return end(false); }
+
+    private boolean end(boolean success) {
         if (job == null) return false;
+        WorldEditJob finished = job;
         task.finish();
         task = null;
         job = null;
         world = null;
+        finished.completion.accept(success);
         return true;
     }
 
@@ -65,12 +69,12 @@ public final class CommandEditQueue {
             if (cursor == job.volume) {
                 mc.thePlayer.addChatMessage(job.kind == WorldEditJob.Kind.PASTE
                     ? new ChatComponentTranslation("litematica.message.schematic_pasted_using_setblock", sent)
-                    : new ChatComponentTranslation(job.taskKind().finishedKey(true)));
-                cancel();
+                    : job.finishedMessage(true));
+                end(true);
             }
         } catch (RuntimeException e) {
             Reference.logger.error("Command edit stopped after partial completion", e);
-            mc.thePlayer.addChatMessage(new ChatComponentTranslation(job.taskKind().finishedKey(false)));
+            mc.thePlayer.addChatMessage(job.finishedMessage(false));
             cancel();
         }
     }

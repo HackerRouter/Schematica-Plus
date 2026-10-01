@@ -82,6 +82,7 @@ public class QueueTickHandler {
         SchematicContainer container = save.container;
         EntityPlayer player = null;
         boolean pending = false;
+        java.io.File written = null;
         try {
             player = owner(save, clientWorld, clientPlayer);
             if (player == null || save.task.progress().cancelling) return;
@@ -108,6 +109,7 @@ public class QueueTickHandler {
             }
             java.io.File saved = SchematicFormat.saveToFile(container.file, container.schematic, container.world,
                 container.includeNBT, container.includeEntities);
+            written = saved;
             boolean renamed = saved != null && !saved.getName().equals(container.file.getName());
             String message = saved != null ? (renamed ? Names.Command.Save.Message.SAVE_EXTENDED
                 : Names.Command.Save.Message.SAVE_SUCCESSFUL) : Names.Command.Save.Message.SAVE_FAILED;
@@ -124,7 +126,14 @@ public class QueueTickHandler {
                     "litematica.message.error.schematic_save_interrupted"));
             }
             if (pending) queue.offer(save);
-            else save.task.finish();
+            else {
+                save.task.finish();
+                if (container.completed != null) {
+                    java.util.function.Consumer<java.io.File> completed = container.completed;
+                    java.io.File result = written;
+                    Minecraft.getMinecraft().func_152344_a(() -> completed.accept(result));
+                }
+            }
             updatePending();
         }
     }

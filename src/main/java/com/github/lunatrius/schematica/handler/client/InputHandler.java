@@ -10,6 +10,7 @@ import net.minecraft.util.MovingObjectPosition;
 import net.minecraftforge.common.ForgeHooks;
 
 
+import com.github.lunatrius.schematica.client.projects.SchematicProjects;
 import com.github.lunatrius.schematica.client.world.RenderLayerSettings;
 import com.github.lunatrius.schematica.handler.VisualSettings;
 import com.github.lunatrius.schematica.client.world.RenderLayerRange;
@@ -48,7 +49,11 @@ public class InputHandler {
         switch (key.id) {
             case "openGuiLoadedSchematics": minecraft.displayGuiScreen(new com.github.lunatrius.schematica.client.gui.placement.GuiSchematicLoadedList(parent)); break;
             case "openGuiSchematicPlacements": minecraft.displayGuiScreen(new com.github.lunatrius.schematica.client.gui.placement.GuiSchematicPlacementsList(parent)); break;
-            case "openGuiSelectionManager": minecraft.displayGuiScreen(new com.github.lunatrius.schematica.client.gui.save.GuiAreaSelectionManager(parent)); break;
+            case "openGuiSelectionManager":
+                if (!SchematicProjects.hasProjectOpen()) minecraft.displayGuiScreen(new com.github.lunatrius.schematica.client.gui.save.GuiAreaSelectionManager(parent));
+                else SchematicProjects.message(net.minecraft.util.EnumChatFormatting.GOLD, "litematica.gui.button.hover.schematic_projects.area_browser_disabled_currently_in_projects_mode");
+                break;
+            case "openGuiSchematicProjects": return SchematicProjects.openGui(parent);
             case "openGuiAreaSettings": minecraft.displayGuiScreen(new com.github.lunatrius.schematica.client.gui.save.GuiAreaSelectionEditor(parent)); break;
             case "openGuiPlacementSettings":
                 if (placement != null) minecraft.displayGuiScreen(new com.github.lunatrius.schematica.client.gui.placement.GuiPlacementConfiguration(parent, placement));
@@ -59,7 +64,10 @@ public class InputHandler {
             case "openGuiSchematicVerifier":
                 if (placement != null) minecraft.displayGuiScreen(new com.github.lunatrius.schematica.client.gui.GuiSchematicVerifier(parent, placement));
                 break;
-            case "saveAreaAsSchematicToFile": minecraft.displayGuiScreen(new GuiSchematicSave(parent)); break;
+            case "saveAreaAsSchematicToFile": return saveSchematic(parent);
+            case "schematicVersionCycleNext": if (SchematicProjects.hasProjectOpen()) SchematicProjects.cycleVersion(1); break;
+            case "schematicVersionCyclePrevious": if (SchematicProjects.hasProjectOpen()) SchematicProjects.cycleVersion(-1); break;
+            case "schematicVCSDeleteBlockByPlacement": return SchematicProjects.deleteBlocksByPlacement();
             case "layerNext": moveLayer(1); break;
             case "layerPrevious": moveLayer(-1); break;
             case "layerModeNext": cycleLayer(1); break;
@@ -98,6 +106,15 @@ public class InputHandler {
                     && ToolHandler.onExecute(minecraft.thePlayer);
             default: return ToolManager.hotkey(key.id);
         }
+        return true;
+    }
+
+    /** SchematicUtils.saveSchematic: a new project version while a project is open, else the save screen. */
+    public boolean saveSchematic(net.minecraft.client.gui.GuiScreen parent) {
+        if (com.github.lunatrius.schematica.client.selection.AreaSelections.library().selected() == null) return false;
+        com.github.lunatrius.schematica.client.projects.SchematicProject project = SchematicProjects.current();
+        if (project != null) minecraft.displayGuiScreen(new com.github.lunatrius.schematica.client.gui.projects.GuiVersionPrompt(parent, project));
+        else minecraft.displayGuiScreen(new GuiSchematicSave(parent));
         return true;
     }
 

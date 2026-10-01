@@ -84,21 +84,27 @@ public abstract class GuiSchematicBrowser extends UiScreen {
             @Override public void draw(UiDraw draw, int mouseX, int mouseY) {
                 draw.fill(bounds(), 0xA0000000);
                 draw.border(bounds(), 0xFF999999);
-                SchematicBrowserModel.Entry entry = selection();
-                if (entry == null || entry.directory) return;
-                int x = bounds().x + 3;
-                int y = bounds().y + 3;
-                draw.text(UiTranslations.format("litematica.gui.label.schematic_info.name"), x, y, 0xC0C0C0C0);
-                draw.text(draw.trim(entry.name(), bounds().width - 10), x + 4, y + 12, 0xFFFFFFFF);
-                draw.text(FileUtils.humanReadableByteCount(entry.size), x, y + 36, 0xC0C0C0C0);
-                String date = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date(entry.modified));
-                draw.text(draw.trim(date, bounds().width - 6), x, y + 48, 0xC0C0C0C0);
+                drawInfo(draw, bounds().x + 3, bounds().y + 3, bounds().width, selection());
             }
         });
         message = root.add(new UiLabel(() -> status));
         createActions();
         back = addButton(directoriesOnly ? "gui.back" : "litematica.gui.button.change_menu.to_main_menu",
             directoriesOnly ? this::closeScreen : this::mainMenu);
+    }
+
+    /** Draws the info panel for the selected entry. */
+    protected void drawInfo(UiDraw draw, int x, int y, int width, SchematicBrowserModel.Entry entry) {
+        if (entry == null || entry.directory) return;
+        draw.text(UiTranslations.format("litematica.gui.label.schematic_info.name"), x, y, 0xC0C0C0C0);
+        draw.text(draw.trim(entry.name(), width - 10), x + 4, y + 12, 0xFFFFFFFF);
+        draw.text(FileUtils.humanReadableByteCount(entry.size), x, y + 36, 0xC0C0C0C0);
+        String date = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date(entry.modified));
+        draw.text(draw.trim(date, width - 6), x, y + 48, 0xC0C0C0C0);
+    }
+
+    protected SchematicBrowserModel createModel() throws IOException {
+        return new SchematicBrowserModel(ConfigurationHandler.schematicDirectory);
     }
 
     private UiButton icon(UiSprite sprite, String key, Runnable action) {
@@ -252,7 +258,7 @@ public abstract class GuiSchematicBrowser extends UiScreen {
 
     protected final void refreshFiles() {
         try {
-            if (browser == null) browser = new SchematicBrowserModel(ConfigurationHandler.schematicDirectory);
+            if (browser == null) browser = createModel();
             browser.refresh();
             updateFiles();
             setStatus("");

@@ -110,14 +110,14 @@ public final class WorldEditQueue {
             if (done) {
                 boolean success = !job.cancelled && job.failure() == null;
                 if (job.failure() != null) Reference.logger.error("World move restored after failure", job.failure());
-                String key = job.taskKind().finishedKey(success);
-                if (player != null && key != null) player.addChatMessage(new ChatComponentTranslation(key));
+                net.minecraft.util.IChatComponent message = job.finishedMessage(success);
+                if (player != null && message != null) player.addChatMessage(message);
                 finish(edit, success);
             }
         } catch (Exception e) {
             Reference.logger.error("World edit stopped after partial completion", e);
-            String key = job.taskKind().finishedKey(false);
-            if (player != null && key != null) player.addChatMessage(new ChatComponentTranslation(key));
+            net.minecraft.util.IChatComponent message = job.finishedMessage(false);
+            if (player != null && message != null) player.addChatMessage(message);
             if (player != null && e instanceof MessageException) {
                 player.addChatMessage(new ChatComponentTranslation(((MessageException) e).key(), ((MessageException) e).arguments()));
             }
