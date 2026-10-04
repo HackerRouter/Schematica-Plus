@@ -364,6 +364,7 @@ public class ConfigurationHandler {
         unhideSchematicVCS = toolFlag("unhideSchematicVCS", false);
         areaSelectionsPerWorld = toolFlag("areaSelectionsPerWorld", true);
         materialListIgnoreState = toolFlag("materialListIgnoreState", false);
+        com.github.lunatrius.schematica.util.BlockGroups.enabled = toolFlag("enableDifferentBlocks", false);
         materialListRecipeDetails = toolFlag("materialListRecipeDetails", true);
         renderMaterialListInGuis = toolFlag("renderMaterialListInGuis", true);
         highlightBlockInInventory = toolFlag("highlightBlockInInventory", false);

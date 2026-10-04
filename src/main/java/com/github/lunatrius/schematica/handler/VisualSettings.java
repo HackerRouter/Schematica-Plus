@@ -15,6 +15,8 @@ import com.github.lunatrius.schematica.reference.Names;
 public final class VisualSettings {
     public static boolean rendering = true, schematic = true, blocks = true, areaBoxes = true, placementBoxes = true, overlayThrough;
     public static boolean blockInfoOverlay = true;
+    public static boolean overlayMissing = true, overlayWrongBlock = true, overlayWrongState = true, overlayDiffBlock = true;
+    public static double outlineWidth = 1.0, outlineWidthThrough = 3.0;
 
     /** A toggleable boolean option and the upstream config group used for its display name. */
     public enum Toggle {
@@ -50,6 +52,25 @@ public final class VisualSettings {
         placementBoxes = flag(config, Names.Config.Category.RENDER, "enablePlacementBoxesRendering", true, "visuals");
         overlayThrough = flag(config, Names.Config.Category.RENDER, "schematicOverlayRenderThroughBlocks", false, "visuals");
         blockInfoOverlay = flag(config, BlockInfoHudSettings.CATEGORY, "blockInfoOverlayEnabled", true, "info_overlays");
+        overlayMissing = flag(config, Names.Config.Category.RENDER, "schematicOverlayTypeMissing", true, "visuals");
+        overlayWrongBlock = flag(config, Names.Config.Category.RENDER, "schematicOverlayTypeWrongBlock", true, "visuals");
+        overlayWrongState = flag(config, Names.Config.Category.RENDER, "schematicOverlayTypeWrongState", true, "visuals");
+        overlayDiffBlock = flag(config, Names.Config.Category.RENDER, "schematicOverlayTypeDiffBlock", true, "visuals");
+        outlineWidth = width(config, "schematicOverlayOutlineWidth", 1.0);
+        outlineWidthThrough = width(config, "schematicOverlayOutlineWidthThrough", 3.0);
+    }
+
+    private static double width(Configuration config, String key, double fallback) {
+        Property property = config.get(Names.Config.Category.RENDER, key, fallback);
+        property.setLanguageKey("litematica.config.visuals.name." + key);
+        property.setMinValue(0.0).setMaxValue(64.0);
+        double value = property.getDouble(fallback);
+        return Double.isFinite(value) && value >= 0 && value <= 64 ? value : fallback;
+    }
+
+    /** The overlay outline width: wider when the overlay is drawn through blocks. */
+    public static float frameOutlineWidth() {
+        return (float) Math.max(0.1, frameThrough ? outlineWidthThrough : outlineWidth);
     }
 
     private static boolean flag(Configuration config, String category, String key, boolean fallback, String group) {

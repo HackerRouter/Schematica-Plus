@@ -213,6 +213,11 @@ public final class VerificationManager {
             if (!notice.isEmpty()) return UiTranslations.format(notice);
             if (scan == null || !running && !scan.done()) return "";
             if (!scan.done()) return UiTranslations.format("litematica.gui.label.schematic_verifier.status.verifying", scan.remainingChunks(), scan.totalChunks());
+            if (com.github.lunatrius.schematica.util.BlockGroups.enabled) {
+                return UiTranslations.format("litematica.gui.label.schematic_verifier.status.done_errors",
+                    scan.count(VerificationScan.Type.WRONG_BLOCK), scan.count(VerificationScan.Type.WRONG_STATE),
+                    scan.count(VerificationScan.Type.MISSING), scan.count(VerificationScan.Type.EXTRA), scan.count(VerificationScan.Type.DIFF_BLOCK));
+            }
             return UiTranslations.format("litematica.gui.label.schematic_verifier.status.done_errors.no_diff",
                 scan.count(VerificationScan.Type.WRONG_BLOCK), scan.count(VerificationScan.Type.WRONG_STATE),
                 scan.count(VerificationScan.Type.MISSING), scan.count(VerificationScan.Type.EXTRA));

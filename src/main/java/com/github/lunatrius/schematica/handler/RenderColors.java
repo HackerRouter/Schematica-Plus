@@ -14,7 +14,7 @@ public enum RenderColors {
     REBUILD_BREAK("schematicRebuildBreakPlaceOverlayColor", 0x4C33CC33, true),
     REBUILD_EXCEPT("schematicRebuildBreakExceptPlaceOverlayColor", 0x4CF03030, true),
     REBUILD_REPLACE("schematicRebuildReplaceOverlayColor", 0x4CF0A010, true),
-    DIFFERENT_TYPE("schematicOverlayColorDiffBlock", 0x30F8D650, false),
+    DIFFERENT_TYPE("schematicOverlayColorDiffBlock", 0x30F8D650, true),
     EXTRA("schematicOverlayColorExtra", 0x4CFF4CE6, true),
     MISSING("schematicOverlayColorMissing", 0x2C33B3E6, true),
     WRONG_BLOCK("schematicOverlayColorWrongBlock", 0x4CFF3333, true),

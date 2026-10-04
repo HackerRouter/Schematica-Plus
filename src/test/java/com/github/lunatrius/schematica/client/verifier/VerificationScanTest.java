@@ -30,7 +30,7 @@ public class VerificationScanTest {
                 return x == 0 || x == 5 ? State.AIR : x == 1 ? DIRT : x == 2 ? new State(STONE.block, 1) : STONE;
             }
         });
-        for (Type type : Type.values()) assertEquals(type.name(), type == Type.ALL ? 4 : 1, scan.count(type));
+        for (Type type : Type.values()) assertEquals(type.name(), type == Type.ALL ? 4 : type == Type.DIFF_BLOCK ? 0 : 1, scan.count(type));
         assertEquals(4, scan.expectedBlocks());
         assertEquals(6, scan.checked());
         assertEquals(0, scan.skipped());

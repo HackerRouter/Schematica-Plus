@@ -88,7 +88,7 @@ public final class VerifierOverlayRenderer {
     private static void tint(Tessellator tessellator, Marker marker, double alpha) {
         Type type = marker.group.type;
         int color = (type == Type.WRONG_BLOCK ? RenderColors.WRONG_BLOCK : type == Type.WRONG_STATE ? RenderColors.WRONG_STATE
-            : type == Type.EXTRA ? RenderColors.EXTRA : RenderColors.MISSING).color();
+            : type == Type.DIFF_BLOCK ? RenderColors.DIFFERENT_TYPE : type == Type.EXTRA ? RenderColors.EXTRA : RenderColors.MISSING).color();
         tessellator.setColorRGBA(color >>> 16 & 255, color >>> 8 & 255, color & 255, (int) (alpha * 255));
     }
 }

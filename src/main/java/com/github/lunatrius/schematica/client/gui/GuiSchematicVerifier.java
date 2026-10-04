@@ -24,6 +24,7 @@ import com.github.lunatrius.schematica.client.gui.framework.UiTranslations;
 import com.github.lunatrius.schematica.client.input.Hotkeys;
 import com.github.lunatrius.schematica.client.verifier.VerificationManager;
 import com.github.lunatrius.schematica.client.verifier.VerificationScan;
+import com.github.lunatrius.schematica.handler.ConfigurationHandler;
 import com.github.lunatrius.schematica.client.verifier.VerificationScan.Group;
 import com.github.lunatrius.schematica.client.verifier.VerificationScan.State;
 import com.github.lunatrius.schematica.client.verifier.VerificationScan.Type;
@@ -138,6 +139,7 @@ public final class GuiSchematicVerifier extends UiScreen {
         ignored.setEnabled(scan != null && !scan.ignored().isEmpty());
         columns[1].setEnabled(session.filter != Type.CORRECT);
         for (int i = 0; i < filters.size(); i++) filters.get(i).setEnabled(Type.values()[i] != session.filter);
+        filters.get(Type.DIFF_BLOCK.ordinal()).setVisible(com.github.lunatrius.schematica.util.BlockGroups.enabled);
         status.setTooltip(message.isEmpty() ? session.progressText() : message, UiTranslations.format("schematica.ui.verifier.comparison"));
         counts.setTooltip(session.countsText());
     }
@@ -151,6 +153,7 @@ public final class GuiSchematicVerifier extends UiScreen {
     private int buttonRow(List<UiButton> buttons, int y) {
         int x = 12;
         for (UiButton button : buttons) {
+            if (!button.isVisible()) continue;
             int w = Math.min(Math.max(20, width - 24), fontRendererObj.getStringWidth(button.label()) + 10);
             if (x > 12 && x + w > width - 12) { x = 12; y += 22; }
             button.setBounds(x, y, w, 20);

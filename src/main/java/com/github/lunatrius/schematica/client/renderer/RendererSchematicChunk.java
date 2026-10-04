@@ -155,8 +155,6 @@ public class RendererSchematicChunk {
                 if (quadCount > 0 || lineCount > 0) {
                     GL11.glDisable(GL11.GL_TEXTURE_2D);
 
-                    GL11.glLineWidth(3.0f);
-
                     GL11.glEnableClientState(GL11.GL_VERTEX_ARRAY);
                     GL11.glEnableClientState(GL11.GL_COLOR_ARRAY);
 
@@ -221,6 +219,7 @@ public class RendererSchematicChunk {
             GL11.glDepthMask(false);
             if (VisualSettings.frameOverlay) {
                 if (VisualSettings.frameThrough) GL11.glDisable(GL11.GL_DEPTH_TEST);
+                GL11.glLineWidth(VisualSettings.frameOutlineWidth());
                 GL11.glCallList(this.glListHighlight + renderPass);
                 GL11.glEnable(GL11.GL_DEPTH_TEST);
             }
@@ -230,6 +229,16 @@ public class RendererSchematicChunk {
             if (OpenGlHelper.shadersSupported) GL20.glUseProgram(previousProgram);
             GL11.glPopAttrib();
             this.profiler.endSection();
+        }
+    }
+
+    /** The overlay of a schematic block standing where another block is, or null when that overlay type is off. */
+    static RenderColors overlayColor(Block expected, int expectedMeta, Block found, int foundMeta) {
+        switch (com.github.lunatrius.schematica.util.BlockGroups.compare(expected, expectedMeta, found, foundMeta, com.github.lunatrius.schematica.util.BlockGroups.enabled)) {
+            case WRONG_BLOCK: return VisualSettings.overlayWrongBlock ? RenderColors.WRONG_BLOCK : null;
+            case WRONG_STATE: return VisualSettings.overlayWrongState ? RenderColors.WRONG_STATE : null;
+            case DIFFERENT_BLOCK: return VisualSettings.overlayDiffBlock ? RenderColors.DIFFERENT_TYPE : null;
+            default: return null;
         }
     }
 
@@ -311,31 +320,19 @@ public class RendererSchematicChunk {
                                             RenderHelper.LINE_ALL,
                                             RenderColors.EXTRA.color());
                                     }
-                                } else if (block != mcBlock) {
-                                    zero.set(x, y, z);
-                                    size.set(x + 1, y + 1, z + 1);
-                                    if (ConfigurationHandler.drawQuads) {
-                                        RenderHelper.drawCuboidSurface(zero, size, sides, RenderColors.WRONG_BLOCK.color());
-                                    }
-                                    if (ConfigurationHandler.drawLines) {
-                                        RenderHelper.drawCuboidOutline(zero, size, sides, RenderColors.WRONG_BLOCK.color());
-                                    }
-                                } else if (this.schematic.getBlockMetadata(x, y, z)
-                                    != mcWorld.getBlockMetadata(wx, wy, wz)) {
+                                } else if (!isAirBlock) {
+                                    RenderColors color = overlayColor(block, this.schematic.getBlockMetadata(x, y, z),
+                                        mcBlock, mcWorld.getBlockMetadata(wx, wy, wz));
+                                    if (color != null) {
                                         zero.set(x, y, z);
                                         size.set(x + 1, y + 1, z + 1);
-                                        if (ConfigurationHandler.drawQuads) {
-                                            RenderHelper
-                                                .drawCuboidSurface(zero, size, sides, RenderColors.WRONG_STATE.color());
-                                        }
-                                        if (ConfigurationHandler.drawLines) {
-                                            RenderHelper
-                                                .drawCuboidOutline(zero, size, sides, RenderColors.WRONG_STATE.color());
-                                        }
+                                        if (ConfigurationHandler.drawQuads) RenderHelper.drawCuboidSurface(zero, size, sides, color.color());
+                                        if (ConfigurationHandler.drawLines) RenderHelper.drawCuboidOutline(zero, size, sides, color.color());
                                     }
+                                }
                             }
                         } else if (!isAirBlock) {
-                            if (ConfigurationHandler.highlight && renderPass == 2) {
+                            if (ConfigurationHandler.highlight && renderPass == 2 && VisualSettings.overlayMissing) {
                                 zero.set(x, y, z);
                                 size.set(x + 1, y + 1, z + 1);
                                 if (ConfigurationHandler.drawQuads) {

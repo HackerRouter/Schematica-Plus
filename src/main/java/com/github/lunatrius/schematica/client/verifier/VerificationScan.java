@@ -20,6 +20,7 @@ public final class VerificationScan {
         ALL("litematica.gui.label.schematic_verifier_display_type.all_not_ignored", ""),
         WRONG_BLOCK("litematica.gui.label.schematic_verifier_display_type.wrong_blocks", "§c"),
         WRONG_STATE("litematica.gui.label.schematic_verifier_display_type.wrong_state", "§6"),
+        DIFF_BLOCK("litematica.gui.label.schematic_verifier_display_type.diff_blocks", "§e"),
         EXTRA("litematica.gui.label.schematic_verifier_display_type.extra", "§d"),
         MISSING("litematica.gui.label.schematic_verifier_display_type.missing", "§b"),
         CORRECT("litematica.gui.label.schematic_verifier_display_type.correct_state", "§a");
@@ -105,7 +106,12 @@ public final class VerificationScan {
         if (expected.equals(found)) return Type.CORRECT;
         if (expected.air()) return Type.EXTRA;
         if (found.air()) return Type.MISSING;
-        return expected.block.equals(found.block) ? Type.WRONG_STATE : Type.WRONG_BLOCK;
+        switch (com.github.lunatrius.schematica.util.BlockGroups.compare(expected.block, expected.metadata, found.block, found.metadata,
+            com.github.lunatrius.schematica.util.BlockGroups.enabled)) {
+            case DIFFERENT_BLOCK: return Type.DIFF_BLOCK;
+            case WRONG_STATE: return Type.WRONG_STATE;
+            default: return Type.WRONG_BLOCK;
+        }
     }
 
     public void step(Reader reader, int limit, long deadline) {
