@@ -45,6 +45,13 @@ public class InputHandler {
             default: break;
         }
         if (minecraft.thePlayer == null || minecraft.theWorld == null) return false;
+        if (key.toggleGroup != null) {
+            VisualSettings.Toggle toggle = VisualSettings.Toggle.byUpstream(key.id);
+            if (toggle == null) return false;
+            VisualSettings.toggle(toggle);
+            if (toggle != VisualSettings.Toggle.ENTITY_HITBOXES) com.github.lunatrius.schematica.client.renderer.RendererSchematicGlobal.INSTANCE.refresh();
+            return true;
+        }
         switch (key.id) {
             case "openGuiLoadedSchematics": minecraft.displayGuiScreen(new com.github.lunatrius.schematica.client.gui.placement.GuiSchematicLoadedList(parent)); break;
             case "openGuiSchematicPlacements": minecraft.displayGuiScreen(new com.github.lunatrius.schematica.client.gui.placement.GuiSchematicPlacementsList(parent)); break;

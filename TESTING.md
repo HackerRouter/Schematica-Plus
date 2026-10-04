@@ -1347,3 +1347,15 @@ compare with a server that does not have the mod and with each server option off
   1.12.2 Litematica and re-import in Plus: items and the rider are kept.
 - Load .schem files from WorldEdit 7 (v2) and 7.3+ (v3) and from FAWE: blocks, chests with items, signs
   and entities appear; the placement origin matches where the copy was made from (//copy position).
+
+## Tool HUD, new generic/visuals options and boolean toggle hotkeys
+
+- Hold the tool: the Tool HUD text is in the bottom left with a dark background per line and shadowed
+  text like Litematica (block, mode, selection/placement lines, `Mode [n/9]`); toolHudAlignment,
+  offsets and scale move/resize it; it hides while a screen is open or F1 is active.
+- Visuals tab: rows such as Enable Schematic Rendering or Schematic Overlay Type Missing show a value
+  button, a keybind button and the keybind settings button. Bind one, press it in game: the option flips,
+  the action bar shows the MaLiLib toggle message and the schematic re-renders; Reset clears the binding
+  and the value. These hotkeys are not listed in the Hotkeys tab.
+- Bind schematicEditReplaceSelection with another key held: it still fires (modifier settings) and the
+  other key keeps working.

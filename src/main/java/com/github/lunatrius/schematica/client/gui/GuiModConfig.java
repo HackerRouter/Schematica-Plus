@@ -11,6 +11,7 @@ import java.util.Map;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.settings.GameSettings;
 import com.github.lunatrius.schematica.client.input.Hotkey;
+import com.github.lunatrius.schematica.handler.VisualSettings;
 import com.github.lunatrius.schematica.client.input.Hotkeys;
 import com.github.lunatrius.schematica.client.input.HotkeyHooks;
 import com.github.lunatrius.schematica.client.gui.config.HotkeySettingsPanel;
@@ -100,7 +101,7 @@ public class GuiModConfig extends UiScreen implements HotkeyHooks.Capture {
                 if (property.showInGui()) entries.add(new Entry(categoryName, property));
             }
         }
-        for (Hotkey key : Hotkeys.ALL) entries.add(new Entry(key));
+        for (Hotkey key : Hotkeys.ALL) if (key.toggleGroup == null) entries.add(new Entry(key));
         entries.sort(Comparator.comparing(Entry::name, String.CASE_INSENSITIVE_ORDER));
         for (Tab value : Tab.values()) {
             UiButton button = addButton(value.key, () -> changeTab(value));
@@ -142,7 +143,7 @@ public class GuiModConfig extends UiScreen implements HotkeyHooks.Capture {
         for (Entry entry : entries) {
             if (tab != Tab.ALL && tab != entry.tab()) continue;
             if (searchOpen && tab.keySearch() && keyFilter != 0
-                && (entry.key == null || !entry.key.keys().contains(keyFilter))) continue;
+                && (entry.binding() == null || !entry.binding().keys().contains(keyFilter))) continue;
             visible.add(entry);
         }
         if (tab == Tab.COLORS) visible.sort(Comparator.comparingInt(entry -> entry.color.ordinal()));
@@ -309,6 +310,8 @@ public class GuiModConfig extends UiScreen implements HotkeyHooks.Capture {
         final String category;
         final ConfigPropertyDraft draft;
         final Hotkey key;
+        /** The toggle hotkey of a ConfigBooleanHotkeyed option, shown next to its value. */
+        final Hotkey toggleKey;
         final RenderColors color;
 
         Entry(String category, Property property) {
@@ -316,14 +319,20 @@ public class GuiModConfig extends UiScreen implements HotkeyHooks.Capture {
             color = RenderColors.find(category, property.getName());
             draft = new ConfigPropertyDraft(property, color != null);
             key = null;
+            VisualSettings.Toggle toggle = property.getType() == Property.Type.BOOLEAN ? VisualSettings.Toggle.byProperty(category, property.getName()) : null;
+            Hotkey hotkey = toggle == null ? null : Hotkeys.get(toggle.upstream);
+            toggleKey = hotkey != null && hotkey.toggleGroup != null ? hotkey : null;
         }
 
         Entry(Hotkey key) {
             category = "hotkeys";
             draft = null;
             this.key = key;
+            toggleKey = null;
             color = null;
         }
+
+        Hotkey binding() { return key != null ? key : toggleKey; }
 
         boolean available() { return color == null || color.available; }
         int previewColor() {
@@ -337,7 +346,7 @@ public class GuiModConfig extends UiScreen implements HotkeyHooks.Capture {
         String name() { return key == null ? draft.property.getName() : key.translationKey(); }
         String label() { return UiTranslations.format(ConfigTranslations.label(key == null ? draft.property.getLanguageKey() : key.translationKey())); }
         String searchText() { return name() + " " + label() + " " + category + (modified() ? " modified" : ""); }
-        boolean modified() { return key == null ? draft.modified() : key.modified(); }
+        boolean modified() { return key == null ? draft.modified() || toggleKey != null && toggleKey.modified() : key.modified(); }
         Tab tab() {
             if (key != null) return Tab.HOTKEYS;
             if (color != null) return Tab.COLORS;
@@ -371,6 +380,7 @@ public class GuiModConfig extends UiScreen implements HotkeyHooks.Capture {
         private UiWidget slider;
         private UiButton sliderToggle;
         private UiWidget keySettings;
+        private UiButton toggleBinding;
         private UiButton swatch;
 
         ConfigRow(Entry entry) {
@@ -380,25 +390,7 @@ public class GuiModConfig extends UiScreen implements HotkeyHooks.Capture {
             reset = add(new UiButton(() -> UiTranslations.format("malilib.gui.button.reset.caps"), button -> reset()));
             if (entry.key != null) {
                 editor = add(new UiButton(() -> bindingLabel(entry.key), button -> captureEntry()));
-                keySettings = add(new UiButton(() -> "", button -> {
-                    if (button == 1) { entry.key.resetSettings(); HotkeyHooks.reset(); keysChanged = true; }
-                    else {
-                        HotkeySettingsPanel panel = new HotkeySettingsPanel(fontRendererObj, entry.key, () -> keysChanged = true);
-                        panel.layout(root.bounds()); input.pushModal(panel);
-                    }
-                }) {
-                    @Override public void draw(UiDraw draw, int mouseX, int mouseY) {
-                        draw.fill(bounds(), 0xFF000000);
-                        draw.border(bounds(), entry.key.settingsModified() ? 0xFFFFBB33 : 0xFFFFFFFF);
-                        Hotkey.Settings s = entry.key.settings;
-                        int[] v = {s.action.ordinal() * 18, s.allowExtra ? 0 : 18, s.ordered ? 18 : 0, s.exclusive ? 18 : 0, s.cancel ? 18 : 0};
-                        for (int i = 0; i < v.length; i++) draw.texture("schematica_plus:textures/gui/malilib_widgets.png",
-                            new UiBounds(bounds().x + 1, bounds().y + 1, 18, 18), i * 18, v[i], 18, 18, 256, 256);
-                        if (bounds().contains(mouseX, mouseY)) draw.border(bounds(), 0xFFFFFF55);
-                    }
-                });
-                keySettings.setTooltip(UiTranslations.format("malilib.gui.label.keybind_settings.title_advanced_keybind_settings"),
-                    UiTranslations.format("malilib.gui.label.keybind_settings.tips"));
+                keySettings = keySettingsButton(entry.key);
             } else if (entry.draft.property.isList()) {
                 editor = add(new UiButton(() -> "[ " + String.join(", ", entry.draft.values()) + " ]", button -> {
                     ConfigStringListPanel panel = new ConfigStringListPanel(fontRendererObj, entry.draft);
@@ -429,6 +421,10 @@ public class GuiModConfig extends UiScreen implements HotkeyHooks.Capture {
                 editor = add(new UiButton(() -> UiTranslations.format(Boolean.parseBoolean(entry.draft.text())
                     ? "malilib.gui.button.true" : "malilib.gui.button.false"),
                     button -> entry.draft.setText(Boolean.toString(!Boolean.parseBoolean(entry.draft.text())))));
+                if (entry.toggleKey != null) {
+                    toggleBinding = add(new UiButton(() -> bindingLabel(entry.toggleKey), button -> beginCapture(entry.toggleKey, toggleBinding)));
+                    keySettings = keySettingsButton(entry.toggleKey);
+                }
             } else {
                 text = add(new UiTextField(fontRendererObj, entry.color == null ? 65535 : 12, entry.draft::setText));
                 text.setText(entry.draft.text());
@@ -465,11 +461,35 @@ public class GuiModConfig extends UiScreen implements HotkeyHooks.Capture {
             tick();
         }
 
+        private UiWidget keySettingsButton(Hotkey key) {
+            UiWidget widget = add(new UiButton(() -> "", button -> {
+                if (button == 1) { key.resetSettings(); HotkeyHooks.reset(); keysChanged = true; }
+                else {
+                    HotkeySettingsPanel panel = new HotkeySettingsPanel(fontRendererObj, key, () -> keysChanged = true);
+                    panel.layout(root.bounds()); input.pushModal(panel);
+                }
+            }) {
+                @Override public void draw(UiDraw draw, int mouseX, int mouseY) {
+                    draw.fill(bounds(), 0xFF000000);
+                    draw.border(bounds(), key.settingsModified() ? 0xFFFFBB33 : 0xFFFFFFFF);
+                    Hotkey.Settings s = key.settings;
+                    int[] v = {s.action.ordinal() * 18, s.allowExtra ? 0 : 18, s.ordered ? 18 : 0, s.exclusive ? 18 : 0, s.cancel ? 18 : 0};
+                    for (int i = 0; i < v.length; i++) draw.texture("schematica_plus:textures/gui/malilib_widgets.png",
+                        new UiBounds(bounds().x + 1, bounds().y + 1, 18, 18), i * 18, v[i], 18, 18, 256, 256);
+                    if (bounds().contains(mouseX, mouseY)) draw.border(bounds(), 0xFFFFFF55);
+                }
+            });
+            widget.setTooltip(UiTranslations.format("malilib.gui.label.keybind_settings.title_advanced_keybind_settings"),
+                UiTranslations.format("malilib.gui.label.keybind_settings.tips"));
+            return widget;
+        }
+
         private void reset() {
             if (entry.key != null) { entry.key.reset(); HotkeyHooks.reset(); keysChanged = true; }
             else {
                 entry.draft.reset();
                 if (text != null) text.setText(entry.draft.text());
+                if (entry.toggleKey != null) { entry.toggleKey.reset(); HotkeyHooks.reset(); keysChanged = true; }
             }
             tick();
         }
@@ -496,6 +516,10 @@ public class GuiModConfig extends UiScreen implements HotkeyHooks.Capture {
                     sliderToggle.setBounds(x + fieldWidth + 2, y + 2, 16, 16);
                     sliderToggle.setSprite(entry.draft.slider ? UiSprite.TEXT_FIELD : UiSprite.SLIDER);
                 }
+            } else if (toggleBinding != null) {
+                editor.setBounds(x, y, 60, 20);
+                toggleBinding.setBounds(x + 62, y, Math.max(20, optionWidth - 84), 20);
+                keySettings.setBounds(x + optionWidth - 20, y, 20, 20);
             } else {
                 editor.setBounds(x, y, optionWidth - (keySettings == null ? 0 : 22), 20);
                 if (keySettings != null) keySettings.setBounds(x + optionWidth - 20, y, 20, 20);

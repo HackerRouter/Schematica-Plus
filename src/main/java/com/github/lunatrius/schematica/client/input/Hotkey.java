@@ -36,8 +36,12 @@ public final class Hotkey {
     public Settings settings;
     boolean held;
 
-    public Hotkey(String id, Settings settings, int... keys) {
-        this.id = id; this.defaultSettings = settings.copy(); this.settings = settings.copy();
+    /** The upstream config group of a ConfigBooleanHotkeyed option this hotkey toggles, else null. */
+    public final String toggleGroup;
+
+    public Hotkey(String id, Settings settings, int... keys) { this(id, null, settings, keys); }
+    public Hotkey(String id, String toggleGroup, Settings settings, int... keys) {
+        this.id = id; this.toggleGroup = toggleGroup; this.defaultSettings = settings.copy(); this.settings = settings.copy();
         List<Integer> values = new ArrayList<>();
         for (int key : keys) values.add(key);
         setKeys(values); defaults = this.keys;
@@ -57,9 +61,12 @@ public final class Hotkey {
     public void reset() { keys = defaults; resetSettings(); }
     public void resetSettings() { settings = defaultSettings.copy(); held = false; }
     public String translationKey() {
+        if (toggleGroup != null) return "litematica.config." + toggleGroup + ".name." + id;
         return id.equals("uiDemo") ? "schematica.key.uiDemo" : plusOnly() ? "schematica.key." + id : "litematica.config.hotkeys.name." + id;
     }
-    public String commentKey() { return plusOnly() ? "schematica.key." + id + ".comment" : "litematica.config.hotkeys.comment." + id; }
+    public String commentKey() {
+        if (toggleGroup != null) return "litematica.config." + toggleGroup + ".comment." + id;
+        return plusOnly() ? "schematica.key." + id + ".comment" : "litematica.config.hotkeys.comment." + id; }
     /** Hotkeys of the 1.12.2 Litematica that the 26.1.2 catalog has no text for. */
     private boolean plusOnly() { return id.equals("openPlacementGridSettingsScreen"); }
 }

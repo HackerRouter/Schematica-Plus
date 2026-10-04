@@ -34,6 +34,23 @@ public final class VisualSettings {
         TRANSLUCENT(Names.Config.Category.RENDER, Names.Config.ALPHA_ENABLED, "visuals", "renderBlocksAsTranslucent"),
         AREA_BOXES(Names.Config.Category.RENDER, "enableAreaSelectionBoxesRendering", "visuals"),
         PLACEMENT_BOXES(Names.Config.Category.RENDER, "enablePlacementBoxesRendering", "visuals"),
+        FLUIDS(Names.Config.Category.RENDER, "enableSchematicFluidRendering", "visuals"),
+        OVERLAY_CULLING(Names.Config.Category.RENDER, "enableSchematicOverlayCulling", "visuals"),
+        ENTITY_HITBOXES(Names.Config.Category.RENDER, "enableSchematicEntityHitboxes", "visuals"),
+        FAKE_LIGHTING(Names.Config.Category.RENDER, "enableSchematicFakeLighting", "visuals"),
+        REDUCED_INNER_SIDES(Names.Config.Category.RENDER, "overlayReducedInnerSides", "visuals"),
+        AO_MODERN(Names.Config.Category.RENDER, "renderAOModernEnable", "visuals"),
+        COLLIDING(Names.Config.Category.RENDER, "renderCollidingSchematicBlocks", "visuals"),
+        ENTITIES(Names.Config.Category.RENDER, "renderSchematicEntities", "visuals"),
+        TILE_ENTITIES(Names.Config.Category.RENDER, "renderSchematicTileEntities", "visuals"),
+        MODEL_OUTLINE(Names.Config.Category.RENDER, "schematicOverlayModelOutline", "visuals"),
+        MODEL_SIDES(Names.Config.Category.RENDER, "schematicOverlayModelSides", "visuals"),
+        OVERLAY_THROUGH(Names.Config.Category.RENDER, "schematicOverlayRenderThroughBlocks", "visuals"),
+        TYPE_DIFF_BLOCK(Names.Config.Category.RENDER, "schematicOverlayTypeDiffBlock", "visuals"),
+        TYPE_EXTRA(Names.Config.Category.RENDER, Names.Config.HIGHLIGHT_AIR, "visuals", "schematicOverlayTypeExtra"),
+        TYPE_MISSING(Names.Config.Category.RENDER, "schematicOverlayTypeMissing", "visuals"),
+        TYPE_WRONG_BLOCK(Names.Config.Category.RENDER, "schematicOverlayTypeWrongBlock", "visuals"),
+        TYPE_WRONG_STATE(Names.Config.Category.RENDER, "schematicOverlayTypeWrongState", "visuals"),
         INFO_OVERLAY(BlockInfoHudSettings.CATEGORY, "blockInfoOverlayEnabled", "info_overlays"),
         VERIFIER_OVERLAY(BlockInfoHudSettings.CATEGORY, "verifierOverlayEnabled", "info_overlays");
 
@@ -45,6 +62,18 @@ public final class VisualSettings {
         }
 
         public String prettyName() { return VisualSettings.prettyName(group, upstream); }
+
+        /** The option that a ConfigBooleanHotkeyed toggle hotkey (named after the upstream option) flips. */
+        public static Toggle byUpstream(String name) {
+            for (Toggle toggle : values()) if (toggle.upstream.equals(name)) return toggle;
+            return null;
+        }
+
+        /** The option stored in a Forge property, for the config rows that carry a toggle hotkey. */
+        public static Toggle byProperty(String category, String key) {
+            for (Toggle toggle : values()) if (toggle.category.equals(category) && toggle.key.equals(key)) return toggle;
+            return null;
+        }
     }
 
     private VisualSettings() {}

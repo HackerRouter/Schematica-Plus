@@ -63,7 +63,7 @@ public final class Hotkeys {
             "setSelectionBoxPosition2", "unloadCurrentSchematic", "uiDemo"}) add(id, normal());
         for (String id : new String[] {"schematicEditBreakAllExcept", "schematicEditBreakPlaceAll", "schematicEditBreakPlaceDirection",
             "schematicEditReplaceAll", "schematicEditReplaceBlock", "schematicEditReplaceDirection"}) add(id, modifier());
-        add("schematicEditReplaceSelection", normal());
+        add("schematicEditReplaceSelection", modifier());
         add("toggleAllRendering", normal(), Keyboard.KEY_M, Keyboard.KEY_R);
         add("toggleSchematicRendering", normal(), Keyboard.KEY_M, Keyboard.KEY_G);
         for (String id : new String[] {"toggleAreaSelectionBoxesRendering", "toggleInfoOverlayRendering", "toggleOverlayRendering",
@@ -84,6 +84,14 @@ public final class Hotkeys {
         add("schematicVersionCycleModifier", modifier());
         add("schematicVersionCycleNext", normal());
         add("schematicVersionCyclePrevious", normal());
+        for (String id : new String[] {"enableRendering", "enableSchematicRendering", "enableSchematicBlocksRendering",
+            "enableSchematicFluidRendering", "enableSchematicOverlay", "enableSchematicOverlayCulling", "enableSchematicEntityHitboxes",
+            "enableSchematicFakeLighting", "enableAreaSelectionBoxesRendering", "enablePlacementBoxesRendering", "overlayReducedInnerSides",
+            "renderAOModernEnable", "renderBlocksAsTranslucent", "renderCollidingSchematicBlocks", "renderSchematicEntities",
+            "renderSchematicTileEntities", "schematicOverlayEnableOutlines", "schematicOverlayEnableSides", "schematicOverlayModelOutline",
+            "schematicOverlayModelSides", "schematicOverlayRenderThroughBlocks", "schematicOverlayTypeDiffBlock", "schematicOverlayTypeExtra",
+            "schematicOverlayTypeMissing", "schematicOverlayTypeWrongBlock", "schematicOverlayTypeWrongState"})
+            BY_ID.put(id, new Hotkey(id, "visuals", normal()));
         ALL = Collections.unmodifiableList(new ArrayList<>(BY_ID.values()));
     }
 
