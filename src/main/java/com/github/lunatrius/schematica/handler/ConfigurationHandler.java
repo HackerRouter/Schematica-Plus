@@ -78,6 +78,7 @@ public class ConfigurationHandler {
     public static boolean printerXAxisReverse, printerYAxisReverse, printerZAxisReverse, printerLagCheck = true;
     public static boolean placeInAir = true, printForcedSneak, printFallingBlockCheck = true, printerAutoDisable = true, printerPauseWhileMoving;
     public static String[] printSkipList = {};
+    public static boolean containerVerifier = true, containerAutofill = true;
     public static boolean printBreakWrongBlock, printBreakExtraBlock, printBreakWrongStateBlock, printHighlight, printHighlightThroughWalls;
     public static int printHighlightFade = 5;
     public static boolean destroyBlocks = DESTROY_BLOCKS_DEFAULT;
@@ -264,6 +265,8 @@ public class ConfigurationHandler {
         destroyInstantly = propDestroyInstantly.getBoolean(DESTROY_INSTANTLY_DEFAULT);
 
         loadPrinter();
+        containerVerifier = printerProperty(configuration.get(Names.Config.Category.TOOL, "containerVerifier", true), "containerVerifier").getBoolean(true);
+        containerAutofill = printerProperty(configuration.get(Names.Config.Category.TOOL, "containerAutofill", true), "containerAutofill").getBoolean(true);
 
         swapSlotsQueue.clear();
         for (int i = 0; i < SWAP_SLOTS_DEFAULT.length; i++) {

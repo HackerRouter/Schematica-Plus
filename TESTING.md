@@ -1439,3 +1439,15 @@ compare with a server that does not have the mod and with each server option off
 - Highlight Printer Blocks: placed blocks flash white, mined red, unplaceable (no item/no side) gray, fading
   over Highlight Fade Time; Highlight Through Walls shows them behind blocks.
 - Turning the printer off while mining stops the mining.
+
+## Container verifier and Fill button
+
+- Paste or load a schematic with filled chests, a double chest, a furnace, a hopper and a dispenser; place the
+  empty blocks in the world and open them: empty slots show the schematic's items faded with a light blue
+  outline, items the schematic does not have a magenta outline, other items red, the right item with another
+  count or NBT orange; hovering a slot shows "Schematic: 64 x Cobblestone" (or empty). Correct slots stay plain.
+- Fill (right of the GUI, left of it when there is no room): items from the main inventory (then the hotbar)
+  are moved in; partial stacks are split, the rest goes back; wrong items stay; the action bar shows how many
+  slots match. With an item on the cursor it asks to put it down first. Works on servers (normal window clicks).
+- Both features can be turned off in the Generic tab (Container Verifier, Container Fill Button). Containers that
+  are not in a visible placement, the player inventory and the creative inventory are unaffected.

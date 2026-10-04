@@ -27,7 +27,7 @@ public final class InventoryPreview {
     private InventoryPreview() {}
 
     /** The inventory at a position, joining double chests like the chest block does. */
-    static IInventory inventory(World world, int x, int y, int z) {
+    public static IInventory inventory(World world, int x, int y, int z) {
         if (world == null) return null;
         TileEntity tile = world.getTileEntity(x, y, z);
         if (!(tile instanceof IInventory)) return null;
