@@ -78,6 +78,8 @@ public class ConfigurationHandler {
     public static boolean printerXAxisReverse, printerYAxisReverse, printerZAxisReverse, printerLagCheck = true;
     public static boolean placeInAir = true, printForcedSneak, printFallingBlockCheck = true, printerAutoDisable = true, printerPauseWhileMoving;
     public static String[] printSkipList = {};
+    public static boolean printBreakWrongBlock, printBreakExtraBlock, printBreakWrongStateBlock, printHighlight, printHighlightThroughWalls;
+    public static int printHighlightFade = 5;
     public static boolean destroyBlocks = DESTROY_BLOCKS_DEFAULT;
     public static boolean destroyInstantly = DESTROY_INSTANTLY_DEFAULT;
     public static boolean[] swapSlots = SWAP_SLOTS_DEFAULT.clone();
@@ -515,6 +517,12 @@ public class ConfigurationHandler {
         printFallingBlockCheck = printerFlag("printFallingBlockCheck", true);
         printerAutoDisable = printerFlag("printerAutoDisable", true);
         printerPauseWhileMoving = printerFlag("printerPauseWhileMoving", false);
+        printBreakWrongBlock = printerFlag("printBreakWrongBlock", false);
+        printBreakExtraBlock = printerFlag("printBreakExtraBlock", false);
+        printBreakWrongStateBlock = printerFlag("printBreakWrongStateBlock", false);
+        printHighlight = printerFlag("printHighlight", false);
+        printHighlightFade = printerInt("printHighlightFade", 5, 1, 100);
+        printHighlightThroughWalls = printerFlag("printHighlightThroughWalls", false);
         printSkipList = printerProperty(configuration.get(Names.Config.Category.PRINTER, "printSkipList", new String[0]), "printSkipList").getStringList();
     }
 

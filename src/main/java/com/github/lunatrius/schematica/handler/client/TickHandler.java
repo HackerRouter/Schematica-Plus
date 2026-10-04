@@ -77,6 +77,7 @@ public class TickHandler {
                     printer.stopWithMessage("schematica.message.printer.died");
                 }
                 printer.showPendingMessage();
+                printer.tickIdle();
                 // placeDelay is the interval between passes in ticks (0 and 1: every tick)
                 if (printer.isEnabled() && printer.isPrinting() && ++this.ticks >= Math.max(1, ConfigurationHandler.placeDelay)) {
                     this.ticks = 0;

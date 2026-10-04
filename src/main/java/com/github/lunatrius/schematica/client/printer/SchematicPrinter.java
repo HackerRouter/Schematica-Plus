@@ -56,6 +56,8 @@ public class SchematicPrinter {
     private final java.util.Map<Long, Long> cooldowns = new java.util.HashMap<>();
     private long tick;
     private Pass pass;
+    /** The block being mined (x, y, z), after litematica-printer's printBreakWrongBlock/ExtraBlock. */
+    private int[] mining;
 
     public boolean isEnabled() {
         return this.isEnabled;
@@ -105,6 +107,7 @@ public class SchematicPrinter {
     }
 
     public void setPrinting(boolean isPrinting) {
+        if (!isPrinting) stopMining();
         this.isPrinting = isPrinting;
     }
 
@@ -119,6 +122,60 @@ public class SchematicPrinter {
 
     public void refresh() {
         this.cooldowns.clear();
+        stopMining();
+    }
+
+    /** Stops a started mining once printing was turned off (the switch may change on the network thread). */
+    public void tickIdle() {
+        if (this.mining != null && (!this.isPrinting || !this.isEnabled)) stopMining();
+    }
+
+    private void stopMining() {
+        if (this.mining != null && this.minecraft.playerController != null) this.minecraft.playerController.resetBlockRemoving();
+        this.mining = null;
+    }
+
+    /** Keeps mining the started block; false when there is none (any more) and the pass may place. */
+    private boolean continueMining(World world, double eyeX, double eyeY, double eyeZ, double range) {
+        if (this.mining == null) return false;
+        int x = this.mining[0], y = this.mining[1], z = this.mining[2];
+        double dx = x + 0.5 - eyeX, dy = y + 0.5 - eyeY, dz = z + 0.5 - eyeZ;
+        if (world.getBlock(x, y, z).isAir(world, x, y, z) || dx * dx + dy * dy + dz * dz > range * range) {
+            stopMining();
+            return false;
+        }
+        this.minecraft.playerController.onPlayerDamageBlock(x, y, z, ForgeDirection.UP.ordinal());
+        this.minecraft.thePlayer.swingItem();
+        return true;
+    }
+
+    /**
+     * printBreakExtraBlock / printBreakWrongBlock / printBreakWrongStateBlock: blocks where the schematic has air,
+     * another block, or the same block in another state are mined first. Replaceable blocks, fluids and blocks a
+     * slab click completes are left to the placement.
+     */
+    private boolean startBreak(World world, SchematicWorld schematic, int wx, int wy, int wz) {
+        if (!ConfigurationHandler.printBreakExtraBlock && !ConfigurationHandler.printBreakWrongBlock && !ConfigurationHandler.printBreakWrongStateBlock) return false;
+        Block real = world.getBlock(wx, wy, wz);
+        if (real.isAir(world, wx, wy, wz) || FluidPrinter.isFluid(real) || real.getBlockHardness(world, wx, wy, wz) < 0) return false;
+        int x = wx - schematic.position.x, y = wy - schematic.position.y, z = wz - schematic.position.z;
+        Block block = schematic.getBlock(x, y, z);
+        int meta = schematic.getBlockMetadata(x, y, z), realMeta = world.getBlockMetadata(wx, wy, wz);
+        boolean wanted;
+        if (block.isAir(schematic, x, y, z)) {
+            wanted = ConfigurationHandler.printBreakExtraBlock && !ConfigurationHandler.isExtraAirBlock(real);
+        } else if (block != real) {
+            wanted = ConfigurationHandler.printBreakWrongBlock && !real.isReplaceable(world, wx, wy, wz)
+                && !(block instanceof BlockSlab && EasyPlace.completesSlab(block, meta, real, realMeta, new ItemStack(block, 1, block.damageDropped(meta))));
+        } else {
+            wanted = ConfigurationHandler.printBreakWrongStateBlock && meta != realMeta && !FluidPrinter.isFluid(block);
+        }
+        if (!wanted) return false;
+        this.minecraft.playerController.clickBlock(wx, wy, wz, ForgeDirection.UP.ordinal());
+        this.minecraft.thePlayer.swingItem();
+        PrinterHighlights.add(wx, wy, wz, PrinterHighlights.Type.BREAK);
+        if (!world.getBlock(wx, wy, wz).isAir(world, wx, wy, wz) && !this.minecraft.playerController.isInCreativeMode()) this.mining = new int[] {wx, wy, wz};
+        return true;
     }
 
     /**
@@ -152,6 +209,7 @@ public class SchematicPrinter {
             ? System.nanoTime() + ConfigurationHandler.printerIterationTimeLimit * 1_000_000L : Long.MAX_VALUE;
         AreaSelectionLibrary.Area area = "selection".equals(ConfigurationHandler.printSelectionType) ? AreaSelections.library().selected() : null;
 
+        if (continueMining(world, eyeX, eyeY, eyeZ, range)) return 0;
         this.pass = new Pass(player);
         int placed = 0;
         try {
@@ -166,7 +224,12 @@ public class SchematicPrinter {
                 if (this.cooldowns.containsKey(key)) continue;
                 SchematicWorld placement = placementAt(placements, x, y, z);
                 if (placement == null) continue;
+                if (startBreak(world, placement, x, y, z)) {
+                    this.cooldowns.put(key, this.tick + Math.max(1, ConfigurationHandler.timeout));
+                    break;
+                }
                 if (placeBlock(world, player, placement, x, y, z)) {
+                    PrinterHighlights.add(x, y, z, PrinterHighlights.Type.PLACE);
                     this.cooldowns.put(key, this.tick + Math.max(1, ConfigurationHandler.timeout));
                     if (++placed >= Math.max(1, ConfigurationHandler.placeBlocksPerTick)) break;
                 }
@@ -302,6 +365,7 @@ public class SchematicPrinter {
 
         Click click = slab ? slabClick(wx, wy, wz, realMetadata) : click(world, wx, wy, wz, data, metadata, accurate);
         if (click == null || !swapToItem(player.inventory, itemStack)) {
+            PrinterHighlights.add(wx, wy, wz, PrinterHighlights.Type.FAILED);
             return false;
         }
         ItemStack held = player.getCurrentEquippedItem();

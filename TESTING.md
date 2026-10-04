@@ -1428,3 +1428,14 @@ compare with a server that does not have the mod and with each server option off
   save and manager browsers; restart the game: all come back (config/schematica_plus/UiState.json).
 - Switch the tool mode, leave and rejoin the world (or restart): the mode is restored; another world keeps its own.
 - A new Simple mode selection is named "Unnamed" like Litematica.
+
+## Printer breaking and highlights
+
+- Break Extra Blocks: survival, dirt inside a placement where the schematic has air: the printer mines it
+  at normal speed (crack animation), then continues; water/lava are left alone. Walking out of reach stops.
+- Break Wrong Blocks: stone where the schematic wants planks is mined, then planks are placed; tall grass
+  and snow layers are simply replaced; a bottom slab under a schematic double slab is completed, not mined.
+- Break Wrong State Blocks: a wrongly rotated stair is mined and placed again with the right facing.
+- Highlight Printer Blocks: placed blocks flash white, mined red, unplaceable (no item/no side) gray, fading
+  over Highlight Fade Time; Highlight Through Walls shows them behind blocks.
+- Turning the printer off while mining stops the mining.
