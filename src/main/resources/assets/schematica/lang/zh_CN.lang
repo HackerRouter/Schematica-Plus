@@ -256,5 +256,6 @@ schematica.ui.placement.grid.reset_size=重置尺寸
 schematica.ui.placement.grid.size=网格尺寸
 schematica.ui.placement.grid.repeat_count=重复次数
 schematica.message.grid_paste.grid_disabled=所选放置未开启网格重复，只粘贴该放置本身
+schematica.message.paste.outside_layers=放置中没有位于渲染层范围内的部分（pasteLayerBehavior：仅渲染的层）
 schematica.key.openPlacementGridSettingsScreen=openPlacementGridSettingsScreen
 schematica.key.openPlacementGridSettingsScreen.comment=打开当前所选原理图放置的网格设置界面

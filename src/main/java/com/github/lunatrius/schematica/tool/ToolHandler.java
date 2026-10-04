@@ -115,7 +115,9 @@ public class ToolHandler {
             schematic.getWidth(), schematic.getHeight(), schematic.getLength(), null, 0, null, 0,
             com.github.lunatrius.schematica.handler.ConfigurationHandler.pasteWithoutUpdates,
             com.github.lunatrius.schematica.handler.ConfigurationHandler.pasteReplaceBehavior);
-        job.capture(schematic.getSchematic(), schematic.isPastingBlockNBT, schematic.isRenderingEntities);
+        job.capture(schematic.getSchematic(), schematic.isPastingBlockNBT, schematic.isRenderingEntities,
+            com.github.lunatrius.schematica.handler.ConfigurationHandler.pasteRenderLayersOnly ? schematic.renderBounds() : null,
+            com.github.lunatrius.schematica.handler.ConfigurationHandler.pasteIgnoreInventories);
         return job;
     }
 

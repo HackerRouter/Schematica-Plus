@@ -39,7 +39,11 @@ public class InfoHudSettingsTest {
         assertEquals(1, InfoHudSettings.offsetX);
         assertEquals(1, InfoHudSettings.offsetY);
         assertEquals(HudAlignment.BOTTOM_RIGHT, InfoHudSettings.alignment);
-        assertEquals(4, config.getCategory(BlockInfoHudSettings.CATEGORY).size());
+        assertEquals(1, InfoHudSettings.toolScale, 0);
+        assertEquals(1, InfoHudSettings.toolOffsetX);
+        assertEquals(1, InfoHudSettings.toolOffsetY);
+        assertEquals(HudAlignment.BOTTOM_LEFT, InfoHudSettings.toolAlignment);
+        assertEquals(8, config.getCategory(BlockInfoHudSettings.CATEGORY).size());
         for (String language : new String[] {"en_US", "zh_CN"}) {
             try (InputStream stream = getClass().getResourceAsStream("/assets/schematica_plus_litematica/lang/" + language + ".lang")) {
                 Map<String, String> translations = StringTranslate.parseLangFile(stream);

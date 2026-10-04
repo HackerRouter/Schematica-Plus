@@ -69,7 +69,28 @@ public final class WorldEditJob extends WorldEditTask {
     }
 
     public void capture(ISchematic source, boolean blockNBT, boolean includeEntities) {
-        setRegions(source.getRegions());
+        capture(source, blockNBT, includeEntities, null, false);
+    }
+
+    /**
+     * bounds: the local [minX, minY, minZ, maxX, maxY, maxZ) part to paste (pasteLayerBehavior rendered_only), or null for all;
+     * ignoreInventories: containers are pasted empty (pasteIgnoreInventories).
+     */
+    public void capture(ISchematic source, boolean blockNBT, boolean includeEntities, int[] bounds, boolean ignoreInventories) {
+        java.util.List<com.github.lunatrius.schematica.api.SchematicRegion> regions = source.getRegions();
+        if (bounds != null) {
+            if (regions.isEmpty()) regions = java.util.Collections.singletonList(new com.github.lunatrius.schematica.api.SchematicRegion(
+                "all", 0, 0, 0, width - 1, height - 1, length - 1));
+            java.util.List<com.github.lunatrius.schematica.api.SchematicRegion> clipped = new java.util.ArrayList<>();
+            for (com.github.lunatrius.schematica.api.SchematicRegion region : regions) {
+                int ax = Math.max(region.minX, bounds[0]), ay = Math.max(region.minY, bounds[1]), az = Math.max(region.minZ, bounds[2]);
+                int bx = Math.min(region.maxX, bounds[3] - 1), by = Math.min(region.maxY, bounds[4] - 1), bz = Math.min(region.maxZ, bounds[5] - 1);
+                if (ax <= bx && ay <= by && az <= bz) clipped.add(new com.github.lunatrius.schematica.api.SchematicRegion(region.name, ax, ay, az, bx, by, bz));
+            }
+            if (clipped.isEmpty()) throw new MessageException("schematica.message.paste.outside_layers");
+            regions = clipped;
+        }
+        setRegions(regions);
         this.blocks = new short[volume];
         this.metadata = new byte[volume];
         for (int i = 0; i < volume; i++) {
@@ -82,17 +103,41 @@ public final class WorldEditJob extends WorldEditTask {
                 if (!source.containsBlock(tile.xCoord, tile.yCoord, tile.zCoord)) continue;
                 if (tile.xCoord < 0 || tile.xCoord >= width || tile.yCoord < 0 || tile.yCoord >= height
                     || tile.zCoord < 0 || tile.zCoord >= length) continue;
+                if (bounds != null && !inside(bounds, tile.xCoord, tile.yCoord, tile.zCoord)) continue;
                 NBTTagCompound tag = NBTHelper.writeTileEntityToCompound(tile);
+                if (ignoreInventories && tile instanceof net.minecraft.inventory.IInventory) tag = emptied(tile, tag);
                 com.github.lunatrius.schematica.nbt.TileEntitySnapshots.removeVisualData(tag);
                 tiles.put(tile.xCoord + width * (tile.zCoord + length * tile.yCoord), tag);
             }
         }
         if (includeEntities) {
             for (Entity entity : source.getEntities()) {
+                if (bounds != null && !inside(bounds, (int) Math.floor(entity.posX), (int) Math.floor(entity.posY), (int) Math.floor(entity.posZ))) continue;
                 NBTTagCompound tag = NBTHelper.writeEntityToCompound(entity);
                 if (tag != null) entities.add(tag);
             }
         }
+    }
+
+    private static boolean inside(int[] bounds, int x, int y, int z) {
+        return x >= bounds[0] && y >= bounds[1] && z >= bounds[2] && x < bounds[3] && y < bounds[4] && z < bounds[5];
+    }
+
+    /** The tile entity's data with its slots cleared, read back through a copy so mod containers clear their own items. */
+    private static NBTTagCompound emptied(TileEntity tile, NBTTagCompound tag) {
+        try {
+            TileEntity copy = NBTHelper.readTileEntityFromCompound((NBTTagCompound) tag.copy());
+            if (copy instanceof net.minecraft.inventory.IInventory) {
+                net.minecraft.inventory.IInventory inventory = (net.minecraft.inventory.IInventory) copy;
+                for (int i = 0; i < inventory.getSizeInventory(); i++) inventory.setInventorySlotContents(i, null);
+                NBTTagCompound cleared = NBTHelper.writeTileEntityToCompound(copy);
+                if (cleared != null) return cleared;
+            }
+        } catch (RuntimeException error) {
+            com.github.lunatrius.schematica.reference.Reference.logger.debug("Could not empty a pasted container", error);
+        }
+        tag.removeTag("Items");
+        return tag;
     }
 
     public void validateCommandFallback() {

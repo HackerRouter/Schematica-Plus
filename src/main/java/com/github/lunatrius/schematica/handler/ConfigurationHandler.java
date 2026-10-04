@@ -93,6 +93,7 @@ public class ConfigurationHandler {
     /** Area selection files per world (area_selections_per_world/<world>/area_selections) or shared. */
     public static boolean areaSelectionsPerWorld = true;
     public static boolean unhideSchematicVCS;
+    public static boolean pasteRenderLayersOnly, pasteIgnoreInventories;
     public static boolean easyPlacePostRewrite, easyPlaceClickAdjacent, pickBlockAvoidDamageable = true, pickBlockAvoidTools;
     public static String pickBlockableSlots = "1,2,3,4,5";
     public static boolean materialListIgnoreState, materialListRecipeDetails = true, renderMaterialListInGuis = true, highlightBlockInInventory;
@@ -367,6 +368,12 @@ public class ConfigurationHandler {
         areaSelectionsPerWorld = toolFlag("areaSelectionsPerWorld", true);
         materialListIgnoreState = toolFlag("materialListIgnoreState", false);
         easyPlacePostRewrite = toolFlag("easyPlacePostRewrite", false);
+        pasteIgnoreInventories = toolFlag("pasteIgnoreInventories", false);
+        Property layers = configuration.get(Names.Config.Category.TOOL, "pasteLayerBehavior", "all");
+        layers.setLanguageKey("litematica.config.generic.name.pasteLayerBehavior");
+        layers.setValidValues(new String[] {"all", "rendered_only"});
+        pasteRenderLayersOnly = "rendered_only".equals(layers.getString());
+        layers.set(pasteRenderLayersOnly ? "rendered_only" : "all");
         easyPlaceClickAdjacent = toolFlag("easyPlaceClickAdjacent", false);
         pickBlockAvoidDamageable = toolFlag("pickBlockAvoidDamageable", true);
         pickBlockAvoidTools = toolFlag("pickBlockAvoidTools", false);

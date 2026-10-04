@@ -8,6 +8,9 @@ public final class InfoHudSettings {
     public static double scale = 1;
     public static int offsetX = 1, offsetY = 1;
     public static HudAlignment alignment = HudAlignment.BOTTOM_RIGHT;
+    public static double toolScale = 1;
+    public static int toolOffsetX = 1, toolOffsetY = 1;
+    public static HudAlignment toolAlignment = HudAlignment.BOTTOM_LEFT;
 
     private InfoHudSettings() {}
 
@@ -23,6 +26,16 @@ public final class InfoHudSettings {
         anchor.setValidValues(values);
         alignment = java.util.Arrays.asList(values).contains(anchor.getString()) ? HudAlignment.parse(anchor.getString()) : HudAlignment.BOTTOM_RIGHT;
         anchor.set(alignment.value());
+        Property tool = label(configuration.get(BlockInfoHudSettings.CATEGORY, "toolHudScale", 1.0), "toolHudScale");
+        tool.setMinValue(0.1).setMaxValue(4.0);
+        toolScale = tool.getDouble(1.0);
+        if (!Double.isFinite(toolScale) || toolScale < 0.1 || toolScale > 4) { toolScale = 1; tool.set(toolScale); }
+        toolOffsetX = offset(configuration, "toolHudOffsetX");
+        toolOffsetY = offset(configuration, "toolHudOffsetY");
+        Property toolAnchor = label(configuration.get(BlockInfoHudSettings.CATEGORY, "toolHudAlignment", "bottom_left"), "toolHudAlignment");
+        toolAnchor.setValidValues(values);
+        toolAlignment = java.util.Arrays.asList(values).contains(toolAnchor.getString()) ? HudAlignment.parse(toolAnchor.getString()) : HudAlignment.BOTTOM_LEFT;
+        toolAnchor.set(toolAlignment.value());
     }
 
     private static int offset(Configuration configuration, String key) {

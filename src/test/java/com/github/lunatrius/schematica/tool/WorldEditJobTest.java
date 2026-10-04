@@ -53,6 +53,18 @@ public class WorldEditJobTest {
         assertTrue(fill.blockCommand(1, 2, 3, "minecraft:stone", 0).endsWith(" replace"));
     }
 
+    @Test public void renderedLayersOnlyPastesTheLayerPartOfEachRegion() {
+        com.github.lunatrius.schematica.world.storage.Schematic schematic = new com.github.lunatrius.schematica.world.storage.Schematic(null, 3, 3, 1);
+        WorldEditJob job = new WorldEditJob(UUID.randomUUID(), 0, WorldEditJob.Kind.PASTE, 0, 64, 0, 3, 3, 1, null, 0, null, 0);
+        job.capture(schematic, false, false, new int[] {0, 1, 0, 3, 2, 1}, false);
+        org.junit.Assert.assertNull(job.command(0, null));
+        org.junit.Assert.assertNull(job.command(8, null));
+        WorldEditJob outside = new WorldEditJob(UUID.randomUUID(), 0, WorldEditJob.Kind.PASTE, 0, 64, 0, 3, 3, 1, null, 0, null, 0);
+        IllegalArgumentException error = assertThrows(IllegalArgumentException.class,
+            () -> outside.capture(schematic, false, false, new int[] {0, 3, 0, 3, 3, 1}, false));
+        assertEquals("schematica.message.paste.outside_layers", ((com.github.lunatrius.schematica.util.MessageException) error).key());
+    }
+
     @Test public void airOnlyCommandsRequireTheServerToRecheckTheTarget() {
         WorldEditJob job = job(WorldEditJob.Kind.PASTE, false, true);
         assertEquals("/setblock -1 64 2 minecraft:stone 3 keep", job.blockCommand(-1, 64, 2, "minecraft:stone", 3));

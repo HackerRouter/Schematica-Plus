@@ -256,5 +256,6 @@ schematica.ui.placement.grid.reset_size=Reset Size
 schematica.ui.placement.grid.size=Grid Size
 schematica.ui.placement.grid.repeat_count=Repeat Count
 schematica.message.grid_paste.grid_disabled=Grid repeat is off for the selected placement, so only the placement itself is pasted
+schematica.message.paste.outside_layers=Nothing of the placement is inside the render layer range (pasteLayerBehavior: Rendered Layers Only)
 schematica.key.openPlacementGridSettingsScreen=openPlacementGridSettingsScreen
 schematica.key.openPlacementGridSettingsScreen.comment=Open the Placement Grid Settings screen for the currently selected schematic placement
