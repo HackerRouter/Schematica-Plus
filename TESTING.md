@@ -1451,3 +1451,7 @@ compare with a server that does not have the mod and with each server option off
   slots match. With an item on the cursor it asks to put it down first. Works on servers (normal window clicks).
 - Both features can be turned off in the Generic tab (Container Verifier, Container Fill Button). Containers that
   are not in a visible placement, the player inventory and the creative inventory are unaffected.
+- Every schematic browser (load, manager, save, projects) has a folder icon after "create directory" that
+  opens the current folder in the system file manager (Windows Explorer, macOS Finder, Linux file manager).
+- Bind refreshMaterialList: pressing it recounts the last viewed material list (else the selected
+  placement's) and the action bar says so; the material list HUD updates.

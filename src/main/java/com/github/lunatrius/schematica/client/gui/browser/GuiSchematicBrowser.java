@@ -40,6 +40,7 @@ public abstract class GuiSchematicBrowser extends UiScreen {
     private UiButton up;
     private UiButton home;
     private UiButton createDirectory;
+    private UiButton openFolder;
     private UiButton searchButton;
     private UiButton back;
     private UiTextField search;
@@ -71,6 +72,8 @@ public abstract class GuiSchematicBrowser extends UiScreen {
         up = icon(UiSprite.UP, "malilib.gui.button.hover.directory_widget.up", () -> navigate(browser.directory().getParentFile()));
         home = icon(UiSprite.ROOT, "malilib.gui.button.hover.directory_widget.root", () -> navigate(browser.root()));
         createDirectory = icon(UiSprite.CREATE_DIRECTORY, "malilib.gui.button.hover.directory_widget.create_directory", this::createDirectory);
+        openFolder = icon(UiSprite.DIRECTORY, "schematica.ui.browser.open_folder",
+            () -> { if (browser != null) com.github.lunatrius.schematica.client.util.FolderOpener.open(browser.directory()); });
         search = root.add(new UiTextField(fontRendererObj, 256, files::setQuery));
         searchButton = icon(UiSprite.SEARCH, null, () -> {
             searching = !searching;
@@ -386,14 +389,16 @@ public abstract class GuiSchematicBrowser extends UiScreen {
         home.setBounds(x + 2, y + 5, 12, 12);
         up.setBounds(x + 16, y + 5, 12, 12);
         createDirectory.setBounds(x + 30, y + 5, 12, 12);
+        openFolder.setBounds(x + 44, y + 5, 12, 12);
         searchButton.setBounds(x + browserWidth - 24, y + 5, 12, 12);
-        path.setBounds(x + 48, y + 4, browserWidth - 76, 14);
+        path.setBounds(x + 62, y + 4, browserWidth - 90, 14);
         search.setBounds(x + 2, y + 4, browserWidth - 28, 14);
         search.setVisible(searching);
         path.setVisible(!searching);
         home.setVisible(!searching);
         up.setVisible(!searching);
         createDirectory.setVisible(!searching);
+        openFolder.setVisible(!searching);
         list.setBounds(x + 2, y + 21, browserWidth - 4, Math.max(0, browserHeight - 25));
         info.setBounds(x + width - 190, y, 170, Math.min(310, browserHeight + (showFooter() ? 10 : 0)));
         message.setBounds(info.bounds().x + 3, info.bounds().bottom() - 25, 164, 22);

@@ -328,3 +328,7 @@ schematica.container.autofill.cursor=Put down the held item first
 schematica.container.autofill.done=Container slots matching the schematic: %s of %s
 schematica.container.expected=Schematic: %s x %s
 schematica.container.expected_empty=Schematic: empty
+schematica.ui.browser.open_folder=Open this folder in the file manager
+schematica.key.refreshMaterialList=refreshMaterialList
+schematica.key.refreshMaterialList.comment=Recount the current material list (the last viewed one, else the selected placement's)
+schematica.message.material_list.refreshed=Material list refreshed
