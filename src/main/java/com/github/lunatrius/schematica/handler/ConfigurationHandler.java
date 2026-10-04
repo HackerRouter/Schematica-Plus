@@ -93,6 +93,8 @@ public class ConfigurationHandler {
     /** Area selection files per world (area_selections_per_world/<world>/area_selections) or shared. */
     public static boolean areaSelectionsPerWorld = true;
     public static boolean unhideSchematicVCS;
+    public static boolean easyPlacePostRewrite, easyPlaceClickAdjacent, pickBlockAvoidDamageable = true, pickBlockAvoidTools;
+    public static String pickBlockableSlots = "1,2,3,4,5";
     public static boolean materialListIgnoreState, materialListRecipeDetails = true, renderMaterialListInGuis = true, highlightBlockInInventory;
     public static int materialListHudMaxLines = 10;
     public static double materialListHudScale = 1;
@@ -364,6 +366,13 @@ public class ConfigurationHandler {
         unhideSchematicVCS = toolFlag("unhideSchematicVCS", false);
         areaSelectionsPerWorld = toolFlag("areaSelectionsPerWorld", true);
         materialListIgnoreState = toolFlag("materialListIgnoreState", false);
+        easyPlacePostRewrite = toolFlag("easyPlacePostRewrite", false);
+        easyPlaceClickAdjacent = toolFlag("easyPlaceClickAdjacent", false);
+        pickBlockAvoidDamageable = toolFlag("pickBlockAvoidDamageable", true);
+        pickBlockAvoidTools = toolFlag("pickBlockAvoidTools", false);
+        Property pickSlots = configuration.get(Names.Config.Category.TOOL, "pickBlockableSlots", "1,2,3,4,5");
+        pickSlots.setLanguageKey("litematica.config.generic.name.pickBlockableSlots");
+        pickBlockableSlots = pickSlots.getString();
         com.github.lunatrius.schematica.util.BlockGroups.enabled = toolFlag("enableDifferentBlocks", false);
         materialListRecipeDetails = toolFlag("materialListRecipeDetails", true);
         renderMaterialListInGuis = toolFlag("renderMaterialListInGuis", true);

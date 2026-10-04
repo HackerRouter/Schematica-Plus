@@ -7,7 +7,6 @@ import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.MathHelper;
 import net.minecraft.util.MovingObjectPosition;
-import net.minecraftforge.common.ForgeHooks;
 
 
 import com.github.lunatrius.schematica.client.projects.SchematicProjects;
@@ -197,16 +196,15 @@ public class InputHandler {
         MovingObjectPosition hit = new MovingObjectPosition(x, y, z, target.side, net.minecraft.util.Vec3.createVectorHelper(
             target.hitX - schematic.position.x, target.hitY - schematic.position.y, target.hitZ - schematic.position.z));
         final EntityClientPlayerMP player = this.minecraft.thePlayer;
-        if (!ForgeHooks.onPickBlock(hit, player, schematic)) return false;
-        if (player.capabilities.isCreativeMode) {
-            final Block block = schematic.getBlock(x, y, z);
-            final int metadata = schematic.getBlockMetadata(x, y, z);
-            if (block == Blocks.double_stone_slab || block == Blocks.double_wooden_slab || block == Blocks.snow_layer) {
-                player.inventory.setInventorySlotContents(player.inventory.currentItem, new ItemStack(block, 1, metadata & 0xF));
-            }
-            final int slot = player.inventoryContainer.inventorySlots.size() - 9 + player.inventory.currentItem;
-            this.minecraft.playerController.sendSlotPacket(player.inventory.getStackInSlot(player.inventory.currentItem), slot);
+        final Block block = schematic.getBlock(x, y, z);
+        if (block.isAir(schematic, x, y, z)) return false;
+        ItemStack stack = block.getPickBlock(hit, schematic, x, y, z, player);
+        if (stack == null || stack.getItem() == null) return false;
+        if (player.capabilities.isCreativeMode && (block == Blocks.double_stone_slab || block == Blocks.double_wooden_slab || block == Blocks.snow_layer)) {
+            stack = new ItemStack(block, 1, schematic.getBlockMetadata(x, y, z) & 0xF);
         }
+        // InventoryUtils.schematicWorldPickBlock: hotbar first, else a pick-blockable slot
+        com.github.lunatrius.schematica.client.printer.PickBlockSlots.pickToHand(this.minecraft, stack, true);
         return true;
     }
 }

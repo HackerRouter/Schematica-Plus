@@ -111,7 +111,12 @@ public final class EasyPlace {
         boolean accurate = AccuratePlacementClient.active(block);
         int cx = x, cy = y, cz = z, side = hit.side, extraClicks = 0;
         Vec3 hitVec = Vec3.createVectorHelper(hit.hitX, hit.hitY, hit.hitZ);
-        if (slab) {
+        Click post = ConfigurationHandler.easyPlacePostRewrite && !accurate
+            ? PostRewrite.click(world, x, y, z, block, meta, real, realMeta, stack, hitVec) : null;
+        if (post == Click.FAIL) return Result.FAIL;
+        if (post != null) {
+            cx = post.x; cy = post.y; cz = post.z; side = post.side; hitVec = post.hit;
+        } else if (slab) {
             side = (realMeta & 8) != 0 ? 0 : 1;
             hitVec = Vec3.createVectorHelper(x + 0.5, y + (side == 1 ? 1 : 0), z + 0.5);
         } else {
@@ -153,6 +158,12 @@ public final class EasyPlace {
         try {
             boolean success = click(player, world, held, cx, cy, cz, side, hitVec);
             for (int i = 0; success && i < extraClicks; i++) success = click(player, world, held, cx, cy, cz, side, hitVec);
+            // Post-Rewrite: a double slab gets its second half right away
+            if (success && post != null && block instanceof BlockSlab && block.isOpaqueCube() && held.stackSize > 0
+                && completesSlab(block, meta, world.getBlock(x, y, z), world.getBlockMetadata(x, y, z), stack)) {
+                boolean top = (world.getBlockMetadata(x, y, z) & 8) != 0;
+                click(player, world, held, x, y, z, top ? 0 : 1, Vec3.createVectorHelper(x + 0.5, y + 0.5, z + 0.5));
+            }
         } finally {
             printer.syncSneaking(player, sneaking);
         }
@@ -161,6 +172,14 @@ public final class EasyPlace {
     }
 
     interface Swap { boolean run(); }
+
+    /** A click on a block face; FAIL when no safe click exists. */
+    static final class Click {
+        static final Click FAIL = new Click(0, 0, 0, 0, null);
+        final int x, y, z, side;
+        final Vec3 hit;
+        Click(int x, int y, int z, int side, Vec3 hit) { this.x = x; this.y = y; this.z = z; this.side = side; this.hit = hit; }
+    }
 
     /** Selects the needed item; a changed hotbar slot or stack starts the easyPlaceSwapInterval wait. */
     private static boolean pick(EntityClientPlayerMP player, Swap swap) {
@@ -173,17 +192,12 @@ public final class EasyPlace {
 
     /** InventoryUtils.schematicWorldPickBlock: creative players get the item in the selected slot when it is not in the hotbar. */
     private static boolean pickStack(EntityClientPlayerMP player, ItemStack stack) {
-        if (pick(player, () -> SchematicPrinter.INSTANCE.swapToItem(player.inventory, stack, true, false))) return true;
-        if (!mc().playerController.isInCreativeMode()) return false;
-        player.inventory.setInventorySlotContents(player.inventory.currentItem, stack.copy());
-        mc().playerController.sendSlotPacket(player.getCurrentEquippedItem(), player.inventoryContainer.inventorySlots.size() - 9 + player.inventory.currentItem);
-        lastPickTime = System.nanoTime();
-        return true;
+        return pick(player, () -> PickBlockSlots.pickToHand(mc(), stack, false));
     }
 
 
     /** A single slab in the world that the schematic's double slab of the same item completes. */
-    private static boolean completesSlab(Block block, int meta, Block real, int realMeta, ItemStack stack) {
+    static boolean completesSlab(Block block, int meta, Block real, int realMeta, ItemStack stack) {
         return block instanceof BlockSlab && block.isOpaqueCube() && real instanceof BlockSlab && !real.isOpaqueCube()
             && Item.getItemFromBlock(real) == stack.getItem() && (realMeta & 7) == (meta & 7);
     }
