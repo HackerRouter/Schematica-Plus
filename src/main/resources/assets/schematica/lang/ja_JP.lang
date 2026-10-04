@@ -11,14 +11,10 @@ schematica.config.placeDelay=設置遅延
 schematica.config.placeDelay.tooltip=設置と設置の間に何tick遅延するかを指定します
 schematica.config.timeout=タイムアウト
 schematica.config.timeout.tooltip=何回設置に失敗したらあきらめるかを指定します
-schematica.config.placeInstantly=同時設置
-schematica.config.placeInstantly.tooltip=1tickで置くことのできるすべてのブロックを設置します
 schematica.config.destroyBlocks=ブロック破壊
 schematica.config.destroyBlocks.tooltip=クリエイティブモードにおいて、ブロックの破壊をします
 schematica.config.destroyInstantly=同時破壊
 schematica.config.destroyInstantly.tooltip=1tickで壊すのできるすべてのブロックを破壊します
-schematica.config.placeAdjacent=隣接設置
-schematica.config.placeAdjacent.tooltip=隣にブロックがある場合のみ設置します
 
 # gui - config - printer - swap slots
 schematica.config.swapSlot0=第1スロットの使用

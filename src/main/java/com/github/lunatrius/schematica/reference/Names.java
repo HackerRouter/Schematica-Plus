@@ -39,14 +39,10 @@ public final class Names {
         public static final String PLACE_DELAY_DESC = "Delay between placement attempts (in ticks).";
         public static final String TIMEOUT = "timeout";
         public static final String TIMEOUT_DESC = "Timeout before re-trying failed blocks.";
-        public static final String PLACE_INSTANTLY = "placeInstantly";
-        public static final String PLACE_INSTANTLY_DESC = "Place all blocks that can be placed in one tick.";
         public static final String DESTROY_BLOCKS = "destroyBlocks";
         public static final String DESTROY_BLOCKS_DESC = "The printer will destroy blocks (creative mode only).";
         public static final String DESTROY_INSTANTLY = "destroyInstantly";
         public static final String DESTROY_INSTANTLY_DESC = "Destroy all blocks that can be destroyed in one tick.";
-        public static final String PLACE_ADJACENT = "placeAdjacent";
-        public static final String PLACE_ADJACENT_DESC = "Place blocks only if there is an adjacent block next to them.";
         public static final String SWAP_SLOT = "swapSlot";
         public static final String SWAP_SLOT_DESC = "Allow the printer to use this hotbar slot.";
 

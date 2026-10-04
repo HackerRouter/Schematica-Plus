@@ -29,6 +29,9 @@ public final class ConfigTranslations {
             case "placementRestrictionWarn": return "malilib.label.message_output_type." + value;
             case "schematicVcsDeleteMode": return "litematica.gui.label.placement_deletion_mode." + value;
             case "easyPlaceProtocolVersion": return "litematica.gui.label.easy_place_protocol." + value;
+            case "printerIteratorShape": return "schematica.printer.shape." + value;
+            case "printerIteratorMode": return "schematica.printer.order." + value;
+            case "printSelectionType": return "schematica.printer.selection." + value;
             default: return null;
         }
     }

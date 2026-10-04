@@ -1,11 +1,9 @@
 package com.github.lunatrius.schematica.handler.client;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.util.ChatComponentTranslation;
 
 import com.github.lunatrius.schematica.SchematicaPlus;
 import com.github.lunatrius.schematica.client.printer.SchematicPrinter;
-import com.github.lunatrius.schematica.client.world.SchematicWorld;
 import com.github.lunatrius.schematica.handler.ConfigurationHandler;
 import com.github.lunatrius.schematica.proxy.ClientProxy;
 import com.github.lunatrius.schematica.reference.Reference;
@@ -20,8 +18,7 @@ public class TickHandler {
 
     private final Minecraft minecraft = Minecraft.getMinecraft();
 
-    private int ticks = -1;
-    private int completionCheckCounter = 0;
+    private int ticks;
 
     private TickHandler() {}
 
@@ -29,6 +26,7 @@ public class TickHandler {
     public void onClientConnect(FMLNetworkEvent.ClientConnectedToServerEvent event) {
         Reference.logger.info("Scheduling client settings reset.");
         ClientProxy.isPendingReset = true;
+        com.github.lunatrius.schematica.client.printer.LagMonitor.install(event.manager);
     }
 
     @SubscribeEvent
@@ -72,31 +70,18 @@ public class TickHandler {
             com.github.lunatrius.schematica.client.projects.SchematicProjects.syncSelections();
             com.github.lunatrius.schematica.tool.RebuildJobs.tick(this.minecraft);
             com.github.lunatrius.schematica.client.printer.EasyPlace.tick(this.minecraft);
-            SchematicWorld schematic = ClientProxy.schematic;
-            if (this.minecraft.thePlayer != null && schematic != null && schematic.isRenderingEnabled()) {
+            if (this.minecraft.thePlayer != null) {
                 this.minecraft.mcProfiler.startSection("printer");
                 SchematicPrinter printer = SchematicPrinter.INSTANCE;
-                if (this.minecraft.thePlayer.isDead || this.minecraft.thePlayer.getHealth() <= 0) printer.stopWithMessage("schematica.message.printer.died");
-                printer.showPendingMessage();
-                if (printer.isEnabled() && printer.isPrinting() && this.ticks-- < 0) {
-                    this.ticks = ConfigurationHandler.placeDelay;
-
-                    printer.print();
-
-                    // Periodically check if printing is complete (every 40 ticks ~ 2 seconds)
-                    this.completionCheckCounter++;
-                    if (this.completionCheckCounter >= 40) {
-                        this.completionCheckCounter = 0;
-                        if (printer.isComplete()) {
-                            printer.setPrinting(false);
-                            Reference.logger.info("Printer finished — all blocks placed.");
-                            if (this.minecraft.thePlayer != null) {
-                                this.minecraft.thePlayer.addChatMessage(new ChatComponentTranslation("schematica.message.printer.finished"));
-                            }
-                        }
-                    }
+                if (ConfigurationHandler.printerAutoDisable && (this.minecraft.thePlayer.isDead || this.minecraft.thePlayer.getHealth() <= 0)) {
+                    printer.stopWithMessage("schematica.message.printer.died");
                 }
-
+                printer.showPendingMessage();
+                // placeDelay is the interval between passes in ticks (0 and 1: every tick)
+                if (printer.isEnabled() && printer.isPrinting() && ++this.ticks >= Math.max(1, ConfigurationHandler.placeDelay)) {
+                    this.ticks = 0;
+                    printer.print();
+                }
                 this.minecraft.mcProfiler.endSection();
             }
 

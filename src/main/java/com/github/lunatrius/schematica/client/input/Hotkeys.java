@@ -84,7 +84,7 @@ public final class Hotkeys {
         add("schematicVersionCycleModifier", modifier());
         add("schematicVersionCycleNext", normal());
         add("schematicVersionCyclePrevious", normal());
-        add("workingSwitch", extra(), Keyboard.KEY_CAPITAL);
+        add("workingSwitch", extra());
         for (String id : new String[] {"enableRendering", "enableSchematicRendering", "enableSchematicBlocksRendering",
             "enableSchematicFluidRendering", "enableSchematicOverlay", "enableSchematicOverlayCulling", "enableSchematicEntityHitboxes",
             "enableSchematicFakeLighting", "enableAreaSelectionBoxesRendering", "enablePlacementBoxesRendering", "overlayReducedInnerSides",

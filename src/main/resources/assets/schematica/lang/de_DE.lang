@@ -1,14 +1,10 @@
 # gui - config - printer
 schematica.config.placeDelay=Abstand zwischen Blockplatzierung
 schematica.config.placeDelay.tooltip=Abstan (in ticks) in der ein Spieler Blöcke setzen kann.
-schematica.config.placeInstantly=Blöcke sofort setzen
-schematica.config.placeInstantly.tooltip=Platziere alle Blöcke innerhalb eines Ticks.
 schematica.config.destroyBlocks=Zerstöre Blöcke
 schematica.config.destroyBlocks.tooltip=Der Drucker wird Blöcke entfernen können (Nur im Kreativmodus verfügbar).
 schematica.config.destroyInstantly=Zerstöre Blöcke sofort
 schematica.config.destroyInstantly.tooltip=Zerstöre alle Blöcke innerhalb eines Ticks.
-schematica.config.placeAdjacent=Angrenzende Blöcke berücksichtigen
-schematica.config.placeAdjacent.tooltip=Platziere Blöcke nur, wenn es angrenzende Blöcke gibt.
 
 # gui - config - server
 schematica.config.printerEnabled=Drucken erlauben

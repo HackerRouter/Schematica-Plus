@@ -10,6 +10,7 @@ import java.util.Set;
 import net.minecraft.block.Block;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.Item;
+import net.minecraftforge.common.config.ConfigCategory;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.common.config.Property;
 
@@ -41,10 +42,8 @@ public class ConfigurationHandler {
     public static final boolean DRAW_LINES_DEFAULT = true;
     public static final int PLACE_DELAY_DEFAULT = 1;
     public static final int TIMEOUT_DEFAULT = 10;
-    public static final boolean PLACE_INSTANTLY_DEFAULT = false;
     public static final boolean DESTROY_BLOCKS_DEFAULT = false;
     public static final boolean DESTROY_INSTANTLY_DEFAULT = false;
-    public static final boolean PLACE_ADJACENT_DEFAULT = true;
     public static final boolean[] SWAP_SLOTS_DEFAULT = new boolean[] { false, false, false, false, false, true, true,
         true, true };
     public static final String SCHEMATIC_DIRECTORY_STR = "schematics";
@@ -72,10 +71,15 @@ public class ConfigurationHandler {
     public static boolean drawLines = DRAW_LINES_DEFAULT;
     public static int placeDelay = PLACE_DELAY_DEFAULT;
     public static int timeout = TIMEOUT_DEFAULT;
-    public static boolean placeInstantly = PLACE_INSTANTLY_DEFAULT;
+    // Printer pass, after the behavior of litematica-printer and the Entropy5 Schematica fork
+    public static double printerWorkRange;
+    public static int printerIterationTimeLimit = 8, placeBlocksPerTick = 1, printerLagCheckMax = 20;
+    public static String printerIteratorShape = "sphere", printerIteratorMode = "xzy", printSelectionType = "render_layers";
+    public static boolean printerXAxisReverse, printerYAxisReverse, printerZAxisReverse, printerLagCheck = true;
+    public static boolean placeInAir = true, printForcedSneak, printFallingBlockCheck = true, printerAutoDisable = true, printerPauseWhileMoving;
+    public static String[] printSkipList = {};
     public static boolean destroyBlocks = DESTROY_BLOCKS_DEFAULT;
     public static boolean destroyInstantly = DESTROY_INSTANTLY_DEFAULT;
-    public static boolean placeAdjacent = PLACE_ADJACENT_DEFAULT;
     public static boolean[] swapSlots = SWAP_SLOTS_DEFAULT.clone();
     public static final Queue<Integer> swapSlotsQueue = new ArrayDeque<>();
     public static File schematicDirectory = SCHEMATIC_DIRECTORY_DEFAULT;
@@ -122,10 +126,8 @@ public class ConfigurationHandler {
     public static Property propDrawLines = null;
     public static Property propPlaceDelay = null;
     public static Property propTimeout = null;
-    public static Property propPlaceInstantly = null;
     public static Property propDestroyBlocks = null;
     public static Property propDestroyInstantly = null;
-    public static Property propPlaceAdjacent = null;
     public static Property[] propSwapSlots = new Property[SWAP_SLOTS_DEFAULT.length];
     public static Property propSchematicDirectory = null;
     public static Property propExtraAirBlocks = null;
@@ -243,14 +245,6 @@ public class ConfigurationHandler {
         propTimeout.setLanguageKey(Names.Config.LANG_PREFIX + "." + Names.Config.TIMEOUT);
         timeout = propTimeout.getInt(TIMEOUT_DEFAULT);
 
-        propPlaceInstantly = configuration.get(
-            Names.Config.Category.PRINTER,
-            Names.Config.PLACE_INSTANTLY,
-            PLACE_INSTANTLY_DEFAULT,
-            Names.Config.PLACE_INSTANTLY_DESC);
-        propPlaceInstantly.setLanguageKey(Names.Config.LANG_PREFIX + "." + Names.Config.PLACE_INSTANTLY);
-        placeInstantly = propPlaceInstantly.getBoolean(PLACE_INSTANTLY_DEFAULT);
-
         propDestroyBlocks = configuration.get(
             Names.Config.Category.PRINTER,
             Names.Config.DESTROY_BLOCKS,
@@ -267,13 +261,7 @@ public class ConfigurationHandler {
         propDestroyInstantly.setLanguageKey(Names.Config.LANG_PREFIX + "." + Names.Config.DESTROY_INSTANTLY);
         destroyInstantly = propDestroyInstantly.getBoolean(DESTROY_INSTANTLY_DEFAULT);
 
-        propPlaceAdjacent = configuration.get(
-            Names.Config.Category.PRINTER,
-            Names.Config.PLACE_ADJACENT,
-            PLACE_ADJACENT_DEFAULT,
-            Names.Config.PLACE_ADJACENT_DESC);
-        propPlaceAdjacent.setLanguageKey(Names.Config.LANG_PREFIX + "." + Names.Config.PLACE_ADJACENT);
-        placeAdjacent = propPlaceAdjacent.getBoolean(PLACE_ADJACENT_DEFAULT);
+        loadPrinter();
 
         swapSlotsQueue.clear();
         for (int i = 0; i < SWAP_SLOTS_DEFAULT.length; i++) {
@@ -502,6 +490,56 @@ public class ConfigurationHandler {
         if (configuration.hasChanged()) {
             configuration.save();
         }
+    }
+
+    private static void loadPrinter() {
+        ConfigCategory printer = configuration.getCategory(Names.Config.Category.PRINTER);
+        // Replaced by placeBlocksPerTick and placeInAir
+        printer.remove("placeInstantly");
+        printer.remove("placeAdjacent");
+        Property range = printerProperty(configuration.get(Names.Config.Category.PRINTER, "printerWorkRange", 0.0), "printerWorkRange");
+        range.setMinValue(0.0).setMaxValue(6.0);
+        printerWorkRange = Math.max(0, Math.min(6, range.getDouble(0)));
+        printerIterationTimeLimit = printerInt("printerIterationTimeLimit", 8, 0, 32);
+        placeBlocksPerTick = printerInt("placeBlocksPerTick", 1, 1, 64);
+        printerIteratorShape = printerChoice("printerIteratorShape", "sphere", "sphere", "octahedron", "cube");
+        printerIteratorMode = printerChoice("printerIteratorMode", "xzy", "xzy", "xyz", "yxz", "yzx", "zxy", "zyx");
+        printerXAxisReverse = printerFlag("printerXAxisReverse", false);
+        printerYAxisReverse = printerFlag("printerYAxisReverse", false);
+        printerZAxisReverse = printerFlag("printerZAxisReverse", false);
+        printSelectionType = printerChoice("printSelectionType", "render_layers", "render_layers", "selection", "below_player", "above_player");
+        printerLagCheck = printerFlag("printerLagCheck", true);
+        printerLagCheckMax = printerInt("printerLagCheckMax", 20, 20, 1200);
+        placeInAir = printerFlag("placeInAir", true);
+        printForcedSneak = printerFlag("printForcedSneak", false);
+        printFallingBlockCheck = printerFlag("printFallingBlockCheck", true);
+        printerAutoDisable = printerFlag("printerAutoDisable", true);
+        printerPauseWhileMoving = printerFlag("printerPauseWhileMoving", false);
+        printSkipList = printerProperty(configuration.get(Names.Config.Category.PRINTER, "printSkipList", new String[0]), "printSkipList").getStringList();
+    }
+
+    private static Property printerProperty(Property property, String name) {
+        property.setLanguageKey(Names.Config.LANG_PREFIX + "." + name);
+        return property;
+    }
+
+    private static int printerInt(String name, int fallback, int min, int max) {
+        Property property = printerProperty(configuration.get(Names.Config.Category.PRINTER, name, fallback), name);
+        property.setMinValue(min).setMaxValue(max);
+        return Math.max(min, Math.min(max, property.getInt(fallback)));
+    }
+
+    private static boolean printerFlag(String name, boolean fallback) {
+        return printerProperty(configuration.get(Names.Config.Category.PRINTER, name, fallback), name).getBoolean(fallback);
+    }
+
+    private static String printerChoice(String name, String fallback, String... values) {
+        Property property = printerProperty(configuration.get(Names.Config.Category.PRINTER, name, fallback), name);
+        property.setValidValues(values);
+        String value = property.getString();
+        for (String candidate : values) if (candidate.equals(value)) return value;
+        property.set(fallback);
+        return fallback;
     }
 
     private static boolean serverFlag(String name, String comment) {

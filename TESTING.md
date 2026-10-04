@@ -1373,7 +1373,7 @@ compare with a server that does not have the mod and with each server option off
 
 ## Printer switch and server permission
 
-- Single player: press Caps Lock (workingSwitch) with a placement selected: the action bar shows the
+- Single player: bind workingSwitch (Printer tab, unbound by default) and press it with a placement visible: the action bar shows the
   printer toggle message and blocks are placed around you; press again to stop. Changing the selected
   placement keeps printing (with the new placement).
 - Turn off Allow Printer (printerEnabled) in the config screen while printing: printing stops with
@@ -1384,3 +1384,21 @@ compare with a server that does not have the mod and with each server option off
 - Die while printing: the printer turns off with a message. Reconnecting always starts with it off.
 - Single player now receives the server capabilities: Easy Place uses the accurate placement protocol
   (stairs/pistons get the schematic facing without turning).
+
+## Printer pass (litematica-printer style)
+
+- Printer tab: all printer options, the swap slots and the workingSwitch binding are there.
+- Default settings: standing next to a placement the printer places one block per tick, bottom layer first,
+  only within reach; several visible placements are all printed.
+- Stairs, chests, furnaces, pumpkins, repeaters, doors and horizontal pistons/dispensers get the schematic
+  facing without turning (also on a vanilla server); the view does not jump. Upside-down stairs, top slabs,
+  open-top trapdoors and logs on all axes are right, also floating in the air (Place In Air on).
+- Place In Air off: floating blocks are skipped. Torches/ladders/buttons without support and sand over air
+  are skipped; with Falling Block Check off sand is placed and falls.
+- Iteration Order YXZ / reversal, Work Area Shape and Work Range 2 change which blocks go first and how far.
+- Print Range: Area selection prints only inside the selected area; Below/Above the player limits by feet.
+- Skip Blocks with minecraft:stone: stone is never placed. Always Sneak: no container opens when clicked.
+- Lag check: on a server, freeze the connection (e.g. suspend the server process): printing pauses after
+  about a second and continues afterwards. Pause While Moving stops printing while walking.
+- Blocks Per Pass 8 with Placement Interval 1 fills quickly; Position Cooldown keeps failed spots from
+  being retried every tick.

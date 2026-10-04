@@ -5,7 +5,9 @@ import java.util.List;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockLiquid;
+import net.minecraft.block.BlockFalling;
 import net.minecraft.block.BlockPistonBase;
+import net.minecraft.block.BlockSlab;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityClientPlayerMP;
 import net.minecraft.entity.player.EntityPlayer;
@@ -13,7 +15,9 @@ import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemBucket;
 import net.minecraft.item.ItemStack;
+import net.minecraft.network.play.client.C03PacketPlayer.C05PacketPlayerLook;
 import net.minecraft.network.play.client.C0BPacketEntityAction;
+import net.minecraft.util.MathHelper;
 import net.minecraft.util.Vec3;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
@@ -24,6 +28,8 @@ import net.minecraftforge.fluids.IFluidBlock;
 
 import com.github.lunatrius.schematica.internal.lunatriuscore.util.vector.Vector3i;
 import com.github.lunatrius.schematica.client.printer.registry.PlacementData;
+import com.github.lunatrius.schematica.client.selection.AreaSelectionLibrary;
+import com.github.lunatrius.schematica.client.selection.AreaSelections;
 import com.github.lunatrius.schematica.client.printer.registry.PlacementRegistry;
 import com.github.lunatrius.schematica.client.util.BlockToItemStack;
 import com.github.lunatrius.schematica.client.world.SchematicWorld;
@@ -47,7 +53,9 @@ public class SchematicPrinter {
     private volatile String pendingMessage;
 
     private SchematicWorld schematic = null;
-    private byte[][][] timeout = null;
+    private final java.util.Map<Long, Long> cooldowns = new java.util.HashMap<>();
+    private long tick;
+    private Pass pass;
 
     public boolean isEnabled() {
         return this.isEnabled;
@@ -110,127 +118,139 @@ public class SchematicPrinter {
     }
 
     public void refresh() {
-        if (this.schematic != null) {
-            this.timeout = new byte[this.schematic.getWidth()][this.schematic.getHeight()][this.schematic.getLength()];
-        } else {
-            this.timeout = null;
-        }
+        this.cooldowns.clear();
     }
 
     /**
-     * Attempts to place one block from the schematic near the player.
-     * @return true if a block was placed or there are still blocks to place, false if printing is complete.
+     * One printer pass around the player over every visible placement, after the behavior of litematica-printer: the
+     * positions within the work range in the configured shape and axis order, at most placeBlocksPerTick placements,
+     * each position then waiting `timeout` ticks.
+     * @return the number of placement clicks made
      */
-    public boolean print() {
-        if (schematic == null || !schematic.isRenderingEnabled()) return true;
+    public int print() {
         final EntityClientPlayerMP player = this.minecraft.thePlayer;
         final World world = this.minecraft.theWorld;
+        if (player == null || world == null) return 0;
+        this.tick = world.getTotalWorldTime();
+        if (!this.cooldowns.isEmpty()) this.cooldowns.values().removeIf(until -> until <= this.tick);
+        boolean moving = Math.abs(player.posX - player.prevPosX) + Math.abs(player.posY - player.prevPosY) + Math.abs(player.posZ - player.prevPosZ) > 0.001;
+        if (ConfigurationHandler.printerPauseWhileMoving && moving) return 0;
+        if (ConfigurationHandler.printerLagCheck && LagMonitor.ticksSincePacket() > ConfigurationHandler.printerLagCheckMax) return 0;
+        List<SchematicWorld> placements = new ArrayList<>();
+        for (SchematicWorld placement : ClientProxy.visiblePlacements()) if (placement.isRenderingEnabled()) placements.add(placement);
+        if (placements.isEmpty()) return 0;
 
-        final boolean isSneaking = player.isSneaking();
-        syncSneaking(player, true);
+        double eyeX = player.posX, eyeY = player.posY + player.getEyeHeight() - player.getDefaultEyeHeight(), eyeZ = player.posZ;
+        double feetY = player.boundingBox.minY;
+        double range = ConfigurationHandler.printerWorkRange > 0 ? ConfigurationHandler.printerWorkRange
+            : this.minecraft.playerController.getBlockReachDistance();
+        int bx = MathHelper.floor_double(eyeX), by = MathHelper.floor_double(eyeY), bz = MathHelper.floor_double(eyeZ);
+        List<int[]> offsets = PrinterIteration.offsets((int) Math.ceil(range), ConfigurationHandler.printerIteratorShape,
+            ConfigurationHandler.printerIteratorMode, ConfigurationHandler.printerXAxisReverse,
+            ConfigurationHandler.printerYAxisReverse, ConfigurationHandler.printerZAxisReverse);
+        long deadline = ConfigurationHandler.printerIterationTimeLimit > 0
+            ? System.nanoTime() + ConfigurationHandler.printerIterationTimeLimit * 1_000_000L : Long.MAX_VALUE;
+        AreaSelectionLibrary.Area area = "selection".equals(ConfigurationHandler.printSelectionType) ? AreaSelections.library().selected() : null;
 
-        final Vector3i trans = ClientProxy.playerPosition.clone()
-            .sub(this.schematic.position.x, this.schematic.position.y, this.schematic.position.z)
-            .toVector3i();
-        final int minX = Math.max(0, trans.x - 3);
-        final int maxX = Math.min(this.schematic.getWidth(), trans.x + 4);
-        final int minY = Math.max(0, trans.y - 3);
-        final int maxY = Math.min(this.schematic.getHeight(), trans.y + 4);
-        final int minZ = Math.max(0, trans.z - 3);
-        final int maxZ = Math.min(this.schematic.getLength(), trans.z + 4);
-
-        final int slot = player.inventory.currentItem;
-
-        for (int y = minY; y < maxY; y++) {
-            for (int x = minX; x < maxX; x++) {
-                for (int z = minZ; z < maxZ; z++) {
-                    if (!schematic.isBlockRendered(x, y, z)) continue;
-                    try {
-                        if (placeBlock(world, player, x, y, z)) {
-                            player.inventory.currentItem = slot;
-                            syncSneaking(player, isSneaking);
-                            return true;
-                        }
-                    } catch (Exception e) {
-                        Reference.logger.error("Could not place block!", e);
-                        player.inventory.currentItem = slot;
-                        syncSneaking(player, isSneaking);
-                        return false;
-                    }
+        this.pass = new Pass(player);
+        int placed = 0;
+        try {
+            for (int[] offset : offsets) {
+                if (System.nanoTime() > deadline) break;
+                int x = bx + offset[0], y = by + offset[1], z = bz + offset[2];
+                if (y < 0 || y > 255) continue;
+                double dx = x + 0.5 - eyeX, dy = y + 0.5 - eyeY, dz = z + 0.5 - eyeZ;
+                if (dx * dx + dy * dy + dz * dz > range * range) continue;
+                if (!selected(x, y, z, feetY, area)) continue;
+                long key = key(x, y, z);
+                if (this.cooldowns.containsKey(key)) continue;
+                SchematicWorld placement = placementAt(placements, x, y, z);
+                if (placement == null) continue;
+                if (placeBlock(world, player, placement, x, y, z)) {
+                    this.cooldowns.put(key, this.tick + Math.max(1, ConfigurationHandler.timeout));
+                    if (++placed >= Math.max(1, ConfigurationHandler.placeBlocksPerTick)) break;
                 }
             }
+        } catch (RuntimeException e) {
+            Reference.logger.error("Could not place block!", e);
+        } finally {
+            this.pass.restore();
+            this.pass = null;
         }
-
-        player.inventory.currentItem = slot;
-        syncSneaking(player, isSneaking);
-        // No block was placed in this pass — could be complete or just out of range
-        return true;
+        return placed;
     }
 
-    /**
-     * Checks whether all non-air blocks in the schematic match the real world,
-     * meaning the print job is complete.
-     */
-    public boolean isComplete() {
-        if (this.schematic == null) {
-            return true;
-        }
-
-        if (!this.schematic.isRenderingEnabled()) return false;
-        final World world = this.minecraft.theWorld;
-        if (world == null) {
-            return false;
-        }
-
-        final int width = this.schematic.getWidth();
-        final int height = this.schematic.getHeight();
-        final int length = this.schematic.getLength();
-
-        for (int y = 0; y < height; y++) {
-            for (int x = 0; x < width; x++) {
-                for (int z = 0; z < length; z++) {
-                    if (!schematic.isBlockRendered(x, y, z)) continue;
-                    final Block block = this.schematic.getBlock(x, y, z);
-                    if (block == null || block.isAir(this.schematic, x, y, z)) {
-                        continue;
-                    }
-
-                    final int wx = this.schematic.position.x + x;
-                    final int wy = this.schematic.position.y + y;
-                    final int wz = this.schematic.position.z + z;
-
-                    final Block realBlock = world.getBlock(wx, wy, wz);
-                    final int metadata = this.schematic.getBlockMetadata(x, y, z);
-                    final int realMetadata = world.getBlockMetadata(wx, wy, wz);
-
-                    if (FluidPrinter.isFluid(block)) {
-                        if (!FluidPrinter.matches(this.schematic, x, y, z, world, wx, wy, wz)) return false;
-                        continue;
-                    }
-                    if (block != realBlock || metadata != realMetadata) {
-                        return false;
-                    }
+    /** printSelectionType: render layers only, also inside the selected area, or below/above the player's feet. */
+    private static boolean selected(int x, int y, int z, double feetY, AreaSelectionLibrary.Area area) {
+        switch (ConfigurationHandler.printSelectionType) {
+            case "selection":
+                if (area == null) return false;
+                for (AreaSelectionLibrary.Box box : area.boxes()) {
+                    Vector3i a = box.first(), b = box.second();
+                    if (x >= Math.min(a.x, b.x) && x <= Math.max(a.x, b.x) && y >= Math.min(a.y, b.y) && y <= Math.max(a.y, b.y)
+                        && z >= Math.min(a.z, b.z) && z <= Math.max(a.z, b.z)) return true;
                 }
-            }
+                return false;
+            case "below_player": return y <= MathHelper.floor_double(feetY);
+            case "above_player": return y >= MathHelper.ceiling_double_int(feetY);
+            default: return true;
         }
-
-        return true;
     }
 
-    private boolean placeBlock(World world, EntityPlayer player, int x, int y, int z) {
-        if (!schematic.getSchematic().containsBlock(x, y, z)) return false;
-        if (this.timeout[x][y][z] > 0) {
-            this.timeout[x][y][z] -= Math.max(1, ConfigurationHandler.placeDelay);
-            return false;
+    private static SchematicWorld placementAt(List<SchematicWorld> placements, int x, int y, int z) {
+        for (SchematicWorld placement : placements) {
+            if (placement.isBlockRendered(x - placement.position.x, y - placement.position.y, z - placement.position.z)) return placement;
+        }
+        return null;
+    }
+
+    private static long key(int x, int y, int z) { return ((long) x & 0x3ffffffL) << 38 | ((long) z & 0x3ffffffL) << 12 | y & 0xfffL; }
+
+    /** The player state a pass changes (held slot, sneaking, reported rotation), restored when the pass ends. */
+    private final class Pass {
+        final EntityClientPlayerMP player;
+        final int slot;
+        final boolean sneaking;
+        final float yaw, pitch;
+        boolean sneakSent, lookSent;
+
+        Pass(EntityClientPlayerMP player) {
+            this.player = player; this.slot = player.inventory.currentItem; this.sneaking = player.isSneaking();
+            this.yaw = player.rotationYaw; this.pitch = player.rotationPitch;
         }
 
-        final int wx = this.schematic.position.x + x;
-        final int wy = this.schematic.position.y + y;
-        final int wz = this.schematic.position.z + z;
+        /** Sneaks for clicks on a neighbor so that containers and other interactive blocks are not opened. */
+        void sneak() {
+            if (sneakSent || player.isSneaking()) return;
+            syncSneaking(player, true);
+            sneakSent = true;
+        }
 
-        final Block block = this.schematic.getBlock(x, y, z);
+        void look(PrinterLook look) {
+            player.rotationYaw = look.yaw;
+            player.rotationPitch = look.pitch;
+            player.sendQueue.addToSendQueue(new C05PacketPlayerLook(look.yaw, look.pitch, player.onGround));
+            lookSent = true;
+        }
+
+        void restoreLook() {
+            player.rotationYaw = yaw;
+            player.rotationPitch = pitch;
+        }
+
+        void restore() {
+            player.inventory.currentItem = slot;
+            restoreLook();
+            if (lookSent) player.sendQueue.addToSendQueue(new C05PacketPlayerLook(yaw, pitch, player.onGround));
+            if (sneakSent) syncSneaking(player, sneaking);
+        }
+    }
+
+    private boolean placeBlock(World world, EntityClientPlayerMP player, SchematicWorld schematic, int wx, int wy, int wz) {
+        final int x = wx - schematic.position.x, y = wy - schematic.position.y, z = wz - schematic.position.z;
+        final Block block = schematic.getBlock(x, y, z);
         final Block realBlock = world.getBlock(wx, wy, wz);
-        final int metadata = this.schematic.getBlockMetadata(x, y, z);
+        final int metadata = schematic.getBlockMetadata(x, y, z);
         final int realMetadata = world.getBlockMetadata(wx, wy, wz);
 
         if (block == realBlock && metadata == realMetadata) {
@@ -238,49 +258,150 @@ public class SchematicPrinter {
         }
 
         if (FluidPrinter.isFluid(block)) {
-            if (FluidPrinter.matches(this.schematic, x, y, z, world, wx, wy, wz)) return false;
+            if (FluidPrinter.matches(schematic, x, y, z, world, wx, wy, wz)) return false;
             if (!world.isAirBlock(wx, wy, wz) && !FluidPrinter.isFluid(realBlock)) return false;
             if (FluidPrinter.isFluid(realBlock) && !FluidPrinter.sameFluid(block, realBlock)) return false;
-            if (FluidPrinter.place(this.minecraft, FluidPrinter.source(this.schematic, x, y, z), wx, wy, wz,
-                bucket -> swapToItem(player.inventory, bucket, true, true))) {
-                this.timeout[x][y][z] = (byte) Math.max(20, ConfigurationHandler.timeout);
-                return true;
-            }
-            return false;
+            return FluidPrinter.place(this.minecraft, FluidPrinter.source(schematic, x, y, z), wx, wy, wz,
+                bucket -> swapToItem(player.inventory, bucket, true, true));
         }
 
         if (ConfigurationHandler.destroyBlocks && !world.isAirBlock(wx, wy, wz)
             && this.minecraft.playerController.isInCreativeMode()) {
             this.minecraft.playerController.clickBlock(wx, wy, wz, 0);
-
-            this.timeout[x][y][z] = (byte) ConfigurationHandler.timeout;
-
             return !ConfigurationHandler.destroyInstantly;
         }
 
-        if (this.schematic.isAirBlock(x, y, z)) {
+        if (block.isAir(schematic, x, y, z) || skipped(block)) {
             return false;
         }
 
-        if (!realBlock.isReplaceable(world, wx, wy, wz)) {
-            return false;
-        }
-
-        final ItemStack itemStack = BlockToItemStack.getItemStack(player, block, this.schematic, x, y, z);
+        final ItemStack itemStack = BlockToItemStack.getItemStack(player, block, schematic, x, y, z);
         if (itemStack == null || itemStack.getItem() == null) {
             Reference.logger.debug("{} is missing a mapping!", BLOCK_REGISTRY.getNameForObject(block));
             return false;
         }
-
-        if (placeBlock(world, player, wx, wy, wz, block, metadata, itemStack)) {
-            this.timeout[x][y][z] = (byte) ConfigurationHandler.timeout;
-
-            if (!ConfigurationHandler.placeInstantly) {
-                return true;
-            }
+        if (isBlacklisted(block, itemStack)) {
+            return false;
         }
 
+        boolean slab = EasyPlace.completesSlab(block, metadata, realBlock, realMetadata, itemStack);
+        if (!slab) {
+            if (!realBlock.isReplaceable(world, wx, wy, wz)) return false;
+            // Gravity blocks need ground below, attached blocks their support (Entropy5's block supports)
+            if (ConfigurationHandler.printFallingBlockCheck && block instanceof BlockFalling && BlockFalling.func_149831_e(world, wx, wy - 1, wz)) return false;
+            if (!block.canPlaceBlockAt(world, wx, wy, wz)) return false;
+        }
+
+        PlacementData data = PlacementRegistry.INSTANCE.getPlacementData(block, itemStack);
+        boolean accurate = AccuratePlacementClient.active(block);
+        PrinterLook look = null;
+        if (!accurate && data != null && data.type != PlacementData.PlacementType.BLOCK) {
+            look = findLook(world, player, wx, wy, wz, data, metadata);
+            if (look == null) return false;
+        }
+
+        Click click = slab ? slabClick(wx, wy, wz, realMetadata) : click(world, wx, wy, wz, data, metadata, accurate);
+        if (click == null || !swapToItem(player.inventory, itemStack)) {
+            return false;
+        }
+        ItemStack held = player.getCurrentEquippedItem();
+        int extraClicks = data == null || slab ? 0 : data.getExtraClicks(block, metadata);
+        if (held == null || !held.isItemEqual(itemStack)
+            || !this.minecraft.playerController.isInCreativeMode() && held.stackSize <= extraClicks) {
+            return false;
+        }
+
+        if (ConfigurationHandler.printForcedSneak || click.neighbor) this.pass.sneak();
+        if (look != null) this.pass.look(look);
+        if (accurate) AccuratePlacementClient.announce(wx, wy, wz, block, metadata);
+        try {
+            boolean success = placeBlock(world, player, held, click.x, click.y, click.z, click.side, click.hit);
+            for (int i = 0; success && i < extraClicks; i++) {
+                // A double slab: the second half goes onto the single slab just placed
+                Click second = block instanceof BlockSlab && world.getBlock(wx, wy, wz) instanceof BlockSlab
+                    ? slabClick(wx, wy, wz, world.getBlockMetadata(wx, wy, wz)) : click;
+                success = placeBlock(world, player, held, second.x, second.y, second.z, second.side, second.hit);
+            }
+            if (held.stackSize == 0) player.inventory.mainInventory[player.inventory.currentItem] = null;
+            return success;
+        } finally {
+            if (look != null) this.pass.restoreLook();
+        }
+    }
+
+    private static boolean skipped(Block block) {
+        if (ConfigurationHandler.printSkipList.length == 0) return false;
+        String name = BLOCK_REGISTRY.getNameForObject(block);
+        for (String entry : ConfigurationHandler.printSkipList) if (entry.trim().equalsIgnoreCase(name)) return true;
         return false;
+    }
+
+    /** A placement click: on a neighbor's face, or at the target itself (1.7.10 places into a replaceable clicked block). */
+    private static final class Click {
+        final int x, y, z, side;
+        final Vec3 hit;
+        final boolean neighbor;
+        Click(int x, int y, int z, int side, Vec3 hit, boolean neighbor) {
+            this.x = x; this.y = y; this.z = z; this.side = side; this.hit = hit; this.neighbor = neighbor;
+        }
+    }
+
+    private static Click slabClick(int x, int y, int z, int realMetadata) {
+        int side = (realMetadata & 8) != 0 ? 0 : 1;
+        return new Click(x, y, z, side, Vec3.createVectorHelper(x + 0.5, y + (side == 1 ? 1 : 0), z + 0.5), false);
+    }
+
+    private Click click(World world, int x, int y, int z, PlacementData data, int metadata, boolean accurate) {
+        ForgeDirection[] solidSides = getSolidSides(world, x, y, z);
+        ForgeDirection direction = null;
+        if (data != null) {
+            ForgeDirection[] valid = data.getValidDirections(solidSides, metadata);
+            if (valid.length == 0 && (accurate || data.type != PlacementData.PlacementType.BLOCK || data.mapping.isEmpty())
+                && data.maskOffset == 0) valid = solidSides;
+            if (valid.length > 0) direction = valid[0];
+        } else if (solidSides.length > 0) {
+            direction = solidSides[0];
+        }
+        float offsetY = data == null ? 0 : data.getOffsetFromMetadata(metadata);
+        if (direction != null) {
+            int cx = x + direction.offsetX, cy = y + direction.offsetY, cz = z + direction.offsetZ;
+            return new Click(cx, cy, cz, direction.getOpposite().ordinal(), Vec3.createVectorHelper(cx, cy + offsetY, cz), true);
+        }
+        if (!ConfigurationHandler.placeInAir) return null;
+        // In the air: the clicked side and height carry the orientation the neighbor click would have given
+        int side = ForgeDirection.UP.ordinal();
+        if (data != null && data.type == PlacementData.PlacementType.BLOCK && !data.mapping.isEmpty()) {
+            side = -1;
+            for (java.util.Map.Entry<ForgeDirection, Integer> entry : data.mapping.entrySet()) {
+                if (entry.getValue() == (metadata & data.maskMeta)) { side = entry.getKey().getOpposite().ordinal(); break; }
+            }
+            if (side < 0) return null;
+        } else if (data != null && data.maskOffset != 0) {
+            side = ForgeDirection.NORTH.ordinal();
+        }
+        double hitY = data != null && data.maskOffset != 0 ? (offsetY >= 0.5f ? 0.75 : 0.25) : 0.5;
+        return new Click(x, y, z, side, Vec3.createVectorHelper(x + 0.5, y + hitY, z + 0.5), false);
+    }
+
+    /** A rotation for which the block gets the schematic orientation, reported to the server before the click. */
+    private PrinterLook findLook(World world, EntityClientPlayerMP player, int x, int y, int z, PlacementData data, int metadata) {
+        float yaw = player.rotationYaw, pitch = player.rotationPitch;
+        try {
+            for (PrinterLook look : PrinterLook.candidates(yaw)) {
+                if (data.type == PlacementData.PlacementType.PISTON) {
+                    player.rotationYaw = look.yaw;
+                    player.rotationPitch = look.pitch;
+                    if (BlockPistonBase.determineOrientation(world, x, y, z, player) == BlockPistonBase.getPistonOrientation(metadata)) return look;
+                } else {
+                    Integer mapped = data.mapping.get(PrinterLook.orientation(look.yaw, look.pitch));
+                    if (mapped != null && mapped == (metadata & data.maskMeta)) return look;
+                }
+            }
+            return null;
+        } finally {
+            player.rotationYaw = yaw;
+            player.rotationPitch = pitch;
+        }
     }
 
     private boolean isSolid(World world, int x, int y, int z, ForgeDirection side) {
@@ -322,54 +443,6 @@ public class SchematicPrinter {
         return list.toArray(sides);
     }
 
-    private boolean placeBlock(World world, EntityPlayer player, int x, int y, int z, Block block, int metadata,
-        ItemStack itemStack) {
-        if (isBlacklisted(block, itemStack)) {
-            return false;
-        }
-
-        PlacementData data = PlacementRegistry.INSTANCE.getPlacementData(block, itemStack);
-
-        boolean accurate = AccuratePlacementClient.active(block);
-        if (!accurate && !isValidOrientation(player, x, y, z, data, metadata)) {
-            return false;
-        }
-
-        ForgeDirection[] solidSides = getSolidSides(world, x, y, z);
-        ForgeDirection direction = ForgeDirection.UNKNOWN;
-        float offsetY = 0.0f;
-        int extraClicks = 0;
-
-        if (solidSides.length > 0) {
-            if (data != null) {
-                ForgeDirection[] validDirections = data.getValidDirections(solidSides, metadata);
-                if (validDirections.length > 0) {
-                    direction = validDirections[0];
-                } else if (accurate) {
-                    direction = solidSides[0];
-                }
-
-                offsetY = data.getOffsetFromMetadata(metadata);
-                extraClicks = data.getExtraClicks(block, metadata);
-            } else {
-                direction = solidSides[0];
-            }
-
-            if (!swapToItem(player.inventory, itemStack)) {
-                return false;
-            }
-        }
-
-        if (direction != ForgeDirection.UNKNOWN || !ConfigurationHandler.placeAdjacent) {
-            if (accurate) {
-                AccuratePlacementClient.announce(x, y, z, block, metadata);
-            }
-            return placeBlock(world, player, x, y, z, direction, 0.0f, offsetY, 0.0f, extraClicks);
-        }
-
-        return false;
-    }
-
     boolean isBlacklisted(Block block, ItemStack itemStack) {
         if (block instanceof IFluidBlock || block instanceof BlockLiquid) {
             return true;
@@ -388,65 +461,6 @@ public class SchematicPrinter {
         }
 
         return false;
-    }
-
-    private boolean isValidOrientation(EntityPlayer player, int x, int y, int z, PlacementData data, int metadata) {
-        if (data != null) {
-            switch (data.type) {
-                case BLOCK: {
-                    return true;
-                }
-
-                case PLAYER: {
-                    Integer integer = data.mapping.get(ClientProxy.orientation);
-                    if (integer != null) {
-                        return integer == (metadata & data.maskMeta);
-                    }
-                    break;
-                }
-
-                case PISTON: {
-                    Integer integer = data.mapping.get(ClientProxy.orientation);
-                    if (integer != null) {
-                        return BlockPistonBase.determineOrientation(null, x, y, z, player)
-                            == BlockPistonBase.getPistonOrientation(metadata);
-                    }
-                    break;
-                }
-            }
-            return false;
-        }
-
-        return true;
-    }
-
-    private boolean placeBlock(World world, EntityPlayer player, int x, int y, int z, ForgeDirection direction,
-        float offsetX, float offsetY, float offsetZ, int extraClicks) {
-        ItemStack itemStack = player.getCurrentEquippedItem();
-
-        if (!this.minecraft.playerController.isInCreativeMode() && itemStack != null
-            && itemStack.stackSize <= extraClicks) {
-            return false;
-        }
-
-        x += direction.offsetX;
-        y += direction.offsetY;
-        z += direction.offsetZ;
-
-        int side = direction.getOpposite()
-            .ordinal();
-        final Vec3 hitVec = Vec3.createVectorHelper(x + offsetX, y + offsetY, z + offsetZ);
-
-        boolean success = placeBlock(world, player, itemStack, x, y, z, side, hitVec);
-        for (int i = 0; success && i < extraClicks; i++) {
-            success = placeBlock(world, player, itemStack, x, y, z, side, hitVec);
-        }
-
-        if (itemStack != null && itemStack.stackSize == 0 && success) {
-            player.inventory.mainInventory[player.inventory.currentItem] = null;
-        }
-
-        return success;
     }
 
     boolean placeBlock(World world, EntityPlayer player, ItemStack itemStack, int x, int y, int z, int side,

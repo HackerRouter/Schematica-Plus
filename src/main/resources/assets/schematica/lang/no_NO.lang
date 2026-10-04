@@ -7,7 +7,3 @@ schematica.config.placeDelay=Plasseringsforsinkelse
 schematica.config.placeDelay.tooltip=Forsinkelse mellom plasseringsforsøk (i ticks).
 schematica.config.timeout=Tidsavbrudd
 schematica.config.timeout.tooltip=Tidsavbrudd før nytt forsøk på å plassere blokker.
-schematica.config.placeInstantly=Plasser umiddelbart
-schematica.config.placeInstantly.tooltip=Plasser alle blokker som kan bli plassert i ett tikk.
-schematica.config.placeAdjacent=Plasser kun tilstøtende
-schematica.config.placeAdjacent.tooltip=Plasser kun blokker hvis det er en tilstøtende blokk ved siden av dem.

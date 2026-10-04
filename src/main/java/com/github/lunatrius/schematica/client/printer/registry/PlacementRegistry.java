@@ -13,6 +13,7 @@ import net.minecraft.block.BlockHopper;
 import net.minecraft.block.BlockPistonBase;
 import net.minecraft.block.BlockPumpkin;
 import net.minecraft.block.BlockRotatedPillar;
+import net.minecraft.block.BlockSlab;
 import net.minecraft.block.BlockStairs;
 import net.minecraft.block.BlockTorch;
 import net.minecraft.init.Blocks;
@@ -62,6 +63,12 @@ public class PlacementRegistry {
         addPlacementMapping(
             BlockRotatedPillar.class,
             new PlacementData(PlacementData.PlacementType.BLOCK, 0, 0, 8, 8, 4, 4).setMaskMeta(0xC));
+        // Every slab, also modded ones: the click height picks the half (after Schematica-Neo)
+        addPlacementMapping(
+            BlockSlab.class,
+            new PlacementData(PlacementData.PlacementType.BLOCK).setOffset(0x8, 0.0f, 1.0f)
+                .setMaskMeta(0x7)
+                .setExtraClick(extraClickDoubleSlab));
         addPlacementMapping(
             BlockStairs.class,
             new PlacementData(PlacementData.PlacementType.PLAYER, -1, -1, 3, 2, 1, 0).setOffset(0x4, 0.0f, 1.0f)

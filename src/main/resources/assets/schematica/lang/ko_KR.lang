@@ -7,14 +7,10 @@ schematica.config.placeDelay=놓기 지연시간
 schematica.config.placeDelay.tooltip=놓기 시도간의 지연시간 (틱 단위).
 schematica.config.timeout=시간 제한
 schematica.config.timeout.tooltip=실패한 블럭을 재시도하기 전의 시간 제한.
-schematica.config.placeInstantly=즉시 놓기
-schematica.config.placeInstantly.tooltip=1틱 안에 가능한 모든 블럭을 놓기.
 schematica.config.destroyBlocks=블럭 부수기
 schematica.config.destroyBlocks.tooltip=프린터가 블럭을 부숩니다 (크리에이티브 모드 전용).
 schematica.config.destroyInstantly=즉시 부수기
 schematica.config.destroyInstantly.tooltip=1틱안에 가능한 모든 블럭을 부수기.
-schematica.config.placeAdjacent=접촉된 블럭만 놓기
-schematica.config.placeAdjacent.tooltip=접촉된 블럭이 있을 경우에만 블럭을 놓습니다.
 
 # gui - config - server
 schematica.config.printerEnabled=프린터 허용

@@ -61,6 +61,7 @@ public class GuiModConfig extends UiScreen implements HotkeyHooks.Capture {
         VISUALS("litematica.gui.button.config_gui.visuals", 180),
         COLORS("litematica.gui.button.config_gui.colors", 100),
         HOTKEYS("litematica.gui.button.config_gui.hotkeys", 204),
+        PRINTER("schematica.ui.config.tab.printer", 180),
         RENDER_LAYERS("litematica.gui.button.config_gui.render_layers", 204);
 
         final String key;
@@ -348,7 +349,8 @@ public class GuiModConfig extends UiScreen implements HotkeyHooks.Capture {
         String searchText() { return name() + " " + label() + " " + category + (modified() ? " modified" : ""); }
         boolean modified() { return key == null ? draft.modified() || toggleKey != null && toggleKey.modified() : key.modified(); }
         Tab tab() {
-            if (key != null) return Tab.HOTKEYS;
+            if (key != null) return "workingSwitch".equals(key.id) ? Tab.PRINTER : Tab.HOTKEYS;
+            if (category.startsWith(Names.Config.Category.PRINTER)) return Tab.PRINTER;
             if (color != null) return Tab.COLORS;
             if (BlockInfoHudSettings.CATEGORY.equals(category)) return Tab.INFO_OVERLAYS;
             if (Names.Config.Category.RENDER.equals(category)) return Tab.VISUALS;
