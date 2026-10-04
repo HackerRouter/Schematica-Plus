@@ -273,7 +273,7 @@ This is the reconciled known backlog, not a promise that every upstream Configs 
 - `IMPLEMENTED_HEADLESS` (2026-10-04): Tool HUD as upstream ToolHud (`client/renderer/hud/ToolHud`): `toolHudAlignment` (bottom left), `toolHudOffsetX/Y`, `toolHudScale`, every line on its own 0x80000000 background with shadowed text as MaLiLib `renderText` (no Plus auto-shrink next to the hotbar); lines and order as upstream (projects block; Delete target; area: name/mode, origin with [Auto/Manual] and box count, sub-region, dimensions with p1/p2, block 1/2 by item name, corners mode; placement modes: placement, region count/modified, origin, REBUILD block, sub-region and its origin, Paste replace/layer/ignore-inventory lines; then `Mode [n/9]: name`, REBUILD in gold), status info lines after it (limited by `infoHudMaxLines`). New paste options `pasteLayerBehavior` (all / rendered_only: the regions are clipped to the render layer range, block entities and entities outside are left out) and `pasteIgnoreInventories` (containers pasted empty). The upstream Data Restore Mode line is left out (Servux-only modes). Block facing is not shown (1.7.10 metadata has no generic facing).
 - `IMPLEMENTED_HEADLESS` (2026-10-04): Different blocks (`enableDifferentBlocks`, default off) through `util/BlockGroups`, the 1.7.10 form of MaLiLib's replaceable block groups (stairs, slabs, double slabs, walls, fences, fence gates, doors, trapdoors, buttons, pressure plates, standing/wall signs, logs, leaves, planks, saplings, flowers, flower pots, anvils, beds, carpets, wool, glass, glass panes, terracotta, ores, by block class so mod subclasses join). Colors and wood types are metadata in 1.7.10, so the bits that change `damageDropped` are the variant and the rest is the state: another block or variant of the same group with the same state is a different block, otherwise wrong state. Overlay `schematicOverlayTypeDiffBlock` with `schematicOverlayColorDiffBlock`, verifier "Diff Blocks" category/button/status, and per-type toggles `schematicOverlayTypeMissing/WrongBlock/WrongState`. Overlay lines use `schematicOverlayOutlineWidth` (1.0) or `schematicOverlayOutlineWidthThrough` (3.0) when drawn through blocks; extra blocks are no longer drawn as wrong blocks when `schematicOverlayTypeExtra` is off.
 - `OPEN`: Remaining visual/config behaviors: `schematicOverlayModelOutline/Sides` (model-shaped overlay) and other HUD/config toggles from the config audit.
-- `PARITY_AUDIT`: All Configs Generic/InfoOverlays/Visuals/Colors options against the pinned upstream class; Plus currently exposes its implemented Forge properties and a subset of equivalents, not the entire upstream configuration system. Preserve Plus-only printer/save options while adding meaningful original options.
+- `DONE` (2026-10-04): Config parity audit, see section 12.C for the classification. Plus-only printer/save options are kept.
 - `UPSTREAM_PLACEHOLDER`: Subregion Slice control is deliberately unavailable, matching the selected upstream placeholder. Do not falsely report it as completed or prioritize invented semantics as a user requirement.
 
 ### P3: Integration, persistence and finish work
@@ -530,115 +530,26 @@ fd53c9b6bc296e580ab3c2591be3eb799016157a Port MaLiLib hotkeys and align configur
 ]
 ```
 
-### C. Config parity audit candidates (mechanical, not confirmed missing behavior)
+### C. Config parity audit (done 2026-10-04)
 
-The following upstream Configs.java option names have no literal-name occurrence in current Java source. Aliases, equivalent legacy properties or intentionally unsupported modern features may exist. Conversely a name that occurs in Java may still be disabled/unwired. Audit semantics and defaults before deciding implementation status. Commented-out upstream declarations are excluded.
+Mechanical diff of every upstream `Configs.java` option name (Generic, InfoOverlays, Visuals, Colors; commented-out ones excluded) against the literal property names registered by Plus, then classified by hand. Everything not listed here is registered under its upstream name and wired. Re-run the diff after upstream updates.
 
-```json
-[
-  "debugHudMode",
-  "easyPlaceProtocolVersion",
-  "pasteNbtRestoreBehavior",
-  "pasteReplaceBehavior",
-  "placementReplaceBehavior",
-  "placementRestrictionWarn",
-  "schematicVcsDeleteMode",
-  "selectionCornersMode",
-  "customSchematicBaseDirectoryEnabled",
-  "areaSelectionsPerWorld",
-  "changeSelectedCornerOnMove",
-  "cloneAtOriginalPosition",
-  "commandDisableFeedback",
-  "commandFillMaxVolume",
-  "commandFillNoChunkClamp",
-  "commandLimitPerTick",
-  "commandNameClone",
-  "commandNameFill",
-  "commandNameSetblock",
-  "commandNameSummon",
-  "commandTaskInterval",
-  "commandUseWorldEdit",
-  "commandUseStrict",
-  "debugHudPMThreads",
-  "debugHudWorld",
-  "debugLogging",
-  "deduplicateSchematicEntities",
-  "datafixerMode",
-  "datafixerDefaultSchema",
-  "displayFileOpsFeedback",
-  "easyPlaceFirst",
-  "easyPlaceHoldEnabled",
-  "easyPlaceMode",
-  "easyPlaceSinglePlayerHandling",
-  "easyPlaceSinglePlayerValidation",
-  "easyPlaceSwapInterval",
-  "easyPlaceSwingHand",
-  "easyPlaceVanillaReach",
-  "entityDataSync",
-  "entityDataSyncBackup",
-  "entityDataSyncCacheTimeout",
-  "fixChestMirror",
-  "fixRailRotation",
-  "fixStairsMirror",
-  "generateLowercaseNames",
-  "itemUsePacketCheckBypass",
-  "layerModeFollowsPlayer",
-  "loadEntireSchematics",
-  "pasteAlwaysUseFill",
-  "pasteIgnoreBlockEntitiesEntirely",
-  "pasteIgnoreBlockEntitiesFromFill",
-  "pasteIgnoreCommandLimitWithNbtRestore",
-  "pasteIgnoreEntities",
-  "pasteToMcFunctionFiles",
-  "pasteUseFillCommand",
-  "pasteUsingCommandsInSp",
-  "pasteUsingServux",
-  "pickBlockShulkers",
-  "placementRestriction",
-  "placementManagerThreadCount",
-  "renderThreadNoTimeout",
-  "reverseOperationModeDirection",
-  "serverNbtRequestRate",
-  "signTextPaste",
-  "toolItemComponents",
-  "translationLanguage",
-  "translationMode",
-  "unhideSchematicVCS",
-  "enableAreaSelectionBoxesRendering",
-  "enablePlacementBoxesRendering",
-  "enableRendering",
-  "enableSchematicBlocksRendering",
-  "enableSchematicFluidRendering",
-  "enableSchematicOverlayCulling",
-  "enableSchematicRendering",
-  "enableSchematicEntityHitboxes",
-  "enableSchematicFakeLighting",
-  "ignoreExistingFluids",
-  "ignoreExistingBlocks",
-  "ignorableExistingBlocks",
-  "overlayReducedInnerSides",
-  "placementBoxSideAlpha",
-  "renderAOModernEnable",
-  "renderAreaSelectionBoxSides",
-  "renderEnableTranslucentResorting",
-  "renderCollidingSchematicBlocks",
-  "renderFakeLightingLevel",
-  "renderPlacementBoxSides",
-  "renderPlacementEnclosingBox",
-  "renderPlacementEnclosingBoxSides",
-  "renderSchematicEntities",
-  "renderSchematicTileEntities",
-  "renderTranslucentBlockInnerSides",
-  "schematicOverlayModelOutline",
-  "schematicOverlayModelSides",
-  "schematicOverlayRenderThroughBlocks",
-  "defaultSelectionMode",
-  "blockInfoOverlayEnabled",
-  "statusInfoHud",
-  "statusInfoHudAuto",
-  "warnDisabledRendering"
-]
-```
+Equivalent under a Plus name (labelled with the upstream name in the config GUI where applicable):
+- `ghostBlockAlpha` = `alpha`; `schematicOverlayTypeExtra` = `highlightAir`; `customSchematicBaseDirectory(Enabled)` = `schematicDirectory` (always custom).
+- `selectionCornersMode` = the per-world corner mode in `AreaSelection.json` (cycled by its hotkey, as upstream's value).
+- `ignoreExistingBlocks` + `ignorableExistingBlocks` = `extraAirBlocks` (always active; empty by default; block names only, no tags in 1.7.10).
+- `debugHudMode` / `debugHudWorld` = `showDebugInfo` F3 lines (the classic placement).
+- `displayFileOpsFeedback`: Plus always shows the browser status line for file operations.
+- `loadEntireSchematics`: Plus always loads the whole schematic.
+
+Not applicable to 1.7.10 / Plus (no implementation planned):
+- Servux and modern server features: `pasteUsingServux`, `entityDataSync`, `entityDataSyncBackup`, `entityDataSyncCacheTimeout`, `serverNbtRequestRate`, `pasteNbtRestoreBehavior`, `easyPlaceSinglePlayerHandling`, `easyPlaceSinglePlayerValidation`, `itemUsePacketCheckBypass` (the Plus server protocol covers paste NBT and accurate placement).
+- Commands that 1.7.10 does not have: `/fill`, `/clone`, `strict`, `sendCommandFeedback`, mcfunction: `commandNameFill`, `commandNameClone`, `commandUseStrict`, `commandDisableFeedback`, `commandFillMaxVolume`, `commandFillNoChunkClamp`, `pasteUseFillCommand`, `pasteAlwaysUseFill`, `pasteIgnoreBlockEntitiesFromFill`, `pasteIgnoreCommandLimitWithNbtRestore`, `pasteToMcFunctionFiles`. `commandNameSummon` and `commandUseWorldEdit`: the Plus command fallback does not summon entities or use WorldEdit.
+- Modern data/rendering internals: `datafixerMode`, `datafixerDefaultSchema` (Plus uses its translators), `fixChestMirror`, `fixRailRotation`, `fixStairsMirror` (vanilla 1.13+ bugs; Plus rotates metadata itself), `deduplicateSchematicEntities`, `placementManagerThreadCount`, `renderThreadNoTimeout`, `debugHudPMThreads`, `renderEnableTranslucentResorting`, `renderTranslucentBlockInnerSides` (display-list renderer with shader alpha), `toolItemComponents` (no item components), `pickBlockShulkers` (no shulker boxes).
+- `placementReplaceBehavior`: Plus keeps every placement as its own world instead of merging them into one schematic world, so there is nothing to overwrite.
+- `debugLogging`, `translationLanguage`, `translationMode` (MaLiLib translation overrides; Plus follows the game language): not ported.
+
+Added in this audit (2026-10-04): `pasteLayerBehavior`, `pasteIgnoreInventories`, `pasteIgnoreEntities`, `pasteIgnoreBlockEntitiesEntirely` (command pasting drops block entity data instead of refusing), `pasteUsingCommandsInSp`, `commandLimitPerTick` (8, was one command every 4 ticks), `commandTaskInterval`, `commandNameSetblock`, `changeSelectedCornerOnMove`, `layerModeFollowsPlayer` (single/above/below boundary follows the camera), `generateLowercaseNames`, `defaultSelectionMode` (new worlds start in Simple mode by default, as upstream), `warnDisabledRendering`, `toolHudAlignment/OffsetX/OffsetY/Scale`, `renderSchematicEntities`, `renderSchematicTileEntities`, `enableSchematicFluidRendering`, `enableSchematicFakeLighting` (off: the real world's light), `renderFakeLightingLevel`, `renderAOModernEnable` (keeps the game's AO for schematic blocks), `renderCollidingSchematicBlocks`, `ignoreExistingFluids`, `schematicOverlayModelOutline/Sides` (overlay boxes follow the block bounds), `overlayReducedInnerSides`, `enableSchematicOverlayCulling`, `enableSchematicEntityHitboxes`, `renderAreaSelectionBoxSides`, `renderPlacementBoxSides`, `placementBoxSideAlpha`, `renderPlacementEnclosingBox`, `renderPlacementEnclosingBoxSides`.
 
 ### D. GTNH source URL/version/ref registry
 

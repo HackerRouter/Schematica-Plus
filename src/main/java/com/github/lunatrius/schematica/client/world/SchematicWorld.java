@@ -357,12 +357,20 @@ public class SchematicWorld extends World {
     @SideOnly(Side.CLIENT)
     @Override
     public int getSkyBlockTypeBrightness(EnumSkyBlock skyBlock, int x, int y, int z) {
-        return 15;
+        // enableSchematicFakeLighting / renderFakeLightingLevel; otherwise the light of the real world at the block
+        if (com.github.lunatrius.schematica.handler.VisualSettings.fakeLighting) return com.github.lunatrius.schematica.handler.VisualSettings.fakeLightLevel;
+        World real = net.minecraft.client.Minecraft.getMinecraft().theWorld;
+        return real == null ? 15 : real.getSkyBlockTypeBrightness(skyBlock, x + position.x, y + position.y, z + position.z);
     }
 
     @Override
     public float getLightBrightness(int x, int y, int z) {
-        return 1.0f;
+        if (com.github.lunatrius.schematica.handler.VisualSettings.fakeLighting) {
+            int level = com.github.lunatrius.schematica.handler.VisualSettings.fakeLightLevel;
+            return level >= 15 || provider == null ? 1.0f : provider.lightBrightnessTable[level];
+        }
+        World real = net.minecraft.client.Minecraft.getMinecraft().theWorld;
+        return real == null ? 1.0f : real.getLightBrightness(x + position.x, y + position.y, z + position.z);
     }
 
     @Override

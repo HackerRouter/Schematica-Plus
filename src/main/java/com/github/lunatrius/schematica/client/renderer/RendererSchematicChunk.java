@@ -224,11 +224,74 @@ public class RendererSchematicChunk {
                 GL11.glEnable(GL11.GL_DEPTH_TEST);
             }
             this.profiler.endStartSection("tileEntities");
-            if (VisualSettings.frameSchematic) renderTileEntities(renderPass, partialTicks);
+            if (VisualSettings.frameSchematic && VisualSettings.renderTileEntities) renderTileEntities(renderPass, partialTicks);
         } finally {
             if (OpenGlHelper.shadersSupported) GL20.glUseProgram(previousProgram);
             GL11.glPopAttrib();
             this.profiler.endSection();
+        }
+    }
+
+    private static boolean isFluid(Block block) {
+        return block instanceof net.minecraft.block.BlockLiquid || block instanceof net.minecraftforge.fluids.IFluidBlock;
+    }
+
+    /** Air in the world for the overlay: air, an extra air block, or a fluid with ignoreExistingFluids. */
+    private static boolean worldAir(IBlockAccess world, Block block, int x, int y, int z) {
+        return world.isAirBlock(x, y, z) || ConfigurationHandler.isExtraAirBlock(block) || VisualSettings.ignoreExistingFluids && isFluid(block);
+    }
+
+    /** The overlay at a schematic position, or null. */
+    private RenderColors overlayAt(IBlockAccess world, int x, int y, int z) {
+        if (!schematic.isBlockRendered(x, y, z)) return null;
+        boolean air = schematic.isAirBlock(x, y, z);
+        Block block = schematic.getBlock(x, y, z);
+        if (!air && !VisualSettings.fluids && isFluid(block)) return null;
+        int wx = schematic.position.x + x, wy = schematic.position.y + y, wz = schematic.position.z + z;
+        Block real = world.getBlock(wx, wy, wz);
+        if (worldAir(world, real, wx, wy, wz)) return air || !VisualSettings.overlayMissing ? null : RenderColors.MISSING;
+        if (air) return ConfigurationHandler.highlightAir ? RenderColors.EXTRA : null;
+        return overlayColor(block, schematic.getBlockMetadata(x, y, z), real, world.getBlockMetadata(wx, wy, wz));
+    }
+
+    private static final int[][] SIDES = {{0, -1, 0}, {0, 1, 0}, {0, 0, -1}, {0, 0, 1}, {-1, 0, 0}, {1, 0, 0}};
+    private static final int[] QUADS = {RenderHelper.QUAD_DOWN, RenderHelper.QUAD_UP, RenderHelper.QUAD_NORTH, RenderHelper.QUAD_SOUTH,
+        RenderHelper.QUAD_WEST, RenderHelper.QUAD_EAST};
+
+    /**
+     * The overlay box: the block's model bounds with schematicOverlayModelSides/Outline, else the full block; faces hidden by
+     * the schematic's neighbours are culled (enableSchematicOverlayCulling), and with overlayReducedInnerSides also the faces
+     * between two overlays of the same type.
+     */
+    private void drawOverlay(IBlockAccess world, RenderColors color, Block block, boolean air, int x, int y, int z, Vector3f zero, Vector3f size) {
+        int sides = 0;
+        for (int i = 0; i < 6; i++) {
+            int nx = x + SIDES[i][0], ny = y + SIDES[i][1], nz = z + SIDES[i][2];
+            boolean visible = air || !VisualSettings.overlayCulling || !schematic.isBlockRendered(nx, ny, nz)
+                || block.shouldSideBeRendered(this.schematic, nx, ny, nz, i);
+            if (visible && VisualSettings.reducedInnerSides && color == overlayAt(world, nx, ny, nz)) visible = false;
+            if (visible) sides |= QUADS[i];
+        }
+        float[] full = {x, y, z, x + 1, y + 1, z + 1}, model = full;
+        if (!air && (VisualSettings.modelSides || VisualSettings.modelOutline)) {
+            try {
+                block.setBlockBoundsBasedOnState(this.schematic, x, y, z);
+                float[] bounds = {x + (float) block.getBlockBoundsMinX(), y + (float) block.getBlockBoundsMinY(), z + (float) block.getBlockBoundsMinZ(),
+                    x + (float) block.getBlockBoundsMaxX(), y + (float) block.getBlockBoundsMaxY(), z + (float) block.getBlockBoundsMaxZ()};
+                if (bounds[3] > bounds[0] && bounds[4] > bounds[1] && bounds[5] > bounds[2]) model = bounds;
+            } catch (RuntimeException ignored) {}
+        }
+        if (ConfigurationHandler.drawQuads) {
+            float[] box = VisualSettings.modelSides ? model : full;
+            zero.set(box[0], box[1], box[2]);
+            size.set(box[3], box[4], box[5]);
+            RenderHelper.drawCuboidSurface(zero, size, box == full ? sides : RenderHelper.QUAD_ALL, color.color());
+        }
+        if (ConfigurationHandler.drawLines) {
+            float[] box = VisualSettings.modelOutline ? model : full;
+            zero.set(box[0], box[1], box[2]);
+            size.set(box[3], box[4], box[5]);
+            RenderHelper.drawCuboidOutline(zero, size, air ? RenderHelper.LINE_ALL : box == full ? sides : RenderHelper.LINE_ALL, color.color());
         }
     }
 
@@ -247,13 +310,12 @@ public class RendererSchematicChunk {
         RenderBlocks renderBlocks = this.ownRenderBlocks;
 
         int x, y, z, wx, wy, wz;
-        int sides;
         Block block, mcBlock;
         Vector3f zero = new Vector3f();
         Vector3f size = new Vector3f();
 
         int ambientOcclusion = this.minecraft.gameSettings.ambientOcclusion;
-        this.minecraft.gameSettings.ambientOcclusion = 0;
+        if (!VisualSettings.aoModern) this.minecraft.gameSettings.ambientOcclusion = 0;
 
         Tessellator.instance.startDrawingQuads();
         try {
@@ -263,94 +325,30 @@ public class RendererSchematicChunk {
                     if (!schematic.isBlockRendered(x, y, z)) continue;
                     try {
                         block = this.schematic.getBlock(x, y, z);
+                        boolean isAirBlock = this.schematic.isAirBlock(x, y, z);
+                        // enableSchematicFluidRendering off: no fluid and no overlay where the fluid is
+                        if (!isAirBlock && !VisualSettings.fluids && isFluid(block)) continue;
 
                         wx = this.schematic.position.x + x;
                         wy = this.schematic.position.y + y;
                         wz = this.schematic.position.z + z;
-
                         mcBlock = mcWorld.getBlock(wx, wy, wz);
+                        boolean isMcAirBlock = worldAir(mcWorld, mcBlock, wx, wy, wz);
 
-                        sides = 0;
-                        if (block != null) {
-                            if (!schematic.isBlockRendered(x, y - 1, z) || block.shouldSideBeRendered(this.schematic, x, y - 1, z, 0)) {
-                                sides |= RenderHelper.QUAD_DOWN;
-                            }
-
-                            if (!schematic.isBlockRendered(x, y + 1, z) || block.shouldSideBeRendered(this.schematic, x, y + 1, z, 1)) {
-                                sides |= RenderHelper.QUAD_UP;
-                            }
-
-                            if (!schematic.isBlockRendered(x, y, z - 1) || block.shouldSideBeRendered(this.schematic, x, y, z - 1, 2)) {
-                                sides |= RenderHelper.QUAD_NORTH;
-                            }
-
-                            if (!schematic.isBlockRendered(x, y, z + 1) || block.shouldSideBeRendered(this.schematic, x, y, z + 1, 3)) {
-                                sides |= RenderHelper.QUAD_SOUTH;
-                            }
-
-                            if (!schematic.isBlockRendered(x - 1, y, z) || block.shouldSideBeRendered(this.schematic, x - 1, y, z, 4)) {
-                                sides |= RenderHelper.QUAD_WEST;
-                            }
-
-                            if (!schematic.isBlockRendered(x + 1, y, z) || block.shouldSideBeRendered(this.schematic, x + 1, y, z, 5)) {
-                                sides |= RenderHelper.QUAD_EAST;
-                            }
+                        if (ConfigurationHandler.highlight && renderPass == 2) {
+                            RenderColors color = overlayAt(mcWorld, x, y, z);
+                            if (color != null) drawOverlay(mcWorld, color, block, isAirBlock, x, y, z, zero, size);
                         }
 
-                        boolean isAirBlock = this.schematic.isAirBlock(x, y, z);
-                        boolean isMcAirBlock = mcWorld.isAirBlock(wx, wy, wz)
-                            || ConfigurationHandler.isExtraAirBlock(mcBlock);
-
-                        if (!isMcAirBlock) {
-                            if (ConfigurationHandler.highlight && renderPass == 2) {
-                                if (isAirBlock && ConfigurationHandler.highlightAir) {
-                                    zero.set(x, y, z);
-                                    size.set(x + 1, y + 1, z + 1);
-                                    if (ConfigurationHandler.drawQuads) {
-                                        RenderHelper.drawCuboidSurface(
-                                            zero,
-                                            size,
-                                            RenderHelper.QUAD_ALL,
-                                            RenderColors.EXTRA.color());
-                                    }
-                                    if (ConfigurationHandler.drawLines) {
-                                        RenderHelper.drawCuboidOutline(
-                                            zero,
-                                            size,
-                                            RenderHelper.LINE_ALL,
-                                            RenderColors.EXTRA.color());
-                                    }
-                                } else if (!isAirBlock) {
-                                    RenderColors color = overlayColor(block, this.schematic.getBlockMetadata(x, y, z),
-                                        mcBlock, mcWorld.getBlockMetadata(wx, wy, wz));
-                                    if (color != null) {
-                                        zero.set(x, y, z);
-                                        size.set(x + 1, y + 1, z + 1);
-                                        if (ConfigurationHandler.drawQuads) RenderHelper.drawCuboidSurface(zero, size, sides, color.color());
-                                        if (ConfigurationHandler.drawLines) RenderHelper.drawCuboidOutline(zero, size, sides, color.color());
-                                    }
-                                }
-                            }
-                        } else if (!isAirBlock) {
-                            if (ConfigurationHandler.highlight && renderPass == 2 && VisualSettings.overlayMissing) {
-                                zero.set(x, y, z);
-                                size.set(x + 1, y + 1, z + 1);
-                                if (ConfigurationHandler.drawQuads) {
-                                    RenderHelper.drawCuboidSurface(zero, size, sides, RenderColors.MISSING.color());
-                                }
-                                if (ConfigurationHandler.drawLines) {
-                                    RenderHelper.drawCuboidOutline(zero, size, sides, RenderColors.MISSING.color());
-                                }
-                            }
-
-                            if (renderPass < 2 && block != null && block.canRenderInPass(renderPass)) {
-                                resetRenderBlocks(renderBlocks);
-                                renderBlocks.renderAllFaces = !schematic.isBlockRendered(x - 1, y, z)
-                                    || !schematic.isBlockRendered(x + 1, y, z) || !schematic.isBlockRendered(x, y - 1, z)
-                                    || !schematic.isBlockRendered(x, y + 1, z) || !schematic.isBlockRendered(x, y, z - 1)
-                                    || !schematic.isBlockRendered(x, y, z + 1);
-                                renderBlocks.renderBlockByRenderType(block, x, y, z);
-                            }
+                        if (renderPass < 2 && !isAirBlock && block != null && block.canRenderInPass(renderPass)
+                            && (isMcAirBlock || VisualSettings.renderColliding && (block != mcBlock
+                                || this.schematic.getBlockMetadata(x, y, z) != mcWorld.getBlockMetadata(wx, wy, wz)))) {
+                            resetRenderBlocks(renderBlocks);
+                            renderBlocks.renderAllFaces = !schematic.isBlockRendered(x - 1, y, z)
+                                || !schematic.isBlockRendered(x + 1, y, z) || !schematic.isBlockRendered(x, y - 1, z)
+                                || !schematic.isBlockRendered(x, y + 1, z) || !schematic.isBlockRendered(x, y, z - 1)
+                                || !schematic.isBlockRendered(x, y, z + 1);
+                            renderBlocks.renderBlockByRenderType(block, x, y, z);
                         }
                     } catch (Exception e) {
                         Reference.logger.error("Failed to render block!", e);

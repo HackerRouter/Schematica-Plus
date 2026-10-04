@@ -142,7 +142,7 @@ public class RendererSchematicGlobal {
             }
 
             // Render entities if enabled
-            if (sw.isRenderingEnabled() && sw.isRenderingEntities && VisualSettings.frameSchematic) {
+            if (sw.isRenderingEnabled() && sw.isRenderingEntities && VisualSettings.frameSchematic && VisualSettings.renderEntities) {
                 renderEntities(sw);
             }
 
@@ -153,11 +153,11 @@ public class RendererSchematicGlobal {
             float g = isActive ? 0.0f : 0.5f;
             float b = isActive ? 0.75f : 0.25f;
             boolean boxes = VisualSettings.placementBoxes;
-            if (boxes && sw.placementSettings().enclosingBox && sw.hasEnabledRegions()) RenderHelper.drawCuboidOutline(
-                RenderHelper.VEC_ZERO,
-                sw.dimensions(),
-                RenderHelper.LINE_ALL,
-                r, g, b, 0.5f);
+            if (boxes && VisualSettings.enclosingBox && sw.placementSettings().enclosingBox && sw.hasEnabledRegions()) {
+                RenderHelper.drawCuboidOutline(RenderHelper.VEC_ZERO, sw.dimensions(), RenderHelper.LINE_ALL, r, g, b, 0.5f);
+                if (VisualSettings.enclosingBoxSides) RenderHelper.drawCuboidSurface(RenderHelper.VEC_ZERO, sw.dimensions(),
+                    RenderHelper.QUAD_ALL, r, g, b, (float) VisualSettings.placementBoxSideAlpha);
+            }
 
             if (boxes && sw.subregions() != null) for (com.github.lunatrius.schematica.client.world.SubRegionPlacements.Region region : sw.subregions().regions()) {
                 boolean selected = isActive && region.name().equals(sw.subregions().selected);
@@ -166,6 +166,10 @@ public class RendererSchematicGlobal {
                 RenderHelper.drawCuboidOutline(new com.github.lunatrius.schematica.internal.lunatriuscore.util.vector.Vector3f(bounds.minX, bounds.minY, bounds.minZ),
                     new com.github.lunatrius.schematica.internal.lunatriuscore.util.vector.Vector3f(bounds.maxX + 1, bounds.maxY + 1, bounds.maxZ + 1),
                     RenderHelper.LINE_ALL, selected ? 0 : r, selected ? 1 : g, selected ? 1 : b, selected ? 0.9f : 0.35f);
+                if (VisualSettings.placementBoxSides) RenderHelper.drawCuboidSurface(
+                    new com.github.lunatrius.schematica.internal.lunatriuscore.util.vector.Vector3f(bounds.minX, bounds.minY, bounds.minZ),
+                    new com.github.lunatrius.schematica.internal.lunatriuscore.util.vector.Vector3f(bounds.maxX + 1, bounds.maxY + 1, bounds.maxZ + 1),
+                    RenderHelper.QUAD_ALL, selected ? 0 : r, selected ? 1 : g, selected ? 1 : b, (float) VisualSettings.placementBoxSideAlpha);
             }
 
             int quadCount = RenderHelper.getQuadCount();
@@ -228,7 +232,7 @@ public class RendererSchematicGlobal {
                 end.set(region.maxX + 1, region.maxY + 1, region.maxZ + 1).sub(extra);
                 RenderHelper.drawCuboidOutline(start.toVector3f(), end.toVector3f(),
                     RenderHelper.LINE_ALL, 0.0f, 0.75f, 0.0f, 0.5f);
-                RenderHelper.drawCuboidSurface(start.toVector3f(), end.toVector3f(),
+                if (VisualSettings.areaBoxSides) RenderHelper.drawCuboidSurface(start.toVector3f(), end.toVector3f(),
                     RenderHelper.QUAD_ALL, RenderColors.AREA_SIDES.color());
             }
 
@@ -505,6 +509,10 @@ public class RendererSchematicGlobal {
 
     private void renderEntities(SchematicWorld schematic) {
         RenderManager renderManager = RenderManager.instance;
+        boolean hitboxes = RenderManager.debugBoundingBox;
+        // enableSchematicEntityHitboxes: schematic entities show their hitboxes only while the hitbox renderer is on
+        RenderManager.debugBoundingBox = hitboxes && VisualSettings.entityHitboxes;
+        try {
         for (Entity entity : schematic.getEntities()) {
             if (!schematic.isBlockRendered(net.minecraft.util.MathHelper.floor_double(entity.posX),
                 net.minecraft.util.MathHelper.floor_double(entity.posY), net.minecraft.util.MathHelper.floor_double(entity.posZ))) continue;
@@ -523,6 +531,9 @@ public class RendererSchematicGlobal {
                 GL11.glPopAttrib();
                 GL11.glPopMatrix();
             }
+        }
+        } finally {
+            RenderManager.debugBoundingBox = hitboxes;
         }
     }
 }

@@ -17,6 +17,11 @@ public final class VisualSettings {
     public static boolean blockInfoOverlay = true;
     public static boolean overlayMissing = true, overlayWrongBlock = true, overlayWrongState = true, overlayDiffBlock = true;
     public static double outlineWidth = 1.0, outlineWidthThrough = 3.0;
+    public static boolean renderEntities = true, renderTileEntities = true, fluids = true, fakeLighting = true, aoModern, renderColliding;
+    public static boolean ignoreExistingFluids, modelOutline = true, modelSides = true, reducedInnerSides, overlayCulling = true, entityHitboxes = true;
+    public static boolean areaBoxSides = true, placementBoxSides, enclosingBox = true, enclosingBoxSides;
+    public static int fakeLightLevel = 15;
+    public static double placementBoxSideAlpha = 0.2;
 
     /** A toggleable boolean option and the upstream config group used for its display name. */
     public enum Toggle {
@@ -56,6 +61,32 @@ public final class VisualSettings {
         overlayWrongBlock = flag(config, Names.Config.Category.RENDER, "schematicOverlayTypeWrongBlock", true, "visuals");
         overlayWrongState = flag(config, Names.Config.Category.RENDER, "schematicOverlayTypeWrongState", true, "visuals");
         overlayDiffBlock = flag(config, Names.Config.Category.RENDER, "schematicOverlayTypeDiffBlock", true, "visuals");
+        String r = Names.Config.Category.RENDER;
+        renderEntities = flag(config, r, "renderSchematicEntities", true, "visuals");
+        renderTileEntities = flag(config, r, "renderSchematicTileEntities", true, "visuals");
+        fluids = flag(config, r, "enableSchematicFluidRendering", true, "visuals");
+        fakeLighting = flag(config, r, "enableSchematicFakeLighting", true, "visuals");
+        aoModern = flag(config, r, "renderAOModernEnable", false, "visuals");
+        renderColliding = flag(config, r, "renderCollidingSchematicBlocks", false, "visuals");
+        ignoreExistingFluids = flag(config, r, "ignoreExistingFluids", false, "visuals");
+        modelOutline = flag(config, r, "schematicOverlayModelOutline", true, "visuals");
+        modelSides = flag(config, r, "schematicOverlayModelSides", true, "visuals");
+        reducedInnerSides = flag(config, r, "overlayReducedInnerSides", false, "visuals");
+        overlayCulling = flag(config, r, "enableSchematicOverlayCulling", true, "visuals");
+        entityHitboxes = flag(config, r, "enableSchematicEntityHitboxes", true, "visuals");
+        areaBoxSides = flag(config, r, "renderAreaSelectionBoxSides", true, "visuals");
+        placementBoxSides = flag(config, r, "renderPlacementBoxSides", false, "visuals");
+        enclosingBox = flag(config, r, "renderPlacementEnclosingBox", true, "visuals");
+        enclosingBoxSides = flag(config, r, "renderPlacementEnclosingBoxSides", false, "visuals");
+        Property light = config.get(r, "renderFakeLightingLevel", 15);
+        light.setLanguageKey("litematica.config.visuals.name.renderFakeLightingLevel");
+        light.setMinValue(0).setMaxValue(15);
+        fakeLightLevel = Math.max(0, Math.min(15, light.getInt(15)));
+        Property sideAlpha = config.get(r, "placementBoxSideAlpha", 0.2);
+        sideAlpha.setLanguageKey("litematica.config.visuals.name.placementBoxSideAlpha");
+        sideAlpha.setMinValue(0.0).setMaxValue(1.0);
+        placementBoxSideAlpha = sideAlpha.getDouble(0.2);
+        if (!Double.isFinite(placementBoxSideAlpha) || placementBoxSideAlpha < 0 || placementBoxSideAlpha > 1) placementBoxSideAlpha = 0.2;
         outlineWidth = width(config, "schematicOverlayOutlineWidth", 1.0);
         outlineWidthThrough = width(config, "schematicOverlayOutlineWidthThrough", 3.0);
     }
