@@ -3,6 +3,8 @@
 dependencies {
     testImplementation('junit:junit:4.13.2')
     compileOnly rfg.deobf('curse.maven:lotr-423748:4091561')
+    // GTNH NEI bookmark groups and recipe buttons; the oldest supported pack version (GTNH 2.8.4), not bundled
+    compileOnly('com.github.GTNewHorizons:NotEnoughItems:2.8.44-GTNH:dev') { transitive = false }
 }
 
 // Forge's legacy Scala module coordinates predate their Maven Central group.

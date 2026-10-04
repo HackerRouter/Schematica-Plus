@@ -118,6 +118,11 @@ public class GuiSchematicMaterials extends UiScreen {
         raw = action("write_to_json", this::exportRaw);
         raw.setTooltip(UiTranslations.format("litematica.gui.button.hover.material_list.json_hold_shift_for_missing_only").split("\\n"));
         secondary.addAll(Arrays.asList(clearIgnored, cache, export, raw));
+        if (com.github.lunatrius.schematica.compat.nei.NeiBridge.available()) {
+            UiButton nei = addButton("schematica.nei.send", this::sendToNei);
+            nei.setTooltip(UiTranslations.format("schematica.nei.send.hover").split("\\n"));
+            secondary.add(nei);
+        }
         multiplierLabel = root.add(new UiLabel(() -> UiTranslations.format(LABEL + "multiplier"), 0xFFFFFFFF));
         multiplier = root.add(new UiIntegerField(fontRendererObj, materials.multiplier(), 1, Integer.MAX_VALUE, value -> {
             materials.setMultiplier(value);
@@ -211,6 +216,23 @@ public class GuiSchematicMaterials extends UiScreen {
         com.github.lunatrius.schematica.client.gui.material.MaterialScan.updateAvailable(materials.entries(), mc.thePlayer);
         saveSettings();
         refreshRows();
+    }
+
+    /** A new NEI bookmark group in crafting chain mode with the missing counts (Shift: the totals), ignored rows left out. */
+    private void sendToNei() {
+        if (!list.hasResult()) return;
+        boolean totals = isShiftKeyDown();
+        List<ItemStack> stacks = new ArrayList<>();
+        for (Entry<MaterialItemKey> entry : materials.entries()) {
+            if (materials.ignored().contains(entry.key)) continue;
+            long count = totals ? materials.total(entry) : materials.missing(entry);
+            if (count <= 0) continue;
+            ItemStack stack = entry.key.stack();
+            stack.stackSize = (int) Math.min(Integer.MAX_VALUE, count);
+            stacks.add(stack);
+        }
+        int sent = com.github.lunatrius.schematica.compat.nei.NeiBridge.sendGroup(stacks);
+        showNotice(UiTranslations.format(sent < 0 ? "schematica.nei.send_failed" : "schematica.nei.sent", Math.max(0, sent)));
     }
 
     private void updateButtons() {

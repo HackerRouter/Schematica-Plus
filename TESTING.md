@@ -1468,3 +1468,16 @@ compare with a server that does not have the mod and with each server option off
   restarting (saved with the placement); Clear ignored clears the ignored ones.
 - With two or more placements, "All placements" opens one list adding up every enabled placement; it
   recounts when a placement is moved, transformed, added or removed.
+
+## NEI (GTNH) bookmark groups
+
+Test in GTNH 2.8.4 (NEI 2.8.44) and GTNH 2.9 (NEI 2.8.145); without NEI the button must not appear.
+- Material list -> "Send to NEI": the bookmark panel gets a new group (crafting chain color) with the
+  missing amounts of all non-ignored rows (Shift: totals); replaced rows are sent as the replacement item.
+  The action bar/progress line says how many materials were sent. The group survives a restart (NEI saves it).
+- Open the recipes of one of those items in NEI: each recipe has an extra "S" button above NEI's own buttons;
+  clicking it adds that recipe to the group ("Added the recipe for ... to the material group"); NEI's group
+  tooltip then shows Ingredients / Missing / Results / Remainders for the chain. Clicking again says it is
+  already there. Delete the group in NEI and click S: it asks to send a list first.
+- GTNH 2.9: open the group's crafting tree (NEI hotkey shown on the group), click nodes and use the tree's
+  own "use for recipe tree" button; the tree's totals match the material list counts.
