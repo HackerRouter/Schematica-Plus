@@ -23,7 +23,6 @@ import org.lwjgl.opengl.GL11;
 
 import com.github.lunatrius.schematica.internal.lunatriuscore.util.vector.Vector3d;
 import com.github.lunatrius.schematica.client.world.SchematicWorld;
-import com.github.lunatrius.schematica.handler.RenderColors;
 import com.github.lunatrius.schematica.handler.VisualSettings;
 import com.github.lunatrius.schematica.proxy.ClientProxy;
 import com.github.lunatrius.schematica.nbt.TileEntitySnapshots;
@@ -146,178 +145,11 @@ public class RendererSchematicGlobal {
                 renderEntities(sw);
             }
 
-            // Draw bounding box outline
-            RenderHelper.createBuffers();
-            boolean isActive = (sw == ClientProxy.schematic);
-            float r = isActive ? 0.75f : 0.25f;
-            float g = isActive ? 0.0f : 0.5f;
-            float b = isActive ? 0.75f : 0.25f;
-            boolean boxes = VisualSettings.placementBoxes;
-            if (boxes && VisualSettings.enclosingBox && sw.placementSettings().enclosingBox && sw.hasEnabledRegions()) {
-                RenderHelper.drawCuboidOutline(RenderHelper.VEC_ZERO, sw.dimensions(), RenderHelper.LINE_ALL, r, g, b, 0.5f);
-                if (VisualSettings.enclosingBoxSides) RenderHelper.drawCuboidSurface(RenderHelper.VEC_ZERO, sw.dimensions(),
-                    RenderHelper.QUAD_ALL, r, g, b, (float) VisualSettings.placementBoxSideAlpha);
-            }
-
-            if (boxes && sw.subregions() != null) for (com.github.lunatrius.schematica.client.world.SubRegionPlacements.Region region : sw.subregions().regions()) {
-                boolean selected = isActive && region.name().equals(sw.subregions().selected);
-                if (!selected && (!region.enabled || !region.rendering)) continue;
-                com.github.lunatrius.schematica.api.SchematicRegion bounds = sw.subregionBounds(region.name()).offset(-sw.position.x, -sw.position.y, -sw.position.z);
-                RenderHelper.drawCuboidOutline(new com.github.lunatrius.schematica.internal.lunatriuscore.util.vector.Vector3f(bounds.minX, bounds.minY, bounds.minZ),
-                    new com.github.lunatrius.schematica.internal.lunatriuscore.util.vector.Vector3f(bounds.maxX + 1, bounds.maxY + 1, bounds.maxZ + 1),
-                    RenderHelper.LINE_ALL, selected ? 0 : r, selected ? 1 : g, selected ? 1 : b, selected ? 0.9f : 0.35f);
-                if (VisualSettings.placementBoxSides) RenderHelper.drawCuboidSurface(
-                    new com.github.lunatrius.schematica.internal.lunatriuscore.util.vector.Vector3f(bounds.minX, bounds.minY, bounds.minZ),
-                    new com.github.lunatrius.schematica.internal.lunatriuscore.util.vector.Vector3f(bounds.maxX + 1, bounds.maxY + 1, bounds.maxZ + 1),
-                    RenderHelper.QUAD_ALL, selected ? 0 : r, selected ? 1 : g, selected ? 1 : b, (float) VisualSettings.placementBoxSideAlpha);
-            }
-
-            int quadCount = RenderHelper.getQuadCount();
-            int lineCount = RenderHelper.getLineCount();
-            if (quadCount > 0 || lineCount > 0) {
-                GL11.glDisable(GL11.GL_TEXTURE_2D);
-                GL11.glLineWidth(3.0f);
-                GL11.glEnableClientState(GL11.GL_VERTEX_ARRAY);
-                GL11.glEnableClientState(GL11.GL_COLOR_ARRAY);
-                if (quadCount > 0) {
-                    GL11.glVertexPointer(3, 0, RenderHelper.getQuadVertexBuffer());
-                    GL11.glColorPointer(4, 0, RenderHelper.getQuadColorBuffer());
-                    GL11.glDrawArrays(GL11.GL_QUADS, 0, quadCount);
-                }
-                if (lineCount > 0) {
-                    GL11.glVertexPointer(3, 0, RenderHelper.getLineVertexBuffer());
-                    GL11.glColorPointer(4, 0, RenderHelper.getLineColorBuffer());
-                    GL11.glDrawArrays(GL11.GL_LINES, 0, lineCount);
-                }
-                GL11.glDisableClientState(GL11.GL_COLOR_ARRAY);
-                GL11.glDisableClientState(GL11.GL_VERTEX_ARRAY);
-                GL11.glEnable(GL11.GL_TEXTURE_2D);
-            }
-
             GL11.glPopMatrix();
         }
 
-        this.profiler.endStartSection("guide");
-
-        // Render guide overlay (selection box)
-        if (ClientProxy.isRenderingGuide && VisualSettings.areaBoxes) {
-            // Re-establish GL state after schematic chunk/entity rendering may have changed it
-            GL11.glEnable(GL11.GL_BLEND);
-            GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
-            GL11.glDepthMask(true);
-            GL11.glDisable(GL11.GL_LIGHTING);
-            GL11.glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-
-            SchematicWorld activeSchematic = ClientProxy.schematic;
-            Vector3d extra = new Vector3d();
-            if (activeSchematic != null) {
-                extra.add(activeSchematic.position.toVector3d());
-            }
-
-            GL11.glPushMatrix();
-            Vector3d playerPos = this.cameraPosition.clone();
-            playerPos.sub(extra);
-            GL11.glTranslated(-playerPos.x, -playerPos.y, -playerPos.z);
-
-            Vector3d start = new Vector3d();
-            Vector3d end = new Vector3d();
-
-            // --- Pass 1: Green selection box (depth-tested, occluded by blocks) ---
-            RenderHelper.createBuffers();
-
-            com.github.lunatrius.schematica.client.selection.AreaSelectionLibrary.Area area =
-                com.github.lunatrius.schematica.client.selection.AreaSelections.library().selected();
-            if (area != null) for (com.github.lunatrius.schematica.api.SchematicRegion region : area.regions()) {
-                start.set(region.minX, region.minY, region.minZ).sub(extra);
-                end.set(region.maxX + 1, region.maxY + 1, region.maxZ + 1).sub(extra);
-                RenderHelper.drawCuboidOutline(start.toVector3f(), end.toVector3f(),
-                    RenderHelper.LINE_ALL, 0.0f, 0.75f, 0.0f, 0.5f);
-                if (VisualSettings.areaBoxSides) RenderHelper.drawCuboidSurface(start.toVector3f(), end.toVector3f(),
-                    RenderHelper.QUAD_ALL, RenderColors.AREA_SIDES.color());
-            }
-
-            int quadCount = RenderHelper.getQuadCount();
-            int lineCount = RenderHelper.getLineCount();
-            if (quadCount > 0 || lineCount > 0) {
-                GL11.glDisable(GL11.GL_TEXTURE_2D);
-                GL11.glLineWidth(com.github.lunatrius.schematica.client.projects.SchematicProjects.hasProjectOpen() ? 3.0f : 1.5f);
-                GL11.glEnableClientState(GL11.GL_VERTEX_ARRAY);
-                GL11.glEnableClientState(GL11.GL_COLOR_ARRAY);
-                if (quadCount > 0) {
-                    GL11.glDepthMask(false);
-                    GL11.glVertexPointer(3, 0, RenderHelper.getQuadVertexBuffer());
-                    GL11.glColorPointer(4, 0, RenderHelper.getQuadColorBuffer());
-                    GL11.glDrawArrays(GL11.GL_QUADS, 0, quadCount);
-                    GL11.glDepthMask(true);
-                }
-                if (lineCount > 0) {
-                    // Green lines WITH depth test — occluded by world blocks
-                    GL11.glVertexPointer(3, 0, RenderHelper.getLineVertexBuffer());
-                    GL11.glColorPointer(4, 0, RenderHelper.getLineColorBuffer());
-                    GL11.glDrawArrays(GL11.GL_LINES, 0, lineCount);
-                }
-                GL11.glDisableClientState(GL11.GL_COLOR_ARRAY);
-                GL11.glDisableClientState(GL11.GL_VERTEX_ARRAY);
-                GL11.glEnable(GL11.GL_TEXTURE_2D);
-            }
-
-            // --- Pass 2: Red (pointA) and Blue (pointB) boxes (no depth test, always visible) ---
-            RenderHelper.createBuffers();
-
-            if (area != null && area.selectedBox() != null) {
-                for (int i = 0; i < 2; i++) {
-                    (i == 0 ? area.first() : area.second()).toVector3d(start).sub(extra);
-                    end.set(start).add(1, 1, 1);
-                    boolean selected = !area.originSelected() && area.selectedCorner() == (i == 0
-                        ? com.github.lunatrius.schematica.client.selection.AreaSelectionLibrary.Corner.FIRST
-                        : com.github.lunatrius.schematica.client.selection.AreaSelectionLibrary.Corner.SECOND);
-                    float r = selected ? 0 : i == 0 ? 0.75f : 0;
-                    float g = selected ? 1 : 0;
-                    float b = selected ? 1 : i == 1 ? 0.75f : 0;
-                    RenderHelper.drawCuboidOutline(start.toVector3f(), end.toVector3f(), RenderHelper.LINE_ALL, r, g, b, selected ? 1 : 0.5f);
-                    RenderHelper.drawCuboidSurface(start.toVector3f(), end.toVector3f(), RenderHelper.QUAD_ALL, r, g, b, selected ? 0.4f : 0.25f);
-                }
-            }
-
-            if (area != null && area.manualOrigin() != null) {
-                area.manualOrigin().toVector3d(start).sub(extra);
-                end.set(start).add(1, 1, 1);
-                boolean selected = area.originSelected();
-                RenderHelper.drawCuboidOutline(start.toVector3f(), end.toVector3f(), RenderHelper.LINE_ALL,
-                    selected ? 0 : 1, selected ? 1 : 0x90 / 255f, selected ? 1 : 0x10 / 255f, 1);
-                if (selected) RenderHelper.drawCuboidSurface(start.toVector3f(), end.toVector3f(),
-                    RenderHelper.QUAD_ALL, 1, 0x90 / 255f, 0x10 / 255f, 0.4f);
-            }
-
-            quadCount = RenderHelper.getQuadCount();
-            lineCount = RenderHelper.getLineCount();
-            if (quadCount > 0 || lineCount > 0) {
-                GL11.glDisable(GL11.GL_TEXTURE_2D);
-                GL11.glLineWidth(3.0f);
-                GL11.glEnableClientState(GL11.GL_VERTEX_ARRAY);
-                GL11.glEnableClientState(GL11.GL_COLOR_ARRAY);
-                if (quadCount > 0) {
-                    GL11.glDepthMask(false);
-                    GL11.glVertexPointer(3, 0, RenderHelper.getQuadVertexBuffer());
-                    GL11.glColorPointer(4, 0, RenderHelper.getQuadColorBuffer());
-                    GL11.glDrawArrays(GL11.GL_QUADS, 0, quadCount);
-                    GL11.glDepthMask(true);
-                }
-                if (lineCount > 0) {
-                    // Red/Blue lines WITHOUT depth test — always visible
-                    GL11.glDisable(GL11.GL_DEPTH_TEST);
-                    GL11.glVertexPointer(3, 0, RenderHelper.getLineVertexBuffer());
-                    GL11.glColorPointer(4, 0, RenderHelper.getLineColorBuffer());
-                    GL11.glDrawArrays(GL11.GL_LINES, 0, lineCount);
-                    GL11.glEnable(GL11.GL_DEPTH_TEST);
-                }
-                GL11.glDisableClientState(GL11.GL_COLOR_ARRAY);
-                GL11.glDisableClientState(GL11.GL_VERTEX_ARRAY);
-                GL11.glEnable(GL11.GL_TEXTURE_2D);
-            }
-
-            GL11.glPopMatrix();
-        }
+        this.profiler.endStartSection("boxes");
+        new BoxRenderer(this.cameraPosition.x, this.cameraPosition.y, this.cameraPosition.z).render();
 
         this.profiler.endStartSection("projects");
         renderProjectOrigin();

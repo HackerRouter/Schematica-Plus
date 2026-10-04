@@ -1411,3 +1411,13 @@ compare with a server that does not have the mod and with each server option off
 - The schematics folder no longer shows area_selections/area_selections_per_world; they, AreaSelection.json,
   LoadedSchematics.json, RenderLayers.json and SchematicProjects.json are in config/schematica_plus and
   existing ones are moved there on first use (selections, loaded placements and layers are kept).
+
+## Selection and placement boxes like Litematica
+
+- Area selection: the selected box has red/green/blue edges along X/Y/Z, other boxes white edges (1.5 px,
+  3 px with a project open); corner 1 red and corner 2 blue block outlines (2 px), the selected corner cyan
+  with translucent sides; both corners at the same block: a red/blue/magenta outline. All are hidden behind
+  blocks (depth tested) like Litematica. The manual origin is orange, cyan when selected.
+- Placements: each placement gets its own color (Litematica's Kelly palette, kept after restarting); the
+  selected placement's boxes are cyan; 1 px edges, corner outlines and a 2 px origin outline; disabled
+  sub-regions show no box; the enclosing box uses the placement color.

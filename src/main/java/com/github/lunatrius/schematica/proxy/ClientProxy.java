@@ -213,6 +213,7 @@ public class ClientProxy extends CommonProxy {
         public com.google.gson.JsonObject placementSettings;
         public com.google.gson.JsonObject grid;
         public com.google.gson.JsonObject materialList;
+        public Integer bb_color;
 
         LoadedSchematicEntry() {}
     }
@@ -642,6 +643,7 @@ public class ClientProxy extends CommonProxy {
                 entry.placementSettings = sw.placementSettings().toJson();
                 entry.grid = sw.grid.isEnabled() || !sw.grid.isAtDefaultValues() ? sw.grid.toJson() : null;
                 entry.materialList = sw.materialList != null ? sw.materialList.toJson() : sw.materialListData;
+                entry.bb_color = sw.boxColor;
                 entry.RotationX = sw.rotationStateX;
                 entry.RotationY = sw.rotationStateY;
                 entry.RotationZ = sw.rotationStateZ;
@@ -725,6 +727,7 @@ public class ClientProxy extends CommonProxy {
                         restored.setPlacementSettings(com.github.lunatrius.schematica.client.world.PlacementSettings.fromJson(entry.placementSettings));
                         restored.grid.fromJson(entry.grid);
                         restored.materialListData = entry.materialList;
+                        restored.boxColor = entry.bb_color;
                         return restored;
                     });
                     RendererSchematicGlobal.INSTANCE.createRendererSchematicChunks(world);

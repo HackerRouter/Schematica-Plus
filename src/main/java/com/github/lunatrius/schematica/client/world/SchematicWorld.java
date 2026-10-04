@@ -119,6 +119,20 @@ public class SchematicWorld extends World {
         return new com.github.lunatrius.schematica.api.SchematicRegion(name, a.x, a.y, a.z, b.x, b.y, b.z);
     }
 
+    /** A sub-region's two corners in world coordinates: its own origin corner first, like Litematica's box pos1/pos2. */
+    public int[] subregionCorners(String name) {
+        com.github.lunatrius.schematica.api.SchematicRegion box = subregions.get(name).bounds();
+        com.github.lunatrius.schematica.api.SchematicOrigin origin = originPosition();
+        com.github.lunatrius.schematica.api.SchematicOrigin a = SubRegionPlacements.vector(
+            new com.github.lunatrius.schematica.api.SchematicOrigin(box.minX, box.minY, box.minZ), transformOperations, false).atMinimum(origin.x, origin.y, origin.z);
+        com.github.lunatrius.schematica.api.SchematicOrigin b = SubRegionPlacements.vector(
+            new com.github.lunatrius.schematica.api.SchematicOrigin(box.maxX, box.maxY, box.maxZ), transformOperations, false).atMinimum(origin.x, origin.y, origin.z);
+        return new int[] {a.x, a.y, a.z, b.x, b.y, b.z};
+    }
+
+    /** The placement's bounding box color (SchematicPlacement.boxesBBColor), one of the Kelly colors; saved with the placement. */
+    public Integer boxColor;
+
     public void moveSubregionTo(String name, int x, int y, int z) {
         com.github.lunatrius.schematica.api.SchematicOrigin origin = originPosition();
         com.github.lunatrius.schematica.api.SchematicOrigin relative = SubRegionPlacements.vector(
@@ -217,6 +231,7 @@ public class SchematicWorld extends World {
         copy.isRenderingLayer = base.isRenderingLayer;
         copy.renderingLayer = base.renderingLayer;
         copy.isPastingBlockNBT = base.isPastingBlockNBT;
+        copy.boxColor = base.boxColor;
         copy.sourceDirectory = base.sourceDirectory;
         copy.sourceFilename = base.sourceFilename;
         copy.position.set(x, y, z);
