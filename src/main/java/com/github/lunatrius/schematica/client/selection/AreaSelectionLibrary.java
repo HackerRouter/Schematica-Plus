@@ -32,7 +32,7 @@ public final class AreaSelectionLibrary {
     public enum Corner { NONE, FIRST, SECOND }
 
     private static Area defaultSimple() {
-        Area area = new Area(UUID.randomUUID().toString(), "Simple selection");
+        Area area = new Area(UUID.randomUUID().toString(), "Unnamed");
         area.selectedBox = new Box(area.name, new Vector3i(), new Vector3i());
         area.boxes.add(area.selectedBox);
         area.guide = false;

@@ -24,12 +24,14 @@ public class WorldHandler {
         ClientProxy.saveAreaSelection(key);
         SchematicProjects.saveSession(key);
         RenderLayerSettings.save(key);
+        com.github.lunatrius.schematica.tool.ToolManager.saveMode(key);
     }, ClientProxy::clearWorldState, key -> {
         ClientProxy.lastWorldServerName = key;
         ClientProxy.restoreLoadedSchematics(key);
         ClientProxy.restoreAreaSelection(key);
         SchematicProjects.restoreSession(key);
         RenderLayerSettings.restore(key);
+        com.github.lunatrius.schematica.tool.ToolManager.restoreMode(key);
     });
 
     private WorldHandler() {}

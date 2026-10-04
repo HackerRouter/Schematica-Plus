@@ -50,6 +50,16 @@ public final class ToolManager {
     public static void setCurrentMode(ToolMode mode) { releaseGrab(); currentMode = mode == null ? ToolMode.AREA_SELECTION : mode; }
     public void cycleMode() { cycleMode(true); }
     public static void cycleMode(boolean forward) { setCurrentMode(currentMode.cycle(forward)); WorldHandler.INSTANCE.saveSession(); }
+
+    /** DataManager's operation_mode: the tool mode is remembered per world. */
+    public static void saveMode(String world) { com.github.lunatrius.schematica.client.util.UiState.setToolMode(worldName(world), currentMode.name()); }
+
+    public static void restoreMode(String world) {
+        String mode = com.github.lunatrius.schematica.client.util.UiState.toolMode(worldName(world));
+        setCurrentMode(mode == null ? ToolMode.AREA_SELECTION : ToolMode.fromString(mode));
+    }
+
+    private static String worldName(String key) { return key == null || !key.contains("|") ? key : key.substring(0, key.lastIndexOf('|')); }
     public static boolean currentModeUsesSchematic() { return currentMode.getUsesSchematic(); }
     public static boolean currentModeUsesAreaSelection() { return currentMode.getUsesAreaSelection(); }
 

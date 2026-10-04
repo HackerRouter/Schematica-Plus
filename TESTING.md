@@ -1421,3 +1421,10 @@ compare with a server that does not have the mod and with each server option off
 - Placements: each placement gets its own color (Litematica's Kelly palette, kept after restarting); the
   selected placement's boxes are cyan; 1 px edges, corner outlines and a 2 px origin outline; disabled
   sub-regions show no box; the enclosing box uses the placement color.
+
+## Remembered UI state
+
+- Change the config tab, the "Create placement" checkbox of the load screen and the directory of the load,
+  save and manager browsers; restart the game: all come back (config/schematica_plus/UiState.json).
+- Switch the tool mode, leave and rejoin the world (or restart): the mode is restored; another world keeps its own.
+- A new Simple mode selection is named "Unnamed" like Litematica.

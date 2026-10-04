@@ -294,6 +294,7 @@ public abstract class GuiSchematicBrowser extends UiScreen {
         if (browser == null) return;
         try {
             browser.navigate(directory);
+            com.github.lunatrius.schematica.client.util.UiState.setLastDirectory(getClass().getSimpleName(), browser.directory());
             search.setText("");
             files.setOffset(0);
             updateFiles();
@@ -304,10 +305,26 @@ public abstract class GuiSchematicBrowser extends UiScreen {
         }
     }
 
+    /** Litematica's last_directories: each browser reopens where it was left, if that is still inside its root. */
+    private void restoreDirectory() {
+        String last = com.github.lunatrius.schematica.client.util.UiState.lastDirectory(getClass().getSimpleName());
+        if (last == null) return;
+        try {
+            File directory = new File(last).getCanonicalFile();
+            File root = browser.root().getCanonicalFile();
+            if (directory.isDirectory() && directory.getPath().startsWith(root.getPath())) browser.navigate(directory);
+        } catch (IOException | RuntimeException ignored) {
+            // the root directory stays
+        }
+    }
+
     protected final void refreshFiles() {
         infoCache.clear();
         try {
-            if (browser == null) browser = createModel();
+            if (browser == null) {
+                browser = createModel();
+                restoreDirectory();
+            }
             browser.refresh();
             updateFiles();
             setStatus("");

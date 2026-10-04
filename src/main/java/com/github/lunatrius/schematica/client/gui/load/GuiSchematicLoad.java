@@ -35,7 +35,7 @@ public final class GuiSchematicLoad extends GuiSchematicBrowser {
     private UiButton materialList;
     private UiButton renameSchematic;
     private UiCheckBox createPlacement;
-    private boolean placeOnLoad = true;
+    private boolean placeOnLoad = Boolean.parseBoolean(com.github.lunatrius.schematica.client.util.UiState.get("create_placement_on_load", "true"));
 
     public GuiSchematicLoad(GuiScreen parent) {
         super(parent, UiTranslations.format("litematica.gui.title.load_schematic"), false);
@@ -54,7 +54,10 @@ public final class GuiSchematicLoad extends GuiSchematicBrowser {
         addAction("litematica.gui.button.change_menu.show_loaded_schematics",
             () -> mc.displayGuiScreen(new GuiSchematicLoadedList(this))).setSprite(UiSprite.LOADED_SCHEMATICS);
         createPlacement = root.add(new UiCheckBox(() -> UiTranslations.format("litematica.gui.label.schematic_load.checkbox.create_placement"),
-            () -> placeOnLoad, value -> placeOnLoad = value));
+            () -> placeOnLoad, value -> {
+                placeOnLoad = value;
+                com.github.lunatrius.schematica.client.util.UiState.set("create_placement_on_load", Boolean.toString(value));
+            }));
         createPlacement.setTooltip(UiTranslations.format("litematica.gui.label.schematic_load.hoverinfo.create_placement").split("\n"));
     }
 

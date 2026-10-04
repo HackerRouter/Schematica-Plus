@@ -70,8 +70,13 @@ public class GuiModConfig extends UiScreen implements HotkeyHooks.Capture {
         boolean keySearch() { return this == ALL || this == GENERIC || this == VISUALS || this == HOTKEYS; }
     }
 
-    private static Tab lastTab = Tab.GENERIC;
+    private static Tab lastTab = savedTab();
     private final List<Entry> entries = new ArrayList<>();
+
+    private static Tab savedTab() {
+        try { return Tab.valueOf(com.github.lunatrius.schematica.client.util.UiState.get("config_gui_tab", Tab.GENERIC.name())); }
+        catch (IllegalArgumentException e) { return Tab.GENERIC; }
+    }
     private final Map<Tab, UiButton> tabs = new EnumMap<>(Tab.class);
     private final UiListModel<Entry> model = new UiListModel<>(22, Entry::searchText);
     private UiRowList<Entry> rows;
@@ -130,6 +135,7 @@ public class GuiModConfig extends UiScreen implements HotkeyHooks.Capture {
         input.focus(null);
         tab = selected;
         lastTab = selected;
+        com.github.lunatrius.schematica.client.util.UiState.set("config_gui_tab", selected.name());
         capturingButton = null;
         keyFilter = 0;
         searchOpen = false;
