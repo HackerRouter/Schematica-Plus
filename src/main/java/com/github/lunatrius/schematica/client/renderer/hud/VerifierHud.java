@@ -72,21 +72,21 @@ public final class VerifierHud {
         Marker marker = held && VerifierOverlaySettings.enabled ? VerifierOverlayRenderer.target(mc, session, partialTicks) : null;
         if (marker == null) { pair = null; info = null; return false; }
         if (!marker.group.pair.equals(pair)) { pair = marker.group.pair; info = new VerifierBlockInfo(pair); }
-        try (MinecraftUiDraw draw = new MinecraftUiDraw(mc)) {
-            int width = info.width(draw, Math.max(0, screen.getScaledWidth() - 8));
-            int y = ("center".equals(VerifierOverlaySettings.alignment) ? screen.getScaledHeight() / 2 : 0) + VerifierOverlaySettings.offsetY;
-            info.draw(draw, (screen.getScaledWidth() - width) / 2,
-                Math.max(4, Math.min(y, screen.getScaledHeight() - VerifierBlockInfo.HEIGHT - 4)), width);
-        }
+        int inventories = InventoryPreview.render(mc, session.placement, marker.x, marker.y, marker.z,
+            "center".equals(VerifierOverlaySettings.alignment), VerifierOverlaySettings.offsetY, screen.getScaledWidth(), screen.getScaledHeight());
+        drawPanel(mc, info, inventories);
         return true;
     }
 
     /** Draws a block info panel at the configured block info overlay position. */
-    public static void drawPanel(Minecraft mc, VerifierBlockInfo panel) {
+    public static void drawPanel(Minecraft mc, VerifierBlockInfo panel, int inventoryHeight) {
         ScaledResolution screen = new ScaledResolution(mc, mc.displayWidth, mc.displayHeight);
         try (MinecraftUiDraw draw = new MinecraftUiDraw(mc)) {
             int width = panel.width(draw, Math.max(0, screen.getScaledWidth() - 8));
-            int y = ("center".equals(VerifierOverlaySettings.alignment) ? screen.getScaledHeight() / 2 : 0) + VerifierOverlaySettings.offsetY;
+            boolean center = "center".equals(VerifierOverlaySettings.alignment);
+            int y = (center ? screen.getScaledHeight() / 2 : 0) + VerifierOverlaySettings.offsetY;
+            // Top center: below the inventory previews
+            if (!center && inventoryHeight > 0) y += inventoryHeight + VerifierOverlaySettings.offsetY;
             panel.draw(draw, (screen.getScaledWidth() - width) / 2,
                 Math.max(4, Math.min(y, screen.getScaledHeight() - VerifierBlockInfo.HEIGHT - 4)), width);
         }

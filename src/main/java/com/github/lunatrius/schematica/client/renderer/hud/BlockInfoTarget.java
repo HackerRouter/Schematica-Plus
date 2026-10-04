@@ -12,6 +12,8 @@ public final class BlockInfoTarget {
         public abstract MovingObjectPosition trace(Vec3 start, Vec3 end, boolean fluids);
         public abstract State state(int x, int y, int z);
         private State at(int wx, int wy, int wz) { return state(wx - x, wy - y, wz - z); }
+        /** The world this layer reads, for inventory previews; null when it has none. */
+        public net.minecraft.world.World world() { return null; }
     }
 
     public static final class State {
@@ -23,11 +25,16 @@ public final class BlockInfoTarget {
 
     public final State schematic, client;
     public final boolean schematicHit;
+    /** The targeted world position and the schematic layer holding the expected block there (or null). */
+    public final int x, y, z;
+    public final Layer schematicLayer;
 
-    private BlockInfoTarget(State schematic, State client, boolean schematicHit) {
+    private BlockInfoTarget(State schematic, State client, boolean schematicHit, int x, int y, int z, Layer schematicLayer) {
         this.schematic = schematic;
         this.client = client;
         this.schematicHit = schematicHit;
+        this.x = x; this.y = y; this.z = z;
+        this.schematicLayer = schematicLayer;
     }
 
     public boolean showComparison() { return schematic != null && client != null && !schematic.matches(client); }
@@ -49,10 +56,11 @@ public final class BlockInfoTarget {
         int x = closest.blockX + closestLayer.x, y = closest.blockY + closestLayer.y, z = closest.blockZ + closestLayer.z;
         boolean schematicHit = closestLayer != client;
         State expected = schematicHit ? closestLayer.at(x, y, z) : null;
+        Layer expectedLayer = schematicHit ? closestLayer : null;
         if (!schematicHit) for (Layer layer : schematics) {
             expected = layer.at(x, y, z);
-            if (expected != null) break;
+            if (expected != null) { expectedLayer = layer; break; }
         }
-        return new BlockInfoTarget(expected, client.at(x, y, z), schematicHit);
+        return new BlockInfoTarget(expected, client.at(x, y, z), schematicHit, x, y, z, expectedLayer);
     }
 }

@@ -82,7 +82,12 @@ public final class BlockInfoHud {
         if (showLines && !lines.isEmpty()) draw(mc);
         if (showOverlay && target != null) {
             if (panel == null) panel = panel(target);
-            if (panel != null) VerifierHud.drawPanel(mc, panel);
+            ScaledResolution screen = new ScaledResolution(mc, mc.displayWidth, mc.displayHeight);
+            World layer = target.schematicLayer == null ? null : target.schematicLayer.world();
+            int inventories = InventoryPreview.render(mc, layer instanceof SchematicWorld ? (SchematicWorld) layer : null, target.x, target.y, target.z,
+                "center".equals(com.github.lunatrius.schematica.handler.VerifierOverlaySettings.alignment),
+                com.github.lunatrius.schematica.handler.VerifierOverlaySettings.offsetY, screen.getScaledWidth(), screen.getScaledHeight());
+            if (panel != null) VerifierHud.drawPanel(mc, panel, inventories);
         }
     }
 
@@ -177,6 +182,8 @@ public final class BlockInfoHud {
             String name = GameData.getBlockRegistry().getNameForObject(block);
             return new BlockInfoTarget.State(name == null ? "#" + Block.getIdFromBlock(block) : name, world.getBlockMetadata(x, y, z));
         }
+
+        @Override public World world() { return world; }
 
         @Override public MovingObjectPosition trace(Vec3 start, Vec3 end, boolean fluids) {
             return VoxelRayTrace.trace(start, end, (x, y, z) -> {
