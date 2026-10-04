@@ -53,6 +53,17 @@ public final class SchematicTargets {
         return mc.renderViewEntity == null ? mc.thePlayer : mc.renderViewEntity;
     }
 
+    /**
+     * The distance to the entity the crosshair targets (vanilla's objectMouseOver, which includes entities), or -1.
+     * A schematic block behind a targeted mob is not picked, so middle click gives the mob's spawn egg.
+     */
+    private static double targetedEntityDistance(Vec3 eye) {
+        MovingObjectPosition target = Minecraft.getMinecraft().objectMouseOver;
+        if (target == null || target.typeOfHit != MovingObjectPosition.MovingObjectType.ENTITY || target.entityHit == null) return -1;
+        return target.hitVec != null ? eye.distanceTo(target.hitVec)
+            : eye.distanceTo(Vec3.createVectorHelper(target.entityHit.posX, target.entityHit.posY, target.entityHit.posZ));
+    }
+
     private static Vec3 copy(Vec3 vector, double x, double y, double z) {
         return Vec3.createVectorHelper(vector.xCoord + x, vector.yCoord + y, vector.zCoord + z);
     }
@@ -66,6 +77,8 @@ public final class SchematicTargets {
         double limit = range;
         MovingObjectPosition real = mc.theWorld.rayTraceBlocks(copy(eye, 0, 0, 0), eye.addVector(look.xCoord * range, look.yCoord * range, look.zCoord * range), fluids);
         if (real != null && real.typeOfHit == MovingObjectPosition.MovingObjectType.BLOCK) limit = eye.distanceTo(real.hitVec);
+        double entity = targetedEntityDistance(eye);
+        if (entity >= 0) limit = Math.min(limit, entity);
         Hit best = null;
         for (SchematicWorld world : ClientProxy.visiblePlacements()) {
             if (!world.isRenderingEnabled()) continue;
@@ -91,6 +104,8 @@ public final class SchematicTargets {
         MovingObjectPosition real = mc.theWorld.rayTraceBlocks(copy(eye, 0, 0, 0), eye.addVector(look.xCoord * range, look.yCoord * range, look.zCoord * range), false);
         if (real == null || real.typeOfHit != MovingObjectPosition.MovingObjectType.BLOCK) return null;
         double vanilla = eye.distanceTo(real.hitVec);
+        double entity = targetedEntityDistance(eye);
+        if (entity >= 0 && entity < vanilla) return null;
         Hit[] best = {null};
         for (SchematicWorld world : ClientProxy.visiblePlacements()) {
             if (!world.isRenderingEnabled()) continue;

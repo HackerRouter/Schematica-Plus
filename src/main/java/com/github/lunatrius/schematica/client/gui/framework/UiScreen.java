@@ -73,6 +73,8 @@ public abstract class UiScreen extends GuiScreen {
         }
         root.setBounds(0, 0, width, height);
         if (opening) opened();
+        // The first frame already shows the ticked state (hidden/disabled buttons), not the created one
+        tickScreen();
         layoutWidgets();
         for (UiPanel panel : input.modalPanels()) panel.layout(root.bounds());
         input.validate();
@@ -80,7 +82,7 @@ public abstract class UiScreen extends GuiScreen {
             input.focus(resumeFocus);
             resumeFocus = null;
         }
-        if (input.focused() == null) input.cycleFocus(false);
+        if (input.focused() == null) input.focusFirstText();
     }
 
     @Override

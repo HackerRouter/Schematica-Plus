@@ -614,7 +614,7 @@ public class ClientProxy extends CommonProxy {
     public static void saveLoadedSchematics(String worldServerName) {
         if (worldServerName == null || worldServerName.isEmpty()) return;
         try {
-            File file = new File(ConfigurationHandler.schematicDirectory, "LoadedSchematics.json");
+            File file = com.github.lunatrius.schematica.util.PlusDataFiles.file("LoadedSchematics.json");
             Map<String, List<LoadedSchematicEntry>> allData;
             if (file.exists()) {
                 try (Reader reader = Files.newBufferedReader(file.toPath(), StandardCharsets.UTF_8)) {
@@ -681,7 +681,7 @@ public class ClientProxy extends CommonProxy {
     public static void restoreLoadedSchematics(String worldServerName) {
         if (worldServerName == null || worldServerName.isEmpty()) return;
         try {
-            File file = new File(ConfigurationHandler.schematicDirectory, "LoadedSchematics.json");
+            File file = com.github.lunatrius.schematica.util.PlusDataFiles.file("LoadedSchematics.json");
             if (!file.exists()) return;
 
             Map<String, List<LoadedSchematicEntry>> allData;

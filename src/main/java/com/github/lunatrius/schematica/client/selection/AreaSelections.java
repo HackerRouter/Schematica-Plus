@@ -86,7 +86,7 @@ public final class AreaSelections {
         clear();
         if (key == null || key.isEmpty()) return;
         try {
-            store = new AreaSelectionStore(new File(ConfigurationHandler.schematicDirectory, "AreaSelection.json"), directory(key), key);
+            store = new AreaSelectionStore(com.github.lunatrius.schematica.util.PlusDataFiles.file("AreaSelection.json"), directory(key), key);
             library = store.library();
         } catch (Exception e) {
             saveFailed = true;
@@ -97,12 +97,12 @@ public final class AreaSelections {
 
     /** DataManager.getAreaSelectionsBaseDirectory: per world or server (without the dimension), or shared. */
     static File directory(String key) {
-        if (!ConfigurationHandler.areaSelectionsPerWorld) return new File(ConfigurationHandler.schematicDirectory, "area_selections");
+        if (!ConfigurationHandler.areaSelectionsPerWorld) return com.github.lunatrius.schematica.util.PlusDataFiles.file("area_selections");
         String world = key.contains("|") ? key.substring(0, key.lastIndexOf('|')) : key;
         if (world.startsWith("save:")) world = world.substring(5);
         else if (world.startsWith("server:")) world = world.substring(7);
         String name = AreaSelectionLibrary.safeFileName(world);
-        return new File(new File(new File(ConfigurationHandler.schematicDirectory, "area_selections_per_world"),
+        return new File(new File(com.github.lunatrius.schematica.util.PlusDataFiles.file("area_selections_per_world"),
             name.isEmpty() ? "_" : name), "area_selections");
     }
 

@@ -33,7 +33,7 @@ public final class UiInput {
         modals.add(new Modal(panel, focused));
         cancelCapture();
         focus(null);
-        cycleFocus(false);
+        focusFirstText();
     }
 
     public boolean popModal() {
@@ -139,6 +139,19 @@ public final class UiInput {
         if (target == null || !target.keyTyped(character, keyCode)) return false;
         if (target instanceof UiButton) buttonSound.run();
         return true;
+    }
+
+    /** Focuses the first text input, as MaLiLib screens do; buttons only get keyboard focus through Tab. */
+    public void focusFirstText() {
+        validate();
+        List<UiWidget> candidates = new ArrayList<>();
+        collectFocus(active(), candidates);
+        for (UiWidget candidate : candidates) {
+            if (candidate instanceof UiTextField || candidate instanceof UiTextArea) {
+                focus(candidate);
+                return;
+            }
+        }
     }
 
     public void cycleFocus(boolean backwards) {

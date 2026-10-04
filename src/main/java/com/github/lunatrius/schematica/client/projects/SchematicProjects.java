@@ -294,7 +294,7 @@ public final class SchematicProjects {
 
     // --- Session: the open project per world, like the per-world schematic_projects_manager data.
 
-    private static File sessionFile() { return new File(ConfigurationHandler.schematicDirectory, "SchematicProjects.json"); }
+    private static File sessionFile() { return com.github.lunatrius.schematica.util.PlusDataFiles.file("SchematicProjects.json"); }
 
     public static void saveSession(String key) {
         if (key == null || key.isEmpty()) return;

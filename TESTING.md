@@ -1402,3 +1402,12 @@ compare with a server that does not have the mod and with each server option off
   about a second and continues afterwards. Pause While Moving stops printing while walking.
 - Blocks Per Pass 8 with Placement Interval 1 fills quickly; Position Cooldown keeps failed spots from
   being retried every tick.
+
+## Menu focus, first frame, pick block on entities, data folder
+
+- Open the main menu with Schematic VCS hidden: no VCS button flashes. Open any menu: no button is
+  highlighted until the mouse is over it; Tab still moves keyboard focus; screens with a text field focus it.
+- Creative, a schematic block behind a cow: middle click on the cow gives a cow spawn egg.
+- The schematics folder no longer shows area_selections/area_selections_per_world; they, AreaSelection.json,
+  LoadedSchematics.json, RenderLayers.json and SchematicProjects.json are in config/schematica_plus and
+  existing ones are moved there on first use (selections, loaded placements and layers are kept).

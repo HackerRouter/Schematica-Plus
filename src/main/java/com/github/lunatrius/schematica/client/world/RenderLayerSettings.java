@@ -39,7 +39,7 @@ public final class RenderLayerSettings {
         }
     }
 
-    private static File file() { return new File(ConfigurationHandler.schematicDirectory, "RenderLayers.json"); }
+    private static File file() { return com.github.lunatrius.schematica.util.PlusDataFiles.file("RenderLayers.json"); }
 
     static void save(File file, String key, RenderLayerRange range) throws IOException {
         JsonObject sessions = read(file);
