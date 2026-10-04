@@ -1455,3 +1455,16 @@ compare with a server that does not have the mod and with each server option off
   opens the current folder in the system file manager (Windows Explorer, macOS Finder, Linux file manager).
 - Bind refreshMaterialList: pressing it recounts the last viewed material list (else the selected
   placement's) and the action bar says so; the material list HUD updates.
+
+## Material list: marks, replacements, storage, all placements
+
+- Each row has ☆ (mark), Replace and Ignore. Marked rows (★) stay on top whatever the sort.
+- Hold birch planks and click Replace on oak planks: the oak row disappears and its counts are added to a
+  birch planks row (available = birch in the inventory); the tooltip lists "Includes: Oak Wood Planks". Right
+  click Replace on the birch row (or click with an empty hand) to undo. The HUD, Write to file and raw
+  material export use the replaced rows.
+- Hover a row: Total and Missing with stacks, Storage "0.19 chests / 0.09 double chests".
+- Marks, replacements and ignored rows of a placement's list survive closing the screen, reloading and
+  restarting (saved with the placement); Clear ignored clears the ignored ones.
+- With two or more placements, "All placements" opens one list adding up every enabled placement; it
+  recounts when a placement is moved, transformed, added or removed.

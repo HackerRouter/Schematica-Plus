@@ -68,4 +68,41 @@ public class MaterialListModelTest {
         model.setEntries(Arrays.asList(new MaterialListModel.Entry<>("a", "a", "a", 20, 15, 3, 7)));
         assertArrayEquals(new long[] {20, 5, 5, 3, 7}, model.progress());
     }
+
+    @Test public void replacementsMergeRowsChainAndUndo() {
+        MaterialListModel<String> model = new MaterialListModel<>();
+        model.setEntries(java.util.Arrays.asList(entry("oak", 10, 4, 1), entry("birch", 5, 5, 0), entry("planks", 3, 0, 7)));
+        model.replace("oak", new MaterialListModel.Replacement<>("planks", "Planks", "mod:planks"));
+        assertEquals(2, model.entries().size());
+        MaterialListModel.Entry<String> planks = find(model, "planks");
+        assertEquals(13, planks.total);
+        assertEquals(4, planks.missing);
+        assertEquals(7, planks.available);
+        assertEquals(java.util.Collections.singletonList("oak"), model.replacedNames("planks"));
+        // birch -> oak resolves to planks; planks -> wood moves oak and birch along
+        model.replace("birch", new MaterialListModel.Replacement<>("oak", "Oak", "mod:oak"));
+        assertEquals(18, find(model, "planks").total);
+        model.replace("planks", new MaterialListModel.Replacement<>("wood", "Wood", "mod:wood"));
+        assertEquals(1, model.entries().size());
+        assertEquals(18, find(model, "wood").total);
+        model.restoreReplaced("wood");
+        assertEquals(3, model.entries().size());
+        assertEquals(3, model.rawEntries().size());
+    }
+
+    @Test public void starredEntriesComeFirst() {
+        MaterialListModel<String> model = new MaterialListModel<>();
+        model.setEntries(java.util.Arrays.asList(entry("a", 100, 0, 0), entry("b", 1, 0, 0)));
+        model.setSort(MaterialListModel.Sort.TOTAL, true);
+        assertEquals("a", model.visible().get(0).key);
+        model.toggleStar("b");
+        assertEquals("b", model.visible().get(0).key);
+        model.toggleStar("b");
+        assertEquals("a", model.visible().get(0).key);
+    }
+
+    private static MaterialListModel.Entry<String> find(MaterialListModel<String> model, String key) {
+        for (MaterialListModel.Entry<String> entry : model.entries()) if (entry.key.equals(key)) return entry;
+        throw new AssertionError(key);
+    }
 }

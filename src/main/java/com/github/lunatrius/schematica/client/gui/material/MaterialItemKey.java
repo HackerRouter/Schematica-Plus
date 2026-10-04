@@ -25,6 +25,31 @@ public final class MaterialItemKey {
         return stack;
     }
 
+    /** "modid:name@damage", with "#" and the NBT when there is one; null for unregistered items. */
+    public String encode() {
+        Object name = cpw.mods.fml.common.registry.GameData.getItemRegistry().getNameForObject(item);
+        if (name == null) return null;
+        return name + "@" + damage + (tag == null ? "" : "#" + tag);
+    }
+
+    public static MaterialItemKey decode(String value) {
+        if (value == null) return null;
+        try {
+            int hash = value.indexOf('#'), at = value.lastIndexOf('@', hash < 0 ? value.length() : hash);
+            if (at < 0) return null;
+            Object item = cpw.mods.fml.common.registry.GameData.getItemRegistry().getObject(value.substring(0, at));
+            if (!(item instanceof Item)) return null;
+            ItemStack stack = new ItemStack((Item) item, 1, Integer.parseInt(value.substring(at + 1, hash < 0 ? value.length() : hash)));
+            if (hash >= 0) {
+                net.minecraft.nbt.NBTBase tag = net.minecraft.nbt.JsonToNBT.func_150315_a(value.substring(hash + 1));
+                if (tag instanceof NBTTagCompound) stack.setTagCompound((NBTTagCompound) tag);
+            }
+            return new MaterialItemKey(stack);
+        } catch (Exception error) {
+            return null;
+        }
+    }
+
     @Override
     public boolean equals(Object object) {
         if (!(object instanceof MaterialItemKey)) return false;

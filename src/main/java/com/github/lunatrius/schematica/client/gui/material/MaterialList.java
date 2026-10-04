@@ -24,7 +24,7 @@ import com.google.gson.JsonObject;
 
 /** A material list that outlives its screen: the last viewed one is reopened by the hotkey and drawn by the info HUD. */
 public final class MaterialList {
-    public enum Kind { PLACEMENT, SCHEMATIC, AREA }
+    public enum Kind { PLACEMENT, SCHEMATIC, AREA, COMBINED }
 
     public final Kind kind;
     private SchematicWorld schematic;
@@ -77,6 +77,20 @@ public final class MaterialList {
 
     public static MaterialList area(Area area) { return new MaterialList(Kind.AREA, null, area, null, null); }
 
+    private static MaterialList combined;
+
+    /** All enabled placements counted together, one list per world. */
+    public static MaterialList combined() {
+        if (combined == null || combined.openedWorld != Minecraft.getMinecraft().theWorld) combined = new MaterialList(Kind.COMBINED, null, null, null, null);
+        return combined;
+    }
+
+    private List<SchematicWorld> combinedPlacements() {
+        List<SchematicWorld> placements = new ArrayList<>();
+        for (SchematicWorld placement : ClientProxy.loadedSchematics) if (placement.isEnabled()) placements.add(placement);
+        return placements;
+    }
+
     /** Moves a placement's list to the placement that replaced it after a reload. */
     public void rebind(SchematicWorld placement) {
         if (kind == Kind.PLACEMENT) schematic = placement;
@@ -107,6 +121,7 @@ public final class MaterialList {
 
     public String name() {
         if (kind == Kind.AREA) return area.name();
+        if (kind == Kind.COMBINED) return UiTranslations.format("schematica.ui.material.all_placements");
         return kind == Kind.SCHEMATIC ? fileName : schematic == null ? "-" : schematic.name;
     }
 
@@ -127,11 +142,24 @@ public final class MaterialList {
         switch (kind) {
             case SCHEMATIC: return true;
             case AREA: return AreaSelections.available(library) && library.contains(area) && SchematicaPlus.proxy.isSaveEnabled;
+            case COMBINED: return !ClientProxy.loadedSchematics.isEmpty();
             default: return schematic != null && ClientProxy.loadedSchematics.contains(schematic);
         }
     }
 
     private int[] geometry() {
+        if (kind == Kind.COMBINED) {
+            List<Integer> values = new ArrayList<>();
+            for (SchematicWorld placement : combinedPlacements()) {
+                values.add(System.identityHashCode(placement)); values.add(System.identityHashCode(placement.getSchematic()));
+                values.add(placement.position.x); values.add(placement.position.y); values.add(placement.position.z);
+                values.add(placement.transformOperations.hashCode());
+                values.add(renderLayers && placement.isRenderingLayer ? placement.renderingLayer : -1);
+            }
+            int[] result = new int[values.size()];
+            for (int i = 0; i < result.length; i++) result[i] = values.get(i);
+            return result;
+        }
         if (area != null) {
             int[] bounds = new int[area.boxes().size() * 6];
             int i = 0;
@@ -149,7 +177,7 @@ public final class MaterialList {
     public boolean geometryChanged() {
         if (kind == Kind.SCHEMATIC) return false;
         if (renderLayers && layerRevision != RenderLayerSettings.RANGE.revision()) return true;
-        if (area != null) return !Arrays.equals(geometry, geometry());
+        if (area != null || kind == Kind.COMBINED) return !Arrays.equals(geometry, geometry());
         return placementEnabled != schematic.isEnabled() || !Arrays.equals(geometry, geometry()) || source != schematic.getSchematic()
             || !transforms.equals(schematic.transformOperations);
     }
@@ -169,7 +197,11 @@ public final class MaterialList {
         }
         geometry = geometry();
         layerRevision = RenderLayerSettings.RANGE.revision();
-        if (area != null) {
+        if (kind == Kind.COMBINED) {
+            List<MaterialScanner> scans = new ArrayList<>();
+            for (SchematicWorld placement : combinedPlacements()) scans.add(new MaterialScan(placement, openedWorld, mc.thePlayer, renderLayers));
+            scan = new CombinedMaterialScan(scans, mc.thePlayer);
+        } else if (area != null) {
             try { scan = new AreaMaterialScan(area.regions(), openedWorld, mc.thePlayer, renderLayers); }
             catch (IllegalArgumentException error) { scanError = UiTranslations.format("schematica.ui.area.analysis_invalid"); }
         } else {
@@ -209,7 +241,28 @@ public final class MaterialList {
         json.addProperty("sort_reverse", !model.descending());
         json.addProperty("hide_available", model.hideAvailable());
         json.addProperty("multiplier", model.multiplier());
+        com.google.gson.JsonArray ignored = new com.google.gson.JsonArray(), starred = new com.google.gson.JsonArray();
+        for (MaterialItemKey key : model.ignored()) add(ignored, key);
+        for (MaterialItemKey key : model.starred()) add(starred, key);
+        if (ignored.size() > 0) json.add("ignored", ignored);
+        if (starred.size() > 0) json.add("starred", starred);
+        JsonObject replacements = new JsonObject();
+        for (java.util.Map.Entry<MaterialItemKey, MaterialListModel.Replacement<MaterialItemKey>> entry : model.replacements().entrySet()) {
+            String from = entry.getKey().encode(), to = entry.getValue().key.encode();
+            if (from == null || to == null) continue;
+            JsonObject target = new JsonObject();
+            target.addProperty("item", to);
+            target.addProperty("name", entry.getValue().name);
+            target.addProperty("registry", entry.getValue().registryName);
+            replacements.add(from, target);
+        }
+        if (!replacements.entrySet().isEmpty()) json.add("replacements", replacements);
         return json;
+    }
+
+    private static void add(com.google.gson.JsonArray array, MaterialItemKey key) {
+        String value = key.encode();
+        if (value != null) array.add(new com.google.gson.JsonPrimitive(value));
     }
 
     public void fromJson(JsonObject json) {
@@ -224,6 +277,19 @@ public final class MaterialList {
             }
             if (json.has("hide_available")) model.setHideAvailable(json.get("hide_available").getAsBoolean());
             if (json.has("multiplier")) model.setMultiplier(json.get("multiplier").getAsInt());
+            if (json.has("ignored")) for (com.google.gson.JsonElement value : json.getAsJsonArray("ignored")) {
+                MaterialItemKey key = MaterialItemKey.decode(value.getAsString());
+                if (key != null) model.ignore(key);
+            }
+            if (json.has("starred")) for (com.google.gson.JsonElement value : json.getAsJsonArray("starred")) {
+                MaterialItemKey key = MaterialItemKey.decode(value.getAsString());
+                if (key != null && !model.isStarred(key)) model.toggleStar(key);
+            }
+            if (json.has("replacements")) for (java.util.Map.Entry<String, com.google.gson.JsonElement> entry : json.getAsJsonObject("replacements").entrySet()) {
+                JsonObject target = entry.getValue().getAsJsonObject();
+                MaterialItemKey from = MaterialItemKey.decode(entry.getKey()), to = MaterialItemKey.decode(target.get("item").getAsString());
+                if (from != null && to != null) model.replace(from, new MaterialListModel.Replacement<>(to, target.get("name").getAsString(), target.get("registry").getAsString()));
+            }
         } catch (RuntimeException ignored) {}
     }
 }

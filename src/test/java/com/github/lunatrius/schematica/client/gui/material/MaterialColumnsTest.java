@@ -25,4 +25,9 @@ public class MaterialColumnsTest {
         assertEquals("5", MaterialColumns.stackCount(5, 0));
         assertEquals("6000000000 = 93750000 x 64", MaterialColumns.stackCount(6000000000L, 64));
     }
+
+    @Test public void storageInChests() {
+        assertEquals("1.00 / 0.50", MaterialColumns.storage(1728, 64, (key, args) -> args[0] + " / " + args[1]));
+        assertEquals("0.19 / 0.09", MaterialColumns.storage(328, 64, (key, args) -> args[0] + " / " + args[1]));
+    }
 }
