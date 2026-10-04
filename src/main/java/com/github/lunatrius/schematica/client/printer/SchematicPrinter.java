@@ -42,8 +42,9 @@ public class SchematicPrinter {
 
     private final Minecraft minecraft = Minecraft.getMinecraft();
 
-    private boolean isEnabled;
-    private boolean isPrinting;
+    private volatile boolean isEnabled;
+    private volatile boolean isPrinting;
+    private volatile String pendingMessage;
 
     private SchematicWorld schematic = null;
     private byte[][][] timeout = null;
@@ -52,13 +53,43 @@ public class SchematicPrinter {
         return this.isEnabled;
     }
 
+    /** Whether the server allows printing (its printerEnabled option); turning it off stops the printer. */
     public void setEnabled(boolean isEnabled) {
+        if (!isEnabled && this.isPrinting) {
+            this.isPrinting = false;
+            message("schematica.message.printer.disabled");
+        }
         this.isEnabled = isEnabled;
     }
 
-    public boolean togglePrinting() {
+    /** The workingSwitch hotkey: toggles printing with the MaLiLib toggle message, unless the server forbids it. */
+    public void toggleWithMessage() {
+        if (!this.isEnabled) {
+            this.isPrinting = false;
+            message("schematica.message.printer.disabled");
+            return;
+        }
         this.isPrinting = !this.isPrinting;
-        return this.isPrinting;
+        if (this.isPrinting) refresh();
+        com.github.lunatrius.schematica.handler.VisualSettings.printToggle(
+            com.github.lunatrius.schematica.client.gui.framework.UiTranslations.format("schematica.printer.name"), this.isPrinting);
+    }
+
+    /** Stops printing after death, like litematica-printer's auto disable. */
+    public void stopWithMessage(String key) {
+        if (!this.isPrinting) return;
+        this.isPrinting = false;
+        message(key);
+    }
+
+    /** Capabilities arrive on the network thread, so messages are shown on the next client tick. */
+    private void message(String key) { this.pendingMessage = key; }
+
+    public void showPendingMessage() {
+        String key = this.pendingMessage;
+        if (key == null || this.minecraft.ingameGUI == null) return;
+        this.pendingMessage = null;
+        this.minecraft.ingameGUI.func_110326_a(com.github.lunatrius.schematica.client.gui.framework.UiTranslations.format(key), false);
     }
 
     public boolean isPrinting() {
@@ -74,7 +105,6 @@ public class SchematicPrinter {
     }
 
     public void setSchematic(SchematicWorld schematic) {
-        this.isPrinting = false;
         this.schematic = schematic;
         refresh();
     }

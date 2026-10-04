@@ -91,6 +91,7 @@ public class InputHandler {
                 return false;
             case "pickBlockToggle": ToolManager.toggleConfig("pickBlockEnabled", true); break;
             case "schematicEditReplaceSelection": return com.github.lunatrius.schematica.tool.SchematicRebuild.replaceSelection();
+            case "workingSwitch": com.github.lunatrius.schematica.client.printer.SchematicPrinter.INSTANCE.toggleWithMessage(); return true;
             case "easyPlaceUseKey": return com.github.lunatrius.schematica.client.printer.EasyPlace.handle();
             case "easyPlaceFirst": ToolManager.toggleConfig("easyPlaceFirst", true); break;
             case "easyPlaceToggle": ToolManager.toggleConfig("easyPlaceMode", true); break;

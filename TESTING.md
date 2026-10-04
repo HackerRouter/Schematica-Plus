@@ -1370,3 +1370,17 @@ compare with a server that does not have the mod and with each server option off
   chunks (n)" and the closest chunk lines for each; after finishing, selecting one category shows its
   name as the title, several categories show "Schematic Verifier errors"; the lines have the dark
   per-line background like the Tool HUD.
+
+## Printer switch and server permission
+
+- Single player: press Caps Lock (workingSwitch) with a placement selected: the action bar shows the
+  printer toggle message and blocks are placed around you; press again to stop. Changing the selected
+  placement keeps printing (with the new placement).
+- Turn off Allow Printer (printerEnabled) in the config screen while printing: printing stops with
+  "The printer is disabled on this server"; pressing the key again only shows that message. Turn it on
+  again and the key works.
+- Dedicated server with printerEnabled=false: the key shows the disabled message; on a server without
+  Schematica Plus the printer works.
+- Die while printing: the printer turns off with a message. Reconnecting always starts with it off.
+- Single player now receives the server capabilities: Easy Place uses the accurate placement protocol
+  (stairs/pistons get the schematic facing without turning).

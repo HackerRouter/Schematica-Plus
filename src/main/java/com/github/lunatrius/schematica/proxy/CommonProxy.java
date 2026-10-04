@@ -71,6 +71,8 @@ public abstract class CommonProxy {
         FMLCommonHandler.instance()
             .bus()
             .register(DownloadHandler.INSTANCE);
+        // Also in single player, so the integrated server's printerEnabled and accurate placement reach the client
+        FMLCommonHandler.instance().bus().register(com.github.lunatrius.schematica.handler.PlayerHandler.INSTANCE);
     }
 
     public void postInit(FMLPostInitializationEvent event) {

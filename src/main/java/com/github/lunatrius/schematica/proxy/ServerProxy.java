@@ -9,23 +9,11 @@ import net.minecraft.server.MinecraftServer;
 
 import com.github.lunatrius.schematica.command.CommandSchematicaDownload;
 import com.github.lunatrius.schematica.handler.ConfigurationHandler;
-import com.github.lunatrius.schematica.handler.PlayerHandler;
 import com.github.lunatrius.schematica.reference.Reference;
 
-import cpw.mods.fml.common.FMLCommonHandler;
-import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.event.FMLServerStartingEvent;
 
 public class ServerProxy extends CommonProxy {
-
-    @Override
-    public void init(FMLInitializationEvent event) {
-        super.init(event);
-
-        FMLCommonHandler.instance()
-            .bus()
-            .register(PlayerHandler.INSTANCE);
-    }
 
     @Override
     public void serverStarting(FMLServerStartingEvent event) {

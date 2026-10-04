@@ -409,7 +409,8 @@ public class ClientProxy extends CommonProxy {
 
         ChatEventHandler.INSTANCE.chatLines = 0;
 
-        // Turn on the printer again.
+        // A server without Schematica Plus does not restrict the printer; the switch is off after every connection change.
+        SchematicPrinter.INSTANCE.setPrinting(false);
         SchematicPrinter.INSTANCE.setEnabled(true);
 
         WorldHandler.INSTANCE.closeSession();

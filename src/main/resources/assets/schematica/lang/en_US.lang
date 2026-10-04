@@ -49,7 +49,7 @@ schematica.config.extraAirBlocks.tooltip=Extra blocks to consider as air for the
 
 # gui - config - server
 schematica.config.printerEnabled=Allow Printer
-schematica.config.printerEnabled.tooltip=Allow players to use the printer.
+schematica.config.printerEnabled.tooltip=Server option: when off, Schematica Plus clients connected to this server (or playing this single player world) cannot use the printer. Clients on servers without Schematica Plus are not restricted.
 schematica.config.saveEnabled=Allow Saving
 schematica.config.saveEnabled.tooltip=Allow players to save schematics.
 schematica.config.loadEnabled=Allow Loading
@@ -200,6 +200,11 @@ schematica.message.edit.remote_too_large=This edit is too large to send to the s
 schematica.message.edit.remote_invalid=The server rejected the edit data. See the server log.
 schematica.message.edit.remote_lost=The server connection changed; the edit was stopped.
 schematica.message.edit.tile_failed=Cannot create the tile entity at %s, %s, %s.
+schematica.key.workingSwitch=workingSwitch
+schematica.key.workingSwitch.comment=Turn the printer on or off. Servers with Schematica Plus can forbid printing (printerEnabled).
+schematica.printer.name=Printer
+schematica.message.printer.disabled=The printer is disabled on this server
+schematica.message.printer.died=Printer turned off because you died
 schematica.message.printer.finished=[Schematica Plus] Printing complete. Printer stopped.
 schematica.message.transform.hanging_entities=Cannot rotate wall-mounted entities onto a floor or ceiling.
 schematica.ui.material.unverified_positions=Unverified positions

@@ -35,6 +35,7 @@ public class TickHandler {
     public void onClientDisconnect(FMLNetworkEvent.ClientDisconnectionFromServerEvent event) {
         com.github.lunatrius.schematica.handler.DownloadHandler.INSTANCE.beginDownload(null);
         CommandEditQueue.INSTANCE.cancel();
+        com.github.lunatrius.schematica.network.message.MessageCapabilities.clearPending();
         Reference.logger.info("Scheduling client settings reset.");
         ClientProxy.isPendingReset = true;
     }
@@ -50,6 +51,7 @@ public class TickHandler {
                 SchematicaPlus.proxy.resetSettings();
                 ClientProxy.isPendingReset = false;
             }
+            com.github.lunatrius.schematica.network.message.MessageCapabilities.applyPending();
             WorldHandler.INSTANCE.updateWorld(this.minecraft);
             com.github.lunatrius.schematica.handler.QueueTickHandler.INSTANCE.clientTick(this.minecraft.theWorld, this.minecraft.thePlayer);
             com.github.lunatrius.schematica.client.world.GridPlacements.INSTANCE.tick(this.minecraft);
@@ -74,6 +76,8 @@ public class TickHandler {
             if (this.minecraft.thePlayer != null && schematic != null && schematic.isRenderingEnabled()) {
                 this.minecraft.mcProfiler.startSection("printer");
                 SchematicPrinter printer = SchematicPrinter.INSTANCE;
+                if (this.minecraft.thePlayer.isDead || this.minecraft.thePlayer.getHealth() <= 0) printer.stopWithMessage("schematica.message.printer.died");
+                printer.showPendingMessage();
                 if (printer.isEnabled() && printer.isPrinting() && this.ticks-- < 0) {
                     this.ticks = ConfigurationHandler.placeDelay;
 

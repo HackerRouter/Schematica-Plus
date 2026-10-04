@@ -2,7 +2,6 @@ package com.github.lunatrius.schematica.network.message;
 
 import com.github.lunatrius.schematica.SchematicaPlus;
 import com.github.lunatrius.schematica.client.printer.SchematicPrinter;
-import com.github.lunatrius.schematica.proxy.ClientProxy;
 import com.github.lunatrius.schematica.reference.Reference;
 
 import cpw.mods.fml.common.network.simpleimpl.IMessage;
@@ -48,13 +47,22 @@ public class MessageCapabilities implements IMessage, IMessageHandler<MessageCap
         buf.writeBoolean(supportsAccuratePlacement);
     }
 
+    private static volatile MessageCapabilities pending;
+
+    /** Runs on the network thread; the capabilities are applied on the client thread after the connection reset. */
     @Override
     public IMessage onMessage(MessageCapabilities message, MessageContext ctx) {
-        if (ClientProxy.isPendingReset) {
-            SchematicaPlus.proxy.resetSettings();
-            ClientProxy.isPendingReset = false;
-        }
+        pending = message;
+        return null;
+    }
 
+    public static void clearPending() { pending = null; }
+
+    /** Called each client tick after a pending settings reset. */
+    public static void applyPending() {
+        MessageCapabilities message = pending;
+        if (message == null) return;
+        pending = null;
         SchematicPrinter.INSTANCE.setEnabled(message.isPrinterEnabled);
         SchematicaPlus.proxy.isSaveEnabled = message.isSaveEnabled;
         SchematicaPlus.proxy.isLoadEnabled = message.isLoadEnabled;
@@ -69,7 +77,5 @@ public class MessageCapabilities implements IMessage, IMessageHandler<MessageCap
             message.isLoadEnabled,
             message.supportsRemoteEdit,
             message.supportsAccuratePlacement);
-
-        return null;
     }
 }

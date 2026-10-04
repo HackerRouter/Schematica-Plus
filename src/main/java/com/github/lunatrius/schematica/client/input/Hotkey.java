@@ -67,6 +67,6 @@ public final class Hotkey {
     public String commentKey() {
         if (toggleGroup != null) return "litematica.config." + toggleGroup + ".comment." + id;
         return plusOnly() ? "schematica.key." + id + ".comment" : "litematica.config.hotkeys.comment." + id; }
-    /** Hotkeys of the 1.12.2 Litematica that the 26.1.2 catalog has no text for. */
-    private boolean plusOnly() { return id.equals("openPlacementGridSettingsScreen"); }
+    /** Hotkeys of the 1.12.2 Litematica that the 26.1.2 catalog has no text for, and the printer switch. */
+    private boolean plusOnly() { return id.equals("openPlacementGridSettingsScreen") || id.equals("workingSwitch"); }
 }

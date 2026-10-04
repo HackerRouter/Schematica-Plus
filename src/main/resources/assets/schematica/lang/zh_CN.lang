@@ -48,8 +48,8 @@ schematica.config.extraAirBlocks=额外空气方块
 schematica.config.extraAirBlocks.tooltip=要视为空气的Schematic渲染额外方块.
 
 # gui - config - server
-schematica.config.printerEnabled=启用投影
-schematica.config.printerEnabled.tooltip=允许玩家使用投影.
+schematica.config.printerEnabled=允许打印机
+schematica.config.printerEnabled.tooltip=服务端选项：关闭后，连接到本服务器（或在本单人世界中）的 Schematica Plus 客户端无法使用打印机。未安装 Schematica Plus 的服务器无法限制客户端。
 schematica.config.saveEnabled=启用保存
 schematica.config.saveEnabled.tooltip=允许玩家保存schematics.
 schematica.config.loadEnabled=启用加载
@@ -200,6 +200,11 @@ schematica.message.edit.remote_too_large=此编辑过大，无法发送到服务
 schematica.message.edit.remote_invalid=服务器拒绝了编辑数据，详见服务器日志。
 schematica.message.edit.remote_lost=与服务器的连接已改变，编辑已停止。
 schematica.message.edit.tile_failed=无法在 %s, %s, %s 创建方块实体。
+schematica.key.workingSwitch=打印机 - 工作开关
+schematica.key.workingSwitch.comment=开启或关闭打印机。安装了 Schematica Plus 的服务器可以禁止打印（printerEnabled）。
+schematica.printer.name=打印机
+schematica.message.printer.disabled=此服务器已禁止使用打印机
+schematica.message.printer.died=玩家死亡，打印机已关闭
 schematica.message.printer.finished=[Schematica Plus] 打印已完成，打印机已停止。
 schematica.message.transform.hanging_entities=无法将壁挂实体旋转到地板或天花板上。
 schematica.ui.material.unverified_positions=未确认的位置
