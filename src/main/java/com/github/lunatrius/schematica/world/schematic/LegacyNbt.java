@@ -29,6 +29,26 @@ public final class LegacyNbt {
     private static final Map<String, String> TILES = new HashMap<>(), TILES_BACK = new HashMap<>();
     private static final Map<String, String> ENTITIES = new HashMap<>(), ENTITIES_BACK = new HashMap<>();
     private static final String[] HORSES = {"horse", "donkey", "mule", "zombie_horse", "skeleton_horse"};
+    private static final int MAX_RIDING = 16;
+    /** The 1.9 ItemPotionFix table: potion damage & 127 to the potion name (null is water). */
+    private static final String[] POTIONS = {
+        "water", "regeneration", "swiftness", "fire_resistance", "poison", "healing", "night_vision", null,
+        "weakness", "strength", "slowness", "leaping", "harming", "water_breathing", "invisibility", null,
+        "awkward", "regeneration", "swiftness", "fire_resistance", "poison", "healing", "night_vision", null,
+        "weakness", "strength", "slowness", "leaping", "harming", "water_breathing", "invisibility", null,
+        "thick", "strong_regeneration", "strong_swiftness", "fire_resistance", "strong_poison", "strong_healing", "night_vision", null,
+        "weakness", "strong_strength", "slowness", "strong_leaping", "strong_harming", "water_breathing", "invisibility", null,
+        null, "strong_regeneration", "strong_swiftness", "fire_resistance", "strong_poison", "strong_healing", "night_vision", null,
+        "weakness", "strong_strength", "slowness", "strong_leaping", "strong_harming", "water_breathing", "invisibility", null,
+        "mundane", "long_regeneration", "long_swiftness", "long_fire_resistance", "long_poison", "healing", "long_night_vision", null,
+        "long_weakness", "long_strength", "long_slowness", "long_leaping", "harming", "long_water_breathing", "long_invisibility", null,
+        "awkward", "long_regeneration", "long_swiftness", "long_fire_resistance", "long_poison", "healing", "long_night_vision", null,
+        "long_weakness", "long_strength", "long_slowness", "long_leaping", "harming", "long_water_breathing", "long_invisibility", null,
+        "thick", "regeneration", "swiftness", "long_fire_resistance", "poison", "strong_healing", "long_night_vision", null,
+        "long_weakness", "strength", "long_slowness", "leaping", "strong_harming", "long_water_breathing", "long_invisibility", null,
+        null, "regeneration", "swiftness", "long_fire_resistance", "poison", "strong_healing", "long_night_vision", null,
+        "long_weakness", "strength", "long_slowness", "leaping", "strong_harming", "long_water_breathing", "long_invisibility", null,
+    };
 
     static {
         tile("Furnace", "furnace"); tile("Chest", "chest"); tile("EnderChest", "ender_chest");
@@ -107,8 +127,27 @@ public final class LegacyNbt {
         return tag;
     }
 
-    /** A 1.7.10 entity tag as 1.12 stores it. */
+    /** A 1.7.10 entity tag as 1.12 stores it; a rider becomes a passenger of its mount, which becomes the stored entity. */
     public static NBTTagCompound entityTo112(NBTTagCompound source) {
+        NBTTagCompound root = null, rider = null;
+        NBTTagCompound current = source;
+        for (int depth = 0; current != null && depth < MAX_RIDING; depth++) {
+            NBTTagCompound mount = current.hasKey("Riding", NBT.TAG_COMPOUND) ? current.getCompoundTag("Riding") : null;
+            NBTTagCompound converted = singleEntityTo112(current);
+            converted.removeTag("Riding");
+            if (rider != null) {
+                NBTTagList passengers = new NBTTagList();
+                passengers.appendTag(rider);
+                converted.setTag("Passengers", passengers);
+            }
+            rider = converted;
+            root = converted;
+            current = mount;
+        }
+        return root;
+    }
+
+    private static NBTTagCompound singleEntityTo112(NBTTagCompound source) {
         NBTTagCompound tag = (NBTTagCompound) source.copy();
         entityIdTo112(tag);
         if (tag.hasKey("Equipment", NBT.TAG_LIST)) {
@@ -136,8 +175,28 @@ public final class LegacyNbt {
         return tag;
     }
 
-    /** A 1.12 entity tag as 1.7.10 reads it. */
+    /**
+     * A 1.12 entity tag as 1.7.10 reads it; the first passenger chain becomes riders holding their mounts, at the mount's
+     * position (1.7.10 has one rider per entity, further passengers are dropped).
+     */
     public static NBTTagCompound entityFrom112(NBTTagCompound source) {
+        NBTTagCompound mount = null;
+        NBTTagCompound current = source;
+        for (int depth = 0; current != null && depth < MAX_RIDING; depth++) {
+            NBTTagList passengers = current.getTagList("Passengers", NBT.TAG_COMPOUND);
+            NBTTagCompound converted = singleEntityFrom112(current);
+            converted.removeTag("Passengers");
+            if (mount != null) {
+                if (mount.hasKey("Pos", NBT.TAG_LIST)) converted.setTag("Pos", mount.getTag("Pos").copy());
+                converted.setTag("Riding", mount);
+            }
+            mount = converted;
+            current = passengers.tagCount() > 0 ? passengers.getCompoundTagAt(0) : null;
+        }
+        return mount;
+    }
+
+    private static NBTTagCompound singleEntityFrom112(NBTTagCompound source) {
         NBTTagCompound tag = (NBTTagCompound) source.copy();
         entityIdFrom112(tag);
         if (tag.hasKey("HandItems", NBT.TAG_LIST) || tag.hasKey("ArmorItems", NBT.TAG_LIST)) {
@@ -245,12 +304,14 @@ public final class LegacyNbt {
             String name = item == null ? null : GameData.getItemRegistry().getNameForObject(item);
             if (name != null) tag.setString("id", name);
         }
+        if (itemStack(tag) && tag.hasKey("id", NBT.TAG_STRING)) itemDataTo112(tag);
         for (Object key : tag.func_150296_c()) visit(tag.getTag((String) key), depth, true);
     }
 
     /** Registry-name item ids become this game's numeric ids; names unknown here stay and load as nothing. */
     private static void itemsFrom112(NBTTagCompound tag, int depth) {
         if (depth > SchematicLimits.MAX_NBT_DEPTH) throw new IllegalArgumentException("NBT nesting is too deep");
+        if (itemStack(tag) && tag.hasKey("id", NBT.TAG_STRING)) itemDataFrom112(tag);
         if (itemStack(tag) && tag.hasKey("id", NBT.TAG_STRING)) {
             Item item = (Item) GameData.getItemRegistry().getObject(tag.getString("id"));
             if (item != null && GameData.getItemRegistry().containsKey(tag.getString("id"))) {
@@ -258,6 +319,79 @@ public final class LegacyNbt {
             }
         }
         for (Object key : tag.func_150296_c()) visit(tag.getTag((String) key), depth, false);
+    }
+
+    /** ItemPotionFix and ItemSpawnEggFix: the damage of potions and spawn eggs moves into their tag. */
+    static void itemDataTo112(NBTTagCompound stack) {
+        String id = stack.getString("id");
+        int damage = stack.getShort("Damage");
+        if ("minecraft:potion".equals(id)) {
+            NBTTagCompound tag = stack.getCompoundTag("tag");
+            if (!tag.hasKey("Potion", NBT.TAG_STRING)) {
+                String potion = POTIONS[damage & 127];
+                tag.setString("Potion", "minecraft:" + (potion == null ? "water" : potion));
+            }
+            stack.setTag("tag", tag);
+            if ((damage & 16384) != 0) stack.setString("id", "minecraft:splash_potion");
+            stack.setShort("Damage", (short) 0);
+        } else if ("minecraft:spawn_egg".equals(id)) {
+            String legacy = net.minecraft.entity.EntityList.getStringFromID(damage);
+            String modern = legacy == null ? null : ENTITIES.get(legacy);
+            if (modern == null && legacy != null) modern = legacy;
+            NBTTagCompound tag = stack.getCompoundTag("tag");
+            NBTTagCompound entity = tag.getCompoundTag("EntityTag");
+            if (modern != null && !entity.hasKey("id", NBT.TAG_STRING)) {
+                entity.setString("id", modern);
+                tag.setTag("EntityTag", entity);
+                stack.setTag("tag", tag);
+            }
+            stack.setShort("Damage", (short) 0);
+        }
+    }
+
+    /** The potion damage of 1.7.10: drinkable potions carry 8192, splash potions 16384. */
+    static int potionDamage(String potion, boolean splash) {
+        String name = potion.startsWith("minecraft:") ? potion.substring(10) : potion;
+        int index = 0;
+        for (int i = 0; i < POTIONS.length; i++) if (name.equals(POTIONS[i])) { index = i; break; }
+        if (index == 0 || "awkward".equals(name) || "thick".equals(name) || "mundane".equals(name)) return splash ? index | 16384 : index;
+        return index | (splash ? 16384 : 8192);
+    }
+
+    static void itemDataFrom112(NBTTagCompound stack) {
+        String id = stack.getString("id");
+        if (id.indexOf(':') < 0) id = "minecraft:" + id;
+        boolean splash = "minecraft:splash_potion".equals(id) || "minecraft:lingering_potion".equals(id);
+        if (splash || "minecraft:potion".equals(id)) {
+            NBTTagCompound tag = stack.getCompoundTag("tag");
+            stack.setShort("Damage", (short) potionDamage(tag.hasKey("Potion", NBT.TAG_STRING) ? tag.getString("Potion") : "water", splash));
+            stack.setString("id", "minecraft:potion");
+            tag.removeTag("Potion");
+            if (tag.hasNoTags()) stack.removeTag("tag"); else stack.setTag("tag", tag);
+        } else if ("minecraft:spawn_egg".equals(id) && stack.hasKey("tag", NBT.TAG_COMPOUND)) {
+            NBTTagCompound tag = stack.getCompoundTag("tag");
+            NBTTagCompound entity = tag.getCompoundTag("EntityTag");
+            String modern = entity.getString("id");
+            if (modern.indexOf(':') < 0 && !modern.isEmpty()) modern = "minecraft:" + modern;
+            String legacy = ENTITIES_BACK.getOrDefault(modern, modern);
+            int numeric = entityNumericId(legacy);
+            if (numeric > 0) {
+                stack.setShort("Damage", (short) numeric);
+                entity.removeTag("id");
+                if (entity.hasNoTags()) tag.removeTag("EntityTag");
+                if (tag.hasNoTags()) stack.removeTag("tag");
+            }
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private static int entityNumericId(String legacy) {
+        Class<?> type = net.minecraft.entity.EntityList.stringToClassMapping.get(legacy);
+        if (type == null) return -1;
+        for (Map.Entry<Integer, Class<? extends net.minecraft.entity.Entity>> entry : net.minecraft.entity.EntityList.IDtoClassMapping.entrySet()) {
+            if (entry.getValue() == type) return entry.getKey();
+        }
+        return -1;
     }
 
     private static void visit(NBTBase child, int depth, boolean to112) {
