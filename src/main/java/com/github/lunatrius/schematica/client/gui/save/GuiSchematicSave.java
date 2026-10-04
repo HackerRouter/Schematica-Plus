@@ -60,10 +60,15 @@ public final class GuiSchematicSave extends GuiSchematicBrowser {
     @Override
     protected boolean showFooter() { return false; }
 
+    /** FileNameUtils.generateSimpleSafeFileName (generateLowercaseNames): lowercase with underscores. */
+    static String simpleName(String name) {
+        return name.toLowerCase(java.util.Locale.ROOT).replaceAll("\\s+", "_").replaceAll("[^a-z0-9_.-]", "");
+    }
+
     @Override
     protected void createActions() {
         name = root.add(new UiTextField(fontRendererObj, 210, text -> {}));
-        name.setText(initialName);
+        name.setText(ConfigurationHandler.generateLowercaseNames ? simpleName(initialName) : initialName);
         save = addButton("litematica.gui.button.save_schematic", this::saveSelection);
         options = addButton("schematica.ui.save.options", () -> mc.displayGuiScreen(new SaveOptions()));
         String[] keys = {"ignore_entities", "save_from_schematic_world", "visible_blocks_only", "support_blocks"};

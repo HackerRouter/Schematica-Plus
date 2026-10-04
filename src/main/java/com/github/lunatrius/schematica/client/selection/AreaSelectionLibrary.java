@@ -18,6 +18,9 @@ public final class AreaSelectionLibrary {
     private Area selected;
     private Area simple = defaultSimple();
     private Mode mode = Mode.NORMAL;
+    /** changeSelectedCornerOnMove and defaultSelectionMode */
+    public static volatile boolean changeSelectedCornerOnMove = true;
+    public static volatile Mode defaultMode = Mode.SIMPLE;
     private CornerMode cornerMode = CornerMode.CORNERS;
     private JsonObject extra = new JsonObject();
     /** The browser directory new selections go to ("" is the root, segments joined by '/'). */
@@ -246,7 +249,7 @@ public final class AreaSelectionLibrary {
         if (area.originSelected) setOrigin(area, point);
         else {
             setPoints(area, first ? point : area.first(), first ? area.second() : point);
-            area.corner = first ? Corner.FIRST : Corner.SECOND;
+            if (changeSelectedCornerOnMove) area.corner = first ? Corner.FIRST : Corner.SECOND;
         }
     }
 

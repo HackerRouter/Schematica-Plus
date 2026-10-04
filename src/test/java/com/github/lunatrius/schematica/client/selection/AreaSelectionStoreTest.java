@@ -16,6 +16,16 @@ import static org.junit.Assert.*;
 
 public class AreaSelectionStoreTest {
     @Rule public TemporaryFolder temporary = new TemporaryFolder();
+    @org.junit.Before public void normalMode() { AreaSelectionLibrary.defaultMode = AreaSelectionLibrary.Mode.NORMAL; }
+    @org.junit.After public void simpleMode() { AreaSelectionLibrary.defaultMode = AreaSelectionLibrary.Mode.SIMPLE; }
+
+    @Test public void newWorldsStartInTheDefaultSelectionMode() throws Exception {
+        AreaSelectionLibrary.defaultMode = AreaSelectionLibrary.Mode.SIMPLE;
+        AreaSelectionStore store = new AreaSelectionStore(settings(), areas("fresh"), "fresh|0");
+        assertEquals(AreaSelectionLibrary.Mode.SIMPLE, store.library().mode());
+        assertTrue(store.library().areas().isEmpty());
+        assertNotNull(store.library().selected());
+    }
 
     private void write(File file, String text) throws IOException {
         Files.createDirectories(file.toPath().toAbsolutePath().getParent());

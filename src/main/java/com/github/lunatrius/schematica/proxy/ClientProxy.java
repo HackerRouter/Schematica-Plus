@@ -493,7 +493,35 @@ public class ClientProxy extends CommonProxy {
         for (SchematicWorld other : loadedSchematics) if (other != world) names.add(other.name);
         while (names.contains(world.name)) world.name = base + " #" + suffix++;
         com.github.lunatrius.schematica.client.renderer.hud.StatusInfoHud.startOverride();
+        warnDisabledRendering();
         return world;
+    }
+
+    /** warnDisabledRendering: the layer mode and disabled renderers are pointed out when a placement is created. */
+    private static void warnDisabledRendering() {
+        net.minecraft.client.entity.EntityClientPlayerMP player = Minecraft.getMinecraft().thePlayer;
+        if (!ConfigurationHandler.warnDisabledRendering || player == null) return;
+        com.github.lunatrius.schematica.client.world.RenderLayerRange range = RenderLayerSettings.RANGE;
+        if (range.mode() != com.github.lunatrius.schematica.client.world.RenderLayerRange.Mode.ALL) {
+            player.addChatMessage(new net.minecraft.util.ChatComponentText(net.minecraft.util.EnumChatFormatting.GOLD + com.github.lunatrius.schematica.client.gui.framework.UiTranslations.format(
+                "litematica.message.warn.layer_mode_currently_at", com.github.lunatrius.schematica.client.gui.framework.UiTranslations.format(range.mode().translationKey()))));
+        }
+        warnDisabled(player, com.github.lunatrius.schematica.handler.VisualSettings.rendering, "litematica.message.warn.main_rendering_disabled", "enableRendering", "toggleAllRendering");
+        warnDisabled(player, com.github.lunatrius.schematica.handler.VisualSettings.schematic, "litematica.message.warn.schematic_rendering_disabled", "enableSchematicRendering", "toggleSchematicRendering");
+        warnDisabled(player, com.github.lunatrius.schematica.handler.VisualSettings.blocks, "litematica.message.warn.schematic_blocks_rendering_disabled", "enableSchematicBlocksRendering", "toggleSchematicBlockRendering");
+    }
+
+    private static void warnDisabled(net.minecraft.client.entity.EntityClientPlayerMP player, boolean enabled, String key, String config, String hotkey) {
+        if (enabled) return;
+        com.github.lunatrius.schematica.client.input.Hotkey binding = com.github.lunatrius.schematica.client.input.Hotkeys.get(hotkey);
+        StringBuilder keys = new StringBuilder();
+        if (binding != null) for (int code : binding.keys()) {
+            if (keys.length() > 0) keys.append(" + ");
+            keys.append(org.lwjgl.input.Keyboard.getKeyName(code));
+        }
+        for (String line : com.github.lunatrius.schematica.client.gui.framework.UiTranslations.format(key, config, hotkey, keys).split("\n")) {
+            player.addChatMessage(new net.minecraft.util.ChatComponentText(net.minecraft.util.EnumChatFormatting.GOLD + line));
+        }
     }
 
     public static void reloadSource(SchematicLibrary.Source<SchematicSourceData> source) throws IOException {

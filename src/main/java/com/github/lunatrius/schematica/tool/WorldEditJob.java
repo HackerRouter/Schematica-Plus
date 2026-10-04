@@ -41,6 +41,8 @@ public final class WorldEditJob extends WorldEditTask {
     private final int replacementMeta, targetMeta;
     private short[] blocks;
     private byte[] metadata;
+    /** commandNameSetblock */
+    public static volatile String setblockCommand = "setblock";
     private final Map<Integer, NBTTagCompound> tiles = new HashMap<>();
     private final List<NBTTagCompound> entities = new ArrayList<>();
     private final BitSet placed = new BitSet();
@@ -139,6 +141,9 @@ public final class WorldEditJob extends WorldEditTask {
         tag.removeTag("Items");
         return tag;
     }
+
+    /** pasteIgnoreBlockEntitiesEntirely: command pasting leaves block entity data out instead of refusing. */
+    public void dropTiles() { tiles.clear(); }
 
     public void validateCommandFallback() {
         if (pasteWithoutUpdates) {
@@ -340,7 +345,7 @@ public final class WorldEditJob extends WorldEditTask {
     }
 
     String blockCommand(int x, int y, int z, String block, int metadata) {
-        return "/setblock " + x + " " + y + " " + z + " " + block + " " + metadata + (replace == ReplaceBehavior.NONE ? " keep" : " replace");
+        return "/" + setblockCommand + " " + x + " " + y + " " + z + " " + block + " " + metadata + (replace == ReplaceBehavior.NONE ? " keep" : " replace");
     }
 
     public void setRegions(List<com.github.lunatrius.schematica.api.SchematicRegion> regions) {

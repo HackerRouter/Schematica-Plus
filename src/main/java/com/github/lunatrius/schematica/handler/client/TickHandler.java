@@ -55,6 +55,18 @@ public class TickHandler {
             com.github.lunatrius.schematica.client.world.GridPlacements.INSTANCE.tick(this.minecraft);
             com.github.lunatrius.schematica.client.verifier.VerificationManager.INSTANCE.tick(this.minecraft);
             com.github.lunatrius.schematica.client.gui.material.MaterialLists.tick();
+            // layerModeFollowsPlayer: the single boundary of the layer range follows the camera
+            if (ConfigurationHandler.layerModeFollowsPlayer && this.minecraft.renderViewEntity != null) {
+                com.github.lunatrius.schematica.client.world.RenderLayerRange range = com.github.lunatrius.schematica.client.world.RenderLayerSettings.RANGE;
+                if (range.mode() != com.github.lunatrius.schematica.client.world.RenderLayerRange.Mode.ALL
+                    && range.mode() != com.github.lunatrius.schematica.client.world.RenderLayerRange.Mode.LAYER_RANGE) {
+                    net.minecraft.entity.EntityLivingBase camera = this.minecraft.renderViewEntity;
+                    double coordinate = range.axis() == com.github.lunatrius.schematica.client.world.RenderLayerRange.Axis.X ? camera.posX
+                        : range.axis() == com.github.lunatrius.schematica.client.world.RenderLayerRange.Axis.Y ? camera.posY : camera.posZ;
+                    int position = net.minecraft.util.MathHelper.floor_double(coordinate);
+                    if (range.value(false) != position) range.setValue(false, position);
+                }
+            }
             com.github.lunatrius.schematica.client.projects.SchematicProjects.syncSelections();
             com.github.lunatrius.schematica.tool.RebuildJobs.tick(this.minecraft);
             com.github.lunatrius.schematica.client.printer.EasyPlace.tick(this.minecraft);

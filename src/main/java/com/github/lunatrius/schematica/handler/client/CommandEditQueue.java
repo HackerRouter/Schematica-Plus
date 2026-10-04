@@ -36,6 +36,7 @@ public final class CommandEditQueue {
 
     public synchronized void submit(WorldEditJob next, World targetWorld) {
         if (job != null) throw new MessageException("schematica.message.edit.busy");
+        if (next.kind == WorldEditJob.Kind.PASTE && com.github.lunatrius.schematica.handler.ConfigurationHandler.pasteIgnoreBlockEntitiesEntirely) next.dropTiles();
         next.validateCommandFallback(); // Preflight before sending the first command.
         if (next.removesEntities() && Minecraft.getMinecraft().thePlayer != null) {
             Minecraft.getMinecraft().thePlayer.addChatMessage(new ChatComponentTranslation("schematica.message.edit.entities_require_singleplayer"));
@@ -62,14 +63,16 @@ public final class CommandEditQueue {
         if (mc.thePlayer == null || mc.theWorld != world || !job.player.equals(mc.thePlayer.getUniqueID())) { cancel(); return; }
         if (delay-- > 0) return;
         try {
-            for (int scanned = 0; scanned < 2048 && cursor < job.volume; scanned++) {
+            // commandLimitPerTick commands every commandTaskInterval ticks
+            int limit = com.github.lunatrius.schematica.handler.ConfigurationHandler.commandLimitPerTick, issued = 0;
+            for (int scanned = 0; scanned < 65536 && cursor < job.volume && issued < limit; scanned++) {
                 String command = job.command(cursor++, world);
                 if (command != null) {
                     mc.thePlayer.sendChatMessage(command);
-                    sent++; delay = 3;
-                    break;
+                    sent++; issued++;
                 }
             }
+            delay = com.github.lunatrius.schematica.handler.ConfigurationHandler.commandTaskInterval - 1;
             task.update(TaskRegistry.Stage.COMMANDS, cursor, job.volume, sent, 0);
             if (cursor == job.volume) {
                 mc.thePlayer.addChatMessage(job.kind == WorldEditJob.Kind.PASTE

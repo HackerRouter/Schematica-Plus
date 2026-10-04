@@ -49,6 +49,9 @@ public final class AreaSelectionStore {
         if (data != null && data.has("version") && data.get("version").getAsInt() == 6) {
             JsonElement selected = data.get("selected");
             library.restoreState(data, selected == null || selected.isJsonNull() ? null : byPath.get(selected.getAsString()));
+        } else if (data == null && library.areas().isEmpty() && AreaSelectionLibrary.defaultMode == AreaSelectionLibrary.Mode.SIMPLE) {
+            // defaultSelectionMode: a new world starts in Simple mode with its one box at 0, 0, 0
+            library.setMode(AreaSelectionLibrary.Mode.SIMPLE);
         } else if (data != null || library.areas().isEmpty()) {
             AreaSelectionLibrary legacy = AreaSelectionLibrary.fromJson(data);
             Area selected = null;

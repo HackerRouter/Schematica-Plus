@@ -93,7 +93,9 @@ public class ConfigurationHandler {
     /** Area selection files per world (area_selections_per_world/<world>/area_selections) or shared. */
     public static boolean areaSelectionsPerWorld = true;
     public static boolean unhideSchematicVCS;
-    public static boolean pasteRenderLayersOnly, pasteIgnoreInventories;
+    public static boolean pasteRenderLayersOnly, pasteIgnoreInventories, pasteIgnoreEntities, pasteIgnoreBlockEntitiesEntirely, pasteUsingCommandsInSp;
+    public static boolean layerModeFollowsPlayer, generateLowercaseNames, warnDisabledRendering = true;
+    public static int commandLimitPerTick = 8, commandTaskInterval = 1;
     public static boolean easyPlacePostRewrite, easyPlaceClickAdjacent, pickBlockAvoidDamageable = true, pickBlockAvoidTools;
     public static String pickBlockableSlots = "1,2,3,4,5";
     public static boolean materialListIgnoreState, materialListRecipeDetails = true, renderMaterialListInGuis = true, highlightBlockInInventory;
@@ -369,6 +371,29 @@ public class ConfigurationHandler {
         materialListIgnoreState = toolFlag("materialListIgnoreState", false);
         easyPlacePostRewrite = toolFlag("easyPlacePostRewrite", false);
         pasteIgnoreInventories = toolFlag("pasteIgnoreInventories", false);
+        pasteIgnoreEntities = toolFlag("pasteIgnoreEntities", false);
+        pasteIgnoreBlockEntitiesEntirely = toolFlag("pasteIgnoreBlockEntitiesEntirely", false);
+        pasteUsingCommandsInSp = toolFlag("pasteUsingCommandsInSp", false);
+        layerModeFollowsPlayer = toolFlag("layerModeFollowsPlayer", false);
+        generateLowercaseNames = toolFlag("generateLowercaseNames", false);
+        com.github.lunatrius.schematica.client.selection.AreaSelectionLibrary.changeSelectedCornerOnMove = toolFlag("changeSelectedCornerOnMove", true);
+        commandLimitPerTick = toolInt("commandLimitPerTick", 8, 1, 256);
+        commandTaskInterval = toolInt("commandTaskInterval", 1, 1, 1000);
+        Property setblock = configuration.get(Names.Config.Category.TOOL, "commandNameSetblock", "setblock");
+        setblock.setLanguageKey("litematica.config.generic.name.commandNameSetblock");
+        String setblockName = setblock.getString().trim().replaceFirst("^/+", "");
+        com.github.lunatrius.schematica.tool.WorldEditJob.setblockCommand = setblockName.matches("[A-Za-z0-9_:.-]{1,64}") ? setblockName : "setblock";
+        Property selectionMode = configuration.get(BlockInfoHudSettings.CATEGORY, "defaultSelectionMode", "simple");
+        selectionMode.setLanguageKey("litematica.config.info_overlays.name.defaultSelectionMode");
+        selectionMode.setValidValues(new String[] {"normal", "simple"});
+        boolean normal = "normal".equals(selectionMode.getString());
+        selectionMode.set(normal ? "normal" : "simple");
+        com.github.lunatrius.schematica.client.selection.AreaSelectionLibrary.defaultMode = normal
+            ? com.github.lunatrius.schematica.client.selection.AreaSelectionLibrary.Mode.NORMAL
+            : com.github.lunatrius.schematica.client.selection.AreaSelectionLibrary.Mode.SIMPLE;
+        Property warnRendering = configuration.get(BlockInfoHudSettings.CATEGORY, "warnDisabledRendering", true);
+        warnRendering.setLanguageKey("litematica.config.info_overlays.name.warnDisabledRendering");
+        warnDisabledRendering = warnRendering.getBoolean(true);
         Property layers = configuration.get(Names.Config.Category.TOOL, "pasteLayerBehavior", "all");
         layers.setLanguageKey("litematica.config.generic.name.pasteLayerBehavior");
         layers.setValidValues(new String[] {"all", "rendered_only"});
@@ -483,6 +508,13 @@ public class ConfigurationHandler {
         Property property = configuration.get(Names.Config.Category.SERVER, name, true, comment);
         property.setLanguageKey(Names.Config.LANG_PREFIX + "." + name);
         return property.getBoolean(true);
+    }
+
+    private static int toolInt(String name, int fallback, int min, int max) {
+        Property property = configuration.get(Names.Config.Category.TOOL, name, fallback);
+        property.setLanguageKey("litematica.config.generic.name." + name);
+        property.setMinValue(min).setMaxValue(max);
+        return Math.max(min, Math.min(max, property.getInt(fallback)));
     }
 
     private static boolean toolFlag(String name, boolean fallback) {

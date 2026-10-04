@@ -115,7 +115,8 @@ public class ToolHandler {
             schematic.getWidth(), schematic.getHeight(), schematic.getLength(), null, 0, null, 0,
             com.github.lunatrius.schematica.handler.ConfigurationHandler.pasteWithoutUpdates,
             com.github.lunatrius.schematica.handler.ConfigurationHandler.pasteReplaceBehavior);
-        job.capture(schematic.getSchematic(), schematic.isPastingBlockNBT, schematic.isRenderingEntities,
+        job.capture(schematic.getSchematic(), schematic.isPastingBlockNBT,
+            schematic.isRenderingEntities && !com.github.lunatrius.schematica.handler.ConfigurationHandler.pasteIgnoreEntities,
             com.github.lunatrius.schematica.handler.ConfigurationHandler.pasteRenderLayersOnly ? schematic.renderBounds() : null,
             com.github.lunatrius.schematica.handler.ConfigurationHandler.pasteIgnoreInventories);
         return job;
@@ -140,7 +141,8 @@ public class ToolHandler {
      */
     private static void submit(EntityPlayer player, WorldEditJob job, Runnable onSuccess) {
         MinecraftServer server = Minecraft.getMinecraft().getIntegratedServer();
-        if (server != null) {
+        boolean commands = com.github.lunatrius.schematica.handler.ConfigurationHandler.pasteUsingCommandsInSp && job.kind == WorldEditJob.Kind.PASTE;
+        if (server != null && !commands) {
             if (onSuccess != null) job.completion = success -> { if (success) Minecraft.getMinecraft().func_152344_a(onSuccess); };
             if (!com.github.lunatrius.schematica.handler.WorldEditQueue.INSTANCE.submit(server, job)) {
                 throw new MessageException("schematica.message.edit.busy");
@@ -150,7 +152,7 @@ public class ToolHandler {
                 || com.github.lunatrius.schematica.handler.client.CommandEditQueue.INSTANCE.busy()) {
                 throw new MessageException("schematica.message.edit.busy");
             }
-            if (SchematicaPlus.proxy.supportsRemoteEdit) {
+            if (SchematicaPlus.proxy.supportsRemoteEdit && server == null) {
                 com.github.lunatrius.schematica.handler.client.RemoteEditClient.INSTANCE.submit(job, player.worldObj, onSuccess);
             } else {
                 if (onSuccess != null) job.completion = success -> { if (success) Minecraft.getMinecraft().func_152344_a(onSuccess); };
