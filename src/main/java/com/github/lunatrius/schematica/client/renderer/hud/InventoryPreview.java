@@ -46,7 +46,7 @@ public final class InventoryPreview {
     }
 
     /** WorldUtils.getBestWorld: the integrated server's world, whose containers hold their items, else the client world. */
-    static World bestWorld(Minecraft mc) {
+    public static World bestWorld(Minecraft mc) {
         if (mc.theWorld == null) return null;
         try {
             MinecraftServer server = mc.isIntegratedServerRunning() ? MinecraftServer.getServer() : null;

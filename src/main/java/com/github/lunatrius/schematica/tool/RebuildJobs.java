@@ -276,8 +276,27 @@ public final class RebuildJobs {
             Block block = world.getBlock(px, py, pz);
             int meta = world.getBlockMetadata(px, py, pz);
             if (SchematicRebuild.composed(owner.world, px, py, pz).same(new CellState(block, meta, null))) return;
-            CellState state = states.computeIfAbsent(Block.getIdFromBlock(block) + ":" + meta, key -> CellState.of(block, meta));
+            CellState state = tile(block, meta, px, py, pz);
+            if (state == null) state = states.computeIfAbsent(Block.getIdFromBlock(block) + ":" + meta, key -> CellState.of(block, meta));
             edits.put(owner.source, owner.cell, state.transform(SourceBlockPosition.inverse(owner.operations()), cache));
+        }
+
+        /** The real block with a copy of its tile entity, read from the integrated server's world when there is one. */
+        private CellState tile(Block block, int meta, int px, int py, int pz) {
+            boolean hasTile;
+            try { hasTile = block.hasTileEntity(meta); }
+            catch (RuntimeException | LinkageError error) { hasTile = false; }
+            if (!hasTile) return null;
+            World source = com.github.lunatrius.schematica.client.renderer.hud.InventoryPreview.bestWorld(Minecraft.getMinecraft());
+            net.minecraft.tileentity.TileEntity tile = source == null ? null : source.getTileEntity(px, py, pz);
+            if (tile == null && source != world) tile = world.getTileEntity(px, py, pz);
+            if (tile == null) return null;
+            try {
+                return new CellState(block, meta, com.github.lunatrius.schematica.world.storage.SchematicCopies.tile(tile, px, py, pz));
+            } catch (IllegalArgumentException error) {
+                com.github.lunatrius.schematica.reference.Reference.logger.warn("Could not copy the tile entity at {}, {}, {}", px, py, pz, error);
+                return null;
+            }
         }
 
         @Override void completed() {
