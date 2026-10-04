@@ -59,6 +59,7 @@ public abstract class SchematicFormat {
         String name = filename.toLowerCase(java.util.Locale.ROOT);
         if (name.endsWith(".litematic")) return FORMATS.get("Litematica").readFromNBT(tag);
         if (name.endsWith(".nbt")) return FORMATS.get("Structure").readFromNBT(tag);
+        if (name.endsWith(".schem") || !tag.hasKey(Names.NBT.MATERIALS) && SpongeSchematic.isSponge(tag)) return FORMATS.get("Sponge").readFromNBT(tag);
         if (name.endsWith(".schemplus") && !tag.hasKey(SchematicBlockIds.ENCODING)) {
             tag.setString(SchematicBlockIds.ENCODING, SchematicBlockIds.EXTENDED);
         }
@@ -143,6 +144,7 @@ public abstract class SchematicFormat {
         FORMATS.put(Names.NBT.FORMAT_ALPHA, new SchematicAlpha());
         FORMATS.put("Litematica", new SchematicLitematica());
         FORMATS.put("Structure", new VanillaStructure());
+        FORMATS.put("Sponge", new SpongeSchematic());
 
         FORMAT_DEFAULT = Names.NBT.FORMAT_ALPHA;
     }

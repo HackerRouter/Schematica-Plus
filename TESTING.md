@@ -1323,3 +1323,27 @@ compare with a server that does not have the mod and with each server option off
   a ladder/planks build resolves to logs; iron bars to iron ingots, packed into blocks plus remainder in
   the simplified file; glass to sand via smelting. Shift writes the _missing_only files for items not yet
   in the inventory. Check a GTNH build to see that it finishes and that the chosen recipes are sensible.
+
+## Different blocks, inventory previews, Easy Place post-rewrite, NBT and Sponge import
+
+- enableDifferentBlocks on: oak stairs in the world where the schematic has stone stairs with the same
+  facing, orange wool for white wool, birch logs for oak logs of the same axis show the yellow
+  "different block" overlay (schematicOverlayColorDiffBlock) and count as Diff Blocks in the verifier
+  (button, status line); a different facing stays Wrong State. Off: they are Wrong Block/State as before.
+  schematicOverlayTypeMissing/WrongBlock/WrongState/DiffBlock hide their overlays; overlay line width
+  follows schematicOverlayOutlineWidth, and schematicOverlayOutlineWidthThrough while rendering through.
+- Hold the info overlay key on a chest/furnace/dispenser/hopper in a placement and in the world: the
+  schematic's contents left, the world's right (single player shows the real items; double chests
+  joined), the block info panel below them for top center. Same on a verifier marker.
+- easyPlacePostRewrite on: single top/bottom slabs are placed as the schematic's half, also next to an
+  existing slab of the same kind without merging into it; double slabs are placed in one click;
+  easyPlaceClickAdjacent places plain blocks only against an existing block.
+- Pick block / Easy Place with the item in the main inventory: it is swapped into one of
+  pickBlockableSlots (empty slot first); tools and damaged items are kept with pickBlockAvoidTools /
+  pickBlockAvoidDamageable; an empty pickBlockableSlots shows the warning.
+- REBUILD replace selection over a chest with items, a sign and a spawner: the edited schematic keeps
+  their contents/text/mob (single player; on a server what the client knows).
+- Export a .litematic with potions (normal/splash), spawn eggs and a skeleton riding a spider; load it in
+  1.12.2 Litematica and re-import in Plus: items and the rider are kept.
+- Load .schem files from WorldEdit 7 (v2) and 7.3+ (v3) and from FAWE: blocks, chests with items, signs
+  and entities appear; the placement origin matches where the copy was made from (//copy position).

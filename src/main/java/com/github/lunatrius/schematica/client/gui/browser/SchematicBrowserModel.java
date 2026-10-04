@@ -201,7 +201,7 @@ public final class SchematicBrowserModel {
 
     public static boolean supported(String name) {
         String lower = name.toLowerCase(Locale.ROOT);
-        return lower.endsWith(".schematic") || lower.endsWith(".schemplus") || lower.endsWith(".litematic") || lower.endsWith(".nbt");
+        return lower.endsWith(".schematic") || lower.endsWith(".schemplus") || lower.endsWith(".litematic") || lower.endsWith(".nbt") || lower.endsWith(".schem");
     }
 
     public static final class Entry {

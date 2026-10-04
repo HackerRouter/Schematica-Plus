@@ -18,6 +18,6 @@ public class FileFilterSchematic implements FileFilter {
             return file.isDirectory();
         }
         final String name = file.getName().toLowerCase(java.util.Locale.ROOT);
-        return name.endsWith(".litematic") || name.endsWith(".schemplus") || name.endsWith(".schematic") || name.endsWith(".nbt");
+        return name.endsWith(".litematic") || name.endsWith(".schemplus") || name.endsWith(".schematic") || name.endsWith(".nbt") || name.endsWith(".schem");
     }
 }
