@@ -210,4 +210,36 @@ public class VerificationScanTest {
         assertThrows(IllegalArgumentException.class, () -> new VerificationScan(Integer.MAX_VALUE, 0, 0, 2, 1, 1, new int[] {0, 0, 0, 2, 1, 1}));
         assertThrows(IllegalArgumentException.class, () -> new VerificationScan(0, 0, 0, 2, 1, 1, new int[] {1, 0, 0, 0, 1, 1}));
     }
+
+    @Test public void ignorableExistingBlocksAreNotExtra() {
+        VerificationScan scan = line(3);
+        State water = new State("minecraft:water", 0);
+        finish(scan, new Reader() {
+            @Override public State expected(int x, int y, int z) { return x == 2 ? STONE : State.AIR; }
+            @Override public State found(int x, int y, int z) { return x == 0 ? water : x == 1 ? DIRT : State.AIR; }
+            @Override public boolean ignorable(State found) { return found.equals(water); }
+        });
+        assertEquals(1, scan.count(Type.EXTRA));
+        assertEquals(1, scan.count(Type.MISSING));
+        assertNull(scan.at(0, 0, 0));
+    }
+
+    @Test public void pendingChunksAreListedClosestFirst() {
+        VerificationScan scan = new VerificationScan(0, 0, 0, 48, 1, 16, new int[] {0, 0, 0, 48, 1, 16});
+        java.util.List<int[]> chunks = scan.pendingChunks(40, 8);
+        assertEquals(3, chunks.size());
+        assertArrayEquals(new int[] {2, 0}, chunks.get(0));
+        assertArrayEquals(new int[] {0, 0}, chunks.get(2));
+        finish(scan, new Reader());
+        assertTrue(scan.pendingChunks(0, 0).isEmpty());
+    }
+
+    @Test public void singleSelectedCategory() {
+        VerificationSelection selection = new VerificationSelection();
+        assertNull(selection.single());
+        selection.toggle(Type.MISSING);
+        assertEquals(Type.MISSING, selection.single());
+        selection.toggle(Type.EXTRA);
+        assertNull(selection.single());
+    }
 }

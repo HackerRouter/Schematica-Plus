@@ -34,6 +34,8 @@ public final class VerificationSelection {
     public boolean category(Type type) { return categories.contains(type); }
     public boolean entry(Group group) { return entries.contains(group.pair); }
     public boolean includes(Group group) { return category(group.type) || entry(group); }
+    /** The only selected category when no single entries are selected, else null. */
+    public Type single() { return categories.size() == 1 && entries.isEmpty() ? categories.iterator().next() : null; }
     public boolean empty() { return categories.isEmpty() && entries.isEmpty(); }
     public long revision() { return revision; }
     public void clear() { categories.clear(); entries.clear(); revision++; }

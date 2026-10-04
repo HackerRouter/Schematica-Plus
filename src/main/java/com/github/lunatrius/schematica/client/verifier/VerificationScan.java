@@ -64,6 +64,8 @@ public final class VerificationScan {
         boolean loaded(int chunkX, int chunkZ);
         State expected(int x, int y, int z);
         State found(int worldX, int worldY, int worldZ);
+        /** An existing block that is not an extra block where the schematic has air (ignoreExistingFluids, ignorable blocks). */
+        default boolean ignorable(State found) { return false; }
         default void failed(int worldX, int worldY, int worldZ, RuntimeException error) {}
     }
 
@@ -134,7 +136,7 @@ public final class VerificationScan {
                     if (!loaded) { pending.add(active); active = null; continue; }
                     State expected = Objects.requireNonNull(reader.expected(sx, sy, sz));
                     State found = Objects.requireNonNull(reader.found(x + sx, y + sy, z + sz));
-                    if (expected.air() && found.air()) replace(index, -1);
+                    if (expected.air() && (found.air() || reader.ignorable(found))) replace(index, -1);
                     else {
                         Pair pair = new Pair(expected, found);
                         Integer id = groupIds.get(pair);
@@ -188,6 +190,17 @@ public final class VerificationScan {
     public boolean done() { return active == null && pending.isEmpty(); }
     public int remainingChunks() { return pending.size() + (active == null ? 0 : 1); }
     public int totalChunks() { return chunks.size(); }
+    /** The chunk coordinates still to verify, closest to the block position first. */
+    public List<int[]> pendingChunks(int blockX, int blockZ) {
+        List<int[]> result = new ArrayList<>();
+        if (active != null) result.add(new int[] {active.chunkX, active.chunkZ});
+        for (Work work : pending) if (work != active) result.add(new int[] {work.chunkX, work.chunkZ});
+        result.sort(Comparator.comparingLong(c -> {
+            long dx = (c[0] << 4) + 8 - blockX, dz = (c[1] << 4) + 8 - blockZ;
+            return dx * dx + dz * dz;
+        }));
+        return result;
+    }
     public int checked() { return checked; }
     public int total() { return total; }
     public int skipped() { return skipped; }

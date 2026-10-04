@@ -1,7 +1,6 @@
 package com.github.lunatrius.schematica.client.verifier;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -36,6 +35,7 @@ public final class VerificationManager {
     }
 
     public Session focused() { return focused; }
+    public java.util.Collection<Session> sessions() { return java.util.Collections.unmodifiableCollection(sessions.values()); }
     public Session overlay(Minecraft mc) {
         Session selected = sessions.get(ClientProxy.schematic);
         return selected != null && selected.scan != null && selected.valid(mc) ? selected : null;
@@ -81,10 +81,14 @@ public final class VerificationManager {
         for (int i = 0; i < pending.size(); i++) pending.get(Math.floorMod(next + i, pending.size())).step(mc, deadline);
         next = pending.isEmpty() ? 0 : Math.floorMod(next + 1, pending.size());
         Session overlay = overlay(mc);
-        if (overlay != null && mc.renderViewEntity != null && com.github.lunatrius.schematica.handler.VerifierOverlaySettings.enabled) {
+        if (mc.renderViewEntity != null && com.github.lunatrius.schematica.handler.VerifierOverlaySettings.enabled) {
             net.minecraft.util.Vec3 camera = mc.renderViewEntity.getPosition(1);
-            overlay.markers.update(overlay.scan, (int) Math.floor(camera.xCoord), (int) Math.floor(camera.yCoord), (int) Math.floor(camera.zCoord),
-                com.github.lunatrius.schematica.handler.VerifierOverlaySettings.maxPositions, 16384, System.nanoTime() + 1_000_000L);
+            long markerDeadline = System.nanoTime() + 1_000_000L;
+            for (Session session : sessions.values()) {
+                if (session.scan == null || session != overlay && !(session.hud && session.valid(mc))) continue;
+                session.markers.update(session.scan, (int) Math.floor(camera.xCoord), (int) Math.floor(camera.yCoord), (int) Math.floor(camera.zCoord),
+                    com.github.lunatrius.schematica.handler.VerifierOverlaySettings.maxPositions, 16384, markerDeadline);
+            }
         }
     }
 
@@ -109,11 +113,14 @@ public final class VerificationManager {
         public VerificationScan scan() { return scan; }
         public boolean running() { return running; }
         public boolean layers() { return layers; }
+        /** Whether the verifier HUD lines of this session are shown: a started, still valid verification with its HUD on. */
+        public boolean showsHud(Minecraft mc) { return hud && scan != null && valid(mc); }
         public String notice() { return notice; }
         public boolean available(Minecraft mc) {
             return mc.theWorld != null && mc.thePlayer != null && placement.isEnabled() && ClientProxy.loadedSchematics.contains(placement);
         }
 
+        /** The render layer range is taken when the verification starts; later layer changes keep the results, as upstream. */
         private int[] bounds() {
             return layers ? placement.renderBounds() : new int[] {0, 0, 0, placement.getWidth(), placement.getHeight(), placement.getLength()};
         }
@@ -121,7 +128,7 @@ public final class VerificationManager {
         private boolean valid(Minecraft mc) {
             return available(mc) && world == mc.theWorld && source == placement.getSchematic()
                 && x == placement.position.x && y == placement.position.y && z == placement.position.z
-                && revision == placement.contentRevision() && Arrays.equals(bounds, bounds());
+                && revision == placement.contentRevision();
         }
 
         public void setLayers(boolean value) { reset(); layers = value; }
@@ -151,6 +158,7 @@ public final class VerificationManager {
             scan.addIgnored(ignored);
             reader = new VerificationScan.Reader() {
                 private final Map<Long, VerificationScan.State> states = new HashMap<>();
+                private final Map<VerificationScan.State, Block> blocks = new HashMap<>();
                 private int logged;
                 @Override public boolean included(int x, int y, int z) { return source.containsBlock(x, y, z); }
                 @Override public boolean loaded(int cx, int cz) {
@@ -160,6 +168,12 @@ public final class VerificationManager {
                 }
                 @Override public VerificationScan.State expected(int x, int y, int z) { return state(placement, x, y, z); }
                 @Override public VerificationScan.State found(int x, int y, int z) { return state(world, x, y, z); }
+                @Override public boolean ignorable(VerificationScan.State found) {
+                    Block block = blocks.get(found);
+                    return block != null && (com.github.lunatrius.schematica.handler.ConfigurationHandler.isExtraAirBlock(block)
+                        || com.github.lunatrius.schematica.handler.VisualSettings.ignoreExistingFluids
+                        && com.github.lunatrius.schematica.client.renderer.RendererSchematicChunk.isFluid(block));
+                }
                 @Override public void failed(int x, int y, int z, RuntimeException error) {
                     if (logged++ < 3) Reference.logger.debug("Could not verify block at {}, {}, {}", x, y, z, error);
                 }
@@ -170,7 +184,9 @@ public final class VerificationManager {
                     long id = ((long) Block.getIdFromBlock(block) << 32) | (meta & 0xffffffffL);
                     return states.computeIfAbsent(id, ignored -> {
                         String name = GameData.getBlockRegistry().getNameForObject(block);
-                        return new VerificationScan.State(name == null ? "#" + Block.getIdFromBlock(block) : name, meta);
+                        VerificationScan.State state = new VerificationScan.State(name == null ? "#" + Block.getIdFromBlock(block) : name, meta);
+                        blocks.put(state, block);
+                        return state;
                     });
                 }
             };

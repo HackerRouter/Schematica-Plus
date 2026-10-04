@@ -229,7 +229,7 @@ schematica.ui.task.cancel_commands=Stop sending commands. Commands already sent 
 schematica.ui.task.cancel_edit=Stop placing blocks and entities, then finish updates for blocks already placed. Existing changes remain.
 
 schematica.ui.verifier.skipped=Unreadable positions: %s (incomplete)
-schematica.ui.verifier.changed=Placement or range changed. Start verification again.
+schematica.ui.verifier.changed=The placement changed. Start verification again.
 schematica.ui.verifier.unavailable=Load and enable the placement in a world before verifying.
 schematica.ui.verifier.bounds=The verification range must fit within world bounds (Y 0..255) and the 16,777,216-block limit.
 schematica.ui.verifier.failed=Verification stopped after an error. See the log.

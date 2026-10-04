@@ -229,7 +229,7 @@ schematica.ui.task.cancel_commands=停止发送命令。已发送的命令无法
 schematica.ui.task.cancel_edit=停止放置方块和实体，并完成已放置方块的更新。已有修改会保留。
 
 schematica.ui.verifier.skipped=无法读取的位置：%s（结果不完整）
-schematica.ui.verifier.changed=放置或验证范围已改变，请重新开始验证。
+schematica.ui.verifier.changed=放置已改变，请重新开始验证。
 schematica.ui.verifier.unavailable=请先进入世界、加载并启用此放置。
 schematica.ui.verifier.bounds=验证范围必须位于世界边界内（Y 为 0..255），且不超过 16,777,216 个方块。
 schematica.ui.verifier.failed=验证遇到错误后已停止，请查看日志。

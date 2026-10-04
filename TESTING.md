@@ -1359,3 +1359,14 @@ compare with a server that does not have the mod and with each server option off
   and the value. These hotkeys are not listed in the Hotkeys tab.
 - Bind schematicEditReplaceSelection with another key held: it still fires (modifier settings) and the
   other key keeps working.
+
+## Verifier parity follow-ups
+
+- Verify a placement over water/lava with ignoreExistingFluids on: water where the schematic has air is
+  not listed as Extra; blocks named in extraAirBlocks likewise.
+- Verify with Render Layers range, then change the layer (or enable layerModeFollowsPlayer and walk):
+  the results stay; moving the placement resets with "The placement changed".
+- With two placements verifying and both HUDs on, the info HUD shows "Schematic Verifier, remaining
+  chunks (n)" and the closest chunk lines for each; after finishing, selecting one category shows its
+  name as the title, several categories show "Schematic Verifier errors"; the lines have the dark
+  per-line background like the Tool HUD.

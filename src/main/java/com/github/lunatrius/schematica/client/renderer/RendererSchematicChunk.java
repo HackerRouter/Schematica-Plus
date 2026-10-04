@@ -232,7 +232,7 @@ public class RendererSchematicChunk {
         }
     }
 
-    private static boolean isFluid(Block block) {
+    public static boolean isFluid(Block block) {
         return block instanceof net.minecraft.block.BlockLiquid || block instanceof net.minecraftforge.fluids.IFluidBlock;
     }
 
