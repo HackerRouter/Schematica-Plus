@@ -4,7 +4,7 @@ import re
 from pathlib import Path
 
 
-VERSIONS = {"litematica": "26.1.2-0.27.8", "malilib": "26.1.2-0.28.8"}
+VERSIONS = {"litematica": "26.1.2-0.27.12", "malilib": "26.1.2-0.28.11"}
 OUTPUT = Path(__file__).resolve().parents[1] / "src/main/resources/assets/schematica_plus_litematica/lang"
 BRAND_KEYS = {
     "litematica.config.generic.comment.debugHudMode",

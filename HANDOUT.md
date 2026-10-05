@@ -56,8 +56,8 @@ target:
   mappings: MCP stable_12
   bytecode: Java 8
   packs: [GTNH 2.8.4, GTNH 2.9.0-RC-1]
-  litematica_reference: 26.1.2-0.27.8
-  matching_malilib_reference: 26.1.2-0.28.8
+  litematica_reference: 26.1.2-0.27.12
+  matching_malilib_reference: 26.1.2-0.28.11
 workflow:
   commit_each_major_completed_portion: true
   comments: avoid unnecessary comments; keep necessary comments concise
@@ -90,8 +90,8 @@ git log --oneline -12
 git fetch origin --tags
 # Clone external references outside the working repository, e.g. ../references/.
 mkdir -p ../references
-git clone --branch 26.1.2-0.27.8 --depth 1 https://github.com/sakura-ryoko/litematica.git ../references/litematica
-git clone --branch 26.1.2-0.28.8 --depth 1 https://github.com/sakura-ryoko/malilib.git ../references/malilib
+git clone --branch 26.1.2-0.27.12 --depth 1 https://github.com/sakura-ryoko/litematica.git ../references/litematica
+git clone --branch 26.1.2-0.28.11 --depth 1 https://github.com/sakura-ryoko/malilib.git ../references/malilib
 chmod +x gradlew
 ./gradlew build --no-daemon --max-workers=2
 python3 tools/import_translations.py --check --litematica ../references/litematica --malilib ../references/malilib
@@ -112,8 +112,8 @@ Reference identities verified during handoff:
 | Purpose | Repository / exact revision | Evidence |
 | --- | --- | --- |
 | Current project | https://github.com/HackerRouter/Schematica-Plus | `origin`, master; local/remote SHAs above |
-| Exact modern Litematica port target | https://github.com/sakura-ryoko/litematica/tree/4c256b9fed7473f00040ac2c258f14449d1f4fe7 | Remote tag `26.1.2-0.27.8`; downloaded `gradle.properties`, `config/Hotkeys.java`, `util/SchematicUtils.java`, `en_us.json` match the supplied snapshot after CRLF normalization. Not a byte audit of every file. |
-| Matching MaLiLib | https://github.com/sakura-ryoko/malilib/tree/d194eb689d60f13ba39df4ab525dca64b1cf4478 | Local checkout HEAD and remote tag `26.1.2-0.28.8` agree |
+| Exact modern Litematica port target | https://github.com/sakura-ryoko/litematica/tree/ef055f72a0f3d0c75b6491504be18172d7c4f926 | Remote tag `26.1.2-0.27.12` (moved from `26.1.2-0.27.8` on 2026-10-05: translations re-imported, the patch releases' features audited, see section 12); for 0.27.8: downloaded `gradle.properties`, `config/Hotkeys.java`, `util/SchematicUtils.java`, `en_us.json` match the supplied snapshot after CRLF normalization. Not a byte audit of every file. |
+| Matching MaLiLib | https://github.com/sakura-ryoko/malilib/tree/977ca3b75281248c1be5210839a9f1584e334f52 | Remote tag `26.1.2-0.28.11` (was `26.1.2-0.28.8`) |
 | Original Litematica lineage | https://github.com/maruohon/litematica | Attribution/lineage; use the pinned fork above for parity |
 | Original MaLiLib lineage | https://github.com/maruohon/malilib | Attribution/lineage |
 | GTNH Schematica lineage | https://github.com/GTNewHorizons/Schematica | Original GTNH family; current implementation is substantially changed |
@@ -286,7 +286,7 @@ This is the reconciled known backlog, not a promise that every upstream Configs 
 - `IMPLEMENTED_HEADLESS` (2026-10-04 verifier audit against `SchematicVerifier`/`GuiSchematicVerifier`): same GUI controls; one verifier per placement, all running at once, overlay/targeting only for the selected placement; "extra" positions skip existing fluids with `ignoreExistingFluids` and `extraAirBlocks` (= `ignorableExistingBlocks`); the render layer range is taken at start and later layer changes keep the results (also with `layerModeFollowsPlayer`); the info HUD shows, for every verifier with its HUD on and `verifierOverlayEnabled`, "Schematic Verifier, remaining chunks (n)" with the closest `cx/cz` lines while verifying, then the closest selected errors (the category name as title when exactly one category is selected) in upstream's `x: %5d, y: %3d, z: %5d` format, drawn like MaLiLib `renderText`. Intentional differences: changed chunks are rechecked as a whole (upstream rechecks only known mismatches, so it misses newly broken blocks); a moved/edited placement or another world resets the verifier with a notice (upstream keeps stale absolute positions); chunks need only themselves loaded (no 3x3 requirement: 1.7.10 metadata does not depend on neighbours). Registry+metadata comparison; no NBT/entity comparison (not upstream either).
 - `IMPLEMENTED_HEADLESS` (2026-10-04): Tool HUD as upstream ToolHud (`client/renderer/hud/ToolHud`): `toolHudAlignment` (bottom left), `toolHudOffsetX/Y`, `toolHudScale`, every line on its own 0x80000000 background with shadowed text as MaLiLib `renderText` (no Plus auto-shrink next to the hotbar); lines and order as upstream (projects block; Delete target; area: name/mode, origin with [Auto/Manual] and box count, sub-region, dimensions with p1/p2, block 1/2 by item name, corners mode; placement modes: placement, region count/modified, origin, REBUILD block, sub-region and its origin, Paste replace/layer/ignore-inventory lines; then `Mode [n/9]: name`, REBUILD in gold), status info lines after it (limited by `infoHudMaxLines`). New paste options `pasteLayerBehavior` (all / rendered_only: the regions are clipped to the render layer range, block entities and entities outside are left out) and `pasteIgnoreInventories` (containers pasted empty). The upstream Data Restore Mode line is left out (Servux-only modes). Block facing is not shown (1.7.10 metadata has no generic facing).
 - `IMPLEMENTED_HEADLESS` (2026-10-04): Different blocks (`enableDifferentBlocks`, default off) through `util/BlockGroups`, the 1.7.10 form of MaLiLib's replaceable block groups (stairs, slabs, double slabs, walls, fences, fence gates, doors, trapdoors, buttons, pressure plates, standing/wall signs, logs, leaves, planks, saplings, flowers, flower pots, anvils, beds, carpets, wool, glass, glass panes, terracotta, ores, by block class so mod subclasses join). Colors and wood types are metadata in 1.7.10, so the bits that change `damageDropped` are the variant and the rest is the state: another block or variant of the same group with the same state is a different block, otherwise wrong state. Overlay `schematicOverlayTypeDiffBlock` with `schematicOverlayColorDiffBlock`, verifier "Diff Blocks" category/button/status, and per-type toggles `schematicOverlayTypeMissing/WrongBlock/WrongState`. Overlay lines use `schematicOverlayOutlineWidth` (1.0) or `schematicOverlayOutlineWidthThrough` (3.0) when drawn through blocks; extra blocks are no longer drawn as wrong blocks when `schematicOverlayTypeExtra` is off.
-- `OPEN`: Remaining visual/config behaviors: `schematicOverlayModelOutline/Sides` (model-shaped overlay) and other HUD/config toggles from the config audit.
+- `IMPLEMENTED_HEADLESS`: `schematicOverlayModelOutline/Sides` (model-shaped overlay, `RendererSchematicChunk`); the remaining HUD/config toggles are classified in section 12.C.
 - `DONE` (2026-10-04): Config parity audit, see section 12.C for the classification. Plus-only printer/save options are kept.
 - `UPSTREAM_PLACEHOLDER`: Subregion Slice control is deliberately unavailable, matching the selected upstream placeholder. Do not falsely report it as completed or prioritize invented semantics as a user requirement.
 
@@ -339,7 +339,7 @@ Read `compatibility/README.md` and concrete `compat/` classes before adding dupl
 
 ## 8. Translation and UI maintenance contract
 
-- Canonical generated catalogs: `src/main/resources/assets/schematica_plus_litematica/lang/*.lang`. 13 Litematica locales + 12 MaLiLib locale inputs produce 13 bundled locale files. Original translator credits retained. Plus-specific fallback strings live under the legacy Schematica asset locale files.
+- Canonical generated catalogs: `src/main/resources/assets/schematica_plus_litematica/lang/*.lang`. 14 Litematica locales + 13 MaLiLib locale inputs (nl_NL added upstream after 0.27.8) produce 14 bundled locale files. Original translator credits retained. Plus-specific fallback strings live under the legacy Schematica asset locale files.
 - Generator: `tools/import_translations.py`, no third-party Python packages. Version targets and the semantic `BRAND_KEYS`/brand substitutions are explicit. Run `--check` with the pinned checkouts after relevant edits.
 - Reuse exact existing upstream keys with correct parameter order/count and formatting codes. A key that exists but describes a different operation is not an acceptable shortcut. Only genuinely Plus-specific behavior/limitations/errors need new keys; keep at least English and Chinese usable and preserve fallback behavior.
 - Do not blind-replace every occurrence of `litematica` in source or language keys. Format identifiers, resource locations, attribution, imported file names and APIs are distinct from displayed product branding.

@@ -745,7 +745,7 @@ These checks supersede Phase 12's Simple-editor and bounding-box expectations.
   is unavailable. Early mod-conflict errors and old-client download rejection
   retain readable English fallback when language resources are unavailable.
 - Automated coverage checks source-referenced keys in English/Chinese and formats
-  active templates across all 13 bundled locales with English fallback. These
+  active templates across all 14 bundled locales with English fallback. These
   checks do not replace in-game text-width, hover or language-switch checks.
 
 ## Block info lines HUD

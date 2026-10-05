@@ -344,7 +344,6 @@ schematica.container.autofill.cursor=请先放下鼠标上的物品
 schematica.container.autofill.done=与原理图一致的容器槽位：%s / %s
 schematica.container.expected=原理图：%s x %s
 schematica.container.expected_empty=原理图：空
-schematica.ui.browser.open_folder=在文件管理器中打开此文件夹
 schematica.key.refreshMaterialList=材料清单 - 刷新
 schematica.key.refreshMaterialList.comment=重新统计当前材料清单（最近查看的清单，没有则为所选放置的清单）
 schematica.message.material_list.refreshed=材料清单已刷新

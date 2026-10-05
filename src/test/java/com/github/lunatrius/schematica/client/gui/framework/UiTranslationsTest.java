@@ -22,7 +22,7 @@ import static org.junit.Assert.*;
 public class UiTranslationsTest {
 
     private static final String DOMAIN = "schematica_plus_litematica";
-    private static final String[] LANGUAGES = {"en_US", "es_ES", "fr_FR", "it_IT", "ja_JP", "ko_KR", "lzh",
+    private static final String[] LANGUAGES = {"en_US", "es_ES", "fr_FR", "it_IT", "ja_JP", "ko_KR", "lzh", "nl_NL",
         "ru_RU", "sv_SE", "tr_TR", "uk_UA", "zh_CN", "zh_TW"};
 
     private InputStream language(String language) throws IOException {
@@ -89,7 +89,7 @@ public class UiTranslationsTest {
 
     @Test public void shipsAllUpstreamKeysAndLocalesIncludingNonUiKeys() throws IOException {
         Map<String, String> english = translations("en_US");
-        assertEquals(1604, english.size());
+        assertEquals(1644, english.size());
         assertTrue(english.containsKey("block.litematica.black_glass_fallback"));
         assertTrue(english.containsKey("modmenu.descriptionTranslation.litematica"));
         assertTrue(english.containsKey("tag.block.malilib.all_signs_fix"));
@@ -100,7 +100,7 @@ public class UiTranslationsTest {
                 expected = expected.stream().filter(key -> key.contains("litematica")).collect(Collectors.toSet());
             }
             assertTrue(language, values.keySet().containsAll(expected));
-            assertEquals(language, language.equals("en_US") ? 1604 : language.equals("tr_TR") ? 1150 : 1605, values.size());
+            assertEquals(language, language.equals("tr_TR") ? 1181 : 1644, values.size());
             for (String text : values.values()) assertFalse(language, text.contains("\uFFFD"));
         }
     }

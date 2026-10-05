@@ -297,7 +297,7 @@ updates and current code take precedence over their superseded status lists.
 Original Schematica by Lunatrius; GTNH fork by the GTNewHorizons contributors;
 Schematica Plus maintained by HackerRouter. Litematica/MaLiLib adaptations credit
 masa, Sakura-Ryoko and their contributors. The main UI target is Litematica
-26.1.2-0.27.8 with MaLiLib 26.1.2-0.28.8; grid placement also uses the 1.12.2
+26.1.2-0.27.12 with MaLiLib 26.1.2-0.28.11; grid placement also uses the 1.12.2
 Litematica implementation as a reference.
 
 The original project and bundled LunatriusCore utilities retain MIT licensing.

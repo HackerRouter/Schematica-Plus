@@ -73,9 +73,14 @@ public abstract class GuiSchematicBrowser extends UiScreen {
         });
         path = root.add(new UiLabel(() -> browser == null ? "" : browser.relativeDirectory()));
         up = icon(UiSprite.UP, "malilib.gui.button.hover.directory_widget.up", () -> navigate(browser.directory().getParentFile()));
-        home = icon(UiSprite.ROOT, "malilib.gui.button.hover.directory_widget.root", () -> navigate(browser.root()));
+        home = root.add(new UiButton(() -> "", mouse -> {
+            if (browser == null) return;
+            if (mouse == 0) navigate(browser.root());
+            else if (mouse == 1) com.github.lunatrius.schematica.client.util.FolderOpener.open(browser.root());
+        }).setSprite(UiSprite.ROOT).setBackground(false));
+        home.setTooltip(UiTranslations.format("malilib.gui.button.hover.directory_widget.root"));
         createDirectory = icon(UiSprite.CREATE_DIRECTORY, "malilib.gui.button.hover.directory_widget.create_directory", this::createDirectory);
-        openFolder = icon(UiSprite.DIRECTORY, "schematica.ui.browser.open_folder",
+        openFolder = icon(UiSprite.DIRECTORY, "malilib.gui.button.hover.directory_widget.open_directory",
             () -> { if (browser != null) com.github.lunatrius.schematica.client.util.FolderOpener.open(browser.directory()); });
         search = root.add(new UiTextField(fontRendererObj, 256, files::setQuery));
         searchButton = icon(UiSprite.SEARCH, null, () -> {
