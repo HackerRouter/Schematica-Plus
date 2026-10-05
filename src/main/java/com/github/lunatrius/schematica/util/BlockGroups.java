@@ -15,21 +15,35 @@ import net.minecraft.block.BlockCarpet;
 import net.minecraft.block.BlockCocoa;
 import net.minecraft.block.BlockColored;
 import net.minecraft.block.BlockCrops;
+import net.minecraft.block.BlockDaylightDetector;
+import net.minecraft.block.BlockDispenser;
 import net.minecraft.block.BlockDoor;
+import net.minecraft.block.BlockFarmland;
 import net.minecraft.block.BlockFence;
-import net.minecraft.block.BlockFire;
 import net.minecraft.block.BlockFenceGate;
+import net.minecraft.block.BlockFire;
 import net.minecraft.block.BlockFlower;
 import net.minecraft.block.BlockFlowerPot;
+import net.minecraft.block.BlockFurnace;
 import net.minecraft.block.BlockGlass;
 import net.minecraft.block.BlockHardenedClay;
+import net.minecraft.block.BlockHopper;
 import net.minecraft.block.BlockLeaves;
+import net.minecraft.block.BlockLiquid;
 import net.minecraft.block.BlockLog;
 import net.minecraft.block.BlockNetherWart;
 import net.minecraft.block.BlockOre;
 import net.minecraft.block.BlockPane;
-import net.minecraft.block.BlockReed;
+import net.minecraft.block.BlockPistonBase;
+import net.minecraft.block.BlockRailDetector;
+import net.minecraft.block.BlockRailPowered;
+import net.minecraft.block.BlockRedstoneComparator;
+import net.minecraft.block.BlockRedstoneLight;
 import net.minecraft.block.BlockRedstoneOre;
+import net.minecraft.block.BlockRedstoneRepeater;
+import net.minecraft.block.BlockRedstoneTorch;
+import net.minecraft.block.BlockRedstoneWire;
+import net.minecraft.block.BlockReed;
 import net.minecraft.block.BlockSapling;
 import net.minecraft.block.BlockSign;
 import net.minecraft.block.BlockSlab;
@@ -38,6 +52,8 @@ import net.minecraft.block.BlockStainedGlassPane;
 import net.minecraft.block.BlockStairs;
 import net.minecraft.block.BlockStem;
 import net.minecraft.block.BlockTrapDoor;
+import net.minecraft.block.BlockTripWire;
+import net.minecraft.block.BlockTripWireHook;
 import net.minecraft.block.BlockWall;
 import net.minecraft.block.BlockWood;
 import net.minecraft.block.material.Material;
@@ -130,6 +146,49 @@ public final class BlockGroups {
         return 0;
     }
 
+    private static final Class<?>[] SWITCHED = {BlockFurnace.class, BlockRedstoneLight.class, BlockRedstoneTorch.class,
+        BlockRedstoneRepeater.class, BlockRedstoneComparator.class, BlockRedstoneOre.class};
+
+    /**
+     * The metadata bits a player cannot choose in survival or that follow from the surroundings: leaf decay bits,
+     * sapling growth, the power of buttons, plates, detector and powered rails, daylight sensors, comparators and
+     * redstone wire, extended pistons, triggered dispensers, tripwire and hooks, occupied beds, fluid levels,
+     * farmland moisture and hoppers disabled by redstone. Growth stages count too.
+     */
+    public static int survivalBits(Block block) {
+        int bits = ageBits(block);
+        if (block instanceof BlockLeaves) bits |= 0xC;
+        else if (block instanceof BlockSapling || block instanceof BlockButton || block instanceof BlockRailDetector || block instanceof BlockRailPowered
+            || block instanceof BlockPistonBase || block instanceof BlockDispenser || block instanceof BlockHopper || block instanceof BlockRedstoneComparator) bits |= 0x8;
+        else if (block instanceof BlockBasePressurePlate || block instanceof BlockDaylightDetector || block instanceof BlockLiquid
+            || block instanceof BlockRedstoneWire) bits |= 0xF;
+        else if (block instanceof BlockTripWire) bits |= 0xD;
+        else if (block instanceof BlockTripWireHook) bits |= 0xC;
+        else if (block instanceof BlockBed) bits |= 0x4;
+        else if (block instanceof BlockFarmland) bits |= 0x7;
+        return bits;
+    }
+
+    /** The lit and unlit (powered and unpowered) blocks of vanilla furnaces, lamps, torches, repeaters, comparators and redstone ore. */
+    static boolean switchedPair(Block a, Block b) {
+        if (a.getClass() != b.getClass()) return false;
+        for (Class<?> type : SWITCHED) if (type == a.getClass()) return true;
+        return false;
+    }
+
+    /** ignoreSurvivalStates: the same block, or its lit/powered twin, differing at most in its survival bits. */
+    public static boolean sameInSurvival(Block expected, int expectedMeta, Block found, int foundMeta) {
+        if (expected != found && !switchedPair(expected, found)) return false;
+        int bits = survivalBits(expected);
+        return (expectedMeta & ~bits) == (foundMeta & ~bits);
+    }
+
+    /** Whether the world block counts as the schematic block under ignoreCropAge and ignoreSurvivalStates. */
+    public static boolean tolerated(Block expected, int expectedMeta, Block found, int foundMeta) {
+        return com.github.lunatrius.schematica.handler.VisualSettings.ignoreSurvivalStates && sameInSurvival(expected, expectedMeta, found, foundMeta)
+            || com.github.lunatrius.schematica.handler.VisualSettings.ignoreCropAge && sameIgnoringAge(expected, expectedMeta, found, foundMeta);
+    }
+
     /** ignoreCropAge (BlockUtils.areStatesEqualIgnoringAge): the same block, differing at most in its age. */
     public static boolean sameIgnoringAge(Block expected, int expectedMeta, Block found, int foundMeta) {
         if (expected != found) return false;
@@ -140,12 +199,16 @@ public final class BlockGroups {
     /** Compares a schematic block with the block in the world; both are present and not air. */
     public static Result compare(Block expected, int expectedMeta, Block found, int foundMeta, boolean differentBlocks) {
         if (expected == found && expectedMeta == foundMeta) return Result.SAME;
-        if (com.github.lunatrius.schematica.handler.VisualSettings.ignoreCropAge && sameIgnoringAge(expected, expectedMeta, found, foundMeta)) return Result.SAME;
+        if (tolerated(expected, expectedMeta, found, foundMeta)) return Result.SAME;
         String group = differentBlocks ? group(expected) : null;
         boolean sameGroup = group != null && group.equals(group(found));
         if (expected != found && !sameGroup) return Result.WRONG_BLOCK;
         if (!sameGroup) return Result.WRONG_STATE;
         int expectedVariant = variantBits(expected), foundVariant = variantBits(found);
+        if (com.github.lunatrius.schematica.handler.VisualSettings.ignoreSurvivalStates) {
+            expectedVariant |= survivalBits(expected);
+            foundVariant |= survivalBits(found);
+        }
         boolean sameState = (expectedMeta & ~expectedVariant) == (foundMeta & ~foundVariant);
         return sameState ? Result.DIFFERENT_BLOCK : Result.WRONG_STATE;
     }
@@ -154,8 +217,8 @@ public final class BlockGroups {
         if (!differentBlocks) {
             if (!expected.equals(found)) return Result.WRONG_BLOCK;
             if (expectedMeta == foundMeta) return Result.SAME;
-            Block block = com.github.lunatrius.schematica.handler.VisualSettings.ignoreCropAge ? block(expected) : null;
-            return block != null && sameIgnoringAge(block, expectedMeta, block, foundMeta) ? Result.SAME : Result.WRONG_STATE;
+            Block block = block(expected);
+            return block != null && tolerated(block, expectedMeta, block, foundMeta) ? Result.SAME : Result.WRONG_STATE;
         }
         Block a = block(expected), b = block(found);
         if (a == null || b == null) return compare(expected, expectedMeta, found, foundMeta, false);

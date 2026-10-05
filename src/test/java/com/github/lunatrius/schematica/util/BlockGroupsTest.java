@@ -42,7 +42,9 @@ public class BlockGroupsTest {
         Block wheat = new net.minecraft.block.BlockCrops() {};
         Block cocoa = new net.minecraft.block.BlockCocoa() {};
         boolean previous = com.github.lunatrius.schematica.handler.VisualSettings.ignoreCropAge;
+        boolean survival = com.github.lunatrius.schematica.handler.VisualSettings.ignoreSurvivalStates;
         try {
+            com.github.lunatrius.schematica.handler.VisualSettings.ignoreSurvivalStates = false;
             com.github.lunatrius.schematica.handler.VisualSettings.ignoreCropAge = false;
             assertEquals(WRONG_STATE, BlockGroups.compare(wheat, 7, wheat, 2, false));
             com.github.lunatrius.schematica.handler.VisualSettings.ignoreCropAge = true;
@@ -52,6 +54,32 @@ public class BlockGroupsTest {
             assertEquals(WRONG_STATE, BlockGroups.compare(PLAIN, 1, PLAIN, 2, true));
         } finally {
             com.github.lunatrius.schematica.handler.VisualSettings.ignoreCropAge = previous;
+            com.github.lunatrius.schematica.handler.VisualSettings.ignoreSurvivalStates = survival;
+        }
+    }
+
+    @Test public void survivalStatesAndLitTwinsAreTheSameBlock() {
+        Block leaves = new net.minecraft.block.BlockOldLeaf();
+        Block plate = new net.minecraft.block.BlockPressurePlate("stone", Material.rock, net.minecraft.block.BlockPressurePlate.Sensitivity.mobs) {};
+        Block ore = new net.minecraft.block.BlockRedstoneOre(false), litOre = new net.minecraft.block.BlockRedstoneOre(true);
+        Block wheat = new net.minecraft.block.BlockCrops() {};
+        boolean survival = com.github.lunatrius.schematica.handler.VisualSettings.ignoreSurvivalStates;
+        try {
+            com.github.lunatrius.schematica.handler.VisualSettings.ignoreSurvivalStates = true;
+            assertEquals(SAME, BlockGroups.compare(leaves, 0x1, leaves, 0x5, true));
+            assertEquals(SAME, BlockGroups.compare(leaves, 0x9, leaves, 0x5, true));
+            assertEquals(DIFFERENT_BLOCK, BlockGroups.compare(leaves, 0x1, leaves, 0x6, true));
+            assertEquals(WRONG_STATE, BlockGroups.compare(leaves, 0x1, leaves, 0x6, false));
+            assertEquals(SAME, BlockGroups.compare(plate, 0, plate, 1, false));
+            assertEquals(SAME, BlockGroups.compare(ore, 0, litOre, 0, false));
+            assertEquals(SAME, BlockGroups.compare(wheat, 7, wheat, 2, false));
+            assertEquals(WRONG_BLOCK, BlockGroups.compare(ore, 0, PLAIN, 0, false));
+            assertEquals(WRONG_STATE, BlockGroups.compare(PLAIN, 1, PLAIN, 2, true));
+            com.github.lunatrius.schematica.handler.VisualSettings.ignoreSurvivalStates = false;
+            assertEquals(WRONG_STATE, BlockGroups.compare(leaves, 0x1, leaves, 0x5, true));
+            assertEquals(WRONG_BLOCK, BlockGroups.compare(ore, 0, litOre, 0, false));
+        } finally {
+            com.github.lunatrius.schematica.handler.VisualSettings.ignoreSurvivalStates = survival;
         }
     }
 }

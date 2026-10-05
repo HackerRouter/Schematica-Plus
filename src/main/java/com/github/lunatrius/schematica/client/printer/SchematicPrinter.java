@@ -173,14 +173,13 @@ public class SchematicPrinter {
         if (block.isAir(schematic, x, y, z)) {
             wanted = ConfigurationHandler.printBreakExtraBlock && !ConfigurationHandler.isExtraAirBlock(real);
         } else if (block != real) {
-            wanted = ConfigurationHandler.printBreakWrongBlock && !real.isReplaceable(world, wx, wy, wz)
+            wanted = ConfigurationHandler.printBreakWrongBlock && !com.github.lunatrius.schematica.util.BlockGroups.tolerated(block, meta, real, realMeta) && !real.isReplaceable(world, wx, wy, wz)
                 && !(block instanceof BlockSlab && EasyPlace.completesSlab(block, meta, real, realMeta, new ItemStack(block, 1, block.damageDropped(meta))));
         } else {
             MultiBlockPlacement.Kind kind = MultiBlockPlacement.kind(block);
             int mask = kind == null ? 0xF : MultiBlockPlacement.stateMask(kind, meta, AccuratePlacementClient.active(block));
             wanted = ConfigurationHandler.printBreakWrongStateBlock && (meta & mask) != (realMeta & mask) && !FluidPrinter.isFluid(block)
-                && !(com.github.lunatrius.schematica.handler.VisualSettings.ignoreCropAge
-                    && com.github.lunatrius.schematica.util.BlockGroups.sameIgnoringAge(block, meta, real, realMeta));
+                && !com.github.lunatrius.schematica.util.BlockGroups.tolerated(block, meta, real, realMeta);
         }
         if (!wanted) return false;
         boolean switched = selectTool(this.minecraft.thePlayer, world, real, wx, wy, wz);
@@ -289,7 +288,9 @@ public class SchematicPrinter {
             if (placement == null) continue;
             int lx = x - placement.position.x, ly = y - placement.position.y, lz = z - placement.position.z;
             Block block = placement.getBlock(lx, ly, lz);
-            if (block == world.getBlock(x, y, z) && placement.getBlockMetadata(lx, ly, lz) == world.getBlockMetadata(x, y, z)) continue;
+            Block real = world.getBlock(x, y, z);
+            int meta = placement.getBlockMetadata(lx, ly, lz), realMeta = world.getBlockMetadata(x, y, z);
+            if (block == real && meta == realMeta || com.github.lunatrius.schematica.util.BlockGroups.tolerated(block, meta, real, realMeta)) continue;
             candidates.add(new PrinterBuildOrder.Candidate(x, y, z, layers ? PrinterBuildOrder.tier(block) : 0, placement));
         }
         if (layers) candidates.sort(PrinterBuildOrder.order(eyeX, eyeY, eyeZ, feetY, ConfigurationHandler.printerYAxisReverse));
