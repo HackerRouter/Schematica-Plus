@@ -470,7 +470,30 @@ public class ClientProxy extends CommonProxy {
     }
 
     public static SchematicLibrary.Source<SchematicSourceData> loadSource(File file) throws IOException {
-        return SCHEMATICS.load(file);
+        SchematicLibrary.Source<SchematicSourceData> source = SCHEMATICS.load(file);
+        reportUnknownBlocks(source);
+        return source;
+    }
+
+    /** Lists in chat the blocks of a newly read file that this game does not have and what replaced them. */
+    private static void reportUnknownBlocks(SchematicLibrary.Source<SchematicSourceData> source) {
+        net.minecraft.client.entity.EntityClientPlayerMP player = Minecraft.getMinecraft().thePlayer;
+        if (player == null) return;
+        Map<String, String> unknown = source.data().takeUnknownBlocks();
+        if (unknown.isEmpty()) return;
+        Reference.logger.warn("{}: unknown blocks replaced: {}", source.file().getName(), unknown);
+        java.util.function.Consumer<String> chat = line -> player.addChatMessage(new net.minecraft.util.ChatComponentText(
+            net.minecraft.util.EnumChatFormatting.GOLD + line));
+        chat.accept(com.github.lunatrius.schematica.client.gui.framework.UiTranslations.format("schematica.message.import.unknown_blocks",
+            source.file().getName(), unknown.size()));
+        int shown = 0;
+        for (Map.Entry<String, String> entry : unknown.entrySet()) {
+            if (shown++ == 8) {
+                chat.accept(com.github.lunatrius.schematica.client.gui.framework.UiTranslations.format("schematica.message.import.unknown_more", unknown.size() - 8));
+                break;
+            }
+            chat.accept(com.github.lunatrius.schematica.client.gui.framework.UiTranslations.format("schematica.message.import.unknown_block", entry.getKey(), entry.getValue()));
+        }
     }
 
     /** Registers a captured schematic that has no file; it is not restored in later sessions. */
@@ -558,6 +581,7 @@ public class ClientProxy extends CommonProxy {
             RendererSchematicGlobal.INSTANCE.removeRendererSchematicChunks(entry.getKey());
         }
         if (selected != schematic) select(selected);
+        if (!memory) reportUnknownBlocks(source);
         WorldHandler.INSTANCE.saveSession();
     }
 

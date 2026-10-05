@@ -23,9 +23,12 @@ public final class SchematicSourceData {
     private int revision;
     private int savedRevision;
     private long modifiedTime;
+    private final java.util.Map<String, String> unknownBlocks;
+    private boolean unknownBlocksReported;
 
     private SchematicSourceData(SchematicFileSnapshot snapshot, ISchematic data) {
         this.snapshot = snapshot;
+        this.unknownBlocks = com.github.lunatrius.schematica.world.schematic.ImportReport.last();
         width = data.getWidth();
         height = data.getHeight();
         length = data.getLength();
@@ -42,6 +45,13 @@ public final class SchematicSourceData {
 
     public ISchematic instantiate() throws IOException {
         return !modified() ? SchematicFormat.readFromSnapshot(snapshot) : SchematicCopies.copy(edited);
+    }
+
+    /** Block names or states of the file this game does not have, to the block that replaced them; taken once. */
+    public java.util.Map<String, String> takeUnknownBlocks() {
+        if (unknownBlocksReported) return java.util.Collections.emptyMap();
+        unknownBlocksReported = true;
+        return unknownBlocks;
     }
 
     public boolean modified() { return revision > 0; }

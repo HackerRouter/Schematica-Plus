@@ -47,7 +47,8 @@ public class SchematicAlpha extends SchematicFormat {
             NBTTagCompound names = tagCompound.getCompoundTag(Names.NBT.MAPPING_SCHEMATICA);
             for (Object key : names.func_150296_c()) {
                 String name = (String) key;
-                Block block = BLOCK_REGISTRY.getObject(name);
+                Block block = BLOCK_REGISTRY.containsKey(name) ? BLOCK_REGISTRY.getObject(name) : null;
+                if (block == null) ImportReport.unknownBlock(name, "minecraft:air");
                 mapping.put(names.getShort(name) & 65535, block == null ? Blocks.air : block);
             }
         }

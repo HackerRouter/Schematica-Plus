@@ -56,6 +56,15 @@ public abstract class SchematicFormat {
     }
 
     private static ISchematic decode(NBTTagCompound tag, String filename) {
+        ImportReport.begin();
+        try {
+            return decodeFormat(tag, filename);
+        } finally {
+            ImportReport.end();
+        }
+    }
+
+    private static ISchematic decodeFormat(NBTTagCompound tag, String filename) {
         String name = filename.toLowerCase(java.util.Locale.ROOT);
         if (name.endsWith(".litematic")) return FORMATS.get("Litematica").readFromNBT(tag);
         if (name.endsWith(".nbt")) return FORMATS.get("Structure").readFromNBT(tag);

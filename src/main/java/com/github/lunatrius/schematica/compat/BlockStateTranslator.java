@@ -36,7 +36,7 @@ public final class BlockStateTranslator {
     private static final FMLControlledNamespacedRegistry<Block> BLOCK_REGISTRY = GameData.getBlockRegistry();
 
     private final Map<String, BlockMapping> jsonOverrides = new HashMap<String, BlockMapping>();
-    private final Map<String, BlockMapping> cache = new HashMap<String, BlockMapping>();
+    private final Map<String, BlockMapping> cache = new java.util.concurrent.ConcurrentHashMap<String, BlockMapping>();
 
     /** Properties that don't exist in 1.7.10 and should be stripped before lookup */
     private static final Set<String> IGNORED_PROPERTIES = new HashSet<String>(Arrays.asList(
@@ -100,6 +100,7 @@ public final class BlockStateTranslator {
         // Note: "open" is NOT in IGNORED_PROPERTIES, so it's already kept
     }
 
+    private final Set<String> unresolved = java.util.Collections.newSetFromMap(new java.util.concurrent.ConcurrentHashMap<String, Boolean>());
     private Block fallbackBlock = Blocks.stone;
     private int fallbackMeta = 0;
 
@@ -121,6 +122,7 @@ public final class BlockStateTranslator {
 
         BlockMapping cached = cache.get(blockStateString);
         if (cached != null) {
+            if (unresolved.contains(blockStateString)) reportUnresolved(blockStateString, cached);
             return cached;
         }
 
@@ -276,7 +278,10 @@ public final class BlockStateTranslator {
         // 10. Fallback
         Reference.logger.warn("BlockStateTranslator: Unresolved blockstate '{}' (legacy: '{}'), using fallback {}",
             blockStateString, legacyName, Block.blockRegistry.getNameForObject(fallbackBlock));
-        return new BlockMapping(fallbackBlock, fallbackMeta);
+        BlockMapping fallback = new BlockMapping(fallbackBlock, fallbackMeta);
+        unresolved.add(blockStateString);
+        reportUnresolved(blockStateString, fallback);
+        return fallback;
     }
 
     /**
@@ -751,6 +756,12 @@ public final class BlockStateTranslator {
 
     public void clearCache() {
         cache.clear();
+        unresolved.clear();
+    }
+
+    private static void reportUnresolved(String state, BlockMapping mapping) {
+        com.github.lunatrius.schematica.world.schematic.ImportReport.unknownBlock(state,
+            Block.blockRegistry.getNameForObject(mapping.block) + (mapping.metadata != 0 ? ":" + mapping.metadata : ""));
     }
 
     private static class JsonBlockEntry {

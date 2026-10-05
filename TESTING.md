@@ -1510,3 +1510,12 @@ Test in GTNH 2.8.4 (NEI 2.8.44) and GTNH 2.9 (NEI 2.8.145); without NEI the butt
   with no swap slots it is not used.
 - A pickaxe with 10 or fewer uses left is skipped (mined by hand or another tool); with the protection at 0
   it is used. "Auto Tool Selection" off: the held item is kept.
+
+## Unknown blocks on import
+
+- Load a .litematic or .schem from a newer version or with blocks of a mod that is not installed: chat shows
+  "<file>: N block types this game does not have were replaced:" and up to 8 lines "name[state] -> minecraft:stone"
+  (more: "...and N more"), the log has the full list. A .schematic/.schemplus saved with a mod that is missing
+  now: its names are listed with "-> minecraft:air".
+- Loading the same file again while it is loaded (a second placement): no repeat. Reload from the loaded
+  schematics list: listed again. A file with only known blocks: no message.
