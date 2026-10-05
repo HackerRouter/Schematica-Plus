@@ -36,6 +36,8 @@ public class RendererSchematicChunk {
     private static final ShaderProgram SHADER_ALPHA = new ShaderProgram("schematica", null, "shaders/alpha.frag");
 
     public boolean isInFrustrum = false;
+    /** Within the render distance (RenderBudget); chunks outside are neither drawn nor rebuilt. */
+    public boolean inRange = true;
 
     public final Vector3d centerPosition = new Vector3d();
 

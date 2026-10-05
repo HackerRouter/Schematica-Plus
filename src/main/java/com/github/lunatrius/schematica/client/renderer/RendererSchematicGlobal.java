@@ -47,6 +47,7 @@ public class RendererSchematicGlobal {
     public final List<RendererSchematicChunk> sortedRendererSchematicChunk = new ArrayList<>();
     private final RendererSchematicChunkComparator rendererSchematicChunkComparator = new RendererSchematicChunkComparator();
     private final RenderUpdateScheduler<RendererSchematicChunk> updateScheduler = new RenderUpdateScheduler<>();
+    private final RenderBudget budget = new RenderBudget();
 
     /** Per-schematic renderer data for multi-schematic rendering. */
     private final Map<SchematicWorld, SchematicRenderData> renderDataMap = new HashMap<>();
@@ -79,6 +80,10 @@ public class RendererSchematicGlobal {
                 }
             }
 
+            if (anyRendering && this.budget.frame(System.nanoTime()) && this.minecraft.ingameGUI != null) {
+                this.minecraft.ingameGUI.func_110326_a(com.github.lunatrius.schematica.client.gui.framework.UiTranslations.format(
+                    "schematica.message.render_distance_reduced", RenderBudget.minFps), false);
+            }
             if (VisualSettings.rendering && (anyRendering || ClientProxy.isRenderingGuide)) {
                 VisualSettings.beginFrame();
                 EntityLivingBase camera = this.minecraft.renderViewEntity;
@@ -200,9 +205,12 @@ public class RendererSchematicGlobal {
             double offsetX = schematic.position.x - this.cameraPosition.x;
             double offsetY = schematic.position.y - this.cameraPosition.y;
             double offsetZ = schematic.position.z - this.cameraPosition.z;
+            double limit = this.budget.limit();
             for (RendererSchematicChunk chunk : data.chunks) {
                 AxisAlignedBB box = chunk.getBoundingBox();
-                chunk.isInFrustrum = this.frustum.isVisible(
+                chunk.inRange = limit == RenderBudget.UNLIMITED || RenderBudget.distance(0, 0, 0, box.minX + offsetX, box.minY + offsetY,
+                    box.minZ + offsetZ, box.maxX + offsetX, box.maxY + offsetY, box.maxZ + offsetZ) <= limit;
+                chunk.isInFrustrum = chunk.inRange && this.frustum.isVisible(
                     box.minX + offsetX, box.minY + offsetY, box.minZ + offsetZ,
                     box.maxX + offsetX, box.maxY + offsetY, box.maxZ + offsetZ);
             }
@@ -212,7 +220,7 @@ public class RendererSchematicGlobal {
         }
         long deadline = System.nanoTime() + 4_000_000L;
         updateScheduler.update(groups, 3, () -> System.nanoTime() < deadline,
-            RendererSchematicChunk::getDirty, RendererSchematicChunk::updateRenderer);
+            chunk -> chunk.inRange && chunk.getDirty(), RendererSchematicChunk::updateRenderer);
     }
 
     public void selectSchematic(SchematicWorld schematic) {

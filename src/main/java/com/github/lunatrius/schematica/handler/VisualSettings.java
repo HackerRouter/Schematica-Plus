@@ -116,6 +116,14 @@ public final class VisualSettings {
         light.setLanguageKey("litematica.config.visuals.name.renderFakeLightingLevel");
         light.setMinValue(0).setMaxValue(15);
         fakeLightLevel = Math.max(0, Math.min(15, light.getInt(15)));
+        Property distance = config.get(r, "schematicRenderDistance", 0);
+        distance.setLanguageKey(Names.Config.LANG_PREFIX + ".schematicRenderDistance");
+        distance.setMinValue(0).setMaxValue(1024);
+        com.github.lunatrius.schematica.client.renderer.RenderBudget.configuredDistance = Math.max(0, Math.min(1024, distance.getInt(0)));
+        Property minFps = config.get(r, "adaptiveRenderingMinFps", 30);
+        minFps.setLanguageKey(Names.Config.LANG_PREFIX + ".adaptiveRenderingMinFps");
+        minFps.setMinValue(0).setMaxValue(240);
+        com.github.lunatrius.schematica.client.renderer.RenderBudget.minFps = Math.max(0, Math.min(240, minFps.getInt(30)));
         Property sideAlpha = config.get(r, "placementBoxSideAlpha", 0.2);
         sideAlpha.setLanguageKey("litematica.config.visuals.name.placementBoxSideAlpha");
         sideAlpha.setMinValue(0.0).setMaxValue(1.0);
