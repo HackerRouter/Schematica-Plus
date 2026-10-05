@@ -54,6 +54,7 @@ public class TickHandler {
             com.github.lunatrius.schematica.handler.QueueTickHandler.INSTANCE.clientTick(this.minecraft.theWorld, this.minecraft.thePlayer);
             com.github.lunatrius.schematica.client.world.GridPlacements.INSTANCE.tick(this.minecraft);
             com.github.lunatrius.schematica.client.verifier.VerificationManager.INSTANCE.tick(this.minecraft);
+            com.github.lunatrius.schematica.client.align.AutoAlignJob.tick(this.minecraft);
             com.github.lunatrius.schematica.client.gui.material.MaterialLists.tick();
             // layerModeFollowsPlayer: the single boundary of the layer range follows the camera
             if (ConfigurationHandler.layerModeFollowsPlayer && this.minecraft.renderViewEntity != null) {

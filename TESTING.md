@@ -1674,3 +1674,15 @@ Test in GTNH 2.8.4 (NEI 2.8.44) and GTNH 2.9 (NEI 2.8.145); without NEI the butt
 - GregTech machines (facing kept in the tile entity) are placed as before.
 - With the option off, the behavior is the same as before.
 
+## Auto align
+
+- Build (or paste) a schematic in the world, then load it again as a new placement somewhere else, rotated and
+  mirrored. Stand near the built copy, open the placement configuration and press "A": after a few seconds chat
+  says the placement moved and how much matches; the placement lies exactly on the build with the right rotation
+  and mirror. Pressing it again says it is already at the best spot.
+- A half-built copy (about half the blocks): it is still found.
+- Far away from any copy: chat says it was not found; the placement does not move.
+- A locked placement: the locked message, nothing moves. Locked X/Z coordinates: the message says locked
+  coordinates kept it from moving all the way.
+- Large GTNH builds: the game does not stutter while it searches.
+

@@ -51,7 +51,7 @@ public final class GuiPlacementConfiguration extends UiScreen {
     private UiTextField name;
     private UiTextField search;
     private UiButton searchButton, rename, allOn, allOff, enabled, rendering, locked, box, entities;
-    private UiButton move, alignToMap, rotation, mirror, reset, grid, materials, verifier, placements;
+    private UiButton move, alignToMap, autoAlign, rotation, mirror, reset, grid, materials, verifier, placements;
     private UiLabel count, originLabel, feedback;
     private PlacementTransform.Orientation orientation;
     private int[] origin = new int[3];
@@ -150,6 +150,10 @@ public final class GuiPlacementConfiguration extends UiScreen {
             if (mouse == 0) moveTo(new int[] {PlacementTransform.mapAlignedStart(placement.position.x, placement.getWidth()) + offset()[0],
                 origin[1], PlacementTransform.mapAlignedStart(placement.position.z, placement.getLength()) + offset()[2]});
         });
+        autoAlign = button(() -> "A", mouse -> {
+            if (mouse == 0 && available()) com.github.lunatrius.schematica.client.align.AutoAlignJob.start(placement);
+        });
+        autoAlign.setTooltip(UiTranslations.format("schematica.ui.placement.auto_align").split("\n"));
         rotation = button(() -> UiTranslations.format("litematica.gui.button.rotation_value", orientation == null ? UiTranslations.format("schematica.ui.placement.custom") : orientation.rotationName()),
             mouse -> transform(mouse == 1 ? "YYY" : "Y"));
         mirror = button(() -> UiTranslations.format("litematica.gui.button.mirror_value", orientation == null ? UiTranslations.format("schematica.ui.placement.custom") : orientation.mirrorName()),
@@ -297,6 +301,7 @@ public final class GuiPlacementConfiguration extends UiScreen {
         move.setEnabled(!settings.locked && settings.coordinateLocks != 7);
         move.setTooltip(settings.locked ? UiTranslations.format(PlacementSettings.LOCKED_MESSAGE) : "");
         alignToMap.setEnabled(!settings.locked && (settings.coordinateLocks & 5) != 5);
+        autoAlign.setEnabled(!settings.locked);
         alignToMap.setTooltip(UiTranslations.format(settings.locked ? PlacementSettings.LOCKED_MESSAGE : "schematica.ui.placement.align_to_map").split("\n"));
         box.setSprite(settings.enclosingBox ? UiSprite.ENCLOSING_BOX_ENABLED : UiSprite.ENCLOSING_BOX_DISABLED);
         box.setTooltip(UiTranslations.format("litematica.gui.button.schematic_placement.hover.enclosing_box", value(settings.enclosingBox)));
@@ -367,8 +372,9 @@ public final class GuiPlacementConfiguration extends UiScreen {
             nudges[i].setBounds(x + 87, y + 1, 16, 16);
             coordinateLocks[i].setBounds(x + 92 + offset, y + 3, 11, 11);
         }
-        move.setBounds(x, 155, 98, 20);
-        alignToMap.setBounds(x + 100, 155, 20, 20);
+        move.setBounds(x, 155, 76, 20);
+        alignToMap.setBounds(x + 78, 155, 20, 20);
+        autoAlign.setBounds(x + 100, 155, 20, 20);
         rotation.setBounds(x, 176, 120, 20);
         mirror.setBounds(x, 197, 120, 20);
         reset.setBounds(x, 218, 120, 20);
