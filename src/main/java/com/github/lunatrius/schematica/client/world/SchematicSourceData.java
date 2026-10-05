@@ -25,10 +25,12 @@ public final class SchematicSourceData {
     private long modifiedTime;
     private final java.util.Map<String, String> unknownBlocks;
     private boolean unknownBlocksReported;
+    private com.github.lunatrius.schematica.world.schematic.ItemIdMaps.Result itemIds;
 
     private SchematicSourceData(SchematicFileSnapshot snapshot, ISchematic data) {
         this.snapshot = snapshot;
         this.unknownBlocks = com.github.lunatrius.schematica.world.schematic.ImportReport.last();
+        this.itemIds = com.github.lunatrius.schematica.world.schematic.ImportReport.lastItems();
         width = data.getWidth();
         height = data.getHeight();
         length = data.getLength();
@@ -52,6 +54,13 @@ public final class SchematicSourceData {
         if (unknownBlocksReported) return java.util.Collections.emptyMap();
         unknownBlocksReported = true;
         return unknownBlocks;
+    }
+
+    /** What loading did with the item ids of the file; taken once, then null. */
+    public com.github.lunatrius.schematica.world.schematic.ItemIdMaps.Result takeItemIds() {
+        com.github.lunatrius.schematica.world.schematic.ItemIdMaps.Result result = itemIds;
+        itemIds = null;
+        return result;
     }
 
     public boolean modified() { return revision > 0; }

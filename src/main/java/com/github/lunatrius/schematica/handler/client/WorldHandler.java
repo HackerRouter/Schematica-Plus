@@ -57,6 +57,7 @@ public class WorldHandler {
     public void onLoad(final WorldEvent.Load event) {
         if (event.world.isRemote) {
             addWorldAccess(event.world, SchematicUpdater.INSTANCE);
+            com.github.lunatrius.schematica.world.schematic.ItemIdMaps.archiveCurrent();
         }
     }
 

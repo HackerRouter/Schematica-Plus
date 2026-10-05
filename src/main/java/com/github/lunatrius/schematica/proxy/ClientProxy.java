@@ -477,15 +477,21 @@ public class ClientProxy extends CommonProxy {
         return source;
     }
 
-    /** Lists in chat the blocks of a newly read file that this game does not have and what replaced them. */
+    /**
+     * Lists in chat the blocks of a newly read file that this game does not have and what replaced them, and the
+     * stored item stacks whose ids were translated or removed.
+     */
     private static void reportUnknownBlocks(SchematicLibrary.Source<SchematicSourceData> source) {
         net.minecraft.client.entity.EntityClientPlayerMP player = Minecraft.getMinecraft().thePlayer;
         if (player == null) return;
         Map<String, String> unknown = source.data().takeUnknownBlocks();
-        if (unknown.isEmpty()) return;
-        Reference.logger.warn("{}: unknown blocks replaced: {}", source.file().getName(), unknown);
+        com.github.lunatrius.schematica.world.schematic.ItemIdMaps.Result items = source.data().takeItemIds();
+        if (unknown.isEmpty() && (items == null || items.removed == 0 && items.translatedWith == null)) return;
         java.util.function.Consumer<String> chat = line -> player.addChatMessage(new net.minecraft.util.ChatComponentText(
             net.minecraft.util.EnumChatFormatting.GOLD + line));
+        if (items != null) reportItemIds(source.file().getName(), items, chat);
+        if (unknown.isEmpty()) return;
+        Reference.logger.warn("{}: unknown blocks replaced: {}", source.file().getName(), unknown);
         chat.accept(com.github.lunatrius.schematica.client.gui.framework.UiTranslations.format("schematica.message.import.unknown_blocks",
             source.file().getName(), unknown.size()));
         int shown = 0;
@@ -495,6 +501,23 @@ public class ClientProxy extends CommonProxy {
                 break;
             }
             chat.accept(com.github.lunatrius.schematica.client.gui.framework.UiTranslations.format("schematica.message.import.unknown_block", entry.getKey(), entry.getValue()));
+        }
+    }
+
+    private static void reportItemIds(String file, com.github.lunatrius.schematica.world.schematic.ItemIdMaps.Result items,
+        java.util.function.Consumer<String> chat) {
+        if (items.translatedWith != null) {
+            Reference.logger.info("{}: item ids translated with the id map {}", file, items.translatedWith);
+            chat.accept(com.github.lunatrius.schematica.client.gui.framework.UiTranslations.format("schematica.message.import.items_translated", file, items.translatedWith));
+        }
+        if (items.removed == 0) return;
+        Reference.logger.warn("{}: {} stored item stacks removed; unknown items: {}", file, items.removed, items.unknownItems);
+        if (items.translatedWith == null && items.unknownItems.isEmpty()) {
+            chat.accept(com.github.lunatrius.schematica.client.gui.framework.UiTranslations.format("schematica.message.import.items_removed", file, items.removed,
+                com.github.lunatrius.schematica.world.schematic.ItemIdMaps.directory().getPath()));
+        } else {
+            chat.accept(com.github.lunatrius.schematica.client.gui.framework.UiTranslations.format("schematica.message.import.unknown_items", file, items.removed,
+                String.join(", ", new java.util.ArrayList<>(items.unknownItems).subList(0, Math.min(8, items.unknownItems.size())))));
         }
     }
 

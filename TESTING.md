@@ -1622,3 +1622,18 @@ Test in GTNH 2.8.4 (NEI 2.8.44) and GTNH 2.9 (NEI 2.8.145); without NEI the butt
   several faces, lamps/fixtures on walls. Rotate and mirror: every microblock stays in the same place relative
   to the build, gates keep their input/output toward the same neighbors, wires stay on the same face. Paste:
   circuits work (wires reconnect after placement).
+
+## Item ids across packs (ItemIdMaps)
+
+- Save a schematic with GT machines holding items in their inventories/output slots, covers, an EnderIO conduit
+  with a filter, Storage Drawers, chests and a flower pot. Load it in a different pack (or a new world with other
+  ids): every container shows the same items as before, no foreign items appear.
+- An older file saved without the item mapping (for example by 2.8.4): load it in 2.9.0. Expected: a chat line
+  says how many stacks were removed and names `config/schematica_plus/id_maps`; no baked potatoes or other wrong
+  items. Copy the level.dat of the 2.8.4 world into that folder and reload the file: a chat line names the
+  level.dat and the items are the original ones. After once joining the 2.8.4 world with this version, a
+  `world-*.dat` there does the same without the level.dat.
+- Reloading the same file again in the same session does not change the items again.
+- An existing world whose Simple selection was named "Simple selection": it now shows "Unnamed" (selection and
+  box); a new Normal mode world creates "Unnamed".
+

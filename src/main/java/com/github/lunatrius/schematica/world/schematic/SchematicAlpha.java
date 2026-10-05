@@ -34,6 +34,7 @@ public class SchematicAlpha extends SchematicFormat {
 
     @Override
     public ISchematic readFromNBT(NBTTagCompound tagCompound) {
+        ItemIdMaps.remap(tagCompound, ImportReport.items());
         ItemStack icon = SchematicUtil.getIconFromNBT(tagCompound);
         int width = tagCompound.getShort(Names.NBT.WIDTH);
         int height = tagCompound.getShort(Names.NBT.HEIGHT);
@@ -263,6 +264,7 @@ public class SchematicAlpha extends SchematicFormat {
         tagCompound.setTag(Names.NBT.ENTITIES, entityList);
         tagCompound.setTag(Names.NBT.TILE_ENTITIES, tileEntitiesList);
         tagCompound.setTag(Names.NBT.MAPPING_SCHEMATICA, nbtMapping);
+        ItemIdMaps.writeMapping(tagCompound, ItemIdMaps.CURRENT);
         NBTTagList regionEntries = regionEntries(schematic, backupWorld, includeNBT, includeEntities);
         if (regionEntries != null) {
             tagCompound.setInteger(REGION_DATA + "Version", 1);
