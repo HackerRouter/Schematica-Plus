@@ -366,7 +366,7 @@ Read `compatibility/README.md` and concrete `compat/` classes before adding dupl
 
 ### Still incomplete / cannot be assumed
 
-- `OPEN`: AE2 multipart orientation, GT extended machine facings, other custom directional encodings, absolute-coordinate links in NBT/streams, links to blocks outside the selection. Native block rotation is not enough for every tile.
+- `OPEN`: AE2, GT, Carpenter's, pipe mods, Railcraft, Botania, Galacticraft and the closed-source mods have rotation/mirror rules and `CoordinateLinks` covers saved links (2026-10-06, entries above). Still open: directional encodings of mods without a rule (their own rotateBlock only, no mirror), links kept only in binary streams/description packets or item NBT, links to blocks outside the saved area (rebased like the rest, so they point at the same offset, not the original block).
 - `LIMITATION`: Multiplayer capture can only know synchronized client state. Singleplayer capture uses integrated-server data. Preserve all available render state separately, but don't manufacture unsynchronized inventories, genetics or private machine state. Older files lacking visual data require recapture.
 - `LIMITATION`: World-time/frame-based animation and selected safe client animation are supported; private tick counters, transient particles/sounds/network events, target entities and simulation-dependent effects are not generally reproducible. Do not solve this by ticking real machines in the schematic world.
 - `OPEN`: Outside-neighbor/context, layer-filtered neighbor lookups, biome/tint, original light environment, resource pack/shader differences. User intent is visual fidelity; further scoped adapters/context capture may be needed.
