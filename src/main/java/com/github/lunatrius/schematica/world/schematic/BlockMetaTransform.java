@@ -74,6 +74,15 @@ public final class BlockMetaTransform {
         }
         MOD_HORIZONTAL.put("micdoodle8.mods.galacticraft.planets.mars.blocks.BlockMachineMarsT2", GALACTICRAFT);
         MOD_HORIZONTAL.put(gc + "BlockSolar", new ForgeDirection[] {NORTH, SOUTH, WEST, EAST});
+        // Witchery: coffins use the bed layout, mirrors keep the side of the block their glass is on (top half + 4)
+        MOD_HORIZONTAL.put("com.emoniph.witchery.blocks.BlockCoffin", HORIZONTAL);
+        MOD_HORIZONTAL.put("com.emoniph.witchery.blocks.BlockMirror", new ForgeDirection[] {SOUTH, NORTH, EAST, WEST});
+        // Extra Utilities conveyors: (yaw quarter + 2) % 4
+        MOD_HORIZONTAL.put("com.rwtema.extrautils.block.BlockConveyor", new ForgeDirection[] {NORTH, EAST, SOUTH, WEST});
+        // BiblioCraft armor stands (top half + 4), printing presses and typesetting tables: (yaw quarter + 1) % 4
+        for (String block : new String[] {"BlockArmorStand", "BlockPrintPress", "BlockTypeMachine"}) {
+            MOD_HORIZONTAL.put("jds.bibliocraft.blocks." + block, new ForgeDirection[] {EAST, SOUTH, WEST, NORTH});
+        }
     }
 
     private BlockMetaTransform() {}
@@ -226,6 +235,20 @@ public final class BlockMetaTransform {
                 return meta >= 2 && meta <= 5 ? ordinal(meta, 7, op, false, false) : meta;
             }
             if (name.equals("vazkii.botania.common.block.string.BlockRedString")) return ordinal(meta, 7, op, true, true);
+            // Witchery: furnace-like devices face a horizontal ForgeDirection, skulls are laid out like vanilla skulls
+            if (name.equals("com.emoniph.witchery.blocks.BlockDistillery") || name.equals("com.emoniph.witchery.blocks.BlockKettle")
+                || name.equals("com.emoniph.witchery.blocks.BlockSpinningWheel") || name.equals("com.emoniph.witchery.blocks.BlockWitchesOven")) {
+                return (meta & 7) >= 2 && (meta & 7) <= 5 ? ordinal(meta, 7, op, false, false) : meta;
+            }
+            if (name.equals("com.emoniph.witchery.blocks.BlockAlluringSkull") || name.equals("com.emoniph.witchery.blocks.BlockWolfHead")) {
+                return (meta & 7) == 1 ? meta : ordinal(meta, 7, op, false, false);
+            }
+            // Thaumcraft mirrors, Extra Utilities transfer nodes and spikes: type * 6 + a side; arcane doors use the door layout
+            if (name.equals("thaumcraft.common.blocks.BlockMirror") || name.equals("com.rwtema.extrautils.tileentity.transfernodes.BlockTransferNode")
+                || name.equals("com.rwtema.extrautils.block.BlockSpike")) {
+                return meta < 12 ? meta / 6 * 6 + turn(op, ForgeDirection.getOrientation(meta % 6)).ordinal() : meta;
+            }
+            if (name.equals("thaumcraft.common.blocks.BlockArcaneDoor")) return door(meta, op);
             // BuildCraft pipes: the extraction or output side of wooden, iron and similar pipes
             if (name.equals("buildcraft.transport.BlockGenericPipe")) {
                 return meta < 6 ? turn(op, ForgeDirection.getOrientation(meta)).ordinal() : meta;

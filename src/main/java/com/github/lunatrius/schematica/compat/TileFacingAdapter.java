@@ -16,21 +16,22 @@ import net.minecraftforge.common.util.ForgeDirection;
 
 import com.github.lunatrius.schematica.api.ISchematicVisualAdapter;
 import com.github.lunatrius.schematica.util.SchematicTransform;
+import com.github.lunatrius.schematica.world.schematic.BlockMetaTransform;
 
 /**
  * Rotation and mirroring of directions mod tile entities keep in their saved NBT (GTNH 2.8.4 / 2.9.0 sources):
- * ForgeDirection ordinals or names, side-indexed arrays and per-side keys. The preview tile reads the turned NBT
+ * ForgeDirection ordinals or names, side-indexed arrays, per-side keys, 16-step rotations and offsets from the tile. The preview tile reads the turned NBT
  * back. Blocks handled here are not also turned through their Block.rotateBlock.
  */
 final class TileFacingAdapter implements ISchematicVisualAdapter {
-    enum Kind { ORDINAL, NAME, SIDE_KEYS, SIDE_ARRAY, MASK, HORIZONTAL }
+    enum Kind { ORDINAL, NAME, SIDE_KEYS, SIDE_ARRAY, MASK, HORIZONTAL, ROTATION16, OFFSET }
 
     static final class Rule {
         final Kind kind;
         final String key;
         /** The operations the rule applies to; others leave the value alone (OpenComputers yaw/pitch). */
         final String operations;
-        /** HORIZONTAL: the sides the values 0-3 stand for. */
+        /** HORIZONTAL: the sides the low two bits 0-3 stand for; higher bits are kept. */
         final ForgeDirection[] sides;
         Rule(Kind kind, String key, String operations) { this(kind, key, operations, HORIZONTAL_SIDES); }
         Rule(Kind kind, String key, String operations, ForgeDirection[] sides) { this.kind = kind; this.key = key; this.operations = operations; this.sides = sides; }
@@ -117,6 +118,39 @@ final class TileFacingAdapter implements ISchematicVisualAdapter {
         add("micdoodle8.mods.galacticraft.planets.asteroids.tile.TileEntityMinerBase", new Rule(Kind.HORIZONTAL, "facing", ALL,
             new ForgeDirection[] {ForgeDirection.NORTH, ForgeDirection.SOUTH, ForgeDirection.WEST, ForgeDirection.EAST}));
         add("micdoodle8.mods.galacticraft.planets.asteroids.tile.TileEntityBeamReceiver", ordinal("FacingSide"));
+        // Thaumcraft
+        String tc = "thaumcraft.common.tiles.";
+        for (String tile : new String[] {"TileAlembic", "TileBrainbox", "TileCentrifuge", "TileEldritchCrabSpawner", "TileEldritchLock",
+            "TileFluxScrubber", "TileJarFillable", "TileThaumatorium"}) {
+            add(tc + tile, ordinal("facing"));
+        }
+        add(tc + "TileEssentiaCrystalizer", ordinal("face"));
+        add(tc + "TileEssentiaReservoir", ordinal("face"));
+        for (String tile : new String[] {"TileCrystal", "TileVisRelay", "TileBellows", "TileArcaneLamp", "TileArcaneLampFertility",
+            "TileArcaneLampGrowth", "TileArcaneBoreBase"}) {
+            add(tc + tile, ordinal("orientation"));
+        }
+        add(tc + "TileArcaneBore", ordinal("orientation"), ordinal("baseOrientation"));
+        add(tc + "TileTube", ordinal("side"), sideArray("open"));
+        add(tc + "TileTubeBuffer", sideArray("open"), sideArray("choke"));
+        add(tc + "TileBanner", new Rule(Kind.ROTATION16, "facing", ALL));
+        // BiblioCraft: ((yaw quarter + 1) % 4), 0 E, 1 S, 2 W, 3 N; weapon cases add 4 when laid flat
+        ForgeDirection[] biblio = {ForgeDirection.EAST, ForgeDirection.SOUTH, ForgeDirection.WEST, ForgeDirection.NORTH};
+        String[][] angles = {{"Bookcase", "bookcaseAngle"}, {"GenericShelf", "genericShelfAngle"}, {"PotionShelf", "potionshelfAngle"},
+            {"Label", "labelAngle"}, {"WeaponCase", "caseAngle"}, {"WeaponRack", "rackAngle"}, {"WritingDesk", "deskAngle"},
+            {"DinnerPlate", "Angle"}, {"DiscRack", "Angle"}, {"MapFrame", "Angle"}, {"Seat", "Angle"}};
+        for (String[] tile : angles) add("jds.bibliocraft.tileentities.TileEntity" + tile[0], new Rule(Kind.HORIZONTAL, tile[1], ALL, biblio));
+        for (String tile : new String[] {"Clipboard", "Clock", "FancySign", "FancyWorkbench", "FramedChest", "FurniturePaneler", "Lamp",
+            "Lantern", "PaintPress", "Painting", "SwordPedestal", "Typewriter"}) {
+            add("jds.bibliocraft.tileentities.TileEntity" + tile, new Rule(Kind.HORIZONTAL, "angle", ALL, biblio));
+        }
+        // Witchery skulls on the floor: a 16-step rotation like vanilla skulls
+        add("com.emoniph.witchery.blocks.BlockAlluringSkull$TileEntityAlluringSkull", new Rule(Kind.ROTATION16, "Rot", ALL));
+        add("com.emoniph.witchery.blocks.BlockWolfHead$TileEntityWolfHead", new Rule(Kind.ROTATION16, "Rot", ALL));
+        // Extra Utilities: generators keep (yaw quarter + 2) % 4, transfer nodes the pipe their search reached
+        add("com.rwtema.extrautils.tileentity.generators.TileEntityGenerator", new Rule(Kind.HORIZONTAL, "rotation", ALL,
+            new ForgeDirection[] {ForgeDirection.NORTH, ForgeDirection.EAST, ForgeDirection.SOUTH, ForgeDirection.WEST}));
+        add("com.rwtema.extrautils.tileentity.transfernodes.TileEntityTransferNode", ordinal("pipe_dir"), new Rule(Kind.OFFSET, "pipe_", ALL));
         // OpenComputers: yaw is horizontal, pitch UP, DOWN or NORTH (level); tilting is not representable
         add("li.cil.oc.common.tileentity.traits.Rotatable", new Rule(Kind.ORDINAL, "oc:yaw", "Yxz"), new Rule(Kind.ORDINAL, "oc:pitch", "y"));
     }
@@ -201,12 +235,30 @@ final class TileFacingAdapter implements ISchematicVisualAdapter {
                 case HORIZONTAL: {
                     NBTBase tag = data.getTag(rule.key);
                     if (!(tag instanceof NBTBase.NBTPrimitive)) break;
-                    int value = ((NBTBase.NBTPrimitive) tag).func_150287_d() & 3;
-                    ForgeDirection turned = SchematicTransform.direction(operation, rule.sides[value]);
+                    int raw = ((NBTBase.NBTPrimitive) tag).func_150287_d();
+                    ForgeDirection turned = SchematicTransform.direction(operation, rule.sides[raw & 3]);
                     int index = java.util.Arrays.asList(rule.sides).indexOf(turned);
                     if (index < 0) break;
+                    index |= raw & ~3;
                     data.setTag(rule.key, tag instanceof NBTTagByte ? new NBTTagByte((byte) index)
                         : tag instanceof NBTTagShort ? new NBTTagShort((short) index) : new NBTTagInt(index));
+                    break;
+                }
+                case ROTATION16: {
+                    NBTBase tag = data.getTag(rule.key);
+                    if (!(tag instanceof NBTBase.NBTPrimitive)) break;
+                    int rotation = BlockMetaTransform.rotation16(((NBTBase.NBTPrimitive) tag).func_150287_d() & 15, operation);
+                    data.setTag(rule.key, tag instanceof NBTTagByte ? new NBTTagByte((byte) rotation)
+                        : tag instanceof NBTTagShort ? new NBTTagShort((short) rotation) : new NBTTagInt(rotation));
+                    break;
+                }
+                case OFFSET: {
+                    String x = rule.key + "x", y = rule.key + "y", z = rule.key + "z";
+                    if (!data.hasKey(x) && !data.hasKey(y) && !data.hasKey(z)) break;
+                    double[] moved = SchematicTransform.point(operation, data.getInteger(x), data.getInteger(y), data.getInteger(z), 0, 0, 0);
+                    data.setInteger(x, (int) Math.round(moved[0]));
+                    data.setInteger(y, (int) Math.round(moved[1]));
+                    data.setInteger(z, (int) Math.round(moved[2]));
                     break;
                 }
                 case MASK: {

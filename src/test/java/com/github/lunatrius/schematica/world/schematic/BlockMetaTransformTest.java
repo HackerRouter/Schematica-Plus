@@ -81,4 +81,20 @@ public class BlockMetaTransformTest {
             }
         }
     }
+
+    @Test public void closedSourceModBlocks() {
+        // Thaumcraft essentia mirror (6 +) on the north side of its support turns east
+        assertEquals(6 + 5, apply(new thaumcraft.common.blocks.BlockMirror(), 6 + 2, "Y"));
+        // BiblioCraft armor stand top half facing east (0) turns south (1)
+        assertEquals(4 + 1, apply(new jds.bibliocraft.blocks.BlockArmorStand(), 4, "Y"));
+        // Witchery coffin head (8) toward south: mirrored across z it points north
+        assertEquals(8 | 2, apply(new com.emoniph.witchery.blocks.BlockCoffin(), 8, "z"));
+        assertEquals(4, apply(new com.emoniph.witchery.blocks.BlockKettle(), 5, "x"));
+        assertEquals(0, apply(new com.emoniph.witchery.blocks.BlockKettle(), 0, "Y"));
+        // Extra Utilities conveyor running north turns east; a liquid transfer node (6 +) facing down stays
+        assertEquals(1, apply(new com.rwtema.extrautils.block.BlockConveyor(), 0, "Y"));
+        assertEquals(6, apply(new com.rwtema.extrautils.tileentity.transfernodes.BlockTransferNode(), 6, "Y"));
+        assertEquals(6 + 4, apply(new com.rwtema.extrautils.tileentity.transfernodes.BlockTransferNode(), 6 + 2, "YYY"));
+        assertEquals(12, apply(new com.rwtema.extrautils.tileentity.transfernodes.BlockTransferNode(), 12, "Y"));
+    }
 }

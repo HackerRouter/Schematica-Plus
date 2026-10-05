@@ -1806,3 +1806,18 @@ Test in GTNH 2.8.4 (NEI 2.8.44) and GTNH 2.9 (NEI 2.8.145); without NEI the butt
   sides. Rotate and mirror: each faces the same neighbor after paste; the miner base still forms and its dock
   side follows.
 
+## Thaumcraft, BiblioCraft, Witchery and Extra Utilities under rotation and mirroring
+
+- Thaumcraft: alembics on a crucible, essentia jars with labels, centrifuge, thaumatorium, reservoir and crystallizer,
+  tubes with closed sides plus a one-way tube and a valve, a buffer with choked sides, vis relays on walls, bellows on
+  an infernal furnace, arcane lamps and an arcane bore on walls, banners standing and on walls, mirrors on walls and an
+  arcane door. Rotate and mirror: everything faces the same neighbor, tubes still connect the same way, banners turn.
+- BiblioCraft: bookcases, shelves, potion shelves, labels, weapon racks/cases (one laid flat), writing desk, clock,
+  fancy sign, map frame, painting, seats, dinner plate, armor stand, printing press, typesetting table. Each faces the
+  same way relative to the build after paste, the flat weapon case stays flat.
+- Witchery: coffin, mirror (two tall), distillery, kettle, spinning wheel, witches' oven, alluring skull and wolf head
+  on the floor and on walls. Same check; the coffin is not split into two halves pointing apart.
+- Extra Utilities: generators of several kinds, conveyor line, item and liquid transfer nodes on pipes, spikes on
+  walls. Same check; the nodes keep pulling into their pipe network.
+
+

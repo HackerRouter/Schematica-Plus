@@ -48,4 +48,75 @@ public class TileFacingAdapterTest {
         TileFacingAdapter.apply(TileFacingAdapter.rulesFor("micdoodle8.mods.galacticraft.planets.asteroids.tile.TileEntityMinerBase"), data, 'x');
         assertEquals(2, data.getInteger("facing"));
     }
+
+    private static NBTTagCompound turned(String type, NBTTagCompound data, String operations) {
+        for (char operation : operations.toCharArray()) TileFacingAdapter.apply(TileFacingAdapter.rulesFor(type), data, operation);
+        return data;
+    }
+
+    @Test public void thaumcraftTubesAndBanners() {
+        NBTTagCompound tube = new NBTTagCompound();
+        tube.setInteger("side", 2);
+        tube.setByteArray("open", new byte[] {1, 1, 0, 1, 1, 1});
+        turned("thaumcraft.common.tiles.TileTube", tube, "Y");
+        assertEquals(5, tube.getInteger("side"));
+        assertArrayEquals(new byte[] {1, 1, 1, 1, 1, 0}, tube.getByteArray("open"));
+
+        NBTTagCompound banner = new NBTTagCompound();
+        banner.setByte("facing", (byte) 0);
+        turned("thaumcraft.common.tiles.TileBanner", banner, "Y");
+        assertEquals(4, banner.getByte("facing"));
+        turned("thaumcraft.common.tiles.TileBanner", banner, "x");
+        assertEquals(12, banner.getByte("facing"));
+        assertEquals(net.minecraftforge.common.util.Constants.NBT.TAG_BYTE, banner.getTag("facing").getId());
+    }
+
+    @Test public void biblioCraftAnglesKeepTheirFlatFlag() {
+        NBTTagCompound shelf = new NBTTagCompound();
+        shelf.setInteger("genericShelfAngle", 0);
+        turned("jds.bibliocraft.tileentities.TileEntityGenericShelf", shelf, "Y");
+        assertEquals(1, shelf.getInteger("genericShelfAngle"));
+        turned("jds.bibliocraft.tileentities.TileEntityGenericShelf", shelf, "z");
+        assertEquals(3, shelf.getInteger("genericShelfAngle"));
+
+        NBTTagCompound weaponCase = new NBTTagCompound();
+        weaponCase.setInteger("caseAngle", 4 + 2);
+        turned("jds.bibliocraft.tileentities.TileEntityWeaponCase", weaponCase, "Y");
+        assertEquals(4 + 3, weaponCase.getInteger("caseAngle"));
+        turned("jds.bibliocraft.tileentities.TileEntityWeaponCase", weaponCase, "YYYY");
+        assertEquals(4 + 3, weaponCase.getInteger("caseAngle"));
+    }
+
+    @Test public void extraUtilitiesGeneratorsAndTransferNodeSearch() {
+        NBTTagCompound generator = new NBTTagCompound();
+        generator.setInteger("rotation", 0);
+        turned("com.rwtema.extrautils.tileentity.generators.TileEntityGenerator", generator, "Y");
+        assertEquals(1, generator.getInteger("rotation"));
+        turned("com.rwtema.extrautils.tileentity.generators.TileEntityGenerator", generator, "x");
+        assertEquals(3, generator.getInteger("rotation"));
+
+        NBTTagCompound node = new NBTTagCompound();
+        node.setInteger("pipe_x", 0);
+        node.setInteger("pipe_y", 1);
+        node.setInteger("pipe_z", -3);
+        node.setInteger("pipe_dir", 2);
+        turned("com.rwtema.extrautils.tileentity.transfernodes.TileEntityTransferNode", node, "Y");
+        assertEquals(3, node.getInteger("pipe_x"));
+        assertEquals(1, node.getInteger("pipe_y"));
+        assertEquals(0, node.getInteger("pipe_z"));
+        assertEquals(5, node.getInteger("pipe_dir"));
+
+        NBTTagCompound fresh = new NBTTagCompound();
+        fresh.setInteger("pipe_dir", 6);
+        turned("com.rwtema.extrautils.tileentity.transfernodes.TileEntityTransferNode", fresh, "Y");
+        assertEquals(6, fresh.getInteger("pipe_dir"));
+        assertFalse(fresh.hasKey("pipe_x"));
+    }
+
+    @Test public void witcherySkullsTurnLikeVanillaSkulls() {
+        NBTTagCompound skull = new NBTTagCompound();
+        skull.setByte("Rot", (byte) 3);
+        turned("com.emoniph.witchery.blocks.BlockWolfHead$TileEntityWolfHead", skull, "Y");
+        assertEquals(7, skull.getByte("Rot"));
+    }
 }
