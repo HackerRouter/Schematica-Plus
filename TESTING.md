@@ -1806,6 +1806,15 @@ Test in GTNH 2.8.4 (NEI 2.8.44) and GTNH 2.9 (NEI 2.8.145); without NEI the butt
   sides. Rotate and mirror: each faces the same neighbor after paste; the miner base still forms and its dock
   side follows.
 
+## Links to other blocks in tile NBT
+
+- Build with a Botania light relay chain, a daybloom bound to a spreader and a hopperhock bound to a pool, a
+  Draconic energy relay linked to two receivers, a BuildCraft quarry with its area and markers, Thaumcraft linked
+  mirrors and a Galacticraft beam reflector chain. Save it, paste it elsewhere (also rotated and mirrored, and as a
+  grid copy): every copy links to its own partners, not to the original build; the quarry digs its own area.
+- Paste a schematic saved by an older version with such tiles: the links keep the old positions (unchanged).
+- Move the build with the move tool: links follow.
+
 ## Thaumcraft, BiblioCraft, Witchery and Extra Utilities under rotation and mirroring
 
 - Thaumcraft: alembics on a crucible, essentia jars with labels, centrifuge, thaumatorium, reservoir and crystallizer,

@@ -10,6 +10,7 @@ import net.minecraft.tileentity.TileEntity;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 import com.github.lunatrius.schematica.reference.Reference;
+import com.github.lunatrius.schematica.compat.CoordinateLinks;
 import com.github.lunatrius.schematica.compat.TileNBTCompat;
 import com.github.lunatrius.schematica.compat.VisualAdapters;
 
@@ -100,8 +101,15 @@ public final class TileEntitySnapshots {
     }
 
     @SideOnly(Side.CLIENT)
-    public static void transformPreview(TileEntity tile, char operation) {
+    public static void transformPreview(TileEntity tile, char operation, int width, int height, int length) {
         NBTTagCompound transformed = VisualAdapters.transformNBT(tile, () -> write(tile), operation);
+        if (CoordinateLinks.has(tile)) {
+            NBTTagCompound data = transformed != null ? transformed : write(tile);
+            if (CoordinateLinks.local(data)) {
+                CoordinateLinks.transform(tile, data, operation, width, height, length);
+                transformed = data;
+            }
+        }
         VisualAdapters.transformPreview(tile, operation);
         TileEntitySnapshot snapshot = SNAPSHOTS.get(tile);
         if (transformed == null) {

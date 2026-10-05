@@ -54,8 +54,10 @@ public final class WorldMoveJob extends WorldEditTask {
             @Override public void write(int x, int y, int z, Cell cell) {
                 writer.setBlock(world, x, y, z, cell.block, cell.meta);
                 if (cell.tag != null) {
-                    NBTTagCompound tag = (NBTTagCompound) cell.tag.copy(); tag.setInteger("x", x); tag.setInteger("y", y); tag.setInteger("z", z);
+                    NBTTagCompound tag = (NBTTagCompound) cell.tag.copy();
                     boolean restoring = transaction.phase() == BlockMoveTransaction.Phase.RESTORE_SOURCE || transaction.phase() == BlockMoveTransaction.Phase.RESTORE_TARGET;
+                    if (!restoring && cell.original != null) com.github.lunatrius.schematica.compat.CoordinateLinks.move(cell.original, tag, x, y, z);
+                    tag.setInteger("x", x); tag.setInteger("y", y); tag.setInteger("z", z);
                     TileEntity tile = restoring ? cell.original : "savedMultipart".equals(tag.getString("id"))
                         ? com.github.lunatrius.schematica.nbt.ForgeMultipart.createFromNBT(tag, false) : TileEntity.createAndLoadEntity(tag);
                     if (tile == null) throw new IllegalArgumentException("Unable to restore moved tile at " + x + ", " + y + ", " + z);

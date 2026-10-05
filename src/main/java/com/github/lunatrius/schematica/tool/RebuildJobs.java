@@ -292,7 +292,7 @@ public final class RebuildJobs {
             if (tile == null && source != world) tile = world.getTileEntity(px, py, pz);
             if (tile == null) return null;
             try {
-                return new CellState(block, meta, com.github.lunatrius.schematica.world.storage.SchematicCopies.tile(tile, px, py, pz));
+                return new CellState(block, meta, com.github.lunatrius.schematica.world.storage.SchematicCopies.tile(tile, px, py, pz, true));
             } catch (IllegalArgumentException error) {
                 com.github.lunatrius.schematica.reference.Reference.logger.warn("Could not copy the tile entity at {}, {}, {}", px, py, pz, error);
                 return null;

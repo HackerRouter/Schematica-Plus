@@ -583,7 +583,7 @@ public class SchematicWorld extends World {
                     TileEntitySkull skull = (TileEntitySkull) tileEntity;
                     skull.func_145903_a(com.github.lunatrius.schematica.world.schematic.BlockMetaTransform.rotation16(skull.func_145906_b(), operation));
                 }
-                TileEntitySnapshots.transformPreview(tileEntity, operation);
+                TileEntitySnapshots.transformPreview(tileEntity, operation, w, h, l);
             }
             for (Entity entity : entities) {
                 double[] p = SchematicTransform.point(operation, entity.posX, entity.posY, entity.posZ, w, h, l);

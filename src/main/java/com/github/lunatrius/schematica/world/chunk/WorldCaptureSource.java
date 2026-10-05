@@ -31,7 +31,7 @@ public final class WorldCaptureSource implements CaptureSource {
     public TileEntity tile(int x, int y, int z, int offsetX, int offsetY, int offsetZ) throws Exception {
         TileEntity tile = serverWorld.getTileEntity(x, y, z);
         if (tile == null) tile = world.getTileEntity(x, y, z);
-        return tile == null ? null : NBTHelper.reloadTileEntity(tile, offsetX, offsetY, offsetZ);
+        return tile == null ? null : NBTHelper.reloadTileEntity(tile, offsetX, offsetY, offsetZ, true);
     }
 
     @Override

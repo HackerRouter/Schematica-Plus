@@ -11,6 +11,7 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.Constants;
 
+import com.github.lunatrius.schematica.compat.CoordinateLinks;
 import com.github.lunatrius.schematica.reference.Names;
 import com.github.lunatrius.schematica.world.WorldDummy;
 
@@ -97,12 +98,20 @@ public class NBTHelper {
 
     public static TileEntity reloadTileEntity(TileEntity tileEntity, int offsetX, int offsetY, int offsetZ)
         throws NBTConversionException {
+        return reloadTileEntity(tileEntity, offsetX, offsetY, offsetZ, false);
+    }
+
+    /** A copy moved by -offset; a tile from the world (fromWorld) gets its links to other blocks in the new coordinates. */
+    public static TileEntity reloadTileEntity(TileEntity tileEntity, int offsetX, int offsetY, int offsetZ, boolean fromWorld)
+        throws NBTConversionException {
         if (tileEntity == null) {
             return null;
         }
 
         try {
             NBTTagCompound tileEntityCompound = writeTileEntityToCompound(tileEntity);
+            if (fromWorld) CoordinateLinks.capture(tileEntity, tileEntityCompound, offsetX, offsetY, offsetZ);
+            else CoordinateLinks.shift(tileEntity, tileEntityCompound, -offsetX, -offsetY, -offsetZ);
             TileEntitySnapshots.capture(tileEntity, tileEntityCompound);
             tileEntity = readTileEntityFromCompound(tileEntityCompound);
             if (tileEntity == null) {

@@ -70,8 +70,13 @@ public final class SchematicCopies {
     }
 
     public static TileEntity tile(TileEntity tile, int x, int y, int z) {
+        return tile(tile, x, y, z, false);
+    }
+
+    /** A copy moved by -(x, y, z); fromWorld for a tile of the world, whose links to other blocks are then rebased too. */
+    public static TileEntity tile(TileEntity tile, int x, int y, int z, boolean fromWorld) {
         try {
-            TileEntity copy = NBTHelper.reloadTileEntity(tile, x, y, z);
+            TileEntity copy = NBTHelper.reloadTileEntity(tile, x, y, z, fromWorld);
             if (copy == null) throw new IllegalArgumentException("Unable to copy tile entity");
             return copy;
         } catch (NBTConversionException e) {

@@ -419,7 +419,7 @@ public final class WorldEditJob extends WorldEditTask {
                     NBTTagCompound tag = tiles.get(index);
                     TileEntity tile;
                     if (tag != null) {
-                        tag = (NBTTagCompound) tag.copy();
+                        tag = com.github.lunatrius.schematica.compat.CoordinateLinks.paste((NBTTagCompound) tag.copy(), wx, wy, wz);
                         tag.setInteger("x", wx); tag.setInteger("y", wy); tag.setInteger("z", wz);
                         tile = "savedMultipart".equals(tag.getString("id"))
                             ? ForgeMultipart.createFromNBT(tag, false) : TileEntity.createAndLoadEntity(tag);
