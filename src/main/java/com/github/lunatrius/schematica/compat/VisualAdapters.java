@@ -36,6 +36,7 @@ public final class VisualAdapters {
         register(new BinnieVisualAdapter());
         register(new MalisisVisualAdapter());
         register(new ThaumicExplorationVisualAdapter());
+        register(new TileFacingAdapter());
         register(new NamedFieldsAdapter("stevesaddons:rf_node", "stevesaddons.tileentities.TileEntityRFNode", "inputSides", "outputSides"));
     }
 

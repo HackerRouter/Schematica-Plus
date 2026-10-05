@@ -1604,3 +1604,13 @@ Test in GTNH 2.8.4 (NEI 2.8.44) and GTNH 2.9 (NEI 2.8.145); without NEI the butt
   mirror: devices keep facing their neighbors, parts stay on the side that faces the same neighbor, terminals
   on floors keep pointing the same way relative to the build; the preview cables connect to the moved parts.
   Paste: everything works without re-placing parts.
+
+## Mod tile facings under rotation and mirroring (TileFacingAdapter)
+
+- For each mod: place a few blocks facing different ways, save, rotate 90/180 and mirror the placement, paste:
+  IC2 machines/generators/solar panels, EnderIO machines with IO modes set per side (input/output colors stay on
+  the side facing the same neighbor), cap banks with IO and display faces, Iron Chests, Storage Drawers (incl.
+  controller), Jabba barrels (also on walls/ceilings, with side upgrades), Avaritia compressor, Draconic chest,
+  Forestry machines, Nuclear Control panels, Railcraft engines/loaders/detectors/signals, Tinkers' smeltery
+  controller/drains/faucets/casting tables, OpenComputers cases/screens (also upside-down screens with y mirror).
+  Each block faces the same neighbor as before in the preview and after paste.
