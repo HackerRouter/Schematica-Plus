@@ -17,10 +17,11 @@ public enum UiSprite {
     TASK_MANAGER(102, 112, 14, 14, true),
     FILE(144, 0, 12, 12, false),
     SCHEMATIC(144, 12, 12, 12, false),
+    SPONGE(144, 24, 12, 12, false),
     VANILLA(144, 36, 12, 12, false),
     SCHEMPLUS(0, 0, 12, 12, false),
     MEMORY(186, 0, 12, 12, false),
-    JSON(144, 44, 12, 12, false),
+    JSON(144, 48, 12, 12, false),
     DIRECTORY(156, 0, 12, 12, false),
     UP(156, 12, 12, 12, false),
     ROOT(156, 24, 12, 12, false),
@@ -76,6 +77,7 @@ public enum UiSprite {
         if (filename.endsWith(".schemplus")) return SCHEMPLUS;
         if (filename.endsWith(".json")) return JSON;
         if (filename.endsWith(".nbt")) return VANILLA;
+        if (filename.endsWith(".schem")) return SPONGE;
         return SCHEMATIC;
     }
 }
