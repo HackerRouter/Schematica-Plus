@@ -143,4 +143,20 @@ public class TileFacingAdapterTest {
         turned("tuhljin.automagy.tiles.TileEntityVisReader", reader, "Y");
         assertArrayEquals(new int[] {5, 6, 0, 2}, reader.getIntArray("outputDir"));
     }
+
+    @Test public void nestedKeysAndYaw() {
+        NBTTagCompound hatch = new NBTTagCompound();
+        NBTTagCompound multi = new NBTTagCompound();
+        multi.setInteger("direction", 2);
+        hatch.setTag("multiBlock", multi);
+        turned("net.malisis.core.tileentity.MultiBlockTileEntity", hatch, "Y");
+        assertEquals(5, hatch.getCompoundTag("multiBlock").getInteger("direction"));
+
+        NBTTagCompound stand = new NBTTagCompound();
+        stand.setInteger("Rotation", 300);
+        turned("com.brandon3055.draconicevolution.common.tileentities.TileTeleporterStand", stand, "Y");
+        assertEquals(30, stand.getInteger("Rotation"));
+        turned("com.brandon3055.draconicevolution.common.tileentities.TileTeleporterStand", stand, "x");
+        assertEquals(330, stand.getInteger("Rotation"));
+    }
 }

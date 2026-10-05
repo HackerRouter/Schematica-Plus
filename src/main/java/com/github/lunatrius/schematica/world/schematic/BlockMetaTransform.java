@@ -2,6 +2,7 @@
 package com.github.lunatrius.schematica.world.schematic;
 
 import java.lang.reflect.Field;
+import java.util.Collections;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockAnvil;
@@ -61,6 +62,12 @@ public final class BlockMetaTransform {
         {SOUTH, EAST}, {SOUTH, WEST}, {NORTH, WEST}, {NORTH, EAST}};
     private static Field standingSign;
 
+    /** Mod blocks facing a horizontal ForgeDirection 2-5 in bits 0-2 (chest and furnace layout). */
+    private static final java.util.Set<String> MOD_WALL = new java.util.HashSet<>();
+    /** Mod blocks facing any ForgeDirection in bits 0-2. */
+    private static final java.util.Set<String> MOD_ANY_SIDE = new java.util.HashSet<>();
+    /** Mod blocks with the torch layout (1 E, 2 W, 3 S, 4 N, 5 standing). */
+    private static final java.util.Set<String> MOD_TORCH = new java.util.HashSet<>();
     /** Mod blocks (by class, subclasses included) with a horizontal direction in the low two metadata bits. */
     private static final java.util.Map<String, ForgeDirection[]> MOD_HORIZONTAL = new java.util.HashMap<>();
     /** Galacticraft machines: the direction the placing player looked. */
@@ -83,6 +90,34 @@ public final class BlockMetaTransform {
             "BlockRequisitionTome", "BlockRemoteComparator", "BlockVisReader", "BlockEagerChest", "BlockGreedyChest", "BlockScribePointer"}) {
             MOD_HORIZONTAL.put("tuhljin.automagy.blocks." + block, new ForgeDirection[] {NORTH, EAST, SOUTH, WEST});
         }
+        // Et Futurum Requiem: glazed terracotta ((yaw quarter + 2) & 3), looms and stonecutters (front side - 2)
+        String efr = "ganymedes01.etfuturum.blocks.";
+        MOD_HORIZONTAL.put(efr + "BlockGlazedTerracotta", new ForgeDirection[] {NORTH, EAST, SOUTH, WEST});
+        MOD_HORIZONTAL.put(efr + "BlockLoom", new ForgeDirection[] {NORTH, SOUTH, WEST, EAST});
+        MOD_HORIZONTAL.put(efr + "BlockStonecutter", new ForgeDirection[] {NORTH, SOUTH, WEST, EAST});
+        // Botania fel pumpkins and tiny potatoes, Tinkers' tool tables and battlesigns (E/W/N/S)
+        MOD_HORIZONTAL.put("vazkii.botania.common.block.BlockFelPumpkin", HORIZONTAL);
+        MOD_HORIZONTAL.put("vazkii.botania.common.block.decor.BlockTinyPotato", HORIZONTAL);
+        MOD_HORIZONTAL.put("tconstruct.tools.blocks.EquipBlock", GALACTICRAFT);
+        // Draconic generators, Hardcore Ender Expansion enderman heads ((yaw quarter + 2) & 3)
+        MOD_HORIZONTAL.put("com.brandon3055.draconicevolution.common.blocks.machine.Generator", HORIZONTAL);
+        MOD_HORIZONTAL.put("chylex.hee.block.BlockEndermanHead", new ForgeDirection[] {NORTH, EAST, SOUTH, WEST});
+        // Galacticraft dishes (N/S/W/E), Avaritia, OpenPrinter printers, Adventure Backpacks (lamp/redstone flags above)
+        MOD_HORIZONTAL.put("micdoodle8.mods.galacticraft.core.blocks.BlockDish", new ForgeDirection[] {NORTH, SOUTH, WEST, EAST});
+        MOD_HORIZONTAL.put("fox.spiteful.avaritia.blocks.BlockMatterClusterOpener", new ForgeDirection[] {NORTH, EAST, SOUTH, WEST});
+        MOD_HORIZONTAL.put("fox.spiteful.avaritia.compat.botania.BlockInfinitato", HORIZONTAL);
+        MOD_HORIZONTAL.put("pcl.openprinter.blocks.BlockPrinter", HORIZONTAL);
+        MOD_HORIZONTAL.put("com.darkona.adventurebackpack.block.BlockAdventureBackpack", HORIZONTAL);
+        Collections.addAll(MOD_WALL, "de.katzenpapst.amunra.block.BlockARChest", "flaxbeard.thaumicexploration.block.BlockBoundChest",
+            "flaxbeard.thaumicexploration.block.BlockThinkTank", "com.glodblock.github.common.block.BlockWalrus",
+            "micdoodle8.mods.galacticraft.core.blocks.BlockT1TreasureChest", "micdoodle8.mods.galacticraft.planets.mars.blocks.BlockTier2TreasureChest",
+            "micdoodle8.mods.galacticraft.planets.asteroids.blocks.BlockTier3TreasureChest", "mods.railcraft.common.blocks.tracks.BlockTrackElevator");
+        Collections.addAll(MOD_ANY_SIDE, "de.keridos.floodlights.block.BlockFL", "pcl.opensecurity.blocks.BlockOSBase",
+            "vswe.stevesfactory.blocks.BlockCableCluster", "vswe.stevesfactory.blocks.BlockCableDirectionAdvanced",
+            "vswe.stevesfactory.blocks.BlockCableSign", "vswe.stevesfactory.blocks.BlockCableBreaker",
+            "com.kentington.thaumichorizons.common.blocks.BlockTransductionAmplifier", "micdoodle8.mods.galacticraft.core.blocks.BlockBrightLamp");
+        Collections.addAll(MOD_TORCH, "micdoodle8.mods.galacticraft.core.blocks.BlockGlowstoneTorch",
+            "micdoodle8.mods.galacticraft.core.blocks.BlockUnlitTorch", "micdoodle8.mods.galacticraft.core.blocks.BlockSpinThruster");
         // Extra Utilities conveyors: (yaw quarter + 2) % 4
         MOD_HORIZONTAL.put("com.rwtema.extrautils.block.BlockConveyor", new ForgeDirection[] {NORTH, EAST, SOUTH, WEST});
         // BiblioCraft armor stands (top half + 4), printing presses and typesetting tables: (yaw quarter + 1) % 4
@@ -154,6 +189,11 @@ public final class BlockMetaTransform {
         ForgeDirection turned = turn(op, ForgeDirection.getOrientation(value));
         if (turned == UP && !allowUp || turned == DOWN && !allowDown) return meta;
         return (meta & ~mask) | turned.ordinal();
+    }
+
+    /** Et Futurum banners: a 16-step rotation when standing (a tile flag), else the wall side 2-5. */
+    public static int banner(int meta, char op, boolean standing) {
+        return standing ? rotation16(meta & 15, op) : ordinal(meta, 7, op, false, false);
     }
 
     /** A 0-15 rotation counted clockwise from above (standing signs, floor skulls). */
@@ -263,6 +303,27 @@ public final class BlockMetaTransform {
             if (table != null) {
                 return direction(meta, 3, 0, table, op);
             }
+            if (MOD_WALL.contains(name)) return (meta & 7) >= 2 && (meta & 7) <= 5 ? ordinal(meta, 7, op, false, false) : meta;
+            if (MOD_ANY_SIDE.contains(name)) return ordinal(meta, 7, op, true, true);
+            if (MOD_TORCH.contains(name)) return direction(meta, 7, 0, ATTACHED, op);
+            // Amun-Ra machines and mothership engines: N/S/W/E in bits 2-3 over the sub-block
+            if (name.equals("de.katzenpapst.amunra.block.BlockMachineMeta")) return direction(meta, 12, 2, new ForgeDirection[] {NORTH, SOUTH, WEST, EAST}, op);
+            // OpenPrinter file cabinets and shredders: the yaw quarter + 1
+            if (name.equals("pcl.openprinter.blocks.BlockFileCabinet") || name.equals("pcl.openprinter.blocks.BlockShredder")) {
+                return meta >= 1 && meta <= 4 ? direction(meta - 1, 3, 0, HORIZONTAL, op) + 1 : meta;
+            }
+            // Tinkers' Defense crest mounts: the ladder layout minus one
+            if (name.equals("gmail.Lance5057.blocks.CrestMount")) return meta >= 1 && meta <= 4 ? ordinal(meta + 1, 7, op, false, false) - 1 : meta;
+            // Gadomancy arcane droppers: facing (any side) + 8 when turned a quarter around it; a Y turn flips that for up/down
+            if (name.equals("makeo.gadomancy.common.blocks.BlockArcaneDropper")) {
+                int turned = ordinal(meta, 7, op, true, true);
+                return (meta & 7) <= 1 && op == 'Y' ? turned ^ 8 : turned;
+            }
+            // Thaumic Tinkerer dark quartz and Botania decorative quartz pillars use the quartz layout; Forestry logs the log layout
+            if (name.equals("thaumic.tinkerer.common.block.quartz.BlockDarkQuartz") || name.equals("vazkii.botania.common.block.decor.quartz.BlockSpecialQuartz")) {
+                return meta >= 2 && meta <= 4 ? axis(meta, 7, 2, 3, 4, op) : meta;
+            }
+            if (name.equals("forestry.arboriculture.blocks.BlockLog")) return axis(meta, 12, 0, 4, 8, op);
             // Mars machines: the terraformer (0-3) stores the placer's look as N/S/W/E, cryogenic chamber and launch controller as E/W/N/S
             if (name.equals("micdoodle8.mods.galacticraft.planets.mars.blocks.BlockMachineMars")) {
                 return direction(meta, 3, 0, meta < 4 ? new ForgeDirection[] {NORTH, SOUTH, WEST, EAST} : GALACTICRAFT, op);
@@ -305,6 +366,87 @@ public final class BlockMetaTransform {
                 return op == 'x' || op == 'z' ? meta & ~3 | (meta & 1) << 1 | (meta & 2) >> 1 : meta;
             }
             // Thaumcraft mirrors, Extra Utilities transfer nodes and spikes: type * 6 + a side; arcane doors use the door layout
+            // Et Futurum Requiem
+            if (name.startsWith("ganymedes01.etfuturum.blocks.")) {
+                String efrBlock = name.substring("ganymedes01.etfuturum.blocks.".length());
+                switch (efrBlock) {
+                    case "BlockObserver": case "BlockBarrel": case "BlockEndRod": case "BlockGlowLichen":
+                        return ordinal(meta, 7, op, true, true);
+                    case "BlockAmethystCluster":
+                        return meta < 12 ? meta / 6 * 6 + turn(op, ForgeDirection.getOrientation(meta % 6)).ordinal() : meta;
+                    case "BlockBeeHive": {
+                        int honey = meta >= 8 ? 6 : 0;
+                        return meta - honey >= 2 && meta - honey <= 5 ? ordinal(meta - honey, 7, op, false, false) + honey : meta;
+                    }
+                    case "BlockPinkPetals":
+                        return direction(meta, 12, 2, new ForgeDirection[] {SOUTH, WEST, EAST, NORTH}, op);
+                    case "BlockChain": {
+                        if (meta > 2) return meta;
+                        ForgeDirection axis = turn(op, meta == 0 ? UP : meta == 1 ? EAST : SOUTH);
+                        return axis.offsetY != 0 ? 0 : axis.offsetX != 0 ? 1 : 2;
+                    }
+                    default:
+                }
+            }
+            // Cooking for Blockheads kitchen blocks face a horizontal ForgeDirection
+            if (name.equals("net.blay09.mods.cookingforblockheads.block.BlockBaseKitchen")) {
+                return (meta & 7) >= 2 && (meta & 7) <= 5 ? ordinal(meta, 7, op, false, false) : meta;
+            }
+            // Chisel snakestone: heads 0-3 (S, N, E, W), straight bodies 12 x, 13 z, 14 y; corners are rebuilt by neighbors
+            if (name.equals("team.chisel.block.BlockSnakestone")) {
+                if (meta <= 3) return direction(meta, 3, 0, new ForgeDirection[] {SOUTH, NORTH, EAST, WEST}, op);
+                if (meta < 12 || meta > 14) return meta;
+                ForgeDirection axis = turn(op, meta == 12 ? EAST : meta == 13 ? SOUTH : UP);
+                return axis.offsetY != 0 ? 14 : axis.offsetZ != 0 ? 13 : 12;
+            }
+            // Tinkers' Construct: drying racks (floor 0 along z, 1 along x; walls 2-5), stone torches (torch layout),
+            // landmines (lever layout), conveyors and slime pads (eighths of a turn in bits 0-2)
+            if (name.equals("tconstruct.armor.blocks.DryingRack")) {
+                if (meta < 2) return op == 'Y' ? meta ^ 1 : meta;
+                return meta <= 5 ? ordinal(meta, 7, op, false, false) : meta;
+            }
+            if (name.equals("tconstruct.world.blocks.StoneTorch")) return direction(meta, 7, 0, ATTACHED, op);
+            if (name.equals("tconstruct.mechworks.blocks.BlockLandmine")) return lever(meta, op);
+            if (name.equals("tconstruct.world.blocks.ConveyorBase") || name.equals("tconstruct.world.blocks.SlimePad")) {
+                int face = meta & 7;
+                switch (op) {
+                    case 'Y': face = face + 2; break;
+                    case 'x': face = 8 - face; break;
+                    case 'z': face = 4 - face; break;
+                    default: return meta;
+                }
+                return meta & ~7 | face & 7;
+            }
+            // Twilight Forest: critters (6 - the side they sit on), trophies (skull layout), stronghold shields (any side),
+            // spiral bricks (low two bits E, W, S, N)
+            if (name.equals("twilightforest.block.BlockTFCritter")) {
+                return direction(meta, 7, 0, new ForgeDirection[] {UNKNOWN, EAST, WEST, SOUTH, NORTH, UP, DOWN}, op);
+            }
+            if (name.equals("twilightforest.block.BlockTFTrophy")) return (meta & 7) == 1 ? meta : ordinal(meta, 7, op, false, false);
+            if (name.equals("twilightforest.block.BlockTFShield")) return ordinal(meta, 7, op, true, true);
+            if (name.equals("twilightforest.block.BlockTFSpiralBricks")) return direction(meta, 3, 0, new ForgeDirection[] {EAST, WEST, SOUTH, NORTH}, op);
+            // Thaumic Tinkerer animation tablets (redstone + 8) and repairers face a horizontal ForgeDirection
+            if (name.equals("thaumic.tinkerer.common.block.BlockAnimationTablet") || name.equals("thaumic.tinkerer.common.block.BlockRepairer")) {
+                return (meta & 7) >= 2 && (meta & 7) <= 5 ? ordinal(meta, 7, op, false, false) : meta;
+            }
+            // Malisis mixers and door factories, Hardcore Ender Expansion void chests: horizontal ForgeDirections;
+            // Malisis mixed blocks and player sensors (powered + 8): any side
+            if (name.equals("net.malisis.doors.block.BlockMixer") || name.equals("net.malisis.doors.block.DoorFactory")
+                || name.equals("chylex.hee.block.BlockVoidChest")) {
+                return (meta & 7) >= 2 && (meta & 7) <= 5 ? ordinal(meta, 7, op, false, false) : meta;
+            }
+            if (name.equals("net.malisis.doors.block.MixedBlock") || name.equals("net.malisis.doors.block.PlayerSensor")) return ordinal(meta, 7, op, true, true);
+            // Draconic potentiometers: the side they point away from (lever-like 1-6, + 8 kept)
+            if (name.equals("com.brandon3055.draconicevolution.common.blocks.Potentiometer")) {
+                return direction(meta, 7, 0, new ForgeDirection[] {UNKNOWN, EAST, WEST, SOUTH, NORTH, DOWN, UP}, op);
+            }
+            // Hardcore Ender Expansion: obsidian pillars (quartz layout: 2 y, 3 x, 4 z), spooky logs (face side - 1)
+            if (name.equals("chylex.hee.block.BlockObsidianSpecial")) return meta >= 2 && meta <= 4 ? axis(meta, 7, 2, 3, 4, op) : meta;
+            if (name.equals("chylex.hee.block.BlockSpookyLog")) {
+                return meta >= 1 && meta <= 4 ? ordinal(meta + 1, 7, op, false, false) - 1 : meta;
+            }
+            // Natura dark trees use the log layout
+            if (name.equals("mods.natura.blocks.trees.DarkTreeBlock")) return axis(meta, 12, 0, 4, 8, op);
             // Automagy: hungry/finical maws face the side they were placed on
             if (name.equals("tuhljin.automagy.blocks.BlockMawHungry")) return ordinal(meta, 7, op, true, true);
             if (name.equals("thaumcraft.common.blocks.BlockMirror") || name.equals("com.rwtema.extrautils.tileentity.transfernodes.BlockTransferNode")

@@ -24,7 +24,7 @@ import com.github.lunatrius.schematica.world.schematic.BlockMetaTransform;
  * back. Blocks handled here are not also turned through their Block.rotateBlock.
  */
 final class TileFacingAdapter implements ISchematicVisualAdapter {
-    enum Kind { ORDINAL, NAME, SIDE_KEYS, SIDE_ARRAY, MASK, HORIZONTAL, ROTATION16, OFFSET, ORDINAL_ARRAY, NAMED_SIDES }
+    enum Kind { ORDINAL, NAME, SIDE_KEYS, SIDE_ARRAY, MASK, HORIZONTAL, ROTATION16, OFFSET, ORDINAL_ARRAY, NAMED_SIDES, YAW }
 
     static final class Rule {
         final Kind kind;
@@ -98,8 +98,12 @@ final class TileFacingAdapter implements ISchematicVisualAdapter {
         add("buildcraft.builders.TileConstructionMarker", ordinal("direction"));
         // Et Futurum Requiem shulker boxes, Natura netherrack furnace, Thaumic Tinkerer mobilizer, Computronics detector
         add("ganymedes01.etfuturum.tileentities.TileEntityShulkerBox", ordinal("Facing"));
+        add("team.chisel.block.tileentity.TileEntityPresent", new Rule(Kind.HORIZONTAL, "rotation", ALL), ordinal("conDir"));
+        add("ganymedes01.etfuturum.tileentities.TileEntityGlowLichen", new Rule(Kind.MASK, "State", ALL));
         add("mods.natura.blocks.tech.NetherrackFurnaceLogic", ordinal("Direction"));
         add("thaumic.tinkerer.common.block.tile.TileEntityMobilizer", ordinal("Direction"));
+        add("thaumic.tinkerer.common.block.tile.TileRPlacer", ordinal("orientation"));
+        add("thaumic.tinkerer.common.block.tile.transvector.TileTransvectorDislocator", ordinal("orientation"));
         add("pl.asie.computronics.integration.railcraft.tile.TileDigitalDetector", ordinal("direction"));
         // Witching Gadgets devices
         for (String tile : new String[] {"TileEntityBlastfurnace", "TileEntityCobbleGen", "TileEntityEssentiaPump", "TileEntityIceGen",
@@ -154,6 +158,15 @@ final class TileFacingAdapter implements ISchematicVisualAdapter {
         // Automagy: redcrystal face and power source side, its N/E/S/W connections; vis reader output sides (6 all)
         add("tuhljin.automagy.tiles.TileEntityRedcrystal", ordinal("orientation"), ordinal("powerSourceSide"), new Rule(Kind.NAMED_SIDES, "connect", ALL));
         add("tuhljin.automagy.tiles.TileEntityVisReader", new Rule(Kind.ORDINAL_ARRAY, "outputDir", ALL));
+        // Malisis multi-block doors (rusty hatches, forcefield doors): the structure's direction
+        for (String tile : new String[] {"core.tileentity.MultiBlockTileEntity", "doors.door.tileentity.RustyHatchTileEntity",
+            "doors.door.tileentity.ForcefieldTileEntity"}) {
+            add("net.malisis." + tile, ordinal("multiBlock/direction"));
+        }
+        // FloodLights
+        add("de.keridos.floodlights.tileentity.TileEntityFL", ordinal("teDirection"));
+        // Draconic teleporter stands: the placer's head yaw in degrees
+        add("com.brandon3055.draconicevolution.common.tileentities.TileTeleporterStand", new Rule(Kind.YAW, "Rotation", ALL));
         // OpenComputers: yaw is horizontal, pitch UP, DOWN or NORTH (level); tilting is not representable
         add("li.cil.oc.common.tileentity.traits.Rotatable", new Rule(Kind.ORDINAL, "oc:yaw", "Yxz"), new Rule(Kind.ORDINAL, "oc:pitch", "y"));
     }
@@ -192,71 +205,80 @@ final class TileFacingAdapter implements ISchematicVisualAdapter {
         tile.readFromNBT(data);
     }
 
-    static void apply(List<Rule> rules, NBTTagCompound data, char operation) {
+    static void apply(List<Rule> rules, NBTTagCompound root, char operation) {
         for (Rule rule : rules) {
             if (rule.operations.indexOf(operation) < 0) continue;
+            // "compound/key" for a key inside a compound
+            NBTTagCompound data = root;
+            String key = rule.key;
+            int slash = key.lastIndexOf('/');
+            if (slash >= 0) {
+                if (!root.hasKey(key.substring(0, slash), 10)) continue;
+                data = root.getCompoundTag(key.substring(0, slash));
+                key = key.substring(slash + 1);
+            }
             switch (rule.kind) {
                 case ORDINAL: {
-                    NBTBase tag = data.getTag(rule.key);
+                    NBTBase tag = data.getTag(key);
                     if (!(tag instanceof NBTBase.NBTPrimitive)) break;
                     int value = ((NBTBase.NBTPrimitive) tag).func_150287_d();
                     if (value < 0 || value > 5) break;
                     int turned = SchematicTransform.direction(operation, ForgeDirection.getOrientation(value)).ordinal();
-                    data.setTag(rule.key, tag instanceof NBTTagByte ? new NBTTagByte((byte) turned)
+                    data.setTag(key, tag instanceof NBTTagByte ? new NBTTagByte((byte) turned)
                         : tag instanceof NBTTagShort ? new NBTTagShort((short) turned) : new NBTTagInt(turned));
                     break;
                 }
                 case NAME:
-                    if (!data.hasKey(rule.key, 8)) break;
+                    if (!data.hasKey(key, 8)) break;
                     try {
-                        ForgeDirection side = ForgeDirection.valueOf(data.getString(rule.key));
-                        if (side != ForgeDirection.UNKNOWN) data.setString(rule.key, SchematicTransform.direction(operation, side).name());
+                        ForgeDirection side = ForgeDirection.valueOf(data.getString(key));
+                        if (side != ForgeDirection.UNKNOWN) data.setString(key, SchematicTransform.direction(operation, side).name());
                     } catch (IllegalArgumentException ignored) {}
                     break;
                 case SIDE_KEYS: {
                     Map<String, NBTBase> moved = new LinkedHashMap<>();
                     for (ForgeDirection side : ForgeDirection.VALID_DIRECTIONS) {
-                        String key = rule.key + side.ordinal();
-                        if (!data.hasKey(key)) continue;
-                        moved.put(rule.key + SchematicTransform.direction(operation, side).ordinal(), data.getTag(key));
-                        data.removeTag(key);
+                        String sideKey = key + side.ordinal();
+                        if (!data.hasKey(sideKey)) continue;
+                        moved.put(key + SchematicTransform.direction(operation, side).ordinal(), data.getTag(sideKey));
+                        data.removeTag(sideKey);
                     }
                     for (Map.Entry<String, NBTBase> entry : moved.entrySet()) data.setTag(entry.getKey(), entry.getValue());
                     break;
                 }
                 case SIDE_ARRAY:
-                    if (data.hasKey(rule.key, 11) && data.getIntArray(rule.key).length == 6) {
-                        int[] values = data.getIntArray(rule.key).clone();
+                    if (data.hasKey(key, 11) && data.getIntArray(key).length == 6) {
+                        int[] values = data.getIntArray(key).clone();
                         SchematicTransform.sides(operation, values);
-                        data.setIntArray(rule.key, values);
-                    } else if (data.hasKey(rule.key, 7) && data.getByteArray(rule.key).length == 6) {
-                        byte[] values = data.getByteArray(rule.key).clone();
+                        data.setIntArray(key, values);
+                    } else if (data.hasKey(key, 7) && data.getByteArray(key).length == 6) {
+                        byte[] values = data.getByteArray(key).clone();
                         SchematicTransform.sides(operation, values);
-                        data.setByteArray(rule.key, values);
+                        data.setByteArray(key, values);
                     }
                     break;
                 case HORIZONTAL: {
-                    NBTBase tag = data.getTag(rule.key);
+                    NBTBase tag = data.getTag(key);
                     if (!(tag instanceof NBTBase.NBTPrimitive)) break;
                     int raw = ((NBTBase.NBTPrimitive) tag).func_150287_d();
                     ForgeDirection turned = SchematicTransform.direction(operation, rule.sides[raw & 3]);
                     int index = java.util.Arrays.asList(rule.sides).indexOf(turned);
                     if (index < 0) break;
                     index |= raw & ~3;
-                    data.setTag(rule.key, tag instanceof NBTTagByte ? new NBTTagByte((byte) index)
+                    data.setTag(key, tag instanceof NBTTagByte ? new NBTTagByte((byte) index)
                         : tag instanceof NBTTagShort ? new NBTTagShort((short) index) : new NBTTagInt(index));
                     break;
                 }
                 case ROTATION16: {
-                    NBTBase tag = data.getTag(rule.key);
+                    NBTBase tag = data.getTag(key);
                     if (!(tag instanceof NBTBase.NBTPrimitive)) break;
                     int rotation = BlockMetaTransform.rotation16(((NBTBase.NBTPrimitive) tag).func_150287_d() & 15, operation);
-                    data.setTag(rule.key, tag instanceof NBTTagByte ? new NBTTagByte((byte) rotation)
+                    data.setTag(key, tag instanceof NBTTagByte ? new NBTTagByte((byte) rotation)
                         : tag instanceof NBTTagShort ? new NBTTagShort((short) rotation) : new NBTTagInt(rotation));
                     break;
                 }
                 case OFFSET: {
-                    String x = rule.key + "x", y = rule.key + "y", z = rule.key + "z";
+                    String x = key + "x", y = key + "y", z = key + "z";
                     if (!data.hasKey(x) && !data.hasKey(y) && !data.hasKey(z)) break;
                     double[] moved = SchematicTransform.point(operation, data.getInteger(x), data.getInteger(y), data.getInteger(z), 0, 0, 0);
                     data.setInteger(x, (int) Math.round(moved[0]));
@@ -265,33 +287,44 @@ final class TileFacingAdapter implements ISchematicVisualAdapter {
                     break;
                 }
                 case ORDINAL_ARRAY:
-                    if (data.hasKey(rule.key, 11)) {
-                        int[] values = data.getIntArray(rule.key).clone();
+                    if (data.hasKey(key, 11)) {
+                        int[] values = data.getIntArray(key).clone();
                         for (int i = 0; i < values.length; i++) {
                             if (values[i] >= 0 && values[i] <= 5) values[i] = SchematicTransform.direction(operation, ForgeDirection.getOrientation(values[i])).ordinal();
                         }
-                        data.setIntArray(rule.key, values);
+                        data.setIntArray(key, values);
                     }
                     break;
                 case NAMED_SIDES: {
                     Map<String, NBTBase> moved = new LinkedHashMap<>();
                     for (ForgeDirection side : ForgeDirection.VALID_DIRECTIONS) {
-                        String key = rule.key + side.name().charAt(0);
-                        if (side.offsetY != 0 || !data.hasKey(key)) continue;
+                        String sideKey = key + side.name().charAt(0);
+                        if (side.offsetY != 0 || !data.hasKey(sideKey)) continue;
                         ForgeDirection turned = SchematicTransform.direction(operation, side);
                         if (turned.offsetY != 0) { moved.clear(); break; }
-                        moved.put(rule.key + turned.name().charAt(0), data.getTag(key));
+                        moved.put(key + turned.name().charAt(0), data.getTag(sideKey));
                     }
                     if (moved.isEmpty()) break;
-                    for (ForgeDirection side : ForgeDirection.VALID_DIRECTIONS) if (side.offsetY == 0) data.removeTag(rule.key + side.name().charAt(0));
+                    for (ForgeDirection side : ForgeDirection.VALID_DIRECTIONS) if (side.offsetY == 0) data.removeTag(key + side.name().charAt(0));
                     for (Map.Entry<String, NBTBase> entry : moved.entrySet()) data.setTag(entry.getKey(), entry.getValue());
                     break;
                 }
+                case YAW: {
+                    NBTBase tag = data.getTag(key);
+                    if (!(tag instanceof NBTBase.NBTPrimitive)) break;
+                    double yaw = ((NBTBase.NBTPrimitive) tag).func_150286_g();
+                    double turned = operation == 'Y' ? yaw + 90 : operation == 'x' ? -yaw : operation == 'z' ? 180 - yaw : yaw;
+                    turned = ((turned % 360) + 360) % 360;
+                    if (tag instanceof net.minecraft.nbt.NBTTagFloat) data.setFloat(key, (float) turned);
+                    else if (tag instanceof net.minecraft.nbt.NBTTagDouble) data.setDouble(key, turned);
+                    else data.setInteger(key, (int) Math.round(turned));
+                    break;
+                }
                 case MASK: {
-                    NBTBase tag = data.getTag(rule.key);
+                    NBTBase tag = data.getTag(key);
                     if (!(tag instanceof NBTBase.NBTPrimitive)) break;
                     int mask = SchematicTransform.sideMask(operation, ((NBTBase.NBTPrimitive) tag).func_150287_d());
-                    data.setTag(rule.key, tag instanceof NBTTagByte ? new NBTTagByte((byte) mask)
+                    data.setTag(key, tag instanceof NBTTagByte ? new NBTTagByte((byte) mask)
                         : tag instanceof NBTTagShort ? new NBTTagShort((short) mask) : new NBTTagInt(mask));
                     break;
                 }

@@ -1806,6 +1806,19 @@ Test in GTNH 2.8.4 (NEI 2.8.44) and GTNH 2.9 (NEI 2.8.145); without NEI the butt
   sides. Rotate and mirror: each faces the same neighbor after paste; the miner base still forms and its dock
   side follows.
 
+## Other GTNH blocks found by the facing sweep
+
+- One of each, facing different ways where they can: Et Futurum glazed terracotta, loom, stonecutter, bee nest,
+  pink petals, observer, barrel, end rod, glow lichen, amethyst cluster, chain, standing and wall banners; Cooking for
+  Blockheads counters/oven/fridge/sink/tool rack; Chisel present (double) and snakestone; Botania fel pumpkin, tiny
+  potato, quartz pillars; Tinkers' drying racks (floor and wall), tool station, battlesign, stone torch, landmine,
+  conveyor and slime pad (diagonal too); Twilight Forest fireflies/cicadas, trophies, shields, spiral bricks; Thaumic
+  Tinkerer tablet, repairer, R-placer, dislocator with a transvector target; HEE void chest, obsidian pillars; Malisis
+  mixer, door factory, rusty hatch, forcefield door; Draconic generator, potentiometer, teleporter stand; Galacticraft
+  dish, lamps, torches, spin thrusters, treasure chests; FloodLights; OpenPrinter, OpenSecurity, Steve's Factory
+  Manager cluster/relay/sign/breaker. Rotate and mirror: each faces the same neighbor; multi-block doors still open as
+  one piece after paste.
+
 ## Catwalks, HarvestCraft, Galaxy Space and Automagy under rotation and mirroring
 
 - Catwalks with some sides opened, caged ladders facing all four ways with opened sides, support columns on all three

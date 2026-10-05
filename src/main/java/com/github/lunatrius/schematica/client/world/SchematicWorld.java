@@ -642,6 +642,15 @@ public class SchematicWorld extends World {
                 Reference.logger.debug("Could not check rail {}", block, e);
             }
         }
+        if (block.getClass().getName().equals("ganymedes01.etfuturum.blocks.BlockBanner")) {
+            TileEntity banner = getTileEntity(x, y, z);
+            try {
+                java.lang.reflect.Field standing = banner == null ? null : banner.getClass().getField("isStanding");
+                if (standing != null) return com.github.lunatrius.schematica.world.schematic.BlockMetaTransform.banner(metadata, operation, standing.getBoolean(banner));
+            } catch (ReflectiveOperationException e) {
+                Reference.logger.debug("Could not check banner {}", block, e);
+            }
+        }
         int result = com.github.lunatrius.schematica.world.schematic.BlockMetaTransform.transform(block, metadata, operation);
         if (result >= 0) return result;
         if (Character.isLowerCase(operation) || com.github.lunatrius.schematica.compat.VisualAdapters.transformsTile(getTileEntity(x, y, z))) return metadata;

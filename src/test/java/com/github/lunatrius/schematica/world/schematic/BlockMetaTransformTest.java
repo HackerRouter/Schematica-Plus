@@ -118,4 +118,28 @@ public class BlockMetaTransformTest {
         // Galaxy Space machines use Galacticraft's E, W, N, S
         assertEquals(4 | 0, apply(new galaxyspace.core.block.machine.BlockMachine(), 4 | 2, "Y"));
     }
+
+    @Test public void openSourceGtnhModBlocksFoundBySweep() {
+        // Et Futurum: bee nest with honey (2-5 + 6), pink petals (direction in bits 2-3 over the count), chains (0 y, 1 x, 2 z)
+        assertEquals(5 + 6, apply(new ganymedes01.etfuturum.blocks.BlockBeeHive(), 2 + 6, "Y"));
+        assertEquals(1 << 2 | 3, apply(new ganymedes01.etfuturum.blocks.BlockPinkPetals(), 0 | 3, "Y"));
+        assertEquals(2, apply(new ganymedes01.etfuturum.blocks.BlockChain(), 1, "Y"));
+        assertEquals(0, apply(new ganymedes01.etfuturum.blocks.BlockChain(), 1, "Z"));
+        // Tinkers' conveyors turn by eighths, drying racks swap floor axes
+        assertEquals(8 | 3, apply(new tconstruct.world.blocks.ConveyorBase(), 8 | 1, "Y"));
+        assertEquals(7, apply(new tconstruct.world.blocks.ConveyorBase(), 1, "x"));
+        assertEquals(1, apply(new tconstruct.armor.blocks.DryingRack(), 0, "Y"));
+        assertEquals(5, apply(new tconstruct.armor.blocks.DryingRack(), 2, "Y"));
+        // Twilight Forest critter on the north side of a block (4) turns to the east side (1)
+        assertEquals(1, apply(new twilightforest.block.BlockTFCritter(), 4, "Y"));
+        assertEquals(6, apply(new twilightforest.block.BlockTFCritter(), 5, "y"));
+        assertEquals(4, apply(new chylex.hee.block.BlockObsidianSpecial(), 3, "Y"));
+        assertEquals(4, apply(new gmail.Lance5057.blocks.CrestMount(), 1, "Y"));
+        assertEquals(2, apply(new pcl.openprinter.blocks.BlockShredder(), 1, "Y"));
+        // Amun-Ra machines keep the sub-block (bits 0-1) under the N/S/W/E bits 2-3
+        assertEquals(3 << 2 | 1, apply(new de.katzenpapst.amunra.block.BlockMachineMeta(), 0 << 2 | 1, "Y"));
+        // arcane dropper facing up keeps up and flips its quarter-turn flag
+        assertEquals(1 | 8, apply(new makeo.gadomancy.common.blocks.BlockArcaneDropper(), 1, "Y"));
+        assertEquals(3, apply(new micdoodle8.mods.galacticraft.core.blocks.BlockDish(), 0, "Y"));
+    }
 }

@@ -60,6 +60,7 @@ public final class CoordinateLinks {
             point("subTileCmp", "poolX", "poolY", "poolZ", null), point("subTileCmp", "bindX", "bindY", "bindZ", null));
         // Thaumic Tinkerer mobilizer relays (same layer)
         add("thaumic.tinkerer.common.block.tile.TileEntityRelay", point("", "PartnerX", null, "PartnerZ", null));
+        add("thaumic.tinkerer.common.block.tile.transvector.TileTransvector", point("", "xt", "yt", "zt", null));
         add("thaumic.tinkerer.common.block.tile.TileEntityMobilizer", point("", "FirstRelayX", null, "FirstRelayZ", null),
             point("", "SecondRelayX", null, "SecondRelayZ", null));
         // Galacticraft beam reflectors and receivers, multiblock parts (also Galaxy Space solar panels), Stargate rings and DHDs, Ra's mothership boosters
@@ -73,6 +74,10 @@ public final class CoordinateLinks {
         // Single links: wireless lever, EnderIO light nodes, Malisis door parts, Nuclear Control extenders, signal terminals
         add("lumien.randomthings.TileEntities.TileEntityWirelessLever", triple("target"));
         add("crazypants.enderio.machine.light.TileLightNode", triple("parent"));
+        for (String tile : new String[] {"core.tileentity.MultiBlockTileEntity", "doors.door.tileentity.RustyHatchTileEntity",
+            "doors.door.tileentity.ForcefieldTileEntity"}) {
+            add("net.malisis." + tile, point("multiBlock", "x", "y", "z", null));
+        }
         add("net.malisis.doors.door.tileentity.MultiTile", triple("mainBlock"));
         add("shedar.mods.ic2.nuclearcontrol.tileentities.TileEntityInfoPanelExtender", triple("core"));
         add("tmechworks.blocks.logic.SignalTerminalLogic", point("", "BusX", "BusY", "BusZ", null));
