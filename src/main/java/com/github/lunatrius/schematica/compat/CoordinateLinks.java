@@ -34,9 +34,15 @@ public final class CoordinateLinks {
         final boolean box;
         /** Dimension of the linked block; links into another dimension are left alone. */
         final String dimension;
+        /** path is a list of compounds whose int array x holds x, y and z. */
+        final boolean list;
 
         Spec(String path, String x, String y, String z, boolean box, String dimension) {
-            this.path = path; this.x = x; this.y = y; this.z = z; this.box = box; this.dimension = dimension;
+            this(path, x, y, z, box, dimension, false);
+        }
+
+        Spec(String path, String x, String y, String z, boolean box, String dimension, boolean list) {
+            this.path = path; this.x = x; this.y = y; this.z = z; this.box = box; this.dimension = dimension; this.list = list;
         }
     }
 
@@ -56,8 +62,10 @@ public final class CoordinateLinks {
         add("thaumic.tinkerer.common.block.tile.TileEntityRelay", point("", "PartnerX", null, "PartnerZ", null));
         add("thaumic.tinkerer.common.block.tile.TileEntityMobilizer", point("", "FirstRelayX", null, "FirstRelayZ", null),
             point("", "SecondRelayX", null, "SecondRelayZ", null));
-        // Galacticraft beam reflectors and receivers, Stargate rings and DHDs, Ra's mothership boosters
+        // Galacticraft beam reflectors and receivers, multiblock parts (also Galaxy Space solar panels), Stargate rings and DHDs, Ra's mothership boosters
         add("micdoodle8.mods.galacticraft.planets.asteroids.tile.TileEntityBeamOutput", triple("Target"));
+        add("micdoodle8.mods.galacticraft.core.tile.TileEntityMulti", point("mainBlockPosition", "x", "y", "z", null));
+        add("micdoodle8.mods.galacticraft.planets.asteroids.tile.TileEntityTelepadFake", point("mainBlockPosition", "x", "y", "z", null));
         add("gcewing.sg.tileentities.SGBaseTE", triple("linked"));
         add("gcewing.sg.guis.DHDTE", triple("linked"));
         add("gcewing.sg.tileentities.SGRingTE", triple("base"));
@@ -84,6 +92,19 @@ public final class CoordinateLinks {
         add("buildcraft.core.TilePathMarker", point("", "x0", "y0", "z0", null), point("", "x1", "y1", "z1", null));
         add("buildcraft.core.TileMarker", point("vectO", "i", "j", "k", null), point("vect0", "i", "j", "k", null),
             point("vect1", "i", "j", "k", null), point("vect2", "i", "j", "k", null));
+        // Automagy: links to inventories, mirrors, targets and the inventarium's nodes and memory users
+        String automagy = "tuhljin.automagy.tiles.";
+        for (String tile : new String[] {"TileEntityGolemTaskmaster", "TileEntityRemoteComparator", "TileEntityRequisitionTome",
+            "TileEntityUnseenScribe", "TileEntityMirrorMultiDest"}) {
+            add(automagy + tile, triple("link"));
+        }
+        add(automagy + "TileEntityTallyBase", triple("target"));
+        add(automagy + "TileEntityVisReader", triple("target"));
+        add(automagy + "TileEntityNethermind", triple("currentRune"));
+        add(automagy + "TileEntityRedcrystalMerc", point("", "mirrorX", "mirrorY", "mirrorZ", "mirrorDim"),
+            point("", "mirrorLinkedX", "mirrorLinkedY", "mirrorLinkedZ", "mirrorLinkedDim"));
+        add(automagy + "TileEntityInventarium", new Spec("Nodes", "pos", null, null, false, null, true),
+            new Spec("MemoryUsers", "pos", null, null, false, null, true));
         // Extra Utilities energy nodes: the receivers they found
         add("com.rwtema.extrautils.tileentity.transfernodes.TileEntityTransferNodeEnergy", point("", "cx%d", "cy%d", "cz%d", null));
     }
@@ -182,6 +203,10 @@ public final class CoordinateLinks {
     private static void apply(List<Spec> specs, NBTTagCompound root, Mapping mapping, boolean vertical) {
         int dimension = root.getInteger(MARKER);
         for (Spec spec : specs) {
+            if (spec.list) {
+                positions(root, spec, mapping);
+                continue;
+            }
             NBTTagCompound tag = spec.path.isEmpty() ? root : root.hasKey(spec.path, 10) ? root.getCompoundTag(spec.path) : null;
             if (tag == null || spec.y == null && vertical) continue;
             if (spec.dimension != null && tag.hasKey(spec.dimension) && tag.getInteger(spec.dimension) != dimension) continue;
@@ -202,6 +227,17 @@ public final class CoordinateLinks {
                 }
                 if (!list) break;
             }
+        }
+    }
+
+    private static void positions(NBTTagCompound root, Spec spec, Mapping mapping) {
+        net.minecraft.nbt.NBTTagList list = root.getTagList(spec.path, 10);
+        for (int i = 0; i < list.tagCount(); i++) {
+            NBTTagCompound entry = list.getCompoundTagAt(i);
+            int[] pos = entry.getIntArray(spec.x);
+            if (pos.length != 3 || pos[1] < 0) continue;
+            double[] moved = mapping.map(new double[] {pos[0], pos[1], pos[2]});
+            entry.setIntArray(spec.x, new int[] {(int) Math.round(moved[0]), (int) Math.round(moved[1]), (int) Math.round(moved[2])});
         }
     }
 

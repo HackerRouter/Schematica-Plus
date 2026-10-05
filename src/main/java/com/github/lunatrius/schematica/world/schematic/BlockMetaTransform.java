@@ -73,10 +73,16 @@ public final class BlockMetaTransform {
             MOD_HORIZONTAL.put(gc + block, GALACTICRAFT);
         }
         MOD_HORIZONTAL.put("micdoodle8.mods.galacticraft.planets.mars.blocks.BlockMachineMarsT2", GALACTICRAFT);
+        MOD_HORIZONTAL.put("galaxyspace.core.block.machine.BlockMachine", GALACTICRAFT);
         MOD_HORIZONTAL.put(gc + "BlockSolar", new ForgeDirection[] {NORTH, SOUTH, WEST, EAST});
         // Witchery: coffins use the bed layout, mirrors keep the side of the block their glass is on (top half + 4)
         MOD_HORIZONTAL.put("com.emoniph.witchery.blocks.BlockCoffin", HORIZONTAL);
         MOD_HORIZONTAL.put("com.emoniph.witchery.blocks.BlockMirror", new ForgeDirection[] {SOUTH, NORTH, EAST, WEST});
+        // Automagy: (yaw quarter + 2) & 3 in the low two bits
+        for (String block : new String[] {"BlockHourglass", "BlockGolemInhibitor", "BlockChestBase", "BlockGolemTaskmaster", "BlockUnseenScribe",
+            "BlockRequisitionTome", "BlockRemoteComparator", "BlockVisReader", "BlockEagerChest", "BlockGreedyChest", "BlockScribePointer"}) {
+            MOD_HORIZONTAL.put("tuhljin.automagy.blocks." + block, new ForgeDirection[] {NORTH, EAST, SOUTH, WEST});
+        }
         // Extra Utilities conveyors: (yaw quarter + 2) % 4
         MOD_HORIZONTAL.put("com.rwtema.extrautils.block.BlockConveyor", new ForgeDirection[] {NORTH, EAST, SOUTH, WEST});
         // BiblioCraft armor stands (top half + 4), printing presses and typesetting tables: (yaw quarter + 1) % 4
@@ -85,7 +91,42 @@ public final class BlockMetaTransform {
         }
     }
 
+    private static final java.util.Set<String> HARVESTCRAFT_MACHINES = new java.util.HashSet<>(
+        java.util.Arrays.asList("Churn", "Grinder", "Oven", "Presser", "Quern"));
+    private static final ForgeDirection[] CATWALK_SIDES = {EAST, WEST, SOUTH, NORTH};
+    private static final String[] LADDER_FACINGS = {"north", "south", "west", "east"};
+
     private BlockMetaTransform() {}
+
+    /**
+     * The block a block becomes under an operation: blocks whose facing is part of the registry name (Catwalks caged
+     * ladders, one block per side) turn into the block for the turned side; others stay.
+     */
+    public static Block block(Block block, char op) {
+        if (block == null || "XZy".indexOf(op) >= 0 || !block.getClass().getName().equals("com.thecodewarrior.catwalks.block.BlockCagedLadder")) {
+            return block;
+        }
+        String name = cpw.mods.fml.common.registry.GameData.getBlockRegistry().getNameForObject(block);
+        String turned = ladderName(name, op);
+        if (turned == null || turned.equals(name)) return block;
+        Block result = cpw.mods.fml.common.registry.GameData.getBlockRegistry().getObject(turned);
+        return result == null || result == net.minecraft.init.Blocks.air ? block : result;
+    }
+
+    /** "catwalks:cagedLadder_north_lit..." with its side turned; null when the name has no side. */
+    static String ladderName(String name, char op) {
+        if (name == null) return null;
+        int start = name.indexOf("cagedLadder_");
+        if (start < 0) return null;
+        start += "cagedLadder_".length();
+        for (String facing : LADDER_FACINGS) {
+            if (!name.startsWith(facing, start)) continue;
+            ForgeDirection side = ForgeDirection.valueOf(facing.toUpperCase(java.util.Locale.ROOT));
+            String turned = turn(op, side).name().toLowerCase(java.util.Locale.ROOT);
+            return name.substring(0, start) + turned + name.substring(start + facing.length());
+        }
+        return null;
+    }
 
     private static ForgeDirection turn(char op, ForgeDirection side) {
         return side == UNKNOWN ? side : SchematicTransform.direction(op, side);
@@ -243,8 +284,31 @@ public final class BlockMetaTransform {
             if (name.equals("com.emoniph.witchery.blocks.BlockAlluringSkull") || name.equals("com.emoniph.witchery.blocks.BlockWolfHead")) {
                 return (meta & 7) == 1 ? meta : ordinal(meta, 7, op, false, false);
             }
+            // Pam's HarvestCraft machines face a horizontal ForgeDirection
+            if (name.startsWith("com.pam.harvestcraft.BlockPam") && HARVESTCRAFT_MACHINES.contains(name.substring("com.pam.harvestcraft.BlockPam".length()))) {
+                return (meta & 7) >= 2 && (meta & 7) <= 5 ? ordinal(meta, 7, op, false, false) : meta;
+            }
+            // Catwalks: catwalk open sides (8 N, 4 S, 2 W, 1 E), support column axis (0 y, 1 z, 2 x), caged ladder sides
+            // relative to the ladder (bits 1 left, 0 right; the ladder's own side is its block, see block())
+            if (name.equals("com.thecodewarrior.catwalks.block.BlockCatwalk")) {
+                if ("XZy".indexOf(op) >= 0) return meta;
+                int result = meta & ~15;
+                for (int bit = 0; bit < 4; bit++) if ((meta & 1 << bit) != 0) result |= 1 << index(CATWALK_SIDES, turn(op, CATWALK_SIDES[bit]));
+                return result;
+            }
+            if (name.equals("com.thecodewarrior.catwalks.block.BlockSupportColumn")) {
+                if (meta > 2) return meta;
+                ForgeDirection axis = turn(op, meta == 0 ? UP : meta == 1 ? SOUTH : EAST);
+                return axis.offsetY != 0 ? 0 : axis.offsetZ != 0 ? 1 : 2;
+            }
+            if (name.equals("com.thecodewarrior.catwalks.block.BlockCagedLadder")) {
+                return op == 'x' || op == 'z' ? meta & ~3 | (meta & 1) << 1 | (meta & 2) >> 1 : meta;
+            }
             // Thaumcraft mirrors, Extra Utilities transfer nodes and spikes: type * 6 + a side; arcane doors use the door layout
+            // Automagy: hungry/finical maws face the side they were placed on
+            if (name.equals("tuhljin.automagy.blocks.BlockMawHungry")) return ordinal(meta, 7, op, true, true);
             if (name.equals("thaumcraft.common.blocks.BlockMirror") || name.equals("com.rwtema.extrautils.tileentity.transfernodes.BlockTransferNode")
+                || name.equals("tuhljin.automagy.blocks.BlockTallyBase")
                 || name.equals("com.rwtema.extrautils.block.BlockSpike")) {
                 return meta < 12 ? meta / 6 * 6 + turn(op, ForgeDirection.getOrientation(meta % 6)).ordinal() : meta;
             }

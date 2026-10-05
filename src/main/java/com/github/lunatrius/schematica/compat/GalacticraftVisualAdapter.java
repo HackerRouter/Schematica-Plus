@@ -67,4 +67,28 @@ final class GalacticraftVisualAdapter implements ISchematicVisualAdapter {
             } else VisualFields.restore(tile, field, tag);
         }
     }
+
+    private static final String[] SOLAR = {"micdoodle8.mods.galacticraft.core.tile.TileEntitySolar",
+        "galaxyspace.core.tile.machine.TileEntitySolarPanel", "galaxyspace.core.tile.machine.TileEntitySolarWind"};
+
+    /** Solar panels turn toward the sun only while ticking; the preview shows them where they would settle now. */
+    @Override public void beforeRender(TileEntity tile, float partialTicks) throws Exception {
+        String type = null;
+        for (String solar : SOLAR) if (Reflect.is(tile, solar)) type = solar;
+        if (type == null) return;
+        net.minecraft.world.World world = ClientWorld.current();
+        if (world == null) return;
+        boolean simple = type == SOLAR[0] && ((Number) Reflect.get(tile, "tierGC")).intValue() == 1;
+        Reflect.field(tile.getClass(), "currentAngle").setFloat(tile, solarAngle(world.getCelestialAngle(1.0F),
+            world.isDaytime() && !world.isRaining() && !world.isThundering(), simple));
+    }
+
+    /** The angle TileEntitySolar.updateEntity converges to for a celestial angle (0-1) and weather. */
+    static float solarAngle(float celestial, boolean clearDay, boolean simple) {
+        if (simple) return clearDay ? 77.5F : 257.5F;
+        float angle = (celestial + (celestial - 0.7845194F < 0 ? 1.0F - 0.7845194F : -0.7845194F)) * 360.0F % 360.0F;
+        if (angle > 30 && angle < 150) return angle;
+        if (!clearDay) return 257.5F;
+        return angle < 50 ? 50.0F : 150.0F;
+    }
 }

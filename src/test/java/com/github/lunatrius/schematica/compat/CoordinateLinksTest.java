@@ -126,4 +126,25 @@ public class CoordinateLinksTest {
         CoordinateLinks.shift(specs, mirror, 10, 10, 10);
         assertEquals(15, mirror.getInteger("linkX"));
     }
+
+    @Test public void positionListsAndGalacticraftMultiblockParts() {
+        NBTTagCompound inventarium = new NBTTagCompound();
+        inventarium.setInteger(CoordinateLinks.MARKER, 0);
+        net.minecraft.nbt.NBTTagList nodes = new net.minecraft.nbt.NBTTagList();
+        NBTTagCompound node = new NBTTagCompound();
+        node.setIntArray("pos", new int[] {110, 64, 205});
+        nodes.appendTag(node);
+        inventarium.setTag("Nodes", nodes);
+        CoordinateLinks.shift(CoordinateLinks.rulesFor("tuhljin.automagy.tiles.TileEntityInventarium"), inventarium, -100, -60, -200);
+        assertArrayEquals(new int[] {10, 4, 5}, inventarium.getTagList("Nodes", 10).getCompoundTagAt(0).getIntArray("pos"));
+
+        NBTTagCompound dummy = new NBTTagCompound();
+        dummy.setInteger(CoordinateLinks.MARKER, 0);
+        NBTTagCompound main = new NBTTagCompound();
+        main.setInteger("x", 1); main.setInteger("y", 0); main.setInteger("z", 2);
+        dummy.setTag("mainBlockPosition", main);
+        CoordinateLinks.transform(CoordinateLinks.rulesFor("micdoodle8.mods.galacticraft.core.tile.TileEntityMulti"), dummy, 'Y', 3, 1, 3);
+        assertEquals(0, dummy.getCompoundTag("mainBlockPosition").getInteger("x"));
+        assertEquals(1, dummy.getCompoundTag("mainBlockPosition").getInteger("z"));
+    }
 }

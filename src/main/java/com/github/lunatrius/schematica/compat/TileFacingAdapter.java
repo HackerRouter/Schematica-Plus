@@ -24,7 +24,7 @@ import com.github.lunatrius.schematica.world.schematic.BlockMetaTransform;
  * back. Blocks handled here are not also turned through their Block.rotateBlock.
  */
 final class TileFacingAdapter implements ISchematicVisualAdapter {
-    enum Kind { ORDINAL, NAME, SIDE_KEYS, SIDE_ARRAY, MASK, HORIZONTAL, ROTATION16, OFFSET }
+    enum Kind { ORDINAL, NAME, SIDE_KEYS, SIDE_ARRAY, MASK, HORIZONTAL, ROTATION16, OFFSET, ORDINAL_ARRAY, NAMED_SIDES }
 
     static final class Rule {
         final Kind kind;
@@ -151,6 +151,9 @@ final class TileFacingAdapter implements ISchematicVisualAdapter {
         add("com.rwtema.extrautils.tileentity.generators.TileEntityGenerator", new Rule(Kind.HORIZONTAL, "rotation", ALL,
             new ForgeDirection[] {ForgeDirection.NORTH, ForgeDirection.EAST, ForgeDirection.SOUTH, ForgeDirection.WEST}));
         add("com.rwtema.extrautils.tileentity.transfernodes.TileEntityTransferNode", ordinal("pipe_dir"), new Rule(Kind.OFFSET, "pipe_", ALL));
+        // Automagy: redcrystal face and power source side, its N/E/S/W connections; vis reader output sides (6 all)
+        add("tuhljin.automagy.tiles.TileEntityRedcrystal", ordinal("orientation"), ordinal("powerSourceSide"), new Rule(Kind.NAMED_SIDES, "connect", ALL));
+        add("tuhljin.automagy.tiles.TileEntityVisReader", new Rule(Kind.ORDINAL_ARRAY, "outputDir", ALL));
         // OpenComputers: yaw is horizontal, pitch UP, DOWN or NORTH (level); tilting is not representable
         add("li.cil.oc.common.tileentity.traits.Rotatable", new Rule(Kind.ORDINAL, "oc:yaw", "Yxz"), new Rule(Kind.ORDINAL, "oc:pitch", "y"));
     }
@@ -259,6 +262,29 @@ final class TileFacingAdapter implements ISchematicVisualAdapter {
                     data.setInteger(x, (int) Math.round(moved[0]));
                     data.setInteger(y, (int) Math.round(moved[1]));
                     data.setInteger(z, (int) Math.round(moved[2]));
+                    break;
+                }
+                case ORDINAL_ARRAY:
+                    if (data.hasKey(rule.key, 11)) {
+                        int[] values = data.getIntArray(rule.key).clone();
+                        for (int i = 0; i < values.length; i++) {
+                            if (values[i] >= 0 && values[i] <= 5) values[i] = SchematicTransform.direction(operation, ForgeDirection.getOrientation(values[i])).ordinal();
+                        }
+                        data.setIntArray(rule.key, values);
+                    }
+                    break;
+                case NAMED_SIDES: {
+                    Map<String, NBTBase> moved = new LinkedHashMap<>();
+                    for (ForgeDirection side : ForgeDirection.VALID_DIRECTIONS) {
+                        String key = rule.key + side.name().charAt(0);
+                        if (side.offsetY != 0 || !data.hasKey(key)) continue;
+                        ForgeDirection turned = SchematicTransform.direction(operation, side);
+                        if (turned.offsetY != 0) { moved.clear(); break; }
+                        moved.put(rule.key + turned.name().charAt(0), data.getTag(key));
+                    }
+                    if (moved.isEmpty()) break;
+                    for (ForgeDirection side : ForgeDirection.VALID_DIRECTIONS) if (side.offsetY == 0) data.removeTag(rule.key + side.name().charAt(0));
+                    for (Map.Entry<String, NBTBase> entry : moved.entrySet()) data.setTag(entry.getKey(), entry.getValue());
                     break;
                 }
                 case MASK: {

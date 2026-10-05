@@ -119,4 +119,28 @@ public class TileFacingAdapterTest {
         turned("com.emoniph.witchery.blocks.BlockWolfHead$TileEntityWolfHead", skull, "Y");
         assertEquals(7, skull.getByte("Rot"));
     }
+
+    @Test public void automagyRedcrystalAndVisReader() {
+        NBTTagCompound crystal = new NBTTagCompound();
+        crystal.setShort("orientation", (short) 2);
+        crystal.setShort("powerSourceSide", (short) -1);
+        crystal.setBoolean("connectN", true);
+        crystal.setBoolean("connectE", false);
+        crystal.setBoolean("connectS", false);
+        crystal.setBoolean("connectW", true);
+        turned("tuhljin.automagy.tiles.TileEntityRedcrystal", crystal, "Y");
+        assertEquals(5, crystal.getShort("orientation"));
+        assertEquals(-1, crystal.getShort("powerSourceSide"));
+        assertTrue(crystal.getBoolean("connectE"));
+        assertTrue(crystal.getBoolean("connectN"));
+        assertFalse(crystal.getBoolean("connectS"));
+        assertFalse(crystal.getBoolean("connectW"));
+        turned("tuhljin.automagy.tiles.TileEntityRedcrystal", crystal, "X");
+        assertTrue(crystal.getBoolean("connectE"));
+
+        NBTTagCompound reader = new NBTTagCompound();
+        reader.setIntArray("outputDir", new int[] {2, 6, 0, 4});
+        turned("tuhljin.automagy.tiles.TileEntityVisReader", reader, "Y");
+        assertArrayEquals(new int[] {5, 6, 0, 2}, reader.getIntArray("outputDir"));
+    }
 }

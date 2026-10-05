@@ -666,7 +666,7 @@ public class SchematicWorld extends World {
                 for (int y = 0; y < height; y++) {
                     for (int z = 0; z < length; z++) {
                         for (int x = 0; x < width; x++) {
-                            final Block block = getBlock(width - 1 - x, y, z);
+                            final Block block = com.github.lunatrius.schematica.world.schematic.BlockMetaTransform.block(getBlock(width - 1 - x, y, z), 'x');
                             final int metadata = transformedMetadata('x', width - 1 - x, y, z);
                             schematicFlipped.setBlock(x, y, z, block, metadata);
                         }
@@ -688,7 +688,7 @@ public class SchematicWorld extends World {
                 for (int y = 0; y < height; y++) {
                     for (int z = 0; z < length; z++) {
                         for (int x = 0; x < width; x++) {
-                            final Block block = getBlock(x, y, length - 1 - z);
+                            final Block block = com.github.lunatrius.schematica.world.schematic.BlockMetaTransform.block(getBlock(x, y, length - 1 - z), 'z');
                             final int metadata = transformedMetadata('z', x, y, length - 1 - z);
                             schematicFlipped.setBlock(x, y, z, block, metadata);
                         }
@@ -711,7 +711,7 @@ public class SchematicWorld extends World {
                 for (int y = 0; y < height; y++) {
                     for (int z = 0; z < length; z++) {
                         for (int x = 0; x < width; x++) {
-                            final Block block = getBlock(x, height - 1 - y, z);
+                            final Block block = com.github.lunatrius.schematica.world.schematic.BlockMetaTransform.block(getBlock(x, height - 1 - y, z), 'y');
                             final int metadata = transformedMetadata('y', x, height - 1 - y, z);
                             schematicFlipped.setBlock(x, y, z, block, metadata);
                         }
@@ -751,7 +751,7 @@ public class SchematicWorld extends World {
                 for (int y = 0; y < height; y++) {
                     for (int z = 0; z < length; z++) {
                         for (int x = 0; x < width; x++) {
-                            final Block block = getBlock(x, height - 1 - y, z);
+                            final Block block = com.github.lunatrius.schematica.world.schematic.BlockMetaTransform.block(getBlock(x, height - 1 - y, z), 'X');
                             final int metadata = transformedMetadata('X', x, height - 1 - y, z);
                             schematicRotated.setBlock(x, z, y, block, metadata);
                         }
@@ -783,7 +783,7 @@ public class SchematicWorld extends World {
                     for (int z = 0; z < length; z++) {
                         for (int x = 0; x < width; x++) {
 
-                            final Block block = getBlock(x, y, length - 1 - z);
+                            final Block block = com.github.lunatrius.schematica.world.schematic.BlockMetaTransform.block(getBlock(x, y, length - 1 - z), 'Y');
                             final int metadata = transformedMetadata('Y', x, y, length - 1 - z);
                             schematicRotated.setBlock(z, y, x, block, metadata);
                         }
@@ -816,7 +816,7 @@ public class SchematicWorld extends World {
                 for (int y = 0; y < height; y++) {
                     for (int z = 0; z < length; z++) {
                         for (int x = 0; x < width; x++) {
-                            final Block block = getBlock(width - 1 - x, y, z);
+                            final Block block = com.github.lunatrius.schematica.world.schematic.BlockMetaTransform.block(getBlock(width - 1 - x, y, z), 'Z');
                             final int metadata = transformedMetadata('Z', width - 1 - x, y, z);
                             schematicRotated.setBlock(y, x, z, block, metadata);
                         }

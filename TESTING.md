@@ -1806,6 +1806,16 @@ Test in GTNH 2.8.4 (NEI 2.8.44) and GTNH 2.9 (NEI 2.8.145); without NEI the butt
   sides. Rotate and mirror: each faces the same neighbor after paste; the miner base still forms and its dock
   side follows.
 
+## Catwalks, HarvestCraft, Galaxy Space and Automagy under rotation and mirroring
+
+- Catwalks with some sides opened, caged ladders facing all four ways with opened sides, support columns on all three
+  axes; HarvestCraft oven, churn, quern, presser and grinder; Galaxy Space machines and solar panels; Automagy
+  hourglass, chests, golem taskmaster/inhibitor, unseen scribe with pointer, requisition tome, remote comparator, vis
+  reader, tallies, hungry maws, redcrystal lines, an inventarium with nodes. Rotate and mirror: everything faces the
+  same neighbor, ladders become the ladder block of the turned side with the same openings, redcrystal still connects
+  along the line, the inventarium and the linked devices still find their partners after paste elsewhere.
+- Galaxy Space and Galacticraft solar panels in the preview tilt toward the sun (flat at night or in rain).
+
 ## Thaumcraft display state in the preview
 
 - Save and load: an active infusion matrix (should hover and turn as in the world), a closed and an open essentia

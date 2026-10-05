@@ -97,4 +97,25 @@ public class BlockMetaTransformTest {
         assertEquals(6 + 4, apply(new com.rwtema.extrautils.tileentity.transfernodes.BlockTransferNode(), 6 + 2, "YYY"));
         assertEquals(12, apply(new com.rwtema.extrautils.tileentity.transfernodes.BlockTransferNode(), 12, "Y"));
     }
+
+    @Test public void privateSourceGtnhModBlocks() {
+        // Catwalks: open north (8) and east (1) sides turn to east (1) and south (4)
+        assertEquals(1 | 4, apply(new com.thecodewarrior.catwalks.block.BlockCatwalk(), 8 | 1, "Y"));
+        assertEquals(8 | 2, apply(new com.thecodewarrior.catwalks.block.BlockCatwalk(), 8 | 1, "x"));
+        assertEquals(2, apply(new com.thecodewarrior.catwalks.block.BlockSupportColumn(), 1, "Y"));
+        assertEquals(1, apply(new com.thecodewarrior.catwalks.block.BlockSupportColumn(), 0, "X"));
+        // caged ladders: left (2) and right (1) swap under a mirror, the side itself is in the block's name
+        assertEquals(8 | 1, apply(new com.thecodewarrior.catwalks.block.BlockCagedLadder(), 8 | 2, "x"));
+        assertEquals(8 | 2, apply(new com.thecodewarrior.catwalks.block.BlockCagedLadder(), 8 | 2, "Y"));
+        assertEquals("catwalks:cagedLadder_east_lit_tape", BlockMetaTransform.ladderName("catwalks:cagedLadder_north_lit_tape", 'Y'));
+        assertEquals("catwalks:cagedLadder_west_unlit", BlockMetaTransform.ladderName("catwalks:cagedLadder_east_unlit", 'x'));
+        assertNull(BlockMetaTransform.ladderName("catwalks:catwalk_lit", 'Y'));
+        assertEquals(5, apply(new com.pam.harvestcraft.BlockPamOven(), 2, "Y"));
+        // Automagy: (yaw quarter + 2) & 3 is N, E, S, W; tallies 6 + side, maws any side
+        assertEquals(1, apply(new tuhljin.automagy.blocks.BlockHourglass(), 0, "Y"));
+        assertEquals(6 + 5, apply(new tuhljin.automagy.blocks.BlockTallyBase(), 6 + 2, "Y"));
+        assertEquals(0, apply(new tuhljin.automagy.blocks.BlockMawHungry(), 1, "y"));
+        // Galaxy Space machines use Galacticraft's E, W, N, S
+        assertEquals(4 | 0, apply(new galaxyspace.core.block.machine.BlockMachine(), 4 | 2, "Y"));
+    }
 }
