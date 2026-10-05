@@ -164,7 +164,8 @@ public final class BlockMetaTransform {
         return (meta & 8) | result;
     }
 
-    private static int rail(int meta, char op, boolean powered) {
+    /** A rail shape (0-9), or for rails that cannot curve (powered, detector, Railcraft boosters) shape 0-5 plus bit 8. */
+    public static int rail(int meta, char op, boolean powered) {
         int shape = powered ? meta & 7 : meta;
         if (shape >= RAILS.length || "XZy".indexOf(op) >= 0) return meta;
         ForgeDirection[] sides = RAILS[shape];

@@ -633,6 +633,15 @@ public class SchematicWorld extends World {
     private int transformedMetadata(char operation, int x, int y, int z) {
         Block block = getBlock(x, y, z);
         int metadata = getBlockMetadata(x, y, z);
+        // Rails that cannot curve keep a power bit: vanilla powered and detector rails, and Railcraft tracks by their tile
+        if (block instanceof net.minecraft.block.BlockRailBase) {
+            try {
+                return com.github.lunatrius.schematica.world.schematic.BlockMetaTransform.rail(metadata, operation,
+                    !((net.minecraft.block.BlockRailBase) block).isFlexibleRail(this, x, y, z));
+            } catch (RuntimeException e) {
+                Reference.logger.debug("Could not check rail {}", block, e);
+            }
+        }
         int result = com.github.lunatrius.schematica.world.schematic.BlockMetaTransform.transform(block, metadata, operation);
         if (result >= 0) return result;
         if (Character.isLowerCase(operation) || com.github.lunatrius.schematica.compat.VisualAdapters.transformsTile(getTileEntity(x, y, z))) return metadata;

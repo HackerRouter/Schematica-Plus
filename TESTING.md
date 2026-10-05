@@ -1785,3 +1785,11 @@ Test in GTNH 2.8.4 (NEI 2.8.44) and GTNH 2.9 (NEI 2.8.145); without NEI the butt
   sides. Rotate and mirror: each chassis still points at its inventory, the sneaky sides follow; after paste the
   network requests and extracts as before.
 
+## Railcraft tracks under rotation and mirroring
+
+- Line with Railcraft boosters (powered and not), one-way tracks, direction detectors, control tracks, gated
+  tracks, buffer stops, boarding/holding tracks, switches with switch motors, curves and slopes. Rotate 90/180 and
+  mirror: straight boosters stay straight (not turned into curves), one-way and direction tracks still pass carts
+  the same way relative to the line, buffer stops face the same end, switches lead to the same branch. Vanilla
+  powered and detector rails as well.
+
