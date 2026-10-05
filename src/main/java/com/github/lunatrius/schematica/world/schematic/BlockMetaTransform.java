@@ -61,6 +61,21 @@ public final class BlockMetaTransform {
         {SOUTH, EAST}, {SOUTH, WEST}, {NORTH, WEST}, {NORTH, EAST}};
     private static Field standingSign;
 
+    /** Mod blocks (by class, subclasses included) with a horizontal direction in the low two metadata bits. */
+    private static final java.util.Map<String, ForgeDirection[]> MOD_HORIZONTAL = new java.util.HashMap<>();
+    /** Galacticraft machines: the direction the placing player looked. */
+    private static final ForgeDirection[] GALACTICRAFT = {EAST, WEST, NORTH, SOUTH};
+
+    static {
+        String gc = "micdoodle8.mods.galacticraft.core.blocks.";
+        for (String block : new String[] {"BlockMachine", "BlockMachine2", "BlockMachineTiered", "BlockCargoLoader", "BlockFuelLoader",
+            "BlockOxygenCollector", "BlockOxygenCompressor", "BlockOxygenDistributor", "BlockOxygenSealer", "BlockRefinery"}) {
+            MOD_HORIZONTAL.put(gc + block, GALACTICRAFT);
+        }
+        MOD_HORIZONTAL.put("micdoodle8.mods.galacticraft.planets.mars.blocks.BlockMachineMarsT2", GALACTICRAFT);
+        MOD_HORIZONTAL.put(gc + "BlockSolar", new ForgeDirection[] {NORTH, SOUTH, WEST, EAST});
+    }
+
     private BlockMetaTransform() {}
 
     private static ForgeDirection turn(char op, ForgeDirection side) {
@@ -189,6 +204,27 @@ public final class BlockMetaTransform {
         return direction(meta, 3, 0, DOOR, op);
     }
 
+    /** Mod blocks keeping a direction in their metadata; -1 when unknown. */
+    private static int modBlock(Block block, int meta, char op) {
+        for (Class<?> type = block.getClass(); type != null && type != Block.class; type = type.getSuperclass()) {
+            String name = type.getName();
+            ForgeDirection[] table = MOD_HORIZONTAL.get(name);
+            if (table != null) {
+                return direction(meta, 3, 0, table, op);
+            }
+            if (name.equals("micdoodle8.mods.galacticraft.core.blocks.BlockTelemetry") || name.equals("micdoodle8.mods.galacticraft.core.blocks.BlockScreen")) {
+                return ordinal(meta, 7, op, false, false);
+            }
+            // Draconic Evolution flow gates: type * 6 + facing ordinal
+            if (name.equals("com.brandon3055.draconicevolution.common.blocks.machine.FlowGate")) {
+                int kind = meta / 6;
+                ForgeDirection turned = turn(op, ForgeDirection.getOrientation(meta % 6));
+                return kind * 6 + turned.ordinal();
+            }
+        }
+        return -1;
+    }
+
     public static int transform(Block block, int meta, char op) {
         if (block == null) return -1;
         if (block instanceof BlockStairs) return stairs(meta, op);
@@ -225,6 +261,6 @@ public final class BlockMetaTransform {
         if (block instanceof BlockDirectional || block instanceof BlockEndPortalFrame || block instanceof BlockTripWireHook) {
             return direction(meta, 3, 0, HORIZONTAL, op);
         }
-        return -1;
+        return modBlock(block, meta, op);
     }
 }

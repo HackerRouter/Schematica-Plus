@@ -23,7 +23,7 @@ import com.github.lunatrius.schematica.util.SchematicTransform;
  * back. Blocks handled here are not also turned through their Block.rotateBlock.
  */
 final class TileFacingAdapter implements ISchematicVisualAdapter {
-    enum Kind { ORDINAL, NAME, SIDE_KEYS, SIDE_ARRAY, MASK }
+    enum Kind { ORDINAL, NAME, SIDE_KEYS, SIDE_ARRAY, MASK, HORIZONTAL }
 
     static final class Rule {
         final Kind kind;
@@ -35,6 +35,7 @@ final class TileFacingAdapter implements ISchematicVisualAdapter {
 
     private static final Map<String, List<Rule>> RULES = new LinkedHashMap<>();
     private static final String ALL = "XYZxyz";
+    private static final ForgeDirection[] HORIZONTAL_SIDES = {ForgeDirection.SOUTH, ForgeDirection.WEST, ForgeDirection.NORTH, ForgeDirection.EAST};
 
     static {
         // IndustrialCraft 2 (and IC2 based: Advanced Solar Panels, Nuclear Control panels, Compact Kinetic Generators)
@@ -106,6 +107,9 @@ final class TileFacingAdapter implements ISchematicVisualAdapter {
             add("tmechworks.blocks.logic." + tile, ordinal("Direction"));
         }
         add("tmechworks.blocks.logic.SignalTerminalLogic", sideArray("sideChannel"), sideArray("receivingSides"), sideArray("connectedSides"));
+        // EnderStorage chests and tanks: the yaw quarter (0 S, 1 W, 2 N, 3 E)
+        add("codechicken.enderstorage.storage.item.TileEnderChest", new Rule(Kind.HORIZONTAL, "rot", ALL));
+        add("codechicken.enderstorage.storage.liquid.TileEnderTank", new Rule(Kind.HORIZONTAL, "rot", ALL));
         // OpenComputers: yaw is horizontal, pitch UP, DOWN or NORTH (level); tilting is not representable
         add("li.cil.oc.common.tileentity.traits.Rotatable", new Rule(Kind.ORDINAL, "oc:yaw", "Yxz"), new Rule(Kind.ORDINAL, "oc:pitch", "y"));
     }
@@ -187,6 +191,17 @@ final class TileFacingAdapter implements ISchematicVisualAdapter {
                         data.setByteArray(rule.key, values);
                     }
                     break;
+                case HORIZONTAL: {
+                    NBTBase tag = data.getTag(rule.key);
+                    if (!(tag instanceof NBTBase.NBTPrimitive)) break;
+                    int value = ((NBTBase.NBTPrimitive) tag).func_150287_d() & 3;
+                    ForgeDirection turned = SchematicTransform.direction(operation, HORIZONTAL_SIDES[value]);
+                    int index = java.util.Arrays.asList(HORIZONTAL_SIDES).indexOf(turned);
+                    if (index < 0) break;
+                    data.setTag(rule.key, tag instanceof NBTTagByte ? new NBTTagByte((byte) index)
+                        : tag instanceof NBTTagShort ? new NBTTagShort((short) index) : new NBTTagInt(index));
+                    break;
+                }
                 case MASK: {
                     NBTBase tag = data.getTag(rule.key);
                     if (!(tag instanceof NBTBase.NBTPrimitive)) break;
