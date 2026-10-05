@@ -41,6 +41,8 @@ public abstract class GuiSchematicBrowser extends UiScreen {
     private UiButton home;
     private UiButton createDirectory;
     private UiButton openFolder;
+    private UiButton favorites, recent, star;
+    private String listName;
     private UiButton searchButton;
     private UiButton back;
     private UiTextField search;
@@ -71,8 +73,26 @@ public abstract class GuiSchematicBrowser extends UiScreen {
                 draw.border(bounds(), 0xFF999999);
             }
         });
-        path = root.add(new UiLabel(() -> browser == null ? "" : browser.relativeDirectory()));
-        up = icon(UiSprite.UP, "malilib.gui.button.hover.directory_widget.up", () -> navigate(browser.directory().getParentFile()));
+        path = root.add(new UiLabel(() -> browser == null ? "" : browser.listing() ? listName : browser.relativeDirectory()));
+        up = icon(UiSprite.UP, "malilib.gui.button.hover.directory_widget.up", this::goUp);
+        favorites = root.add(new UiButton(() -> (listName != null && browser != null && browser.listing()
+            && listName.equals(UiTranslations.format("schematica.ui.browser.favorites")) ? "\u00a7e" : "\u00a77") + "\u2605",
+            mouse -> { if (mouse == 0) showList("favorite_schematics", "schematica.ui.browser.favorites"); }).setBackground(false));
+        favorites.setTooltip(UiTranslations.format("schematica.ui.browser.favorites.hover").split("\n"));
+        recent = root.add(new UiButton(() -> (listName != null && browser != null && browser.listing()
+            && listName.equals(UiTranslations.format("schematica.ui.browser.recent")) ? "\u00a7e" : "\u00a77") + "\u231a",
+            mouse -> { if (mouse == 0) showList("recent_schematics", "schematica.ui.browser.recent"); }).setBackground(false));
+        recent.setTooltip(UiTranslations.format("schematica.ui.browser.recent.hover").split("\n"));
+        star = root.add(new UiButton(() -> {
+            SchematicBrowserModel.Entry entry = selection();
+            return entry != null && com.github.lunatrius.schematica.client.util.UiState.favorite(entry.file) ? "\u00a7e\u2605" : "\u00a78\u2605";
+        }, mouse -> {
+            SchematicBrowserModel.Entry entry = selection();
+            if (mouse != 0 || entry == null || entry.directory) return;
+            com.github.lunatrius.schematica.client.util.UiState.toggleFavorite(entry.file);
+            if (browser.listing()) refreshFiles();
+        }).setBackground(false));
+        star.setTooltip(UiTranslations.format("schematica.ui.browser.star.hover"));
         home = root.add(new UiButton(() -> "", mouse -> {
             if (browser == null) return;
             if (mouse == 0) navigate(browser.root());
@@ -92,7 +112,8 @@ public abstract class GuiSchematicBrowser extends UiScreen {
         list = root.add(new UiList<>(files, "", this::activate));
         list.setFileStyle(entry -> entry.directory ? UiSprite.DIRECTORY
             : UiSprite.schematicFile(entry.name()),
-            entry -> entry.directory ? entry.name() : entry.name().substring(0, entry.name().lastIndexOf('.')));
+            entry -> entry.directory ? entry.name() : (collections() && com.github.lunatrius.schematica.client.util.UiState.favorite(entry.file)
+                ? "\u00a7e\u2605\u00a7r " : "") + entry.name().substring(0, entry.name().lastIndexOf('.')));
         info = root.add(new UiWidget() {
             @Override public void draw(UiDraw draw, int mouseX, int mouseY) {
                 draw.fill(bounds(), 0xA0000000);
@@ -189,6 +210,33 @@ public abstract class GuiSchematicBrowser extends UiScreen {
             return;
         }
         preview.draw(mc, box.x, box.y, size, infoMouseX, infoMouseY);
+    }
+
+    /** Whether the browser offers favorite and recent files (the load browser). */
+    protected boolean collections() { return false; }
+
+    private void goUp() {
+        if (browser == null) return;
+        if (browser.listing()) navigate(browser.directory());
+        else navigate(browser.directory().getParentFile());
+    }
+
+    /** Shows the favorite or recent files; pressing it again goes back to the directory. */
+    private void showList(String key, String nameKey) {
+        if (browser == null) return;
+        String name = UiTranslations.format(nameKey);
+        if (browser.listing() && name.equals(listName)) {
+            navigate(browser.directory());
+            return;
+        }
+        List<File> listed = new ArrayList<>();
+        for (String value : com.github.lunatrius.schematica.client.util.UiState.paths(key)) listed.add(new File(value));
+        listName = name;
+        browser.list(listed);
+        search.setText("");
+        files.setOffset(0);
+        updateFiles();
+        setStatus(browser.entries().isEmpty() ? UiTranslations.format(nameKey + ".empty") : "");
     }
 
     protected SchematicBrowserModel createModel() throws IOException {
@@ -327,7 +375,7 @@ public abstract class GuiSchematicBrowser extends UiScreen {
             return true;
         }
         if (!(input.focused() instanceof UiTextField) && keyCode == Keyboard.KEY_BACK && browser != null && browser.canGoUp()) {
-            navigate(browser.directory().getParentFile());
+            goUp();
             return true;
         }
         return false;
@@ -410,7 +458,9 @@ public abstract class GuiSchematicBrowser extends UiScreen {
     protected void tickScreen() {
         up.setEnabled(browser != null && browser.canGoUp());
         home.setEnabled(browser != null);
-        createDirectory.setEnabled(browser != null && browser.directory().isDirectory());
+        createDirectory.setEnabled(browser != null && !browser.listing() && browser.directory().isDirectory());
+        SchematicBrowserModel.Entry selected = selection();
+        star.setVisible(collections() && selected != null && !selected.directory);
         info.setTooltip(selectionInfo());
         SchematicBrowserModel.Entry current = selection();
         if (!java.util.Objects.equals(current, lastSelection)) {
@@ -430,8 +480,13 @@ public abstract class GuiSchematicBrowser extends UiScreen {
         up.setBounds(x + 16, y + 5, 12, 12);
         createDirectory.setBounds(x + 30, y + 5, 12, 12);
         openFolder.setBounds(x + 44, y + 5, 12, 12);
+        favorites.setBounds(x + 58, y + 4, 12, 13);
+        recent.setBounds(x + 72, y + 4, 12, 13);
+        favorites.setVisible(collections() && !searching);
+        recent.setVisible(collections() && !searching);
+        int pathX = collections() ? x + 90 : x + 62;
         searchButton.setBounds(x + browserWidth - 24, y + 5, 12, 12);
-        path.setBounds(x + 62, y + 4, browserWidth - 90, 14);
+        path.setBounds(pathX, y + 4, browserWidth - 28 - (pathX - x), 14);
         search.setBounds(x + 2, y + 4, browserWidth - 28, 14);
         search.setVisible(searching);
         path.setVisible(!searching);
@@ -441,6 +496,7 @@ public abstract class GuiSchematicBrowser extends UiScreen {
         openFolder.setVisible(!searching);
         list.setBounds(x + 2, y + 21, browserWidth - 4, Math.max(0, browserHeight - 25));
         info.setBounds(x + width - 190, y, 170, Math.min(310, browserHeight + (showFooter() ? 10 : 0)));
+        star.setBounds(info.bounds().right() - 15, info.bounds().y + 2, 12, 12);
         message.setBounds(info.bounds().x + 3, info.bounds().bottom() - 25, 164, 22);
         back.setVisible(showFooter());
         int menuWidth = fontRendererObj.getStringWidth(back.label()) + 20;

@@ -22,6 +22,8 @@ public final class SchematicBrowserModel {
     private final java.util.function.Predicate<String> filter;
     private Path directory;
     private List<Entry> entries = Collections.emptyList();
+    /** The files listed instead of the directory (favorites, recent), or null. */
+    private List<File> listed;
 
     public SchematicBrowserModel(File root) throws IOException {
         this(root, SchematicBrowserModel::supported);
@@ -47,14 +49,34 @@ public final class SchematicBrowserModel {
     }
 
     public boolean canGoUp() {
-        return !directory.equals(root);
+        return listed != null || !directory.equals(root);
     }
 
     public List<Entry> entries() {
         return entries;
     }
 
+    public boolean listing() { return listed != null; }
+
+    /** Lists these files, in this order, instead of a directory; missing files and files outside the root are left out. */
+    public void list(List<File> files) {
+        listed = new ArrayList<>(files);
+        List<Entry> found = new ArrayList<>();
+        for (File file : listed) {
+            try {
+                Path resolved = checked(file.toPath());
+                BasicFileAttributes attributes = Files.readAttributes(resolved, BasicFileAttributes.class);
+                if (attributes.isRegularFile() && filter.test(resolved.getFileName().toString())) found.add(new Entry(resolved.toFile(), attributes));
+            } catch (IOException | RuntimeException ignored) {}
+        }
+        entries = Collections.unmodifiableList(found);
+    }
+
     public void refresh() throws IOException {
+        if (listed != null) {
+            list(listed);
+            return;
+        }
         entries = Collections.emptyList();
         Path current = checked(directory);
         List<Entry> found = new ArrayList<>();
@@ -77,12 +99,15 @@ public final class SchematicBrowserModel {
     public void navigate(File target) throws IOException {
         Path next = checked(target.toPath());
         if (!Files.isDirectory(next)) throw new IOException("Not a directory: " + target);
+        listed = null;
         directory = next;
         refresh();
     }
 
+    /** Back to the directory from a list, else to the parent directory. */
     public void up() throws IOException {
-        if (canGoUp()) navigate(directory.getParent().toFile());
+        if (listed != null) navigate(directory.toFile());
+        else if (canGoUp()) navigate(directory.getParent().toFile());
     }
 
     public File readableFile(Entry entry) throws IOException {

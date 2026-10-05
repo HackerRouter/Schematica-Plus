@@ -112,4 +112,27 @@ public class SchematicBrowserModelTest {
             fail("Loaded stale selection from previous folder");
         } catch (IOException expected) {}
     }
+
+    @Test public void listsGivenFilesInOrderAndGoesBackToTheFolder() throws IOException {
+        File root = temporary.newFolder("schematics");
+        File child = new File(root, "sub");
+        Files.createDirectory(child.toPath());
+        File a = new File(child, "a.schematic"), b = new File(root, "b.litematic"), outside = temporary.newFile("c.schematic");
+        Files.write(a.toPath(), new byte[] {1});
+        Files.write(b.toPath(), new byte[] {1});
+        SchematicBrowserModel browser = new SchematicBrowserModel(root);
+        browser.refresh();
+        browser.list(java.util.Arrays.asList(b, new File(root, "missing.schematic"), outside, a, new File(root, "x.json")));
+        assertTrue(browser.listing());
+        List<String> names = browser.entries().stream().map(SchematicBrowserModel.Entry::name).collect(Collectors.toList());
+        assertEquals(java.util.Arrays.asList("b.litematic", "a.schematic"), names);
+        assertEquals(a.getCanonicalFile(), browser.readableFile(browser.entries().get(1)).getCanonicalFile());
+        assertTrue(browser.canGoUp());
+        browser.refresh();
+        assertEquals(2, browser.entries().size());
+        browser.up();
+        assertFalse(browser.listing());
+        assertEquals(root.getCanonicalFile(), browser.directory());
+        assertEquals(2, browser.entries().size());
+    }
 }

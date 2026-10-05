@@ -1730,3 +1730,11 @@ Test in GTNH 2.8.4 (NEI 2.8.44) and GTNH 2.9 (NEI 2.8.145); without NEI the butt
   flint and steel the missing-material HUD lists it. Easy Place on a farmland ghost over dirt tills it.
 - With "break wrong blocks" on, the dirt under farmland is not mined.
 
+## Favorite and recent schematics (load browser)
+
+- Select a schematic, click the grey star at the top right of the info panel: it turns yellow and the file shows
+  a yellow ★ in the list. The ★ button next to the folder icons lists the favorites from all folders; the star
+  removes one again. ⌚ lists the last loaded schematics, newest first. Pressing the same button, Up or Backspace
+  returns to the folder. Lists survive a restart; deleted files disappear from them. Other browsers (save,
+  manager) have no such buttons.
+

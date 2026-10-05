@@ -15,7 +15,8 @@ import com.github.lunatrius.schematica.util.PlusDataFiles;
 
 /**
  * What Litematica's DataManager remembers between sessions: the config GUI tab, create_placement_on_load, the
- * last directory of each file browser (last_directories) and the tool mode per world (operation_mode).
+ * last directory of each file browser (last_directories) and the tool mode per world (operation_mode); also the
+ * favorite and recently loaded schematic files of the load browser (after Buildprint).
  */
 public final class UiState {
     private static JsonObject root;
@@ -74,6 +75,51 @@ public final class UiState {
     public static String lastDirectory(String browser) { return entry("last_directories", browser); }
 
     public static void setLastDirectory(String browser, File directory) { setEntry("last_directories", browser, directory.getAbsolutePath()); }
+
+    /** The paths of a list, newest or first added first. */
+    public static synchronized java.util.List<String> paths(String key) {
+        java.util.List<String> result = new java.util.ArrayList<>();
+        JsonElement list = root().get(key);
+        if (list != null && list.isJsonArray()) {
+            for (JsonElement value : list.getAsJsonArray()) if (value.isJsonPrimitive()) result.add(value.getAsString());
+        }
+        return result;
+    }
+
+    private static synchronized void setPaths(String key, java.util.List<String> paths) {
+        com.google.gson.JsonArray array = new com.google.gson.JsonArray();
+        for (String path : paths) array.add(new com.google.gson.JsonPrimitive(path));
+        root().add(key, array);
+        save();
+    }
+
+    private static String canonical(File file) {
+        try {
+            return file.getCanonicalPath();
+        } catch (java.io.IOException e) {
+            return file.getAbsolutePath();
+        }
+    }
+
+    public static synchronized boolean favorite(File file) { return paths("favorite_schematics").contains(canonical(file)); }
+
+    /** Stars or unstars a file; returns whether it is a favorite now. */
+    public static synchronized boolean toggleFavorite(File file) {
+        java.util.List<String> paths = paths("favorite_schematics");
+        boolean added = !paths.remove(canonical(file));
+        if (added) paths.add(canonical(file));
+        setPaths("favorite_schematics", paths);
+        return added;
+    }
+
+    /** Puts a loaded file at the top of the recent list, which keeps the last 20. */
+    public static synchronized void addRecent(File file) {
+        java.util.List<String> paths = paths("recent_schematics");
+        paths.remove(canonical(file));
+        paths.add(0, canonical(file));
+        while (paths.size() > 20) paths.remove(paths.size() - 1);
+        setPaths("recent_schematics", paths);
+    }
 
     public static String toolMode(String world) { return world == null ? null : entry("operation_mode", world); }
 

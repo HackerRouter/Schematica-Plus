@@ -198,6 +198,13 @@ schematica.ui.demo.child=打开子页面
 
 schematica.ui.browser.unreadable=无法读取目录，请检查原理图目录和访问权限。
 schematica.ui.load.disabled=当前世界不允许加载原理图。
+schematica.ui.browser.favorites=收藏
+schematica.ui.browser.favorites.hover=收藏\n显示已加星标的原理图；再按一次返回文件夹。
+schematica.ui.browser.favorites.empty=还没有收藏。选中一个原理图后点击信息面板里的星标。
+schematica.ui.browser.recent=最近
+schematica.ui.browser.recent.hover=最近\n显示最近加载的 20 个原理图；再按一次返回文件夹。
+schematica.ui.browser.recent.empty=还没有最近加载的原理图。
+schematica.ui.browser.star.hover=加入或移出收藏
 schematica.ui.load.reading=正在读取 %s……
 schematica.ui.load.already_reading=%s 仍在读取中
 

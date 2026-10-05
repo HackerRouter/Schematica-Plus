@@ -46,6 +46,9 @@ public final class GuiSchematicLoad extends GuiSchematicBrowser {
 
     /** WidgetSchematicBrowser: custom material lists (.json, .txt) are listed next to the schematics. */
     @Override
+    protected boolean collections() { return true; }
+
+    @Override
     protected SchematicBrowserModel createModel() throws IOException {
         return new SchematicBrowserModel(com.github.lunatrius.schematica.handler.ConfigurationHandler.schematicDirectory,
             name -> SchematicBrowserModel.supported(name) || CustomMaterialListFile.isListFile(name));
@@ -126,6 +129,7 @@ public final class GuiSchematicLoad extends GuiSchematicBrowser {
             boolean[] finished = {false};
             boolean started = SchematicGuiLoader.loadAsync(mc, file, placeOnLoad, source -> {
                 finished[0] = true;
+                com.github.lunatrius.schematica.client.util.UiState.addRecent(file);
                 setStatus(UiTranslations.format("litematica.message.schematic_read_from_file_success", file.getName()));
                 tickScreen();
             }, error -> {

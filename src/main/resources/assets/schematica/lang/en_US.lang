@@ -198,6 +198,13 @@ schematica.ui.demo.child=Open child page
 
 schematica.ui.browser.unreadable=Cannot read this folder. Check the schematic directory and permissions.
 schematica.ui.load.disabled=Schematic loading is unavailable in this world.
+schematica.ui.browser.favorites=Favorites
+schematica.ui.browser.favorites.hover=Favorites\nShow your starred schematics; press again to go back to the folder.
+schematica.ui.browser.favorites.empty=No favorites yet. Select a schematic and click the star in the info panel.
+schematica.ui.browser.recent=Recent
+schematica.ui.browser.recent.hover=Recent\nShow the 20 schematics you loaded last; press again to go back to the folder.
+schematica.ui.browser.recent.empty=No recently loaded schematics yet.
+schematica.ui.browser.star.hover=Add to or remove from the favorites
 schematica.ui.load.reading=Reading %s...
 schematica.ui.load.already_reading=%s is still being read
 
