@@ -1648,7 +1648,8 @@ Test in GTNH 2.8.4 (NEI 2.8.44) and GTNH 2.9 (NEI 2.8.145); without NEI the butt
 
 ## Ignore survival states (ignoreSurvivalStates)
 
-- Save a natural tree, a wheat farm, a wired redstone circuit with buttons, pressure plates, powered rails, a
+- Off by default: the blocks below show as wrong state/wrong block until the option is turned on.
+- Option on. Save a natural tree, a wheat farm, a wired redstone circuit with buttons, pressure plates, powered rails, a
   lit furnace and a redstone lamp. Build it by hand: placed leaves (no-decay bit), younger crops, unpowered
   plates/rails/wire, unlit furnace and lamp show no wrong-state or wrong-block overlay, the verifier counts them
   as correct, the material list does not list them as missing, and the printer neither re-places nor breaks
