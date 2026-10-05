@@ -88,7 +88,7 @@ public final class SchematicBrowserModel {
     public File readableFile(Entry entry) throws IOException {
         if (entry == null || entry.directory || !entries.contains(entry)) throw new IOException("No file selected");
         Path target = checked(entry.file.toPath());
-        if (!Files.isRegularFile(target) || !Files.isReadable(target) || !supported(entry.name())) {
+        if (!Files.isRegularFile(target) || !Files.isReadable(target) || !filter.test(entry.name())) {
             throw new IOException("File is not readable: " + entry.name());
         }
         return entry.file;

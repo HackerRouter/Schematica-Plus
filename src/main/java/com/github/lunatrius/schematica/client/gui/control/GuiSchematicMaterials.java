@@ -117,7 +117,11 @@ public class GuiSchematicMaterials extends UiScreen {
         export.setTooltip(UiTranslations.format("litematica.gui.button.hover.material_list.write_hold_shift_for_csv").split("\\n"));
         raw = action("write_to_json", this::exportRaw);
         raw.setTooltip(UiTranslations.format("litematica.gui.button.hover.material_list.json_hold_shift_for_missing_only").split("\\n"));
-        secondary.addAll(Arrays.asList(clearIgnored, cache, export, raw));
+        UiButton custom = action("export", () -> {
+            if (exportable()) mc.displayGuiScreen(new com.github.lunatrius.schematica.client.gui.save.GuiMaterialListSave(this, list.name(), list.customItems()));
+        });
+        custom.setTooltip(UiTranslations.format("litematica.gui.button.hover.material_list.export_custom_json").split("\\n"));
+        secondary.addAll(Arrays.asList(clearIgnored, cache, export, raw, custom));
         if (com.github.lunatrius.schematica.compat.nei.NeiBridge.available()) {
             UiButton nei = addButton("schematica.nei.send", this::sendToNei);
             nei.setTooltip(UiTranslations.format("schematica.nei.send.hover").split("\\n"));
@@ -438,7 +442,12 @@ public class GuiSchematicMaterials extends UiScreen {
             sort(); return true;
         }
         private void sort() {
-            materials.sortBy(MaterialListModel.Sort.values()[column]);
+            MaterialListModel.Sort current = materials.sort();
+            if (column != 0) materials.sortBy(MaterialListModel.Sort.values()[column]);
+            // The name column cycles NAME, CACHE_ORDER, CACHE_ORDER reversed (WidgetMaterialListEntry)
+            else if (current == MaterialListModel.Sort.NAME) materials.setSort(MaterialListModel.Sort.CACHE_ORDER, false);
+            else if (current == MaterialListModel.Sort.CACHE_ORDER && !materials.descending()) materials.setSort(MaterialListModel.Sort.CACHE_ORDER, true);
+            else materials.setSort(MaterialListModel.Sort.NAME, false);
             ConfigurationHandler.propSortType.set(materials.savedSort());
             ConfigurationHandler.loadConfiguration();
             saveSettings();
@@ -447,7 +456,7 @@ public class GuiSchematicMaterials extends UiScreen {
         @Override public void draw(UiDraw draw, int x, int y) {
             draw.fill(bounds(), 0xA0101010);
             draw.border(bounds(), containsVisible(x, y) || isFocused() ? 0xFFFFFFFF : 0xC0707070);
-            boolean sorted = materials.sort().ordinal() == column;
+            boolean sorted = materials.sort().ordinal() == column || column == 0 && materials.sort() == MaterialListModel.Sort.CACHE_ORDER;
             draw.text(draw.trim("§l" + UiTranslations.format(LABEL + "title." + HEADERS[column]), bounds().width - (sorted ? 21 : 4)),
                 bounds().x + 3, bounds().y + 6, 0xFFFFFFFF);
             if (sorted) (materials.descending() ? UiSprite.SORT_DOWN : UiSprite.SORT_UP)

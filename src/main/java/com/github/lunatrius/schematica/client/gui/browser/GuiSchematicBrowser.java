@@ -175,7 +175,8 @@ public abstract class GuiSchematicBrowser extends UiScreen {
 
     /** The selected file drawn in 3D into the square below the info, when enabled and not too large. */
     private void drawPreview3D(UiDraw draw, SchematicBrowserModel.Entry entry, int x, int y, int width, long volume) {
-        if (!ConfigurationHandler.schematicPreview3D || volume > SchematicPreview3D.MAX_VOLUME || entry.size > PREVIEW_3D_MAX_FILE) return;
+        if (!ConfigurationHandler.schematicPreview3D || volume > SchematicPreview3D.MAX_VOLUME || entry.size > PREVIEW_3D_MAX_FILE
+            || !SchematicBrowserModel.supported(entry.name())) return;
         int size = Math.min(SchematicPreview.SIZE, Math.min(width - 14, info.bounds().bottom() - y - 30));
         if (size <= 8) return;
         UiBounds box = new UiBounds(x + 4, y, size, size);

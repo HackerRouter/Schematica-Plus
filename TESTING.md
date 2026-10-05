@@ -1548,3 +1548,22 @@ Test in GTNH 2.8.4 (NEI 2.8.44) and GTNH 2.9 (NEI 2.8.145); without NEI the butt
   Turn "ignoreCropAge" on and save: overlays disappear, the verifier (re-run) counts them correct, the material
   list (refresh) no longer counts them. A cocoa pod facing the wrong way is still a wrong state.
 - With "Break Wrong State Blocks" on and ignoreCropAge on, the printer does not break young crops.
+
+## Custom material lists (Litematica 0.27.12)
+
+- Material list of a placement -> Export: a save screen listing .json/.txt files opens with "<name>.json";
+  Save writes it into the shown folder (chat link opens it), saving again without Shift says it exists, Shift
+  overwrites. The file has "name" and "items" with "id", "count" and "damage" for colored wool etc.
+- Load screen: the .json appears in the list; selecting it shows "Material List: JSON / Name / Item Count"
+  instead of schematic info, Load and Rename Schematic are disabled. Material List (or double click) opens
+  "Custom Material List: <name> (<file>)" with every item missing; Available follows the inventory; the info
+  HUD toggle works. Edit the file and press Refresh: the list follows the file.
+- A text file "minecraft:cooked_beef 64" / "# comment" / "minecraft:wool@14 3" opens the same way; an upstream
+  (1.21) JSON without damage opens with damage 0; unknown items are left out (incomplete hint shows them).
+- A schematic project .json shows plain file info; Material List says it failed to load the custom list.
+
+## Container scan and cache order (Litematica 0.27.12)
+
+- New material lists sort by name. Turn on materialListContainerScan, open a chest with cobblestone and glass,
+  close it, open the material list: cobblestone and glass are on top (the last opened container first).
+- Clicking the Item column header cycles name, cache order, cache order reversed (arrow on the Item column).

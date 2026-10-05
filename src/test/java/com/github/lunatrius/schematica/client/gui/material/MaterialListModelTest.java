@@ -49,6 +49,9 @@ public class MaterialListModelTest {
     @Test public void numericSortAndLegacySortPreferencesRemainStable() {
         MaterialListModel<String> model = new MaterialListModel<>();
         model.setEntries(Arrays.asList(entry("Beta", 20, 1, 0), entry("Alpha", 4, 4, 9)));
+        // CACHE_ORDER is the default, by name while no container was scanned
+        assertEquals("Alpha", model.visible().get(0).key);
+        model.sortBy(MaterialListModel.Sort.TOTAL);
         assertEquals("Beta", model.visible().get(0).key);
         model.sortBy(MaterialListModel.Sort.MISSING);
         assertEquals("Alpha", model.visible().get(0).key);
@@ -61,6 +64,26 @@ public class MaterialListModelTest {
         assertEquals("Beta", model.visible().get(0).key);
         model.restoreSort("MATERIAL_BROKEN");
         assertEquals(saved, model.savedSort());
+    }
+
+    @Test public void cacheOrderPutsRecentlySeenItemsFirst() {
+        java.util.function.ToIntFunction<Object> previous = MaterialListModel.cachePriority;
+        try {
+            MaterialListModel.cachePriority = key -> "Gamma".equals(key) ? 0 : "Beta".equals(key) ? 1 : Integer.MAX_VALUE;
+            MaterialListModel<String> model = new MaterialListModel<>();
+            model.setEntries(Arrays.asList(entry("Alpha", 1, 1, 0), entry("Beta", 1, 1, 0), entry("Gamma", 1, 1, 0), entry("Delta", 1, 1, 0)));
+            assertEquals(Arrays.asList("Gamma", "Beta", "Alpha", "Delta"), keys(model));
+            model.setSort(MaterialListModel.Sort.CACHE_ORDER, true);
+            assertEquals("Gamma", keys(model).get(3));
+        } finally {
+            MaterialListModel.cachePriority = previous;
+        }
+    }
+
+    private static java.util.List<String> keys(MaterialListModel<String> model) {
+        java.util.List<String> keys = new java.util.ArrayList<>();
+        for (MaterialListModel.Entry<String> entry : model.visible()) keys.add(entry.key);
+        return keys;
     }
 
     @Test public void unknownPositionsAreNotReportedAsCompletedOrKnownMissing() {

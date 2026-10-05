@@ -12,7 +12,11 @@ import java.util.Map;
 import java.util.Set;
 
 public final class MaterialListModel<T> {
-    public enum Sort { NAME, TOTAL, MISSING, AVAILABLE }
+    /** CACHE_ORDER: the items of the containers opened last first (materialListContainerScan), then by name. */
+    public enum Sort { NAME, TOTAL, MISSING, AVAILABLE, CACHE_ORDER }
+
+    /** The CACHE_ORDER priority of a key, lower first. */
+    public static java.util.function.ToIntFunction<Object> cachePriority = key -> Integer.MAX_VALUE;
 
     public static final class Entry<T> {
         public final T key;
@@ -50,8 +54,8 @@ public final class MaterialListModel<T> {
     private List<Entry<T>> raw = Collections.emptyList();
     private List<Entry<T>> entries = Collections.emptyList();
     private int multiplier = 1;
-    private Sort sort = Sort.TOTAL;
-    private boolean descending = true;
+    private Sort sort = Sort.CACHE_ORDER;
+    private boolean descending;
     private boolean hideAvailable;
     private String query = "";
 
@@ -215,6 +219,8 @@ public final class MaterialListModel<T> {
             case TOTAL: comparator = Comparator.comparingLong(this::total); break;
             case MISSING: comparator = Comparator.comparingLong(this::missing); break;
             case AVAILABLE: comparator = Comparator.comparingLong(entry -> entry.available); break;
+            case CACHE_ORDER: comparator = Comparator.<Entry<T>>comparingInt(entry -> cachePriority.applyAsInt(entry.key))
+                .thenComparing(entry -> entry.name, String.CASE_INSENSITIVE_ORDER); break;
             default: comparator = Comparator.comparing(entry -> entry.name, String.CASE_INSENSITIVE_ORDER);
         }
         if (descending) comparator = comparator.reversed();

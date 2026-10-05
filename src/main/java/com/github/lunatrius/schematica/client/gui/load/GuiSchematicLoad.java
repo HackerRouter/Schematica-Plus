@@ -23,6 +23,7 @@ import com.github.lunatrius.schematica.api.ISchematic;
 import com.github.lunatrius.schematica.api.SchematicRegion;
 import com.github.lunatrius.schematica.client.gui.GuiStringListSelection;
 import com.github.lunatrius.schematica.client.gui.control.GuiSchematicMaterials;
+import com.github.lunatrius.schematica.client.gui.material.CustomMaterialListFile;
 import com.github.lunatrius.schematica.client.world.SchematicWorld;
 import com.github.lunatrius.schematica.reference.Reference;
 import com.github.lunatrius.schematica.world.schematic.SchematicFiles;
@@ -39,6 +40,48 @@ public final class GuiSchematicLoad extends GuiSchematicBrowser {
 
     public GuiSchematicLoad(GuiScreen parent) {
         super(parent, UiTranslations.format("litematica.gui.title.load_schematic"), false);
+    }
+
+    private final java.util.Map<File, Object[]> customLists = new java.util.HashMap<>();
+
+    /** WidgetSchematicBrowser: custom material lists (.json, .txt) are listed next to the schematics. */
+    @Override
+    protected SchematicBrowserModel createModel() throws IOException {
+        return new SchematicBrowserModel(com.github.lunatrius.schematica.handler.ConfigurationHandler.schematicDirectory,
+            name -> SchematicBrowserModel.supported(name) || CustomMaterialListFile.isListFile(name));
+    }
+
+    private static boolean listFile(SchematicBrowserModel.Entry entry) {
+        return entry != null && !entry.directory && CustomMaterialListFile.isListFile(entry.name());
+    }
+
+    /** The parsed list file, cached until the file changes; null when it is not a valid list. */
+    private CustomMaterialListFile customList(File file) {
+        Object[] cached = customLists.get(file);
+        if (cached == null || (long) cached[0] != file.lastModified()) {
+            CustomMaterialListFile parsed;
+            try { parsed = CustomMaterialListFile.read(file); }
+            catch (IOException | RuntimeException e) { parsed = null; }
+            customLists.put(file, cached = new Object[] {file.lastModified(), parsed});
+        }
+        return (CustomMaterialListFile) cached[1];
+    }
+
+    /** The material list info panel of WidgetSchematicBrowser for custom list files. */
+    @Override
+    protected void drawInfo(com.github.lunatrius.schematica.client.gui.framework.UiDraw draw, int x, int y, int width, SchematicBrowserModel.Entry entry) {
+        CustomMaterialListFile list = listFile(entry) ? customList(entry.file) : null;
+        if (list == null) {
+            super.drawInfo(draw, x, y, width, entry);
+            return;
+        }
+        int text = 0xC0C0C0C0, value = 0xFFFFFFFF;
+        draw.text(UiTranslations.format("litematica.gui.label.material_list_info.title_colon"), x, y, text);
+        draw.text(entry.name().toLowerCase(Locale.ROOT).endsWith(CustomMaterialListFile.TEXT_EXTENSION) ? "TEXT" : "JSON", x + 4, y += 12, value);
+        draw.text(UiTranslations.format("litematica.gui.label.material_list_info.name"), x, y += 12, text);
+        draw.text(draw.trim(list.name, width - 14), x + 4, y += 12, value);
+        draw.text(UiTranslations.format("litematica.gui.label.material_list_info.item_count"), x, y += 12, text);
+        draw.text(String.format(Locale.ROOT, "%03d", list.items.size()), x + 4, y += 12, value);
     }
 
     @Override
@@ -69,6 +112,10 @@ public final class GuiSchematicLoad extends GuiSchematicBrowser {
 
     @Override
     protected void activateFile(SchematicBrowserModel.Entry entry) {
+        if (listFile(entry)) {
+            materialList();
+            return;
+        }
         if (!SchematicaPlus.proxy.isLoadEnabled || mc.theWorld == null || mc.thePlayer == null) {
             setStatus(UiTranslations.format("schematica.ui.load.disabled"));
             return;
@@ -101,6 +148,19 @@ public final class GuiSchematicLoad extends GuiSchematicBrowser {
     private void materialList() {
         File file = selectedFile();
         if (file == null) return;
+        if (CustomMaterialListFile.isListFile(file.getName())) {
+            CustomMaterialListFile custom = customList(file);
+            if (custom == null) {
+                setStatus(UiTranslations.format("litematica.message.error.material_list.custom_load_failed", file.getName()));
+                return;
+            }
+            com.github.lunatrius.schematica.client.gui.material.MaterialList list =
+                com.github.lunatrius.schematica.client.gui.material.MaterialList.custom(custom.name, file, custom.items);
+            com.github.lunatrius.schematica.client.gui.material.MaterialLists.setCurrent(list);
+            setStatus(UiTranslations.format("litematica.info.material_list.custom_loaded", file.getName()));
+            mc.displayGuiScreen(new GuiSchematicMaterials(this, list));
+            return;
+        }
         ISchematic schematic = SchematicFormat.readFromFile(file);
         if (schematic == null) {
             setStatus(UiTranslations.format("litematica.error.schematic_read_from_file_failed.exception", file.getName()));
@@ -160,9 +220,10 @@ public final class GuiSchematicLoad extends GuiSchematicBrowser {
     protected void tickScreen() {
         super.tickScreen();
         SchematicBrowserModel.Entry entry = selection();
-        load.setEnabled(SchematicaPlus.proxy.isLoadEnabled && mc.theWorld != null && entry != null && !entry.directory);
+        boolean list = listFile(entry);
+        load.setEnabled(SchematicaPlus.proxy.isLoadEnabled && mc.theWorld != null && entry != null && !entry.directory && !list);
         renameFile.setEnabled(entry != null && !entry.directory);
         materialList.setEnabled(entry != null && !entry.directory && mc.theWorld != null);
-        renameSchematic.setEnabled(entry != null && !entry.directory);
+        renameSchematic.setEnabled(entry != null && !entry.directory && !list);
     }
 }

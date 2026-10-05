@@ -24,7 +24,7 @@ import com.google.gson.JsonObject;
 
 /** A material list that outlives its screen: the last viewed one is reopened by the hotkey and drawn by the info HUD. */
 public final class MaterialList {
-    public enum Kind { PLACEMENT, SCHEMATIC, AREA, COMBINED }
+    public enum Kind { PLACEMENT, SCHEMATIC, AREA, COMBINED, CUSTOM }
 
     public final Kind kind;
     private SchematicWorld schematic;
@@ -48,6 +48,9 @@ public final class MaterialList {
     private int revision;
     private int ticks;
     private long lastTick = -1;
+    private String customName;
+    private java.io.File customFile;
+    private List<CustomMaterialListFile.Item> customItems = Collections.emptyList();
 
     private MaterialList(Kind kind, SchematicWorld schematic, Area area, String fileName, List<SchematicRegion> fileRegions) {
         this.kind = kind;
@@ -77,6 +80,25 @@ public final class MaterialList {
 
     public static MaterialList area(Area area) { return new MaterialList(Kind.AREA, null, area, null, null); }
 
+    /** MaterialListCustom: items and counts from a file or another list; nothing is placed, so all are missing. */
+    public static MaterialList custom(String name, java.io.File file, List<CustomMaterialListFile.Item> items) {
+        MaterialList list = new MaterialList(Kind.CUSTOM, null, null, null, null);
+        list.customName = name;
+        list.customFile = file;
+        list.customItems = new ArrayList<>(items);
+        return list;
+    }
+
+    /** The items of this list with their total counts, as a custom list file writes them. */
+    public List<CustomMaterialListFile.Item> customItems() {
+        List<CustomMaterialListFile.Item> items = new ArrayList<>();
+        for (MaterialListModel.Entry<MaterialItemKey> entry : model.entries()) {
+            Object id = cpw.mods.fml.common.registry.GameData.getItemRegistry().getNameForObject(entry.key.stack().getItem());
+            if (id != null) items.add(new CustomMaterialListFile.Item(id.toString(), entry.key.stack().getItemDamage(), entry.total));
+        }
+        return items;
+    }
+
     private static MaterialList combined;
 
     /** All enabled placements counted together, one list per world. */
@@ -101,7 +123,7 @@ public final class MaterialList {
     public Area area() { return area; }
     public String fileName() { return fileName; }
     public boolean renderLayers() { return renderLayers; }
-    public boolean supportsRenderLayers() { return kind != Kind.SCHEMATIC; }
+    public boolean supportsRenderLayers() { return kind != Kind.SCHEMATIC && kind != Kind.CUSTOM; }
     public boolean hud() { return hud; }
     public void setHud(boolean hud) { this.hud = hud; }
     public boolean scanning() { return scan != null; }
@@ -122,12 +144,15 @@ public final class MaterialList {
     public String name() {
         if (kind == Kind.AREA) return area.name();
         if (kind == Kind.COMBINED) return UiTranslations.format("schematica.ui.material.all_placements");
+        if (kind == Kind.CUSTOM) return customName;
         return kind == Kind.SCHEMATIC ? fileName : schematic == null ? "-" : schematic.name;
     }
 
     public String title() {
         switch (kind) {
             case AREA: return UiTranslations.format("litematica.gui.title.material_list.area_analyzer", area.name());
+            case CUSTOM: return customFile != null ? UiTranslations.format("litematica.gui.title.material_list.custom_file", customName, customFile.getName())
+                : UiTranslations.format("litematica.gui.title.material_list.custom", customName);
             case SCHEMATIC:
                 int regions = Math.max(1, schematic.getSchematic().getRegions().size());
                 return UiTranslations.format("litematica.gui.title.material_list.schematic", fileName,
@@ -140,7 +165,7 @@ public final class MaterialList {
         Minecraft mc = Minecraft.getMinecraft();
         if (openedWorld == null || mc.theWorld != openedWorld || mc.thePlayer == null) return false;
         switch (kind) {
-            case SCHEMATIC: return true;
+            case SCHEMATIC: case CUSTOM: return true;
             case AREA: return AreaSelections.available(library) && library.contains(area) && SchematicaPlus.proxy.isSaveEnabled;
             case COMBINED: return !ClientProxy.loadedSchematics.isEmpty();
             default: return schematic != null && ClientProxy.loadedSchematics.contains(schematic);
@@ -175,7 +200,7 @@ public final class MaterialList {
     }
 
     public boolean geometryChanged() {
-        if (kind == Kind.SCHEMATIC) return false;
+        if (kind == Kind.SCHEMATIC || kind == Kind.CUSTOM) return false;
         if (renderLayers && layerRevision != RenderLayerSettings.RANGE.revision()) return true;
         if (area != null || kind == Kind.COMBINED) return !Arrays.equals(geometry, geometry());
         return placementEnabled != schematic.isEnabled() || !Arrays.equals(geometry, geometry()) || source != schematic.getSchematic()
@@ -193,6 +218,15 @@ public final class MaterialList {
         if (!validContext()) return;
         if (kind == Kind.SCHEMATIC) {
             scan = new SchematicFileMaterialScan(schematic, fileRegions, mc.thePlayer);
+            return;
+        }
+        if (kind == Kind.CUSTOM) {
+            // reCreateMaterialList reads the source file again
+            if (customFile != null && customFile.isFile()) {
+                try { customItems = new ArrayList<>(CustomMaterialListFile.read(customFile).items); }
+                catch (java.io.IOException error) { com.github.lunatrius.schematica.reference.Reference.logger.warn("Could not reload {}", customFile, error); }
+            }
+            scan = new CustomMaterialScan(customItems, mc.thePlayer);
             return;
         }
         geometry = geometry();
@@ -237,7 +271,8 @@ public final class MaterialList {
     public JsonObject toJson() {
         JsonObject json = new JsonObject();
         json.addProperty("type", renderLayers ? "render_layers" : "all");
-        json.addProperty("sort_criteria", model.sort() == MaterialListModel.Sort.NAME ? "NAME" : "COUNT_" + model.sort().name());
+        MaterialListModel.Sort sort = model.sort();
+        json.addProperty("sort_criteria", sort == MaterialListModel.Sort.NAME || sort == MaterialListModel.Sort.CACHE_ORDER ? sort.name() : "COUNT_" + sort.name());
         json.addProperty("sort_reverse", !model.descending());
         json.addProperty("hide_available", model.hideAvailable());
         json.addProperty("multiplier", model.multiplier());

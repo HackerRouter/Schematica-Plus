@@ -344,6 +344,8 @@ public class ClientProxy extends CommonProxy {
 
     @Override
     public void init(FMLInitializationEvent event) {
+        com.github.lunatrius.schematica.client.gui.material.MaterialListModel.cachePriority = key -> key instanceof com.github.lunatrius.schematica.client.gui.material.MaterialItemKey
+            ? com.github.lunatrius.schematica.client.gui.material.MaterialItemCache.priority((com.github.lunatrius.schematica.client.gui.material.MaterialItemKey) key) : Integer.MAX_VALUE;
         super.init(event);
         FMLCommonHandler.instance().bus().register(
             com.github.lunatrius.schematica.handler.client.CommandEditQueue.INSTANCE);

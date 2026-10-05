@@ -108,6 +108,7 @@ public class ConfigurationHandler {
     public static int commandLimitPerTick = 8, commandTaskInterval = 1;
     public static boolean easyPlacePostRewrite, easyPlaceClickAdjacent, pickBlockAvoidDamageable = true, pickBlockAvoidTools;
     public static String pickBlockableSlots = "1,2,3,4,5";
+    public static boolean materialListContainerScan;
     public static boolean materialListIgnoreState, materialListRecipeDetails = true, renderMaterialListInGuis = true, highlightBlockInInventory;
     public static int materialListHudMaxLines = 10;
     public static double materialListHudScale = 1;
@@ -367,6 +368,7 @@ public class ConfigurationHandler {
         unhideSchematicVCS = toolFlag("unhideSchematicVCS", false);
         areaSelectionsPerWorld = toolFlag("areaSelectionsPerWorld", true);
         materialListIgnoreState = toolFlag("materialListIgnoreState", false);
+        materialListContainerScan = toolFlag("materialListContainerScan", false);
         easyPlacePostRewrite = toolFlag("easyPlacePostRewrite", false);
         pasteIgnoreInventories = toolFlag("pasteIgnoreInventories", false);
         pasteIgnoreEntities = toolFlag("pasteIgnoreEntities", false);

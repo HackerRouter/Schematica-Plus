@@ -44,8 +44,17 @@ public class OverlayHandler {
     }
 
     /** The material list HUD inside GUIs (renderMaterialListInGuis) and the looked at block in inventories. */
+    private net.minecraft.client.gui.GuiScreen scannedContainer;
+
     @SubscribeEvent
     public void onDrawScreen(net.minecraftforge.client.event.GuiScreenEvent.DrawScreenEvent.Post event) {
+        // materialListContainerScan: once per opened container screen, at its first frame
+        if (event.gui instanceof net.minecraft.client.gui.inventory.GuiContainer && event.gui != this.scannedContainer
+            && com.github.lunatrius.schematica.handler.ConfigurationHandler.materialListContainerScan) {
+            this.scannedContainer = event.gui;
+            com.github.lunatrius.schematica.client.gui.material.MaterialItemCache.scan(
+                ((net.minecraft.client.gui.inventory.GuiContainer) event.gui).inventorySlots.inventorySlots);
+        }
         if (this.minecraft.theWorld == null || !com.github.lunatrius.schematica.handler.VisualSettings.rendering) return;
         if (event.gui instanceof net.minecraft.client.gui.inventory.GuiContainer) {
             com.github.lunatrius.schematica.client.renderer.hud.MaterialListHud.highlightInventory(this.minecraft,
