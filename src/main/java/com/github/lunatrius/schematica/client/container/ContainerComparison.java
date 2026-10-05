@@ -30,6 +30,33 @@ public final class ContainerComparison {
         return a.getItem() == b.getItem() && a.getItemDamage() == b.getItemDamage() && ItemStack.areItemStackTagsEqual(a, b);
     }
 
+    /**
+     * The items the schematic's container holds and the world's lacks, summed per item (same item, damage and NBT)
+     * in the order they first appear; with unknown world contents (null) everything the schematic holds.
+     */
+    public static List<ItemStack> missing(List<ItemStack> expected, List<ItemStack> actual) {
+        List<ItemStack> result = new ArrayList<>();
+        for (ItemStack stack : expected) {
+            if (stack == null || stack.getItem() == null || stack.stackSize <= 0) continue;
+            ItemStack total = null;
+            for (ItemStack entry : result) if (stackable(entry, stack)) total = entry;
+            if (total == null) {
+                total = stack.copy();
+                result.add(total);
+            } else {
+                total.stackSize += stack.stackSize;
+            }
+        }
+        if (actual != null) {
+            for (ItemStack stack : actual) {
+                if (stack == null || stack.getItem() == null) continue;
+                for (ItemStack entry : result) if (stackable(entry, stack)) entry.stackSize -= stack.stackSize;
+            }
+            result.removeIf(entry -> entry.stackSize <= 0);
+        }
+        return result;
+    }
+
     /** A container slot: its index in the open container's slot list, the schematic's stack and the current one. */
     public static final class Target {
         final int slot;

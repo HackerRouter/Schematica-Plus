@@ -53,4 +53,19 @@ public class ContainerComparisonTest {
             Arrays.asList(new Source(20, new ItemStack(STONE, 4, 1)), new Source(21, tagged)));
         assertTrue(clicks.isEmpty());
     }
+
+    @Test public void missingSumsPerItemAndSubtractsTheKnownContents() {
+        List<ItemStack> expected = Arrays.asList(new ItemStack(STONE, 64, 1), null, new ItemStack(DIRT, 10), new ItemStack(STONE, 6, 1), new ItemStack(STONE, 3, 2));
+        List<ItemStack> unknown = ContainerComparison.missing(expected, null);
+        assertEquals(3, unknown.size());
+        assertEquals(70, unknown.get(0).stackSize);
+        assertEquals(1, unknown.get(0).getItemDamage());
+        assertEquals(10, unknown.get(1).stackSize);
+        assertEquals(64, expected.get(0).stackSize);
+        List<ItemStack> known = ContainerComparison.missing(expected, Arrays.asList(new ItemStack(STONE, 64, 1), new ItemStack(DIRT, 12), new ItemStack(STONE, 1, 1), null));
+        assertEquals(2, known.size());
+        assertEquals(5, known.get(0).stackSize);
+        assertEquals(2, known.get(1).getItemDamage());
+        assertTrue(ContainerComparison.missing(expected, Arrays.asList(new ItemStack(STONE, 70, 1), new ItemStack(DIRT, 10), new ItemStack(STONE, 3, 2))).isEmpty());
+    }
 }

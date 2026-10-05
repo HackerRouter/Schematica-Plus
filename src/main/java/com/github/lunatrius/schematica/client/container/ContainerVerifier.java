@@ -149,6 +149,19 @@ public final class ContainerVerifier {
         message(mc, UiTranslations.format("schematica.container.autofill.done", filled, targets.size()));
     }
 
+    /** Keeps what the opened container holds for the in-world labels (ContainerLabels). */
+    private void remember(GuiContainer gui) {
+        List<ItemStack> contents = new ArrayList<>();
+        for (Object object : gui.inventorySlots.inventorySlots) {
+            Slot slot = (Slot) object;
+            if (slot.inventory instanceof InventoryPlayer) continue;
+            ItemStack stack = slot.getStack();
+            contents.add(stack == null ? null : stack.copy());
+        }
+        ContainerLabels.seen(Minecraft.getMinecraft().theWorld, placement.position.x + localX, placement.position.y + localY,
+            placement.position.z + localZ, contents);
+    }
+
     private static ItemStack wanted(IInventory expected, Slot slot) {
         int index = slot.getSlotIndex();
         return index >= 0 && index < expected.getSizeInventory() ? expected.getStackInSlot(index) : null;
@@ -160,10 +173,12 @@ public final class ContainerVerifier {
 
     @SubscribeEvent
     public void onDraw(GuiScreenEvent.DrawScreenEvent.Post event) {
-        if (!ConfigurationHandler.containerVerifier || !(event.gui instanceof GuiContainer)) return;
+        if (!(event.gui instanceof GuiContainer)) return;
         IInventory expected = expected();
         if (expected == null) return;
         GuiContainer gui = (GuiContainer) event.gui;
+        remember(gui);
+        if (!ConfigurationHandler.containerVerifier) return;
         int[] g = geometry(gui);
         if (g == null) return;
         Minecraft mc = Minecraft.getMinecraft();

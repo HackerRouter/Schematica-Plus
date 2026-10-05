@@ -1738,3 +1738,11 @@ Test in GTNH 2.8.4 (NEI 2.8.44) and GTNH 2.9 (NEI 2.8.145); without NEI the butt
   returns to the folder. Lists survive a restart; deleted files disappear from them. Other browsers (save,
   manager) have no such buttons.
 
+## Container labels (containerLabels)
+
+- Schematic with filled chests (also a double chest), a furnace with fuel and a hopper. Build the containers
+  empty: within 12 blocks each shows "Wanted" in grey with up to three of its items and counts, facing you.
+  Open one: its label turns amber; fill it (Fill button or by hand) and close: the label disappears. A double
+  chest has one label. Containers whose schematic copy is empty and blocks other than the schematic's get none.
+  The labels are gone after rejoining until the containers are opened again (grey meanwhile).
+
