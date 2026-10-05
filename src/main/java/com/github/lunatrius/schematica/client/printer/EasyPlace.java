@@ -104,6 +104,9 @@ public final class EasyPlace {
         }
         ItemStack stack = BlockToItemStack.getItemStack(player, block, schematic, lx, ly, lz);
         if (stack == null || stack.getItem() == null) return Result.SUCCESS;
+        if (MaterialReplacements.built(schematic, stack, real, realMeta)) return Result.FAIL;
+        ItemStack replaced = MaterialReplacements.replacement(schematic, stack);
+        if (replaced != null) stack = replaced;
         boolean slab = completesSlab(block, meta, real, realMeta, stack);
         if (!slab && !real.isReplaceable(world, x, y, z)) return Result.FAIL;
         if (!pickStack(player, stack)) return Result.FAIL;
@@ -194,6 +197,8 @@ public final class EasyPlace {
             || below.isAir(world, x, y - 1, z) || below.isReplaceable(world, x, y - 1, z)) return Result.FAIL;
         ItemStack stack = BlockToItemStack.getItemStack(player, block, schematic, lx, ly, lz);
         if (stack == null || stack.getItem() == null) return Result.SUCCESS;
+        ItemStack replaced = MaterialReplacements.replacement(schematic, stack);
+        if (replaced != null) stack = replaced;
         if (!pickStack(player, stack)) return Result.FAIL;
         ItemStack held = player.getCurrentEquippedItem();
         if (held == null || !held.isItemEqual(stack)) return Result.FAIL;

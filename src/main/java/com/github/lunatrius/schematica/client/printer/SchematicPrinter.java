@@ -173,7 +173,9 @@ public class SchematicPrinter {
         if (block.isAir(schematic, x, y, z)) {
             wanted = ConfigurationHandler.printBreakExtraBlock && !ConfigurationHandler.isExtraAirBlock(real);
         } else if (block != real) {
-            wanted = ConfigurationHandler.printBreakWrongBlock && !com.github.lunatrius.schematica.util.BlockGroups.tolerated(block, meta, real, realMeta) && !real.isReplaceable(world, wx, wy, wz)
+            wanted = ConfigurationHandler.printBreakWrongBlock && !com.github.lunatrius.schematica.util.BlockGroups.tolerated(block, meta, real, realMeta)
+                && !MaterialReplacements.built(schematic, BlockToItemStack.getItemStack(this.minecraft.thePlayer, block, schematic, x, y, z), real, realMeta)
+                && !real.isReplaceable(world, wx, wy, wz)
                 && !(block instanceof BlockSlab && EasyPlace.completesSlab(block, meta, real, realMeta, new ItemStack(block, 1, block.damageDropped(meta))));
         } else {
             MultiBlockPlacement.Kind kind = MultiBlockPlacement.kind(block);
@@ -421,7 +423,7 @@ public class SchematicPrinter {
         MultiBlockPlacement.Kind multi = MultiBlockPlacement.kind(block);
         if (multi != null && MultiBlockPlacement.secondary(metadata)) return false;
 
-        final ItemStack itemStack = BlockToItemStack.getItemStack(player, block, schematic, x, y, z);
+        ItemStack itemStack = BlockToItemStack.getItemStack(player, block, schematic, x, y, z);
         if (itemStack == null || itemStack.getItem() == null) {
             Reference.logger.debug("{} is missing a mapping!", BLOCK_REGISTRY.getNameForObject(block));
             return false;
@@ -429,6 +431,9 @@ public class SchematicPrinter {
         if (isBlacklisted(block, itemStack)) {
             return false;
         }
+        if (MaterialReplacements.built(schematic, itemStack, realBlock, realMetadata)) return false;
+        ItemStack replaced = MaterialReplacements.replacement(schematic, itemStack);
+        if (replaced != null) itemStack = replaced;
 
         if (multi != null) return placeMultiBlock(world, player, schematic, x, y, z, wx, wy, wz, block, metadata, itemStack, multi);
 

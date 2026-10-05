@@ -55,6 +55,8 @@ public final class PlacementRestriction {
         Block block = schematic.getSchematic().getBlock(lx, ly, lz);
         int meta = schematic.getSchematic().getBlockMetadata(lx, ly, lz);
         ItemStack required = BlockToItemStack.getItemStack(mc.thePlayer, block, schematic, lx, ly, lz);
+        ItemStack replaced = MaterialReplacements.replacement(schematic, required);
+        if (replaced != null && held.isItemEqual(replaced)) return false;
         if (required != null && required.getItem() != null && !held.isItemEqual(required)) return true;
         PlacementData data = required == null ? null : PlacementRegistry.INSTANCE.getPlacementData(block, required);
         if (data == null) return false;

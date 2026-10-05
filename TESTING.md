@@ -1656,3 +1656,11 @@ Test in GTNH 2.8.4 (NEI 2.8.44) and GTNH 2.9 (NEI 2.8.145); without NEI the butt
   still shows as wrong.
 - With the option off, the same blocks show as wrong state/wrong block like before.
 
+## Material list replacements while building
+
+- Open a placement's material list, replace oak planks with spruce planks and oak stairs with spruce stairs.
+  Printer: it places spruce planks and spruce stairs (facing like the schematic) where oak is wanted, and with
+  "break wrong blocks" on it does not break them afterwards. Easy Place: clicking an oak plank ghost holds and
+  places spruce planks. Placement Restriction lets you place spruce planks there by hand but not stone.
+- Clear the replacement: the printer goes back to oak planks.
+
