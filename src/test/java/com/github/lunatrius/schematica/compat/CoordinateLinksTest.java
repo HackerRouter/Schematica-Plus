@@ -147,4 +147,24 @@ public class CoordinateLinksTest {
         assertEquals(0, dummy.getCompoundTag("mainBlockPosition").getInteger("x"));
         assertEquals(1, dummy.getCompoundTag("mainBlockPosition").getInteger("z"));
     }
+
+    @Test public void columnHeightsMoveAndFlipButDoNotTilt() {
+        NBTTagCompound lure = new NBTTagCompound();
+        lure.setInteger(CoordinateLinks.MARKER, 0);
+        lure.setInteger("yTop", 70);
+        lure.setInteger("yBottom", 64);
+        java.util.List<CoordinateLinks.Spec> specs = CoordinateLinks.rulesFor("tuhljin.automagy.tiles.TileEntityMobLure");
+        CoordinateLinks.shift(specs, lure, 5, -60, 5);
+        assertEquals(10, lure.getInteger("yTop"));
+        CoordinateLinks.transform(specs, lure, 'X', 3, 12, 3);
+        assertEquals(10, lure.getInteger("yTop"));
+        CoordinateLinks.transform(specs, lure, 'y', 3, 12, 3);
+        assertEquals(1, lure.getInteger("yTop"));
+        assertEquals(7, lure.getInteger("yBottom"));
+        NBTTagCompound pylon = new NBTTagCompound();
+        pylon.setInteger(CoordinateLinks.MARKER, 0);
+        pylon.setInteger("bossY", -1);
+        CoordinateLinks.shift(CoordinateLinks.rulesFor("tuhljin.automagy.tiles.TileEntityThaumostaticPylon"), pylon, 0, 5, 0);
+        assertEquals(-1, pylon.getInteger("bossY"));
+    }
 }

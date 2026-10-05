@@ -103,6 +103,9 @@ public final class CoordinateLinks {
         add(automagy + "TileEntityNethermind", triple("currentRune"));
         add(automagy + "TileEntityRedcrystalMerc", point("", "mirrorX", "mirrorY", "mirrorZ", "mirrorDim"),
             point("", "mirrorLinkedX", "mirrorLinkedY", "mirrorLinkedZ", "mirrorLinkedDim"));
+        add(automagy + "TileEntityMobLure", point("", null, "yTop", null, null), point("", null, "yBottom", null, null));
+        add(automagy + "TileEntityThaumostaticController", point("", null, "spireY", null, null));
+        add(automagy + "TileEntityThaumostaticPylon", point("", null, "bossY", null, null));
         add(automagy + "TileEntityInventarium", new Spec("Nodes", "pos", null, null, false, null, true),
             new Spec("MemoryUsers", "pos", null, null, false, null, true));
         // Extra Utilities energy nodes: the receivers they found
@@ -145,7 +148,7 @@ public final class CoordinateLinks {
         if (specs.isEmpty()) return;
         int dimension = tile.hasWorldObj() && tile.getWorldObj().provider != null ? tile.getWorldObj().provider.dimensionId : 0;
         tag.setInteger(MARKER, dimension);
-        apply(specs, tag, p -> new double[] {p[0] - ox, p[1] - oy, p[2] - oz}, false);
+        apply(specs, tag, p -> new double[] {p[0] - ox, p[1] - oy, p[2] - oz}, (char) 0);
     }
 
     /** Moves the links of a schematic tile whose x/y/z moves by (dx, dy, dz). */
@@ -154,7 +157,7 @@ public final class CoordinateLinks {
     }
 
     static void shift(List<Spec> specs, NBTTagCompound tag, int dx, int dy, int dz) {
-        if (dx != 0 || dy != 0 || dz != 0) apply(specs, tag, p -> new double[] {p[0] + dx, p[1] + dy, p[2] + dz}, false);
+        if (dx != 0 || dy != 0 || dz != 0) apply(specs, tag, p -> new double[] {p[0] + dx, p[1] + dy, p[2] + dz}, (char) 0);
     }
 
     /** Turns the links of a schematic tile with the schematic (sizes before the operation). */
@@ -164,7 +167,7 @@ public final class CoordinateLinks {
 
     static void transform(List<Spec> specs, NBTTagCompound tag, char operation, int width, int height, int length) {
         apply(specs, tag, p -> SchematicTransform.point(operation, p[0], p[1], p[2], width - 1, height - 1, length - 1),
-            "XZy".indexOf(operation) >= 0);
+            operation);
     }
 
     /** A pasted tile's NBT (x/y/z still in the schematic) put at (x, y, z) in the world; returns the tag. */
@@ -199,8 +202,12 @@ public final class CoordinateLinks {
 
     private interface Mapping { double[] map(double[] point); }
 
-    /** Maps every position of the specs; `vertical` operations leave positions without a y alone. */
-    private static void apply(List<Spec> specs, NBTTagCompound root, Mapping mapping, boolean vertical) {
+    /**
+     * Maps every position of the specs (operation 0 for a move). Positions without a y (on the tile's layer) skip
+     * X, Z and y; y-only positions (in the tile's column) skip X and Z.
+     */
+    private static void apply(List<Spec> specs, NBTTagCompound root, Mapping mapping, char operation) {
+        boolean vertical = operation != 0 && "XZy".indexOf(operation) >= 0, tilting = operation == 'X' || operation == 'Z';
         int dimension = root.getInteger(MARKER);
         for (Spec spec : specs) {
             if (spec.list) {
@@ -208,10 +215,14 @@ public final class CoordinateLinks {
                 continue;
             }
             NBTTagCompound tag = spec.path.isEmpty() ? root : root.hasKey(spec.path, 10) ? root.getCompoundTag(spec.path) : null;
-            if (tag == null || spec.y == null && vertical) continue;
+            if (tag == null || spec.y == null && vertical || spec.x == null && tilting) continue;
             if (spec.dimension != null && tag.hasKey(spec.dimension) && tag.getInteger(spec.dimension) != dimension) continue;
             if (spec.box) {
                 box(tag, spec, mapping);
+                continue;
+            }
+            if (spec.x == null) {
+                if (tag.hasKey(spec.y) && number(tag, spec.y) >= 0) put(tag, spec.y, mapping.map(new double[] {0, number(tag, spec.y), 0})[1]);
                 continue;
             }
             boolean list = spec.x.contains("%d");
