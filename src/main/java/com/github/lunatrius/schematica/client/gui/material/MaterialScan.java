@@ -26,6 +26,7 @@ public final class MaterialScan implements MaterialScanner {
     private final int width, length;
     private final long volume;
     private final boolean ignoreState = com.github.lunatrius.schematica.handler.ConfigurationHandler.materialListIgnoreState;
+    private final boolean ignoreCropAge = com.github.lunatrius.schematica.handler.VisualSettings.ignoreCropAge;
     private long cursor;
     private int skipped;
 
@@ -73,7 +74,9 @@ public final class MaterialScan implements MaterialScanner {
             Chunk chunk = world.getChunkFromChunkCoords(wx >> 4, wz >> 4);
             boolean unknown = !verifiedChunk(chunk, wy);
             Block real = unknown ? null : world.getBlock(wx, wy, wz);
-            boolean missing = unknown || real != block || !ignoreState && world.getBlockMetadata(wx, wy, wz) != meta;
+            int realMeta = unknown ? 0 : world.getBlockMetadata(wx, wy, wz);
+            boolean missing = unknown || real != block || !ignoreState && realMeta != meta
+                && !(ignoreCropAge && com.github.lunatrius.schematica.util.BlockGroups.sameIgnoringAge(block, meta, real, realMeta));
             boolean mismatched = missing && !unknown && !world.isAirBlock(wx, wy, wz);
             for (int i = 0; i < items.size(); i++) {
                 int amount = items.count(i);

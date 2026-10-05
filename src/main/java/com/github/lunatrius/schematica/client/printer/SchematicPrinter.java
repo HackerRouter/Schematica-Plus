@@ -178,7 +178,9 @@ public class SchematicPrinter {
         } else {
             MultiBlockPlacement.Kind kind = MultiBlockPlacement.kind(block);
             int mask = kind == null ? 0xF : MultiBlockPlacement.stateMask(kind, meta, AccuratePlacementClient.active(block));
-            wanted = ConfigurationHandler.printBreakWrongStateBlock && (meta & mask) != (realMeta & mask) && !FluidPrinter.isFluid(block);
+            wanted = ConfigurationHandler.printBreakWrongStateBlock && (meta & mask) != (realMeta & mask) && !FluidPrinter.isFluid(block)
+                && !(com.github.lunatrius.schematica.handler.VisualSettings.ignoreCropAge
+                    && com.github.lunatrius.schematica.util.BlockGroups.sameIgnoringAge(block, meta, real, realMeta));
         }
         if (!wanted) return false;
         boolean switched = selectTool(this.minecraft.thePlayer, world, real, wx, wy, wz);

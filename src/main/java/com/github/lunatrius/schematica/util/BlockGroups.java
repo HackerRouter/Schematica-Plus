@@ -10,10 +10,14 @@ import net.minecraft.block.BlockAnvil;
 import net.minecraft.block.BlockBasePressurePlate;
 import net.minecraft.block.BlockBed;
 import net.minecraft.block.BlockButton;
+import net.minecraft.block.BlockCactus;
 import net.minecraft.block.BlockCarpet;
+import net.minecraft.block.BlockCocoa;
 import net.minecraft.block.BlockColored;
+import net.minecraft.block.BlockCrops;
 import net.minecraft.block.BlockDoor;
 import net.minecraft.block.BlockFence;
+import net.minecraft.block.BlockFire;
 import net.minecraft.block.BlockFenceGate;
 import net.minecraft.block.BlockFlower;
 import net.minecraft.block.BlockFlowerPot;
@@ -21,8 +25,10 @@ import net.minecraft.block.BlockGlass;
 import net.minecraft.block.BlockHardenedClay;
 import net.minecraft.block.BlockLeaves;
 import net.minecraft.block.BlockLog;
+import net.minecraft.block.BlockNetherWart;
 import net.minecraft.block.BlockOre;
 import net.minecraft.block.BlockPane;
+import net.minecraft.block.BlockReed;
 import net.minecraft.block.BlockRedstoneOre;
 import net.minecraft.block.BlockSapling;
 import net.minecraft.block.BlockSign;
@@ -30,6 +36,7 @@ import net.minecraft.block.BlockSlab;
 import net.minecraft.block.BlockStainedGlass;
 import net.minecraft.block.BlockStainedGlassPane;
 import net.minecraft.block.BlockStairs;
+import net.minecraft.block.BlockStem;
 import net.minecraft.block.BlockTrapDoor;
 import net.minecraft.block.BlockWall;
 import net.minecraft.block.BlockWood;
@@ -114,9 +121,26 @@ public final class BlockGroups {
         return bits;
     }
 
+    /** The metadata bits of a block that hold its growth stage (Litematica's "age" property). */
+    public static int ageBits(Block block) {
+        if (block instanceof BlockCrops || block instanceof BlockStem) return 0x7;
+        if (block instanceof BlockNetherWart) return 0x3;
+        if (block instanceof BlockCocoa) return 0xC;
+        if (block instanceof BlockCactus || block instanceof BlockReed || block instanceof BlockFire) return 0xF;
+        return 0;
+    }
+
+    /** ignoreCropAge (BlockUtils.areStatesEqualIgnoringAge): the same block, differing at most in its age. */
+    public static boolean sameIgnoringAge(Block expected, int expectedMeta, Block found, int foundMeta) {
+        if (expected != found) return false;
+        int age = ageBits(expected);
+        return (expectedMeta & ~age) == (foundMeta & ~age);
+    }
+
     /** Compares a schematic block with the block in the world; both are present and not air. */
     public static Result compare(Block expected, int expectedMeta, Block found, int foundMeta, boolean differentBlocks) {
         if (expected == found && expectedMeta == foundMeta) return Result.SAME;
+        if (com.github.lunatrius.schematica.handler.VisualSettings.ignoreCropAge && sameIgnoringAge(expected, expectedMeta, found, foundMeta)) return Result.SAME;
         String group = differentBlocks ? group(expected) : null;
         boolean sameGroup = group != null && group.equals(group(found));
         if (expected != found && !sameGroup) return Result.WRONG_BLOCK;
@@ -127,7 +151,12 @@ public final class BlockGroups {
     }
 
     public static Result compare(String expected, int expectedMeta, String found, int foundMeta, boolean differentBlocks) {
-        if (!differentBlocks) return expected.equals(found) ? (expectedMeta == foundMeta ? Result.SAME : Result.WRONG_STATE) : Result.WRONG_BLOCK;
+        if (!differentBlocks) {
+            if (!expected.equals(found)) return Result.WRONG_BLOCK;
+            if (expectedMeta == foundMeta) return Result.SAME;
+            Block block = com.github.lunatrius.schematica.handler.VisualSettings.ignoreCropAge ? block(expected) : null;
+            return block != null && sameIgnoringAge(block, expectedMeta, block, foundMeta) ? Result.SAME : Result.WRONG_STATE;
+        }
         Block a = block(expected), b = block(found);
         if (a == null || b == null) return compare(expected, expectedMeta, found, foundMeta, false);
         return compare(a, expectedMeta, b, foundMeta, true);

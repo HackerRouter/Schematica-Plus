@@ -37,4 +37,21 @@ public class BlockGroupsTest {
         assertEquals(3, BlockGroups.variantBits(LOG));
         assertEquals(0, BlockGroups.variantBits(OAK_STAIRS));
     }
+
+    @Test public void ignoreCropAgeOnlySkipsTheGrowthBits() {
+        Block wheat = new net.minecraft.block.BlockCrops() {};
+        Block cocoa = new net.minecraft.block.BlockCocoa() {};
+        boolean previous = com.github.lunatrius.schematica.handler.VisualSettings.ignoreCropAge;
+        try {
+            com.github.lunatrius.schematica.handler.VisualSettings.ignoreCropAge = false;
+            assertEquals(WRONG_STATE, BlockGroups.compare(wheat, 7, wheat, 2, false));
+            com.github.lunatrius.schematica.handler.VisualSettings.ignoreCropAge = true;
+            assertEquals(SAME, BlockGroups.compare(wheat, 7, wheat, 2, false));
+            assertEquals(SAME, BlockGroups.compare(cocoa, 0x9, cocoa, 0x1, true));
+            assertEquals(WRONG_STATE, BlockGroups.compare(cocoa, 0x9, cocoa, 0x2, true));
+            assertEquals(WRONG_STATE, BlockGroups.compare(PLAIN, 1, PLAIN, 2, true));
+        } finally {
+            com.github.lunatrius.schematica.handler.VisualSettings.ignoreCropAge = previous;
+        }
+    }
 }

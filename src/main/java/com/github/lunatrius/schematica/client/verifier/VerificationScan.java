@@ -110,6 +110,7 @@ public final class VerificationScan {
         if (found.air()) return Type.MISSING;
         switch (com.github.lunatrius.schematica.util.BlockGroups.compare(expected.block, expected.metadata, found.block, found.metadata,
             com.github.lunatrius.schematica.util.BlockGroups.enabled)) {
+            case SAME: return Type.CORRECT;
             case DIFFERENT_BLOCK: return Type.DIFF_BLOCK;
             case WRONG_STATE: return Type.WRONG_STATE;
             default: return Type.WRONG_BLOCK;

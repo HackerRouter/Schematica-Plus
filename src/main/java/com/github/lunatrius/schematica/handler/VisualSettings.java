@@ -19,6 +19,7 @@ public final class VisualSettings {
     public static double outlineWidth = 1.0, outlineWidthThrough = 3.0;
     public static boolean renderEntities = true, renderTileEntities = true, fluids = true, fakeLighting = true, aoModern, renderColliding;
     public static boolean ignoreExistingFluids, modelOutline = true, modelSides = true, reducedInnerSides, overlayCulling = true, entityHitboxes = true;
+    public static boolean ignoreCropAge;
     public static boolean areaBoxSides = true, placementBoxSides, enclosingBox = true, enclosingBoxSides;
     public static int fakeLightLevel = 15;
     public static double placementBoxSideAlpha = 0.2;
@@ -98,6 +99,7 @@ public final class VisualSettings {
         aoModern = flag(config, r, "renderAOModernEnable", false, "visuals");
         renderColliding = flag(config, r, "renderCollidingSchematicBlocks", false, "visuals");
         ignoreExistingFluids = flag(config, r, "ignoreExistingFluids", false, "visuals");
+        ignoreCropAge = flag(config, r, "ignoreCropAge", false, "visuals");
         modelOutline = flag(config, r, "schematicOverlayModelOutline", true, "visuals");
         modelSides = flag(config, r, "schematicOverlayModelSides", true, "visuals");
         reducedInnerSides = flag(config, r, "overlayReducedInnerSides", false, "visuals");

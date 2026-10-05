@@ -1540,3 +1540,11 @@ Test in GTNH 2.8.4 (NEI 2.8.44) and GTNH 2.9 (NEI 2.8.145); without NEI the butt
 - Easy Place: aim at a door's upper half or a bed head and use: the door/bed is placed from below/the foot;
   facing follows your own view (on a Plus server the door facing/hinge/open follow the schematic).
 - A bed whose head position is blocked or has no solid ground: not placed, no item lost.
+
+## ignoreCropAge (Litematica 0.27.12)
+
+- Schematic with fully grown wheat, carrots, pumpkin stems, nether wart, cocoa and sugar cane; plant them
+  young. Off: wrong state overlay (orange), verifier lists wrong states, material list counts them missing.
+  Turn "ignoreCropAge" on and save: overlays disappear, the verifier (re-run) counts them correct, the material
+  list (refresh) no longer counts them. A cocoa pod facing the wrong way is still a wrong state.
+- With "Break Wrong State Blocks" on and ignoreCropAge on, the printer does not break young crops.
