@@ -192,6 +192,8 @@ schematica.ui.demo.child=Open child page
 
 schematica.ui.browser.unreadable=Cannot read this folder. Check the schematic directory and permissions.
 schematica.ui.load.disabled=Schematic loading is unavailable in this world.
+schematica.ui.load.reading=Reading %s...
+schematica.ui.load.already_reading=%s is still being read
 
 schematica.ui.save.directory_title=Choose schematic output folder
 schematica.ui.save.use_directory=Use this folder

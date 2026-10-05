@@ -192,6 +192,8 @@ schematica.ui.demo.child=打开子页面
 
 schematica.ui.browser.unreadable=无法读取目录，请检查原理图目录和访问权限。
 schematica.ui.load.disabled=当前世界不允许加载原理图。
+schematica.ui.load.reading=正在读取 %s……
+schematica.ui.load.already_reading=%s 仍在读取中
 
 schematica.ui.save.directory_title=选择原理图保存目录
 schematica.ui.save.use_directory=使用当前目录

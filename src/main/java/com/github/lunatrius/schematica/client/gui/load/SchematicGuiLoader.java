@@ -34,6 +34,23 @@ public final class SchematicGuiLoader {
         return source;
     }
 
+    /** load() with the file read on a worker thread; done or failed runs on the client thread afterwards. */
+    public static boolean loadAsync(Minecraft minecraft, File file, boolean createPlacement,
+        java.util.function.Consumer<SchematicLibrary.Source<SchematicSourceData>> done, java.util.function.Consumer<Exception> failed) throws IOException {
+        if (minecraft.theWorld == null || minecraft.thePlayer == null || !SchematicaPlus.proxy.isLoadEnabled) {
+            throw new IOException("Schematic loading is unavailable in this world");
+        }
+        return ClientProxy.loadSourceAsync(file, source -> {
+            try {
+                if (createPlacement) createPlacement(minecraft, source, true);
+                WorldHandler.INSTANCE.saveSession();
+                done.accept(source);
+            } catch (IOException | RuntimeException e) {
+                failed.accept(e);
+            }
+        }, failed);
+    }
+
     public static SchematicWorld createPlacement(Minecraft minecraft, SchematicLibrary.Source<SchematicSourceData> source,
         boolean restoreCoordinates) throws IOException {
         if (minecraft.theWorld == null || minecraft.thePlayer == null || !SchematicaPlus.proxy.isLoadEnabled) {

@@ -32,6 +32,22 @@ public final class SchematicLibrary<D, P> {
         return source;
     }
 
+    /** The loaded source of a file, or null. */
+    public Source<D> find(File file) throws IOException {
+        File canonical = file.getCanonicalFile();
+        for (Source<D> source : sources) if (!source.memory && source.file.equals(canonical)) return source;
+        return null;
+    }
+
+    /** Adds the data of a file read elsewhere (on another thread), unless the file is loaded by now. */
+    public Source<D> add(File file, D data) throws IOException {
+        Source<D> loaded = find(file);
+        if (loaded != null) return loaded;
+        Source<D> source = new Source<>(file.getCanonicalFile(), data);
+        sources.add(source);
+        return source;
+    }
+
     /** Adds a source that exists only in memory; its file names it and is never read. */
     public Source<D> addMemory(File file, D data) {
         Source<D> source = new Source<>(file.getAbsoluteFile(), data);

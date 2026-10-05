@@ -477,6 +477,54 @@ public class ClientProxy extends CommonProxy {
         return source;
     }
 
+    private static final java.util.concurrent.ExecutorService SOURCE_READER = java.util.concurrent.Executors.newSingleThreadExecutor(runnable -> {
+        Thread thread = new Thread(runnable, "Schematica Plus schematic reader");
+        thread.setDaemon(true);
+        return thread;
+    });
+    private static final java.util.Set<File> READING = java.util.Collections.synchronizedSet(new java.util.HashSet<>());
+
+    /**
+     * Reads and decodes a file on a worker thread so that the game keeps running, then adds it on the client thread
+     * and passes it on; false when the file is already being read. A file loaded before is passed on right away.
+     */
+    public static boolean loadSourceAsync(File file, java.util.function.Consumer<SchematicLibrary.Source<SchematicSourceData>> loaded,
+        java.util.function.Consumer<Exception> failed) throws IOException {
+        File canonical = file.getCanonicalFile();
+        SchematicLibrary.Source<SchematicSourceData> existing = SCHEMATICS.find(canonical);
+        if (existing != null) {
+            loaded.accept(existing);
+            return true;
+        }
+        if (!READING.add(canonical)) return false;
+        Minecraft mc = Minecraft.getMinecraft();
+        net.minecraft.world.World world = mc.theWorld;
+        SOURCE_READER.execute(() -> {
+            SchematicSourceData data = null;
+            Exception error = null;
+            try {
+                data = SchematicSourceData.read(canonical);
+            } catch (IOException | RuntimeException e) {
+                error = e;
+            }
+            SchematicSourceData read = data;
+            Exception problem = error;
+            mc.func_152344_a(() -> {
+                READING.remove(canonical);
+                if (problem != null) { failed.accept(problem); return; }
+                if (mc.theWorld != world) return;
+                try {
+                    SchematicLibrary.Source<SchematicSourceData> source = SCHEMATICS.add(canonical, read);
+                    reportUnknownBlocks(source);
+                    loaded.accept(source);
+                } catch (IOException | RuntimeException e) {
+                    failed.accept(e);
+                }
+            });
+        });
+        return true;
+    }
+
     /**
      * Lists in chat the blocks of a newly read file that this game does not have and what replaced them, and the
      * stored item stacks whose ids were translated or removed.

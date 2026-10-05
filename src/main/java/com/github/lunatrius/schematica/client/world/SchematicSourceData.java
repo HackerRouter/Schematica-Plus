@@ -26,6 +26,8 @@ public final class SchematicSourceData {
     private final java.util.Map<String, String> unknownBlocks;
     private boolean unknownBlocksReported;
     private com.github.lunatrius.schematica.world.schematic.ItemIdMaps.Result itemIds;
+    /** The schematic decoded while reading, handed to the first placement instead of decoding the file again. */
+    private java.lang.ref.SoftReference<ISchematic> decoded;
 
     private SchematicSourceData(SchematicFileSnapshot snapshot, ISchematic data) {
         this.snapshot = snapshot;
@@ -35,6 +37,7 @@ public final class SchematicSourceData {
         height = data.getHeight();
         length = data.getLength();
         SchematicLimits.volume(width, height, length);
+        decoded = new java.lang.ref.SoftReference<>(data);
     }
 
     public static SchematicSourceData read(File file) throws IOException {
@@ -45,8 +48,11 @@ public final class SchematicSourceData {
         return new SchematicSourceData(snapshot, SchematicFormat.readFromSnapshot(snapshot));
     }
 
-    public ISchematic instantiate() throws IOException {
-        return !modified() ? SchematicFormat.readFromSnapshot(snapshot) : SchematicCopies.copy(edited);
+    public synchronized ISchematic instantiate() throws IOException {
+        ISchematic first = decoded == null ? null : decoded.get();
+        decoded = null;
+        if (modified()) return SchematicCopies.copy(edited);
+        return first != null ? first : SchematicFormat.readFromSnapshot(snapshot);
     }
 
     /** Block names or states of the file this game does not have, to the block that replaced them; taken once. */

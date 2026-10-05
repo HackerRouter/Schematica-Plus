@@ -1686,3 +1686,18 @@ Test in GTNH 2.8.4 (NEI 2.8.44) and GTNH 2.9 (NEI 2.8.145); without NEI the butt
   coordinates kept it from moving all the way.
 - Large GTNH builds: the game does not stutter while it searches.
 
+## Render distance and FPS guard
+
+- Load a very large GTNH schematic. With Schematic Render Distance 64: only schematic chunks within about 64
+  blocks are drawn; walking along the build draws the next chunks. 0 draws everything.
+- Adaptive Rendering Min FPS 30 with a placement that makes the frame rate drop below 30: within a few seconds the
+  action bar says the render distance was reduced and the frame rate recovers; far parts disappear. Looking away
+  or moving to a lighter area grows it back. 0 turns this off.
+
+## Asynchronous loading
+
+- Load a large schematic (tens of MB) from the load browser: the game keeps running (the status line says it is
+  being read), then the placement appears and the status says it was read. Pressing load again while it is read
+  says it is still being read. Loading takes about half as long as before.
+- Leave the world while a file is read: nothing appears in the next world.
+

@@ -122,8 +122,18 @@ public final class GuiSchematicLoad extends GuiSchematicBrowser {
         }
         try {
             File file = browser.readableFile(entry);
-            SchematicGuiLoader.load(mc, file, placeOnLoad);
-            setStatus(UiTranslations.format("litematica.message.schematic_read_from_file_success", file.getName()));
+            String name = entry.name();
+            boolean[] finished = {false};
+            boolean started = SchematicGuiLoader.loadAsync(mc, file, placeOnLoad, source -> {
+                finished[0] = true;
+                setStatus(UiTranslations.format("litematica.message.schematic_read_from_file_success", file.getName()));
+                tickScreen();
+            }, error -> {
+                finished[0] = true;
+                fail("litematica.error.schematic_read_from_file_failed.exception", error, name);
+                tickScreen();
+            });
+            if (!finished[0]) setStatus(UiTranslations.format(started ? "schematica.ui.load.reading" : "schematica.ui.load.already_reading", file.getName()));
         } catch (IOException | RuntimeException e) {
             fail("litematica.error.schematic_read_from_file_failed.exception", e, entry.name());
         }
