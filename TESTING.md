@@ -1567,3 +1567,10 @@ Test in GTNH 2.8.4 (NEI 2.8.44) and GTNH 2.9 (NEI 2.8.145); without NEI the butt
 - New material lists sort by name. Turn on materialListContainerScan, open a chest with cobblestone and glass,
   close it, open the material list: cobblestone and glass are on top (the last opened container first).
 - Clicking the Item column header cycles name, cache order, cache order reversed (arrow on the Item column).
+
+## Verifier and disabled sub-regions (Litematica 0.27.12)
+
+- Placement with two sub-regions, one disabled, built in the world (also where the disabled one is): run the
+  verifier: nothing inside the disabled sub-region is listed (no "extra" blocks there); unloaded chunks that
+  only the disabled sub-region touches are not waited for. Enable it again: the verification restarts and
+  covers it.

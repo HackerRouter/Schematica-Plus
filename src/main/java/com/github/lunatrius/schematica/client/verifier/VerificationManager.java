@@ -156,11 +156,13 @@ public final class VerificationManager {
                 throw new MessageException("schematica.ui.verifier.bounds");
             }
             scan.addIgnored(ignored);
+            // Only the enabled sub-regions are verified, and only their chunks are waited for (RequiredEnabled.PLACEMENT_ENABLED)
+            final java.util.List<com.github.lunatrius.schematica.api.SchematicRegion> enabled = enabledBoxes(placement, x, y, z);
             reader = new VerificationScan.Reader() {
                 private final Map<Long, VerificationScan.State> states = new HashMap<>();
                 private final Map<VerificationScan.State, Block> blocks = new HashMap<>();
                 private int logged;
-                @Override public boolean included(int x, int y, int z) { return source.containsBlock(x, y, z); }
+                @Override public boolean included(int x, int y, int z) { return source.containsBlock(x, y, z) && inside(enabled, x, y, z); }
                 @Override public boolean loaded(int cx, int cz) {
                     if (!world.getChunkProvider().chunkExists(cx, cz)) return false;
                     Chunk chunk = world.getChunkFromChunkCoords(cx, cz);
@@ -192,6 +194,20 @@ public final class VerificationManager {
             };
             running = true;
             ensureTask(mc);
+        }
+
+        /** The enabled sub-region boxes in placement coordinates; null when the placement has no sub-region layout. */
+        private java.util.List<com.github.lunatrius.schematica.api.SchematicRegion> enabledBoxes(SchematicWorld placement, int x, int y, int z) {
+            if (placement.subregions() == null) return null;
+            java.util.List<com.github.lunatrius.schematica.api.SchematicRegion> boxes = new java.util.ArrayList<>();
+            for (com.github.lunatrius.schematica.api.SchematicRegion box : placement.enabledRegionBounds()) boxes.add(box.offset(-x, -y, -z));
+            return boxes;
+        }
+
+        private boolean inside(java.util.List<com.github.lunatrius.schematica.api.SchematicRegion> boxes, int x, int y, int z) {
+            if (boxes == null) return true;
+            for (com.github.lunatrius.schematica.api.SchematicRegion box : boxes) if (box.contains(x, y, z)) return true;
+            return false;
         }
 
         private void ensureTask(Minecraft mc) {
