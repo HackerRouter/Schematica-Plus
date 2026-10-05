@@ -1637,3 +1637,12 @@ Test in GTNH 2.8.4 (NEI 2.8.44) and GTNH 2.9 (NEI 2.8.145); without NEI the butt
 - An existing world whose Simple selection was named "Simple selection": it now shows "Unnamed" (selection and
   box); a new Normal mode world creates "Unnamed".
 
+## Printer build order (printerBuildOrder)
+
+- Layers (default): print a small house with torches on the walls, rails and flowers on the floor, standing
+  inside it. The printer fills the lowest layer in reach first, puts the walls' full blocks before glass panes,
+  slabs and stairs, and torches/rails/flowers after the blocks they hang on; it does not place blocks next to
+  your feet and head while other positions are left, so you are not boxed in. With Y Axis Reverse it starts at
+  the top.
+- Iterator: the order follows the iteration order and axis settings as before.
+

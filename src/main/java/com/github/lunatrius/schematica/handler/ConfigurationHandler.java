@@ -75,6 +75,7 @@ public class ConfigurationHandler {
     public static double printerWorkRange;
     public static int printerIterationTimeLimit = 8, placeBlocksPerTick = 1, printerLagCheckMax = 20;
     public static String printerIteratorShape = "sphere", printerIteratorMode = "xzy", printSelectionType = "render_layers";
+    public static String printerBuildOrder = "layers";
     public static boolean printerXAxisReverse, printerYAxisReverse, printerZAxisReverse, printerLagCheck = true;
     public static boolean placeInAir = true, printForcedSneak, printFallingBlockCheck = true, printerAutoDisable = true, printerPauseWhileMoving;
     public static String[] printSkipList = {};
@@ -514,6 +515,7 @@ public class ConfigurationHandler {
         printerWorkRange = Math.max(0, Math.min(6, range.getDouble(0)));
         printerIterationTimeLimit = printerInt("printerIterationTimeLimit", 8, 0, 32);
         placeBlocksPerTick = printerInt("placeBlocksPerTick", 1, 1, 64);
+        printerBuildOrder = printerChoice("printerBuildOrder", "layers", "layers", "iterator");
         printerIteratorShape = printerChoice("printerIteratorShape", "sphere", "sphere", "octahedron", "cube");
         printerIteratorMode = printerChoice("printerIteratorMode", "xzy", "xzy", "xyz", "yxz", "yzx", "zxy", "zyx");
         printerXAxisReverse = printerFlag("printerXAxisReverse", false);

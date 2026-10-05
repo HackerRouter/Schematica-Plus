@@ -275,20 +275,31 @@ public class SchematicPrinter {
         AreaSelectionLibrary.Area area = "selection".equals(ConfigurationHandler.printSelectionType) ? AreaSelections.library().selected() : null;
 
         if (continueMining(world, eyeX, eyeY, eyeZ, range)) return 0;
+        boolean layers = "layers".equals(ConfigurationHandler.printerBuildOrder);
+        List<PrinterBuildOrder.Candidate> candidates = new ArrayList<>();
+        for (int[] offset : offsets) {
+            if (System.nanoTime() > deadline) break;
+            int x = bx + offset[0], y = by + offset[1], z = bz + offset[2];
+            if (y < 0 || y > 255) continue;
+            double dx = x + 0.5 - eyeX, dy = y + 0.5 - eyeY, dz = z + 0.5 - eyeZ;
+            if (dx * dx + dy * dy + dz * dz > range * range) continue;
+            if (!selected(x, y, z, feetY, area)) continue;
+            if (this.cooldowns.containsKey(key(x, y, z))) continue;
+            SchematicWorld placement = placementAt(placements, x, y, z);
+            if (placement == null) continue;
+            int lx = x - placement.position.x, ly = y - placement.position.y, lz = z - placement.position.z;
+            Block block = placement.getBlock(lx, ly, lz);
+            if (block == world.getBlock(x, y, z) && placement.getBlockMetadata(lx, ly, lz) == world.getBlockMetadata(x, y, z)) continue;
+            candidates.add(new PrinterBuildOrder.Candidate(x, y, z, layers ? PrinterBuildOrder.tier(block) : 0, placement));
+        }
+        if (layers) candidates.sort(PrinterBuildOrder.order(eyeX, eyeY, eyeZ, feetY, ConfigurationHandler.printerYAxisReverse));
         this.pass = new Pass(player);
         int placed = 0;
         try {
-            for (int[] offset : offsets) {
-                if (System.nanoTime() > deadline) break;
-                int x = bx + offset[0], y = by + offset[1], z = bz + offset[2];
-                if (y < 0 || y > 255) continue;
-                double dx = x + 0.5 - eyeX, dy = y + 0.5 - eyeY, dz = z + 0.5 - eyeZ;
-                if (dx * dx + dy * dy + dz * dz > range * range) continue;
-                if (!selected(x, y, z, feetY, area)) continue;
+            for (PrinterBuildOrder.Candidate candidate : candidates) {
+                int x = candidate.x, y = candidate.y, z = candidate.z;
                 long key = key(x, y, z);
-                if (this.cooldowns.containsKey(key)) continue;
-                SchematicWorld placement = placementAt(placements, x, y, z);
-                if (placement == null) continue;
+                SchematicWorld placement = (SchematicWorld) candidate.placement;
                 if (startBreak(world, placement, x, y, z)) {
                     this.cooldowns.put(key, this.tick + Math.max(1, ConfigurationHandler.timeout));
                     break;
