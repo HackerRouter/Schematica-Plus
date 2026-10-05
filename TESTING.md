@@ -1519,3 +1519,11 @@ Test in GTNH 2.8.4 (NEI 2.8.44) and GTNH 2.9 (NEI 2.8.145); without NEI the butt
   now: its names are listed with "-> minecraft:air".
 - Loading the same file again while it is loaded (a second placement): no repeat. Reload from the loaded
   schematics list: listed again. A file with only known blocks: no message.
+
+## Align to Map
+
+- Load a 128 x 128 (one layer) map art, open its placement configuration and click "#" next to Move to player:
+  the placement covers exactly one map (check with a map item: the border of the drawn area matches the
+  schematic box). A 128 x 129 map art: the extra north row lies one block north of the map.
+- Rotate the placement 90 degrees and align again: still aligned. With X locked only Z moves; with X and Z
+  locked or the placement locked the button is disabled. Y never changes.

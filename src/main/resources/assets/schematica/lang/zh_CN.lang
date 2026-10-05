@@ -85,6 +85,7 @@ schematica.printer.missing.overflow=§7...还有 %d 种
 schematica.message.import.unknown_blocks=%s：%d 种本游戏中没有的方块已被替换：
 schematica.message.import.unknown_block=  %s -> %s
 schematica.message.import.unknown_more=  ……还有 %d 种（完整列表见日志）
+schematica.ui.placement.align_to_map=对齐到地图\n在 X 和 Z 方向移动放置，使其东边和南边落在最近的地图边界上（每张地图覆盖 128 x 128 格，从 -64 开始）。128 x 128 的地图画正好占满一张地图；128 x 129 的地图画多出的北侧一行位于地图外。
 schematica.config.destroyBlocks=破坏方块
 schematica.config.destroyBlocks.tooltip=投影将可以破坏方块(创造模式专用).
 schematica.config.destroyInstantly=立即破坏

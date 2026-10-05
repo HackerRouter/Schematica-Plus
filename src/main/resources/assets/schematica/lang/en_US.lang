@@ -85,6 +85,7 @@ schematica.printer.missing.overflow=§7...and %d more
 schematica.message.import.unknown_blocks=%s: %d block types this game does not have were replaced:
 schematica.message.import.unknown_block=  %s -> %s
 schematica.message.import.unknown_more=  ...and %d more (all of them are in the log)
+schematica.ui.placement.align_to_map=Align to Map\nMoves the placement on X and Z so that its east and south edges lie on the nearest map borders (maps cover 128 x 128 blocks from -64). A 128 x 128 map art then fills one map; a 128 x 129 one keeps its extra north row just outside it.
 schematica.config.destroyBlocks=Destroy Blocks
 schematica.config.destroyBlocks.tooltip=The printer will destroy blocks (creative mode only).
 schematica.config.destroyInstantly=Destroy Instantly

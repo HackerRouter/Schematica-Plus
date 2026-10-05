@@ -128,4 +128,14 @@ public final class PlacementTransform {
             return z ? "z" : "x";
         }
     }
+
+    /**
+     * Entropy5's Align to Map: the start coordinate that puts the far (east or south) edge of a placement of this size
+     * on the nearest map border (maps cover -64 + 128k to 63 + 128k), so a 128 wide map art fills one map and a 129
+     * long one keeps its extra shading row just north of it.
+     */
+    static int mapAlignedStart(int start, int size) {
+        long end = (long) start + size;
+        return (int) (Math.floorDiv(end + 128, 128L) * 128 - 64 - size);
+    }
 }

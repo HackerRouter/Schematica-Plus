@@ -84,4 +84,13 @@ public class PlacementTransformTest {
         assertThrows(ArithmeticException.class, () -> PlacementTransform.reloadedMinimum(new int[] {Integer.MIN_VALUE, 0, 0},
             new int[] {5, 3, 2}, new int[] {9, 3, 2}, operations("Y")));
     }
+
+    @Test public void alignsTheFarEdgeToTheNearestMapBorder() {
+        assertEquals(-64, PlacementTransform.mapAlignedStart(-64, 128));
+        assertEquals(-64, PlacementTransform.mapAlignedStart(-60, 128));
+        assertEquals(64, PlacementTransform.mapAlignedStart(10, 128));
+        assertEquals(-65, PlacementTransform.mapAlignedStart(-70, 129));
+        assertEquals(-1089, PlacementTransform.mapAlignedStart(-1150, 129));
+        assertEquals(60, PlacementTransform.mapAlignedStart(30, 4));
+    }
 }
