@@ -1574,3 +1574,15 @@ Test in GTNH 2.8.4 (NEI 2.8.44) and GTNH 2.9 (NEI 2.8.145); without NEI the butt
   verifier: nothing inside the disabled sub-region is listed (no "extra" blocks there); unloaded chunks that
   only the disabled sub-region touches are not waited for. Enable it again: the verification restarts and
   covers it.
+
+## Rotation and mirroring of vanilla blocks
+
+- Build a test schematic with stairs (normal and upside-down, all facings), slabs (top/bottom), logs on every
+  axis, quartz pillars, hay, pistons/dispensers/droppers/hoppers in all directions, furnaces, chests, ladders,
+  wall and standing signs, wall and floor skulls, torches, buttons, levers (wall, floor, ceiling), rails (straight,
+  curved, ascending, powered), doors (both hinges, open), trapdoors (top/bottom/open), vines, a huge mushroom,
+  beds, fence gates, pumpkins, repeaters, comparators, cocoa, tripwire hooks, end portal frames, anvils,
+  sunflowers. Rotate the placement 90/180/270 degrees and mirror it front-back and left-right: every block keeps
+  its relation to its neighbors (a torch stays on its wall, rails stay connected, a door keeps its hinge side
+  next to the same wall, beds stay whole). Paste it and compare; REBUILD edits on a rotated/mirrored placement
+  change the right block in the source.

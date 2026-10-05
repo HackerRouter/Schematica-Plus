@@ -576,6 +576,10 @@ public class SchematicWorld extends World {
             ((Schematic) this.schematic).setOrigin(transformedOrigin);
             position.set(minimum.x, minimum.y, minimum.z);
             for (TileEntity tileEntity : this.schematic.getTileEntities()) {
+                if (tileEntity instanceof TileEntitySkull && (tileEntity.blockMetadata & 7) == 1) {
+                    TileEntitySkull skull = (TileEntitySkull) tileEntity;
+                    skull.func_145903_a(com.github.lunatrius.schematica.world.schematic.BlockMetaTransform.rotation16(skull.func_145906_b(), operation));
+                }
                 TileEntitySnapshots.transformPreview(tileEntity, operation);
             }
             for (Entity entity : entities) {
@@ -619,6 +623,24 @@ public class SchematicWorld extends World {
         }
     }
 
+    /**
+     * The metadata of a block after the operation: vanilla layouts from {@link com.github.lunatrius.schematica.world.schematic.BlockMetaTransform},
+     * other blocks through their own Block.rotateBlock for rotations; mirrors keep their metadata.
+     */
+    private int transformedMetadata(char operation, int x, int y, int z) {
+        Block block = getBlock(x, y, z);
+        int metadata = getBlockMetadata(x, y, z);
+        int result = com.github.lunatrius.schematica.world.schematic.BlockMetaTransform.transform(block, metadata, operation);
+        if (result >= 0) return result;
+        if (Character.isLowerCase(operation)) return metadata;
+        try {
+            block.rotateBlock(this, x, y, z, operation == 'X' ? ForgeDirection.EAST : operation == 'Y' ? ForgeDirection.UP : ForgeDirection.SOUTH);
+        } catch (Exception e) {
+            Reference.logger.debug("Failed to rotate block!", e);
+        }
+        return getBlockMetadata(x, y, z);
+    }
+
     private void flipContents(ForgeDirection direction) {
         final ItemStack icon = this.schematic.getIcon();
         final int width = this.schematic.getWidth();
@@ -633,7 +655,7 @@ public class SchematicWorld extends World {
                     for (int z = 0; z < length; z++) {
                         for (int x = 0; x < width; x++) {
                             final Block block = getBlock(width - 1 - x, y, z);
-                            final int metadata = getBlockMetadata(width - 1 - x, y, z);
+                            final int metadata = transformedMetadata('x', width - 1 - x, y, z);
                             schematicFlipped.setBlock(x, y, z, block, metadata);
                         }
                     }
@@ -655,7 +677,7 @@ public class SchematicWorld extends World {
                     for (int z = 0; z < length; z++) {
                         for (int x = 0; x < width; x++) {
                             final Block block = getBlock(x, y, length - 1 - z);
-                            final int metadata = getBlockMetadata(x, y, length - 1 - z);
+                            final int metadata = transformedMetadata('z', x, y, length - 1 - z);
                             schematicFlipped.setBlock(x, y, z, block, metadata);
                         }
                     }
@@ -678,7 +700,7 @@ public class SchematicWorld extends World {
                     for (int z = 0; z < length; z++) {
                         for (int x = 0; x < width; x++) {
                             final Block block = getBlock(x, height - 1 - y, z);
-                            final int metadata = getBlockMetadata(x, height - 1 - y, z);
+                            final int metadata = transformedMetadata('y', x, height - 1 - y, z);
                             schematicFlipped.setBlock(x, y, z, block, metadata);
                         }
                     }
@@ -717,14 +739,8 @@ public class SchematicWorld extends World {
                 for (int y = 0; y < height; y++) {
                     for (int z = 0; z < length; z++) {
                         for (int x = 0; x < width; x++) {
-                            try {
-                                getBlock(x, height - 1 - y, z)
-                                    .rotateBlock(this, x, height - 1 - y, z, ForgeDirection.EAST);
-                            } catch (Exception e) {
-                                Reference.logger.debug("Failed to rotate block!", e);
-                            }
                             final Block block = getBlock(x, height - 1 - y, z);
-                            final int metadata = getBlockMetadata(x, height - 1 - y, z);
+                            final int metadata = transformedMetadata('X', x, height - 1 - y, z);
                             schematicRotated.setBlock(x, z, y, block, metadata);
                         }
                     }
@@ -754,15 +770,9 @@ public class SchematicWorld extends World {
                 for (int y = 0; y < height; y++) {
                     for (int z = 0; z < length; z++) {
                         for (int x = 0; x < width; x++) {
-                            try {
-                                getBlock(x, y, length - 1 - z)
-                                    .rotateBlock(this, x, y, length - 1 - z, ForgeDirection.UP);
-                            } catch (Exception e) {
-                                Reference.logger.debug("Failed to rotate block!", e);
-                            }
 
                             final Block block = getBlock(x, y, length - 1 - z);
-                            final int metadata = getBlockMetadata(x, y, length - 1 - z);
+                            final int metadata = transformedMetadata('Y', x, y, length - 1 - z);
                             schematicRotated.setBlock(z, y, x, block, metadata);
                         }
                     }
@@ -775,9 +785,6 @@ public class SchematicWorld extends World {
                     tileEntity.blockMetadata = schematicRotated
                         .getBlockMetadata(tileEntity.xCoord, tileEntity.yCoord, tileEntity.zCoord);
 
-                    if (tileEntity instanceof TileEntitySkull && tileEntity.blockMetadata == 0x1) {
-                        ((TileEntitySkull) tileEntity).func_145903_a((((TileEntitySkull) tileEntity).func_145906_b() + 12) & 15);
-                    }
 
                     schematicRotated.setTileEntity(tileEntity.xCoord, tileEntity.yCoord, tileEntity.zCoord, tileEntity);
                 }
@@ -797,14 +804,8 @@ public class SchematicWorld extends World {
                 for (int y = 0; y < height; y++) {
                     for (int z = 0; z < length; z++) {
                         for (int x = 0; x < width; x++) {
-                            try {
-                                getBlock(width - 1 - x, y, z)
-                                    .rotateBlock(this, width - 1 - x, y, z, ForgeDirection.SOUTH);
-                            } catch (Exception e) {
-                                Reference.logger.debug("Failed to rotate block!", e);
-                            }
                             final Block block = getBlock(width - 1 - x, y, z);
-                            final int metadata = getBlockMetadata(width - 1 - x, y, z);
+                            final int metadata = transformedMetadata('Z', width - 1 - x, y, z);
                             schematicRotated.setBlock(y, x, z, block, metadata);
                         }
                     }
