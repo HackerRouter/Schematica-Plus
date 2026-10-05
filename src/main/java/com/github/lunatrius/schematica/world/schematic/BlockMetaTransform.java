@@ -216,6 +216,12 @@ public final class BlockMetaTransform {
             if (name.equals("micdoodle8.mods.galacticraft.core.blocks.BlockTelemetry") || name.equals("micdoodle8.mods.galacticraft.core.blocks.BlockScreen")) {
                 return ordinal(meta, 7, op, false, false);
             }
+            // Botania: bellows, pumps, incense plates and avatars face a horizontal ForgeDirection, red string blocks any
+            if (name.equals("vazkii.botania.common.block.mana.BlockBellows") || name.equals("vazkii.botania.common.block.mana.BlockPump")
+                || name.equals("vazkii.botania.common.block.BlockIncensePlate") || name.equals("vazkii.botania.common.block.BlockAvatar")) {
+                return meta >= 2 && meta <= 5 ? ordinal(meta, 7, op, false, false) : meta;
+            }
+            if (name.equals("vazkii.botania.common.block.string.BlockRedString")) return ordinal(meta, 7, op, true, true);
             // BuildCraft pipes: the extraction or output side of wooden, iron and similar pipes
             if (name.equals("buildcraft.transport.BlockGenericPipe")) {
                 return meta < 6 ? turn(op, ForgeDirection.getOrientation(meta)).ordinal() : meta;

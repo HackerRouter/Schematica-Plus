@@ -38,6 +38,7 @@ public final class VisualAdapters {
         register(new ThaumicExplorationVisualAdapter());
         register(new CarpentersVisualAdapter());
         register(new RailcraftTrackAdapter());
+        register(new BotaniaVisualAdapter());
         register(new TileFacingAdapter());
         register(new NamedFieldsAdapter("stevesaddons:rf_node", "stevesaddons.tileentities.TileEntityRFNode", "inputSides", "outputSides"));
     }

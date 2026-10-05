@@ -1793,3 +1793,10 @@ Test in GTNH 2.8.4 (NEI 2.8.44) and GTNH 2.9 (NEI 2.8.145); without NEI the butt
   the same way relative to the line, buffer stops face the same end, switches lead to the same branch. Vanilla
   powered and detector rails as well.
 
+## Botania under rotation and mirroring
+
+- Mana spreaders aimed at pools (also upwards and downwards, one on a turntable), bellows on furnaces, mana pumps,
+  incense plates, avatars and red string containers facing different ways. Rotate and mirror: every spreader
+  still hits its pool after paste, the turntable turns the spreader the mirrored way, the other blocks face the
+  same neighbor.
+
