@@ -1754,3 +1754,10 @@ Test in GTNH 2.8.4 (NEI 2.8.44) and GTNH 2.9 (NEI 2.8.145); without NEI the butt
   shows again. Moving a shown placement elsewhere in A takes a new fingerprint there.
 - Superflat worlds (no random bedrock): placements are never hidden. Option off: never hidden.
 
+## Easy Place supports first (easyPlacePrerequisites)
+
+- Schematic with a torch on a wall, a rail on a block and sand on a block, all of them floating with nothing
+  built yet. Easy Place on the torch ghost places the wall block first, the next click the torch; the same for
+  the rail and the sand (the block below first). Aimed blocks that can stand are placed directly. Option off:
+  clicking such a ghost places nothing, as before.
+

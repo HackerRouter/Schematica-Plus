@@ -85,6 +85,12 @@ public final class EasyPlace {
         if (hit == null) return PlacementRestriction.inEffect(mc) ? Result.FAIL : Result.PASS;
         SchematicWorld schematic = hit.world;
         int lx = hit.localX(), ly = hit.localY(), lz = hit.localZ(), x = hit.x, y = hit.y, z = hit.z;
+        ForgeDirection prerequisite = Prerequisites.support(world, schematic, lx, ly, lz, x, y, z);
+        boolean redirected = prerequisite != null;
+        if (redirected) {
+            lx += prerequisite.offsetX; ly += prerequisite.offsetY; lz += prerequisite.offsetZ;
+            x += prerequisite.offsetX; y += prerequisite.offsetY; z += prerequisite.offsetZ;
+        }
         Block block = schematic.getBlock(lx, ly, lz);
         int meta = schematic.getBlockMetadata(lx, ly, lz);
         MultiBlockPlacement.Kind kind = MultiBlockPlacement.kind(block);
@@ -121,7 +127,7 @@ public final class EasyPlace {
         boolean accurate = AccuratePlacementClient.active(block);
         PlacementSolver.Solution solved = null;
         int cx = x, cy = y, cz = z, side = hit.side, extraClicks = 0;
-        Vec3 hitVec = Vec3.createVectorHelper(hit.hitX, hit.hitY, hit.hitZ);
+        Vec3 hitVec = redirected ? Vec3.createVectorHelper(x + 0.5, y + 0.5, z + 0.5) : Vec3.createVectorHelper(hit.hitX, hit.hitY, hit.hitZ);
         Click post = ConfigurationHandler.easyPlacePostRewrite && !accurate
             ? PostRewrite.click(world, x, y, z, block, meta, real, realMeta, stack, hitVec) : null;
         if (post == Click.FAIL) return Result.FAIL;

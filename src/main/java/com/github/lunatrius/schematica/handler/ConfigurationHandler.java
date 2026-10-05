@@ -80,7 +80,7 @@ public class ConfigurationHandler {
     public static boolean placeInAir = true, printForcedSneak, printFallingBlockCheck = true, printerAutoDisable = true, printerPauseWhileMoving;
     public static String[] printSkipList = {};
     public static boolean containerVerifier = true, containerAutofill = true, containerLabels = true, worldFingerprinting = true;
-    public static boolean printMissingMaterialHud = true, printAutoTool = true, printerPlacementSolver = true, destroyAssist, highlightNextBlock, printUseTools = true;
+    public static boolean printMissingMaterialHud = true, printAutoTool = true, printerPlacementSolver = true, destroyAssist, highlightNextBlock, printUseTools = true, easyPlacePrerequisites = true;
     public static int printAutoToolDurability = 10;
     public static boolean schematicPreview3D = true, schematicPreview3DReplacesImage;
     public static boolean printBreakWrongBlock, printBreakExtraBlock, printBreakWrongStateBlock, printHighlight, printHighlightThroughWalls;
@@ -532,6 +532,7 @@ public class ConfigurationHandler {
         printerPlacementSolver = printerFlag("printerPlacementSolver", true);
         destroyAssist = printerFlag("destroyAssist", false);
         printUseTools = printerFlag("printUseTools", true);
+        easyPlacePrerequisites = printerFlag("easyPlacePrerequisites", true);
         highlightNextBlock = printerFlag("highlightNextBlock", false);
         printerAutoDisable = printerFlag("printerAutoDisable", true);
         printerPauseWhileMoving = printerFlag("printerPauseWhileMoving", false);
