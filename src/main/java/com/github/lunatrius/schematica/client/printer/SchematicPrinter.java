@@ -183,6 +183,7 @@ public class SchematicPrinter {
             wanted = extra && !ConfigurationHandler.isExtraAirBlock(real);
         } else if (block != real) {
             wanted = wrong && !com.github.lunatrius.schematica.util.BlockGroups.tolerated(block, meta, real, realMeta)
+                && !ToolUse.fixable(world, block, real, wx, wy, wz)
                 && !MaterialReplacements.built(schematic, BlockToItemStack.getItemStack(this.minecraft.thePlayer, block, schematic, x, y, z), real, realMeta)
                 && !real.isReplaceable(world, wx, wy, wz)
                 && !(block instanceof BlockSlab && EasyPlace.completesSlab(block, meta, real, realMeta, new ItemStack(block, 1, block.damageDropped(meta))));
@@ -435,6 +436,11 @@ public class SchematicPrinter {
 
         if (block.isAir(schematic, x, y, z) || skipped(block)) {
             return false;
+        }
+        int[] toolClick = ToolUse.click(world, block, realBlock, wx, wy, wz);
+        if (toolClick != null) {
+            if (ConfigurationHandler.printForcedSneak) this.pass.sneak();
+            return ToolUse.use(this, world, player, block, toolClick);
         }
         MultiBlockPlacement.Kind multi = MultiBlockPlacement.kind(block);
         if (multi != null && MultiBlockPlacement.secondary(metadata)) return false;
@@ -745,6 +751,26 @@ public class SchematicPrinter {
                     return swapToItem(inventory, itemStack, false, matchNBT);
                 }
             }
+        return false;
+    }
+
+    /** Holds a stack the test accepts: from the hotbar, else moved there from the main inventory through the swap slots. */
+    boolean swapToMatching(InventoryPlayer inventory, java.util.function.Predicate<ItemStack> wanted) {
+        int hotbar = Constants.Inventory.InventoryOffset.HOTBAR, size = Constants.Inventory.Size.HOTBAR;
+        for (int pass = 0; pass < 2; pass++) {
+            for (int i = hotbar; i < hotbar + size; i++) {
+                if (wanted.test(inventory.mainInventory[i])) {
+                    inventory.currentItem = i;
+                    return true;
+                }
+            }
+            if (pass > 0) return false;
+            int found = -1;
+            for (int i = Constants.Inventory.InventoryOffset.INVENTORY; i < Constants.Inventory.InventoryOffset.INVENTORY + Constants.Inventory.Size.INVENTORY && found < 0; i++) {
+                if (wanted.test(inventory.mainInventory[i])) found = i;
+            }
+            if (found < 0 || !swapSlots(inventory, found)) return false;
+        }
         return false;
     }
 

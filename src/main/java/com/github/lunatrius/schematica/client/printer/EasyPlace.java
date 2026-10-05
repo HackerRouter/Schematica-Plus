@@ -94,6 +94,11 @@ public final class EasyPlace {
         int realMeta = world.getBlockMetadata(x, y, z);
         if (block == real && meta == realMeta) return Result.FAIL;
         SchematicPrinter printer = SchematicPrinter.INSTANCE;
+        int[] tool = ToolUse.click(world, block, real, x, y, z);
+        if (tool != null) {
+            cache(x, y, z);
+            return ToolUse.use(printer, world, player, block, tool) ? Result.SUCCESS : Result.FAIL;
+        }
         if (FluidPrinter.isFluid(block)) {
             if (FluidPrinter.matches(schematic, lx, ly, lz, world, x, y, z)) return Result.FAIL;
             if (!world.isAirBlock(x, y, z) && !(FluidPrinter.isFluid(real) && FluidPrinter.sameFluid(block, real))) return Result.FAIL;

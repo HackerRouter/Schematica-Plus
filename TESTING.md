@@ -1722,3 +1722,11 @@ Test in GTNH 2.8.4 (NEI 2.8.44) and GTNH 2.9 (NEI 2.8.145); without NEI the butt
   neighbor; it moves on after placing it. Floating blocks without neighbors are not marked; nothing is marked
   when everything near is built.
 
+## Printer tools (printUseTools)
+
+- Schematic with a wheat field on farmland and a nether portal. Over grass: the printer tills the grass under the
+  field with a hoe from the hotbar (or one moved up from the inventory), then plants. Over air: it places dirt,
+  then tills it. With the obsidian frame built it lights the portal once with flint and steel. Without a hoe or
+  flint and steel the missing-material HUD lists it. Easy Place on a farmland ghost over dirt tills it.
+- With "break wrong blocks" on, the dirt under farmland is not mined.
+
