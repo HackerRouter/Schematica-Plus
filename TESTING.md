@@ -1800,3 +1800,9 @@ Test in GTNH 2.8.4 (NEI 2.8.44) and GTNH 2.9 (NEI 2.8.145); without NEI the butt
   still hits its pool after paste, the turntable turns the spreader the mirrored way, the other blocks face the
   same neighbor.
 
+## Galacticraft Mars and asteroid machines
+
+- Terraformers, cryogenic chambers, launch controllers, an astro miner base and beam receivers on different
+  sides. Rotate and mirror: each faces the same neighbor after paste; the miner base still forms and its dock
+  side follows.
+

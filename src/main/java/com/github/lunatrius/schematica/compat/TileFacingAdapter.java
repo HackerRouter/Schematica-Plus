@@ -30,7 +30,10 @@ final class TileFacingAdapter implements ISchematicVisualAdapter {
         final String key;
         /** The operations the rule applies to; others leave the value alone (OpenComputers yaw/pitch). */
         final String operations;
-        Rule(Kind kind, String key, String operations) { this.kind = kind; this.key = key; this.operations = operations; }
+        /** HORIZONTAL: the sides the values 0-3 stand for. */
+        final ForgeDirection[] sides;
+        Rule(Kind kind, String key, String operations) { this(kind, key, operations, HORIZONTAL_SIDES); }
+        Rule(Kind kind, String key, String operations, ForgeDirection[] sides) { this.kind = kind; this.key = key; this.operations = operations; this.sides = sides; }
     }
 
     private static final Map<String, List<Rule>> RULES = new LinkedHashMap<>();
@@ -110,6 +113,10 @@ final class TileFacingAdapter implements ISchematicVisualAdapter {
         // EnderStorage chests and tanks: the yaw quarter (0 S, 1 W, 2 N, 3 E)
         add("codechicken.enderstorage.storage.item.TileEnderChest", new Rule(Kind.HORIZONTAL, "rot", ALL));
         add("codechicken.enderstorage.storage.liquid.TileEnderTank", new Rule(Kind.HORIZONTAL, "rot", ALL));
+        // Galacticraft asteroids: the astro miner base faces ForgeDirection facing + 2, beam receivers any side
+        add("micdoodle8.mods.galacticraft.planets.asteroids.tile.TileEntityMinerBase", new Rule(Kind.HORIZONTAL, "facing", ALL,
+            new ForgeDirection[] {ForgeDirection.NORTH, ForgeDirection.SOUTH, ForgeDirection.WEST, ForgeDirection.EAST}));
+        add("micdoodle8.mods.galacticraft.planets.asteroids.tile.TileEntityBeamReceiver", ordinal("FacingSide"));
         // OpenComputers: yaw is horizontal, pitch UP, DOWN or NORTH (level); tilting is not representable
         add("li.cil.oc.common.tileentity.traits.Rotatable", new Rule(Kind.ORDINAL, "oc:yaw", "Yxz"), new Rule(Kind.ORDINAL, "oc:pitch", "y"));
     }
@@ -195,8 +202,8 @@ final class TileFacingAdapter implements ISchematicVisualAdapter {
                     NBTBase tag = data.getTag(rule.key);
                     if (!(tag instanceof NBTBase.NBTPrimitive)) break;
                     int value = ((NBTBase.NBTPrimitive) tag).func_150287_d() & 3;
-                    ForgeDirection turned = SchematicTransform.direction(operation, HORIZONTAL_SIDES[value]);
-                    int index = java.util.Arrays.asList(HORIZONTAL_SIDES).indexOf(turned);
+                    ForgeDirection turned = SchematicTransform.direction(operation, rule.sides[value]);
+                    int index = java.util.Arrays.asList(rule.sides).indexOf(turned);
                     if (index < 0) break;
                     data.setTag(rule.key, tag instanceof NBTTagByte ? new NBTTagByte((byte) index)
                         : tag instanceof NBTTagShort ? new NBTTagShort((short) index) : new NBTTagInt(index));

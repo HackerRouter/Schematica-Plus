@@ -213,6 +213,10 @@ public final class BlockMetaTransform {
             if (table != null) {
                 return direction(meta, 3, 0, table, op);
             }
+            // Mars machines: the terraformer (0-3) stores the placer's look as N/S/W/E, cryogenic chamber and launch controller as E/W/N/S
+            if (name.equals("micdoodle8.mods.galacticraft.planets.mars.blocks.BlockMachineMars")) {
+                return direction(meta, 3, 0, meta < 4 ? new ForgeDirection[] {NORTH, SOUTH, WEST, EAST} : GALACTICRAFT, op);
+            }
             if (name.equals("micdoodle8.mods.galacticraft.core.blocks.BlockTelemetry") || name.equals("micdoodle8.mods.galacticraft.core.blocks.BlockScreen")) {
                 return ordinal(meta, 7, op, false, false);
             }

@@ -38,4 +38,14 @@ public class TileFacingAdapterTest {
         TileFacingAdapter.apply(TileFacingAdapter.rulesFor("li.cil.oc.common.tileentity.traits.Rotatable"), computer, 'Y');
         assertEquals(4, computer.getInteger("oc:yaw"));
     }
+
+    @Test public void galacticraftAsteroidMinerBaseUsesItsOwnSideTable() {
+        net.minecraft.nbt.NBTTagCompound data = new net.minecraft.nbt.NBTTagCompound();
+        data.setInteger("facing", 0);
+        TileFacingAdapter.apply(TileFacingAdapter.rulesFor("micdoodle8.mods.galacticraft.planets.asteroids.tile.TileEntityMinerBase"), data, 'Y');
+        // facing 0 is north (ForgeDirection 0 + 2); turned it faces east, value 3
+        assertEquals(3, data.getInteger("facing"));
+        TileFacingAdapter.apply(TileFacingAdapter.rulesFor("micdoodle8.mods.galacticraft.planets.asteroids.tile.TileEntityMinerBase"), data, 'x');
+        assertEquals(2, data.getInteger("facing"));
+    }
 }
