@@ -240,9 +240,8 @@ public class ClientProxy extends CommonProxy {
             }
 
         } else if (!coordinatesFile.exists()) {
-            if (saveCoordinatesFile(coordinates)) {
-                Reference.logger.info("Created new coordinates file");
-            } else throw new IOException("Failed to create coordinates file");
+            // Only read: placements are remembered in config/schematica_plus, an empty file is not created
+            return coordinates;
         } else {
             throw new IOException("No read/write permission for coordinates file");
         }
