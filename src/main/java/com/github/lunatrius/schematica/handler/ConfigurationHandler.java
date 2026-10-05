@@ -79,7 +79,7 @@ public class ConfigurationHandler {
     public static boolean printerXAxisReverse, printerYAxisReverse, printerZAxisReverse, printerLagCheck = true;
     public static boolean placeInAir = true, printForcedSneak, printFallingBlockCheck = true, printerAutoDisable = true, printerPauseWhileMoving;
     public static String[] printSkipList = {};
-    public static boolean containerVerifier = true, containerAutofill = true, containerLabels = true;
+    public static boolean containerVerifier = true, containerAutofill = true, containerLabels = true, worldFingerprinting = true;
     public static boolean printMissingMaterialHud = true, printAutoTool = true, printerPlacementSolver = true, destroyAssist, highlightNextBlock, printUseTools = true;
     public static int printAutoToolDurability = 10;
     public static boolean schematicPreview3D = true, schematicPreview3DReplacesImage;
@@ -273,6 +273,7 @@ public class ConfigurationHandler {
         containerVerifier = printerProperty(configuration.get(Names.Config.Category.TOOL, "containerVerifier", true), "containerVerifier").getBoolean(true);
         containerAutofill = printerProperty(configuration.get(Names.Config.Category.TOOL, "containerAutofill", true), "containerAutofill").getBoolean(true);
         containerLabels = printerProperty(configuration.get(Names.Config.Category.TOOL, "containerLabels", true), "containerLabels").getBoolean(true);
+        worldFingerprinting = printerProperty(configuration.get(Names.Config.Category.TOOL, "worldFingerprinting", true), "worldFingerprinting").getBoolean(true);
         schematicPreview3D = printerProperty(configuration.get(Names.Config.Category.TOOL, "schematicPreview3D", true), "schematicPreview3D").getBoolean(true);
         schematicPreview3DReplacesImage = printerProperty(configuration.get(Names.Config.Category.TOOL, "schematicPreview3DReplacesImage", false), "schematicPreview3DReplacesImage").getBoolean(false);
 

@@ -207,6 +207,9 @@ public class SchematicWorld extends World {
     }
 
     public final Vector3i position = new Vector3i();
+    /** worldFingerprinting: the bedrock under the placement where it was put, and whether this world has other bedrock there. */
+    public WorldFingerprint fingerprint;
+    public boolean otherWorld;
     /** Grid/repeat settings of a normal placement (GridSettings of the 1.12.2 Litematica). */
     public final GridSettings grid = new GridSettings();
     /** The placement's material list and its saved settings (SchematicPlacement material_list). */

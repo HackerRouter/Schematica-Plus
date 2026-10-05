@@ -1744,5 +1744,13 @@ Test in GTNH 2.8.4 (NEI 2.8.44) and GTNH 2.9 (NEI 2.8.145); without NEI the butt
   empty: within 12 blocks each shows "Wanted" in grey with up to three of its items and counts, facing you.
   Open one: its label turns amber; fill it (Fill button or by hand) and close: the label disappears. A double
   chest has one label. Containers whose schematic copy is empty and blocks other than the schematic's get none.
-  The labels are gone after rejoining until the containers are opened again (grey meanwhile).
+  After rejoining the contents are unknown again: the labels are grey until the containers are opened.
+
+## World fingerprinting (worldFingerprinting)
+
+- On a server that runs several worlds behind one address (or two single-player worlds saved under the same
+  folder name, if possible): put a placement in world A and wait two seconds. Switch to world B: a chat line says
+  the placement was placed in another world and it is not drawn, printed or listed for Easy Place. Back in A it
+  shows again. Moving a shown placement elsewhere in A takes a new fingerprint there.
+- Superflat worlds (no random bedrock): placements are never hidden. Option off: never hidden.
 

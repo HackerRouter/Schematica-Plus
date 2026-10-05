@@ -74,6 +74,7 @@ public class TickHandler {
             com.github.lunatrius.schematica.client.printer.DestroyAssist.tick(this.minecraft);
             com.github.lunatrius.schematica.client.printer.NextBlockHint.tick(this.minecraft);
             com.github.lunatrius.schematica.client.container.ContainerLabels.tick(this.minecraft);
+            com.github.lunatrius.schematica.client.world.WorldFingerprints.tick(this.minecraft);
             if (this.minecraft.thePlayer != null) {
                 this.minecraft.mcProfiler.startSection("printer");
                 SchematicPrinter printer = SchematicPrinter.INSTANCE;

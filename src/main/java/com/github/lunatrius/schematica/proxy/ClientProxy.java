@@ -87,10 +87,13 @@ public class ClientProxy extends CommonProxy {
     /** The placements and their grid copies, for rendering and targeting (the visible placements upstream). */
     public static List<SchematicWorld> visiblePlacements() {
         List<SchematicWorld> copies = com.github.lunatrius.schematica.client.world.GridPlacements.INSTANCE.copies();
-        if (copies.isEmpty()) return loadedSchematics;
+        boolean hidden = false;
+        for (SchematicWorld world : loadedSchematics) hidden |= world.otherWorld;
+        if (copies.isEmpty() && !hidden) return loadedSchematics;
         List<SchematicWorld> all = new ArrayList<>(loadedSchematics.size() + copies.size());
-        all.addAll(loadedSchematics);
-        all.addAll(copies);
+        // worldFingerprinting: placements put in another world of the same server are left out
+        for (SchematicWorld world : loadedSchematics) if (!world.otherWorld) all.add(world);
+        for (SchematicWorld copy : copies) if (copy.gridBase == null || !copy.gridBase.otherWorld) all.add(copy);
         return all;
     }
     public static MovingObjectPosition movingObjectPosition = null;
@@ -214,6 +217,7 @@ public class ClientProxy extends CommonProxy {
         public com.google.gson.JsonObject grid;
         public com.google.gson.JsonObject materialList;
         public Integer bb_color;
+        public com.google.gson.JsonObject fingerprint;
 
         LoadedSchematicEntry() {}
     }
@@ -743,6 +747,7 @@ public class ClientProxy extends CommonProxy {
                 entry.grid = sw.grid.isEnabled() || !sw.grid.isAtDefaultValues() ? sw.grid.toJson() : null;
                 entry.materialList = sw.materialList != null ? sw.materialList.toJson() : sw.materialListData;
                 entry.bb_color = sw.boxColor;
+                entry.fingerprint = sw.fingerprint == null ? null : sw.fingerprint.toJson();
                 entry.RotationX = sw.rotationStateX;
                 entry.RotationY = sw.rotationStateY;
                 entry.RotationZ = sw.rotationStateZ;
@@ -827,6 +832,7 @@ public class ClientProxy extends CommonProxy {
                         restored.grid.fromJson(entry.grid);
                         restored.materialListData = entry.materialList;
                         restored.boxColor = entry.bb_color;
+                        restored.fingerprint = com.github.lunatrius.schematica.client.world.WorldFingerprint.fromJson(entry.fingerprint);
                         return restored;
                     });
                     RendererSchematicGlobal.INSTANCE.createRendererSchematicChunks(world);
