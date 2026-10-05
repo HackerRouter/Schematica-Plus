@@ -1779,3 +1779,9 @@ Test in GTNH 2.8.4 (NEI 2.8.44) and GTNH 2.9 (NEI 2.8.145); without NEI the butt
   same neighbor; diamond filters follow their sides. After paste the network works without reconfiguring.
 - Loading such a schematic in another pack: the pipes keep their pipe type (pipe item ids are remapped).
 
+## Logistics Pipes under rotation and mirroring
+
+- Chassis pipes pointing at inventories on different sides, with provider and extractor modules set to sneaky
+  sides. Rotate and mirror: each chassis still points at its inventory, the sneaky sides follow; after paste the
+  network requests and extracts as before.
+
