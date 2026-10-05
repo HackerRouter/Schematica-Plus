@@ -156,6 +156,7 @@ public class RendererSchematicGlobal {
         this.profiler.endStartSection("boxes");
         new BoxRenderer(this.cameraPosition.x, this.cameraPosition.y, this.cameraPosition.z).render();
         com.github.lunatrius.schematica.client.printer.PrinterHighlights.render(this.cameraPosition.x, this.cameraPosition.y, this.cameraPosition.z);
+        com.github.lunatrius.schematica.client.printer.NextBlockHint.render(this.cameraPosition.x, this.cameraPosition.y, this.cameraPosition.z);
 
         this.profiler.endStartSection("projects");
         renderProjectOrigin();

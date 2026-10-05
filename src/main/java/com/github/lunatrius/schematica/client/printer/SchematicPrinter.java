@@ -58,6 +58,7 @@ public class SchematicPrinter {
     private Pass pass;
     /** The block being mined (x, y, z), after litematica-printer's printBreakWrongBlock/ExtraBlock. */
     private int[] mining;
+    private final BlockMiner miner = new BlockMiner();
     /** printAutoTool: the hotbar slot of the tool held while mining and the slot to go back to afterwards. */
     private int toolSlot = -1, toolRestoreSlot;
 
@@ -130,20 +131,20 @@ public class SchematicPrinter {
     /** Stops a started mining once printing was turned off (the switch may change on the network thread). */
     public void tickIdle() {
         if (!this.isPrinting || !this.isEnabled) {
-            if (this.mining != null) stopMining();
+            if (this.mining != null && !DestroyAssist.active()) stopMining();
             PrinterMissingMaterials.clear();
         }
     }
 
-    private void stopMining() {
-        if (this.mining != null && this.minecraft.playerController != null) this.minecraft.playerController.resetBlockRemoving();
+    void stopMining() {
+        this.miner.abort();
         this.mining = null;
         if (this.toolSlot >= 0 && this.minecraft.thePlayer != null) this.minecraft.thePlayer.inventory.currentItem = this.toolRestoreSlot;
         this.toolSlot = -1;
     }
 
     /** Keeps mining the started block; false when there is none (any more) and the pass may place. */
-    private boolean continueMining(World world, double eyeX, double eyeY, double eyeZ, double range) {
+    boolean continueMining(World world, double eyeX, double eyeY, double eyeZ, double range) {
         if (this.mining == null) return false;
         int x = this.mining[0], y = this.mining[1], z = this.mining[2];
         double dx = x + 0.5 - eyeX, dy = y + 0.5 - eyeY, dz = z + 0.5 - eyeZ;
@@ -152,8 +153,10 @@ public class SchematicPrinter {
             return false;
         }
         if (this.toolSlot >= 0) this.minecraft.thePlayer.inventory.currentItem = this.toolSlot;
-        this.minecraft.playerController.onPlayerDamageBlock(x, y, z, ForgeDirection.UP.ordinal());
-        this.minecraft.thePlayer.swingItem();
+        if (this.miner.tick() != BlockMiner.State.MINING) {
+            stopMining();
+            return false;
+        }
         return true;
     }
 
@@ -163,7 +166,13 @@ public class SchematicPrinter {
      * slab click completes are left to the placement.
      */
     private boolean startBreak(World world, SchematicWorld schematic, int wx, int wy, int wz) {
-        if (!ConfigurationHandler.printBreakExtraBlock && !ConfigurationHandler.printBreakWrongBlock && !ConfigurationHandler.printBreakWrongStateBlock) return false;
+        return breakWanted(world, schematic, wx, wy, wz, ConfigurationHandler.printBreakExtraBlock, ConfigurationHandler.printBreakWrongBlock,
+            ConfigurationHandler.printBreakWrongStateBlock) && beginMining(world, wx, wy, wz);
+    }
+
+    /** Whether the world block is an extra, wrong or wrong-state block of the placement that may be mined. */
+    boolean breakWanted(World world, SchematicWorld schematic, int wx, int wy, int wz, boolean extra, boolean wrong, boolean wrongState) {
+        if (!extra && !wrong && !wrongState) return false;
         Block real = world.getBlock(wx, wy, wz);
         if (real.isAir(world, wx, wy, wz) || FluidPrinter.isFluid(real) || real.getBlockHardness(world, wx, wy, wz) < 0) return false;
         int x = wx - schematic.position.x, y = wy - schematic.position.y, z = wz - schematic.position.z;
@@ -171,28 +180,34 @@ public class SchematicPrinter {
         int meta = schematic.getBlockMetadata(x, y, z), realMeta = world.getBlockMetadata(wx, wy, wz);
         boolean wanted;
         if (block.isAir(schematic, x, y, z)) {
-            wanted = ConfigurationHandler.printBreakExtraBlock && !ConfigurationHandler.isExtraAirBlock(real);
+            wanted = extra && !ConfigurationHandler.isExtraAirBlock(real);
         } else if (block != real) {
-            wanted = ConfigurationHandler.printBreakWrongBlock && !com.github.lunatrius.schematica.util.BlockGroups.tolerated(block, meta, real, realMeta)
+            wanted = wrong && !com.github.lunatrius.schematica.util.BlockGroups.tolerated(block, meta, real, realMeta)
                 && !MaterialReplacements.built(schematic, BlockToItemStack.getItemStack(this.minecraft.thePlayer, block, schematic, x, y, z), real, realMeta)
                 && !real.isReplaceable(world, wx, wy, wz)
                 && !(block instanceof BlockSlab && EasyPlace.completesSlab(block, meta, real, realMeta, new ItemStack(block, 1, block.damageDropped(meta))));
         } else {
             MultiBlockPlacement.Kind kind = MultiBlockPlacement.kind(block);
             int mask = kind == null ? 0xF : MultiBlockPlacement.stateMask(kind, meta, AccuratePlacementClient.active(block));
-            wanted = ConfigurationHandler.printBreakWrongStateBlock && (meta & mask) != (realMeta & mask) && !FluidPrinter.isFluid(block)
+            wanted = wrongState && (meta & mask) != (realMeta & mask) && !FluidPrinter.isFluid(block)
                 && !com.github.lunatrius.schematica.util.BlockGroups.tolerated(block, meta, real, realMeta);
         }
-        if (!wanted) return false;
-        boolean switched = selectTool(this.minecraft.thePlayer, world, real, wx, wy, wz);
-        this.minecraft.playerController.clickBlock(wx, wy, wz, ForgeDirection.UP.ordinal());
+        return wanted;
+    }
+
+    /** Starts mining a block with the best tool; false while the miner waits after the previous block. */
+    boolean beginMining(World world, int wx, int wy, int wz) {
+        int previous = this.minecraft.thePlayer.inventory.currentItem;
+        boolean switched = selectTool(this.minecraft.thePlayer, world, world.getBlock(wx, wy, wz), wx, wy, wz);
+        BlockMiner.State state = this.miner.start(wx, wy, wz, ForgeDirection.UP.ordinal());
+        if (state == BlockMiner.State.IDLE) return false;
         this.minecraft.thePlayer.swingItem();
         PrinterHighlights.add(wx, wy, wz, PrinterHighlights.Type.BREAK);
-        if (!world.getBlock(wx, wy, wz).isAir(world, wx, wy, wz) && !this.minecraft.playerController.isInCreativeMode()) {
+        if (state == BlockMiner.State.MINING) {
             this.mining = new int[] {wx, wy, wz};
             if (switched) {
                 this.toolSlot = this.minecraft.thePlayer.inventory.currentItem;
-                this.toolRestoreSlot = this.pass != null ? this.pass.slot : this.toolSlot;
+                this.toolRestoreSlot = this.pass != null ? this.pass.slot : previous;
             }
         }
         return true;
@@ -275,7 +290,7 @@ public class SchematicPrinter {
             ? System.nanoTime() + ConfigurationHandler.printerIterationTimeLimit * 1_000_000L : Long.MAX_VALUE;
         AreaSelectionLibrary.Area area = "selection".equals(ConfigurationHandler.printSelectionType) ? AreaSelections.library().selected() : null;
 
-        if (continueMining(world, eyeX, eyeY, eyeZ, range)) return 0;
+        if (DestroyAssist.active() || continueMining(world, eyeX, eyeY, eyeZ, range)) return 0;
         boolean layers = "layers".equals(ConfigurationHandler.printerBuildOrder);
         List<PrinterBuildOrder.Candidate> candidates = new ArrayList<>();
         for (int[] offset : offsets) {
@@ -340,7 +355,7 @@ public class SchematicPrinter {
         }
     }
 
-    private static SchematicWorld placementAt(List<SchematicWorld> placements, int x, int y, int z) {
+    static SchematicWorld placementAt(List<SchematicWorld> placements, int x, int y, int z) {
         for (SchematicWorld placement : placements) {
             if (placement.isBlockRendered(x - placement.position.x, y - placement.position.y, z - placement.position.z)) return placement;
         }

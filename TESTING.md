@@ -1701,3 +1701,23 @@ Test in GTNH 2.8.4 (NEI 2.8.44) and GTNH 2.9 (NEI 2.8.145); without NEI the butt
   says it is still being read. Loading takes about half as long as before.
 - Leave the world while a file is read: nothing appears in the next world.
 
+## Printer mining in survival
+
+- Survival, printer on with "break wrong blocks" and "break extra blocks": wrong stone and dirt blocks inside the
+  placement are mined to the end (crack animation, then the block breaks and drops), one after another, with
+  the best tool picked by Auto Tool; the previous slot is held again afterwards. Before this change blocks that
+  are not broken instantly were never finished.
+
+## Destroy assist (destroyAssist)
+
+- Survival, option on. Press and hold left click on an extra block (where the schematic has air) of a placement:
+  it is mined, then the next extra/wrong blocks in reach follow while the button stays down; correct blocks and
+  blocks outside placements are never mined. Releasing stops at once. Left click on a correct block or outside a
+  placement mines normally. Attack bound to a keyboard key: no assist.
+
+## Next block hint (highlightNextBlock)
+
+- Option on, survival build in progress: a pulsing cyan box marks the nearest missing block that has a solid
+  neighbor; it moves on after placing it. Floating blocks without neighbors are not marked; nothing is marked
+  when everything near is built.
+

@@ -71,6 +71,8 @@ public class TickHandler {
             com.github.lunatrius.schematica.client.projects.SchematicProjects.syncSelections();
             com.github.lunatrius.schematica.tool.RebuildJobs.tick(this.minecraft);
             com.github.lunatrius.schematica.client.printer.EasyPlace.tick(this.minecraft);
+            com.github.lunatrius.schematica.client.printer.DestroyAssist.tick(this.minecraft);
+            com.github.lunatrius.schematica.client.printer.NextBlockHint.tick(this.minecraft);
             if (this.minecraft.thePlayer != null) {
                 this.minecraft.mcProfiler.startSection("printer");
                 SchematicPrinter printer = SchematicPrinter.INSTANCE;
