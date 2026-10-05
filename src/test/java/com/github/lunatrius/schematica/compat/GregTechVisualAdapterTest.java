@@ -73,4 +73,24 @@ public class GregTechVisualAdapterTest {
         assertEquals(0, GregTechVisualAdapter.updateData(turbine, false));
         assertEquals(3, GregTechVisualAdapter.updateData(turbine, true));
     }
+
+    @Test public void machinesTurnFrontOutputSidesAndCovers() throws Exception {
+        net.minecraft.nbt.NBTTagCompound tag = new net.minecraft.nbt.NBTTagCompound();
+        tag.setShort("mFacing", (short) 2);
+        tag.setInteger("mMainFacing", 4);
+        tag.setByte("mStrongRedstone", (byte) (1 << 2));
+        tag.setByteArray("mItemsPerSide", new byte[] {0, 0, 7, 0, 0, 0});
+        tag.setByte("mCurrentSide", (byte) 2);
+        GregTechVisualAdapter.transformMachineNBT(tag, 'Y', false);
+        assertEquals(5, tag.getShort("mFacing"));
+        assertEquals(2, tag.getInteger("mMainFacing"));
+        assertEquals(1 << 5, tag.getByte("mStrongRedstone"));
+        assertEquals(7, tag.getByteArray("mItemsPerSide")[5]);
+        assertEquals(5, tag.getByte("mCurrentSide"));
+        GregTechVisualAdapter.transformMachineNBT(tag, 'x', false);
+        assertEquals(4, tag.getShort("mFacing"));
+        tag.setInteger("mMainFacing", 6);
+        GregTechVisualAdapter.transformMachineNBT(tag, 'Y', false);
+        assertEquals(6, tag.getInteger("mMainFacing"));
+    }
 }

@@ -1586,3 +1586,12 @@ Test in GTNH 2.8.4 (NEI 2.8.44) and GTNH 2.9 (NEI 2.8.145); without NEI the butt
   its relation to its neighbors (a torch stays on its wall, rails stay connected, a door keeps its hinge side
   next to the same wall, beds stay whole). Paste it and compare; REBUILD edits on a rotated/mirrored placement
   change the right block in the source.
+
+## GT machines under rotation and mirroring (GT5U 5.09.54.205)
+
+- Save a schematic with single-block machines (output side set with the wrench), a few multiblocks (EBF,
+  Large Chemical Reactor, an assembly line, a turbine; one controller turned with the wrench to a rotated/
+  flipped ExtendedFacing), hatches incl. a maintenance hatch, an item distributor with per-side counts, covers
+  (conveyor, pump, redstone covers) and strong redstone on some sides. Rotate the placement 90/180 degrees and
+  mirror it: controller fronts, output sides, covers and multiblock structure previews (the in-world hologram
+  after paste) all follow; pasted multiblocks form without re-wrenching.
