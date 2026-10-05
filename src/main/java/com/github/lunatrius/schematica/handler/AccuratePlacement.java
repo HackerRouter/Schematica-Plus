@@ -15,6 +15,7 @@ import net.minecraft.block.BlockButton;
 import net.minecraft.block.BlockChest;
 import net.minecraft.block.BlockCocoa;
 import net.minecraft.block.BlockDispenser;
+import net.minecraft.block.BlockDoor;
 import net.minecraft.block.BlockEndPortalFrame;
 import net.minecraft.block.BlockEnderChest;
 import net.minecraft.block.BlockFenceGate;
@@ -44,6 +45,7 @@ import com.github.lunatrius.schematica.network.message.MessagePlacementIntent;
 import cpw.mods.fml.common.eventhandler.EventPriority;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.registry.GameData;
+import net.minecraftforge.common.util.BlockSnapshot;
 import net.minecraftforge.event.world.BlockEvent;
 
 /**
@@ -92,22 +94,35 @@ public final class AccuratePlacement {
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public void onPlace(BlockEvent.PlaceEvent event) {
-        if (event.world.isRemote || event instanceof BlockEvent.MultiPlaceEvent || !(event.player instanceof EntityPlayerMP)) return;
+        if (event.world.isRemote || !(event.player instanceof EntityPlayerMP)) return;
         Map<Long, Intent> pending = intents.get(event.player.getUniqueID());
         if (pending == null) return;
+        if (event instanceof BlockEvent.MultiPlaceEvent) {
+            // Doors: both halves come from one item use; only door intents apply here
+            if (!(event.placedBlock instanceof BlockDoor)) return;
+            for (BlockSnapshot snapshot : ((BlockEvent.MultiPlaceEvent) event).getReplacedBlockSnapshots()) {
+                apply(event, pending, snapshot.x, snapshot.y, snapshot.z);
+            }
+        } else {
+            apply(event, pending, event.x, event.y, event.z);
+        }
+    }
+
+    private void apply(BlockEvent.PlaceEvent event, Map<Long, Intent> pending, int x, int y, int z) {
         Intent intent;
         synchronized (pending) {
-            intent = pending.remove(key(event.x, event.y, event.z));
+            intent = pending.remove(key(x, y, z));
         }
         if (intent == null || !ConfigurationHandler.accuratePlacementEnabled || System.nanoTime() - intent.time > LIFETIME_NANOS) return;
-        Block block = event.world.getBlock(event.x, event.y, event.z);
+        Block block = event.world.getBlock(x, y, z);
         if (block != event.placedBlock || !intent.block.equals(GameData.getBlockRegistry().getNameForObject(block))) return;
-        int current = event.world.getBlockMetadata(event.x, event.y, event.z);
-        if (allowed(block, current, intent.metadata)) event.world.setBlockMetadataWithNotify(event.x, event.y, event.z, intent.metadata, 2);
+        int current = event.world.getBlockMetadata(x, y, z);
+        if (allowed(block, current, intent.metadata)) event.world.setBlockMetadataWithNotify(x, y, z, intent.metadata, 2);
     }
 
     /** The metadata bits holding the block's whitelisted placement properties, 0 for blocks without any. */
-    static int mask(Block block) {
+    static int mask(Block block, int current) {
+        if (block instanceof BlockDoor) return (current & 8) != 0 ? 0x1 : 0x7;
         if (block instanceof BlockSlab) return block.isOpaqueCube() ? 0 : 0x8;
         if (block instanceof BlockStairs || block instanceof BlockPistonBase || block instanceof BlockDispenser
             || block instanceof BlockHopper || block instanceof BlockFurnace || block instanceof BlockChest
@@ -129,7 +144,7 @@ public final class AccuratePlacement {
         if (block instanceof BlockQuartz) {
             if (current < 2 || current > 4 || desired < 2 || desired > 4) return false;
         } else {
-            int mask = mask(block);
+            int mask = mask(block, current);
             if (mask == 0 || (desired & ~mask) != (current & ~mask)) return false;
         }
         if (block.damageDropped(desired) != block.damageDropped(current)) return false;

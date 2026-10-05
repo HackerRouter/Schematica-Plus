@@ -176,7 +176,9 @@ public class SchematicPrinter {
             wanted = ConfigurationHandler.printBreakWrongBlock && !real.isReplaceable(world, wx, wy, wz)
                 && !(block instanceof BlockSlab && EasyPlace.completesSlab(block, meta, real, realMeta, new ItemStack(block, 1, block.damageDropped(meta))));
         } else {
-            wanted = ConfigurationHandler.printBreakWrongStateBlock && meta != realMeta && !FluidPrinter.isFluid(block);
+            MultiBlockPlacement.Kind kind = MultiBlockPlacement.kind(block);
+            int mask = kind == null ? 0xF : MultiBlockPlacement.stateMask(kind, meta, AccuratePlacementClient.active(block));
+            wanted = ConfigurationHandler.printBreakWrongStateBlock && (meta & mask) != (realMeta & mask) && !FluidPrinter.isFluid(block);
         }
         if (!wanted) return false;
         boolean switched = selectTool(this.minecraft.thePlayer, world, real, wx, wy, wz);
@@ -402,6 +404,8 @@ public class SchematicPrinter {
         if (block.isAir(schematic, x, y, z) || skipped(block)) {
             return false;
         }
+        MultiBlockPlacement.Kind multi = MultiBlockPlacement.kind(block);
+        if (multi != null && MultiBlockPlacement.secondary(metadata)) return false;
 
         final ItemStack itemStack = BlockToItemStack.getItemStack(player, block, schematic, x, y, z);
         if (itemStack == null || itemStack.getItem() == null) {
@@ -411,6 +415,8 @@ public class SchematicPrinter {
         if (isBlacklisted(block, itemStack)) {
             return false;
         }
+
+        if (multi != null) return placeMultiBlock(world, player, schematic, x, y, z, wx, wy, wz, block, metadata, itemStack, multi);
 
         boolean slab = EasyPlace.completesSlab(block, metadata, realBlock, realMetadata, itemStack);
         if (!slab) {
@@ -452,6 +458,52 @@ public class SchematicPrinter {
                     ? slabClick(wx, wy, wz, world.getBlockMetadata(wx, wy, wz)) : click;
                 success = placeBlock(world, player, held, second.x, second.y, second.z, second.side, second.hit);
             }
+            if (held.stackSize == 0) player.inventory.mainInventory[player.inventory.currentItem] = null;
+            return success;
+        } finally {
+            if (look != null) this.pass.restoreLook();
+        }
+    }
+
+    /**
+     * A door, bed or double plant: its first block is placed by clicking the top of the block below while facing the
+     * schematic's direction; the second block comes with it. On a Plus server the door halves' open bit and hinge
+     * are sent as accurate placement intents.
+     */
+    private boolean placeMultiBlock(World world, EntityClientPlayerMP player, SchematicWorld schematic, int x, int y, int z,
+        int wx, int wy, int wz, Block block, int metadata, ItemStack itemStack, MultiBlockPlacement.Kind kind) {
+        int[] offset = MultiBlockPlacement.secondOffset(kind, metadata);
+        int sx = wx + offset[0], sy = wy + offset[1], sz = wz + offset[2];
+        if (sy > 255 || wy < 1) return false;
+        if (kind == MultiBlockPlacement.Kind.BED) {
+            if (!world.isAirBlock(wx, wy, wz) || !world.isAirBlock(sx, sy, sz)
+                || !World.doesBlockHaveSolidTopSurface(world, wx, wy - 1, wz) || !World.doesBlockHaveSolidTopSurface(world, sx, sy - 1, sz)) return false;
+        } else if (!block.canPlaceBlockAt(world, wx, wy, wz)) {
+            return false;
+        }
+        Block below = world.getBlock(wx, wy - 1, wz);
+        if (below.isAir(world, wx, wy - 1, wz) || below.isReplaceable(world, wx, wy - 1, wz)) return false;
+        Block second = schematic.getBlock(x + offset[0], y + offset[1], z + offset[2]);
+        int secondMeta = schematic.getBlockMetadata(x + offset[0], y + offset[1], z + offset[2]);
+        int facing = MultiBlockPlacement.wantedFacing(kind, block, metadata, second, secondMeta);
+        PrinterLook look = facing < 0 ? null : MultiBlockPlacement.look(kind, player.rotationYaw, facing);
+        if (facing >= 0 && look == null) return false;
+
+        if (!swapToItem(player.inventory, itemStack)) {
+            PrinterMissingMaterials.record(itemStack);
+            PrinterHighlights.add(wx, wy, wz, PrinterHighlights.Type.FAILED);
+            return false;
+        }
+        ItemStack held = player.getCurrentEquippedItem();
+        if (held == null || !held.isItemEqual(itemStack)) return false;
+        this.pass.sneak();
+        if (look != null) this.pass.look(look);
+        if (kind == MultiBlockPlacement.Kind.DOOR && AccuratePlacementClient.active(block)) {
+            AccuratePlacementClient.announce(wx, wy, wz, block, metadata);
+            if (second == block && MultiBlockPlacement.secondary(secondMeta)) AccuratePlacementClient.announce(sx, sy, sz, block, secondMeta);
+        }
+        try {
+            boolean success = placeBlock(world, player, held, wx, wy - 1, wz, ForgeDirection.UP.ordinal(), Vec3.createVectorHelper(wx + 0.5, wy, wz + 0.5));
             if (held.stackSize == 0) player.inventory.mainInventory[player.inventory.currentItem] = null;
             return success;
         } finally {

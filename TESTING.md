@@ -1527,3 +1527,16 @@ Test in GTNH 2.8.4 (NEI 2.8.44) and GTNH 2.9 (NEI 2.8.145); without NEI the butt
   schematic box). A 128 x 129 map art: the extra north row lies one block north of the map.
 - Rotate the placement 90 degrees and align again: still aligned. With X locked only Z moves; with X and Z
   locked or the placement locked the button is disabled. Y never changes.
+
+## Doors, beds and double plants
+
+- Printer, survival, no Plus server: a schematic with doors in all four facings, beds in all four directions
+  and sunflowers/tall grass/lilacs: each is placed once from its lower block/foot (never a door whose lower
+  half sits at the upper half's position), doors face the schematic direction, beds point the right way,
+  sunflowers face the schematic direction. A door next to a chest: the chest does not open (sneaking click).
+- Same without a server: door hinges may differ from the schematic and open doors are placed closed; with
+  "Break Wrong State Blocks" on, these doors are NOT broken again and again.
+- Plus server with accurate placement: doors also get the schematic hinge and open state, for both halves.
+- Easy Place: aim at a door's upper half or a bed head and use: the door/bed is placed from below/the foot;
+  facing follows your own view (on a Plus server the door facing/hinge/open follow the schematic).
+- A bed whose head position is blocked or has no solid ground: not placed, no item lost.

@@ -87,6 +87,8 @@ public final class EasyPlace {
         int lx = hit.localX(), ly = hit.localY(), lz = hit.localZ(), x = hit.x, y = hit.y, z = hit.z;
         Block block = schematic.getBlock(lx, ly, lz);
         int meta = schematic.getBlockMetadata(lx, ly, lz);
+        MultiBlockPlacement.Kind kind = MultiBlockPlacement.kind(block);
+        if (kind != null) return multiBlock(player, world, schematic, lx, ly, lz, x, y, z, block, meta, kind);
         if (cached(x, y, z) || System.nanoTime() - lastPickTime < 1_000_000L * ConfigurationHandler.easyPlaceSwapInterval) return Result.FAIL;
         Block real = world.getBlock(x, y, z);
         int realMeta = world.getBlockMetadata(x, y, z);
@@ -164,6 +166,50 @@ public final class EasyPlace {
                 boolean top = (world.getBlockMetadata(x, y, z) & 8) != 0;
                 click(player, world, held, x, y, z, top ? 0 : 1, Vec3.createVectorHelper(x + 0.5, y + 0.5, z + 0.5));
             }
+        } finally {
+            printer.syncSneaking(player, sneaking);
+        }
+        if (held.stackSize == 0) player.inventory.mainInventory[player.inventory.currentItem] = null;
+        return Result.SUCCESS;
+    }
+
+    /**
+     * A door, bed or double plant: the item is used on the top of the block below its first block, also when the
+     * upper half or the bed head is targeted; the facing follows the player unless the server applies it.
+     */
+    private static Result multiBlock(EntityClientPlayerMP player, World world, SchematicWorld schematic, int lx, int ly, int lz,
+        int x, int y, int z, Block block, int meta, MultiBlockPlacement.Kind kind) {
+        if (MultiBlockPlacement.secondary(meta)) {
+            int[] offset = MultiBlockPlacement.secondOffset(kind, meta);
+            lx -= offset[0]; ly -= offset[1]; lz -= offset[2];
+            x -= offset[0]; y -= offset[1]; z -= offset[2];
+            meta = schematic.getBlockMetadata(lx, ly, lz);
+            if (schematic.getBlock(lx, ly, lz) != block || MultiBlockPlacement.secondary(meta)) return Result.FAIL;
+        }
+        if (cached(x, y, z) || System.nanoTime() - lastPickTime < 1_000_000L * ConfigurationHandler.easyPlaceSwapInterval) return Result.FAIL;
+        int[] offset = MultiBlockPlacement.secondOffset(kind, meta);
+        int sx = x + offset[0], sy = y + offset[1], sz = z + offset[2];
+        Block real = world.getBlock(x, y, z), below = world.getBlock(x, y - 1, z);
+        if (real == block || !real.isReplaceable(world, x, y, z) || !world.getBlock(sx, sy, sz).isReplaceable(world, sx, sy, sz)
+            || below.isAir(world, x, y - 1, z) || below.isReplaceable(world, x, y - 1, z)) return Result.FAIL;
+        ItemStack stack = BlockToItemStack.getItemStack(player, block, schematic, lx, ly, lz);
+        if (stack == null || stack.getItem() == null) return Result.SUCCESS;
+        if (!pickStack(player, stack)) return Result.FAIL;
+        ItemStack held = player.getCurrentEquippedItem();
+        if (held == null || !held.isItemEqual(stack)) return Result.FAIL;
+        cache(x, y, z);
+        if (kind == MultiBlockPlacement.Kind.DOOR && AccuratePlacementClient.active(block)) {
+            AccuratePlacementClient.announce(x, y, z, block, meta);
+            int secondMeta = schematic.getBlockMetadata(lx + offset[0], ly + offset[1], lz + offset[2]);
+            if (schematic.getBlock(lx + offset[0], ly + offset[1], lz + offset[2]) == block && MultiBlockPlacement.secondary(secondMeta)) {
+                AccuratePlacementClient.announce(sx, sy, sz, block, secondMeta);
+            }
+        }
+        SchematicPrinter printer = SchematicPrinter.INSTANCE;
+        boolean sneaking = player.isSneaking();
+        printer.syncSneaking(player, true);
+        try {
+            click(player, world, held, x, y - 1, z, ForgeDirection.UP.ordinal(), Vec3.createVectorHelper(x + 0.5, y, z + 0.5));
         } finally {
             printer.syncSneaking(player, sneaking);
         }
