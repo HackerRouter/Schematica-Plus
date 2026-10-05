@@ -1664,3 +1664,13 @@ Test in GTNH 2.8.4 (NEI 2.8.44) and GTNH 2.9 (NEI 2.8.145); without NEI the butt
   places spruce planks. Placement Restriction lets you place spruce planks there by hand but not stone.
 - Clear the replacement: the printer goes back to oak planks.
 
+## Placement by simulation (printerPlacementSolver)
+
+- Schematic with mod blocks whose facing is in their metadata and that the printer did not orient before
+  (for example logs/pillars, machines or chests from mods that set metadata from the player's direction), in all
+  directions. Printer and Easy Place: each block gets the schematic's facing; the player's view turns briefly for
+  the placement. A block that cannot be placed facing the right way next to the available neighbors is skipped
+  (red failed highlight) instead of being placed wrong.
+- GregTech machines (facing kept in the tile entity) are placed as before.
+- With the option off, the behavior is the same as before.
+

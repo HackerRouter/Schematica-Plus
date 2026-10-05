@@ -114,6 +114,7 @@ public final class EasyPlace {
         if (held == null || !held.isItemEqual(stack)) return Result.FAIL;
 
         boolean accurate = AccuratePlacementClient.active(block);
+        PlacementSolver.Solution solved = null;
         int cx = x, cy = y, cz = z, side = hit.side, extraClicks = 0;
         Vec3 hitVec = Vec3.createVectorHelper(hit.hitX, hit.hitY, hit.hitZ);
         Click post = ConfigurationHandler.easyPlacePostRewrite && !accurate
@@ -142,6 +143,10 @@ public final class EasyPlace {
                     hitVec = Vec3.createVectorHelper(x + 0.5, y + (data.getOffsetFromMetadata(meta) >= 0.5f ? 0.75 : 0.25), z);
                 }
                 extraClicks = data.getExtraClicks(block, meta);
+            } else if ((solved = ConfigurationHandler.printerPlacementSolver && !accurate
+                ? PlacementSolver.solve(world, player, held, block, meta, x, y, z, printer.getSolidSides(world, x, y, z), true) : null) != null) {
+                if (solved == PlacementSolver.REFUSE) return Result.FAIL;
+                cx = solved.x; cy = solved.y; cz = solved.z; side = solved.side; hitVec = solved.hit;
             } else {
                 MovingObjectPosition vanilla = SchematicTargets.vanilla(range, false);
                 if (vanilla != null && vanilla.typeOfHit == MovingObjectPosition.MovingObjectType.BLOCK
@@ -159,7 +164,9 @@ public final class EasyPlace {
         cache(x, y, z);
         if (accurate) AccuratePlacementClient.announce(x, y, z, block, meta);
         boolean sneaking = player.isSneaking();
+        float yaw = player.rotationYaw, pitch = player.rotationPitch;
         printer.syncSneaking(player, true);
+        if (solved != null && solved.look != null) look(player, solved.look.yaw, solved.look.pitch);
         try {
             boolean success = click(player, world, held, cx, cy, cz, side, hitVec);
             for (int i = 0; success && i < extraClicks; i++) success = click(player, world, held, cx, cy, cz, side, hitVec);
@@ -170,10 +177,18 @@ public final class EasyPlace {
                 click(player, world, held, x, y, z, top ? 0 : 1, Vec3.createVectorHelper(x + 0.5, y + 0.5, z + 0.5));
             }
         } finally {
+            if (solved != null && solved.look != null) look(player, yaw, pitch);
             printer.syncSneaking(player, sneaking);
         }
         if (held.stackSize == 0) player.inventory.mainInventory[player.inventory.currentItem] = null;
         return Result.SUCCESS;
+    }
+
+    /** Turns the player and reports the rotation, so that the server places the block facing that way. */
+    private static void look(EntityClientPlayerMP player, float yaw, float pitch) {
+        player.rotationYaw = yaw;
+        player.rotationPitch = pitch;
+        player.sendQueue.addToSendQueue(new net.minecraft.network.play.client.C03PacketPlayer.C05PacketPlayerLook(yaw, pitch, player.onGround));
     }
 
     /**

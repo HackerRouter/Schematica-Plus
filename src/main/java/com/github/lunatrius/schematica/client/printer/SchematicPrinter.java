@@ -300,6 +300,7 @@ public class SchematicPrinter {
         int placed = 0;
         try {
             for (PrinterBuildOrder.Candidate candidate : candidates) {
+                if (System.nanoTime() > deadline) break;
                 int x = candidate.x, y = candidate.y, z = candidate.z;
                 long key = key(x, y, z);
                 SchematicWorld placement = (SchematicWorld) candidate.placement;
@@ -453,7 +454,19 @@ public class SchematicPrinter {
             if (look == null) return false;
         }
 
-        Click click = slab ? slabClick(wx, wy, wz, realMetadata) : click(world, wx, wy, wz, data, metadata, accurate);
+        PlacementSolver.Solution solved = null;
+        if (data == null && !accurate && !slab && ConfigurationHandler.printerPlacementSolver) {
+            solved = PlacementSolver.solve(world, player, itemStack, block, metadata, wx, wy, wz, getSolidSides(world, wx, wy, wz), ConfigurationHandler.placeInAir);
+            if (solved == PlacementSolver.REFUSE) {
+                PrinterHighlights.add(wx, wy, wz, PrinterHighlights.Type.FAILED);
+                return false;
+            }
+            if (solved != null) look = solved.look;
+        }
+
+        Click click = slab ? slabClick(wx, wy, wz, realMetadata)
+            : solved != null ? new Click(solved.x, solved.y, solved.z, solved.side, solved.hit, solved.neighbor)
+            : click(world, wx, wy, wz, data, metadata, accurate);
         if (click == null || !swapToItem(player.inventory, itemStack)) {
             if (click != null) PrinterMissingMaterials.record(itemStack);
             PrinterHighlights.add(wx, wy, wz, PrinterHighlights.Type.FAILED);

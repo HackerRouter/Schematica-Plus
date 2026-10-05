@@ -80,9 +80,32 @@ public final class CellState {
 
     /** A detached one-block world in which placement code can run without touching a real world. */
     public static final class Scratch extends SchematicWorld {
+        private net.minecraft.world.World real;
+        private int ox, oy, oz;
+
         private Scratch(Schematic schematic) { super(schematic); }
 
         public static Scratch create() { return new Scratch(new Schematic(DEFAULT_ICON, 1, 1, 1)); }
+
+        /** A scratch cell at a world position whose neighbors read the blocks of that world (without tile entities). */
+        public static Scratch around(net.minecraft.world.World real, int x, int y, int z) {
+            Scratch scratch = create();
+            scratch.real = real;
+            scratch.ox = x; scratch.oy = y; scratch.oz = z;
+            return scratch;
+        }
+
+        private boolean outside(int x, int y, int z) { return real != null && (x != 0 || y != 0 || z != 0); }
+
+        @Override
+        public Block getBlock(int x, int y, int z) {
+            return outside(x, y, z) ? real.getBlock(x + ox, y + oy, z + oz) : super.getBlock(x, y, z);
+        }
+
+        @Override
+        public int getBlockMetadata(int x, int y, int z) {
+            return outside(x, y, z) ? real.getBlockMetadata(x + ox, y + oy, z + oz) : super.getBlockMetadata(x, y, z);
+        }
 
         @Override
         public boolean setBlock(int x, int y, int z, Block block, int metadata, int flags) {
