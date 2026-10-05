@@ -79,6 +79,7 @@ public class ConfigurationHandler {
     public static boolean placeInAir = true, printForcedSneak, printFallingBlockCheck = true, printerAutoDisable = true, printerPauseWhileMoving;
     public static String[] printSkipList = {};
     public static boolean containerVerifier = true, containerAutofill = true;
+    public static boolean schematicPreview3D = true, schematicPreview3DReplacesImage;
     public static boolean printBreakWrongBlock, printBreakExtraBlock, printBreakWrongStateBlock, printHighlight, printHighlightThroughWalls;
     public static int printHighlightFade = 5;
     public static boolean destroyBlocks = DESTROY_BLOCKS_DEFAULT;
@@ -267,6 +268,8 @@ public class ConfigurationHandler {
         loadPrinter();
         containerVerifier = printerProperty(configuration.get(Names.Config.Category.TOOL, "containerVerifier", true), "containerVerifier").getBoolean(true);
         containerAutofill = printerProperty(configuration.get(Names.Config.Category.TOOL, "containerAutofill", true), "containerAutofill").getBoolean(true);
+        schematicPreview3D = printerProperty(configuration.get(Names.Config.Category.TOOL, "schematicPreview3D", true), "schematicPreview3D").getBoolean(true);
+        schematicPreview3DReplacesImage = printerProperty(configuration.get(Names.Config.Category.TOOL, "schematicPreview3DReplacesImage", false), "schematicPreview3DReplacesImage").getBoolean(false);
 
         swapSlotsQueue.clear();
         for (int i = 0; i < SWAP_SLOTS_DEFAULT.length; i++) {

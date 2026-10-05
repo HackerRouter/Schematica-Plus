@@ -13,8 +13,10 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.texture.DynamicTexture;
 import net.minecraft.util.ResourceLocation;
 
+import com.github.lunatrius.schematica.api.ISchematic;
 import com.github.lunatrius.schematica.reference.Reference;
 import com.github.lunatrius.schematica.world.schematic.SchematicFiles;
+import com.github.lunatrius.schematica.world.schematic.SchematicFormat;
 
 /** Reads file metadata off the client thread and keeps preview textures until the browser closes. */
 final class SchematicInfoCache {
@@ -26,6 +28,9 @@ final class SchematicInfoCache {
 
     private final Map<File, Future<SchematicFiles.Info>> infos = new HashMap<>();
     private final Map<File, ResourceLocation> previews = new HashMap<>();
+    private File modelFile;
+    private Future<ISchematic> model;
+    private SchematicPreview3D preview3D;
 
     /** The metadata of a .litematic or .nbt file once read, else null (also for other formats and unreadable files). */
     SchematicFiles.Info get(File file) {
@@ -37,6 +42,39 @@ final class SchematicInfoCache {
             Reference.logger.debug("Could not read schematic metadata of {}", file, e);
             return null;
         }
+    }
+
+    /** True once the metadata read has ended, also when it gave nothing. */
+    boolean infoDone(File file) {
+        Future<SchematicFiles.Info> future = infos.get(file);
+        return future != null && future.isDone();
+    }
+
+    /** The 3D preview of the file, read on the reader thread; only the last asked file is kept. Null while reading. */
+    SchematicPreview3D preview3D(File file) {
+        if (!file.equals(modelFile)) {
+            dropModel();
+            modelFile = file;
+            model = READER.submit(() -> SchematicFormat.readFromFile(file));
+        }
+        if (preview3D == null && model.isDone()) {
+            try {
+                ISchematic schematic = model.get();
+                if (schematic != null && (long) schematic.getWidth() * schematic.getHeight() * schematic.getLength() <= SchematicPreview3D.MAX_VOLUME) preview3D = new SchematicPreview3D(schematic);
+            } catch (Exception e) {
+                Reference.logger.debug("Could not read {} for the preview", file, e);
+            }
+            model = java.util.concurrent.CompletableFuture.completedFuture(null);
+        }
+        return preview3D;
+    }
+
+    private void dropModel() {
+        if (model != null) model.cancel(false);
+        if (preview3D != null) preview3D.delete();
+        model = null;
+        modelFile = null;
+        preview3D = null;
     }
 
     /** A texture of the square preview image, or null when the file has none. */
@@ -61,5 +99,6 @@ final class SchematicInfoCache {
         }
         previews.clear();
         infos.clear();
+        dropModel();
     }
 }

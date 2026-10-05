@@ -53,6 +53,9 @@ public abstract class GuiSchematicBrowser extends UiScreen {
     private String status = "";
     private SchematicBrowserModel.Entry lastSelection;
     private final SchematicInfoCache infoCache = new SchematicInfoCache();
+    private static final long PREVIEW_3D_MAX_FILE = 32L << 20;
+    private int infoMouseX, infoMouseY;
+    private UiBounds preview3DBox;
     private static final java.text.SimpleDateFormat DATE_FORMAT = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
     protected GuiSchematicBrowser(GuiScreen parent, String title, boolean directoriesOnly) {
@@ -89,7 +92,18 @@ public abstract class GuiSchematicBrowser extends UiScreen {
             @Override public void draw(UiDraw draw, int mouseX, int mouseY) {
                 draw.fill(bounds(), 0xA0000000);
                 draw.border(bounds(), 0xFF999999);
+                infoMouseX = mouseX;
+                infoMouseY = mouseY;
+                preview3DBox = null;
                 drawInfo(draw, bounds().x + 3, bounds().y + 3, bounds().width, selection());
+            }
+
+            @Override public boolean scroll(int x, int y, int amount) {
+                SchematicPreview3D preview = preview3DBox != null && preview3DBox.contains(x, y) && selection() != null
+                    ? infoCache.preview3D(selection().file) : null;
+                if (preview == null) return false;
+                preview.zoom(amount);
+                return true;
             }
         });
         message = root.add(new UiLabel(() -> status));
@@ -107,6 +121,7 @@ public abstract class GuiSchematicBrowser extends UiScreen {
             draw.text(draw.trim(entry.name(), width - 10), x + 4, y + 12, 0xFFFFFFFF);
             draw.text(FileUtils.humanReadableByteCount(entry.size), x, y + 36, 0xC0C0C0C0);
             draw.text(draw.trim(DATE_FORMAT.format(new Date(entry.modified)), width - 6), x, y + 48, 0xC0C0C0C0);
+            if (infoCache.infoDone(entry.file)) drawPreview3D(draw, entry, x, y + 72, width, -1);
             return;
         }
         int text = 0xC0C0C0C0, value = 0xFFFFFFFF, limit = width - 8;
@@ -139,7 +154,9 @@ public abstract class GuiSchematicBrowser extends UiScreen {
             draw.text(draw.trim(UiTranslations.format("litematica.gui.label.schematic_info.schema", schema, meta.dataVersion), limit), x, y += 12, text);
         }
         net.minecraft.util.ResourceLocation preview = infoCache.preview(entry.file, meta);
-        if (preview != null) {
+        if (preview == null || ConfigurationHandler.schematicPreview3DReplacesImage) {
+            drawPreview3D(draw, entry, x, y + 24, width, meta.volume);
+        } else {
             y += 24;
             int iconSize = Math.min(SchematicPreview.SIZE, Math.min(width - 14, info.bounds().bottom() - y - 30));
             if (iconSize > 8) {
@@ -149,6 +166,23 @@ public abstract class GuiSchematicBrowser extends UiScreen {
                 draw.border(new UiBounds(box.x - 1, box.y - 1, iconSize + 2, iconSize + 2), 0xFF999999);
             }
         }
+    }
+
+    /** The selected file drawn in 3D into the square below the info, when enabled and not too large. */
+    private void drawPreview3D(UiDraw draw, SchematicBrowserModel.Entry entry, int x, int y, int width, long volume) {
+        if (!ConfigurationHandler.schematicPreview3D || volume > SchematicPreview3D.MAX_VOLUME || entry.size > PREVIEW_3D_MAX_FILE) return;
+        int size = Math.min(SchematicPreview.SIZE, Math.min(width - 14, info.bounds().bottom() - y - 30));
+        if (size <= 8) return;
+        UiBounds box = new UiBounds(x + 4, y, size, size);
+        draw.fill(box, 0xA0000000);
+        draw.border(new UiBounds(box.x - 1, box.y - 1, size + 2, size + 2), 0xFF999999);
+        preview3DBox = box;
+        SchematicPreview3D preview = infoCache.preview3D(entry.file);
+        if (preview == null) {
+            draw.text("...", box.x + 3, box.bottom() - 11, 0xFFAAAAAA);
+            return;
+        }
+        preview.draw(mc, box.x, box.y, size, infoMouseX, infoMouseY);
     }
 
     protected SchematicBrowserModel createModel() throws IOException {

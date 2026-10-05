@@ -1481,3 +1481,15 @@ Test in GTNH 2.8.4 (NEI 2.8.44) and GTNH 2.9 (NEI 2.8.145); without NEI the butt
   already there. Delete the group in NEI and click S: it asks to send a list first.
 - GTNH 2.9: open the group's crafting tree (NEI hotkey shown on the group), click nodes and use the tree's
   own "use for recipe tree" button; the tree's totals match the material list counts.
+
+## 3D schematic preview in the browsers
+
+- Load Schematic browser: select a .schematic, .schem or .schemplus file and a .litematic without a preview
+  image: below the info a square fills in (percentage at the bottom left while building) and the schematic
+  turns slowly. Drag inside the square to turn it, scroll over it to zoom; the file list still scrolls
+  elsewhere. Glass, water and ice are see-through; chests and signs are missing (expected).
+- A .litematic with a preview image still shows the image; with "3D Preview Replaces Image" on it shows the
+  3D model instead. With "3D Schematic Preview" off no square appears.
+- Switching quickly between files, F5, leaving the screen: no stutter beyond the first frames, no GL errors
+  in the log, other menus draw normally afterwards (no missing text or buttons, no depth artifacts).
+- A very large file (over 4 million blocks or 32 MB) shows no square and does not freeze the browser.
