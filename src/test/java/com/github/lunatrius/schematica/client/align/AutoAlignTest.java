@@ -68,7 +68,8 @@ public class AutoAlignTest {
             };
 
             AutoAlign.Plan plan = AutoAlign.plan(house, new HashSet<Object>(Collections.singleton(STONE)));
-            assertEquals(GOLD, plan.ids.get(0));
+            // gold and the torch occur once each: the rarest kinds come first
+            assertEquals(new HashSet<Object>(java.util.Arrays.asList(GOLD, TORCH)), new HashSet<>(plan.ids.subList(0, 2)));
             assertFalse(plan.ids.contains(STONE));
             List<long[]> hits = new ArrayList<>();
             for (Object id : plan.ids) {

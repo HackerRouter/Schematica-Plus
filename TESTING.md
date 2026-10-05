@@ -1761,3 +1761,13 @@ Test in GTNH 2.8.4 (NEI 2.8.44) and GTNH 2.9 (NEI 2.8.145); without NEI the butt
   the rail and the sand (the block below first). Aimed blocks that can stand are placed directly. Option off:
   clicking such a ghost places nothing, as before.
 
+## Carpenter's Blocks under rotation and mirroring
+
+- Build with Carpenter's slopes (wedges, corners, oblique, prisms), stairs, slabs in all directions, a full block
+  with different covers on each face and chiseled sides, buttons, levers on walls and floors, torches, ladders,
+  hatches open and closed (low and high), doors with left and right hinges, gates open both ways, beds, safes,
+  garage doors, daylight sensors and collapsible blocks with uneven corners. Rotate the placement 90/180 degrees
+  and mirror it on X/Z: every shape, cover and side design faces the same neighbor as before in the preview and
+  after paste; doors keep opening correctly (hinge side swapped by mirrors). Upside-down mirror: wedges, stairs
+  and slabs flip; prisms stay.
+
