@@ -88,6 +88,24 @@ final class TileFacingAdapter implements ISchematicVisualAdapter {
         }
         add("tconstruct.smeltery.logic.CastingBlockLogic", ordinal("direction"));
         add("tconstruct.tools.logic.CraftingStationLogic", ordinal("ChestDirection"));
+        // BuildCraft engines and construction markers
+        add("buildcraft.core.lib.engines.TileEngineBase", ordinal("orientation"));
+        add("buildcraft.builders.TileConstructionMarker", ordinal("direction"));
+        // Et Futurum Requiem shulker boxes, Natura netherrack furnace, Thaumic Tinkerer mobilizer, Computronics detector
+        add("ganymedes01.etfuturum.tileentities.TileEntityShulkerBox", ordinal("Facing"));
+        add("mods.natura.blocks.tech.NetherrackFurnaceLogic", ordinal("Direction"));
+        add("thaumic.tinkerer.common.block.tile.TileEntityMobilizer", ordinal("Direction"));
+        add("pl.asie.computronics.integration.railcraft.tile.TileDigitalDetector", ordinal("direction"));
+        // Witching Gadgets devices
+        for (String tile : new String[] {"TileEntityBlastfurnace", "TileEntityCobbleGen", "TileEntityEssentiaPump", "TileEntityIceGen",
+            "TileEntitySnowGen", "TileEntitySpinningWheel", "TileEntityCuttingTable", "TileEntityWallMirror", "TileEntityLabelLibrary"}) {
+            add("witchinggadgets.common.blocks.tiles." + tile, ordinal("facing"));
+        }
+        // Tinkers' Mechworks
+        for (String tile : new String[] {"DrawbridgeLogic", "AdvancedDrawbridgeLogic", "FirestarterLogic"}) {
+            add("tmechworks.blocks.logic." + tile, ordinal("Direction"));
+        }
+        add("tmechworks.blocks.logic.SignalTerminalLogic", sideArray("sideChannel"), sideArray("receivingSides"), sideArray("connectedSides"));
         // OpenComputers: yaw is horizontal, pitch UP, DOWN or NORTH (level); tilting is not representable
         add("li.cil.oc.common.tileentity.traits.Rotatable", new Rule(Kind.ORDINAL, "oc:yaw", "Yxz"), new Rule(Kind.ORDINAL, "oc:pitch", "y"));
     }
