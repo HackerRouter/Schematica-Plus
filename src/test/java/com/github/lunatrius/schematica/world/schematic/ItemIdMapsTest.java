@@ -167,4 +167,17 @@ public class ItemIdMapsTest {
         assertEquals("gregtech:gt.metaitem.01", archive.itemName(7495));
         assertEquals(-1, archive.item("minecraft:stone"));
     }
+
+    @Test public void buildCraftPipeItemsAreRemapped() {
+        NBTTagCompound root = new NBTTagCompound();
+        NBTTagCompound pipe = new NBTTagCompound();
+        pipe.setString("id", "net.minecraft.src.buildcraft.transport.GenericPipe");
+        pipe.setInteger("pipeId", 7495);
+        NBTTagList tiles = new NBTTagList();
+        tiles.appendTag(pipe);
+        root.setTag("TileEntities", tiles);
+        ItemIdMaps.writeMapping(root, OLD);
+        ItemIdMaps.remap(root, NOW, Collections::emptyList, new ItemIdMaps.Result());
+        assertEquals(8000, tile(root, 0).getInteger("pipeId"));
+    }
 }

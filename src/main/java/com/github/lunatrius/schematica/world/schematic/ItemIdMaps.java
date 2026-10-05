@@ -239,6 +239,8 @@ public final class ItemIdMaps {
             }
             tag.setIntArray("mCoverSides", covers);
         }
+        // BuildCraft pipes: the pipe item
+        if (tag.hasKey("pipeId", NBT.TAG_INT) && tag.getInteger("pipeId") != 0 && !apply(tag, "pipeId", ids)) tag.removeTag("pipeId");
         // StorageDrawers slots: {Item, Meta, Count}
         if (numeric(tag, "Item") && tag.hasKey("Meta") && !apply(tag, "Item", ids)) {
             tag.removeTag("Item");

@@ -13,6 +13,28 @@ final class BuildCraftPipeAdapter implements ISchematicVisualAdapter {
         return Reflect.is(tile, "buildcraft.transport.TileGenericPipe");
     }
 
+    @Override public boolean transformsNBT(TileEntity tile) { return true; }
+
+    private static boolean diamond(TileEntity tile) {
+        try {
+            Object pipe = Reflect.get(tile, "pipe");
+            return Reflect.is(pipe, "buildcraft.transport.pipes.PipeItemsDiamond") || Reflect.is(pipe, "buildcraft.transport.pipes.PipeFluidsDiamond");
+        } catch (ReflectiveOperationException | RuntimeException e) {
+            return false;
+        }
+    }
+
+    @Override public void transformNBT(TileEntity tile, NBTTagCompound data, char operation) {
+        BuildCraftPipeNbt.transform(data, operation, diamond(tile));
+    }
+
+    @Override public void transformPreview(TileEntity tile, char operation) {
+        NBTTagCompound data = new NBTTagCompound();
+        tile.writeToNBT(data);
+        BuildCraftPipeNbt.transform(data, operation, diamond(tile));
+        tile.readFromNBT(data);
+    }
+
     @Override public NBTTagCompound capture(TileEntity tile) throws Exception {
         NBTTagCompound tag = new NBTTagCompound();
         for (byte id = 1; id <= 3; id++) {

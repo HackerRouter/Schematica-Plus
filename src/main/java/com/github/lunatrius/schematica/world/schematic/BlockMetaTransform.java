@@ -215,6 +215,10 @@ public final class BlockMetaTransform {
             if (name.equals("micdoodle8.mods.galacticraft.core.blocks.BlockTelemetry") || name.equals("micdoodle8.mods.galacticraft.core.blocks.BlockScreen")) {
                 return ordinal(meta, 7, op, false, false);
             }
+            // BuildCraft pipes: the extraction or output side of wooden, iron and similar pipes
+            if (name.equals("buildcraft.transport.BlockGenericPipe")) {
+                return meta < 6 ? turn(op, ForgeDirection.getOrientation(meta)).ordinal() : meta;
+            }
             // Draconic Evolution flow gates: type * 6 + facing ordinal
             if (name.equals("com.brandon3055.draconicevolution.common.blocks.machine.FlowGate")) {
                 int kind = meta / 6;

@@ -1771,3 +1771,11 @@ Test in GTNH 2.8.4 (NEI 2.8.44) and GTNH 2.9 (NEI 2.8.145); without NEI the butt
   after paste; doors keep opening correctly (hinge side swapped by mirrors). Upside-down mirror: wedges, stairs
   and slabs flip; prisms stay.
 
+## BuildCraft pipes under rotation and mirroring
+
+- Pipe network with wooden extraction pipes, iron pipes pointing different ways, diamond item and fluid pipes with
+  filters on several sides, gates with wires and expansions, facades and plugs on pipe sides, a powered wooden
+  kinesis pipe. Rotate and mirror: extraction/output sides, gates, facades and plugs stay on the side facing the
+  same neighbor; diamond filters follow their sides. After paste the network works without reconfiguring.
+- Loading such a schematic in another pack: the pipes keep their pipe type (pipe item ids are remapped).
+
