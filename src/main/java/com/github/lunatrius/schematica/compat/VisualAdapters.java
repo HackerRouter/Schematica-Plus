@@ -137,6 +137,16 @@ public final class VisualAdapters {
         }
     }
 
+    /** Whether an adapter turns this tile's saved data; such blocks are not also turned by Block.rotateBlock. */
+    public static boolean transformsTile(TileEntity tile) {
+        if (tile == null) return false;
+        for (ISchematicVisualAdapter adapter : ADAPTERS) {
+            try { if (adapter.supports(tile) && adapter.transformsNBT(tile)) return true; }
+            catch (RuntimeException | LinkageError e) { Reference.logger.debug("Could not check {}", adapter.id(), e); }
+        }
+        return false;
+    }
+
     public static NBTTagCompound transformNBT(TileEntity tile, java.util.function.Supplier<NBTTagCompound> source, char operation) {
         NBTTagCompound data = null;
         for (ISchematicVisualAdapter adapter : ADAPTERS) {

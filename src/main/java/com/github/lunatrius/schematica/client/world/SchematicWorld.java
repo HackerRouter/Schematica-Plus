@@ -632,7 +632,7 @@ public class SchematicWorld extends World {
         int metadata = getBlockMetadata(x, y, z);
         int result = com.github.lunatrius.schematica.world.schematic.BlockMetaTransform.transform(block, metadata, operation);
         if (result >= 0) return result;
-        if (Character.isLowerCase(operation)) return metadata;
+        if (Character.isLowerCase(operation) || com.github.lunatrius.schematica.compat.VisualAdapters.transformsTile(getTileEntity(x, y, z))) return metadata;
         try {
             block.rotateBlock(this, x, y, z, operation == 'X' ? ForgeDirection.EAST : operation == 'Y' ? ForgeDirection.UP : ForgeDirection.SOUTH);
         } catch (Exception e) {

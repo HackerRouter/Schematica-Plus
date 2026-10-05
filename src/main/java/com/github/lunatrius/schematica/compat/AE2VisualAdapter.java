@@ -95,6 +95,80 @@ final class AE2VisualAdapter implements ISchematicVisualAdapter {
         }
     }
 
+    private static final ForgeDirection[] SPIN = {ForgeDirection.SOUTH, ForgeDirection.WEST, ForgeDirection.NORTH, ForgeDirection.EAST};
+
+    @Override public boolean transformsNBT(TileEntity tile) { return Reflect.is(tile, "appeng.tile.AEBaseTile"); }
+
+    /**
+     * Rotation and mirroring: a device's forward and up directions; a cable bus's parts ("def:N", "extra:N") and
+     * facades ("facade:N") move to the turned side; terminals and panels on a floor or ceiling turn their spin.
+     */
+    @Override public void transformNBT(TileEntity tile, NBTTagCompound data, char operation) {
+        transformTag(data, operation);
+    }
+
+    static void transformTag(NBTTagCompound data, char operation) {
+        for (String key : new String[] {"orientation_forward", "orientation_up"}) {
+            if (!data.hasKey(key, 8)) continue;
+            try {
+                ForgeDirection side = ForgeDirection.valueOf(data.getString(key));
+                data.setString(key, com.github.lunatrius.schematica.util.SchematicTransform.direction(operation, side).name());
+            } catch (IllegalArgumentException ignored) {}
+        }
+        Map<String, net.minecraft.nbt.NBTBase> moved = new LinkedHashMap<>();
+        for (ForgeDirection side : ForgeDirection.VALID_DIRECTIONS) {
+            ForgeDirection turned = com.github.lunatrius.schematica.util.SchematicTransform.direction(operation, side);
+            for (String prefix : new String[] {"def:", "extra:", "facade:"}) {
+                String key = prefix + side.ordinal();
+                if (!data.hasKey(key)) continue;
+                net.minecraft.nbt.NBTBase value = data.getTag(key);
+                data.removeTag(key);
+                if (prefix.equals("extra:") && value instanceof NBTTagCompound) spin((NBTTagCompound) value, side, turned, operation);
+                moved.put(prefix + turned.ordinal(), value);
+            }
+        }
+        for (Map.Entry<String, net.minecraft.nbt.NBTBase> entry : moved.entrySet()) data.setTag(entry.getKey(), entry.getValue());
+    }
+
+    /** AbstractPartReporting.spin on a floor or ceiling is a horizontal direction in the yaw encoding (0 S, 1 W, 2 N, 3 E). */
+    private static void spin(NBTTagCompound extra, ForgeDirection side, ForgeDirection turned, char operation) {
+        if (!extra.hasKey("spin", 1) || side.offsetY == 0) return;
+        int spin = extra.getByte("spin") & 3;
+        if (turned.offsetY == 0) { extra.setByte("spin", (byte) 0); return; }
+        ForgeDirection direction = com.github.lunatrius.schematica.util.SchematicTransform.direction(operation, SPIN[spin]);
+        for (int i = 0; i < 4; i++) if (SPIN[i] == direction) extra.setByte("spin", (byte) i);
+    }
+
+    /** The preview: orientation fields directly; a cable bus reads the transformed NBT, then its cable turns its client connections. */
+    @Override public void transformPreview(TileEntity tile, char operation) throws Exception {
+        if (Reflect.is(tile, "appeng.api.parts.IPartHost")) {
+            NBTTagCompound data = new NBTTagCompound();
+            tile.writeToNBT(data);
+            transformTag(data, operation);
+            tile.readFromNBT(data);
+            Object cable = Reflect.call(tile, "getPart", new Class<?>[] {ForgeDirection.class}, ForgeDirection.UNKNOWN);
+            if (Reflect.is(cable, "appeng.parts.networking.PartCable")) {
+                Field connections = Reflect.field(cable.getClass(), "connections");
+                @SuppressWarnings("unchecked") java.util.Set<ForgeDirection> sides = (java.util.Set<ForgeDirection>) connections.get(cable);
+                java.util.EnumSet<ForgeDirection> turned = java.util.EnumSet.noneOf(ForgeDirection.class);
+                for (ForgeDirection side : sides) turned.add(com.github.lunatrius.schematica.util.SchematicTransform.direction(operation, side));
+                sides.clear();
+                sides.addAll(turned);
+                Object channels = Reflect.get(cable, "channelsOnSide");
+                if (channels != null && channels.getClass().isArray() && java.lang.reflect.Array.getLength(channels) == 6) {
+                    com.github.lunatrius.schematica.util.SchematicTransform.sides(operation, channels);
+                }
+            }
+            return;
+        }
+        if (!(Boolean) Reflect.call(tile, "canBeRotated")) return;
+        Field forward = Reflect.field(tile.getClass(), "forward"), up = Reflect.field(tile.getClass(), "up");
+        for (Field field : new Field[] {forward, up}) {
+            ForgeDirection side = (ForgeDirection) field.get(tile);
+            if (side != null && side != ForgeDirection.UNKNOWN) field.set(tile, com.github.lunatrius.schematica.util.SchematicTransform.direction(operation, side));
+        }
+    }
+
     private static void transferFields(Object target, NBTTagCompound tag, boolean restore) throws ReflectiveOperationException {
         for (Class<?> type = target.getClass(); type != null; type = type.getSuperclass()) {
             String[] names = FIELDS.get(type.getName());

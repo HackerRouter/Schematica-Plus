@@ -1595,3 +1595,12 @@ Test in GTNH 2.8.4 (NEI 2.8.44) and GTNH 2.9 (NEI 2.8.145); without NEI the butt
   (conveyor, pump, redstone covers) and strong redstone on some sides. Rotate the placement 90/180 degrees and
   mirror it: controller fronts, output sides, covers and multiblock structure previews (the in-world hologram
   after paste) all follow; pasted multiblocks form without re-wrenching.
+
+## AE2 under rotation and mirroring (rv3-beta-1080-GTNH)
+
+- Schematic with ME drives, interfaces, molecular assemblers, a controller, chests and a quartz growth
+  accelerator in various orientations; cable buses with export/import buses, storage buses, P2P tunnels,
+  terminals on walls, floors and ceilings (wrenched to different spins), facades on some sides. Rotate and
+  mirror: devices keep facing their neighbors, parts stay on the side that faces the same neighbor, terminals
+  on floors keep pointing the same way relative to the build; the preview cables connect to the moved parts.
+  Paste: everything works without re-placing parts.
