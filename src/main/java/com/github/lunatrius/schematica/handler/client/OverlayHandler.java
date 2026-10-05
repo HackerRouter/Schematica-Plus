@@ -51,7 +51,8 @@ public class OverlayHandler {
             com.github.lunatrius.schematica.client.renderer.hud.MaterialListHud.highlightInventory(this.minecraft,
                 (net.minecraft.client.gui.inventory.GuiContainer) event.gui);
         }
-        com.github.lunatrius.schematica.client.renderer.hud.MaterialListHud.render(this.minecraft, 0, true);
+        int height = com.github.lunatrius.schematica.client.renderer.hud.MaterialListHud.render(this.minecraft, 0, true);
+        com.github.lunatrius.schematica.client.printer.PrinterMissingMaterials.render(this.minecraft, height);
     }
 
     @SubscribeEvent
@@ -67,8 +68,9 @@ public class OverlayHandler {
         boolean verifier = com.github.lunatrius.schematica.client.renderer.hud.VerifierHud.render(this.minecraft, event.partialTicks);
         com.github.lunatrius.schematica.client.renderer.hud.BlockInfoHud.INSTANCE.render(this.minecraft, event.partialTicks, !verifier);
         if (this.minecraft.currentScreen == null && !this.minecraft.gameSettings.hideGUI) {
-            com.github.lunatrius.schematica.client.renderer.hud.MaterialListHud.render(this.minecraft,
-                com.github.lunatrius.schematica.client.renderer.hud.VerifierHud.textHeight(), false);
+            int height = com.github.lunatrius.schematica.client.renderer.hud.VerifierHud.textHeight();
+            height += com.github.lunatrius.schematica.client.renderer.hud.MaterialListHud.render(this.minecraft, height, false);
+            com.github.lunatrius.schematica.client.printer.PrinterMissingMaterials.render(this.minecraft, height);
         }
 
         if (this.minecraft.currentScreen != null || this.minecraft.gameSettings.hideGUI) return;

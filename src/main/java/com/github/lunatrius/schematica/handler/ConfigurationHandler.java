@@ -79,6 +79,8 @@ public class ConfigurationHandler {
     public static boolean placeInAir = true, printForcedSneak, printFallingBlockCheck = true, printerAutoDisable = true, printerPauseWhileMoving;
     public static String[] printSkipList = {};
     public static boolean containerVerifier = true, containerAutofill = true;
+    public static boolean printMissingMaterialHud = true, printAutoTool = true;
+    public static int printAutoToolDurability = 10;
     public static boolean schematicPreview3D = true, schematicPreview3DReplacesImage;
     public static boolean printBreakWrongBlock, printBreakExtraBlock, printBreakWrongStateBlock, printHighlight, printHighlightThroughWalls;
     public static int printHighlightFade = 5;
@@ -529,6 +531,9 @@ public class ConfigurationHandler {
         printHighlight = printerFlag("printHighlight", false);
         printHighlightFade = printerInt("printHighlightFade", 5, 1, 100);
         printHighlightThroughWalls = printerFlag("printHighlightThroughWalls", false);
+        printMissingMaterialHud = printerFlag("printMissingMaterialHud", true);
+        printAutoTool = printerFlag("printAutoTool", true);
+        printAutoToolDurability = printerInt("printAutoToolDurability", 10, 0, 1000);
         printSkipList = printerProperty(configuration.get(Names.Config.Category.PRINTER, "printSkipList", new String[0]), "printSkipList").getStringList();
     }
 

@@ -58,6 +58,8 @@ public class SchematicPrinter {
     private Pass pass;
     /** The block being mined (x, y, z), after litematica-printer's printBreakWrongBlock/ExtraBlock. */
     private int[] mining;
+    /** printAutoTool: the hotbar slot of the tool held while mining and the slot to go back to afterwards. */
+    private int toolSlot = -1, toolRestoreSlot;
 
     public boolean isEnabled() {
         return this.isEnabled;
@@ -127,12 +129,17 @@ public class SchematicPrinter {
 
     /** Stops a started mining once printing was turned off (the switch may change on the network thread). */
     public void tickIdle() {
-        if (this.mining != null && (!this.isPrinting || !this.isEnabled)) stopMining();
+        if (!this.isPrinting || !this.isEnabled) {
+            if (this.mining != null) stopMining();
+            PrinterMissingMaterials.clear();
+        }
     }
 
     private void stopMining() {
         if (this.mining != null && this.minecraft.playerController != null) this.minecraft.playerController.resetBlockRemoving();
         this.mining = null;
+        if (this.toolSlot >= 0 && this.minecraft.thePlayer != null) this.minecraft.thePlayer.inventory.currentItem = this.toolRestoreSlot;
+        this.toolSlot = -1;
     }
 
     /** Keeps mining the started block; false when there is none (any more) and the pass may place. */
@@ -144,6 +151,7 @@ public class SchematicPrinter {
             stopMining();
             return false;
         }
+        if (this.toolSlot >= 0) this.minecraft.thePlayer.inventory.currentItem = this.toolSlot;
         this.minecraft.playerController.onPlayerDamageBlock(x, y, z, ForgeDirection.UP.ordinal());
         this.minecraft.thePlayer.swingItem();
         return true;
@@ -171,11 +179,64 @@ public class SchematicPrinter {
             wanted = ConfigurationHandler.printBreakWrongStateBlock && meta != realMeta && !FluidPrinter.isFluid(block);
         }
         if (!wanted) return false;
+        boolean switched = selectTool(this.minecraft.thePlayer, world, real, wx, wy, wz);
         this.minecraft.playerController.clickBlock(wx, wy, wz, ForgeDirection.UP.ordinal());
         this.minecraft.thePlayer.swingItem();
         PrinterHighlights.add(wx, wy, wz, PrinterHighlights.Type.BREAK);
-        if (!world.getBlock(wx, wy, wz).isAir(world, wx, wy, wz) && !this.minecraft.playerController.isInCreativeMode()) this.mining = new int[] {wx, wy, wz};
+        if (!world.getBlock(wx, wy, wz).isAir(world, wx, wy, wz) && !this.minecraft.playerController.isInCreativeMode()) {
+            this.mining = new int[] {wx, wy, wz};
+            if (switched) {
+                this.toolSlot = this.minecraft.thePlayer.inventory.currentItem;
+                this.toolRestoreSlot = this.pass != null ? this.pass.slot : this.toolSlot;
+            }
+        }
         return true;
+    }
+
+    /**
+     * printAutoTool: holds the item of the hotbar, or of the inventory through the swap slots, that mines the block
+     * fastest (harvest level and enchantments included); tools at or below printAutoToolDurability uses left are not
+     * used. The held item stays when nothing is faster. True when another slot was selected.
+     */
+    private boolean selectTool(EntityClientPlayerMP player, World world, Block block, int x, int y, int z) {
+        if (!ConfigurationHandler.printAutoTool || this.minecraft.playerController.isInCreativeMode()) return false;
+        InventoryPlayer inventory = player.inventory;
+        int current = inventory.currentItem;
+        float best = usableTool(inventory.mainInventory[current]) ? strength(player, world, block, x, y, z, inventory.mainInventory[current]) : -1;
+        int bestSlot = -1;
+        int slots = ConfigurationHandler.swapSlotsQueue.isEmpty() ? Constants.Inventory.Size.HOTBAR : inventory.mainInventory.length;
+        for (int slot = 0; slot < slots; slot++) {
+            if (slot == current || !usableTool(inventory.mainInventory[slot])) continue;
+            float strength = strength(player, world, block, x, y, z, inventory.mainInventory[slot]);
+            if (strength > best) { best = strength; bestSlot = slot; }
+        }
+        if (bestSlot < 0) return false;
+        if (bestSlot >= Constants.Inventory.Size.HOTBAR) {
+            int target = getNextSlot();
+            swapSlots(bestSlot, target);
+            bestSlot = target;
+        }
+        inventory.currentItem = bestSlot;
+        return true;
+    }
+
+    private static boolean usableTool(ItemStack stack) {
+        return stack == null || !stack.isItemStackDamageable() || ConfigurationHandler.printAutoToolDurability <= 0
+            || stack.getMaxDamage() - stack.getItemDamage() > ConfigurationHandler.printAutoToolDurability;
+    }
+
+    /** The block's mining progress per tick with the stack in hand (the held slot is swapped only on the client side). */
+    private static float strength(EntityClientPlayerMP player, World world, Block block, int x, int y, int z, ItemStack stack) {
+        InventoryPlayer inventory = player.inventory;
+        ItemStack held = inventory.mainInventory[inventory.currentItem];
+        inventory.mainInventory[inventory.currentItem] = stack;
+        try {
+            return block.getPlayerRelativeBlockHardness(player, world, x, y, z);
+        } catch (RuntimeException error) {
+            return -1;
+        } finally {
+            inventory.mainInventory[inventory.currentItem] = held;
+        }
     }
 
     /**
@@ -302,7 +363,7 @@ public class SchematicPrinter {
         }
 
         void restore() {
-            player.inventory.currentItem = slot;
+            player.inventory.currentItem = mining != null && toolSlot >= 0 ? toolSlot : slot;
             restoreLook();
             if (lookSent) player.sendQueue.addToSendQueue(new C05PacketPlayerLook(yaw, pitch, player.onGround));
             if (sneakSent) syncSneaking(player, sneaking);
@@ -325,7 +386,11 @@ public class SchematicPrinter {
             if (!world.isAirBlock(wx, wy, wz) && !FluidPrinter.isFluid(realBlock)) return false;
             if (FluidPrinter.isFluid(realBlock) && !FluidPrinter.sameFluid(block, realBlock)) return false;
             return FluidPrinter.place(this.minecraft, FluidPrinter.source(schematic, x, y, z), wx, wy, wz,
-                bucket -> swapToItem(player.inventory, bucket, true, true));
+                bucket -> {
+                    if (swapToItem(player.inventory, bucket, true, true)) return true;
+                    PrinterMissingMaterials.record(bucket);
+                    return false;
+                });
         }
 
         if (ConfigurationHandler.destroyBlocks && !world.isAirBlock(wx, wy, wz)
@@ -365,6 +430,7 @@ public class SchematicPrinter {
 
         Click click = slab ? slabClick(wx, wy, wz, realMetadata) : click(world, wx, wy, wz, data, metadata, accurate);
         if (click == null || !swapToItem(player.inventory, itemStack)) {
+            if (click != null) PrinterMissingMaterials.record(itemStack);
             PrinterHighlights.add(wx, wy, wz, PrinterHighlights.Type.FAILED);
             return false;
         }

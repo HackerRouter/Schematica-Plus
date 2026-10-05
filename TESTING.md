@@ -1493,3 +1493,20 @@ Test in GTNH 2.8.4 (NEI 2.8.44) and GTNH 2.9 (NEI 2.8.145); without NEI the butt
 - Switching quickly between files, F5, leaving the screen: no stutter beyond the first frames, no GL errors
   in the log, other menus draw normally afterwards (no missing text or buttons, no depth artifacts).
 - A very large file (over 4 million blocks or 32 MB) shows no square and does not freeze the browser.
+
+## Printer missing material HUD and auto tool
+
+- Survival, printer on, a placement needing stone and glass with only stone in the inventory: in the info HUD
+  corner (below the material list HUD if shown) "Missing: 1 types" with a glass icon appears while the
+  printer works; picking up glass makes it disappear about 3 seconds later. Open a chest: the list shows
+  there too. Turn the printer off: the list goes away at once. More than 10 kinds: "...and N more".
+- A water source in the schematic without a water bucket: Water Bucket is listed.
+- "Missing Material HUD" off: nothing shown.
+- With "Break Wrong Blocks" on, a stone block where the schematic has dirt, a pickaxe in hotbar slot 5 and a
+  block held in slot 1: the printer switches to the pickaxe, mines the stone at pickaxe speed (no restart of
+  the crack animation), then goes back to slot 1 and places the dirt. Dirt where the schematic wants stone:
+  a shovel is picked over the pickaxe. Obsidian with an iron and a diamond pickaxe: the diamond one.
+- Pickaxe only in the main inventory with swap slots configured: it is moved into a swap slot and used;
+  with no swap slots it is not used.
+- A pickaxe with 10 or fewer uses left is skipped (mined by hand or another tool); with the protection at 0
+  it is used. "Auto Tool Selection" off: the held item is kept.
