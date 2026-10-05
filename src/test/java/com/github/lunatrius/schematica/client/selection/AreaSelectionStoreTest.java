@@ -47,7 +47,7 @@ public class AreaSelectionStoreTest {
         AreaSelectionStore restored = new AreaSelectionStore(settings(), areas("world"), "world|0");
         assertNull(restored.library().selected().selectedBox());
         assertEquals(2, restored.library().selected().boxes().size());
-        assertTrue(new File(areas("world"), "Selection.json").isFile());
+        assertTrue(new File(areas("world"), "Unnamed.json").isFile());
     }
 
     @Test public void migratesLegacyDataIntoFilesAndPreservesOtherWorldsAndUnknownFields() throws Exception {
@@ -85,7 +85,7 @@ public class AreaSelectionStoreTest {
         first.save();
         assertNull(new AreaSelectionStore(settings(), areas("one"), "one|0").library().selected());
         assertTrue(new AreaSelectionStore(settings(), areas("two"), "two|0").library().areas().isEmpty());
-        assertFalse(new File(areas("two"), "Selection.json").exists());
+        assertFalse(new File(areas("two"), "Unnamed.json").exists());
         assertNotNull(new AreaSelectionStore(settings(), areas("three"), "three|0").library().selected());
     }
 

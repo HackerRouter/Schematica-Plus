@@ -33,7 +33,7 @@ public class AreaSelectionLibraryTest {
         AreaSelectionLibrary.Box original = area.selectedBox();
         AreaSelectionLibrary.Box pipes = library.addBox(area, "Pipes", new Vector3i(20, 64, 3), new Vector3i(24, 70, 5));
         assertSame(pipes, area.selectedBox());
-        assertThrows(AreaSelectionLibrary.NameConflictException.class, () -> library.renameBox(area, pipes, "selection"));
+        assertThrows(AreaSelectionLibrary.NameConflictException.class, () -> library.renameBox(area, pipes, "unnamed"));
         Area copy = library.copy(area, "Copy");
         library.setPoints(copy, new Vector3i(1, 2, 3), new Vector3i(4, 5, 6));
         assertEquals(new Vector3i(20, 64, 3), pipes.first());
@@ -129,5 +129,18 @@ public class AreaSelectionLibraryTest {
         box.addProperty("ax", 0);
         valid.getAsJsonArray("selections").add(entry);
         assertThrows(IllegalArgumentException.class, () -> AreaSelectionLibrary.fromJson(valid));
+    }
+
+    @Test public void oldSimpleSelectionNameBecomesUnnamed() {
+        JsonObject state = new AreaSelectionLibrary().stateJson(null);
+        JsonObject simple = state.getAsJsonObject("simple");
+        simple.addProperty("name", "Simple selection");
+        simple.getAsJsonArray("boxes").get(0).getAsJsonObject().addProperty("name", "Simple selection");
+        simple.addProperty("selectedBox", "Simple selection");
+        AreaSelectionLibrary library = new AreaSelectionLibrary();
+        library.restoreState(state, null);
+        assertEquals("Unnamed", library.simpleSelection().name());
+        assertEquals("Unnamed", library.simpleSelection().boxName());
+        assertEquals("Unnamed", AreaSelectionLibrary.fromJson(null).normalSelection().name());
     }
 }

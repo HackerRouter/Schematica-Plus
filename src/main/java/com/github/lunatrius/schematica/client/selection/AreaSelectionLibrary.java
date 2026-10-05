@@ -31,8 +31,12 @@ public final class AreaSelectionLibrary {
     public enum CornerMode { CORNERS, EXPAND }
     public enum Corner { NONE, FIRST, SECOND }
 
+    /** AreaSelection's and Box's default name. */
+    public static final String DEFAULT_NAME = "Unnamed";
+    private static final String OLD_SIMPLE_NAME = "Simple selection";
+
     private static Area defaultSimple() {
-        Area area = new Area(UUID.randomUUID().toString(), "Unnamed");
+        Area area = new Area(UUID.randomUUID().toString(), DEFAULT_NAME);
         area.selectedBox = new Box(area.name, new Vector3i(), new Vector3i());
         area.boxes.add(area.selectedBox);
         area.guide = false;
@@ -425,6 +429,7 @@ public final class AreaSelectionLibrary {
         extra = copyJson(data);
         simple = readArea(data.getAsJsonObject("simple"), 5);
         if (simple.boxes.size() != 1 || simple.selectedBox == null) throw new IllegalArgumentException("Invalid simple selection");
+        renameOldSimple(simple);
         mode = Mode.valueOf(data.get("mode").getAsString());
         cornerMode = CornerMode.valueOf(data.get("cornerMode").getAsString());
         selected = selectedArea != null && areas.contains(selectedArea) ? selectedArea : null;
@@ -528,7 +533,7 @@ public final class AreaSelectionLibrary {
     public static AreaSelectionLibrary fromJson(JsonObject data) {
         AreaSelectionLibrary library = new AreaSelectionLibrary();
         if (data == null) {
-            Area area = library.create("Selection", new Vector3i(), new Vector3i());
+            Area area = library.create(DEFAULT_NAME, new Vector3i(), new Vector3i());
             library.setGuide(area, false);
             library.select(area);
             return library;
@@ -536,7 +541,7 @@ public final class AreaSelectionLibrary {
         library.extra = copyJson(data);
         if (!data.has("version")) {
             if (data.has("selections")) throw new IllegalArgumentException("Missing selection library version");
-            Area area = library.create("Selection", point(data, "a"), point(data, "b"));
+            Area area = library.create(DEFAULT_NAME, point(data, "a"), point(data, "b"));
             library.setGuide(area, guide(data));
             library.select(area);
             return library;
@@ -559,10 +564,18 @@ public final class AreaSelectionLibrary {
         if (version >= 5) {
             library.simple = readArea(data.getAsJsonObject("simple"), version);
             if (library.simple.boxes.size() != 1 || library.simple.selectedBox == null) throw new IllegalArgumentException("Invalid simple selection");
+            renameOldSimple(library.simple);
             library.mode = Mode.valueOf(data.get("mode").getAsString());
             library.cornerMode = CornerMode.valueOf(data.get("cornerMode").getAsString());
         }
         return library;
+    }
+
+    /** Simple selections saved before the default became "Unnamed" keep the old default name for the area and its box. */
+    private static void renameOldSimple(Area area) {
+        if (!OLD_SIMPLE_NAME.equals(area.name)) return;
+        area.name = DEFAULT_NAME;
+        if (OLD_SIMPLE_NAME.equals(area.selectedBox.name)) area.selectedBox.name = DEFAULT_NAME;
     }
 
     private static Area readArea(JsonObject entry, int version) {
