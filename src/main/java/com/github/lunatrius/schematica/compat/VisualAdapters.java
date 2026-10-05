@@ -36,6 +36,7 @@ public final class VisualAdapters {
         register(new BinnieVisualAdapter());
         register(new MalisisVisualAdapter());
         register(new ThaumicExplorationVisualAdapter());
+        register(new ThaumcraftVisualAdapter());
         register(new CarpentersVisualAdapter());
         register(new RailcraftTrackAdapter());
         register(new BotaniaVisualAdapter());

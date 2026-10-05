@@ -1806,6 +1806,12 @@ Test in GTNH 2.8.4 (NEI 2.8.44) and GTNH 2.9 (NEI 2.8.145); without NEI the butt
   sides. Rotate and mirror: each faces the same neighbor after paste; the miner base still forms and its dock
   side follows.
 
+## Thaumcraft display state in the preview
+
+- Save and load: an active infusion matrix (should hover and turn as in the world), a closed and an open essentia
+  valve (handle down / up), an arcane bore with a focus (focus shown), an essentia reservoir holding two aspects
+  (glass color cycles between them), a crystallizer working on an aspect (tinted), an ethereal bloom (fully grown).
+
 ## Links to other blocks in tile NBT
 
 - Build with a Botania light relay chain, a daybloom bound to a spreader and a hopperhock bound to a pool, a
