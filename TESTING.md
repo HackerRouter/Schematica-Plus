@@ -1614,3 +1614,11 @@ Test in GTNH 2.8.4 (NEI 2.8.44) and GTNH 2.9 (NEI 2.8.145); without NEI the butt
   Forestry machines, Nuclear Control panels, Railcraft engines/loaders/detectors/signals, Tinkers' smeltery
   controller/drains/faucets/casting tables, OpenComputers cases/screens (also upside-down screens with y mirror).
   Each block faces the same neighbor as before in the preview and after paste.
+
+## ForgeMultipart / ProjectRed under rotation and mirroring
+
+- Microblock covers, panels, slabs, hollow covers, corners (nooks), edges (strips) and posts in every position;
+  ProjectRed gates on floors, walls and ceilings pointing different ways, red alloy/insulated/bundled wires on
+  several faces, lamps/fixtures on walls. Rotate and mirror: every microblock stays in the same place relative
+  to the build, gates keep their input/output toward the same neighbors, wires stay on the same face. Paste:
+  circuits work (wires reconnect after placement).

@@ -55,4 +55,32 @@ final class MultipartVisualAdapter implements ISchematicVisualAdapter {
         }
         Reflect.call(tile, "updateRenderCache");
     }
+
+    @Override public boolean transformsNBT(TileEntity tile) { return true; }
+
+    @Override public void transformNBT(TileEntity tile, NBTTagCompound data, char operation) {
+        MultipartTransforms.transformTile(data, operation);
+    }
+
+    /** Each part saves, turns and loads itself; the tile then re-adds them so its slot map follows the new shapes. */
+    @Override public void transformPreview(TileEntity tile, char operation) throws Exception {
+        java.util.List<?> parts = new java.util.ArrayList<>((java.util.List<?>) Reflect.call(tile, "jPartList"));
+        for (Object part : parts) {
+            NBTTagCompound tag = new NBTTagCompound();
+            part.getClass().getMethod("save", NBTTagCompound.class).invoke(part, tag);
+            MultipartTransforms.transformPart(String.valueOf(part.getClass().getMethod("getType").invoke(part)), tag, operation);
+            part.getClass().getMethod("load", NBTTagCompound.class).invoke(part, tag);
+        }
+        Object conversions = Class.forName("scala.collection.JavaConversions$").getField("MODULE$").get(null);
+        Object buffer = conversions.getClass().getMethod("asScalaBuffer", java.util.List.class).invoke(conversions, parts);
+        java.lang.reflect.Method load = null;
+        for (Class<?> type = tile.getClass(); type != null && load == null; type = type.getSuperclass()) {
+            for (java.lang.reflect.Method method : type.getDeclaredMethods()) {
+                if (method.getName().equals("loadParts") && method.getParameterTypes().length == 1) { load = method; break; }
+            }
+        }
+        if (load == null) throw new NoSuchMethodException("TileMultipart.loadParts");
+        load.setAccessible(true);
+        load.invoke(tile, buffer);
+    }
 }
