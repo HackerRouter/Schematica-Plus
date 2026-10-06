@@ -199,4 +199,77 @@ public class TileFacingAdapterTest {
         assertEquals(5, jar.getInteger("placedOn"));
         assertEquals(4, jar.getCompoundTag("parent").getByte("facing"));
     }
+
+    @Test public void arcLampsAndPanels() {
+        // a lamp on the floor (1) lighting north (facing 0 -> side 2) lights east (side 5, facing 3) after a turn
+        assertEquals(3, TileFacingAdapter.arcLamp(1, 0, 'Y'));
+        // on the west wall (4) lighting north (facing 2): now on the north wall (2), lighting east (7 - 2)
+        assertEquals(2, TileFacingAdapter.arcLamp(2, 2, 'Y'));
+        for (int side = 0; side < 6; side++) for (int facing = 0; facing < 4; facing++) {
+            for (char op : "XYZxyz".toCharArray()) {
+                int turnedSide = com.github.lunatrius.schematica.util.SchematicTransform.direction(op, net.minecraftforge.common.util.ForgeDirection.getOrientation(side)).ordinal();
+                int turned = TileFacingAdapter.arcLamp(turnedSide, facing, op);
+                assertTrue(turned >= 0);
+                assertEquals(com.github.lunatrius.schematica.util.SchematicTransform.direction(op,
+                    net.minecraftforge.common.util.ForgeDirection.getOrientation(TileFacingAdapter.arcLampSide(side, facing))).ordinal(),
+                    TileFacingAdapter.arcLampSide(turnedSide, turned));
+            }
+        }
+        NBTTagCompound lamp = new NBTTagCompound();
+        lamp.setInteger("Facing", 0);
+        TileFacingAdapter.apply(TileFacingAdapter.rulesFor("micdoodle8.mods.galacticraft.core.tile.TileEntityArclamp"), lamp, 'Y', 1);
+        assertEquals(3, lamp.getInteger("Facing"));
+
+        // floor panel (facing up) reading north turns to read east (rotation 1), a ceiling panel to rotation 2
+        assertArrayEquals(new int[] {1, 1}, TileFacingAdapter.panel(1, 0, 'Y'));
+        assertArrayEquals(new int[] {0, 2}, TileFacingAdapter.panel(0, 0, 'Y'));
+        assertArrayEquals(new int[] {5, 0}, TileFacingAdapter.panel(2, 0, 'Y'));
+        for (int facing = 0; facing < 6; facing++) for (int rotation = 0; rotation < 4; rotation++) {
+            int[] value = {facing, rotation};
+            for (int i = 0; i < 4; i++) value = TileFacingAdapter.panel(value[0], value[1], 'X');
+            assertArrayEquals(new int[] {facing, rotation}, value);
+            for (char op : "xyz".toCharArray()) {
+                int[] once = TileFacingAdapter.panel(facing, rotation, op);
+                assertArrayEquals(new int[] {facing, rotation}, TileFacingAdapter.panel(once[0], once[1], op));
+            }
+        }
+        NBTTagCompound panel = new NBTTagCompound();
+        panel.setShort("facing", (short) 1);
+        panel.setInteger("rotation", 1);
+        panel.setByte("rotateHor", (byte) 5);
+        panel.setByte("rotateVert", (byte) 3);
+        turned("shedar.mods.ic2.nuclearcontrol.tileentities.TileEntityInfoPanel", panel, "x");
+        assertEquals(1, panel.getShort("facing"));
+        assertEquals(2, panel.getInteger("rotation"));
+        assertEquals(-5, panel.getByte("rotateHor"));
+        assertEquals(3, panel.getByte("rotateVert"));
+    }
+
+    @Test public void architectureMirrors() {
+        // a roof outer corner mirrored across x is the same corner a quarter turn about its local y; LH cornices turn RH
+        assertArrayEquals(new int[] {0, 3, 1}, SideTurn.apply(0, 0, 1, 'x'));
+        assertArrayEquals(new int[] {0, 0, 41}, SideTurn.apply(0, 0, 40, 'x'));
+        assertArrayEquals(new int[] {0, 0, 91}, SideTurn.apply(0, 0, 91, 'x'));
+        assertArrayEquals(new int[] {5, 0, 1}, SideTurn.apply(2, 0, 1, 'Y'));
+        for (int shape = 0; shape < 120; shape++) for (int side = 0; side < 6; side++) for (int turn = 0; turn < 4; turn++) {
+            for (char op : "xyz".toCharArray()) {
+                int[] once = SideTurn.apply(side, turn, shape, op);
+                assertArrayEquals(new int[] {side, turn, shape}, SideTurn.apply(once[0], once[1], once[2], op));
+            }
+        }
+        NBTTagCompound tile = new NBTTagCompound();
+        tile.setInteger("Shape", 50);
+        tile.setByte("offsetX", (byte) 4);
+        tile.setInteger("Disconnected", 1 << 2);
+        java.util.List<TileFacingAdapter.Rule> rules = new java.util.ArrayList<>(TileFacingAdapter.rulesFor("gcewing.architecture.common.tile.TileArchitecture"));
+        rules.addAll(TileFacingAdapter.rulesFor("gcewing.architecture.common.tile.TileShape"));
+        TileFacingAdapter.apply(rules, tile, 'z');
+        assertEquals(51, tile.getInteger("Shape"));
+        assertEquals(-4, tile.getByte("offsetX"));
+        assertEquals(1 << 3, tile.getInteger("Disconnected"));
+        TileFacingAdapter.apply(rules, tile, 'Y');
+        assertEquals(51, tile.getInteger("Shape"));
+        assertEquals(-4, tile.getByte("offsetX"));
+        assertEquals(1 << 4, tile.getInteger("Disconnected"));
+    }
 }

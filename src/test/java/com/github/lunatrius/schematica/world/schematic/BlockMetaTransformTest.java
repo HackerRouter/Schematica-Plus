@@ -152,4 +152,28 @@ public class BlockMetaTransformTest {
         // SGCraft facing index N, W, S, E
         assertEquals(3, apply(new gcewing.sg.blocks.SGBaseBlock(), 0, "Y"));
     }
+
+    @Test public void serpentsAndBloodwood() {
+        Block naga = new twilightforest.block.BlockTFNagastone(), snake = new team.chisel.block.BlockSnakestone();
+        // head joined to the north (1) joins to the east (2); corners join below or above (4, 8) and a side N, S, W, E
+        assertEquals(2, apply(naga, 1, "Y"));
+        assertEquals(2, apply(snake, 1, "Y"));
+        assertEquals(4 | 3, apply(naga, 4 | 0, "Y"));
+        assertEquals(4 | 1, apply(snake, 4 | 0, "z"));
+        // tilted: below + north becomes south + below; up + west would join two sides and keeps its metadata
+        assertEquals(4 | 1, apply(naga, 4 | 0, "X"));
+        assertEquals(8 | 2, apply(naga, 8 | 2, "X"));
+        assertEquals(13, apply(naga, 12, "Y"));
+        assertEquals(15, apply(naga, 15, "Y"));
+        for (int meta = 0; meta < 16; meta++) assertEquals(meta, apply(snake, meta, "YYYY"));
+        assertEquals(5, apply(new twilightforest.block.BlockTFNagastoneEtched(), 2, "Y"));
+        // bloodwood quarters: north-west (0) turns north-east (1); lying logs swap axes
+        Block bloodwood = new mods.natura.blocks.trees.LogTwoxTwo();
+        assertEquals(1, apply(bloodwood, 0, "Y"));
+        assertEquals(1, apply(bloodwood, 0, "x"));
+        assertEquals(8, apply(bloodwood, 4, "Y"));
+        assertEquals(10, apply(bloodwood, 0, "X"));
+        assertEquals(15, apply(bloodwood, 15, "Y"));
+        for (int meta = 0; meta < 12; meta++) for (String op : new String[] {"YYYY", "XXXX", "ZZZZ", "xx", "yy", "zz"}) assertEquals(meta, apply(bloodwood, meta, op));
+    }
 }

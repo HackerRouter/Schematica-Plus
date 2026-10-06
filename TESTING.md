@@ -1814,7 +1814,7 @@ Test in GTNH 2.8.4 (NEI 2.8.44) and GTNH 2.9 (NEI 2.8.145); without NEI the butt
   (2x2); Draconic flow gate; Thaumic Horizons node monitor/stabilizer; Gadomancy sticky jar on a wall; Botanic
   Horizons automation block; Thaumic Energistics essentia provider; Mechworks signal bus; Steve's Factory Manager
   breaker. Rotate and mirror: each keeps its orientation relative to the build; the ritual still activates after
-  paste; shapes still meet at the same edges (mirrored shapes with a handedness come out rotated, not flipped).
+  paste; shapes still meet at the same edges (mirroring is covered in "ArchitectureCraft mirrors").
 
 ## Other GTNH blocks found by the facing sweep
 
@@ -1878,3 +1878,31 @@ Test in GTNH 2.8.4 (NEI 2.8.44) and GTNH 2.9 (NEI 2.8.145); without NEI the butt
 - With a swap slot queue configured and printAutoTool on, keep a pickaxe only in the offhand and break a wrong block
   with the printer: the pickaxe is swapped into the queued hotbar slot. Reopen the inventory: no item is duplicated or
   lost, on a server too.
+
+## Snakestone, nagastone, bloodwood, arc lamps and Nuclear Control panels
+
+- Chisel snakestone and Twilight Forest nagastone: a snake with a head, straight runs along x, z and y, and corners
+  going up and down (also the naga courtyard as generated), plus etched nagastone on every side. Rotate and mirror: the
+  body still runs through the same blocks, heads point away from the body, no piece shows a wrong corner texture.
+  Tilt it (X/Z): straight runs and vertical corners turn; a corner that would join two horizontal sides keeps its
+  texture until a neighbor update rebuilds it after paste.
+- Natura bloodwood: a grown 2x2 bloodwood trunk. Rotate and mirror: the end grain on top still forms one ring across
+  the four logs.
+- Galacticraft arc lamps on the floor, the ceiling and each wall, each lit toward a different side. Rotate, mirror and
+  paste: each lights the same part of the build as before (check with the lamp on, at night).
+- Nuclear Control info panels and advanced info panels on the floor, the ceiling and walls, with text, some turned
+  with the wrench (screen rotation), an advanced one tilted left and up and one with text rotation. Rotate: floor and
+  ceiling screens read the same way relative to the build. Mirror: screens still read upright, the left/right tilt of
+  the advanced panel flips to the other side, the up/down tilt stays.
+
+## ArchitectureCraft mirrors
+
+- Place every shape from the sawbench at least once, the corner ones (roof, overhang, bevelled, round, sphere, stair,
+  balustrade, banister and window corners, Ionic and Corinthian capitals, plain balustrades) with two different
+  turns, LH and RH gable overhangs and cornices (and their ends), a banister with a placement offset, and a window
+  with a connection turned off with the hammer. Mirror along x and z and paste.
+- Each shape is the mirror image of the original: corners fill the mirrored corner, LH pieces become RH and the other
+  way round, the banister sits on the other side of its block, the disconnected window side is the mirrored one.
+  Triglyph and architrave corners are not quite symmetric in their carving; their outline must match, the carving
+  may differ slightly.
+

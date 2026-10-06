@@ -24,7 +24,7 @@ import com.github.lunatrius.schematica.world.schematic.BlockMetaTransform;
  * back. Blocks handled here are not also turned through their Block.rotateBlock.
  */
 final class TileFacingAdapter implements ISchematicVisualAdapter {
-    enum Kind { ORDINAL, NAME, SIDE_KEYS, SIDE_ARRAY, MASK, HORIZONTAL, ROTATION16, OFFSET, ORDINAL_ARRAY, NAMED_SIDES, YAW, SIDE_TURN, HORIZONTAL1 }
+    enum Kind { ORDINAL, NAME, SIDE_KEYS, SIDE_ARRAY, MASK, HORIZONTAL, ROTATION16, OFFSET, ORDINAL_ARRAY, NAMED_SIDES, YAW, SIDE_TURN, HORIZONTAL1, ARC_LAMP, PANEL }
 
     static final class Rule {
         final Kind kind;
@@ -68,10 +68,12 @@ final class TileFacingAdapter implements ISchematicVisualAdapter {
         add("lumien.randomthings.TileEntities.EnergyDistributors.TileEntityEnergyDistributor", ordinal("facing"));
         add("WayofTime.alchemicalWizardry.common.tileEntity.TEOrientable", ordinal("inputFace"), ordinal("outputFace"));
         // Nuclear Control (IC2 add-on with its own tiles)
-        for (String tile : new String[] {"TileEntityInfoPanel", "TileEntityHowlerAlarm", "TileEntityRangeTrigger", "TileEntityThermo",
+        for (String tile : new String[] {"TileEntityHowlerAlarm", "TileEntityRangeTrigger", "TileEntityThermo",
             "TileEntityInfoPanelExtender", "TileEntityEnergyCounter", "TileEntityAverageCounter"}) {
             add("shedar.mods.ic2.nuclearcontrol.tileentities." + tile, ordinal("facing"));
         }
+        // Nuclear Control panels: the screen's facing with its quarter turn on it (and the advanced panel's tilt)
+        add("shedar.mods.ic2.nuclearcontrol.tileentities.TileEntityInfoPanel", new Rule(Kind.PANEL, "facing", ALL));
         // Railcraft
         String railcraft = "mods.railcraft.common.blocks.";
         for (String tile : new String[] {"machine.beta.TileEngine", "machine.alpha.TileTradeStation", "machine.alpha.TileSteamTrap",
@@ -163,8 +165,11 @@ final class TileFacingAdapter implements ISchematicVisualAdapter {
             "doors.door.tileentity.ForcefieldTileEntity"}) {
             add("net.malisis." + tile, ordinal("multiBlock/direction"));
         }
-        // ArchitectureCraft shapes: the side their local bottom faces and a quarter turn around it
+        // ArchitectureCraft shapes: the side their local bottom faces and a quarter turn around it, disconnected sides
         add("gcewing.architecture.common.tile.TileArchitecture", new Rule(Kind.SIDE_TURN, "side", ALL));
+        add("gcewing.architecture.common.tile.TileShape", new Rule(Kind.MASK, "Disconnected", ALL));
+        // Galacticraft arc lamps: the lit side as 0-3 relative to the side the lamp sits on (the block metadata)
+        add("micdoodle8.mods.galacticraft.core.tile.TileEntityArclamp", new Rule(Kind.ARC_LAMP, "Facing", ALL));
         // Blood Magic master ritual stones (and Blood Arsenal's): the ritual's direction, 1 N 2 E 3 S 4 W
         add("WayofTime.alchemicalWizardry.common.tileEntity.TEMasterStone", new Rule(Kind.HORIZONTAL1, "direction", ALL,
             new ForgeDirection[] {ForgeDirection.NORTH, ForgeDirection.EAST, ForgeDirection.SOUTH, ForgeDirection.WEST}));
@@ -215,17 +220,29 @@ final class TileFacingAdapter implements ISchematicVisualAdapter {
     @Override public boolean transformsNBT(TileEntity tile) { return true; }
 
     @Override public void transformNBT(TileEntity tile, NBTTagCompound data, char operation) {
-        apply(rules(tile), data, operation);
+        apply(rules(tile), data, operation, metadata(tile));
     }
 
     @Override public void transformPreview(TileEntity tile, char operation) {
         NBTTagCompound data = new NBTTagCompound();
         tile.writeToNBT(data);
-        apply(rules(tile), data, operation);
+        apply(rules(tile), data, operation, metadata(tile));
         tile.readFromNBT(data);
     }
 
-    static void apply(List<Rule> rules, NBTTagCompound root, char operation) {
+    /** The metadata of the tile's block, already turned with the schematic (SchematicWorld sets it); -1 if unknown. */
+    private static int metadata(TileEntity tile) {
+        if (tile.blockMetadata >= 0) return tile.blockMetadata;
+        try {
+            return tile.getWorldObj() == null ? -1 : tile.getWorldObj().getBlockMetadata(tile.xCoord, tile.yCoord, tile.zCoord);
+        } catch (RuntimeException e) {
+            return -1;
+        }
+    }
+
+    static void apply(List<Rule> rules, NBTTagCompound root, char operation) { apply(rules, root, operation, -1); }
+
+    static void apply(List<Rule> rules, NBTTagCompound root, char operation, int metadata) {
         for (Rule rule : rules) {
             if (rule.operations.indexOf(operation) < 0) continue;
             // "compound/key" for a key inside a compound
@@ -339,10 +356,32 @@ final class TileFacingAdapter implements ISchematicVisualAdapter {
                     break;
                 }
                 case SIDE_TURN: {
-                    int[] turned = SideTurn.apply(data.getByte(key), data.getByte("turn"), operation);
+                    int shape = data.hasKey("Shape") ? data.getInteger("Shape") : -1;
+                    int[] turned = SideTurn.apply(data.getByte(key), data.getByte("turn"), shape, operation);
                     if (turned == null) break;
                     data.setByte(key, (byte) turned[0]);
                     data.setByte("turn", (byte) turned[1]);
+                    if (turned[2] != shape) data.setInteger("Shape", turned[2]);
+                    if (Character.isLowerCase(operation) && data.getByte("offsetX") != 0) data.setByte("offsetX", (byte) -data.getByte("offsetX"));
+                    break;
+                }
+                case ARC_LAMP: {
+                    if (!data.hasKey(key) || metadata < 0 || metadata > 5) break;
+                    int turned = arcLamp(metadata, data.getInteger(key), operation);
+                    if (turned >= 0) data.setInteger(key, turned);
+                    break;
+                }
+                case PANEL: {
+                    NBTBase tag = data.getTag(key);
+                    if (!(tag instanceof NBTBase.NBTPrimitive)) break;
+                    int facing = ((NBTBase.NBTPrimitive) tag).func_150287_d();
+                    if (facing < 0 || facing > 5) break;
+                    int[] turned = panel(facing, data.getInteger("rotation"), operation);
+                    if (turned == null) break;
+                    data.setTag(key, tag instanceof NBTTagByte ? new NBTTagByte((byte) turned[0])
+                        : tag instanceof NBTTagShort ? new NBTTagShort((short) turned[0]) : new NBTTagInt(turned[0]));
+                    data.setInteger("rotation", turned[1]);
+                    if (Character.isLowerCase(operation) && data.hasKey("rotateHor")) data.setByte("rotateHor", (byte) -data.getByte("rotateHor"));
                     break;
                 }
                 case YAW: {
@@ -366,6 +405,52 @@ final class TileFacingAdapter implements ISchematicVisualAdapter {
                 }
             }
         }
+    }
+
+    /** TileEntityArclamp.updateEntity: the side a lamp sitting on `side` lights toward for its facing 0-3. */
+    static int arcLampSide(int side, int facing) {
+        switch (side) {
+            case 0: case 1: return facing + 2;
+            case 2: return facing < 2 ? facing : 7 - facing;
+            case 3: return facing < 2 ? facing : facing + 2;
+            case 5: return facing < 2 ? facing : 5 - facing;
+            default: return facing;
+        }
+    }
+
+    /** The facing of a lamp that sits on `side` after the operation and lit the turned way before it; -1 if none. */
+    static int arcLamp(int side, int facing, char operation) {
+        if (facing < 0 || facing > 3) return -1;
+        for (ForgeDirection before : ForgeDirection.VALID_DIRECTIONS) {
+            if (SchematicTransform.direction(operation, before).ordinal() != side) continue;
+            ForgeDirection lit = SchematicTransform.direction(operation, ForgeDirection.getOrientation(arcLampSide(before.ordinal(), facing)));
+            for (int turned = 0; turned < 4; turned++) if (arcLampSide(side, turned) == lit.ordinal()) return turned;
+        }
+        return -1;
+    }
+
+    /** The screen's local x and y (text up at rotation 0) for each panel facing (TileEntityInfoPanelRenderer). */
+    private static final ForgeDirection[] PANEL_X = {ForgeDirection.WEST, ForgeDirection.EAST, ForgeDirection.WEST, ForgeDirection.EAST,
+        ForgeDirection.SOUTH, ForgeDirection.NORTH};
+    private static final ForgeDirection[] PANEL_Y = {ForgeDirection.NORTH, ForgeDirection.NORTH, ForgeDirection.UP, ForgeDirection.UP,
+        ForgeDirection.UP, ForgeDirection.UP};
+
+    /** The world direction of the screen's up for a facing and rotation (0 none, 1 -90 degrees, 2 90, 3 180). */
+    static ForgeDirection panelUp(int facing, int rotation) {
+        switch (rotation & 3) {
+            case 1: return PANEL_X[facing];
+            case 2: return PANEL_X[facing].getOpposite();
+            case 3: return PANEL_Y[facing].getOpposite();
+            default: return PANEL_Y[facing];
+        }
+    }
+
+    /** The {facing, rotation} whose screen faces and points up the turned ways. */
+    static int[] panel(int facing, int rotation, char operation) {
+        ForgeDirection turned = SchematicTransform.direction(operation, ForgeDirection.getOrientation(facing));
+        ForgeDirection up = SchematicTransform.direction(operation, panelUp(facing, rotation));
+        for (int r = 0; r < 4; r++) if (panelUp(turned.ordinal(), r) == up) return new int[] {turned.ordinal(), r};
+        return null;
     }
 
     /** The rules for a tile type name, for tests. */

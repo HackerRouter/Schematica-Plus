@@ -321,6 +321,42 @@ public final class BlockMetaTransform {
         return (int) Math.round(p[2] + 1) * 3 + (int) Math.round(p[0] + 1) + 1;
     }
 
+    /** Nagastone and snakestone connections: N, S, W, E, down, up. */
+    private static final ForgeDirection[] SERPENT = {NORTH, SOUTH, WEST, EAST, DOWN, UP};
+    /** Natura bloodwood: the quarter of the 2 x 2 trunk, as its offset from the trunk's axis (vertical, along x, along z). */
+    private static final int[][] BLOODWOOD = {{-1, 0, -1}, {1, 0, -1}, {-1, 0, 1}, {1, 0, 1}, {0, 1, 1}, {0, 1, -1}, {0, -1, 1},
+        {0, -1, -1}, {-1, 1, 0}, {1, 1, 0}, {-1, -1, 0}, {1, -1, 0}};
+
+    /**
+     * Snakestone and nagastone: heads 0-3 join the neighbor on side meta ^ 1, corners join the one below (4 | side) or
+     * above (8 | side) and a horizontal side, straight pieces run along x (12), z (13) or y (14).
+     */
+    static int serpent(int meta, char op) {
+        if (meta <= 3) {
+            ForgeDirection joined = turn(op, SERPENT[meta ^ 1]);
+            return horizontal(joined) ? index(SERPENT, joined) ^ 1 : meta;
+        }
+        if (meta <= 11) {
+            ForgeDirection vertical = turn(op, (meta & 4) != 0 ? DOWN : UP), side = turn(op, SERPENT[meta & 3]);
+            if (horizontal(vertical)) { ForgeDirection swap = vertical; vertical = side; side = swap; }
+            if (horizontal(vertical) || !horizontal(side)) return meta;
+            return (vertical == DOWN ? 4 : 8) | index(SERPENT, side);
+        }
+        if (meta == 15) return meta;
+        ForgeDirection axis = turn(op, meta == 12 ? EAST : meta == 13 ? SOUTH : UP);
+        return axis.offsetY != 0 ? 14 : axis.offsetZ != 0 ? 13 : 12;
+    }
+
+    static int bloodwood(int meta, char op) {
+        if (meta >= BLOODWOOD.length) return meta;
+        int[] offset = BLOODWOOD[meta];
+        double[] turned = SchematicTransform.point(op, offset[0], offset[1], offset[2], 0, 0, 0);
+        for (int i = 0; i < BLOODWOOD.length; i++) {
+            if (BLOODWOOD[i][0] == turned[0] && BLOODWOOD[i][1] == turned[1] && BLOODWOOD[i][2] == turned[2]) return i;
+        }
+        return meta;
+    }
+
     private static int door(int meta, char op) {
         if ((meta & 8) != 0) return op == 'x' || op == 'z' ? meta ^ 1 : meta;
         return direction(meta, 3, 0, DOOR, op);
@@ -425,13 +461,10 @@ public final class BlockMetaTransform {
             if (name.equals("net.blay09.mods.cookingforblockheads.block.BlockBaseKitchen")) {
                 return (meta & 7) >= 2 && (meta & 7) <= 5 ? ordinal(meta, 7, op, false, false) : meta;
             }
-            // Chisel snakestone: heads 0-3 (S, N, E, W), straight bodies 12 x, 13 z, 14 y; corners are rebuilt by neighbors
-            if (name.equals("team.chisel.block.BlockSnakestone")) {
-                if (meta <= 3) return direction(meta, 3, 0, new ForgeDirection[] {SOUTH, NORTH, EAST, WEST}, op);
-                if (meta < 12 || meta > 14) return meta;
-                ForgeDirection axis = turn(op, meta == 12 ? EAST : meta == 13 ? SOUTH : UP);
-                return axis.offsetY != 0 ? 14 : axis.offsetZ != 0 ? 13 : 12;
-            }
+            // Chisel snakestone and Twilight Forest nagastone share a layout; etched nagastone faces any ForgeDirection
+            if (name.equals("team.chisel.block.BlockSnakestone") || name.equals("twilightforest.block.BlockTFNagastone")) return serpent(meta, op);
+            if (name.equals("twilightforest.block.BlockTFNagastoneEtched")) return ordinal(meta, 7, op, true, true);
+            if (name.equals("mods.natura.blocks.trees.LogTwoxTwo")) return bloodwood(meta, op);
             // Tinkers' Construct: drying racks (floor 0 along z, 1 along x; walls 2-5), stone torches (torch layout),
             // landmines (lever layout), conveyors and slime pads (eighths of a turn in bits 0-2)
             if (name.equals("tconstruct.armor.blocks.DryingRack")) {
