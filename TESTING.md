@@ -1828,6 +1828,9 @@ Test in GTNH 2.8.4 (NEI 2.8.44) and GTNH 2.9 (NEI 2.8.145); without NEI the butt
   dish, lamps, torches, spin thrusters, treasure chests; FloodLights; OpenPrinter, OpenSecurity, Steve's Factory
   Manager cluster/relay/sign/breaker. Rotate and mirror: each faces the same neighbor; multi-block doors still open as
   one piece after paste.
+- Et Futurum lanterns standing and hanging, a dripstone stalactite and stalagmite (several blocks long). Flip the
+  schematic upside down (y mirror): lanterns hang from what they stood on, dripstone points the other way with its tip
+  still at the end. Horizontal turns and mirrors leave them as they were.
 
 ## Catwalks, HarvestCraft, Galaxy Space and Automagy under rotation and mirroring
 

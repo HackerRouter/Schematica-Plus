@@ -125,6 +125,13 @@ public class BlockMetaTransformTest {
         assertEquals(1 << 2 | 3, apply(new ganymedes01.etfuturum.blocks.BlockPinkPetals(), 0 | 3, "Y"));
         assertEquals(2, apply(new ganymedes01.etfuturum.blocks.BlockChain(), 1, "Y"));
         assertEquals(0, apply(new ganymedes01.etfuturum.blocks.BlockChain(), 1, "Z"));
+        // lanterns hang (1) after a vertical flip, dripstone points up (+ 5); a tilt leaves both
+        assertEquals(1, apply(new ganymedes01.etfuturum.blocks.BlockLantern(), 0, "y"));
+        assertEquals(0, apply(new ganymedes01.etfuturum.blocks.BlockLantern(), 0, "Y"));
+        assertEquals(0, apply(new ganymedes01.etfuturum.blocks.BlockLantern(), 0, "X"));
+        assertEquals(2 + 5, apply(new ganymedes01.etfuturum.blocks.BlockPointedDripstone(), 2, "y"));
+        assertEquals(2, apply(new ganymedes01.etfuturum.blocks.BlockPointedDripstone(), 2 + 5, "y"));
+        assertEquals(2, apply(new ganymedes01.etfuturum.blocks.BlockPointedDripstone(), 2, "Z"));
         // Tinkers' conveyors turn by eighths, drying racks swap floor axes
         assertEquals(8 | 3, apply(new tconstruct.world.blocks.ConveyorBase(), 8 | 1, "Y"));
         assertEquals(7, apply(new tconstruct.world.blocks.ConveyorBase(), 1, "x"));

@@ -449,6 +449,18 @@ public final class BlockMetaTransform {
                     }
                     case "BlockPinkPetals":
                         return direction(meta, 12, 2, new ForgeDirection[] {SOUTH, WEST, EAST, NORTH}, op);
+                    case "BlockLantern": {
+                        // 0 stands on the block below, 1 hangs; turned sideways it keeps its metadata
+                        if (meta > 1) return meta;
+                        ForgeDirection support = turn(op, meta == 1 ? UP : DOWN);
+                        return horizontal(support) ? meta : support == UP ? 1 : 0;
+                    }
+                    case "BlockPointedDripstone": {
+                        // thickness 0-4 pointing down, + 5 pointing up
+                        if (meta > 9) return meta;
+                        ForgeDirection tip = turn(op, meta >= 5 ? UP : DOWN);
+                        return horizontal(tip) ? meta : meta % 5 + (tip == UP ? 5 : 0);
+                    }
                     case "BlockChain": {
                         if (meta > 2) return meta;
                         ForgeDirection axis = turn(op, meta == 0 ? UP : meta == 1 ? EAST : SOUTH);
