@@ -117,6 +117,12 @@ public final class MinecraftUiDraw implements UiDraw, AutoCloseable {
     }
 
     @Override
+    public void flatText(String text, int x, int y, int color) {
+        prepareTextured();
+        minecraft.fontRenderer.drawString(text, x, y, color);
+    }
+
+    @Override
     public int textWidth(String text) {
         return minecraft.fontRenderer.getStringWidth(text);
     }

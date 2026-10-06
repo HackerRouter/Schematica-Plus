@@ -12,6 +12,11 @@ public interface UiDraw {
 
     void text(String text, int x, int y, int color);
 
+    /** Text without the drop shadow (MaLiLib's drawString(..., false) spots). */
+    default void flatText(String text, int x, int y, int color) {
+        text(text, x, y, color);
+    }
+
     int textWidth(String text);
 
     String trim(String text, int width);
