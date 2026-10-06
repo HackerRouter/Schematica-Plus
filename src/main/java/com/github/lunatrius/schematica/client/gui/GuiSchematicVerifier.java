@@ -96,7 +96,7 @@ public final class GuiSchematicVerifier extends UiScreen {
                     draw.text(draw.trim("§l" + label(), Math.max(0, bounds().width - 18)), bounds().x, bounds().y + 7, 0xFFFFFFFF);
                     if (session.sortColumn == column) (session.reverse ? UiSprite.SORT_UP : UiSprite.SORT_DOWN)
                         .draw(draw, bounds().right() - 16, bounds().y + 3, true, false);
-                    if (isFocused()) draw.border(bounds(), 0xFFE0E0E0);
+                    if (isFocused() && com.github.lunatrius.schematica.client.gui.framework.UiInput.focusVisible()) draw.border(bounds(), 0xFFE0E0E0);
                 }
             });
         }
@@ -210,7 +210,7 @@ public final class GuiSchematicVerifier extends UiScreen {
                 }
             }) {
                 @Override public void draw(UiDraw draw, int mouseX, int mouseY) {
-                    if (isFocused()) draw.border(bounds(), 0xFFE0E0E0);
+                    if (isFocused() && com.github.lunatrius.schematica.client.gui.framework.UiInput.focusVisible()) draw.border(bounds(), 0xFFE0E0E0);
                 }
                 @Override public boolean drawTooltip(UiDraw draw, int mouseX, int mouseY, UiBounds screen) {
                     if (row.group == null) return false;

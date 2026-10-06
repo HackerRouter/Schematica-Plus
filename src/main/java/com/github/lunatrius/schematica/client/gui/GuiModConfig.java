@@ -444,7 +444,7 @@ public class GuiModConfig extends UiScreen implements HotkeyHooks.Capture {
                             draw.fill(bounds(), isEnabled() ? 0xFFFFFFFF : 0xFF808080);
                             draw.fill(bounds().inset(1), 0xFF000000);
                             draw.fill(bounds().inset(2), entry.previewColor() | 0xFF000000);
-                            if (isFocused()) draw.border(bounds(), 0xFFFFFF00);
+                            if (isFocused() && com.github.lunatrius.schematica.client.gui.framework.UiInput.focusVisible()) draw.border(bounds(), 0xFFFFFF00);
                         }
                     });
                     swatch.setEnabled(entry.available());

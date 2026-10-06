@@ -292,7 +292,7 @@ public final class GuiAreaSelectionEditor extends UiScreen {
             originCoordinates[axis].setBounds(244, 126 + axis * 20, 68, 16);
             originNudges[axis].setBounds(316, 126 + axis * 20, 16, 16);
         }
-        originToPlayer.setBounds(242, 186, 100, 20);
+        originToPlayer.setBounds(242, 186, fontRendererObj.getStringWidth(originToPlayer.label()) + 10, 20);
         place(save, 22, 208, false); place(analyze, 132, 208, false);
         browser.setVisible(false); main.setVisible(false);
         status.setBounds(setName.bounds().right() + 10, 59, Math.max(0, width - setName.bounds().right() - 22), 16);

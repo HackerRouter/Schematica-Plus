@@ -27,7 +27,7 @@ public final class UiConfigSlider extends UiWidget {
             196, 66, 4, 20, 256, 256);
         String label = draw.trim(draft.text(), box.width - 6);
         draw.text(label, box.x + (box.width - draw.textWidth(label)) / 2, box.y + 6, 0xFFFFFFA0);
-        if (isFocused()) draw.border(box, 0xFFE0E0E0);
+        if (isFocused() && com.github.lunatrius.schematica.client.gui.framework.UiInput.focusVisible()) draw.border(box, 0xFFE0E0E0);
     }
 
     @Override

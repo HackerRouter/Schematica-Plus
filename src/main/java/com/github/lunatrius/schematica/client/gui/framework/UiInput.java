@@ -9,6 +9,8 @@ public final class UiInput {
     private final Runnable buttonSound;
     private final List<Modal> modals = new ArrayList<>();
     private UiWidget focused;
+    /** Focus last moved by Tab; only then do buttons show it (MaLiLib buttons have no focus outline). */
+    private static boolean keyboardFocus;
     private UiWidget captured;
     private int capturedButton = -1;
 
@@ -95,9 +97,14 @@ public final class UiInput {
         return widget;
     }
 
+    public static boolean focusVisible() {
+        return keyboardFocus;
+    }
+
     public void mouseDown(int x, int y, int button) {
         validate();
         if (captured != null) return;
+        keyboardFocus = false;
         UiWidget target = hit(x, y);
         focus(target);
         if (target != null && available(target)) {
@@ -166,6 +173,7 @@ public final class UiInput {
         int next = index < 0 ? (backwards ? candidates.size() - 1 : 0)
             : Math.floorMod(index + (backwards ? -1 : 1), candidates.size());
         focus(candidates.get(next));
+        keyboardFocus = true;
     }
 
     private void collectFocus(UiWidget widget, List<UiWidget> candidates) {

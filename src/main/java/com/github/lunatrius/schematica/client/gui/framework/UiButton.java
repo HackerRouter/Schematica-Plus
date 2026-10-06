@@ -63,7 +63,7 @@ public class UiButton extends UiWidget {
             int right = box.width - left;
             draw.texture("minecraft:textures/gui/widgets.png", new UiBounds(box.x + left, box.y, right, box.height),
                 200 - Math.min(right, 200), v, Math.min(right, 200), 20, 256, 256);
-            if (isFocused() && isEnabled()) draw.border(box, 0xFFE0E0E0);
+            if (isFocused() && isEnabled() && UiInput.focusVisible()) draw.border(box, 0xFFE0E0E0);
         }
         int color = !isEnabled() ? 0xFFA0A0A0 : hovered ? 0xFFFFFFFF : 0xFFE0E0E0;
         if (sprite != null) {
@@ -84,7 +84,7 @@ public class UiButton extends UiWidget {
     }
 
     private void drawIconHighlight(UiDraw draw, boolean hovered) {
-        if (!background && isEnabled() && (hovered || isFocused())) {
+        if (!background && isEnabled() && (hovered || isFocused() && UiInput.focusVisible())) {
             draw.fill(bounds(), 0x20C0C0C0);
             draw.border(bounds(), 0xE0FFFFFF);
         }

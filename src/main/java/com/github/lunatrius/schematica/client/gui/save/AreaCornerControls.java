@@ -90,6 +90,6 @@ final class AreaCornerControls extends UiPanel {
             coordinates[axis].setBounds(x + 12, y + 16 + axis * 20, 68, 16);
             nudges[axis].setBounds(x + 84, y + 16 + axis * 20, 16, 16);
         }
-        move.setBounds(x + 10, y + 76, 100, 20);
+        move.setBounds(x + 10, y + 76, net.minecraft.client.Minecraft.getMinecraft().fontRenderer.getStringWidth(move.label()) + 10, 20);
     }
 }
