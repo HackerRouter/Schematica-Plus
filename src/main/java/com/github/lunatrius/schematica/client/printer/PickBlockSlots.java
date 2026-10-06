@@ -8,7 +8,11 @@ import java.util.List;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityClientPlayerMP;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
+import net.minecraft.inventory.Container;
+import net.minecraft.inventory.IInventory;
+import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemHoe;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemSword;
@@ -83,6 +87,26 @@ public final class PickBlockSlots {
         return -1;
     }
 
+    /**
+     * The slot of a container that shows the inventory index, or -1. Offhand mods such as Backhand keep the offhand
+     * past the vanilla 36 indices, in a container slot of its own, so the index is not always the slot number.
+     */
+    static int containerSlot(Container container, IInventory inventory, int index) {
+        for (int i = 0; i < container.inventorySlots.size(); i++) {
+            Slot slot = (Slot) container.inventorySlots.get(i);
+            if (slot.inventory == inventory && slot.getSlotIndex() == index) return i;
+        }
+        return -1;
+    }
+
+    /** Swaps the stack at an inventory index with a hotbar slot through the player's own container. */
+    public static boolean swapToHotbar(Minecraft mc, EntityPlayer player, int index, int hotbar) {
+        int slot = containerSlot(player.inventoryContainer, player.inventory, index);
+        if (slot < 0) return false;
+        mc.playerController.windowClick(player.inventoryContainer.windowId, slot, hotbar, 2, player);
+        return true;
+    }
+
     /** setPickedItemToHand; returns whether the item is in the hand now. */
     public static boolean pickToHand(Minecraft mc, ItemStack stack, boolean matchNbt) {
         EntityClientPlayerMP player = mc.thePlayer;
@@ -105,14 +129,13 @@ public final class PickBlockSlots {
             EasyPlace.warn("litematica.message.warn.pickblock.no_suitable_slot_found");
             return false;
         }
+        if (!creative && !swapToHotbar(mc, player, source, hotbar)) return false;
         inventory.currentItem = hotbar;
         if (creative) {
             ItemStack copy = stack.copy();
             copy.stackSize = Math.max(1, copy.stackSize);
             inventory.setInventorySlotContents(hotbar, copy);
             mc.playerController.sendSlotPacket(copy, 36 + hotbar);
-        } else {
-            mc.playerController.windowClick(player.inventoryContainer.windowId, source, hotbar, 2, player);
         }
         return true;
     }

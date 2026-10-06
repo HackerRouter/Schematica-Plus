@@ -1868,4 +1868,13 @@ Test in GTNH 2.8.4 (NEI 2.8.44) and GTNH 2.9 (NEI 2.8.145); without NEI the butt
 - Extra Utilities: generators of several kinds, conveyor line, item and liquid transfer nodes on pipes, spikes on
   walls. Same check; the nodes keep pulling into their pipe network.
 
+## Backhand offhand with Easy Place, pick block and the printer
 
+- With Backhand installed, hold a torch in the offhand and blocks of a schematic in the hotbar. Easy Place and the
+  printer place the schematic blocks; no torch is placed by the offhand.
+- Put the only stack of a schematic block in the offhand (none in the main inventory) and empty a pick-blockable
+  hotbar slot. Pick block on that schematic block and use Easy Place: the stack moves from the offhand into the hotbar
+  slot and is placed; the item in hotbar slot 1 is not touched.
+- With a swap slot queue configured and printAutoTool on, keep a pickaxe only in the offhand and break a wrong block
+  with the printer: the pickaxe is swapped into the queued hotbar slot. Reopen the inventory: no item is duplicated or
+  lost, on a server too.

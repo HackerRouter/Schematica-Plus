@@ -234,7 +234,7 @@ public class SchematicPrinter {
         if (bestSlot < 0) return false;
         if (bestSlot >= Constants.Inventory.Size.HOTBAR) {
             int target = getNextSlot();
-            swapSlots(bestSlot, target);
+            if (!swapSlots(bestSlot, target)) return false;
             bestSlot = target;
         }
         inventory.currentItem = bestSlot;
@@ -788,8 +788,7 @@ public class SchematicPrinter {
         if (!ConfigurationHandler.swapSlotsQueue.isEmpty()) {
             int slot = getNextSlot();
 
-            swapSlots(from, slot);
-            return true;
+            return swapSlots(from, slot);
         }
 
         return false;
@@ -802,8 +801,6 @@ public class SchematicPrinter {
     }
 
     private boolean swapSlots(final int from, final int to) {
-        return this.minecraft.playerController
-            .windowClick(this.minecraft.thePlayer.inventoryContainer.windowId, from, to, 2, this.minecraft.thePlayer)
-            == null;
+        return PickBlockSlots.swapToHotbar(this.minecraft, this.minecraft.thePlayer, from, to);
     }
 }
