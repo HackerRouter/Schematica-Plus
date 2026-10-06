@@ -1853,6 +1853,9 @@ Test in GTNH 2.8.4 (NEI 2.8.44) and GTNH 2.9 (NEI 2.8.145); without NEI the butt
   grid copy): every copy links to its own partners, not to the original build; the quarry digs its own area.
 - Paste a schematic saved by an older version with such tiles: the links keep the old positions (unchanged).
 - Move the build with the move tool: links follow.
+- A Nuclear Control screen of several panels and extenders, and a lit Galacticraft arc lamp: save, paste elsewhere
+  rotated. The screen shows its text across all its panels at the copy; switching the copied lamp off and breaking it
+  leaves no lit air at the copy and touches nothing at the original.
 
 ## Thaumcraft, BiblioCraft, Witchery and Extra Utilities under rotation and mirroring
 

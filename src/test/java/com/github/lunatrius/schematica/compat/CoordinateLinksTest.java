@@ -167,4 +167,30 @@ public class CoordinateLinksTest {
         CoordinateLinks.shift(CoordinateLinks.rulesFor("tuhljin.automagy.tiles.TileEntityThaumostaticPylon"), pylon, 0, 5, 0);
         assertEquals(-1, pylon.getInteger("bossY"));
     }
+
+    @Test public void panelScreensAndArcLampAirBlocks() {
+        NBTTagCompound panel = new NBTTagCompound();
+        panel.setInteger(CoordinateLinks.MARKER, 0);
+        NBTTagCompound screen = new NBTTagCompound();
+        screen.setInteger("minX", 100); screen.setInteger("minY", 64); screen.setInteger("minZ", 200);
+        screen.setInteger("maxX", 102); screen.setInteger("maxY", 64); screen.setInteger("maxZ", 200);
+        panel.setTag("screenData", screen);
+        java.util.List<CoordinateLinks.Spec> specs = CoordinateLinks.rulesFor("shedar.mods.ic2.nuclearcontrol.tileentities.TileEntityInfoPanel");
+        CoordinateLinks.shift(specs, panel, -100, -64, -200);
+        CoordinateLinks.transform(specs, panel, 'Y', 3, 1, 3);
+        NBTTagCompound turned = panel.getCompoundTag("screenData");
+        assertArrayEquals(new int[] {2, 0, 0, 2, 0, 2}, new int[] {turned.getInteger("minX"), turned.getInteger("minY"), turned.getInteger("minZ"),
+            turned.getInteger("maxX"), turned.getInteger("maxY"), turned.getInteger("maxZ")});
+
+        NBTTagCompound lamp = new NBTTagCompound();
+        lamp.setInteger(CoordinateLinks.MARKER, 0);
+        net.minecraft.nbt.NBTTagList air = new net.minecraft.nbt.NBTTagList();
+        NBTTagCompound block = new NBTTagCompound();
+        block.setInteger("x", 105); block.setInteger("y", 70); block.setInteger("z", 210);
+        air.appendTag(block);
+        lamp.setTag("AirBlocks", air);
+        CoordinateLinks.shift(CoordinateLinks.rulesFor("micdoodle8.mods.galacticraft.core.tile.TileEntityArclamp"), lamp, -100, -64, -200);
+        NBTTagCompound moved = lamp.getTagList("AirBlocks", 10).getCompoundTagAt(0);
+        assertArrayEquals(new int[] {5, 6, 10}, new int[] {moved.getInteger("x"), moved.getInteger("y"), moved.getInteger("z")});
+    }
 }

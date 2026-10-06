@@ -34,7 +34,7 @@ public final class CoordinateLinks {
         final boolean box;
         /** Dimension of the linked block; links into another dimension are left alone. */
         final String dimension;
-        /** path is a list of compounds whose int array x holds x, y and z. */
+        /** path is a list of compounds whose int array x holds x, y and z, or with y set, keys x, y and z. */
         final boolean list;
 
         Spec(String path, String x, String y, String z, boolean box, String dimension) {
@@ -80,6 +80,9 @@ public final class CoordinateLinks {
         }
         add("net.malisis.doors.door.tileentity.MultiTile", triple("mainBlock"));
         add("shedar.mods.ic2.nuclearcontrol.tileentities.TileEntityInfoPanelExtender", triple("core"));
+        // Nuclear Control screens spanning several panels, Galacticraft arc lamps' lit air blocks
+        add("shedar.mods.ic2.nuclearcontrol.tileentities.TileEntityInfoPanel", new Spec("screenData", "minX", "minY", "minZ", true, null));
+        add("micdoodle8.mods.galacticraft.core.tile.TileEntityArclamp", new Spec("AirBlocks", "x", "y", "z", false, null, true));
         add("tmechworks.blocks.logic.SignalTerminalLogic", point("", "BusX", "BusY", "BusZ", null));
         // Draconic Evolution energy relays/transceivers and reactor parts
         add("com.brandon3055.draconicevolution.common.tileentities.energynet.TileRemoteEnergyBase",
@@ -250,6 +253,14 @@ public final class CoordinateLinks {
         net.minecraft.nbt.NBTTagList list = root.getTagList(spec.path, 10);
         for (int i = 0; i < list.tagCount(); i++) {
             NBTTagCompound entry = list.getCompoundTagAt(i);
+            if (spec.y != null) {
+                if (!entry.hasKey(spec.x) || !entry.hasKey(spec.y) || !entry.hasKey(spec.z) || entry.getInteger(spec.y) < 0) continue;
+                double[] moved = mapping.map(new double[] {entry.getInteger(spec.x), entry.getInteger(spec.y), entry.getInteger(spec.z)});
+                put(entry, spec.x, moved[0]);
+                put(entry, spec.y, moved[1]);
+                put(entry, spec.z, moved[2]);
+                continue;
+            }
             int[] pos = entry.getIntArray(spec.x);
             if (pos.length != 3 || pos[1] < 0) continue;
             double[] moved = mapping.map(new double[] {pos[0], pos[1], pos[2]});
@@ -257,8 +268,10 @@ public final class CoordinateLinks {
         }
     }
 
+    /** A box of the spec's minimum keys and the same keys with Min/min turned into Max/max. */
     private static void box(NBTTagCompound tag, Spec spec, Mapping mapping) {
-        String[] min = {"xMin", "yMin", "zMin"}, max = {"xMax", "yMax", "zMax"};
+        String[] min = {spec.x, spec.y, spec.z}, max = new String[3];
+        for (int i = 0; i < 3; i++) max[i] = min[i].replace("Min", "Max").replace("min", "max");
         for (String key : min) if (!tag.hasKey(key) || tag.getInteger(key) == Integer.MAX_VALUE) return;
         double[] a = mapping.map(new double[] {tag.getInteger(min[0]), tag.getInteger(min[1]), tag.getInteger(min[2])});
         double[] b = mapping.map(new double[] {tag.getInteger(max[0]), tag.getInteger(max[1]), tag.getInteger(max[2])});
