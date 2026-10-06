@@ -1806,6 +1806,16 @@ Test in GTNH 2.8.4 (NEI 2.8.44) and GTNH 2.9 (NEI 2.8.145); without NEI the butt
   sides. Rotate and mirror: each faces the same neighbor after paste; the miner base still forms and its dock
   side follows.
 
+## Facings kept in tile NBT (second sweep)
+
+- OpenBlocks: block breaker/placer (six ways), fan, target, grave, XP shower, paint mixer, drawing table, bear trap,
+  sprinkler, rotating elevator, guide; ArchitectureCraft shapes placed on walls, floors and ceilings with different
+  turns, sawbench; a Stargate with DHD and interfaces; a Blood Magic ritual set up facing east; Ender IO reservoir
+  (2x2); Draconic flow gate; Thaumic Horizons node monitor/stabilizer; Gadomancy sticky jar on a wall; Botanic
+  Horizons automation block; Thaumic Energistics essentia provider; Mechworks signal bus; Steve's Factory Manager
+  breaker. Rotate and mirror: each keeps its orientation relative to the build; the ritual still activates after
+  paste; shapes still meet at the same edges (mirrored shapes with a handedness come out rotated, not flipped).
+
 ## Other GTNH blocks found by the facing sweep
 
 - One of each, facing different ways where they can: Et Futurum glazed terracotta, loom, stonecutter, bee nest,

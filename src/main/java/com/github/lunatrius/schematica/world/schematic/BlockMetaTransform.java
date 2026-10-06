@@ -102,6 +102,11 @@ public final class BlockMetaTransform {
         // Draconic generators, Hardcore Ender Expansion enderman heads ((yaw quarter + 2) & 3)
         MOD_HORIZONTAL.put("com.brandon3055.draconicevolution.common.blocks.machine.Generator", HORIZONTAL);
         MOD_HORIZONTAL.put("chylex.hee.block.BlockEndermanHead", new ForgeDirection[] {NORTH, EAST, SOUTH, WEST});
+        // SGCraft and ArchitectureCraft blocks with a facing property: index in N, W, S, E
+        for (String block : new String[] {"gcewing.sg.blocks.SGBaseBlock", "gcewing.sg.blocks.DHDBlock", "gcewing.sg.blocks.SGInterfaceBlock",
+            "gcewing.sg.compat.ic2.IC2PowerBlock", "gcewing.architecture.common.block.BlockSawbench"}) {
+            MOD_HORIZONTAL.put(block, new ForgeDirection[] {NORTH, WEST, SOUTH, EAST});
+        }
         // Galacticraft dishes (N/S/W/E), Avaritia, OpenPrinter printers, Adventure Backpacks (lamp/redstone flags above)
         MOD_HORIZONTAL.put("micdoodle8.mods.galacticraft.core.blocks.BlockDish", new ForgeDirection[] {NORTH, SOUTH, WEST, EAST});
         MOD_HORIZONTAL.put("fox.spiteful.avaritia.blocks.BlockMatterClusterOpener", new ForgeDirection[] {NORTH, EAST, SOUTH, WEST});
@@ -189,6 +194,32 @@ public final class BlockMetaTransform {
         ForgeDirection turned = turn(op, ForgeDirection.getOrientation(value));
         if (turned == UP && !allowUp || turned == DOWN && !allowDown) return meta;
         return (meta & ~mask) | turned.ordinal();
+    }
+
+    /**
+     * OpenModsLib: the metadata (under the mode's mask) indexes the rotation mode's valid orientations, each a pair of
+     * world directions for the block's local x and y. Both are turned and the matching orientation looked up; one the
+     * mode does not allow keeps the metadata.
+     */
+    private static int openMods(Block block, int meta, char op) {
+        try {
+            Object mode = block.getClass().getMethod("getRotationMode").invoke(block);
+            int mask = mode.getClass().getField("mask").getInt(mode);
+            if (mask == 0) return meta;
+            Object orientation = mode.getClass().getMethod("fromValue", int.class).invoke(mode, meta & mask);
+            Class<?> orientationType = orientation.getClass();
+            Object x = orientationType.getField("x").get(orientation), y = orientationType.getField("y").get(orientation);
+            Class<?> axis = x.getClass();
+            java.lang.reflect.Method fromDirection = axis.getMethod("fromDirection", ForgeDirection.class);
+            Object tx = fromDirection.invoke(null, turn(op, (ForgeDirection) axis.getField("dir").get(x)));
+            Object ty = fromDirection.invoke(null, turn(op, (ForgeDirection) axis.getField("dir").get(y)));
+            Object turned = orientationType.getMethod("lookupXY", axis, axis).invoke(null, tx, ty);
+            if (turned == null || !(Boolean) mode.getClass().getMethod("isPlacementValid", orientationType).invoke(mode, turned)) return meta;
+            int value = (Integer) mode.getClass().getMethod("toValue", orientationType).invoke(mode, turned);
+            return meta & ~mask | value & mask;
+        } catch (ReflectiveOperationException | RuntimeException e) {
+            return meta;
+        }
     }
 
     /** Et Futurum banners: a 16-step rotation when standing (a tile flag), else the wall side 2-5. */
@@ -303,6 +334,8 @@ public final class BlockMetaTransform {
             if (table != null) {
                 return direction(meta, 3, 0, table, op);
             }
+            // OpenModsLib blocks (OpenBlocks and others): an index into their rotation mode's orientations
+            if (name.equals("openmods.block.OpenBlock")) return openMods(block, meta, op);
             if (MOD_WALL.contains(name)) return (meta & 7) >= 2 && (meta & 7) <= 5 ? ordinal(meta, 7, op, false, false) : meta;
             if (MOD_ANY_SIDE.contains(name)) return ordinal(meta, 7, op, true, true);
             if (MOD_TORCH.contains(name)) return direction(meta, 7, 0, ATTACHED, op);

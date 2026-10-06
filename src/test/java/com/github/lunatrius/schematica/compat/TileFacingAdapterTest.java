@@ -159,4 +159,44 @@ public class TileFacingAdapterTest {
         turned("com.brandon3055.draconicevolution.common.tileentities.TileTeleporterStand", stand, "x");
         assertEquals(330, stand.getInteger("Rotation"));
     }
+
+    @Test public void architectureSideTurnRitualsAndStickyJars() {
+        // bottom facing north (side 2) turned clockwise from above faces east (side 5)
+        assertArrayEquals(new int[] {5, 0}, SideTurn.apply(2, 0, 'Y'));
+        // four turns and two mirrors give every orientation back
+        for (int side = 0; side < 6; side++) for (int turn = 0; turn < 4; turn++) {
+            int[] value = {side, turn};
+            for (int i = 0; i < 4; i++) value = SideTurn.apply(value[0], value[1], 'Y');
+            assertArrayEquals(new int[] {side, turn}, value);
+            for (char op : "XZxyz".toCharArray()) {
+                int[] once = SideTurn.apply(side, turn, op);
+                if (Character.isLowerCase(op)) assertArrayEquals(new int[] {side, turn}, SideTurn.apply(once[0], once[1], op));
+            }
+        }
+        assertEquals(1, SideTurn.apply(0, 0, 'y')[0]);
+        assertEquals(5, SideTurn.apply(4, 1, 'x')[0]);
+
+        NBTTagCompound shape = new NBTTagCompound();
+        turned("gcewing.architecture.common.tile.TileArchitecture", shape, "X");
+        assertEquals(3, shape.getByte("side"));
+
+        NBTTagCompound stone = new NBTTagCompound();
+        stone.setInteger("direction", 1);
+        turned("WayofTime.alchemicalWizardry.common.tileEntity.TEMasterStone", stone, "Y");
+        assertEquals(2, stone.getInteger("direction"));
+        turned("WayofTime.alchemicalWizardry.common.tileEntity.TEMasterStone", stone, "x");
+        assertEquals(4, stone.getInteger("direction"));
+        stone.setInteger("direction", 0);
+        turned("WayofTime.alchemicalWizardry.common.tileEntity.TEMasterStone", stone, "Y");
+        assertEquals(0, stone.getInteger("direction"));
+
+        NBTTagCompound jar = new NBTTagCompound();
+        jar.setInteger("placedOn", 2);
+        NBTTagCompound parent = new NBTTagCompound();
+        parent.setByte("facing", (byte) 3);
+        jar.setTag("parent", parent);
+        turned("makeo.gadomancy.common.blocks.tiles.TileStickyJar", jar, "Y");
+        assertEquals(5, jar.getInteger("placedOn"));
+        assertEquals(4, jar.getCompoundTag("parent").getByte("facing"));
+    }
 }

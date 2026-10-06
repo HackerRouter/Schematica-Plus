@@ -24,14 +24,14 @@ import com.github.lunatrius.schematica.world.schematic.BlockMetaTransform;
  * back. Blocks handled here are not also turned through their Block.rotateBlock.
  */
 final class TileFacingAdapter implements ISchematicVisualAdapter {
-    enum Kind { ORDINAL, NAME, SIDE_KEYS, SIDE_ARRAY, MASK, HORIZONTAL, ROTATION16, OFFSET, ORDINAL_ARRAY, NAMED_SIDES, YAW }
+    enum Kind { ORDINAL, NAME, SIDE_KEYS, SIDE_ARRAY, MASK, HORIZONTAL, ROTATION16, OFFSET, ORDINAL_ARRAY, NAMED_SIDES, YAW, SIDE_TURN, HORIZONTAL1 }
 
     static final class Rule {
         final Kind kind;
         final String key;
         /** The operations the rule applies to; others leave the value alone (OpenComputers yaw/pitch). */
         final String operations;
-        /** HORIZONTAL: the sides the low two bits 0-3 stand for; higher bits are kept. */
+        /** HORIZONTAL: the sides the low two bits 0-3 stand for; higher bits are kept. HORIZONTAL1: the sides of 1-4. */
         final ForgeDirection[] sides;
         Rule(Kind kind, String key, String operations) { this(kind, key, operations, HORIZONTAL_SIDES); }
         Rule(Kind kind, String key, String operations, ForgeDirection[] sides) { this.kind = kind; this.key = key; this.operations = operations; this.sides = sides; }
@@ -163,6 +163,26 @@ final class TileFacingAdapter implements ISchematicVisualAdapter {
             "doors.door.tileentity.ForcefieldTileEntity"}) {
             add("net.malisis." + tile, ordinal("multiBlock/direction"));
         }
+        // ArchitectureCraft shapes: the side their local bottom faces and a quarter turn around it
+        add("gcewing.architecture.common.tile.TileArchitecture", new Rule(Kind.SIDE_TURN, "side", ALL));
+        // Blood Magic master ritual stones (and Blood Arsenal's): the ritual's direction, 1 N 2 E 3 S 4 W
+        add("WayofTime.alchemicalWizardry.common.tileEntity.TEMasterStone", new Rule(Kind.HORIZONTAL1, "direction", ALL,
+            new ForgeDirection[] {ForgeDirection.NORTH, ForgeDirection.EAST, ForgeDirection.SOUTH, ForgeDirection.WEST}));
+        // Draconic gates, Thaumic Horizons node monitors/amplifiers/stabilizers, Ender IO reservoirs, Loot Games,
+        // Gadomancy sticky jars (and the jar inside), Botanic Horizons automation blocks (N, E, S, W)
+        add("com.brandon3055.draconicevolution.common.tileentities.gates.TileGate", ordinal("Output"));
+        add("com.kentington.thaumichorizons.common.tiles.TileNodeMonitor", ordinal("dir"));
+        add("com.kentington.thaumichorizons.common.tiles.TileTransductionAmplifier", ordinal("dir"));
+        add("com.kentington.thaumichorizons.common.tiles.TileVortexStabilizer", ordinal("direction"));
+        add("crazypants.enderio.machine.reservoir.TileReservoir", ordinal("front"), ordinal("up"), ordinal("right"));
+        add("eu.usrv.legacylootgames.gol.tiles.LegacyGameOfLightTile", ordinal("mTEDirection"));
+        add("makeo.gadomancy.common.blocks.tiles.TileStickyJar", ordinal("placedOn"), ordinal("parent/facing"));
+        add("net.fuzzycraft.botanichorizons.addons.tileentity.AutomationTileEntity", new Rule(Kind.HORIZONTAL, "face", ALL,
+            new ForgeDirection[] {ForgeDirection.NORTH, ForgeDirection.EAST, ForgeDirection.SOUTH, ForgeDirection.WEST}));
+        // Thaumic Energistics providers (6 none), Mechworks signal bus placed sides, Steve's Factory Manager breaker placing side
+        add("thaumicenergistics.common.tiles.abstraction.TileProviderBase", ordinal("TEAttachSide"));
+        add("tmechworks.blocks.logic.SignalBusLogic", new Rule(Kind.MASK, "placedSides", ALL));
+        add("vswe.stevesfactory.blocks.TileEntityBreaker", ordinal("Direction"));
         // FloodLights
         add("de.keridos.floodlights.tileentity.TileEntityFL", ordinal("teDirection"));
         // Draconic teleporter stands: the placer's head yaw in degrees
@@ -307,6 +327,22 @@ final class TileFacingAdapter implements ISchematicVisualAdapter {
                     if (moved.isEmpty()) break;
                     for (ForgeDirection side : ForgeDirection.VALID_DIRECTIONS) if (side.offsetY == 0) data.removeTag(key + side.name().charAt(0));
                     for (Map.Entry<String, NBTBase> entry : moved.entrySet()) data.setTag(entry.getKey(), entry.getValue());
+                    break;
+                }
+                case HORIZONTAL1: {
+                    NBTBase tag = data.getTag(key);
+                    if (!(tag instanceof NBTBase.NBTPrimitive)) break;
+                    int value = ((NBTBase.NBTPrimitive) tag).func_150287_d();
+                    if (value < 1 || value > 4) break;
+                    int index = java.util.Arrays.asList(rule.sides).indexOf(SchematicTransform.direction(operation, rule.sides[value - 1]));
+                    if (index >= 0) data.setInteger(key, index + 1);
+                    break;
+                }
+                case SIDE_TURN: {
+                    int[] turned = SideTurn.apply(data.getByte(key), data.getByte("turn"), operation);
+                    if (turned == null) break;
+                    data.setByte(key, (byte) turned[0]);
+                    data.setByte("turn", (byte) turned[1]);
                     break;
                 }
                 case YAW: {

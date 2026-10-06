@@ -142,4 +142,14 @@ public class BlockMetaTransformTest {
         assertEquals(1 | 8, apply(new makeo.gadomancy.common.blocks.BlockArcaneDropper(), 1, "Y"));
         assertEquals(3, apply(new micdoodle8.mods.galacticraft.core.blocks.BlockDish(), 0, "Y"));
     }
+
+    @Test public void openModsRotationModesAndStargates() {
+        // FOUR_DIRECTIONS: local x east (0) turns south (local x +Z, index 3); bits above the mask stay
+        Block openBlock = new openmods.block.OpenBlock();
+        assertEquals(8 | 3, apply(openBlock, 8 | 0, "Y"));
+        assertEquals(2, apply(openBlock, 0, "x"));
+        assertEquals(0, apply(openBlock, 0, "YYYY"));
+        // SGCraft facing index N, W, S, E
+        assertEquals(3, apply(new gcewing.sg.blocks.SGBaseBlock(), 0, "Y"));
+    }
 }
