@@ -241,4 +241,25 @@ public class CoordinateLinksTest {
         assertEquals(5, cached.getCompoundTag("key").getInteger("x"));
         assertEquals(3, cached.getCompoundTag("value").getInteger("y"));
     }
+
+    @Test public void smelteryAreaAndServants() {
+        NBTTagCompound smeltery = new NBTTagCompound();
+        smeltery.setInteger(CoordinateLinks.MARKER, 0);
+        smeltery.setIntArray("MinPos", new int[] {101, 61, 201});
+        smeltery.setIntArray("MaxPos", new int[] {103, 62, 202});
+        java.util.List<CoordinateLinks.Spec> specs = CoordinateLinks.rulesFor("tconstruct.smeltery.logic.SmelteryLogic");
+        CoordinateLinks.shift(specs, smeltery, -100, -60, -200);
+        assertArrayEquals(new int[] {1, 1, 1}, smeltery.getIntArray("MinPos"));
+        CoordinateLinks.transform(specs, smeltery, 'Y', 5, 3, 4);
+        // (x, y, z) -> (3 - z, y, x): (1, 1, 1)..(3, 2, 2) becomes (1, 1, 1)..(2, 2, 3)
+        assertArrayEquals(new int[] {1, 1, 1}, smeltery.getIntArray("MinPos"));
+        assertArrayEquals(new int[] {2, 2, 3}, smeltery.getIntArray("MaxPos"));
+
+        NBTTagCompound drain = new NBTTagCompound();
+        drain.setInteger(CoordinateLinks.MARKER, 0);
+        drain.setInteger("xCenter", 102); drain.setInteger("yCenter", 61); drain.setInteger("zCenter", 200);
+        CoordinateLinks.shift(CoordinateLinks.rulesFor("mantle.blocks.abstracts.MultiServantLogic"), drain, -100, -60, -200);
+        assertEquals(2, drain.getInteger("xCenter"));
+        assertEquals(1, drain.getInteger("yCenter"));
+    }
 }

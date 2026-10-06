@@ -24,7 +24,7 @@ import com.github.lunatrius.schematica.world.schematic.BlockMetaTransform;
  * back. Blocks handled here are not also turned through their Block.rotateBlock.
  */
 final class TileFacingAdapter implements ISchematicVisualAdapter {
-    enum Kind { ORDINAL, NAME, SIDE_KEYS, SIDE_ARRAY, MASK, HORIZONTAL, ROTATION16, OFFSET, ORDINAL_ARRAY, NAMED_SIDES, YAW, SIDE_TURN, HORIZONTAL1, ARC_LAMP, PANEL }
+    enum Kind { ORDINAL, NAME, SIDE_KEYS, SIDE_ARRAY, MASK, HORIZONTAL, ROTATION16, OFFSET, ORDINAL_ARRAY, NAMED_SIDES, YAW, SIDE_TURN, HORIZONTAL1, ARC_LAMP, PANEL, NAME_KEYS }
 
     static final class Rule {
         final Kind kind;
@@ -94,6 +94,9 @@ final class TileFacingAdapter implements ISchematicVisualAdapter {
             add("tconstruct." + tile, ordinal("Direction"));
         }
         add("tconstruct.smeltery.logic.CastingBlockLogic", ordinal("direction"));
+        // Tinkers' casting channels: open outputs, the side last filled from, the horizontal sub tanks by side name
+        add("tconstruct.smeltery.logic.CastingChannelLogic", new Rule(Kind.ORDINAL_ARRAY, "validOutputs", ALL), ordinal("LastProvider"),
+            new Rule(Kind.NAME_KEYS, "subTank_", ALL));
         add("tconstruct.tools.logic.CraftingStationLogic", ordinal("ChestDirection"));
         // BuildCraft engines and construction markers
         add("buildcraft.core.lib.engines.TileEngineBase", ordinal("orientation"));
@@ -363,6 +366,18 @@ final class TileFacingAdapter implements ISchematicVisualAdapter {
                     data.setByte("turn", (byte) turned[1]);
                     if (turned[2] != shape) data.setInteger("Shape", turned[2]);
                     if (Character.isLowerCase(operation) && data.getByte("offsetX") != 0) data.setByte("offsetX", (byte) -data.getByte("offsetX"));
+                    break;
+                }
+                case NAME_KEYS: {
+                    // keys "prefix" + ForgeDirection name; only sides that already have a key can take one
+                    Map<String, NBTBase> moved = new LinkedHashMap<>();
+                    for (ForgeDirection side : ForgeDirection.VALID_DIRECTIONS) {
+                        if (!data.hasKey(key + side.name())) continue;
+                        ForgeDirection turned = SchematicTransform.direction(operation, side);
+                        if (!data.hasKey(key + turned.name())) { moved.clear(); break; }
+                        moved.put(key + turned.name(), data.getTag(key + side.name()));
+                    }
+                    for (Map.Entry<String, NBTBase> entry : moved.entrySet()) data.setTag(entry.getKey(), entry.getValue());
                     break;
                 }
                 case ARC_LAMP: {

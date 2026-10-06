@@ -272,4 +272,23 @@ public class TileFacingAdapterTest {
         assertEquals(-4, tile.getByte("offsetX"));
         assertEquals(1 << 4, tile.getInteger("Disconnected"));
     }
+
+    @Test public void castingChannels() {
+        NBTTagCompound channel = new NBTTagCompound();
+        channel.setIntArray("validOutputs", new int[] {0, 2, 5});
+        channel.setInteger("LastProvider", 4);
+        for (String side : new String[] {"NORTH", "SOUTH", "WEST", "EAST"}) {
+            NBTTagCompound tank = new NBTTagCompound();
+            tank.setString("side", side);
+            channel.setTag("subTank_" + side, tank);
+        }
+        turned("tconstruct.smeltery.logic.CastingChannelLogic", channel, "Y");
+        assertArrayEquals(new int[] {0, 5, 3}, channel.getIntArray("validOutputs"));
+        assertEquals(2, channel.getInteger("LastProvider"));
+        assertEquals("NORTH", channel.getCompoundTag("subTank_EAST").getString("side"));
+        assertEquals("WEST", channel.getCompoundTag("subTank_NORTH").getString("side"));
+        // tilted, the sub tanks would need up/down keys the channel does not read: they stay
+        turned("tconstruct.smeltery.logic.CastingChannelLogic", channel, "X");
+        assertEquals("NORTH", channel.getCompoundTag("subTank_EAST").getString("side"));
+    }
 }

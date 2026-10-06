@@ -44,8 +44,16 @@ public final class CoordinateLinks {
             this(path, x, y, z, box, dimension, false);
         }
 
+        /** x and z are int arrays holding the minimum and maximum corner. */
+        final boolean arrays;
+
         Spec(String path, String x, String y, String z, boolean box, String dimension, boolean list) {
+            this(path, x, y, z, box, dimension, list, false);
+        }
+
+        Spec(String path, String x, String y, String z, boolean box, String dimension, boolean list, boolean arrays) {
             this.path = path; this.x = x; this.y = y; this.z = z; this.box = box; this.dimension = dimension; this.list = list;
+            this.arrays = arrays;
         }
     }
 
@@ -124,13 +132,23 @@ public final class CoordinateLinks {
         add(automagy + "TileEntityThaumostaticPylon", point("", null, "bossY", null, null));
         add(automagy + "TileEntityInventarium", new Spec("Nodes", "pos", null, null, false, null, true),
             new Spec("MemoryUsers", "pos", null, null, false, null, true));
-        // Railcraft signals, signal boxes and switch motors: paired controllers/receivers/block signals, cached tracks
+        // Railcraft signals, signal boxes and switch motors: paired controllers/receivers/block signals, cached tracks,
+        // the signals Computronics digital boxes keep aspects for
         Spec[] signals = {new Spec("controller/pairings", "coords", null, null, false, null, true),
             new Spec("receiver/pairings", "coords", null, null, false, null, true),
             new Spec("SignalBlock/pairings", "coords", null, null, false, null, true),
             new Spec("SignalBlock/trackCache", "key/x", "key/y", "key/z", false, "key/dim", true),
-            new Spec("SignalBlock/trackCache", "value/x", "value/y", "value/z", false, "value/dim", true)};
+            new Spec("SignalBlock/trackCache", "value/x", "value/y", "value/z", false, "value/dim", true),
+            new Spec("controller/aspects", "coords", null, null, false, null, true), new Spec("receiver/aspects", "coords", null, null, false, null, true)};
         for (String tile : new String[] {"TileSignalBase", "TileBoxBase", "TileSwitchBase"}) add("mods.railcraft.common.blocks.signals." + tile, signals);
+        // Tinkers' smeltery parts (Mantle servants) and the smeltery's inner area, Draconic portal blocks, Adventure
+        // Backpack sleeping bags, Railcraft world anchors and Galacticraft launch controllers (their own last position)
+        add("mantle.blocks.abstracts.MultiServantLogic", point("", "xCenter", "yCenter", "zCenter", null));
+        add("tconstruct.smeltery.logic.SmelteryLogic", new Spec("", "MinPos", null, "MaxPos", true, null, false, true));
+        add("com.brandon3055.draconicevolution.common.tileentities.multiblocktiles.TilePortalBlock", triple("Master"));
+        add("com.darkona.adventurebackpack.block.TileAdventureBackpack", point("", "sbx", "sby", "sbz", null));
+        add("mods.railcraft.common.blocks.machine.alpha.TileAnchorWorld", triple("prev"));
+        add("micdoodle8.mods.galacticraft.planets.mars.tile.TileEntityLaunchController", triple("ChunkLoaderTile"));
         // Extra Utilities energy nodes: the receivers they found
         add("com.rwtema.extrautils.tileentity.transfernodes.TileEntityTransferNodeEnergy", point("", "cx%d", "cy%d", "cz%d", null));
     }
@@ -238,6 +256,10 @@ public final class CoordinateLinks {
                 continue;
             }
             NBTTagCompound tag = spec.path.isEmpty() ? root : root.hasKey(spec.path, 10) ? root.getCompoundTag(spec.path) : null;
+            if (spec.arrays) {
+                if (tag != null) arrayBox(tag, spec, mapping);
+                continue;
+            }
             if (tag == null || spec.y == null && vertical || spec.x == null && tilting) continue;
             if (spec.dimension != null && tag.hasKey(spec.dimension) && tag.getInteger(spec.dimension) != dimension) continue;
             if (spec.box) {
@@ -314,6 +336,19 @@ public final class CoordinateLinks {
             tag.setInteger(min[i], (int) Math.round(Math.min(a[i], b[i])));
             tag.setInteger(max[i], (int) Math.round(Math.max(a[i], b[i])));
         }
+    }
+
+    private static void arrayBox(NBTTagCompound tag, Spec spec, Mapping mapping) {
+        int[] min = tag.getIntArray(spec.x), max = tag.getIntArray(spec.z);
+        if (min.length != 3 || max.length != 3) return;
+        double[] a = mapping.map(new double[] {min[0], min[1], min[2]}), b = mapping.map(new double[] {max[0], max[1], max[2]});
+        int[] low = new int[3], high = new int[3];
+        for (int i = 0; i < 3; i++) {
+            low[i] = (int) Math.round(Math.min(a[i], b[i]));
+            high[i] = (int) Math.round(Math.max(a[i], b[i]));
+        }
+        tag.setIntArray(spec.x, low);
+        tag.setIntArray(spec.z, high);
     }
 
     private static double number(NBTTagCompound tag, String key) {

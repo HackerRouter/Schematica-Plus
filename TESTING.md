@@ -1866,6 +1866,11 @@ Test in GTNH 2.8.4 (NEI 2.8.44) and GTNH 2.9 (NEI 2.8.145); without NEI the butt
   motor paired to a receiver box: save, paste elsewhere (also rotated and mirrored). The copied signals change aspect
   for carts on the copied track and the copied motor follows the copied box; the originals are unaffected. Pairings
   into another dimension are left as they were.
+- A Tinkers' smeltery with drains, seared tanks, faucets and casting channels branching in several directions, molten
+  metal inside: save, paste elsewhere rotated and mirrored. The copy forms without breaking a block, its drains and
+  tanks belong to the copied controller, molten metal renders inside the copied walls, channels keep their open
+  outputs and contents turned with the build. Also a Draconic portal (dislocator receptacle frame), a deployed Adventure
+  Backpack sleeping bag, a Railcraft world anchor and a Galacticraft launch controller: links follow the copy.
 
 ## Thaumcraft, BiblioCraft, Witchery and Extra Utilities under rotation and mirroring
 
