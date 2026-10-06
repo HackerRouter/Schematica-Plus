@@ -380,9 +380,20 @@ public final class GuiPlacementConfiguration extends UiScreen {
         reset.setBounds(x, 218, 120, 20);
         grid.setBounds(x, 239, 120, 20);
         if (height < 349) {
-            materials.setBounds(10, height - 22, textWidth(materials), 20);
-            verifier.setBounds(materials.bounds().right() + 1, height - 22, textWidth(verifier), 20);
-            placements.setBounds(verifier.bounds().right() + 1, height - 22, textWidth(placements), 20);
+            // Upstream moves these to the bottom left below 328; the grid button joins them, and the row stops left of
+            // the column (upstream's runs under Reset), shrinking its buttons when needed
+            UiButton[] row = height < 261 ? new UiButton[] {materials, verifier, placements, grid} : new UiButton[] {materials, verifier, placements};
+            int total = 0;
+            for (UiButton button : row) total += textWidth(button) + 1;
+            int columnBottom = row.length == 4 ? reset.bounds().bottom() : grid.bounds().bottom();
+            int available = (height - 22 < columnBottom ? x - 2 : width - 10) - 10;
+            double scale = total > available ? Math.max(0, available - row.length) / (double) (total - row.length) : 1;
+            int rowX = 10;
+            for (UiButton button : row) {
+                int w = Math.max(20, (int) (textWidth(button) * scale));
+                button.setBounds(rowX, height - 22, w, 20);
+                rowX += w + 1;
+            }
         } else {
             materials.setBounds(x, 271, 120, 20);
             verifier.setBounds(x, 292, 120, 20);

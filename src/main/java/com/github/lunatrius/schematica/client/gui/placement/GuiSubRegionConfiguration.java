@@ -184,7 +184,9 @@ public final class GuiSubRegionConfiguration extends UiScreen {
         slice.setBounds(x, 204, 120, 20);
         int backWidth = fontRendererObj.getStringWidth(back.label()) + 10, menuWidth = fontRendererObj.getStringWidth(menu.label()) + 20;
         back.setBounds(10, height - 36, backWidth, 20);
-        menu.setBounds(width >= 270 ? width - menuWidth - 10 : back.bounds().right() + 4, height - 36, menuWidth, 20);
+        // upstream puts the menu button next to the back button below 270 wide; also when it would cover the column
+        boolean beside = width < 270 || height - 36 < slice.bounds().bottom();
+        menu.setBounds(beside ? back.bounds().right() + 4 : width - menuWidth - 10, height - 36, menuWidth, 20);
         feedback.setBounds(12, height - 54, Math.max(0, x - 24), 16);
     }
 }
