@@ -193,4 +193,24 @@ public class CoordinateLinksTest {
         NBTTagCompound moved = lamp.getTagList("AirBlocks", 10).getCompoundTagAt(0);
         assertArrayEquals(new int[] {5, 6, 10}, new int[] {moved.getInteger("x"), moved.getInteger("y"), moved.getInteger("z")});
     }
+
+    @Test public void sensorCardTargetsInPanels() {
+        NBTTagCompound panel = new NBTTagCompound();
+        panel.setInteger(CoordinateLinks.MARKER, 0);
+        net.minecraft.nbt.NBTTagList items = new net.minecraft.nbt.NBTTagList();
+        NBTTagCompound card = new NBTTagCompound(), tag = new NBTTagCompound();
+        tag.setInteger("x", 101); tag.setInteger("y", 65); tag.setInteger("z", 202);
+        card.setTag("tag", tag);
+        NBTTagCompound upgrade = new NBTTagCompound();
+        upgrade.setShort("id", (short) 4000);
+        items.appendTag(card);
+        items.appendTag(upgrade);
+        panel.setTag("Items", items);
+        java.util.List<CoordinateLinks.Spec> specs = CoordinateLinks.rulesFor("shedar.mods.ic2.nuclearcontrol.tileentities.TileEntityInfoPanel");
+        CoordinateLinks.shift(specs, panel, -100, -64, -200);
+        CoordinateLinks.transform(specs, panel, 'Y', 3, 2, 3);
+        NBTTagCompound moved = panel.getTagList("Items", 10).getCompoundTagAt(0).getCompoundTag("tag");
+        assertArrayEquals(new int[] {0, 1, 1}, new int[] {moved.getInteger("x"), moved.getInteger("y"), moved.getInteger("z")});
+        assertFalse(panel.getTagList("Items", 10).getCompoundTagAt(1).hasKey("tag"));
+    }
 }

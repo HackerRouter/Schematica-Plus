@@ -1859,6 +1859,9 @@ Test in GTNH 2.8.4 (NEI 2.8.44) and GTNH 2.9 (NEI 2.8.145); without NEI the butt
 - A Nuclear Control screen of several panels and extenders, and a lit Galacticraft arc lamp: save, paste elsewhere
   rotated. The screen shows its text across all its panels at the copy; switching the copied lamp off and breaking it
   leaves no lit air at the copy and touches nothing at the original.
+- Nuclear Control info panel with a reactor/energy sensor card for a reactor or storage in the build, a range trigger
+  and a remote thermometer with cards: save, paste elsewhere (also rotated). The copies show and react to the copied
+  machines, not the original ones; cards pointing outside the saved area point at the same offset from the copy.
 
 ## Thaumcraft, BiblioCraft, Witchery and Extra Utilities under rotation and mirroring
 

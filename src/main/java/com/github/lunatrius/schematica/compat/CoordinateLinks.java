@@ -34,7 +34,10 @@ public final class CoordinateLinks {
         final boolean box;
         /** Dimension of the linked block; links into another dimension are left alone. */
         final String dimension;
-        /** path is a list of compounds whose int array x holds x, y and z, or with y set, keys x, y and z. */
+        /**
+         * path is a list of compounds whose int array x holds x, y and z, or with y set, keys x, y and z (in a compound
+         * of the entry for "compound/key").
+         */
         final boolean list;
 
         Spec(String path, String x, String y, String z, boolean box, String dimension) {
@@ -80,9 +83,14 @@ public final class CoordinateLinks {
         }
         add("net.malisis.doors.door.tileentity.MultiTile", triple("mainBlock"));
         add("shedar.mods.ic2.nuclearcontrol.tileentities.TileEntityInfoPanelExtender", triple("core"));
-        // Nuclear Control screens spanning several panels, Galacticraft arc lamps' lit air blocks
-        add("shedar.mods.ic2.nuclearcontrol.tileentities.TileEntityInfoPanel", new Spec("screenData", "minX", "minY", "minZ", true, null));
+        // Galacticraft arc lamps' lit air blocks
         add("micdoodle8.mods.galacticraft.core.tile.TileEntityArclamp", new Spec("AirBlocks", "x", "y", "z", false, null, true));
+        // Nuclear Control screens spanning several panels; sensor cards in panels, range triggers and remote thermometers
+        // keep their target in the card's tag
+        Spec cards = new Spec("Items", "tag/x", "tag/y", "tag/z", false, null, true);
+        add("shedar.mods.ic2.nuclearcontrol.tileentities.TileEntityInfoPanel", new Spec("screenData", "minX", "minY", "minZ", true, null), cards);
+        add("shedar.mods.ic2.nuclearcontrol.tileentities.TileEntityRangeTrigger", cards);
+        add("shedar.mods.ic2.nuclearcontrol.tileentities.TileEntityRemoteThermo", cards);
         add("tmechworks.blocks.logic.SignalTerminalLogic", point("", "BusX", "BusY", "BusZ", null));
         // Draconic Evolution energy relays/transceivers and reactor parts
         add("com.brandon3055.draconicevolution.common.tileentities.energynet.TileRemoteEnergyBase",
@@ -254,11 +262,17 @@ public final class CoordinateLinks {
         for (int i = 0; i < list.tagCount(); i++) {
             NBTTagCompound entry = list.getCompoundTagAt(i);
             if (spec.y != null) {
-                if (!entry.hasKey(spec.x) || !entry.hasKey(spec.y) || !entry.hasKey(spec.z) || entry.getInteger(spec.y) < 0) continue;
-                double[] moved = mapping.map(new double[] {entry.getInteger(spec.x), entry.getInteger(spec.y), entry.getInteger(spec.z)});
-                put(entry, spec.x, moved[0]);
-                put(entry, spec.y, moved[1]);
-                put(entry, spec.z, moved[2]);
+                int slash = spec.x.lastIndexOf('/');
+                if (slash >= 0) {
+                    if (!entry.hasKey(spec.x.substring(0, slash), 10)) continue;
+                    entry = entry.getCompoundTag(spec.x.substring(0, slash));
+                }
+                String x = spec.x.substring(slash + 1), y = spec.y.substring(slash + 1), z = spec.z.substring(slash + 1);
+                if (!entry.hasKey(x) || !entry.hasKey(y) || !entry.hasKey(z) || entry.getInteger(y) < 0) continue;
+                double[] moved = mapping.map(new double[] {entry.getInteger(x), entry.getInteger(y), entry.getInteger(z)});
+                put(entry, x, moved[0]);
+                put(entry, y, moved[1]);
+                put(entry, z, moved[2]);
                 continue;
             }
             int[] pos = entry.getIntArray(spec.x);
