@@ -1862,6 +1862,10 @@ Test in GTNH 2.8.4 (NEI 2.8.44) and GTNH 2.9 (NEI 2.8.145); without NEI the butt
 - Nuclear Control info panel with a reactor/energy sensor card for a reactor or storage in the build, a range trigger
   and a remote thermometer with cards: save, paste elsewhere (also rotated). The copies show and react to the copied
   machines, not the original ones; cards pointing outside the saved area point at the same offset from the copy.
+- Railcraft block signals paired along a track, a distant signal paired to a signal box controller, and a switch
+  motor paired to a receiver box: save, paste elsewhere (also rotated and mirrored). The copied signals change aspect
+  for carts on the copied track and the copied motor follows the copied box; the originals are unaffected. Pairings
+  into another dimension are left as they were.
 
 ## Thaumcraft, BiblioCraft, Witchery and Extra Utilities under rotation and mirroring
 

@@ -213,4 +213,32 @@ public class CoordinateLinksTest {
         assertArrayEquals(new int[] {0, 1, 1}, new int[] {moved.getInteger("x"), moved.getInteger("y"), moved.getInteger("z")});
         assertFalse(panel.getTagList("Items", 10).getCompoundTagAt(1).hasKey("tag"));
     }
+
+    @Test public void railcraftSignalPairings() {
+        NBTTagCompound signal = new NBTTagCompound();
+        signal.setInteger(CoordinateLinks.MARKER, 0);
+        NBTTagCompound block = new NBTTagCompound();
+        net.minecraft.nbt.NBTTagList pairings = new net.minecraft.nbt.NBTTagList();
+        NBTTagCompound pair = new NBTTagCompound(), other = new NBTTagCompound();
+        pair.setIntArray("coords", new int[] {0, 110, 64, 200});
+        other.setIntArray("coords", new int[] {-1, 110, 64, 200});
+        pairings.appendTag(pair);
+        pairings.appendTag(other);
+        block.setTag("pairings", pairings);
+        net.minecraft.nbt.NBTTagList cache = new net.minecraft.nbt.NBTTagList();
+        NBTTagCompound entry = new NBTTagCompound(), key = new NBTTagCompound();
+        key.setInteger("dim", 0); key.setInteger("x", 105); key.setInteger("y", 63); key.setInteger("z", 201);
+        entry.setTag("key", key);
+        entry.setTag("value", key.copy());
+        cache.appendTag(entry);
+        block.setTag("trackCache", cache);
+        signal.setTag("SignalBlock", block);
+        CoordinateLinks.shift(CoordinateLinks.rulesFor("mods.railcraft.common.blocks.signals.TileSignalBase"), signal, -100, -60, -200);
+        net.minecraft.nbt.NBTTagList moved = signal.getCompoundTag("SignalBlock").getTagList("pairings", 10);
+        assertArrayEquals(new int[] {0, 10, 4, 0}, moved.getCompoundTagAt(0).getIntArray("coords"));
+        assertArrayEquals(new int[] {-1, 110, 64, 200}, moved.getCompoundTagAt(1).getIntArray("coords"));
+        NBTTagCompound cached = signal.getCompoundTag("SignalBlock").getTagList("trackCache", 10).getCompoundTagAt(0);
+        assertEquals(5, cached.getCompoundTag("key").getInteger("x"));
+        assertEquals(3, cached.getCompoundTag("value").getInteger("y"));
+    }
 }

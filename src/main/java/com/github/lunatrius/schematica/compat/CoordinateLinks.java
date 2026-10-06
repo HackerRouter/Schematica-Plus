@@ -35,8 +35,8 @@ public final class CoordinateLinks {
         /** Dimension of the linked block; links into another dimension are left alone. */
         final String dimension;
         /**
-         * path is a list of compounds whose int array x holds x, y and z, or with y set, keys x, y and z (in a compound
-         * of the entry for "compound/key").
+         * path ("compound/list" for a list in a compound) is a list of compounds whose int array x holds x, y and z
+         * (or dimension, x, y and z), or with y set, keys x, y and z (in a compound of the entry for "compound/key").
          */
         final boolean list;
 
@@ -124,6 +124,13 @@ public final class CoordinateLinks {
         add(automagy + "TileEntityThaumostaticPylon", point("", null, "bossY", null, null));
         add(automagy + "TileEntityInventarium", new Spec("Nodes", "pos", null, null, false, null, true),
             new Spec("MemoryUsers", "pos", null, null, false, null, true));
+        // Railcraft signals, signal boxes and switch motors: paired controllers/receivers/block signals, cached tracks
+        Spec[] signals = {new Spec("controller/pairings", "coords", null, null, false, null, true),
+            new Spec("receiver/pairings", "coords", null, null, false, null, true),
+            new Spec("SignalBlock/pairings", "coords", null, null, false, null, true),
+            new Spec("SignalBlock/trackCache", "key/x", "key/y", "key/z", false, "key/dim", true),
+            new Spec("SignalBlock/trackCache", "value/x", "value/y", "value/z", false, "value/dim", true)};
+        for (String tile : new String[] {"TileSignalBase", "TileBoxBase", "TileSwitchBase"}) add("mods.railcraft.common.blocks.signals." + tile, signals);
         // Extra Utilities energy nodes: the receivers they found
         add("com.rwtema.extrautils.tileentity.transfernodes.TileEntityTransferNodeEnergy", point("", "cx%d", "cy%d", "cz%d", null));
     }
@@ -227,7 +234,7 @@ public final class CoordinateLinks {
         int dimension = root.getInteger(MARKER);
         for (Spec spec : specs) {
             if (spec.list) {
-                positions(root, spec, mapping);
+                positions(root, spec, mapping, dimension);
                 continue;
             }
             NBTTagCompound tag = spec.path.isEmpty() ? root : root.hasKey(spec.path, 10) ? root.getCompoundTag(spec.path) : null;
@@ -257,8 +264,16 @@ public final class CoordinateLinks {
         }
     }
 
-    private static void positions(NBTTagCompound root, Spec spec, Mapping mapping) {
-        net.minecraft.nbt.NBTTagList list = root.getTagList(spec.path, 10);
+    private static void positions(NBTTagCompound root, Spec spec, Mapping mapping, int dimension) {
+        NBTTagCompound holder = root;
+        String path = spec.path;
+        int split = path.lastIndexOf('/');
+        if (split >= 0) {
+            if (!root.hasKey(path.substring(0, split), 10)) return;
+            holder = root.getCompoundTag(path.substring(0, split));
+            path = path.substring(split + 1);
+        }
+        net.minecraft.nbt.NBTTagList list = holder.getTagList(path, 10);
         for (int i = 0; i < list.tagCount(); i++) {
             NBTTagCompound entry = list.getCompoundTagAt(i);
             if (spec.y != null) {
@@ -268,7 +283,9 @@ public final class CoordinateLinks {
                     entry = entry.getCompoundTag(spec.x.substring(0, slash));
                 }
                 String x = spec.x.substring(slash + 1), y = spec.y.substring(slash + 1), z = spec.z.substring(slash + 1);
+                String dim = spec.dimension == null ? null : spec.dimension.substring(spec.dimension.lastIndexOf('/') + 1);
                 if (!entry.hasKey(x) || !entry.hasKey(y) || !entry.hasKey(z) || entry.getInteger(y) < 0) continue;
+                if (dim != null && entry.hasKey(dim) && entry.getInteger(dim) != dimension) continue;
                 double[] moved = mapping.map(new double[] {entry.getInteger(x), entry.getInteger(y), entry.getInteger(z)});
                 put(entry, x, moved[0]);
                 put(entry, y, moved[1]);
@@ -276,9 +293,13 @@ public final class CoordinateLinks {
                 continue;
             }
             int[] pos = entry.getIntArray(spec.x);
-            if (pos.length != 3 || pos[1] < 0) continue;
-            double[] moved = mapping.map(new double[] {pos[0], pos[1], pos[2]});
-            entry.setIntArray(spec.x, new int[] {(int) Math.round(moved[0]), (int) Math.round(moved[1]), (int) Math.round(moved[2])});
+            // [x, y, z] or [dimension, x, y, z]
+            int at = pos.length - 3;
+            if (at != 0 && at != 1 || pos[at + 1] < 0 || at == 1 && pos[0] != dimension) continue;
+            double[] moved = mapping.map(new double[] {pos[at], pos[at + 1], pos[at + 2]});
+            int[] result = pos.clone();
+            for (int j = 0; j < 3; j++) result[at + j] = (int) Math.round(moved[j]);
+            entry.setIntArray(spec.x, result);
         }
     }
 
