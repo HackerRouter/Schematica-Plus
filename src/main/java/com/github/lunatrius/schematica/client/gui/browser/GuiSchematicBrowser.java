@@ -505,10 +505,19 @@ public abstract class GuiSchematicBrowser extends UiScreen {
     }
 
     protected void layoutActions() {
+        // Upstream lets the row run under the menu button; here the buttons shrink (labels cut, full label on hover)
+        int total = 0, count = 0;
+        for (UiButton button : actions) {
+            if (!button.isVisible()) continue;
+            total += button.preferredWidth(fontRendererObj.getStringWidth(button.label())) + 4;
+            count++;
+        }
+        int available = (back.isVisible() ? back.bounds().x - 4 : width - 12) - 12;
+        double scale = total > available && total > 0 ? Math.max(0, available - 4.0 * count) / (total - 4.0 * count) : 1;
         int x = 12;
         for (UiButton button : actions) {
             if (!button.isVisible()) continue;
-            int w = button.preferredWidth(fontRendererObj.getStringWidth(button.label()));
+            int w = Math.max(20, (int) (button.preferredWidth(fontRendererObj.getStringWidth(button.label())) * scale));
             button.setBounds(x, height - 26, w, 20);
             x += w + 4;
         }
