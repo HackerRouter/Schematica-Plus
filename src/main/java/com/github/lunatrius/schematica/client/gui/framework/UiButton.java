@@ -15,6 +15,8 @@ public class UiButton extends UiWidget {
     private UiSprite sprite;
     private boolean background = true;
     private int pressed = -1;
+    /** The label did not fit when last drawn; it is then shown in full on hover (MaLiLib buttons are never cut). */
+    private boolean cut;
 
     public UiButton(Supplier<String> label, IntConsumer action) {
         this(label, null, action);
@@ -67,12 +69,14 @@ public class UiButton extends UiWidget {
         if (sprite != null) {
             sprite.draw(draw, box.x + (background ? 4 : 0), box.y + (box.height - sprite.height) / 2,
                 isEnabled(), hovered);
-            draw.text(draw.trim(label.get(), box.width - sprite.width - 12), box.x + sprite.width + 8,
-                box.y + (box.height - 8) / 2, color);
+            String shown = draw.trim(label.get(), box.width - sprite.width - 12);
+            cut = !shown.equals(label.get());
+            draw.text(shown, box.x + sprite.width + 8, box.y + (box.height - 8) / 2, color);
             drawIconHighlight(draw, hovered);
             return;
         }
         String text = draw.trim(label.get(), box.width - (icon == null ? 8 : 21));
+        cut = !text.equals(label.get());
         if (icon != null) icon.draw(draw, box.x + 5, box.y + (box.height - 7) / 2, color);
         int x = icon == null ? box.x + (box.width - draw.textWidth(text)) / 2 : box.x + 17;
         draw.text(text, x, box.y + (box.height - 8) / 2, color);
@@ -84,6 +88,12 @@ public class UiButton extends UiWidget {
             draw.fill(bounds(), 0x20C0C0C0);
             draw.border(bounds(), 0xE0FFFFFF);
         }
+    }
+
+    @Override
+    public java.util.List<String> tooltip(int mouseX, int mouseY) {
+        java.util.List<String> lines = super.tooltip(mouseX, mouseY);
+        return lines.isEmpty() && cut ? java.util.Collections.singletonList(label.get()) : lines;
     }
 
     @Override

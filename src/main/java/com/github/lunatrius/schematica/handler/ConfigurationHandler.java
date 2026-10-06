@@ -34,7 +34,7 @@ public class ConfigurationHandler {
     public static final boolean SHOW_DEBUG_INFO_DEFAULT = true;
     public static final boolean EXTENDED_ID_FORMAT_DEFAULT = false;
     public static final boolean ENABLE_ALPHA_DEFAULT = false;
-    public static final double ALPHA_DEFAULT = 1.0;
+    public static final double ALPHA_DEFAULT = 0.5;
     public static final boolean HIGHLIGHT_DEFAULT = true;
     public static final boolean HIGHLIGHT_AIR_DEFAULT = true;
     public static final double BLOCK_DELTA_DEFAULT = 0.005;

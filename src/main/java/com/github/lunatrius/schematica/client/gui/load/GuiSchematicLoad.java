@@ -234,10 +234,15 @@ public final class GuiSchematicLoad extends GuiSchematicBrowser {
     protected void tickScreen() {
         super.tickScreen();
         SchematicBrowserModel.Entry entry = selection();
-        boolean list = listFile(entry);
-        load.setEnabled(SchematicaPlus.proxy.isLoadEnabled && mc.theWorld != null && entry != null && !entry.directory && !list);
-        renameFile.setEnabled(entry != null && !entry.directory);
-        materialList.setEnabled(entry != null && !entry.directory && mc.theWorld != null);
-        renameSchematic.setEnabled(entry != null && !entry.directory && !list);
+        boolean list = listFile(entry), file = entry != null && !entry.directory;
+        // GuiSchematicLoad.createButtons: schematic files get all four, material list files Material List and Rename File
+        boolean changed = load.isVisible() != (file && !list) || materialList.isVisible() != file;
+        load.setVisible(file && !list);
+        renameSchematic.setVisible(file && !list);
+        materialList.setVisible(file);
+        renameFile.setVisible(file);
+        load.setEnabled(SchematicaPlus.proxy.isLoadEnabled && mc.theWorld != null);
+        materialList.setEnabled(mc.theWorld != null);
+        if (changed) layoutActions();
     }
 }

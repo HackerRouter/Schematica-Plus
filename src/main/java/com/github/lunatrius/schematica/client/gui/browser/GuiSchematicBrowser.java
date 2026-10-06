@@ -507,6 +507,7 @@ public abstract class GuiSchematicBrowser extends UiScreen {
     protected void layoutActions() {
         int x = 12;
         for (UiButton button : actions) {
+            if (!button.isVisible()) continue;
             int w = button.preferredWidth(fontRendererObj.getStringWidth(button.label()));
             button.setBounds(x, height - 26, w, 20);
             x += w + 4;

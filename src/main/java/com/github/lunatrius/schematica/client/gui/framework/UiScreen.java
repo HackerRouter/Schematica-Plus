@@ -55,7 +55,6 @@ public abstract class UiScreen extends GuiScreen {
         UiButton button = root.add(new UiButton(() -> UiTranslations.format(key), mouseButton -> {
             if (mouseButton == 0) action.run();
         }));
-        button.setTooltip(UiTranslations.format(key));
         return button;
     }
 

@@ -83,7 +83,6 @@ public class GuiModConfig extends UiScreen implements HotkeyHooks.Capture {
     private RenderLayerPanel layers;
     private UiButton searchButton;
     private UiButton keySearch;
-    private UiButton done;
     private UiTextField search;
     private UiLabel status;
     private boolean searchOpen;
@@ -125,7 +124,6 @@ public class GuiModConfig extends UiScreen implements HotkeyHooks.Capture {
         keySearch = root.add(new UiButton(() -> capturingButton == keySearch ? captureLabel() : keyLabel(keyFilter),
             button -> beginCapture(null, keySearch)));
         rows = root.add(new UiRowList<>(model, (entry, index) -> new ConfigRow(entry), 12));
-        done = addButton("gui.done", this::closeScreen);
         status = root.add(new UiLabel(this::statusText, 0xFFFFA0A0));
         layers = root.add(new RenderLayerPanel(fontRendererObj, RenderLayerSettings.RANGE, () -> input.focus(null)));
         refreshEntries();
@@ -167,8 +165,6 @@ public class GuiModConfig extends UiScreen implements HotkeyHooks.Capture {
         int y = 26;
         for (Tab value : Tab.values()) {
             UiButton button = tabs.get(value);
-            button.setVisible(tab != Tab.RENDER_LAYERS || value != Tab.ALL);
-            if (!button.isVisible()) continue;
             int w = fontRendererObj.getStringWidth(button.label()) + 10;
             if (x > 10 && x + w > width - 10) { x = 10; y += 22; }
             button.setBounds(x, y, w, 20);
@@ -181,7 +177,6 @@ public class GuiModConfig extends UiScreen implements HotkeyHooks.Capture {
         layers.layout(root.bounds());
         rows.setVisible(!renderingLayers);
         searchButton.setVisible(!renderingLayers);
-        done.setVisible(!renderingLayers);
         status.setVisible(!renderingLayers);
         int listY = y + 24;
         boolean withKeys = tab.keySearch();
@@ -192,9 +187,8 @@ public class GuiModConfig extends UiScreen implements HotkeyHooks.Capture {
         keySearch.setBounds(width - 174, listY + 4, 140, 20);
         keySearch.setVisible(!renderingLayers && searchOpen && withKeys);
         int rowY = listY + 4 + (withKeys ? 23 : 17);
-        rows.setBounds(12, rowY, Math.max(1, width - 24), Math.max(0, height - 34 - rowY));
-        done.setBounds(10, height - 26, 80, 20);
-        status.setBounds(98, height - 24, Math.max(0, width - 110), 16);
+        rows.setBounds(12, rowY, Math.max(1, width - 24), Math.max(0, height - 30 - rowY));
+        status.setBounds(10, height - 24, Math.max(0, width - 20), 16);
     }
 
     @Override
