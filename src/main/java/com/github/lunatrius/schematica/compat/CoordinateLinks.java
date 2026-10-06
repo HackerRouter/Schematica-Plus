@@ -149,6 +149,8 @@ public final class CoordinateLinks {
         add("com.darkona.adventurebackpack.block.TileAdventureBackpack", point("", "sbx", "sby", "sbz", null));
         add("mods.railcraft.common.blocks.machine.alpha.TileAnchorWorld", triple("prev"));
         add("micdoodle8.mods.galacticraft.planets.mars.tile.TileEntityLaunchController", triple("ChunkLoaderTile"));
+        // Storage Drawers controller slaves: their controller
+        add("com.jaquadro.minecraft.storagedrawers.block.tile.TileEntitySlave", point("Controller", "x", "y", "z", null));
         // Extra Utilities energy nodes: the receivers they found
         add("com.rwtema.extrautils.tileentity.transfernodes.TileEntityTransferNodeEnergy", point("", "cx%d", "cy%d", "cz%d", null));
     }

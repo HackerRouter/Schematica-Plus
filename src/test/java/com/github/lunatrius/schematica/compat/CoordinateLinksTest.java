@@ -260,6 +260,12 @@ public class CoordinateLinksTest {
         drain.setInteger("xCenter", 102); drain.setInteger("yCenter", 61); drain.setInteger("zCenter", 200);
         CoordinateLinks.shift(CoordinateLinks.rulesFor("mantle.blocks.abstracts.MultiServantLogic"), drain, -100, -60, -200);
         assertEquals(2, drain.getInteger("xCenter"));
+        NBTTagCompound slave = new NBTTagCompound(), controller = new NBTTagCompound();
+        slave.setInteger(CoordinateLinks.MARKER, 0);
+        controller.setInteger("x", 103); controller.setInteger("y", 64); controller.setInteger("z", 205);
+        slave.setTag("Controller", controller);
+        CoordinateLinks.shift(CoordinateLinks.rulesFor("com.jaquadro.minecraft.storagedrawers.block.tile.TileEntitySlave"), slave, -100, -60, -200);
+        assertEquals(5, slave.getCompoundTag("Controller").getInteger("z"));
         assertEquals(1, drain.getInteger("yCenter"));
     }
 }

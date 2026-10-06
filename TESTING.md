@@ -1870,7 +1870,8 @@ Test in GTNH 2.8.4 (NEI 2.8.44) and GTNH 2.9 (NEI 2.8.145); without NEI the butt
   metal inside: save, paste elsewhere rotated and mirrored. The copy forms without breaking a block, its drains and
   tanks belong to the copied controller, molten metal renders inside the copied walls, channels keep their open
   outputs and contents turned with the build. Also a Draconic portal (dislocator receptacle frame), a deployed Adventure
-  Backpack sleeping bag, a Railcraft world anchor and a Galacticraft launch controller: links follow the copy.
+  Backpack sleeping bag, a Railcraft world anchor, a Galacticraft launch controller and Storage Drawers with a
+  controller and controller slaves: links follow the copy (the copied slaves serve the copied controller).
 
 ## Thaumcraft, BiblioCraft, Witchery and Extra Utilities under rotation and mirroring
 
