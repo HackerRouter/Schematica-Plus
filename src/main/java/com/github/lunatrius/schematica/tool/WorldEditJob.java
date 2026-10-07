@@ -426,6 +426,11 @@ public final class WorldEditJob extends WorldEditTask {
                 }
             }
             int stored = world.getBlockMetadata(wx, wy, wz);
+            // Placement callbacks may choose a new facing before the saved tile data is restored.
+            if (silentPlacement == null && world.getBlock(wx, wy, wz) == block && stored != meta && stored != (meta & 15)) {
+                world.setBlockMetadataWithNotify(wx, wy, wz, meta, 2);
+                stored = world.getBlockMetadata(wx, wy, wz);
+            }
             // without EndlessIDs the world keeps only the low 4 bits of extended metadata
             if (world.getBlock(wx, wy, wz) == block && (stored == meta || stored == (meta & 15))) {
                 if (kind == Kind.PASTE && block.hasTileEntity(meta)) {

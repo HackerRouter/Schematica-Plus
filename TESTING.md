@@ -1959,7 +1959,10 @@ Dedicated GTNH server fixture (fresh disposable world, creative + op):
   energy, input bus, output bus, maintenance and muffler hatches. Require the controller
   to form normally. Its 12 Tungstensteel frames have metadata **316**.
 - Include a named chest with seven diamonds, a four-line sign and red wool beside
-  the machine. Save `(-12,79,-1)..(4,84,4)` using
+  the machine. Face the chest south, then put the wool immediately west of it;
+  this catches the chest placement callback auto-facing east and skipping saved NBT.
+  Keep `pasteWithoutUpdates=false` and require the saved chest facing, custom name
+  and all seven diamonds after pasting. Save `(-12,79,-1)..(4,84,4)` using
   `/schematicaSave -12 79 -1 4 84 4 net_meta316`, then download it with
   `/schematicaDownload net_meta316.schemplus`. Do not copy the file between instances.
   The 17-block width puts six extended-metadata frames in each of two download chunks.
@@ -1980,3 +1983,8 @@ Dedicated GTNH server fixture (fresh disposable world, creative + op):
   cannot be concealed by a separate NBT validation error. Re-enable and reconnect;
   the same operation must succeed. Legacy servers without the protocol retain their
   documented command fallback.
+
+- Adjacent-container follow-up: paste a double chest with a solid block north of it and
+  stored metadata 2 on both halves. Check both halves after the entire operation;
+  the later placement callback can reface the earlier chest. Repeat with rotation
+  and mirror, checking both inventories. This remains a separate unverified case.
