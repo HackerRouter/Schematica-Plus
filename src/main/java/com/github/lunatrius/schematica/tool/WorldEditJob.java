@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import net.minecraft.block.Block;
+import net.minecraft.block.BlockChest;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityList;
 import net.minecraft.init.Blocks;
@@ -50,6 +51,7 @@ public final class WorldEditJob extends WorldEditTask {
     private BitSet selected;
     private final SilentBlockPlacement silentPlacement;
     private int cursor, phase, entityCursor;
+    private boolean metadataPassComplete;
 
     public WorldEditJob(UUID player, int dimension, Kind kind, int x, int y, int z,
         int width, int height, int length, Block replacement, int replacementMeta, Block target, int targetMeta) {
@@ -69,6 +71,7 @@ public final class WorldEditJob extends WorldEditTask {
         this.pasteWithoutUpdates = kind == Kind.PASTE && pasteWithoutUpdates;
         this.replace = kind == Kind.PASTE ? replace : ReplaceBehavior.ALL;
         this.silentPlacement = this.pasteWithoutUpdates ? new SilentBlockPlacement() : null;
+        this.metadataPassComplete = kind != Kind.PASTE || this.pasteWithoutUpdates;
     }
 
     public void capture(ISchematic source, boolean blockNBT, boolean includeEntities) {
@@ -382,7 +385,24 @@ public final class WorldEditJob extends WorldEditTask {
     public void publishProgress(TaskRegistry.Task task) {
         TaskRegistry.Stage stage = phase == 0 ? TaskRegistry.Stage.STRUCTURE : phase == 1
             ? TaskRegistry.Stage.DECORATIONS : phase == 2 ? TaskRegistry.Stage.UPDATES : TaskRegistry.Stage.ENTITIES;
-        task.update(stage, phase < 3 ? cursor : entityCursor, phase < 3 ? volume : entities.size(), blockCount, entityCount);
+        long completed = phase < 3 ? cursor : entityCursor, total = phase < 3 ? volume : entities.size();
+        if (phase == 2 && kind == Kind.PASTE && !pasteWithoutUpdates) {
+            total *= 2;
+            if (metadataPassComplete) completed += volume;
+        }
+        task.update(stage, completed, total, blockCount, entityCount);
+    }
+
+    private boolean restoreMetadata(WorldServer world, int wx, int wy, int wz, Block block, int meta) {
+        if (world.getBlock(wx, wy, wz) != block) return false;
+        int stored = world.getBlockMetadata(wx, wy, wz);
+        // Placement callbacks may change this block's facing when another block is placed later.
+        if (silentPlacement == null && stored != meta && stored != (meta & 15)) {
+            world.setBlockMetadataWithNotify(wx, wy, wz, meta, 2);
+            stored = world.getBlockMetadata(wx, wy, wz);
+        }
+        // Without EndlessIDs the world keeps only the low 4 bits of extended metadata.
+        return world.getBlock(wx, wy, wz) == block && (stored == meta || stored == (meta & 15));
     }
 
     /** Process one cell/entity, returning true only when all phases are finished. */
@@ -393,7 +413,12 @@ public final class WorldEditJob extends WorldEditTask {
             if (!cancelled) removeEntities(world);
         }
         if (phase < 3) {
-            if (cursor == volume) { cursor = 0; phase++; return false; }
+            if (cursor == volume) {
+                cursor = 0;
+                if (phase == 2 && !metadataPassComplete) metadataPassComplete = true;
+                else phase++;
+                return false;
+            }
             int index = cursor++;
             if (selected != null && !selected.get(index)) return false;
             int wx = x + index % width, wz = z + index / width % length, wy = y + index / width / length;
@@ -402,6 +427,14 @@ public final class WorldEditJob extends WorldEditTask {
             if (block == null) return false;
             if (phase == 2) {
                 if (!placed.get(index) || pasteWithoutUpdates) return false;
+                // Later chest placement can turn the other half; preserve normal changes to other blocks.
+                if (!metadataPassComplete) {
+                    if (block instanceof BlockChest && world.getBlock(wx, wy, wz) == block
+                        && !restoreMetadata(world, wx, wy, wz, block, meta) && world.getBlock(wx, wy, wz) == block) {
+                        throw new IllegalStateException("Could not restore pasted chest metadata at " + wx + ", " + wy + ", " + wz);
+                    }
+                    return false;
+                }
                 world.markBlockForUpdate(wx, wy, wz);
                 world.notifyBlocksOfNeighborChange(wx, wy, wz, block);
                 return false;
@@ -425,14 +458,7 @@ public final class WorldEditJob extends WorldEditTask {
                     world.restoringBlockSnapshots = previous;
                 }
             }
-            int stored = world.getBlockMetadata(wx, wy, wz);
-            // Placement callbacks may choose a new facing before the saved tile data is restored.
-            if (silentPlacement == null && world.getBlock(wx, wy, wz) == block && stored != meta && stored != (meta & 15)) {
-                world.setBlockMetadataWithNotify(wx, wy, wz, meta, 2);
-                stored = world.getBlockMetadata(wx, wy, wz);
-            }
-            // without EndlessIDs the world keeps only the low 4 bits of extended metadata
-            if (world.getBlock(wx, wy, wz) == block && (stored == meta || stored == (meta & 15))) {
+            if (restoreMetadata(world, wx, wy, wz, block, meta)) {
                 if (kind == Kind.PASTE && block.hasTileEntity(meta)) {
                     NBTTagCompound tag = tiles.get(index);
                     TileEntity tile;

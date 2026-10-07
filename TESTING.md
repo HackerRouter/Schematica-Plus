@@ -1984,7 +1984,27 @@ Dedicated GTNH server fixture (fresh disposable world, creative + op):
   the same operation must succeed. Legacy servers without the protocol retain their
   documented command fallback.
 
-- Adjacent-container follow-up: paste a double chest with a solid block north of it and
-  stored metadata 2 on both halves. Check both halves after the entire operation;
-  the later placement callback can reface the earlier chest. Repeat with rotation
-  and mirror, checking both inventories. This remains a separate unverified case.
+Adjacent double-chest placement callbacks (normal updates):
+
+- In a fresh test area, place two chests side by side facing NORTH (metadata 2), then
+  add a wall north of both. For console construction, leave the north side clear,
+  temporarily put stone south of both, and create each chest once with its full NBT.
+  Remove the south stones and add the north wall. Do not use a second `setblock`
+  to change chest metadata: in 1.7.10 it can break the chest and drop its inventory.
+- Give the west half the name `Double A Diamonds` and seven diamonds in local slot 0;
+  give the east half `Double B Emeralds` and eleven emeralds in local slot 26.
+  Save and download the area through the dedicated server. Keep normal updates,
+  block NBT and inventories enabled; paste into empty destinations.
+- Test NONE/NONE, CW_90/NONE and NONE/FRONT_BACK. Require both metadata values to
+  be 2/2, 5/5 and 2/2 respectively after the entire paste and a world save. The X
+  mirror must move each half's name and inventory with that half. Before the fix,
+  the second placement callback changed the first half from 2 to 3 in a plain paste.
+- Open both halves in every copy. Each must expose the same six-row, 54-slot
+  inventory. Plain/CW_90: diamonds in global slot 0, emeralds in slot 53, title A.
+  FRONT_BACK: diamonds in slot 27, emeralds in slot 26, title B. No items may be
+  duplicated, lost or reassigned between halves.
+- The extra metadata pass must only repair surviving chest blocks. Test a long
+  paste alongside flowing water/lava and other ticking blocks: normal world changes
+  must not cause a new metadata-restoration failure or prevent remaining updates
+  and entities. Unit regressions separately cover cancellation, skipped cells,
+  silent placement, rejected chest metadata writes and progress across both scans.
