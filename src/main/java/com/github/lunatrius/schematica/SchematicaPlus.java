@@ -36,7 +36,7 @@ public class SchematicaPlus {
     @SidedProxy(serverSide = Reference.PROXY_SERVER, clientSide = Reference.PROXY_CLIENT)
     public static CommonProxy proxy;
 
-    private final ArtifactVersion minimumClientJoinVersion = new DefaultArtifactVersion("1.0.0-beta.1");
+    private static final ArtifactVersion MINIMUM_CLIENT_JOIN_VERSION = new DefaultArtifactVersion("1.0.0-beta.1");
 
     public SchematicaPlus() {
         String conflict = findLegacyMod(Loader.instance().getIndexedModList().keySet());
@@ -65,8 +65,14 @@ public class SchematicaPlus {
     @SuppressWarnings("unused")
     @NetworkCheckHandler
     public boolean checkModList(Map<String, String> versions, Side side) {
+        return acceptsRemoteMods(Reference.VERSION, versions, side);
+    }
+
+    static boolean acceptsRemoteMods(String localVersion, Map<String, String> versions, Side side) {
         if (side == Side.CLIENT && versions.containsKey(Reference.MODID)) {
-            return minimumClientJoinVersion.compareTo(new DefaultArtifactVersion(versions.get(Reference.MODID))) <= 0;
+            String remoteVersion = versions.get(Reference.MODID);
+            return localVersion.equals(remoteVersion)
+                || MINIMUM_CLIENT_JOIN_VERSION.compareTo(new DefaultArtifactVersion(remoteVersion)) <= 0;
         }
         return true;
     }

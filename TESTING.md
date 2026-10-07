@@ -1201,6 +1201,12 @@ These checks supersede Phase 12's Simple-editor and bounding-box expectations.
 Needs a dedicated server (and a LAN-opened singleplayer world) running this build;
 compare with a server that does not have the mod and with each server option off.
 
+- Development-build login: install the same untagged main JAR on a dedicated server
+  and client, including a git-hash/dirty version. Join and require the world to open
+  without a `Mod rejections [FMLMod:schematica_plus{...}]` screen. Check the client's
+  `Server capabilities{...}` log after joining. `SchematicaPlusTest` separately checks
+  the release-version floor and peers without Plus; matching hashes must not be
+  interpreted as release numbers below `1.0.0-beta.1`.
 - Accurate placement: with easyPlaceProtocolVersion Auto/V3/V2, Easy Place and the
   printer place stairs (all facings and upside down), slabs (top/bottom), logs/pillars
   (all axes, quartz pillars), pistons/dispensers/droppers/hoppers (all six facings),
@@ -1934,4 +1940,3 @@ Test in GTNH 2.8.4 (NEI 2.8.44) and GTNH 2.9 (NEI 2.8.145); without NEI the butt
 - Same with an AE2 build mirrored: cables connect to the mirrored sides, controllers light up, Assembly Lines form.
 - Multiplayer: download the schematic from a server (`/schematicaDownload`) and paste it through the remote edit
   path; the frames keep their material.
-

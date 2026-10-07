@@ -8,7 +8,7 @@ audience: the next developer, working in a cloud container that has the GitHub r
 language: English context; communicate with the user in Chinese
 repository: https://github.com/HackerRouter/Schematica-Plus
 branch: master (all work is committed and pushed to origin/master; there is no other working branch)
-latest_validation: build + Checkstyle + 504 JUnit tests, 0 failures (run with LC_ALL=C.UTF-8)
+latest_validation: build + Checkstyle + 509 JUnit tests, 0 failures (run with LC_ALL=C.UTF-8)
 game_runs: development client (vanilla) and GTNH 2.9.0-RC-2 under Xvfb + Mesa llvmpipe, see section 2A
 ```
 
@@ -396,6 +396,7 @@ This is the reconciled known backlog, not a promise that every upstream Configs 
 
 ### P3: Integration, persistence and finish work
 
+- `VISUAL_CHECKED_HEADLESS` (2026-10-07): matching development builds pass the dedicated-server version check (`SchematicaPlus.acceptsRemoteMods`). The first GTNH 2.9.0-RC-2 connection with the same `db05cb5` runtime JAR on both sides was rejected because its git hash compared below `1.0.0-beta.1`. Equal version strings now pass before the existing minimum-release comparison; optional clients and remote-server checks retain their previous behavior. Five added `SchematicaPlusTest` cases cover matching hashes/dirty versions, release bounds and optional peers. After rebuilding, the cloud client entered the dedicated GTNH server and received `remoteEdit=true` capabilities; both used the same main JAR (SHA-256 `0c877d46e4b1a85ac91a1a7e6f38e0839cc25937e4d05129b2b0da8e57a1b024`). Build, Checkstyle and 509 tests passed. Screenshots and before/after logs are outside the repository in `/workspace/multiplayer-validation`.
 - `IMPLEMENTED_HEADLESS` (2026-10-01): remote full-NBT edit protocol, the Plus counterpart of Servux paste. On a server advertising `supportsRemoteEdit`, Paste/Fill/Replace/Delete/delete-by-placement/VCS edits are encoded by `WorldEditJob.write` (registry-name palette, metadata, region mask, tile and entity NBT, entity-removal boxes, replace behavior, without-updates), gzip-compressed (≤32 MiB) and uploaded in 30000-byte `MessageEditUpload` slices by `handler/client/RemoteEditClient` (Task Manager stage Upload, cancellable). `handler/RemoteEdits` reassembles per player, decodes off-thread with an NBT size limit, validates every size/name/index (`WorldEditJob.read`), checks creative + op level 2 like MOVE and runs the job in the server `WorldEditQueue`; `MessageEditStatus` returns accepted/progress/finished/failed/rejected with Litematica finish messages from the server. Config `remoteEditsEnabled`. Other servers keep the `/setblock` fallback (no NBT, no update suppression, entities kept, reports commands sent).
 - `PARITY_AUDIT`: Bounds, stale callbacks, closing screens, task cancellation/disconnect, dimension transitions, concurrent source reload, deleted files and shared-source edits. Maintain bounded budgets and no false success on partial/unreadable work.
 - `OPEN`: Pixel/layout parity and native input checks at GUI scales 1/2/3/Auto, 320x240, Unicode fonts and all locales. Long labels, button widths, icon hover border, click sounds and modal focus must remain correct. Existing hand-built adapters may differ from modern MaLiLib under resource packs/fonts; compare actual behavior.
