@@ -166,15 +166,15 @@ It starts `Xvfb :99` and `./gradlew runClient21` (Java 21, lwjgl3ify), logs to `
 
 ### GTNH 2.9.0-RC-2 instance (322 mods)
 
-There is no RC zip on downloads.gtnewhorizons.com, so the instance is assembled from the release manifest. Paths are examples (`/home/user/gtnh` outside the repository):
+Beta/RC MultiMC zips are at https://downloads.gaytnh.com/Multi_mc_downloads/betas/ (e.g. `GT_New_Horizons_2.9.0-RC-2_Java_17-26.zip`, which the user plays; the same path on downloads.gtnewhorizons.com is 404). Using that zip's `.minecraft/mods` is the simplest way to match the user's client exactly. The instance below was instead assembled from the release manifest. Paths are examples (`/home/user/gtnh` outside the repository):
 
 ```sh
 G=/home/user/gtnh; mkdir -p $G/rc2/mods && cd $G
 git clone --filter=blob:none https://github.com/GTNewHorizons/DreamAssemblerXXL DAXXL
 python3 /home/user/Schematica-Plus/tools/headless/gtnh/mod_list.py DAXXL 2.9.0-RC-2 mods.json
 python3 /home/user/Schematica-Plus/tools/headless/gtnh/get_mods.py mods.json rc2/mods > getmods.log
-#  Automagy-GTNH 0.29.8 has only a dev jar: take Automagy-1.7.10-0.28.2.jar from the 2.8.4 MultiMC zip
-#  https://downloads.gtnewhorizons.com/Multi_mc_downloads/GT_New_Horizons_2.8.4_Java_17-25.zip
+#  Automagy-GTNH 0.29.8 is not on GitHub/nexus as a release jar; take Automagy-0.29.8-GTNH.jar from the RC-2 zip above
+#  (a 0.28.2 substitute loads, but a server with it rejects RC-2 clients)
 rm rc2/mods/Schematica-*-GTNH.jar          # the original Schematica: Plus refuses to load beside it
 cp /home/user/Schematica-Plus/build/libs/schematica_plus-<version>.jar rc2/mods/   # the main jar, not -dev/-sources/-api
 git clone https://github.com/GTNewHorizons/GT-New-Horizons-Modpack packrepo
@@ -191,6 +191,7 @@ python3 /home/user/Schematica-Plus/tools/headless/gtnh/mklaunch.py lwjgl3ify-mmc
 - Loading to the main menu takes about 4 minutes: wait for "Forge Mod Loader has successfully loaded 322 mods" and the second "Sound engine started" in the log, then `DISPLAY_NUM=:98 tools/headless/x.sh window`.
 - Original Schematica and Plus together: Plus's incompatibility screen appears (checked); there must be no FML sorting cycle.
 - New worlds are fixed to Realistic Alpha; creating one takes about a minute.
+- **Dedicated server (checked 2026-10-07):** `server_assets/forge/` of the DAXXL checkout is the server skeleton (forge universal, minecraft_server, libraries, `java9args.txt`); add `lwjgl3ify-forgePatches.jar` from the MultiMC zip's `libraries/`, the BOTH/SERVER mods of `mods.json` (not CLIENT), the Plus jar, `config/` and `serverutilities/` from the pack repo, `eula=true`. Start: `java -Xms4G -Xmx8G -Dfml.readTimeout=180 @java9args.txt -jar lwjgl3ify-forgePatches.jar nogui` (295 mods, about a minute). Feed the console through a FIFO to run `op` and `stop`. Players outside the container can join over Tailscale (tailscaled works with the kernel TUN device; traffic goes through DERP relays, no UDP), using an auth key the user provides; delete the key after use.
 - **User saves:** copy them into `rc2/saves/`, delete `session.lock`, run `tools/headless/gtnh/world_cheats.py rc2/saves/<world>/level.dat` on the copy (Creative + commands). Saves from older packs ask about missing blocks (FML) and a ChunkAPI/EndlessIDs migration: answer Yes, on the copy only. A 2.7-era save in a 2.9 instance loaded fine that way.
 
 ### Driving the game
