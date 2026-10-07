@@ -81,6 +81,28 @@ public class RemoteEditCodecTest {
         assertEquals(tag, read.write());
     }
 
+    @Test public void extendedMetadataTravelsAsAHighByteArray() {
+        NBTTagCompound tag = paste();
+        tag.setByteArray("meta", new byte[] {60, 3, 7, 15});
+        tag.setByteArray("metaHigh", new byte[] {1, 0, 0, 0});
+        NBTTagCompound written = WorldEditJob.read(tag, UUID.randomUUID(), 0).write();
+        assertEquals(tag, written);
+
+        NBTTagCompound low = paste();
+        assertTrue(!WorldEditJob.read(low, UUID.randomUUID(), 0).write().hasKey("metaHigh"));
+
+        NBTTagCompound broken = paste();
+        broken.setByteArray("metaHigh", new byte[] {1});
+        assertThrows(IllegalArgumentException.class, () -> WorldEditJob.read(broken, UUID.randomUUID(), 0));
+    }
+
+    @Test public void fillsWithExtendedMetadataKeepIt() {
+        WorldEditJob source = new WorldEditJob(UUID.randomUUID(), 0, WorldEditJob.Kind.REPLACE, 0, 1, 2, 3, 4, 5, first, 316, second, 6);
+        NBTTagCompound tag = source.write();
+        assertEquals(316, tag.getInteger("replacementMeta"));
+        assertEquals(tag, WorldEditJob.read(tag, source.player, 0).write());
+    }
+
     @Test public void fillsAndReplacesKeepTheirBlocks() {
         WorldEditJob source = new WorldEditJob(UUID.randomUUID(), 0, WorldEditJob.Kind.REPLACE, 0, 1, 2, 3, 4, 5, first, 2, second, 6);
         NBTTagCompound tag = source.write();

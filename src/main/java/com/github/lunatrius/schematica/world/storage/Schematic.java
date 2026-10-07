@@ -24,7 +24,8 @@ public class Schematic implements ISchematic {
 
     private ItemStack icon;
     private final short[][][] blocks;
-    private final byte[][][] metadata;
+    /** 16 bits, for EndlessIDs extended metadata. */
+    private final short[][][] metadata;
     private final List<TileEntity> tileEntities = new ArrayList<>();
     private final List<Entity> entities = new ArrayList<>();
     private final int width;
@@ -63,7 +64,7 @@ public class Schematic implements ISchematic {
         com.github.lunatrius.schematica.util.SchematicLimits.volume(width, height, length);
         this.icon = icon;
         this.blocks = new short[width][height][length];
-        this.metadata = new byte[width][height][length];
+        this.metadata = new short[width][height][length];
 
         this.width = width;
         this.height = height;
@@ -143,7 +144,7 @@ public class Schematic implements ISchematic {
             return 0;
         }
 
-        return this.metadata[x][y][z] & 255;
+        return this.metadata[x][y][z] & 0xffff;
     }
 
     @Override
@@ -152,7 +153,7 @@ public class Schematic implements ISchematic {
             return false;
         }
 
-        this.metadata[x][y][z] = (byte) metadata;
+        this.metadata[x][y][z] = (short) metadata;
         return true;
     }
 

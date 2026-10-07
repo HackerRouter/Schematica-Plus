@@ -97,7 +97,7 @@ public class SchematicLitematica extends SchematicFormat {
         Block block = registered(entry.getString("Name"));
         if (block == null) return translator.translate(state);
         if (entry.hasKey(LitematicExport.META_KEY) || !entry.hasKey("Properties")) {
-            return new BlockMapping(block, entry.getInteger(LitematicExport.META_KEY) & 15);
+            return new BlockMapping(block, entry.getInteger(LitematicExport.META_KEY) & 0xffff);
         }
         BlockMapping translated = translator.translate(state);
         return translated.block == block ? translated : new BlockMapping(block, 0);

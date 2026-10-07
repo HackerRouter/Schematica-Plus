@@ -148,7 +148,7 @@ public final class VanillaStructure extends SchematicFormat {
                     if (!schematic.containsBlock(x, y, z)) continue;
                     Block block = schematic.getBlock(x, y, z);
                     int meta = schematic.getBlockMetadata(x, y, z);
-                    long blockKey = (long) (block == null ? -1 : net.minecraft.block.Block.getIdFromBlock(block)) << 4 | (meta & 15);
+                    long blockKey = (long) (block == null ? -1 : net.minecraft.block.Block.getIdFromBlock(block)) << 16 | (meta & 0xffff);
                     Integer index = indices.get(blockKey);
                     if (index == null) {
                         NBTTagCompound entry = LitematicExport.paletteEntry(block, meta);

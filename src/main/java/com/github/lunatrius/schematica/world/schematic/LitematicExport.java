@@ -116,11 +116,11 @@ public final class LitematicExport {
     static NBTTagCompound paletteEntry(Block block, int meta) {
         String name = block == null ? null : GameData.getBlockRegistry().getNameForObject(block);
         if (name == null || name.equals("minecraft:air")) return null;
-        String state = LegacyBlockStates.state(name, meta & 15);
+        String state = meta <= 15 ? LegacyBlockStates.state(name, meta) : null;
         if (state != null) return LegacyBlockStates.tag(state);
         NBTTagCompound tag = new NBTTagCompound();
         tag.setString("Name", name);
-        if (meta != 0) tag.setInteger(META_KEY, meta & 15);
+        if (meta != 0) tag.setInteger(META_KEY, meta);
         return tag;
     }
 
@@ -141,7 +141,7 @@ public final class LitematicExport {
                     if (part != null) { block = part.getBlock(x, y, z); meta = part.getBlockMetadata(x, y, z); }
                     else if (schematic.containsBlock(sx, sy, sz)) { block = schematic.getBlock(sx, sy, sz); meta = schematic.getBlockMetadata(sx, sy, sz); }
                     else continue;
-                    long key = (long) (block == null ? -1 : GameData.getBlockRegistry().getId(block)) << 4 | (meta & 15);
+                    long key = (long) (block == null ? -1 : GameData.getBlockRegistry().getId(block)) << 16 | (meta & 0xffff);
                     Integer index = indices.get(key);
                     if (index == null) {
                         NBTTagCompound entry = paletteEntry(block, meta);

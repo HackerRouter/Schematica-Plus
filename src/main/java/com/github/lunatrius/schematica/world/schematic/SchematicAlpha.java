@@ -42,6 +42,8 @@ public class SchematicAlpha extends SchematicFormat {
         int size = com.github.lunatrius.schematica.util.SchematicLimits.volume(width, height, length);
         int[] ids = SchematicBlockIds.read(tagCompound, size);
         byte[] metadata = tagCompound.getByteArray(Names.NBT.DATA);
+        byte[] metadataHigh = tagCompound.getByteArray(DATA_HIGH);
+        if (metadataHigh.length != 0 && metadataHigh.length != size) throw new IllegalArgumentException("Invalid extended metadata array");
         Map<Integer, Block> mapping = new HashMap<>();
         boolean hasMapping = tagCompound.hasKey(Names.NBT.MAPPING_SCHEMATICA);
         if (hasMapping) {
@@ -62,7 +64,8 @@ public class SchematicAlpha extends SchematicFormat {
                 for (int x = 0; x < width; x++) {
                     int index = x + (y * length + z) * width;
                     Block block = hasMapping ? mapping.get(ids[index]) : BLOCK_REGISTRY.getObjectById(ids[index]);
-                    schematic.setBlock(x, y, z, block == null ? Blocks.air : block, metadata[index] & 255);
+                    int meta = (metadata[index] & 255) | (metadataHigh.length == 0 ? 0 : (metadataHigh[index] & 255) << 8);
+                    schematic.setBlock(x, y, z, block == null ? Blocks.air : block, meta);
                 }
             }
         }
@@ -97,6 +100,8 @@ public class SchematicAlpha extends SchematicFormat {
 
     /** Independent (possibly overlapping) region contents of a .schemplus, each as a nested Alpha schematic. */
     static final String REGION_DATA = "SchematicaPlusRegionData";
+    /** High byte of EndlessIDs extended metadata (above 255), .schemplus only; Data keeps the low byte. */
+    static final String DATA_HIGH = "SchematicaPlusDataHigh";
 
     private ISchematic readIndependent(NBTTagCompound tag, ItemStack icon, int width, int height, int length) {
         if (tag.getInteger(REGION_DATA + "Version") != 1) throw new IllegalArgumentException("Unsupported region data");
@@ -187,6 +192,8 @@ public class SchematicAlpha extends SchematicFormat {
         int size = schematic.getWidth() * schematic.getLength() * schematic.getHeight();
         byte[] localBlocks = new byte[size];
         byte[] localMetadata = new byte[size];
+        byte[] metadataHigh = new byte[size];
+        boolean highMetadata = false;
         byte[] extraBlocks = new byte[size];
 
         Map<String, Short> mappings = new HashMap<>();
@@ -198,7 +205,10 @@ public class SchematicAlpha extends SchematicFormat {
                     int blockId = BLOCK_REGISTRY.getId(block);
                     localBlocks[index] = BlockIdCodec.low(blockId);
                     extraBlocks[index] = BlockIdCodec.high(blockId);
-                    localMetadata[index] = (byte) schematic.getBlockMetadata(x, y, z);
+                    int meta = schematic.getBlockMetadata(x, y, z);
+                    localMetadata[index] = (byte) meta;
+                    metadataHigh[index] = (byte) (meta >> 8);
+                    highMetadata |= metadataHigh[index] != 0;
                     String name = BLOCK_REGISTRY.getNameForObject(block);
                     if (!mappings.containsKey(name)) {
                         mappings.put(name, (short) blockId);
@@ -256,11 +266,12 @@ public class SchematicAlpha extends SchematicFormat {
         }
 
         tagCompound.setString(Names.NBT.MATERIALS, Names.NBT.FORMAT_ALPHA);
-        SchematicBlockIds.write(tagCompound, localBlocks, extraBlocks, extended || SchematicRegions.requiresExtended(schematic)
+        SchematicBlockIds.write(tagCompound, localBlocks, extraBlocks, extended || highMetadata || SchematicRegions.requiresExtended(schematic)
             || !schematic.getOrigin().isZero() || com.github.lunatrius.schematica.world.storage.SchematicCopies.independent(schematic));
         SchematicRegions.write(tagCompound, schematic);
         SchematicOrigins.write(tagCompound, schematic.getOrigin());
         tagCompound.setByteArray(Names.NBT.DATA, localMetadata);
+        if (highMetadata) tagCompound.setByteArray(DATA_HIGH, metadataHigh);
         tagCompound.setTag(Names.NBT.ENTITIES, entityList);
         tagCompound.setTag(Names.NBT.TILE_ENTITIES, tileEntitiesList);
         tagCompound.setTag(Names.NBT.MAPPING_SCHEMATICA, nbtMapping);

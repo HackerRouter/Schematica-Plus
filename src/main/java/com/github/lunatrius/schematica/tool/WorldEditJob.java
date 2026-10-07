@@ -40,7 +40,8 @@ public final class WorldEditJob extends WorldEditTask {
     private final Block replacement, target;
     private final int replacementMeta, targetMeta;
     private short[] blocks;
-    private byte[] metadata;
+    /** Block metadata, 16 bits for EndlessIDs extended metadata (GTNH 2.9 frames store the material there). */
+    private short[] metadata;
     /** commandNameSetblock */
     public static volatile String setblockCommand = "setblock";
     private final Map<Integer, NBTTagCompound> tiles = new HashMap<>();
@@ -94,11 +95,11 @@ public final class WorldEditJob extends WorldEditTask {
         }
         setRegions(regions);
         this.blocks = new short[volume];
-        this.metadata = new byte[volume];
+        this.metadata = new short[volume];
         for (int i = 0; i < volume; i++) {
             int sx = i % width, sz = i / width % length, sy = i / width / length;
             blocks[i] = (short) GameData.getBlockRegistry().getId(source.getBlock(sx, sy, sz));
-            metadata[i] = (byte) source.getBlockMetadata(sx, sy, sz);
+            metadata[i] = (short) source.getBlockMetadata(sx, sy, sz);
         }
         if (blockNBT) {
             for (TileEntity tile : source.getTileEntities()) {
@@ -173,7 +174,7 @@ public final class WorldEditJob extends WorldEditTask {
         if (kind == Kind.DELETE_PLACEMENT && !deletes(index, world, wx, wy, wz)) return null;
         Block block = kind == Kind.PASTE ? GameData.getBlockRegistry().getObjectById(blocks[index] & 0xffff) : replacement;
         if (block == null || !pastes(block, world.isAirBlock(wx, wy, wz))) return null;
-        int meta = kind == Kind.PASTE ? metadata[index] & 15 : replacementMeta;
+        int meta = kind == Kind.PASTE ? metadata[index] & 0xffff : replacementMeta;
         return blockCommand(wx, wy, wz, GameData.getBlockRegistry().getNameForObject(block), meta);
     }
 
@@ -186,8 +187,8 @@ public final class WorldEditJob extends WorldEditTask {
         tag.setBoolean("updates", pasteWithoutUpdates);
         tag.setString("replace", replace.value);
         tag.setString("deletion", deletion.value);
-        if (replacement != null) { tag.setString("replacement", name(replacement)); tag.setByte("replacementMeta", (byte) replacementMeta); }
-        if (target != null) { tag.setString("target", name(target)); tag.setByte("targetMeta", (byte) targetMeta); }
+        if (replacement != null) { tag.setString("replacement", name(replacement)); tag.setInteger("replacementMeta", replacementMeta); }
+        if (target != null) { tag.setString("target", name(target)); tag.setInteger("targetMeta", targetMeta); }
         if (selected != null) tag.setByteArray("mask", selected.toByteArray());
         if (blocks != null) {
             List<String> palette = new ArrayList<>();
@@ -208,7 +209,15 @@ public final class WorldEditJob extends WorldEditTask {
             for (String entry : palette) names.appendTag(new net.minecraft.nbt.NBTTagString(entry));
             tag.setTag("palette", names);
             tag.setByteArray("cells", cells);
-            tag.setByteArray("meta", metadata);
+            byte[] low = new byte[volume], high = new byte[volume];
+            boolean extended = false;
+            for (int i = 0; i < volume; i++) {
+                low[i] = (byte) metadata[i];
+                high[i] = (byte) (metadata[i] >> 8);
+                extended |= high[i] != 0;
+            }
+            tag.setByteArray("meta", low);
+            if (extended) tag.setByteArray("metaHigh", high);
         }
         NBTTagList tileList = new NBTTagList();
         for (Map.Entry<Integer, NBTTagCompound> entry : tiles.entrySet()) {
@@ -254,7 +263,7 @@ public final class WorldEditJob extends WorldEditTask {
         if (kind == Kind.REPLACE && target == null) throw new IllegalArgumentException("Missing target block");
         if (kind == Kind.DELETE_PLACEMENT && replacement != Blocks.air) throw new IllegalArgumentException("Deletion must place air");
         WorldEditJob job = new WorldEditJob(player, dimension, kind, bounds[0], bounds[1], bounds[2], bounds[3], bounds[4], bounds[5],
-            replacement, tag.getByte("replacementMeta") & 15, target, tag.getByte("targetMeta") & 15,
+            replacement, tag.getInteger("replacementMeta") & 0xffff, target, tag.getInteger("targetMeta") & 0xffff,
             tag.getBoolean("updates"), ReplaceBehavior.parse(tag.getString("replace")));
         job.deletion = PlacementDeletionMode.parse(tag.getString("deletion"));
         if (tag.hasKey("mask", 7)) {
@@ -264,8 +273,9 @@ public final class WorldEditJob extends WorldEditTask {
         }
         if (kind == Kind.PASTE || kind == Kind.DELETE_PLACEMENT) {
             NBTTagList names = tag.getTagList("palette", 8);
-            byte[] cells = tag.getByteArray("cells"), meta = tag.getByteArray("meta");
-            if (names.tagCount() == 0 || names.tagCount() > 65536 || cells.length != job.volume * 2 || meta.length != job.volume) {
+            byte[] cells = tag.getByteArray("cells"), meta = tag.getByteArray("meta"), metaHigh = tag.getByteArray("metaHigh");
+            if (names.tagCount() == 0 || names.tagCount() > 65536 || cells.length != job.volume * 2 || meta.length != job.volume
+                || metaHigh.length != 0 && metaHigh.length != job.volume) {
                 throw new IllegalArgumentException("Invalid edit blocks");
             }
             short[] ids = new short[names.tagCount()];
@@ -276,7 +286,8 @@ public final class WorldEditJob extends WorldEditTask {
                 if (index >= ids.length) throw new IllegalArgumentException("Invalid palette index");
                 job.blocks[i] = ids[index];
             }
-            job.metadata = meta.clone();
+            job.metadata = new short[job.volume];
+            for (int i = 0; i < job.volume; i++) job.metadata[i] = (short) ((meta[i] & 0xff) | (metaHigh.length == 0 ? 0 : (metaHigh[i] & 0xff) << 8));
         }
         NBTTagList tileList = tag.getTagList("tiles", 10);
         if (kind != Kind.PASTE && tileList.tagCount() > 0) throw new IllegalArgumentException("Tile data outside a paste");
@@ -307,7 +318,7 @@ public final class WorldEditJob extends WorldEditTask {
         if (existing.isAir(world, wx, wy, wz)) return false;
         Block schematic = GameData.getBlockRegistry().getObjectById(blocks[index] & 0xffff);
         boolean schematicAir = schematic == null || schematic == Blocks.air;
-        return deletion.deletes(schematicAir, existing == schematic && world.getBlockMetadata(wx, wy, wz) == (metadata[index] & 15));
+        return deletion.deletes(schematicAir, existing == schematic && world.getBlockMetadata(wx, wy, wz) == (metadata[index] & 0xffff));
     }
 
     /** TaskFillArea.directRemoveEntities: non-player entities inside these world boxes are removed before deleting. */
@@ -387,7 +398,7 @@ public final class WorldEditJob extends WorldEditTask {
             if (selected != null && !selected.get(index)) return false;
             int wx = x + index % width, wz = z + index / width % length, wy = y + index / width / length;
             Block block = kind == Kind.PASTE ? GameData.getBlockRegistry().getObjectById(blocks[index] & 0xffff) : replacement;
-            int meta = kind == Kind.PASTE ? metadata[index] & 15 : replacementMeta;
+            int meta = kind == Kind.PASTE ? metadata[index] & 0xffff : replacementMeta;
             if (block == null) return false;
             if (phase == 2) {
                 if (!placed.get(index) || pasteWithoutUpdates) return false;
@@ -414,7 +425,9 @@ public final class WorldEditJob extends WorldEditTask {
                     world.restoringBlockSnapshots = previous;
                 }
             }
-            if (world.getBlock(wx, wy, wz) == block && world.getBlockMetadata(wx, wy, wz) == meta) {
+            int stored = world.getBlockMetadata(wx, wy, wz);
+            // without EndlessIDs the world keeps only the low 4 bits of extended metadata
+            if (world.getBlock(wx, wy, wz) == block && (stored == meta || stored == (meta & 15))) {
                 if (kind == Kind.PASTE && block.hasTileEntity(meta)) {
                     NBTTagCompound tag = tiles.get(index);
                     TileEntity tile;
