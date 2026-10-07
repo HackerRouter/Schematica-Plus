@@ -8,6 +8,10 @@
   Require the normal `Done (...)!` startup message and clean shutdown after `stop`.
   Initialization must not load EntityClientPlayerMP, WorldClient or Minecraft.
 - On a dedicated server, run a server-side schematic save with a player connected.
+  Use an ordinary filename without an icon prefix, then an unknown `mod:item;name`
+  prefix: both must use the default grass icon without loading `WorldClient` or
+  failing the command. A valid `minecraft:diamond;name` prefix keeps its item icon.
+  Download and reload the resulting files to exercise the NBT icon fallback too.
   In singleplayer, save an area, clone it to memory and save a project version;
   client callbacks must still run on the client thread after capture completes.
 - The tag release workflow runs the same build/tests/server smoke check before
@@ -1207,6 +1211,12 @@ compare with a server that does not have the mod and with each server option off
   `Server capabilities{...}` log after joining. `SchematicaPlusTest` separately checks
   the release-version floor and peers without Plus; matching hashes must not be
   interpreted as release numbers below `1.0.0-beta.1`.
+- Download completion: download an ordinary single-region `.schematic` and a flat
+  `.schemplus` with extended metadata. Both must finish, create usable client files
+  and leave the dedicated server running. These files have no independent-region
+  payload even when the client supports one. `DownloadCompletionTest` also checks
+  independent-region slice ordering and verifies that encoding failures cannot send
+  a successful end packet.
 - Accurate placement: with easyPlaceProtocolVersion Auto/V3/V2, Easy Place and the
   printer place stairs (all facings and upside down), slabs (top/bottom), logs/pillars
   (all axes, quartz pillars), pistons/dispensers/droppers/hoppers (all six facings),
@@ -1940,3 +1950,33 @@ Test in GTNH 2.8.4 (NEI 2.8.44) and GTNH 2.9 (NEI 2.8.145); without NEI the butt
 - Same with an AE2 build mirrored: cables connect to the mirrored sides, controllers light up, Assembly Lines form.
 - Multiplayer: download the schematic from a server (`/schematicaDownload`) and paste it through the remote edit
   path; the frames keep their material.
+
+Dedicated GTNH server fixture (fresh disposable world, creative + op):
+
+- Build a north-facing Precise Auto-Assembler at `(0,80,0)` (`mID=32018`, not the
+  display model number 3662). Creative sneak-right-click with two Hologram Projectors
+  in one stack builds the shell with EV glass; replace five front-bottom casings with
+  energy, input bus, output bus, maintenance and muffler hatches. Require the controller
+  to form normally. Its 12 Tungstensteel frames have metadata **316**.
+- Include a named chest with seven diamonds, a four-line sign and red wool beside
+  the machine. Save `(-12,79,-1)..(4,84,4)` using
+  `/schematicaSave -12 79 -1 4 84 4 net_meta316`, then download it with
+  `/schematicaDownload net_meta316.schemplus`. Do not copy the file between instances.
+  The 17-block width puts six extended-metadata frames in each of two download chunks.
+  Compare block names, full metadata and tile NBT in the two files; the frame bytes
+  must combine as `60 + (1 << 8) = 316`, never 60 or 12.
+- Load the downloaded file and execute Paste while holding the tool. Test separate
+  placements at origins `(52,79,-1)` with NONE/NONE, `(128,79,64)` with CW_90/NONE,
+  and `(192,79,64)` with NONE/LEFT_RIGHT. Keep block NBT and inventories enabled.
+  After each operation check the real controller and frames in game, then issue
+  `save-all` on the server console and inspect its region files with
+  `tools/headless/regions.py`. Require 12 metadata-316 frames, preserved chest/sign
+  contents and controller/hatch facings NORTH, EAST and SOUTH respectively. Account
+  for the chest/sign metadata rotating too; normal formation does not prove a powered
+  recipe was run.
+- Disable `remoteEditsEnabled`, restart the server and reconnect. Paste a single stone
+  block into known empty space: require the server's remote-edit rejection and an
+  unchanged destination. Using a block without tile NBT ensures a command fallback
+  cannot be concealed by a separate NBT validation error. Re-enable and reconnect;
+  the same operation must succeed. Legacy servers without the protocol retain their
+  documented command fallback.

@@ -135,11 +135,16 @@ public class DownloadHandler {
         } else if (transfer.state == SchematicTransfer.State.CHUNK_WAIT) {
             sendChunk(player, transfer);
         } else if (transfer.state == SchematicTransfer.State.END_WAIT) {
-            if (sendRegions(player, transfer)) {
-                this.transferMap.put(player, transfer);
-                return;
+            try {
+                if (sendEnd(transfer, message -> PacketHandler.INSTANCE.sendTo(message, player))) {
+                    this.transferMap.put(player, transfer);
+                }
+            } catch (java.io.IOException | RuntimeException e) {
+                transfer.cancelled = true;
+                Reference.logger.warn("Could not complete the download of {}", transfer.name, e);
+                player.addChatMessage(new net.minecraft.util.ChatComponentTranslation(
+                    com.github.lunatrius.schematica.reference.Names.Command.Download.Message.DOWNLOAD_FAILED, transfer.name));
             }
-            sendEnd(player, transfer);
             return;
         }
 
@@ -166,29 +171,29 @@ public class DownloadHandler {
     }
 
     /** Sends up to eight slices of the independent region payload; returns whether slices remain to be sent. */
-    private boolean sendRegions(EntityPlayerMP player, SchematicTransfer transfer) {
+    private static boolean sendRegions(SchematicTransfer transfer,
+        java.util.function.Consumer<cpw.mods.fml.common.network.simpleimpl.IMessage> sender) throws java.io.IOException {
         if (!transfer.regionSupport) return false;
         if (transfer.regionPayload == null) {
-            try {
-                transfer.regionPayload = com.github.lunatrius.schematica.world.schematic.SchematicAlpha.regionPayload(transfer.schematic);
-            } catch (java.io.IOException | RuntimeException e) {
-                Reference.logger.warn("Could not encode the regions of {}", transfer.name, e);
-                transfer.regionPayload = new byte[0];
-            }
+            transfer.regionPayload = com.github.lunatrius.schematica.world.schematic.SchematicAlpha.regionPayload(transfer.schematic);
         }
         byte[] payload = transfer.regionPayload;
+        if (payload == null) return false;
         int size = com.github.lunatrius.schematica.network.message.MessageDownloadRegions.CHUNK_SIZE;
         int count = (payload.length + size - 1) / size;
         for (int i = 0; i < 8 && transfer.regionSent < count; i++, transfer.regionSent++) {
             int from = transfer.regionSent * size;
-            PacketHandler.INSTANCE.sendTo(new com.github.lunatrius.schematica.network.message.MessageDownloadRegions(transfer.regionSent, count,
-                java.util.Arrays.copyOfRange(payload, from, Math.min(payload.length, from + size))), player);
+            sender.accept(new com.github.lunatrius.schematica.network.message.MessageDownloadRegions(transfer.regionSent, count,
+                java.util.Arrays.copyOfRange(payload, from, Math.min(payload.length, from + size))));
         }
         return transfer.regionSent < count;
     }
 
-    private void sendEnd(EntityPlayerMP player, SchematicTransfer transfer) {
-        MessageDownloadEnd message = new MessageDownloadEnd(transfer.name);
-        PacketHandler.INSTANCE.sendTo(message, player);
+    static boolean sendEnd(SchematicTransfer transfer,
+        java.util.function.Consumer<cpw.mods.fml.common.network.simpleimpl.IMessage> sender) throws java.io.IOException {
+        if (sendRegions(transfer, sender)) return true;
+        sender.accept(new MessageDownloadEnd(transfer.name));
+        transfer.setState(SchematicTransfer.State.END);
+        return false;
     }
 }

@@ -23,7 +23,7 @@ public class PlayerHandler {
             ConfigurationHandler.printerEnabled,
             ConfigurationHandler.saveEnabled,
             ConfigurationHandler.loadEnabled);
-        capabilities.supportsRemoteEdit = ConfigurationHandler.remoteEditsEnabled;
+        capabilities.supportsRemoteEdit = true;
         capabilities.supportsAccuratePlacement = ConfigurationHandler.accuratePlacementEnabled;
         return capabilities;
     }
