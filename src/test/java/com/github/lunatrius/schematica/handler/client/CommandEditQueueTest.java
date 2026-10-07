@@ -7,15 +7,30 @@ import com.github.lunatrius.schematica.tool.WorldEditJob;
 import com.github.lunatrius.schematica.util.MessageException;
 import cpw.mods.fml.common.gameevent.TickEvent;
 import org.junit.After;
+import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
 import static org.junit.Assert.*;
 
 public class CommandEditQueueTest {
+    @Rule public TemporaryFolder temporary = new TemporaryFolder();
+    private com.github.lunatrius.schematica.proxy.CommonProxy previousProxy;
     private final CommandEditQueue queue = new CommandEditQueue();
     private final UUID owner = UUID.randomUUID();
 
-    @After public void clear() { queue.cancel(); }
+    @Before public void proxy() {
+        previousProxy = com.github.lunatrius.schematica.SchematicaPlus.proxy;
+        if (previousProxy == null) com.github.lunatrius.schematica.SchematicaPlus.proxy = new com.github.lunatrius.schematica.proxy.ServerProxy() {
+            @Override public java.io.File getDataDirectory() { return temporary.getRoot(); }
+        };
+    }
+
+    @After public void clear() {
+        queue.cancel();
+        com.github.lunatrius.schematica.SchematicaPlus.proxy = previousProxy;
+    }
 
     private WorldEditJob job() {
         return new WorldEditJob(owner, 0, WorldEditJob.Kind.FILL, 0, 64, 0, 3, 1, 1, null, 0, null, 0);

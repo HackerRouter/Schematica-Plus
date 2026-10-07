@@ -155,11 +155,35 @@ public class ToolHandler {
             if (SchematicaPlus.proxy.supportsRemoteEdit && server == null) {
                 com.github.lunatrius.schematica.handler.client.RemoteEditClient.INSTANCE.submit(job, player.worldObj, onSuccess);
             } else {
+                if (prepareCommandPaste(job)) {
+                    confirmCommandPaste(player, job, () -> submit(player, job, onSuccess));
+                    return;
+                }
                 if (onSuccess != null) job.completion = success -> { if (success) Minecraft.getMinecraft().func_152344_a(onSuccess); };
                 com.github.lunatrius.schematica.handler.client.CommandEditQueue.INSTANCE.submit(job, player.worldObj);
             }
         }
         sendChat(player, UiTranslations.format("litematica.message.scheduled_task_added"));
+    }
+
+    private static boolean prepareCommandPaste(WorldEditJob job) {
+        if (job.kind == WorldEditJob.Kind.PASTE && com.github.lunatrius.schematica.handler.ConfigurationHandler.pasteIgnoreBlockEntitiesEntirely) job.dropTiles();
+        job.validateCommandFallback(true);
+        return job.hasCommandNbt();
+    }
+
+    private static void confirmCommandPaste(EntityPlayer player, WorldEditJob job, Runnable accepted) {
+        Minecraft mc = Minecraft.getMinecraft();
+        net.minecraft.world.World world = player.worldObj;
+        mc.displayGuiScreen(new com.github.lunatrius.schematica.client.gui.GuiConfirmAction(mc.currentScreen,
+            UiTranslations.format("schematica.ui.command_paste.title"),
+            UiTranslations.format("schematica.ui.command_paste.message"), "schematica.ui.command_paste.accept", () -> {
+                if (mc.thePlayer != player || mc.theWorld != world || player.dimension != job.dimension) return;
+                request(player, TaskRegistry.Kind.PASTE, p -> {
+                    job.dropCommandNbt();
+                    accepted.run();
+                });
+            }));
     }
 
     interface Edit { void run(EntityPlayer player); }
@@ -198,6 +222,21 @@ public class ToolHandler {
     /** Pastes a placement, as pastePlacementToWorld. */
     public static boolean paste(EntityPlayer player, SchematicWorld placement, Runnable onSuccess) {
         return request(player, TaskRegistry.Kind.PASTE, p -> submit(p, pasteJob(p, placement), onSuccess));
+    }
+
+    /** Project replacement confirms any command-mode data omission before clearing the old area. */
+    public static boolean pasteAfterClearing(EntityPlayer player, SchematicWorld placement,
+        java.util.List<com.github.lunatrius.schematica.api.SchematicRegion> boxes, Runnable onSuccess) {
+        return request(player, TaskRegistry.Kind.PASTE, p -> {
+            WorldEditJob job = pasteJob(p, placement);
+            java.util.List<com.github.lunatrius.schematica.api.SchematicRegion> clear = new java.util.ArrayList<>(boxes);
+            Runnable start = () -> deleteBoxes(p, clear, () -> request(p, TaskRegistry.Kind.PASTE, current -> submit(current, job, onSuccess)));
+            MinecraftServer server = Minecraft.getMinecraft().getIntegratedServer();
+            boolean commands = server == null ? !SchematicaPlus.proxy.supportsRemoteEdit
+                : com.github.lunatrius.schematica.handler.ConfigurationHandler.pasteUsingCommandsInSp;
+            if (commands && prepareCommandPaste(job)) confirmCommandPaste(p, job, start);
+            else start.run();
+        });
     }
 
     /** Clears whole boxes, as deleteSelectionVolumes. */

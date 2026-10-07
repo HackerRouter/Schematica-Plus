@@ -89,6 +89,73 @@ public class WorldEditJobTest {
             ((com.github.lunatrius.schematica.util.MessageException) error).key());
     }
 
+    @Test public void blocksOnlyPreflightKeepsNbtUntilExplicitlyAccepted() throws Exception {
+        WorldEditJob job = nbtJob(false, true, true);
+        net.minecraft.nbt.NBTTagCompound complete = job.write();
+        assertTrue(job.hasCommandNbt());
+        assertThrows(com.github.lunatrius.schematica.util.MessageException.class, job::validateCommandFallback);
+        job.validateCommandFallback(true);
+        assertEquals(complete, job.write());
+        job.dropCommandNbt();
+        assertFalse(job.hasCommandNbt());
+        job.validateCommandFallback();
+        net.minecraft.nbt.NBTTagCompound expected = (net.minecraft.nbt.NBTTagCompound) complete.copy();
+        expected.setTag("tiles", new net.minecraft.nbt.NBTTagList());
+        expected.setTag("entities", new net.minecraft.nbt.NBTTagList());
+        assertEquals(expected, job.write());
+        assertEquals(1, complete.getTagList("tiles", 10).tagCount());
+        assertEquals(1, complete.getTagList("entities", 10).tagCount());
+    }
+
+    @Test public void ignoringTilesDoesNotSilentlyDiscardEntities() throws Exception {
+        WorldEditJob job = nbtJob(false, true, true);
+        job.dropTiles();
+        assertTrue(job.hasCommandNbt());
+        assertThrows(com.github.lunatrius.schematica.util.MessageException.class, job::validateCommandFallback);
+        job.dropCommandNbt();
+        job.validateCommandFallback();
+        assertFalse(job.hasCommandNbt());
+    }
+
+    @Test public void ordinaryBlocksAndExplicitlyIgnoredTilesNeedNoOmission() throws Exception {
+        WorldEditJob ordinary = nbtJob(false, false, false);
+        assertFalse(ordinary.hasCommandNbt());
+        ordinary.validateCommandFallback();
+        WorldEditJob tiles = nbtJob(false, true, false);
+        tiles.dropTiles();
+        assertFalse(tiles.hasCommandNbt());
+        tiles.validateCommandFallback();
+    }
+
+    @Test public void blocksOnlyChoiceCannotBypassUnsupportedUpdateSuppression() throws Exception {
+        WorldEditJob job = nbtJob(true, true, true);
+        net.minecraft.nbt.NBTTagCompound before = job.write();
+        com.github.lunatrius.schematica.util.MessageException error = assertThrows(
+            com.github.lunatrius.schematica.util.MessageException.class, () -> job.validateCommandFallback(true));
+        assertEquals("schematica.message.edit.updates_require_singleplayer", error.key());
+        assertEquals(before, job.write());
+    }
+
+    @SuppressWarnings("unchecked")
+    private static WorldEditJob nbtJob(boolean silent, boolean tiles, boolean entities) throws Exception {
+        WorldEditJob job = job(WorldEditJob.Kind.PASTE, silent, false);
+        job.capture(new com.github.lunatrius.schematica.world.storage.Schematic(null, 1, 1, 1), false, false);
+        net.minecraft.nbt.NBTTagCompound data = new net.minecraft.nbt.NBTTagCompound();
+        data.setString("id", "SavedData");
+        data.setString("CustomName", "Preserved until accepted");
+        if (tiles) {
+            java.lang.reflect.Field field = WorldEditJob.class.getDeclaredField("tiles");
+            field.setAccessible(true);
+            ((java.util.Map<Integer, net.minecraft.nbt.NBTTagCompound>) field.get(job)).put(0, data);
+        }
+        if (entities) {
+            java.lang.reflect.Field field = WorldEditJob.class.getDeclaredField("entities");
+            field.setAccessible(true);
+            ((java.util.List<net.minecraft.nbt.NBTTagCompound>) field.get(job)).add((net.minecraft.nbt.NBTTagCompound) data.copy());
+        }
+        return job;
+    }
+
     private static WorldEditJob job(WorldEditJob.Kind kind, boolean silent, boolean air) {
         return new WorldEditJob(UUID.randomUUID(), 0, kind, 0, 0, 0, 1, 1, 1, null, 0, null, 0, silent, air ? ReplaceBehavior.NONE : ReplaceBehavior.ALL);
     }

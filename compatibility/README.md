@@ -81,6 +81,12 @@ accepted merely because they contain or interact with fluid.
 - Singleplayer uses the integrated server world. Remote capture can preserve
   synchronized visual data, but cannot recover inventory/genetics/private machine
   data that the server never sent.
+- Client-only creative paste uses server commands and requires `/setblock` permission.
+  When saved tile/entity data is present, an explicit blocks-only confirmation
+  explains that inventories, machine data, sign text and entities will be omitted.
+  The source schematic is preserved. Complete NBT needs singleplayer or Plus on
+  the server; command-mode update suppression remains unsupported. This new
+  confirmation flow still needs the in-game checks in TESTING.md.
 - Canonical NBT and visual state are separate. Loading a smaller client update
   must not overwrite unsynchronized inventories when saving again or pasting.
 - Binary adapters are version-guarded. Multipart/LogisticsPipes streams also use

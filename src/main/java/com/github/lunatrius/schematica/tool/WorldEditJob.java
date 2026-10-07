@@ -149,11 +149,20 @@ public final class WorldEditJob extends WorldEditTask {
     /** pasteIgnoreBlockEntitiesEntirely: command pasting leaves block entity data out instead of refusing. */
     public void dropTiles() { tiles.clear(); }
 
+    public boolean hasCommandNbt() { return !tiles.isEmpty() || !entities.isEmpty(); }
+
+    /** Only the queued snapshot is changed; the loaded schematic keeps its complete data. */
+    public void dropCommandNbt() { tiles.clear(); entities.clear(); }
+
     public void validateCommandFallback() {
+        validateCommandFallback(false);
+    }
+
+    public void validateCommandFallback(boolean blocksOnly) {
         if (pasteWithoutUpdates) {
             throw new MessageException("schematica.message.edit.updates_require_singleplayer");
         }
-        if (!tiles.isEmpty() || !entities.isEmpty()) {
+        if (!blocksOnly && hasCommandNbt()) {
             throw new MessageException("schematica.message.edit.nbt_requires_singleplayer");
         }
         java.util.Set<Block> checked = new java.util.HashSet<>();

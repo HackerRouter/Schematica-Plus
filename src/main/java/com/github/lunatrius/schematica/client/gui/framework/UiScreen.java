@@ -208,7 +208,11 @@ public abstract class UiScreen extends GuiScreen {
     }
 
     protected final void confirm(String title, String message, Runnable confirmed) {
-        UiPanel panel = new ConfirmationPanel(title, message, confirmed);
+        confirm(title, message, "malilib.gui.button.ok", confirmed);
+    }
+
+    protected final void confirm(String title, String message, String acceptKey, Runnable confirmed) {
+        UiPanel panel = new ConfirmationPanel(title, message, acceptKey, confirmed);
         panel.layout(root.bounds());
         input.pushModal(panel);
     }
@@ -242,13 +246,13 @@ public abstract class UiScreen extends GuiScreen {
         private final UiButton accept;
         private List<String> lines;
 
-        ConfirmationPanel(String title, String message, Runnable confirmed) {
+        ConfirmationPanel(String title, String message, String acceptKey, Runnable confirmed) {
             this.dialogTitle = title;
             this.message = message;
             cancel = add(new UiButton(() -> "\u00a7c" + UiTranslations.format("malilib.gui.button.cancel") + "\u00a7r", button -> {
                 if (button == 0) input.popModal();
             }));
-            accept = add(new UiButton(() -> "\u00a7a" + UiTranslations.format("malilib.gui.button.ok") + "\u00a7r", button -> {
+            accept = add(new UiButton(() -> "\u00a7a" + UiTranslations.format(acceptKey) + "\u00a7r", button -> {
                 if (button == 0) {
                     input.popModal();
                     confirmed.run();

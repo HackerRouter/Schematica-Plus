@@ -2073,3 +2073,37 @@ compatibility with every older protocol peer. Keep those results separate.
 - Bind a keyboard shortcut, open/close the main menu, scroll the tool mode and repeat
   clicks. Recheck a vanilla development client and other lwjgl3ify versions when
   changing the hook. A successful 2.8.4 run alone does not cover every input coremod.
+
+
+### Client-only command paste with NBT
+
+The confirmation flow is implemented and covered by automated preflight tests;
+its game checks below are pending. The old public release's red NBT rejection was
+reproduced on GTNH 2.8.4 with no Plus on the dedicated server.
+
+- Connect with only the client installing Plus. Use Creative mode and server
+  `/setblock` permission. Load a fresh schematic containing stone, colored wool,
+  a chest with seven diamonds, a sign with text and an entity. Keep default NBT
+  and entity settings. Record the source file hash and an empty destination.
+- Execute Paste. Require the blocks-only explanation before any command or task
+  starts. Cancel and repeat using Escape: save the server world and require an
+  unchanged destination. Confirm on the next attempt; require the block layout
+  and supported metadata, an empty chest, blank sign and no copied entity.
+  The source file hash and loaded schematic's complete NBT must remain unchanged.
+- Paste a block-only file: no omission dialog is needed. Explicitly ignoring
+  block entities must not silently drop entities that are still included. With
+  update suppression enabled, reject before sending commands or offering consent.
+- Remove command permission and repeat; require the server's rejection and an
+  unchanged destination. Restore permission and require a new task to work. Do
+  not describe commands sent as acknowledged successful server edits.
+- Disconnect/change dimension or leave Creative mode while the dialog is open;
+  its old snapshot must not execute in a different player/world context. Remove
+  a running COMMANDS task and check that further commands stop.
+- Project ENTIRE_VOLUME mode must confirm data omission before clearing the old
+  area. Cancel and require the original blocks and paste history to remain. After
+  accepting, require clear-then-paste order. Changing project/version while work
+  is pending must not mark the new version pasted. Check grid copies separately.
+- With Plus on the server (and in normal singleplayer), repeat with full NBT:
+  no blocks-only prompt, inventories/signs/entities preserved. A server that
+  advertises the protocol but rejects remote editing must not fall back to chat
+  commands to evade that server policy.

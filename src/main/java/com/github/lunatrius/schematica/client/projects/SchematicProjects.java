@@ -215,8 +215,9 @@ public final class SchematicProjects {
             return true;
         }
         project.cacheCurrentAreaFromPlacement();
+        SchematicVersion version = project.currentVersion();
         if (ConfigurationHandler.schematicVcsDeleteMode == PlacementDeletionMode.ENTIRE_VOLUME) {
-            ToolHandler.deleteBoxes(mc().thePlayer, project.lastSeenArea(), () -> pasteCurrentPlacement(project));
+            ToolHandler.pasteAfterClearing(mc().thePlayer, project.currentPlacement(), project.lastSeenArea(), () -> pasted(project, version));
         } else {
             if (project.lastPastedVersion() < 0 || project.lastPastedVersion() >= project.versionCount()) {
                 mc().thePlayer.addChatMessage(new net.minecraft.util.ChatComponentText(EnumChatFormatting.RED + "No previous pasted version known, skipping delete"));
@@ -228,9 +229,14 @@ public final class SchematicProjects {
 
     private static void pasteCurrentPlacement(SchematicProject project) {
         if (project != current || project.currentPlacement() == null) return;
+        SchematicVersion version = project.currentVersion();
+        ToolHandler.paste(mc().thePlayer, project.currentPlacement(), () -> pasted(project, version));
+    }
+
+    private static void pasted(SchematicProject project, SchematicVersion version) {
+        if (project != current || project.currentVersion() != version) return;
         project.pasted();
         project.saveToFile();
-        ToolHandler.paste(mc().thePlayer, project.currentPlacement(), null);
     }
 
     public static boolean deleteLastSeenArea() {
