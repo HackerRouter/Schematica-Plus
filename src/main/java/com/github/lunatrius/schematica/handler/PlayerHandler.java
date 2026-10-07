@@ -61,6 +61,11 @@ public class PlayerHandler {
     }
 
     @SubscribeEvent
+    public void onPlayerChangedDimension(PlayerEvent.PlayerChangedDimensionEvent event) {
+        if (event.player instanceof EntityPlayerMP) RemoteEdits.INSTANCE.forget(event.player);
+    }
+
+    @SubscribeEvent
     public void onPlayerLoggedOut(PlayerEvent.PlayerLoggedOutEvent event) {
         if (event.player instanceof EntityPlayerMP) {
             DownloadHandler.INSTANCE.transferMap.remove(event.player);

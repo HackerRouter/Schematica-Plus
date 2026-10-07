@@ -104,6 +104,7 @@ public class SchematicaPlus {
 
     @EventHandler
     public void serverStopped(cpw.mods.fml.common.event.FMLServerStoppedEvent event) {
+        com.github.lunatrius.schematica.handler.RemoteEdits.INSTANCE.clear();
         com.github.lunatrius.schematica.handler.WorldEditQueue.INSTANCE.clear();
         com.github.lunatrius.schematica.handler.QueueTickHandler.INSTANCE.clear();
         com.github.lunatrius.schematica.handler.DownloadHandler.INSTANCE.transferMap.clear();

@@ -7,9 +7,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.zip.GZIPInputStream;
@@ -37,19 +37,27 @@ public final class RemoteEdits {
     private static final long PROGRESS_NANOS = 250_000_000L;
 
     private static final class Upload {
-        final long id;
+        final RemoteEditOperations.Operation<WorldEditJob> operation;
         final int dimension, count;
         final byte[][] parts;
         int received, bytes;
         long touched = System.nanoTime();
 
-        Upload(long id, int dimension, int count) {
-            this.id = id; this.dimension = dimension; this.count = count; this.parts = new byte[count][];
+        Upload(RemoteEditOperations.Operation<WorldEditJob> operation, int dimension, int count) {
+            this.operation = operation; this.dimension = dimension; this.count = count; this.parts = new byte[count][];
         }
     }
 
-    private final Map<UUID, Upload> uploads = new ConcurrentHashMap<>();
-    private final Map<UUID, Long> running = new ConcurrentHashMap<>();
+    private static final class Received {
+        final Upload complete;
+        final String error;
+
+        Received(Upload complete, String error) { this.complete = complete; this.error = error; }
+    }
+
+    private final Map<UUID, Upload> uploads = new HashMap<>();
+    private final RemoteEditOperations<WorldEditJob> operations = new RemoteEditOperations<>(
+        job -> WorldEditQueue.INSTANCE.cancel(job.player, job));
     private final ExecutorService decoder = Executors.newSingleThreadExecutor(runnable -> {
         Thread thread = new Thread(runnable, "Schematica Plus remote edit decoder");
         thread.setDaemon(true);
@@ -65,25 +73,38 @@ public final class RemoteEdits {
     /** Network thread: stores one slice and, once all have arrived, decodes the edit off the server thread. */
     public void receive(EntityPlayerMP player, MessageEditUpload message) {
         if (player == null) return;
-        UUID owner = player.getUniqueID();
         if (!ConfigurationHandler.remoteEditsEnabled) {
             if (message.index == 0) send(player, MessageEditStatus.rejected(message.id, "schematica.message.edit.remote_disabled"));
             return;
         }
+        Received received;
+        synchronized (uploads) { received = accept(player.getUniqueID(), player.dimension, message); }
+        if (received.error != null) send(player, MessageEditStatus.rejected(message.id, received.error));
+        if (received.complete != null) decoder.execute(() -> decode(player, received.complete));
+    }
+
+    private Received accept(UUID owner, int dimension, MessageEditUpload message) {
+        if (message.dimension != dimension) return new Received(null, "schematica.message.edit.remote_invalid");
         Upload upload = uploads.get(owner);
         if (message.index == 0) {
             if (message.count < 1 || (long) message.count * MessageEditUpload.CHUNK_SIZE > MAX_UPLOAD_BYTES + MessageEditUpload.CHUNK_SIZE) {
-                send(player, MessageEditStatus.rejected(message.id, "schematica.message.edit.remote_too_large"));
-                return;
+                return new Received(null, "schematica.message.edit.remote_too_large");
             }
-            upload = new Upload(message.id, message.dimension, message.count);
+            if (upload != null && System.nanoTime() - upload.touched > IDLE_NANOS) {
+                uploads.remove(owner);
+                operations.finish(upload.operation);
+            }
+            RemoteEditOperations.Operation<WorldEditJob> operation = operations.begin(owner, message.id);
+            if (operation == null) return new Received(null, "schematica.message.edit.busy");
+            upload = new Upload(operation, message.dimension, message.count);
             uploads.put(owner, upload);
         }
-        if (upload == null || upload.id != message.id || upload.count != message.count || message.index < 0 || message.index >= upload.count
+        if (upload == null || upload.operation.id != message.id) return new Received(null, "schematica.message.edit.remote_invalid");
+        if (upload.count != message.count || message.index < 0 || message.index >= upload.count
             || upload.parts[message.index] != null || System.nanoTime() - upload.touched > IDLE_NANOS) {
             uploads.remove(owner);
-            send(player, MessageEditStatus.rejected(message.id, "schematica.message.edit.remote_invalid"));
-            return;
+            operations.finish(upload.operation);
+            return new Received(null, "schematica.message.edit.remote_invalid");
         }
         upload.parts[message.index] = message.data;
         upload.received++;
@@ -91,16 +112,17 @@ public final class RemoteEdits {
         upload.touched = System.nanoTime();
         if (upload.bytes > MAX_UPLOAD_BYTES) {
             uploads.remove(owner);
-            send(player, MessageEditStatus.rejected(message.id, "schematica.message.edit.remote_too_large"));
-            return;
+            operations.finish(upload.operation);
+            return new Received(null, "schematica.message.edit.remote_too_large");
         }
-        if (upload.received < upload.count) return;
+        if (upload.received < upload.count) return new Received(null, null);
         uploads.remove(owner);
-        Upload complete = upload;
-        decoder.execute(() -> decode(player, complete));
+        operations.uploaded(upload.operation);
+        return new Received(upload, null);
     }
 
     private void decode(EntityPlayerMP player, Upload upload) {
+        if (!operations.active(upload.operation)) return;
         WorldEditJob job;
         try {
             ByteArrayOutputStream joined = new ByteArrayOutputStream(upload.bytes);
@@ -108,11 +130,12 @@ public final class RemoteEdits {
             job = WorldEditJob.read(read(joined.toByteArray()), player.getUniqueID(), upload.dimension);
         } catch (IOException | RuntimeException e) {
             Reference.logger.warn("Rejected an invalid remote edit from {}", player.getCommandSenderName(), e);
-            send(player, MessageEditStatus.rejected(upload.id, "schematica.message.edit.remote_invalid"));
+            if (operations.finish(upload.operation)) send(player, MessageEditStatus.rejected(upload.operation.id, "schematica.message.edit.remote_invalid"));
             return;
         }
-        if (!WorldEditQueue.INSTANCE.enqueue(() -> start(player, upload.id, job))) {
-            send(player, MessageEditStatus.rejected(upload.id, "schematica.message.edit.busy"));
+        if (!operations.active(upload.operation)) return;
+        if (!WorldEditQueue.INSTANCE.enqueue(() -> start(player, upload.operation, job))) {
+            if (operations.finish(upload.operation)) send(player, MessageEditStatus.rejected(upload.operation.id, "schematica.message.edit.busy"));
         }
     }
 
@@ -124,18 +147,22 @@ public final class RemoteEdits {
     }
 
     /** Server thread: permission checks as for MOVE, then the shared edit queue. */
-    private void start(EntityPlayerMP player, long id, WorldEditJob job) {
+    private void start(EntityPlayerMP player, RemoteEditOperations.Operation<WorldEditJob> operation, WorldEditJob job) {
+        if (!operations.active(operation)) return;
+        long id = operation.id;
         MinecraftServer server = MinecraftServer.getServer();
         if (server == null || !server.getConfigurationManager().playerEntityList.contains(player) || player.dimension != job.dimension) {
+            operations.finish(operation);
             return;
         }
         if (!player.capabilities.isCreativeMode || !player.canCommandSenderUseCommand(2, "setblock")) {
+            operations.finish(operation);
             send(player, MessageEditStatus.rejected(id, "schematica.message.edit.permissions"));
             return;
         }
         long[] lastProgress = {0};
         job.completion = success -> {
-            running.remove(player.getUniqueID(), id);
+            operations.finish(operation);
             send(player, new MessageEditStatus(id, success ? MessageEditStatus.State.FINISHED : MessageEditStatus.State.FAILED));
         };
         job.progress = progress -> {
@@ -144,12 +171,19 @@ public final class RemoteEdits {
             lastProgress[0] = now;
             send(player, status(id, progress));
         };
-        if (!WorldEditQueue.INSTANCE.submit(server, job)) {
+        RemoteEditOperations.Start started;
+        try {
+            started = operations.start(operation, job, edit -> WorldEditQueue.INSTANCE.submit(server, edit));
+        } catch (RuntimeException e) {
+            Reference.logger.warn("Could not start the remote edit from {}", player.getCommandSenderName(), e);
+            send(player, MessageEditStatus.rejected(id, "schematica.message.edit.remote_invalid"));
+            return;
+        }
+        if (started == RemoteEditOperations.Start.BUSY) {
             send(player, MessageEditStatus.rejected(id, "schematica.message.edit.busy"));
             return;
         }
-        running.put(player.getUniqueID(), id);
-        send(player, new MessageEditStatus(id, MessageEditStatus.State.ACCEPTED));
+        if (started == RemoteEditOperations.Start.STARTED) send(player, new MessageEditStatus(id, MessageEditStatus.State.ACCEPTED));
     }
 
     static MessageEditStatus status(long id, TaskRegistry.Progress progress) {
@@ -164,14 +198,28 @@ public final class RemoteEdits {
 
     public void cancel(EntityPlayerMP player, long id) {
         if (player == null) return;
-        Upload upload = uploads.get(player.getUniqueID());
-        if (upload != null && upload.id == id) uploads.remove(player.getUniqueID());
-        Long current = running.get(player.getUniqueID());
-        if (current != null && current == id) WorldEditQueue.INSTANCE.cancel(player.getUniqueID());
+        synchronized (uploads) {
+            Upload upload = uploads.get(player.getUniqueID());
+            if (upload != null && upload.operation.id == id) uploads.remove(player.getUniqueID());
+            operations.cancel(player.getUniqueID(), id);
+        }
     }
 
     public void forget(EntityPlayer player) {
-        uploads.remove(player.getUniqueID());
-        running.remove(player.getUniqueID());
+        forget(player.getUniqueID());
+    }
+
+    void forget(UUID owner) {
+        synchronized (uploads) {
+            uploads.remove(owner);
+            operations.forget(owner);
+        }
+    }
+
+    public void clear() {
+        synchronized (uploads) {
+            uploads.clear();
+            operations.clear();
+        }
     }
 }

@@ -2008,3 +2008,50 @@ Adjacent double-chest placement callbacks (normal updates):
   must not cause a new metadata-restoration failure or prevent remaining updates
   and entities. Unit regressions separately cover cancellation, skipped cells,
   silent placement, rejected chest metadata writes and progress across both scans.
+
+
+### Dedicated-server edit lifecycle and download boundaries
+
+Use a fresh disposable world, matching client/server JARs and real network commands.
+Save the world before reading region files; retain inputs, logs and screenshots.
+
+- With remote edits enabled, paste a one-stone file into air as a creative non-OP.
+  Require the server permission rejection and an unchanged destination. Restore OP,
+  switch to survival and repeat: this is the client's Creative-only rejection,
+  not proof of the server check. Restore creative mode and require the same paste
+  to succeed. Separately change to survival while a large task is already writing:
+  the server must stop further writes and allow a new task after permissions return.
+- Use a 256x16x128 wool schematic in a new empty destination, hide its preview,
+  and wait for a SERVER task with Structure progress. Open Task Manager and Remove
+  it. The already pasted subset is retained; no rollback is promised for PASTE.
+  Compare two saved-world snapshots: the nonempty subset must stop growing below
+  524288 cells. Wait for the task to disappear, then require a new small paste to
+  succeed. Repeat at another destination, disconnecting during Structure instead.
+- Exercise cancellation during upload, decoding and queued server start as well.
+  Deterministic lifecycle tests pause these stages; a GUI run that only cancels
+  Structure does not prove it hit the shorter decoding window. After cancel A,
+  start B and release A's delayed work: A must neither start nor cancel/remove B.
+  Change dimension during an incomplete upload; a new-dimension task must not
+  remain busy, and late old-dimension slices must not disturb it.
+- Download a separate 128-chunk file and disconnect after transfer begins. The
+  client must not save a partial file. Reconnect, download a small file successfully,
+  then retry the complete large download and compare all block states and NBT.
+  Keep the client filename distinct from any local large-paste input.
+- Download an explicit independent-region fixture with overlapping A/B regions,
+  a distant C region and an origin outside the enclosing box. Compare every nested
+  schematic and region definition. Load the actual downloaded file, move B aside
+  in the subregion GUI and verify that A's previously hidden blocks/NBT reappear.
+  Paste with Replace All: air inside a region must clear a preplaced marker, while
+  a sentinel in the gap between regions must survive. Check all three inventories.
+- Build a source spanning a download chunk boundary with two named chest minecarts
+  containing distinct items, and two item frames holding differently rotated items.
+  Place frames through the normal held-item action and wait for their surface check;
+  do not rely on `/summon` to preserve a hanging entity's thin collision box. Save
+  through the server, download, and compare all four entities without duplication.
+  Enable placement entities and paste to a fresh area. Verify exact item contents,
+  rotations, relative positions, hanging anchors and newly assigned UUIDs; wait
+  over five seconds to check that the frames remain attached. Repeat with Ignore
+  Entities enabled and require zero copied entities.
+
+These single-client checks do not establish simultaneous multi-user scheduling or
+compatibility with every older protocol peer. Keep those results separate.

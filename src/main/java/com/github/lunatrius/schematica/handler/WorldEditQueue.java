@@ -44,8 +44,12 @@ public final class WorldEditQueue {
     }
 
     public boolean cancel(UUID player) {
+        return cancel(player, null);
+    }
+
+    public boolean cancel(UUID player, WorldEditTask expected) {
         Edit edit = pending.get();
-        if (edit == null || !edit.job.player.equals(player)) return false;
+        if (edit == null || !edit.job.player.equals(player) || (expected != null && edit.job != expected)) return false;
         edit.task.cancel(player);
         edit.job.cancelled = true;
         return true;
