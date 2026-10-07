@@ -8,7 +8,7 @@ audience: the next developer, working in a cloud container that has the GitHub r
 language: English context; communicate with the user in Chinese
 repository: https://github.com/HackerRouter/Schematica-Plus
 branch: master (all work is committed and pushed to origin/master; there is no other working branch)
-latest_validation: build + Checkstyle + 550 JUnit tests, 0 failures (run with LC_ALL=C.UTF-8)
+latest_validation: build + Checkstyle + 551 JUnit tests, 0 failures (run with LC_ALL=C.UTF-8)
 game_runs: development client (vanilla) and GTNH 2.9.0-RC-2 under Xvfb + Mesa llvmpipe, see section 2A
 ```
 
@@ -295,6 +295,8 @@ Bulk edits (break/replace all, break all except, replace block type, fill air) a
 Still `OPEN`: persisting unsaved edits across sessions (memory-only, as upstream). Replace-selection copies the real tile entity NBT (2026-10-04): from the integrated server's world in single player, else the client's tile entity, which may lack container contents on a remote server. Press consumption follows upstream exactly (user decision): attack/use are cancelled only when the edit is carried out; a refused edit (placement not selected, no owning region, identical replacement, error) lets the vanilla action reach the real world. Targeting matches `getGenericTrace` (fluids included, schematic wins ties, single break range = reach + 1). Remaining intentional difference: replace-selection skips unloaded chunks instead of treating them as air. Placements keep showing the old content until a long job finishes.
 
 ## 6. Remaining feature/parity backlog
+
+- `VISUAL_CHECKED_HEADLESS` (2026-10-07): restored the original `Mouse.next` / `Keyboard.next` calls in `asm/InputTransformer`; `HotkeyHooks` filters their boolean result instead of replacing the calls. GTNH 2.8.4 ships lwjgl3ify 2.1.16: its `MixinMinecraftKeyBinding` uses `Keyboard.next` as the start of a keyboard-only slice. Removing that anchor made its redirects also disable the mouse KeyBinding updates. The public `1.0.0-beta.1` JAR reproduced the reported failure with default settings, no loaded schematic and an empty hand; inventory mouse clicks still worked. The installed bytecode confirmed both mouse updates were redirected before the fix. Added an anchor-order regression in `InputTransformerTest`; build/Checkstyle and 551 tests pass. Evidence and the disposable 2.8.4 client/server are under `/workspace/release-issues/`; the server has no Plus. The fixed runtime JAR restored empty-hand stone breaking, red-wool placement (saved-world metadata 14), opening the named chest with seven diamonds, and breaking after closing its GUI. Holding the stick still set both selection corners without damaging the wool. The fixed installed bytecode keeps mouse KeyBinding updates outside the keyboard slice. Other lwjgl3ify versions were not rerun for this fix.
 
 This is the reconciled known backlog, not a promise that every upstream Configs field has been audited. Use the exact upstream source to extend the coverage matrix. Translation-key presence is not feature implementation.
 

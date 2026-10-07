@@ -2055,3 +2055,21 @@ Save the world before reading region files; retain inputs, logs and screenshots.
 
 These single-client checks do not establish simultaneous multi-user scheduling or
 compatibility with every older protocol peer. Keep those results separate.
+
+
+### GTNH 2.8.4 mouse input with lwjgl3ify 2.1.16
+
+- Use an installed runtime JAR with the pack's original lwjgl3ify, fresh Plus
+  configuration, Creative mode and no loaded schematic. In a disposable world,
+  break a stone block with an empty hand, place a colored wool block and open a
+  chest. Check the actual saved blocks as well as the screen. Repeat after closing
+  an inventory and regaining window focus. Inventory left/right clicks must work.
+- The public `1.0.0-beta.1` JAR reproduces blocked attack/use on this pack. Compare
+  against the fix with the same server and player; the server need not install Plus.
+  Use OP outside protected areas so permissions cannot mask input behavior.
+- Hold the configured tool (default stick), with rendering and tool enabled:
+  left/right clicks must still control selection/placement instead of breaking or
+  placing real blocks. Switch to an empty slot and require normal interaction again.
+- Bind a keyboard shortcut, open/close the main menu, scroll the tool mode and repeat
+  clicks. Recheck a vanilla development client and other lwjgl3ify versions when
+  changing the hook. A successful 2.8.4 run alone does not cover every input coremod.

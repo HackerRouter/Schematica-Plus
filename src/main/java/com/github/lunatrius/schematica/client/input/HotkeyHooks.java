@@ -100,15 +100,15 @@ public final class HotkeyHooks {
         }
     }
 
-    public static boolean nextKeyboard() {
-        while (Keyboard.next()) {
+    public static boolean nextKeyboard(boolean available) {
+        for (; available; available = Keyboard.next()) {
             if (!event(Keyboard.getEventKey(), Keyboard.getEventKeyState(), Keyboard.isRepeatEvent())) return true;
         }
         return false;
     }
 
-    public static boolean nextMouse() {
-        while (Mouse.next()) {
+    public static boolean nextMouse(boolean available) {
+        for (; available; available = Mouse.next()) {
             if (Mouse.getEventButton() >= 0 && event(Mouse.getEventButton() - 100, Mouse.getEventButtonState(), false)) continue;
             if (engine != null && Mouse.getEventDWheel() != 0) {
                 context();

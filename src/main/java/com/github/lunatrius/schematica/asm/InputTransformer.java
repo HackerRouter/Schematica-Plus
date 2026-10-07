@@ -21,10 +21,16 @@ public final class InputTransformer implements IClassTransformer {
                 if (!(instruction instanceof MethodInsnNode)) continue;
                 MethodInsnNode call = (MethodInsnNode) instruction;
                 if (!call.name.equals("next") || !call.desc.equals("()Z")) continue;
-                if (call.owner.equals("org/lwjgl/input/Keyboard")) call.name = "nextKeyboard";
-                else if (call.owner.equals("org/lwjgl/input/Mouse")) call.name = "nextMouse";
+                String hook;
+                if (call.owner.equals("org/lwjgl/input/Keyboard")) hook = "nextKeyboard";
+                else if (call.owner.equals("org/lwjgl/input/Mouse")) hook = "nextMouse";
                 else continue;
-                call.owner = "com/github/lunatrius/schematica/client/input/HotkeyHooks";
+                String owner = "com/github/lunatrius/schematica/client/input/HotkeyHooks";
+                AbstractInsnNode next = call.getNext();
+                if (next instanceof MethodInsnNode && owner.equals(((MethodInsnNode) next).owner)
+                    && hook.equals(((MethodInsnNode) next).name) && "(Z)Z".equals(((MethodInsnNode) next).desc)) continue;
+                // Other input patches use the original polling calls as injection/slice anchors.
+                method.instructions.insert(call, new MethodInsnNode(call.getOpcode(), owner, hook, "(Z)Z", false));
                 changed = true;
             }
         }
