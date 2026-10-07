@@ -5,12 +5,13 @@ import net.minecraftforge.client.ForgeHooksClient;
 import net.minecraftforge.client.MinecraftForgeClient;
 import cpw.mods.fml.relauncher.ReflectionHelper;
 
-final class SchematicRenderPass implements AutoCloseable {
+/** Sets Forge's world and entity render pass while schematic blocks are drawn, as world rendering does. */
+public final class SchematicRenderPass implements AutoCloseable {
     private static final Field WORLD_PASS = ReflectionHelper.findField(ForgeHooksClient.class, "worldRenderPass");
     private final int entityPass = MinecraftForgeClient.getRenderPass();
     private final int worldPass = ForgeHooksClient.getWorldRenderPass();
 
-    SchematicRenderPass(int pass) {
+    public SchematicRenderPass(int pass) {
         setWorldPass(pass);
         ForgeHooksClient.setRenderPass(pass);
     }
