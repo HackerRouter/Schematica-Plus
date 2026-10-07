@@ -1,14 +1,20 @@
 package com.github.lunatrius.schematica.nbt;
 
 import java.io.IOException;
+import java.lang.reflect.Field;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufOutputStream;
 import io.netty.buffer.Unpooled;
+import net.minecraft.nbt.CompressedStreamTools;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.Packet;
-import net.minecraft.network.PacketBuffer;
 import net.minecraft.network.play.server.S35PacketUpdateTileEntity;
+import cpw.mods.fml.relauncher.ReflectionHelper;
 
 final class TileUpdateData {
     static final String KEY = "SchematicaVisualState";
+    private static final Field PACKET_TYPE = ReflectionHelper.findField(S35PacketUpdateTileEntity.class, "field_148859_d");
+    private static final Field PACKET_DATA = ReflectionHelper.findField(S35PacketUpdateTileEntity.class, "field_148860_e");
 
     private TileUpdateData() {}
 
@@ -27,24 +33,33 @@ final class TileUpdateData {
             ? data.getCompoundTag("Adapters") : new NBTTagCompound();
     }
 
+    /**
+     * Reads the update packet's fields rather than its bytes: modpacks change how the packet is serialized (GTNH 2.9
+     * writes its NBT in another form than vanilla reads back). The payload is still bounded by its serialized size.
+     */
     static NBTTagCompound capture(String tileClass, Packet packet) throws IOException {
         if (!(packet instanceof S35PacketUpdateTileEntity)) return null;
-        PacketBuffer buffer = new PacketBuffer(Unpooled.buffer(256, Short.MAX_VALUE + 13));
+        int type;
+        NBTTagCompound payload;
         try {
-            packet.writePacketData(buffer);
-            buffer.skipBytes(10);
-            int type = buffer.readUnsignedByte();
-            NBTTagCompound payload = buffer.readNBTTagCompoundFromBuffer();
-            if (payload == null || buffer.isReadable()) return null;
-            NBTTagCompound data = new NBTTagCompound();
-            data.setInteger("Version", 1);
-            data.setString("Class", tileClass);
-            data.setInteger("Type", type);
-            data.setTag("Data", payload);
-            return data;
-        } finally {
-            buffer.release();
+            type = PACKET_TYPE.getInt(packet);
+            payload = (NBTTagCompound) PACKET_DATA.get(packet);
+        } catch (IllegalAccessException e) {
+            throw new IOException(e);
         }
+        if (payload == null) return null;
+        ByteBuf bound = Unpooled.buffer(256, Short.MAX_VALUE);
+        try {
+            CompressedStreamTools.write(payload, new ByteBufOutputStream(bound));
+        } finally {
+            bound.release();
+        }
+        NBTTagCompound data = new NBTTagCompound();
+        data.setInteger("Version", 1);
+        data.setString("Class", tileClass);
+        data.setInteger("Type", type & 255);
+        data.setTag("Data", payload.copy());
+        return data;
     }
 
     static S35PacketUpdateTileEntity packet(NBTTagCompound data, String tileClass, int x, int y, int z) {

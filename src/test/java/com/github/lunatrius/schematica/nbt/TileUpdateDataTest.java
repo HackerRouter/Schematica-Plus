@@ -58,6 +58,19 @@ public class TileUpdateDataTest {
         assertEquals(3, data.getCompoundTag("Data").getByteArray("X").length);
     }
 
+    @Test public void capturesPacketsWhoseSerializationIsReplaced() throws Exception {
+        NBTTagCompound payload = new NBTTagCompound();
+        payload.setByteArray("X", new byte[] { 4, 5 });
+        S35PacketUpdateTileEntity patched = new S35PacketUpdateTileEntity(1, 2, 3, 64, payload) {
+            @Override public void writePacketData(net.minecraft.network.PacketBuffer data) throws java.io.IOException {
+                throw new java.io.IOException("serialized by another mod");
+            }
+        };
+        S35PacketUpdateTileEntity packet = TileUpdateData.packet(TileUpdateData.capture("test.Tile", patched), "test.Tile", 0, 0, 0);
+        assertEquals(64, packet.func_148853_f());
+        assertArrayEquals(new byte[] { 4, 5 }, packet.func_148857_g().getByteArray("X"));
+    }
+
     @Test public void rejectsMismatchedClassesAndUnknownVersions() throws Exception {
         NBTTagCompound data = TileUpdateData.capture("test.Tile",
             new S35PacketUpdateTileEntity(0, 0, 0, 1, new NBTTagCompound()));
