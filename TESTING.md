@@ -1925,3 +1925,13 @@ Test in GTNH 2.8.4 (NEI 2.8.44) and GTNH 2.9 (NEI 2.8.145); without NEI the butt
   Triglyph and architrave corners are not quite symmetric in their carving; their outline must match, the carving
   may differ slightly.
 
+## Extended block metadata (EndlessIDs) and multiblocks under rotation and mirroring
+
+- In GTNH 2.9, build or find a GT multiblock that uses frames (for example a Precise Auto-Assembler MT-3662 with
+  Tungstensteel frames) and save a box that holds the whole structure: the file is saved as `.schemplus`. Paste it
+  rotated (CW_90) and mirrored (CW_180 + LEFT_RIGHT): the frames keep their material (WAILA shows the same frame
+  name), the controller forms ("Running Fine"), a mirrored controller shows its front texture mirrored.
+- Same with an AE2 build mirrored: cables connect to the mirrored sides, controllers light up, Assembly Lines form.
+- Multiplayer: download the schematic from a server (`/schematicaDownload`) and paste it through the remote edit
+  path; the frames keep their material.
+
