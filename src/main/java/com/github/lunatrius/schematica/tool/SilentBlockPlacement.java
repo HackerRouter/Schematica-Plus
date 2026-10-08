@@ -56,6 +56,7 @@ final class SilentBlockPlacement {
 
     void setTile(WorldServer world, TileEntity tile) {
         world.getChunkFromChunkCoords(tile.xCoord >> 4, tile.zCoord >> 4).addTileEntity(tile);
+        com.github.lunatrius.schematica.nbt.ForgeMultipart.sendDescription(world, tile);
     }
 
     void flush(WorldServer world) {

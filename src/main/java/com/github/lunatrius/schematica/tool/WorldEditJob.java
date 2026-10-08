@@ -494,6 +494,7 @@ public final class WorldEditJob extends WorldEditTask {
                     else {
                         world.setTileEntity(wx, wy, wz, tile);
                         tile.markDirty();
+                        ForgeMultipart.sendDescription(world, tile);
                     }
                 }
                 placed.set(index);

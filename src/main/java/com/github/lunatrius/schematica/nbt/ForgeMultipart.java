@@ -8,6 +8,7 @@ import java.util.List;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.world.World;
 import net.minecraftforge.common.util.Constants;
 
 import com.github.lunatrius.schematica.reference.Reference;
@@ -35,6 +36,7 @@ public class ForgeMultipart {
     private static Method methodGenerateCompositeTile;
     private static Method methodLoadParts;
     private static Method methodCreateFromNBT;
+    private static Method methodSendDescription;
 
     public static void init() {
         enabled = Loader.isModLoaded("ForgeMultipart");
@@ -90,10 +92,22 @@ public class ForgeMultipart {
                     .findMethod(classTileMultipart, null, new String[] { "loadParts" }, Iterable.class);
                 methodCreateFromNBT = ReflectionHelper
                     .findMethod(classTileMultipart, null, new String[] { "createFromNBT" }, NBTTagCompound.class);
+                methodSendDescription = classLoader.loadClass("codechicken.multipart.MultipartHelper")
+                    .getMethod("sendDescPacket", World.class, TileEntity.class);
             } catch (final Exception e) {
                 Reference.logger.error("Something went wrong, disabling FMP integration.", e);
                 enabled = false;
             }
+        }
+    }
+
+    public static void sendDescription(World world, TileEntity tile) {
+        if (!enabled || world.isRemote || !methodLoadParts.getDeclaringClass().isInstance(tile)) return;
+        try {
+            // Multipart tiles do not use the ordinary block-update description packet.
+            methodSendDescription.invoke(null, world, tile);
+        } catch (ReflectiveOperationException e) {
+            throw new IllegalStateException("Could not synchronize pasted multipart tile", e);
         }
     }
 

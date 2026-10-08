@@ -348,6 +348,50 @@ public class WorldEditPlacementTest {
         assertEquals(2, job.blockCount);
     }
 
+    @Test public void normalPasteSynchronizesInstalledTilesBeforeCancellation() throws Exception {
+        assertDescriptionDelivery(false);
+    }
+
+    @Test public void silentPasteSynchronizesInstalledTilesBeforeCancellation() throws Exception {
+        assertDescriptionDelivery(true);
+    }
+
+    private static int descriptions;
+
+    public static void receiveDescription(World world, TileEntity tile) {
+        assertSame(tile, world.getTileEntity(tile.xCoord, tile.yCoord, tile.zCoord));
+        assertEquals("Saved chest 1", ((TileEntityChest) tile).getInventoryName());
+        descriptions++;
+    }
+
+    private static void assertDescriptionDelivery(boolean silent) throws Exception {
+        Class<?> bridge = com.github.lunatrius.schematica.nbt.ForgeMultipart.class;
+        Map<Field, Object> previous = new HashMap<>();
+        try {
+            Object[] values = {true, TileEntityChest.class.getMethod("getSizeInventory"),
+                WorldEditPlacementTest.class.getMethod("receiveDescription", World.class, TileEntity.class)};
+            String[] fields = {"enabled", "methodLoadParts", "methodSendDescription"};
+            for (int i = 0; i < fields.length; i++) {
+                Field field = bridge.getDeclaredField(fields[i]);
+                field.setAccessible(true);
+                previous.put(field, field.get(null));
+                field.set(null, values[i]);
+            }
+            descriptions = 0;
+            FakeWorld world = world(15);
+            if (silent) world.chunk = new Chunk(world, 0, 0);
+            WorldEditJob job = paste(3, 2, silent);
+            job.step(world);
+            assertEquals(1, descriptions);
+            job.cancelled = true;
+            finish(job, world);
+            assertEquals(1, descriptions);
+            assertEquals(1, job.blockCount);
+        } finally {
+            for (Map.Entry<Field, Object> entry : previous.entrySet()) entry.getKey().set(null, entry.getValue());
+        }
+    }
+
     @Test public void updateProgressAccountsForBothPassesWithoutGoingBackwards() throws Exception {
         FakeWorld world = doubleChestWorld(65535);
         WorldEditJob job = paste(2, 2, false);
@@ -495,6 +539,9 @@ public class WorldEditPlacementTest {
             return true;
         }
         @Override public void removeTileEntity(int x, int y, int z) { cell(x, y, z).tile = null; }
+        @Override public TileEntity getTileEntity(int x, int y, int z) {
+            return chunk == null ? cell(x, y, z).tile : (TileEntity) chunk.chunkTileEntityMap.get(new ChunkPosition(x & 15, y, z & 15));
+        }
         @Override public void setTileEntity(int x, int y, int z, TileEntity value) { cell(x, y, z).tile = value; tileWrites++; }
         @Override public void markBlockForUpdate(int x, int y, int z) { blockUpdates++; }
         @Override public void notifyBlocksOfNeighborChange(int x, int y, int z, Block value) {

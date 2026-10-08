@@ -67,7 +67,8 @@ Empty/inactive machines do not cover all upgrades, inventories, orientations,
 active animations, connected networks or formed multiblocks. The unconnected GT
 pipe fixture does not validate every connection shape. Lighting and schematic
 alpha can differ from real blocks. Angelica shaders, other graphics drivers,
-resource packs and the user's own schematics remain untested here. The intermittent crystal-chest item visibility was subsequently reproduced in
+resource packs and the user's own schematics remain untested here. The intermittent
+crystal-chest item visibility was subsequently reproduced in
 a cold 2.9 client with Plus removed, on a copied world; the native inventory
 still contained all 64 diamonds. No Plus change was made for that observation.
 
@@ -96,3 +97,29 @@ formed multiblocks, 2.8 Freecam or external shader compatibility. The 2.9 softwa
 renderer showed ground dithering even with schematic rendering disabled; this
 was not classified as a newly observed missing-face defect. Evidence is under
 `/workspace/release-issues/followup`; see the follow-up steps in TESTING.md.
+
+
+## Historical fixtures and pasted Multipart tiles
+
+The follow-up also inspected all eight horizontal EnderIO transforms and a
+subregion/global composition in both packs. Saved conduit settings, ordinary
+block states and filtered item transport matched independent expectations.
+Seven IC2 crop-stick states rendered without missing textures and retained their
+crop/stage data in immediate post-paste snapshots. A mirrored/rotated, reloaded
+2.9 GT frame fixture retained metadata 316 in all twelve frame cells.
+
+ProjectRed full lamps had real registry IDs above 4095 in both packs and kept
+their identity/state across pack exchange. Four small-light types exposed a
+different problem: previews were complete and server tiles existed after paste,
+but clients did not receive Multipart descriptions until a chunk reload.
+`ForgeMultipart.sendDescription` now calls the native helper after normal or
+silent tile installation, including world moves. Both cold clients passed
+ordinary/silent/cross-pack paste and move without reloading chunks. A cold 2.9
+dedicated server also passed remote paste and replacing existing parts with new
+colours/inversion. Inspected client appearances and saved tile data matched.
+Build, Checkstyle and 588 automated tests pass; two added placement/cancellation
+regressions fail without the synchronization calls.
+
+These checks use constructed native fixtures. The original GT invalid-texture
+and EnderIO report files remain unavailable and are not declared fixed by this
+coverage. See HANDOUT section 6 and TESTING for steps and evidence locations.
