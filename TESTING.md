@@ -2271,3 +2271,16 @@ Run in GTNH 2.8.4 and 2.9.0-RC-2, including a server without Plus:
 - On a Plus server with the accurate-placement protocol enabled, test a non-whitelisted mod block whose placement solver supports its orientation. The client must continue computing its placement direction instead of assuming the server will rewrite it. Recheck vanilla stairs, and repeat with protocol None.
 
 Project and material follow-up acceptance (2026-10-08): cold GTNH 2.9.0-RC-2 recovered an older two-version project, retained chest/sign NBT and Chinese descriptions, and restored the selected second version after leaving/re-entering the world. Opening alone left all three source file hashes unchanged. GTNH 2.8.4 opened a copied legacy project. Both packs refreshed an already-open English material list to Chinese automatically. In 2.8.4 the two-times multiplier, ignored material and gold-block replacement survived; verify the Chinese inventory HUD appears with `renderMaterialListInGuis` on and disappears with it off. These checks used the combined project/layout/material fix, with 580 automated tests passing.
+
+### Connected states, camera and dimension follow-up
+
+Observed in both GTNH 2.8.4 and 2.9.0-RC-2 on 2026-10-08:
+
+1. Power a lamp/piston, fuel a furnace, join clear/coloured panes, fences and iron bars, stack three BuildCraft tanks and connect GT pipes. Capture the actual world, and compare opposite preview views; verify saved source states include the lit furnace/lamp and extended piston.
+2. Place the preview across x=671/672 and at minimum (-17,150,-17), crossing negative chunk boundaries. Compare fast/AO-off and fancy/AO-on; move the camera across the chunk and view the same geometry again.
+3. Enter the Nether and move clear of the arrival portal before testing. Confirm dimension -1, then load the fixture above the roof and inspect it. In 2.8.4, load a uniquely named placement, remove it, leave and return; it must remain absent while retained placements restore.
+4. In 2.9, enable the installed Freecam with F4, wait, and move forward while watching the connected EnderIO fixture. The real player must remain fixed, the camera coordinates must change, and the preview must remain fixed in world space. Disable Freecam afterward. This run does not cover a separately installed Freecam on 2.8.4.
+5. Compare stone against a real gold block, red wool against white wool, and schematic air against a real stone block. Enable overlays and inspect distinct wrong-block, wrong-state and extra colours in both packs.
+6. Capture seven actual EnderIO bundles (item/power curve and item T) with five endpoint chests. Check source connections, mode arrays, side filters and inventories from a saved-world copy before comparing both preview views. A stale in-memory source must be reloaded after replacing its file; the 2.9 final inspection used a fresh complete-file name. Transform/transport checks are separate.
+
+No external shader pack was installed; no shader or universal machine-animation result is claimed. Screenshots, source snapshots and native command records: `/workspace/release-issues/followup`.

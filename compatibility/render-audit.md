@@ -77,3 +77,22 @@ pass readings, screenshots and logs are outside the repository at
 pass API and tank behavior were Angelica `7059ee0eecbee9cc66a3b9a301bf42d7242669b3`
 and TConstruct `ba672fb6af0f71678a5c7aac2b2c4c05abf1e2de`; no upstream rendering
 implementation was copied.
+
+## Expanded states and cameras
+
+A later 2026-10-08 run on the project/material fix added native powered lamps,
+burning furnaces, extended pistons, connected clear/coloured panes, bars and
+fences, stacked BuildCraft tanks and connected GT pipes in both packs. Source
+saved-world states and opposite preview views matched. Fast/fancy graphics with
+AO off/on, positive/negative chunk boundaries, actual Nether previews and distinct
+wrong-block/wrong-state/extra colours were inspected without another missing-face
+defect. A removed Nether placement stayed removed after a 2.8.4 round trip.
+Native Freecam 1.0.12 in 2.9 moved independently of the player while the preview
+kept its world position. Seven-bundle EnderIO curve/T fixtures with item/power
+conduits rendered completely in both packs after checking native source NBT.
+
+These expand the earlier coverage; they do not establish all machine animations,
+formed multiblocks, 2.8 Freecam or external shader compatibility. The 2.9 software
+renderer showed ground dithering even with schematic rendering disabled; this
+was not classified as a newly observed missing-face defect. Evidence is under
+`/workspace/release-issues/followup`; see the follow-up steps in TESTING.md.
