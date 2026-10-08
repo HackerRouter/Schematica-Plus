@@ -67,9 +67,9 @@ Empty/inactive machines do not cover all upgrades, inventories, orientations,
 active animations, connected networks or formed multiblocks. The unconnected GT
 pipe fixture does not validate every connection shape. Lighting and schematic
 alpha can differ from real blocks. Angelica shaders, other graphics drivers,
-resource packs and the user's own schematics remain untested here. The previously
-observed intermittent crystal-chest item visibility is a separate unresolved
-observation; this audit does not claim to fix it.
+resource packs and the user's own schematics remain untested here. The intermittent crystal-chest item visibility was subsequently reproduced in
+a cold 2.9 client with Plus removed, on a copied world; the native inventory
+still contained all 64 diamonds. No Plus change was made for that observation.
 
 Follow the render checks in [TESTING.md](../TESTING.md). Scripts, native captures,
 pass readings, screenshots and logs are outside the repository at
