@@ -3,7 +3,6 @@ package com.github.lunatrius.schematica.compat.nei;
 import java.util.List;
 
 import net.minecraft.item.ItemStack;
-import net.minecraftforge.common.MinecraftForge;
 
 import com.github.lunatrius.schematica.reference.Reference;
 
@@ -32,14 +31,23 @@ public final class NeiBridge {
     public static void register() {
         if (!available()) return;
         try {
-            MinecraftForge.EVENT_BUS.register(NeiIntegration.INSTANCE);
+            NeiIntegration.register();
         } catch (LinkageError | RuntimeException error) {
             available = false;
             Reference.logger.warn("This NEI version does not offer bookmark groups to Schematica Plus", error);
         }
     }
 
-    /** A new NEI bookmark group in crafting chain mode with these stacks (stack size = amount); the number of items or -1. */
+    public static void clear() {
+        if (!available()) return;
+        try {
+            NeiIntegration.clear();
+        } catch (LinkageError | RuntimeException error) {
+            Reference.logger.debug("Could not clear the NEI material group reference", error);
+        }
+    }
+
+    /** Creates a demand group; returns its material count, -1 on failure, or -2 while NEI loads its bookmarks. */
     public static int sendGroup(List<ItemStack> stacks) {
         if (!available()) return -1;
         try {

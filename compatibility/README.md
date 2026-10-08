@@ -62,6 +62,22 @@ tile, add-on, special renderer or animation in those projects. Block-only mods u
 the existing block-name/metadata storage. Libraries, UI, recipe and entity-only
 mods do not each need a tile-visual adapter.
 
+## NEI material planning
+
+GTNH 2.8.4 (NEI 2.8.44) supports bookmark crafting chains; GTNH 2.9.0-RC-2
+(NEI 2.8.155) also supports the graphical crafting tree. Sending a material list
+creates a saved demand node, shown as a named book. Its ingredients are required
+materials, so they are not mistaken for existing inventory. Select production
+recipes with S or the native tree controls; NEI determines batches and further
+ingredients. A request for 17 iron bars with a three-bar recipe requires six
+batches, not one. The book is an informational plan, with no crafting overlay.
+
+Snapshots retain item registry names, metadata, NBT and amounts. Sending waits
+for NEI's own bookmark loading to finish. S targets the last sent group in the
+current world and bookmark namespace; deleted groups and reused numeric IDs do
+not acquire that reference. Saved plans survive through NEI's normal storage;
+after restarting, use NEI's own controls or send a new list to bind S again.
+
 ## Multipart Easy Place
 
 ProjectRed Easy Place uses native multipart item factories and ordinary item use to

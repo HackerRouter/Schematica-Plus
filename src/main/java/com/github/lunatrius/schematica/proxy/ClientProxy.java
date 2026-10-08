@@ -431,6 +431,7 @@ public class ClientProxy extends CommonProxy {
     }
 
     public static void clearWorldState() {
+        com.github.lunatrius.schematica.compat.nei.NeiBridge.clear();
         com.github.lunatrius.schematica.client.gui.material.MaterialLists.clear();
         com.github.lunatrius.schematica.client.verifier.VerificationManager.INSTANCE.clear();
         com.github.lunatrius.schematica.client.renderer.hud.BlockInfoHud.INSTANCE.clear();

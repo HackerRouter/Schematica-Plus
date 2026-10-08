@@ -224,7 +224,7 @@ public class GuiSchematicMaterials extends UiScreen {
 
     /** A new NEI bookmark group in crafting chain mode with the missing counts (Shift: the totals), ignored rows left out. */
     private void sendToNei() {
-        if (!list.hasResult()) return;
+        if (!list.validContext() || !list.hasResult()) return;
         boolean totals = isShiftKeyDown();
         List<ItemStack> stacks = new ArrayList<>();
         for (Entry<MaterialItemKey> entry : materials.entries()) {
@@ -232,11 +232,16 @@ public class GuiSchematicMaterials extends UiScreen {
             long count = totals ? materials.total(entry) : materials.missing(entry);
             if (count <= 0) continue;
             ItemStack stack = entry.key.stack();
-            stack.stackSize = (int) Math.min(Integer.MAX_VALUE, count);
+            if (count > Integer.MAX_VALUE) {
+                showNotice(UiTranslations.format("schematica.nei.too_large"));
+                return;
+            }
+            stack.stackSize = (int) count;
             stacks.add(stack);
         }
         int sent = com.github.lunatrius.schematica.compat.nei.NeiBridge.sendGroup(stacks);
-        showNotice(UiTranslations.format(sent < 0 ? "schematica.nei.send_failed" : "schematica.nei.sent", Math.max(0, sent)));
+        showNotice(UiTranslations.format(sent == -2 ? "schematica.nei.loading"
+            : sent < 0 ? "schematica.nei.send_failed" : "schematica.nei.sent", Math.max(0, sent)));
     }
 
     private void updateButtons() {

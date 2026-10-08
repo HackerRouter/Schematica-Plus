@@ -2,6 +2,10 @@
 package com.github.lunatrius.schematica.compat.nei;
 
 import java.util.List;
+import java.util.ArrayList;
+import java.io.File;
+import java.io.IOException;
+import java.lang.reflect.Field;
 import java.util.Map;
 
 import net.minecraft.client.Minecraft;
@@ -12,9 +16,10 @@ import com.github.lunatrius.schematica.reference.Reference;
 
 import codechicken.nei.BookmarkPanel;
 import codechicken.nei.ItemPanels;
+import codechicken.nei.NEIClientConfig;
 import codechicken.nei.bookmark.BookmarkGrid;
 import codechicken.nei.bookmark.BookmarkGroup;
-import codechicken.nei.bookmark.BookmarkItem;
+import codechicken.nei.api.API;
 import codechicken.nei.recipe.GuiRecipeButton;
 import codechicken.nei.recipe.Recipe;
 import codechicken.nei.recipe.RecipeHandlerRef;
@@ -28,45 +33,89 @@ import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 public final class NeiIntegration {
     static final NeiIntegration INSTANCE = new NeiIntegration();
     private static int group = -1;
+    private static BookmarkGrid sentGrid;
+    private static BookmarkGroup sentGroup;
 
     private NeiIntegration() {}
 
-    private static BookmarkGrid grid() { return (BookmarkGrid) ItemPanels.bookmarkPanel.getGrid(); }
+    private static BookmarkGrid grid() {
+        ItemPanels.bookmarkPanel.update();
+        return (BookmarkGrid) ItemPanels.bookmarkPanel.getGrid();
+    }
+
+    static void register() {
+        API.registerRecipeHandler(new MaterialDemandHandler());
+        net.minecraftforge.common.MinecraftForge.EVENT_BUS.register(INSTANCE);
+    }
+
+    static void clear() {
+        group = -1;
+        sentGrid = null;
+        sentGroup = null;
+    }
 
     static int sendGroup(List<ItemStack> stacks) {
-        BookmarkGrid grid = grid();
-        int id = grid.addGroup(new BookmarkGroup(BookmarkPanel.BookmarkViewMode.DEFAULT, true));
-        int count = 0;
+        List<ItemStack> demands = new ArrayList<>();
         for (ItemStack stack : stacks) {
-            if (stack == null || stack.getItem() == null || stack.stackSize <= 0) continue;
-            grid.addItem(BookmarkItem.of(id, stack.copy()), false);
-            count++;
+            if (stack != null && stack.getItem() != null && stack.stackSize > 0) demands.add(stack.copy());
+        }
+        if (demands.isEmpty()) return 0;
+        if (!bookmarksLoaded()) return -2;
+        BookmarkGrid grid = grid();
+        BookmarkGroup target = new BookmarkGroup(BookmarkPanel.BookmarkViewMode.DEFAULT, true);
+        int id = grid.addGroup(target);
+        try {
+            grid.addRecipe(MaterialDemandHandler.recipe(demands), 1, id);
+            ItemPanels.bookmarkPanel.save();
+        } catch (RuntimeException | LinkageError error) {
+            grid.removeGroup(id);
+            throw error;
         }
         group = id;
-        ItemPanels.bookmarkPanel.save();
-        return count;
+        sentGrid = grid;
+        sentGroup = target;
+        return demands.size();
     }
 
     private static boolean groupExists() {
+        return group >= 0 && grid() == sentGrid && sentGrid.getGroup(group) == sentGroup;
+    }
+
+    private static boolean bookmarksLoaded() {
         try {
-            return group >= 0 && grid().getGroup(group) != null;
-        } catch (RuntimeException error) {
-            return false;
+            Field storageField = BookmarkPanel.class.getDeclaredField("storage");
+            storageField.setAccessible(true);
+            Object storage = storageField.get(ItemPanels.bookmarkPanel);
+            Field fileField = storage.getClass().getDeclaredField("bookmarkFile");
+            fileField.setAccessible(true);
+            File loaded = (File) fileField.get(storage);
+            String world = NEIClientConfig.getBooleanSetting("inventory.bookmarks.worldSpecific")
+                ? NEIClientConfig.getWorldPath() : "global";
+            File expected = new File(Minecraft.getMinecraft().mcDataDir, "saves/NEI/" + world + "/bookmarks.ini");
+            // NEI assigns this file only after its background loader has installed the bookmark grids.
+            return loaded != null && loaded.getCanonicalFile().equals(expected.getCanonicalFile());
+        } catch (ReflectiveOperationException | IOException error) {
+            throw new IllegalStateException("Could not determine whether NEI bookmarks finished loading", error);
         }
     }
 
     static void addRecipe(RecipeHandlerRef ref) {
         Minecraft mc = Minecraft.getMinecraft();
         String message;
-        if (!groupExists()) {
-            message = UiTranslations.format("schematica.nei.no_group");
-        } else {
-            Recipe recipe = Recipe.of(ref);
-            boolean added = recipe != null && ItemPanels.bookmarkPanel.addRecipe(recipe, 1, group);
-            if (added) ItemPanels.bookmarkPanel.save();
-            ItemStack result = recipe == null ? null : recipe.getResult();
-            String name = result == null ? "?" : result.getDisplayName();
-            message = UiTranslations.format(added ? "schematica.nei.recipe_added" : "schematica.nei.recipe_present", name);
+        try {
+            if (!groupExists()) {
+                message = UiTranslations.format("schematica.nei.no_group");
+            } else {
+                Recipe recipe = Recipe.of(ref);
+                boolean added = recipe != null && ItemPanels.bookmarkPanel.addRecipe(recipe, 1, group);
+                if (added) ItemPanels.bookmarkPanel.save();
+                ItemStack result = recipe == null ? null : recipe.getResult();
+                String name = result == null ? "?" : result.getDisplayName();
+                message = UiTranslations.format(added ? "schematica.nei.recipe_added" : "schematica.nei.recipe_present", name);
+            }
+        } catch (RuntimeException | LinkageError error) {
+            Reference.logger.warn("Could not add a recipe to the NEI material group", error);
+            message = UiTranslations.format("schematica.nei.send_failed");
         }
         if (mc.ingameGUI != null) mc.ingameGUI.func_110326_a(message, false);
     }
@@ -75,7 +124,7 @@ public final class NeiIntegration {
     @SubscribeEvent
     public void onRecipeButtons(GuiRecipeButton.UpdateRecipeButtonsEvent.Post event) {
         try {
-            if (!groupExists() || event.buttonList.isEmpty()) return;
+            if (!groupExists() || event.buttonList.isEmpty() || event.buttonList.get(0).handlerRef.handler instanceof MaterialDemandHandler) return;
             GuiRecipeButton first = event.buttonList.get(0);
             int top = first.yPosition;
             for (GuiRecipeButton button : event.buttonList) top = Math.min(top, button.yPosition);

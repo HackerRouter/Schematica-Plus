@@ -1496,18 +1496,39 @@ compare with a server that does not have the mod and with each server option off
 - With two or more placements, "All placements" opens one list adding up every enabled placement; it
   recounts when a placement is moved, transformed, added or removed.
 
-## NEI (GTNH) bookmark groups
+## NEI (GTNH) material demands and bookmark groups
 
-Test in GTNH 2.8.4 (NEI 2.8.44) and GTNH 2.9 (NEI 2.8.145); without NEI the button must not appear.
-- Material list -> "Send to NEI": the bookmark panel gets a new group (crafting chain color) with the
-  missing amounts of all non-ignored rows (Shift: totals); replaced rows are sent as the replacement item.
-  The action bar/progress line says how many materials were sent. The group survives a restart (NEI saves it).
-- Open the recipes of one of those items in NEI: each recipe has an extra "S" button above NEI's own buttons;
-  clicking it adds that recipe to the group ("Added the recipe for ... to the material group"); NEI's group
-  tooltip then shows Ingredients / Missing / Results / Remainders for the chain. Clicking again says it is
-  already there. Delete the group in NEI and click S: it asks to send a list first.
-- GTNH 2.9: open the group's crafting tree (NEI hotkey shown on the group), click nodes and use the tree's
-  own "use for recipe tree" button; the tree's totals match the material list counts.
+Use GTNH 2.8.4 / NEI 2.8.44 and GTNH 2.9.0-RC-2 / NEI 2.8.155. The former has
+bookmark crafting chains; the latter also has the graphical crafting tree.
+
+- Cold-start the client and send a material list before NEI finishes loading its bookmarks. The notice
+  asks to retry shortly, without creating or saving a temporary group. Retry after loading: the new
+  group stays present when a recipe screen is opened. Existing bookmarks must remain intact.
+- Material list -> Send to NEI creates a saved demand represented by a named book. This is a planning
+  node, not a craftable item or supplied inventory. Its ingredients are the missing block amounts;
+  Shift sends totals. Check a partially built placement, a multiplier greater than one, ignored rows
+  and a material replacement. Zero demand must not create an empty group; excessive amounts must
+  report the export limit instead of silently truncating the list.
+- Use 17 iron bars and three iron blocks as a fixture. Select the shaped iron-bar recipe producing
+  three bars from six rods. Click S: the chain must request 36 rods and produce 18 bars (six batches),
+  while still requesting the three iron blocks. Repeated S must not duplicate the recipe.
+- In 2.9, open the group's crafting tree, click its iron-bar node and use the native recipe-tree arrow.
+  Repeat on its rod node with the one-rod-from-one-ingot recipe. The tree must expand to 36 ingots,
+  retain the three iron blocks and show one surplus bar. Tool choices and alternatives follow NEI.
+- Send a second list with different counts but the same material types; both plans must retain their
+  own counts. Save/reload NEI bookmarks and restart the client; requests, recipes and calculated
+  amounts must survive. Open the saved demand book's NEI recipe to inspect the original quantities.
+- Switch bookmark namespaces while an old S button is still on screen. It must not add to another
+  group with the same numeric ID. Return to the original namespace and retry. Delete the group and
+  create another with a reused ID: the old S button must not target that replacement. Leaving the
+  world clears the last-send reference. Saved groups remain usable through NEI's own controls;
+  send a new material list to bind S again.
+- Export a demand containing modded items in 2.8.4 and read the snapshot in 2.9.0-RC-2. Registry names,
+  metadata, item NBT and amounts must survive changed numeric item IDs. Missing named items must
+  not be mistaken for unrelated items occupying the old IDs.
+- Without GTNH NEI, the optional button must not appear and normal materials/recipe screens must
+  remain usable. This integration selects recipes manually; it does not choose a GT machine route,
+  perform crafts or replace NEI's native tool, fluid, byproduct and ore-dictionary calculations.
 
 ## 3D schematic preview in the browsers
 
