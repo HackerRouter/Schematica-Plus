@@ -54,6 +54,7 @@ import net.minecraftforge.event.world.BlockEvent;
  * may change; powered states, ages and contents stay as vanilla placed them.
  */
 public final class AccuratePlacement {
+    public static boolean supports(Block block) { return block instanceof BlockQuartz || block != null && mask(block, 0) != 0; }
     public static final AccuratePlacement INSTANCE = new AccuratePlacement();
     static final long LIFETIME_NANOS = 2_000_000_000L;
     static final int MAX_PENDING = 64;

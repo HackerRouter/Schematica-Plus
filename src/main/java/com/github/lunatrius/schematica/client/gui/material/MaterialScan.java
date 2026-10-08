@@ -14,6 +14,8 @@ import net.minecraft.world.chunk.Chunk;
 
 import com.github.lunatrius.schematica.client.world.SchematicWorld;
 import com.github.lunatrius.schematica.reference.Reference;
+import com.github.lunatrius.schematica.compat.MultipartItems;
+import com.github.lunatrius.schematica.compat.MultipartItems.Part;
 
 import cpw.mods.fml.common.registry.GameData;
 
@@ -77,12 +79,25 @@ public final class MaterialScan implements MaterialScanner {
             boolean missing = unknown || real != block || !ignoreState && realMeta != meta
                 && !com.github.lunatrius.schematica.util.BlockGroups.tolerated(block, meta, real, realMeta);
             boolean mismatched = missing && !unknown && !world.isAirBlock(wx, wy, wz);
+            List<Part> missingParts = null;
+            if (!unknown && MultipartItems.supports(schematic.getTileEntity(x, y, z))) {
+                missingParts = MultipartItems.missing(
+                    MultipartItems.parts(schematic.getTileEntity(x, y, z)),
+                    MultipartItems.parts(world.getTileEntity(wx, wy, wz)), ignoreState);
+            }
             for (int i = 0; i < items.size(); i++) {
                 int amount = items.count(i);
+                int missingAmount = missing ? amount : 0;
+                if (missingParts != null) {
+                    missingAmount = 0;
+                    for (MultipartItems.Part part : missingParts) {
+                        if (part.stack != null && items.key(i).equals(new MaterialItemKey(part.stack))) missingAmount++;
+                    }
+                }
                 int[] count = counts.computeIfAbsent(items.key(i), ignored -> new int[4]);
                 count[0] += amount;
-                if (missing) count[1] += amount;
-                if (mismatched) count[2] += amount;
+                count[1] += missingAmount;
+                if (mismatched || missingParts != null && !world.isAirBlock(wx, wy, wz)) count[2] += missingAmount;
                 if (unknown) count[3] += amount;
             }
         } catch (Exception e) {

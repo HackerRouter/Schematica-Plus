@@ -62,6 +62,16 @@ tile, add-on, special renderer or animation in those projects. Block-only mods u
 the existing block-name/metadata storage. Libraries, UI, recipe and entity-only
 mods do not each need a tile-visual adapter.
 
+## Multipart Easy Place
+
+ProjectRed Easy Place uses native multipart item factories and ordinary item use to
+match the schematic's mounting side and gate rotation. Materials count each part,
+including multiple parts in one cell. OR gates and red-alloy wires were checked in
+GTNH 2.8.4 and 2.9.0-RC-2; client-only installation was also checked against a
+2.8.4 dedicated server without Plus. The inventory and backing block are required
+in survival. Gate settings that require a screwdriver remain manual; this does
+not restore arbitrary NBT or promise automatic printer support for every part.
+
 ## Fluid printer
 
 Supported routes are native `ItemBucket` placement (including EnderIO/Tinkers'

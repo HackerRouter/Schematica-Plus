@@ -7,6 +7,7 @@ import net.minecraft.block.BlockSlab;
 
 import com.github.lunatrius.schematica.SchematicaPlus;
 import com.github.lunatrius.schematica.handler.ConfigurationHandler;
+import com.github.lunatrius.schematica.handler.AccuratePlacement;
 import com.github.lunatrius.schematica.network.PacketHandler;
 import com.github.lunatrius.schematica.network.message.MessagePlacementIntent;
 
@@ -18,7 +19,8 @@ public final class AccuratePlacementClient {
 
     /** Whether the server will set this block's orientation: auto, v3 and v2 use the protocol, slabs_only only for slabs. */
     public static boolean active(Block block) {
-        if (!SchematicaPlus.proxy.supportsAccuratePlacement) return false;
+        if (!SchematicaPlus.proxy.supportsAccuratePlacement
+            || !AccuratePlacement.supports(block)) return false;
         switch (ConfigurationHandler.easyPlaceProtocolVersion) {
             case "none": return false;
             case "slabs_only": return block instanceof BlockSlab;

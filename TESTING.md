@@ -1943,6 +1943,8 @@ Test in GTNH 2.8.4 (NEI 2.8.44) and GTNH 2.9 (NEI 2.8.145); without NEI the butt
 
 ## ArchitectureCraft mirrors
 
+- Run the following in both GTNH 2.8.4 and 2.9.0-RC-2. Save with tile NBT enabled, load the result with schematic and block rendering enabled, and open its material list. Roof outer/inner corners and small triangular shapes must appear as models and contribute to the total; GTNH 2.8.4 may use the native generic Architectural Block item name.
+- After original and mirrored pastes, capture both copies again. Compare `Shape`, `BaseName`, `BaseData`, `side` and `turn` with the preview and inspect the saved region data; omitted zero-valued orientation fields are equivalent to zero. A file without the shape tile NBT is an incomplete sample and cannot establish whether the mirror calculation is correct.
 - Place every shape from the sawbench at least once, the corner ones (roof, overhang, bevelled, round, sphere, stair,
   balustrade, banister and window corners, Ionic and Corinthian capitals, plain balustrades) with two different
   turns, LH and RH gable overhangs and cornices (and their ends), a banister with a placement offset, and a window
@@ -2118,3 +2120,13 @@ reproduced on GTNH 2.8.4 with no Plus on the dedicated server.
   no blocks-only prompt, inventories/signs/entities preserved. A server that
   advertises the protocol but rejects remote editing must not fall back to chat
   commands to evade that server policy.
+
+## ProjectRed Easy Place and multipart materials
+
+Run in GTNH 2.8.4 and 2.9.0-RC-2, including a server without Plus:
+
+- Capture OR gates at all four floor rotations and on a wall and ceiling, with tile NBT enabled. Keep the backing blocks, move the placement to an empty copy, enter survival with the correct gates in inventory, and use Easy Place. Check each native gate's facing, the inventory decrease and its saved `orient` value. Repeated use on a complete gate must not consume another item.
+- Capture two red-alloy wires on different faces of the same cell. Its material list must count two wires. Build one face, refresh the list (one missing), then build the other (zero missing); both parts must remain present. A matching host block and metadata alone must not mark the second wire as built.
+- With Ignore State disabled, a differently oriented gate remains missing. With it enabled, orientation is ignored, but a different gate item or missing second part remains missing. Unsupported/unknown picked items must be reported as skipped rather than silently counted as complete.
+- With no matching item in survival, or with the required backing block removed, Easy Place must fail without placing or consuming anything. Gate configurations that cannot be produced by normal placement still require the native screwdriver/configuration tools; this does not copy powered state, timers or arbitrary NBT.
+- On a Plus server with the accurate-placement protocol enabled, test a non-whitelisted mod block whose placement solver supports its orientation. The client must continue computing its placement direction instead of assuming the server will rewrite it. Recheck vanilla stairs, and repeat with protocol None.

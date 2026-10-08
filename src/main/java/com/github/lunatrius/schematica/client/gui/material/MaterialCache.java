@@ -101,6 +101,15 @@ public final class MaterialCache {
     private static final BuildItems UNKNOWN = new BuildItems(Collections.<MaterialItemKey>emptyList(), new int[] {-1});
 
     private static BuildItems resolve(World world, int x, int y, int z, Block block, int meta, EntityPlayer player) {
+        TileEntity tile = world == null ? null : world.getTileEntity(x, y, z);
+        if (com.github.lunatrius.schematica.compat.MultipartItems.supports(tile)) {
+            try {
+                ItemStack[] parts = com.github.lunatrius.schematica.compat.MultipartItems.items(tile);
+                return parts == null ? null : BuildItems.of(parts);
+            } catch (ReflectiveOperationException e) {
+                return null;
+            }
+        }
         if (block == Blocks.piston_head || block == Blocks.piston_extension || block == Blocks.portal || block == Blocks.end_portal
             || block == Blocks.fire) return BuildItems.NONE;
         if (block instanceof BlockDoor && (meta & 8) != 0) return BuildItems.NONE;
@@ -114,7 +123,6 @@ public final class MaterialCache {
         }
         if (block instanceof IFluidBlock) return fluid((IFluidBlock) block, world, x, y, z, meta);
         if (block instanceof BlockFlowerPot) {
-            TileEntity tile = world.getTileEntity(x, y, z);
             ItemStack plant = tile instanceof TileEntityFlowerPot && ((TileEntityFlowerPot) tile).getFlowerPotItem() != null
                 ? new ItemStack(((TileEntityFlowerPot) tile).getFlowerPotItem(), 1, ((TileEntityFlowerPot) tile).getFlowerPotData()) : null;
             return BuildItems.of(new ItemStack(Items.flower_pot), plant);

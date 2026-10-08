@@ -15,6 +15,9 @@ import net.minecraft.util.ChatComponentTranslation;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.util.Vec3;
 import net.minecraft.world.World;
+import net.minecraft.tileentity.TileEntity;
+
+import com.github.lunatrius.schematica.compat.MultipartItems;
 import net.minecraftforge.common.util.ForgeDirection;
 import net.minecraftforge.event.ForgeEventFactory;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent.Action;
@@ -96,6 +99,9 @@ public final class EasyPlace {
         MultiBlockPlacement.Kind kind = MultiBlockPlacement.kind(block);
         if (kind != null) return multiBlock(player, world, schematic, lx, ly, lz, x, y, z, block, meta, kind);
         if (cached(x, y, z) || System.nanoTime() - lastPickTime < 1_000_000L * ConfigurationHandler.easyPlaceSwapInterval) return Result.FAIL;
+        if (MultipartItems.supports(schematic.getTileEntity(lx, ly, lz))) {
+            return multipart(player, world, schematic.getTileEntity(lx, ly, lz), x, y, z);
+        }
         Block real = world.getBlock(x, y, z);
         int realMeta = world.getBlockMetadata(x, y, z);
         if (block == real && meta == realMeta) return Result.FAIL;
@@ -114,7 +120,7 @@ public final class EasyPlace {
             return Result.SUCCESS;
         }
         ItemStack stack = BlockToItemStack.getItemStack(player, block, schematic, lx, ly, lz);
-        if (stack == null || stack.getItem() == null) return Result.SUCCESS;
+        if (stack == null || stack.getItem() == null) return Result.FAIL;
         if (MaterialReplacements.built(schematic, stack, real, realMeta)) return Result.FAIL;
         ItemStack replaced = MaterialReplacements.replacement(schematic, stack);
         if (replaced != null) stack = replaced;
@@ -200,6 +206,28 @@ public final class EasyPlace {
         player.rotationYaw = yaw;
         player.rotationPitch = pitch;
         player.sendQueue.addToSendQueue(new net.minecraft.network.play.client.C03PacketPlayer.C05PacketPlayerLook(yaw, pitch, player.onGround));
+    }
+
+    private static Result multipart(EntityClientPlayerMP player, World world, TileEntity template, int x, int y, int z) {
+        MultipartPlacement.Plan plan = MultipartPlacement.plan(player, world, template, x, y, z);
+        if (plan == null || !pick(player, () -> PickBlockSlots.pickToHand(mc(), plan.stack, true))) return Result.FAIL;
+        ItemStack held = player.getCurrentEquippedItem();
+        if (held == null || !held.isItemEqual(plan.stack) || !ItemStack.areItemStackTagsEqual(held, plan.stack)) return Result.FAIL;
+        boolean sneaking = player.isSneaking();
+        float yaw = player.rotationYaw, pitch = player.rotationPitch;
+        SchematicPrinter printer = SchematicPrinter.INSTANCE;
+        cache(x, y, z);
+        printer.syncSneaking(player, true);
+        look(player, plan.look.yaw, plan.look.pitch);
+        boolean placed;
+        try {
+            placed = click(player, world, held, x, y, z, plan.face, Vec3.createVectorHelper(x + 0.5, y + 0.5, z + 0.5));
+        } finally {
+            look(player, yaw, pitch);
+            printer.syncSneaking(player, sneaking);
+        }
+        if (held.stackSize == 0) player.inventory.mainInventory[player.inventory.currentItem] = null;
+        return placed ? Result.SUCCESS : Result.FAIL;
     }
 
     /**
