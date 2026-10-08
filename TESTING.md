@@ -167,6 +167,25 @@ Before a release, use a disposable 1.7.10 world to check:
   disappearance separately from missing chest faces. Check that other pass-1
   renderers still work, and real blocks in front still occlude the preview.
   Rendering a preview must not change the source chest's lid or contents.
+- After chest depth changes, compare real blocks with their moved previews in
+  GTNH 2.8.4 and 2.9.0-RC-2. Include a beacon, enchanting table, skull, sign,
+  brewing stand, hopper, filled cauldron and anvil; Baby Chest, EnderStorage,
+  AE2 sky chests, Galacticraft treasure/parachests, hungry/bound chests and Forestry
+  chests; BuildCraft/EnderIO/EnderStorage tanks, Thaumcraft jars/brain jars,
+  Botania pools/pylons, Forestry/BuildCraft engines, JABBA and StorageDrawers.
+  Compare opposite views, not just a single screenshot. Also check glass/panes,
+  stained glass, slabs/stairs, fences/bars, GT machines/pipes, ArchitectureCraft
+  shapes and ProjectRed multipart wires. Default empty/inactive fixtures do not
+  validate every active machine, orientation, upgrade or animation.
+- Specifically capture all three TConstruct `LavaTank` metadata variants, empty
+  and half filled through native fluid insertion, and GT tinted industrial glass
+  (`gregtech:gt.blocktintedglass`). On old Angelica, changing only Forge's static
+  pass leaves `getWorldRenderPass()` stuck at zero: tank shells and industrial
+  glass disappear from the preview. Both passes must reach the renderer, and
+  entering/exiting the schematic pass must restore the previous Forge and legacy
+  thread-local values independently. Check overlays and alpha on/off, then inspect
+  real terrain and containers again. Repeat on 2.9 where the legacy classes are
+  absent; no optional renderer classes may become a hard dependency.
 - Print water/lava and a registered mod fluid bucket in survival and creative,
   with the bucket in the hotbar and main inventory. Check consumption/empty bucket,
   restored view/slot/sneaking, source-versus-flow behavior, reach, occlusion, and

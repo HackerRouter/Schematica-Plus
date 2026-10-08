@@ -1,7 +1,8 @@
 # GTNH compatibility scope
 
-Targets: Minecraft 1.7.10, GTNH **2.8.4** and **2.9.0-RC-1**. These are source-backed
-adapters awaiting pack-level game tests, not a claim that every block renders identically.
+Source manifest targets: Minecraft 1.7.10, GTNH **2.8.4** and **2.9.0-RC-1**.
+Game checks also cover selected fixtures in **2.9.0-RC-2**. The adapter tables
+describe implementation coverage, not a claim that every block renders identically.
 
 The official manifests are [2.8.4](https://github.com/GTNewHorizons/GT-New-Horizons-Modpack/blob/2.8.4/README.md)
 and [2.9.0-RC-1](https://github.com/GTNewHorizons/GT-New-Horizons-Modpack/blob/2.9.0-RC-1/README.md).
@@ -140,7 +141,11 @@ executes the unit tests. The tests cover bounded codecs, field restoration,
 client/server distinctions, snapshot isolation, stream framing and transformations.
 Small test fixtures do not reproduce entire upstream mods and are not packaged.
 
-No pack-level game test has been run for this change. Follow [TESTING.md](../TESTING.md)
-in both target packs, using singleplayer and a remote server. Include Angelica,
-Freecam, multiple schematic instances, chunk boundaries, rotations, dimension
-changes and a save/reload round trip before treating the build as release-ready.
+Selected pack-level results and their limits are recorded in
+[HANDOUT.md](../HANDOUT.md) and the [render audit](render-audit.md). The latter
+checks the build after the chest depth fix and tracks the additional old-Angelica
+render-pass fix for TConstruct container shells and GT industrial glass.
+Follow [TESTING.md](../TESTING.md) for scenarios still needing coverage, including
+multiplayer, Freecam, multiple instances, chunk boundaries, rotations, dimension
+changes, shaders and save/reload round trips. A passing fixture does not establish
+complete compatibility for its entire mod.
