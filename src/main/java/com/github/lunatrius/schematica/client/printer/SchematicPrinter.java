@@ -619,7 +619,7 @@ public class SchematicPrinter {
     }
 
     /** A rotation for which the block gets the schematic orientation, reported to the server before the click. */
-    private PrinterLook findLook(World world, EntityClientPlayerMP player, int x, int y, int z, PlacementData data, int metadata) {
+    PrinterLook findLook(World world, EntityClientPlayerMP player, int x, int y, int z, PlacementData data, int metadata) {
         float yaw = player.rotationYaw, pitch = player.rotationPitch;
         try {
             for (PrinterLook look : PrinterLook.candidates(yaw)) {

@@ -1110,8 +1110,19 @@ These checks supersede Phase 12's Simple-editor and bounding-box expectations.
   (upper/lower and completing a double slab), stairs, repeaters (extra clicks),
   doors, carpets, GT/mod blocks, signs, buckets/cells for fluids, survival and
   creative, easyPlaceSwapInterval with high ping, easyPlaceVanillaReach on servers.
-  Without a Plus server (or with easyPlaceProtocolVersion = None), facing-based blocks
-  (furnaces, stairs, pistons) take the player's facing.
+  Without a Plus server (or with easyPlaceProtocolVersion = None), known facing-based
+  blocks use the placement registry's player/piston direction rules and restore the view.
+- In both GTNH 2.8.4 and 2.9.0-RC-2, use survival with protocol None and a deliberately
+  different player facing. Place upper oak stairs with metadata 6 and a south-facing bed
+  (foot metadata 2, head 10). Enable Post-Rewrite and Click Adjacent, then place white glazed
+  terracotta with metadata 3 beside a solid support. Each action must consume one item,
+  match the schematic, restore yaw/pitch and refuse a repeat without further consumption.
+  Save and inspect the real blocks with the preview hidden. Test missing inventory and
+  blocked positions too: failed clicks must not report success.
+- For doors in GTNH, capture real doors with complete tile NBT: MalisisDoors replaces the
+  vanilla door and depends on that tile for its bounding boxes. A template containing only
+  the block ID and metadata cannot validate full door support. The ordinary direction pass
+  covers stairs, beds and glazed terracotta; other door variants still need separate checks.
 - togglePlacementRestriction: using items is blocked where the schematic has air
   near its regions, outside the layer range, into occupied positions, with the
   wrong item, or (for blocks with known orientation rules) with the wrong

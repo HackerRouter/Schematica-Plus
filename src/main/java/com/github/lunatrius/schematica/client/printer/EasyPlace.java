@@ -131,10 +131,21 @@ public final class EasyPlace {
         if (held == null || !held.isItemEqual(stack)) return Result.FAIL;
 
         boolean accurate = AccuratePlacementClient.active(block);
-        PlacementSolver.Solution solved = null;
+        PlacementData data = PlacementRegistry.INSTANCE.getPlacementData(block, stack);
+        PrinterLook placementLook = null;
+        if (!accurate && data != null && data.type != PlacementData.PlacementType.BLOCK) {
+            placementLook = printer.findLook(world, player, x, y, z, data, meta);
+            if (placementLook == null) return Result.FAIL;
+        }
+        PlacementSolver.Solution solved = data == null && !accurate && !slab && !(block instanceof BlockSlab)
+            && ConfigurationHandler.printerPlacementSolver
+            ? PlacementSolver.solve(world, player, held, block, meta, x, y, z, printer.getSolidSides(world, x, y, z),
+                !(ConfigurationHandler.easyPlacePostRewrite && ConfigurationHandler.easyPlaceClickAdjacent)) : null;
+        if (solved == PlacementSolver.REFUSE) return Result.FAIL;
+        if (solved != null) placementLook = solved.look;
         int cx = x, cy = y, cz = z, side = hit.side, extraClicks = 0;
         Vec3 hitVec = redirected ? Vec3.createVectorHelper(x + 0.5, y + 0.5, z + 0.5) : Vec3.createVectorHelper(hit.hitX, hit.hitY, hit.hitZ);
-        Click post = ConfigurationHandler.easyPlacePostRewrite && !accurate
+        Click post = solved == null && ConfigurationHandler.easyPlacePostRewrite && !accurate
             ? PostRewrite.click(world, x, y, z, block, meta, real, realMeta, stack, hitVec) : null;
         if (post == Click.FAIL) return Result.FAIL;
         if (post != null) {
@@ -143,7 +154,6 @@ public final class EasyPlace {
             side = (realMeta & 8) != 0 ? 0 : 1;
             hitVec = Vec3.createVectorHelper(x + 0.5, y + (side == 1 ? 1 : 0), z + 0.5);
         } else {
-            PlacementData data = PlacementRegistry.INSTANCE.getPlacementData(block, stack);
             if (data != null) {
                 ForgeDirection[] solid = printer.getSolidSides(world, x, y, z);
                 ForgeDirection[] valid = data.getValidDirections(solid, meta);
@@ -160,9 +170,7 @@ public final class EasyPlace {
                     hitVec = Vec3.createVectorHelper(x + 0.5, y + (data.getOffsetFromMetadata(meta) >= 0.5f ? 0.75 : 0.25), z);
                 }
                 extraClicks = data.getExtraClicks(block, meta);
-            } else if ((solved = ConfigurationHandler.printerPlacementSolver && !accurate
-                ? PlacementSolver.solve(world, player, held, block, meta, x, y, z, printer.getSolidSides(world, x, y, z), true) : null) != null) {
-                if (solved == PlacementSolver.REFUSE) return Result.FAIL;
+            } else if (solved != null) {
                 cx = solved.x; cy = solved.y; cz = solved.z; side = solved.side; hitVec = solved.hit;
             } else {
                 MovingObjectPosition vanilla = SchematicTargets.vanilla(range, false);
@@ -183,9 +191,10 @@ public final class EasyPlace {
         boolean sneaking = player.isSneaking();
         float yaw = player.rotationYaw, pitch = player.rotationPitch;
         printer.syncSneaking(player, true);
-        if (solved != null && solved.look != null) look(player, solved.look.yaw, solved.look.pitch);
+        if (placementLook != null) look(player, placementLook.yaw, placementLook.pitch);
+        boolean success;
         try {
-            boolean success = click(player, world, held, cx, cy, cz, side, hitVec);
+            success = click(player, world, held, cx, cy, cz, side, hitVec);
             for (int i = 0; success && i < extraClicks; i++) success = click(player, world, held, cx, cy, cz, side, hitVec);
             // Post-Rewrite: a double slab gets its second half right away
             if (success && post != null && block instanceof BlockSlab && block.isOpaqueCube() && held.stackSize > 0
@@ -194,11 +203,11 @@ public final class EasyPlace {
                 click(player, world, held, x, y, z, top ? 0 : 1, Vec3.createVectorHelper(x + 0.5, y + 0.5, z + 0.5));
             }
         } finally {
-            if (solved != null && solved.look != null) look(player, yaw, pitch);
+            if (placementLook != null) look(player, yaw, pitch);
             printer.syncSneaking(player, sneaking);
         }
         if (held.stackSize == 0) player.inventory.mainInventory[player.inventory.currentItem] = null;
-        return Result.SUCCESS;
+        return success ? Result.SUCCESS : Result.FAIL;
     }
 
     /** Turns the player and reports the rotation, so that the server places the block facing that way. */
@@ -232,7 +241,7 @@ public final class EasyPlace {
 
     /**
      * A door, bed or double plant: the item is used on the top of the block below its first block, also when the
-     * upper half or the bed head is targeted; the facing follows the player unless the server applies it.
+     * upper half or the bed head is targeted; the player turns temporarily to the schematic's facing.
      */
     private static Result multiBlock(EntityClientPlayerMP player, World world, SchematicWorld schematic, int lx, int ly, int lz,
         int x, int y, int z, Block block, int meta, MultiBlockPlacement.Kind kind) {
@@ -256,6 +265,11 @@ public final class EasyPlace {
         if (!pickStack(player, stack)) return Result.FAIL;
         ItemStack held = player.getCurrentEquippedItem();
         if (held == null || !held.isItemEqual(stack)) return Result.FAIL;
+        int facing = MultiBlockPlacement.wantedFacing(kind, block, meta,
+            schematic.getBlock(lx + offset[0], ly + offset[1], lz + offset[2]),
+            schematic.getBlockMetadata(lx + offset[0], ly + offset[1], lz + offset[2]));
+        PrinterLook placementLook = facing < 0 ? null : MultiBlockPlacement.look(kind, player.rotationYaw, facing);
+        if (facing >= 0 && placementLook == null) return Result.FAIL;
         cache(x, y, z);
         if (kind == MultiBlockPlacement.Kind.DOOR && AccuratePlacementClient.active(block)) {
             AccuratePlacementClient.announce(x, y, z, block, meta);
@@ -266,14 +280,18 @@ public final class EasyPlace {
         }
         SchematicPrinter printer = SchematicPrinter.INSTANCE;
         boolean sneaking = player.isSneaking();
+        float yaw = player.rotationYaw, pitch = player.rotationPitch;
         printer.syncSneaking(player, true);
+        if (placementLook != null) look(player, placementLook.yaw, placementLook.pitch);
+        boolean placed;
         try {
-            click(player, world, held, x, y - 1, z, ForgeDirection.UP.ordinal(), Vec3.createVectorHelper(x + 0.5, y, z + 0.5));
+            placed = click(player, world, held, x, y - 1, z, ForgeDirection.UP.ordinal(), Vec3.createVectorHelper(x + 0.5, y, z + 0.5));
         } finally {
+            if (placementLook != null) look(player, yaw, pitch);
             printer.syncSneaking(player, sneaking);
         }
         if (held.stackSize == 0) player.inventory.mainInventory[player.inventory.currentItem] = null;
-        return Result.SUCCESS;
+        return placed ? Result.SUCCESS : Result.FAIL;
     }
 
     interface Swap { boolean run(); }
