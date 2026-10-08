@@ -1,5 +1,16 @@
 # Verification
 
+## NEI recipe-button event dispatch
+
+- In GTNH 2.8.4 and 2.9.0-RC-2, enter a world and open the crafting-table recipe
+  before exporting a material list. The recipe page must render without an
+  `IllegalAccessError` from `ASMEventHandler` / `NeiIntegration`.
+- After NEI finishes loading its items, export a material list to its bookmark
+  group. Reopen a recipe, hover the S button, and click it. The recipe must appear
+  in the exported group. Check another recipe tab and return to the inventory.
+- Restart and open recipes before exporting another group. A missing group must
+  hide the S button without breaking NEI's own recipe buttons.
+
 ## Dedicated-server save queue and release gate
 
 - `ServerSaveQueueLoadingTest` loads the shared save queue with Minecraft client,

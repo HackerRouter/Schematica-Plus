@@ -25,7 +25,7 @@ import cpw.mods.fml.common.eventhandler.SubscribeEvent;
  * recipes put into it, and in GTNH 2.9 shows its crafting tree) and adds an "S" button to every recipe on NEI's
  * recipe pages that puts that recipe into the last sent group, instead of bookmarking it and dragging it over.
  */
-final class NeiIntegration {
+public final class NeiIntegration {
     static final NeiIntegration INSTANCE = new NeiIntegration();
     private static int group = -1;
 
