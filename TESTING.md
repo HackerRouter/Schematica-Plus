@@ -2131,8 +2131,21 @@ Save the world before reading region files; retain inputs, logs and screenshots.
   over five seconds to check that the frames remain attached. Repeat with Ignore
   Entities enabled and require zero copied entities.
 
-These single-client checks do not establish simultaneous multi-user scheduling or
-compatibility with every older protocol peer. Keep those results separate.
+- Connect two independent clients with different player UUIDs. Give each private
+  server directory a same-named, differently shaped/colored large file. Start both
+  downloads together and compare every block, metadata and NBT to its own input.
+- Start a large edit for A; submit B while A is writing. Require the busy rejection
+  and no queued B writes. A cancellation packet from B using A's operation ID must
+  not stop A. Once A finishes, B must work. Cancel another edit using A's Task
+  Manager, compare stable partial-world snapshots, then require B to work again.
+- With a test peer advertising no geometry/region capability, require the explicit
+  upgrade message for independent-region data, no completed local file, and a
+  subsequent flat-file download to work. Restore capability and compare the full
+  region download. Label capability emulation separately from actual old binaries.
+
+Two-client scheduling/download checks and live legacy-capability emulation passed
+on 2026-10-08; HANDOUT.md records their scope. They do not establish compatibility
+with every older binary or server permission plugin.
 
 
 ### GTNH 2.8.4 mouse input with lwjgl3ify 2.1.16
