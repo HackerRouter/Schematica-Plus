@@ -139,6 +139,16 @@ public class WorldEditPlacementTest {
         assertEquals(0, job.blockCount);
     }
 
+    @Test public void commandPasteSkipsMatchingCellsButStillSendsDifferentMetadata() throws Exception {
+        FakeWorld world = world(65535);
+        world.cell(4).block = CHEST;
+        world.cell(4).metadata = 316;
+        WorldEditJob same = paste(316);
+        assertEquals(null, same.command(0, world));
+        world.cell(4).metadata = 12;
+        assertTrue(same.command(0, world).contains(" 316 replace"));
+    }
+
     @Test public void bothChestHalvesAreRestoredBeforeAnyFinalNeighborNotification() throws Exception {
         FakeWorld world = doubleChestWorld(65535);
         WorldEditJob job = paste(2, 2, false);
@@ -398,6 +408,7 @@ public class WorldEditPlacementTest {
             return chunk == null ? cell(x, y, z).block : chunk.getBlock(x & 15, y, z & 15);
         }
         @Override public boolean isAirBlock(int x, int y, int z) { return getBlock(x, y, z) == AIR; }
+        @Override public boolean blockExists(int x, int y, int z) { return y >= 0 && y < 256; }
         @Override public int getBlockMetadata(int x, int y, int z) {
             return chunk == null ? cell(x, y, z).metadata : chunk.getBlockMetadata(x & 15, y, z & 15);
         }

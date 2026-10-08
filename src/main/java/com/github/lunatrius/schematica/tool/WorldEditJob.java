@@ -187,6 +187,8 @@ public final class WorldEditJob extends WorldEditTask {
         Block block = kind == Kind.PASTE ? GameData.getBlockRegistry().getObjectById(blocks[index] & 0xffff) : replacement;
         if (block == null || !pastes(block, world.isAirBlock(wx, wy, wz))) return null;
         int meta = kind == Kind.PASTE ? metadata[index] & 0xffff : replacementMeta;
+        if (world.blockExists(wx, wy, wz) && world.getBlock(wx, wy, wz) == block
+            && world.getBlockMetadata(wx, wy, wz) == meta) return null;
         return blockCommand(wx, wy, wz, GameData.getBlockRegistry().getNameForObject(block), meta);
     }
 

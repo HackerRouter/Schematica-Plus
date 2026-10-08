@@ -2155,9 +2155,11 @@ compatibility with every older protocol peer. Keep those results separate.
 
 ### Client-only command paste with NBT
 
-The confirmation flow is implemented and covered by automated preflight tests;
-its game checks below are pending. The old public release's red NBT rejection was
-reproduced on GTNH 2.8.4 with no Plus on the dedicated server.
+The core confirmation, omission, permission, recovery and cancellation checks
+passed in the GTNH 2.8.4 dedicated server without Plus on 2026-10-08. GTNH
+2.9.0-RC-2 also passed the blocks-only result through forced integrated-server
+commands. Project/grid and the remaining context combinations below need separate
+coverage; section 6 of HANDOUT.md records the exact completed scenarios.
 
 - Connect with only the client installing Plus. Use Creative mode and server
   `/setblock` permission. Load a fresh schematic containing stone, colored wool,
@@ -2185,6 +2187,29 @@ reproduced on GTNH 2.8.4 with no Plus on the dedicated server.
   no blocks-only prompt, inventories/signs/entities preserved. A server that
   advertises the protocol but rejects remote editing must not fall back to chat
   commands to evade that server policy.
+
+### Command paste replies and permissions
+
+- On a dedicated server without Plus, whitelist a creative player but remove OP.
+  Accept the blocks-only dialog for a file with more than ten non-air blocks.
+  Require one rejected command, no completed-paste message or completion callback,
+  an unchanged destination, no remaining task and no spam disconnect. Restore OP
+  and repeat at a fresh, loaded destination; inspect every block and metadata.
+- The first command must receive a native success reply before another batch is
+  sent. Completion, including a project's clear-then-paste continuation and paste
+  history, must wait for the last reply. Test a one-block file too: it must not
+  finish before a delayed permission or out-of-world error arrives.
+- Repeat an already matching block-only paste. Matching loaded cells need no
+  command; they must not trigger a vanilla no-change error. For other commands,
+  no-change, syntax and block errors stop the task without a success callback.
+- Remove a task while it awaits a reply, leave creative mode, change dimension or
+  disconnect. No further commands should be sent. Already sent commands cannot
+  be recalled; an unrelated player's admin broadcast must not acknowledge them.
+- If a custom server command suppresses or replaces native setblock replies, the
+  queue must stop with the unconfirmed-result message after the reply timeout.
+  It must not assume completion or advance a project's history. Automated queue
+  tests exercise delayed, absent, wrapped and unrelated replies independently
+  of the native-game checks above.
 
 ## ProjectRed Easy Place and multipart materials
 

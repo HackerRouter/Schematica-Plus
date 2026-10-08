@@ -290,6 +290,7 @@ schematica.command.setblock.usage=/sblock <primary|target> <block_name> [meta]
 schematica.message.tool.primary_set=[Schematica Plus] Primary block set to %s:%s (mode: %s).
 schematica.message.tool.target_set=[Schematica Plus] Target block set to %s:%s (mode: %s).
 schematica.message.edit.busy=Another world edit is still running.
+schematica.message.edit.commands_unconfirmed=No complete command reply from the server after sending %s commands. The edit stopped without confirming completion; some blocks may have changed.
 schematica.message.edit.permissions=[Schematica Plus] Editing requires creative mode and command permission.
 schematica.message.edit.updates_require_singleplayer=Pasting without block updates requires singleplayer or Schematica Plus on the server. Minecraft 1.7.10 commands cannot suppress updates.
 schematica.message.edit.nbt_requires_singleplayer=Complete schematic NBT requires singleplayer or Schematica Plus on the server. Use Paste to choose a blocks-only command paste.

@@ -290,6 +290,7 @@ schematica.command.setblock.usage=/sblock <primary|target> <方块注册名> [�
 schematica.message.tool.primary_set=[Schematica Plus] 已将主方块设为 %s:%s（模式：%s）。
 schematica.message.tool.target_set=[Schematica Plus] 已将目标方块设为 %s:%s（模式：%s）。
 schematica.message.edit.busy=另一个世界编辑任务仍在运行。
+schematica.message.edit.commands_unconfirmed=发送 %s 条命令后未收到完整的服务端回复。编辑已停止，无法确认完成；部分方块可能已经改变。
 schematica.message.edit.permissions=[Schematica Plus] 编辑需要创造模式和命令权限。
 schematica.message.edit.updates_require_singleplayer=不发送方块更新的粘贴需要单人游戏，或服务端安装 Schematica Plus。Minecraft 1.7.10 的命令无法禁止这些更新。
 schematica.message.edit.nbt_requires_singleplayer=完整粘贴原理图 NBT 需要单人游戏，或服务端安装 Schematica Plus。执行粘贴可选择仅通过命令粘贴方块。

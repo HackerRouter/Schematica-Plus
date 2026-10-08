@@ -134,6 +134,12 @@ accepted merely because they contain or interact with fluid.
   The manifests' binary-only entries such as Thaumcraft, Witchery, Extra Utilities
   and BiblioCraft have not received a complete tile-render audit.
 
+Client-only command editing requires native server command replies. The queue
+waits for these replies and stops on permission errors or an unconfirmed result;
+a server plugin that suppresses or replaces vanilla replies cannot be assumed to
+have completed the edit. Blocks-only consent preserves the loaded source NBT but
+does not transfer inventories, sign text or entities to a server without Plus.
+
 ## Verification
 
 `gradlew build --offline --no-daemon` compiles, reobfuscates, runs Checkstyle and
