@@ -125,6 +125,10 @@ public final class VisualAdapters {
         }
     }
 
+    public static boolean usesTransparentDepth(TileEntity tile) {
+        return Reflect.is(tile, "cpw.mods.ironchest.TileEntityCrystalChest");
+    }
+
     public static void beforeRender(TileEntity tile, float partialTicks) {
         for (ISchematicVisualAdapter adapter : ADAPTERS) {
             try { adapter.beforeRender(tile, partialTicks); }

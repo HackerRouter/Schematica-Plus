@@ -153,6 +153,20 @@ Before a release, use a disposable 1.7.10 world to check:
 - Inspect an empty and filled cauldron from all sides with alpha enabled/disabled,
   alongside mod blocks that use both render passes. Check multipart glows and
   ensure rendering them does not change nearby blocks, entities or the HUD.
+- In GTNH 2.8.4 and 2.9.0-RC-2, capture isolated normal/trapped/ender chests, a
+  double chest and IronChest iron/gold/diamond/crystal/obsidian variants with their
+  native tile NBT. Move the preview into air and inspect the front, back, sides,
+  top and bottom, especially the strip just below the lid. Compare with the real
+  source chests: no gap, rear latch or internal face should cover the exterior.
+  Repeat with overlays on/off and schematic alpha on/off. The 2.8.4 regression
+  showed triangular holes under closed lids when the overlay's disabled depth
+  writes leaked into the opaque tile pass. Put 64 diamonds in a crystal chest and
+  capture it again: both the transparent frame and the rotating contents must show.
+  Crystal chest models must retain transparent depth handling. Watch a complete
+  item rotation cycle and compare with the real crystal chest; record intermittent
+  disappearance separately from missing chest faces. Check that other pass-1
+  renderers still work, and real blocks in front still occlude the preview.
+  Rendering a preview must not change the source chest's lid or contents.
 - Print water/lava and a registered mod fluid bucket in survival and creative,
   with the bucket in the hotbar and main inventory. Check consumption/empty bucket,
   restored view/slot/sneaking, source-versus-flow behavior, reach, occlusion, and

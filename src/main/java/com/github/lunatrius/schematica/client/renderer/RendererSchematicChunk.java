@@ -415,6 +415,8 @@ public class RendererSchematicChunk {
                         GL11.glPushMatrix();
                         GL11.glPushAttrib(GL11.GL_ALL_ATTRIB_BITS);
                         try {
+                            // Opaque models need depth writes; transparent chest faces must not hide their contents.
+                            GL11.glDepthMask(renderPass == 0 && !VisualAdapters.usesTransparentDepth(tileEntity));
                             VisualAdapters.beforeRender(tileEntity, partialTicks);
                             tileEntitySpecialRenderer.renderTileEntityAt(tileEntity, x, y, z, partialTicks);
 
