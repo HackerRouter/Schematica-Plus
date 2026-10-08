@@ -153,6 +153,16 @@ public class CommandEditQueueTest {
         return client;
     }
 
+    @Test public void skippedCommandsReportNoChangesButAllowTheNextProjectStep() {
+        FakeClient client = start(3);
+        client.skip = true;
+        tick();
+        assertTrue(client.commands.isEmpty());
+        assertEquals(java.util.Collections.singletonList(true), client.completed);
+        assertEquals("schematica.message.edit.no_changes",
+            ((net.minecraft.util.ChatComponentTranslation) client.messages.get(0)).getKey());
+    }
+
     private void tick() { queue.onTick(new TickEvent.ClientTickEvent(TickEvent.Phase.END)); }
 
     private void chat(net.minecraft.util.IChatComponent message) {
@@ -160,12 +170,12 @@ public class CommandEditQueueTest {
     }
 
     private static final class FakeClient implements CommandEditQueue.Client {
-        boolean valid = true;
+        boolean valid = true, skip;
         final java.util.List<String> commands = new java.util.ArrayList<>();
         final java.util.List<Boolean> completed = new java.util.ArrayList<>();
         final java.util.List<net.minecraft.util.IChatComponent> messages = new java.util.ArrayList<>();
         public boolean valid(WorldEditJob job, net.minecraft.world.World world) { return valid; }
-        public String command(WorldEditJob job, int index, net.minecraft.world.World world) { return "/setblock " + index + " 64 0 minecraft:stone"; }
+        public String command(WorldEditJob job, int index, net.minecraft.world.World world) { return skip ? null : "/setblock " + index + " 64 0 minecraft:stone"; }
         public void send(String command) { commands.add(command); }
         public void message(net.minecraft.util.IChatComponent message) { messages.add(message); }
     }

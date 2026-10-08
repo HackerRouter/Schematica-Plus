@@ -81,6 +81,7 @@ public final class CommandEditQueue {
         String key = reply(event.message);
         if ("commands.setblock.success".equals(key)) {
             pending--;
+            job.blockCount++;
             waiting = 0;
         } else if (key != null) {
             client.message(job.finishedMessage(false));
@@ -130,7 +131,7 @@ public final class CommandEditQueue {
             delay = com.github.lunatrius.schematica.handler.ConfigurationHandler.commandTaskInterval - 1;
             task.update(TaskRegistry.Stage.COMMANDS, cursor, job.volume, sent, 0);
             if (cursor == job.volume && pending == 0) {
-                client.message(job.kind == WorldEditJob.Kind.PASTE
+                client.message(job.kind == WorldEditJob.Kind.PASTE && sent != 0
                     ? new ChatComponentTranslation("litematica.message.schematic_pasted_using_setblock", sent)
                     : job.finishedMessage(true));
                 end(true);

@@ -109,7 +109,7 @@ public class WorldEditPlacementTest {
         FakeWorld world = world(65535);
         world.replaceOnAdded = true;
         WorldEditJob job = paste(3);
-        job.step(world);
+        assertThrows(com.github.lunatrius.schematica.util.MessageException.class, () -> job.step(world));
         assertSame(WALL, world.cell(4).block);
         assertEquals(5, world.cell(4).metadata);
         assertEquals(0, world.restorations);
@@ -121,7 +121,7 @@ public class WorldEditPlacementTest {
         FakeWorld world = world(65535);
         world.replaceOnRestore = true;
         WorldEditJob job = paste(3);
-        job.step(world);
+        assertThrows(com.github.lunatrius.schematica.util.MessageException.class, () -> job.step(world));
         assertEquals(1, world.restorations);
         assertSame(WALL, world.cell(4).block);
         assertEquals(0, world.tileWrites);
@@ -132,11 +132,66 @@ public class WorldEditPlacementTest {
         FakeWorld world = world(65535);
         world.rejectRestore = true;
         WorldEditJob job = paste(3);
-        job.step(world);
+        assertThrows(com.github.lunatrius.schematica.util.MessageException.class, () -> job.step(world));
         assertEquals(1, world.restorations);
         assertEquals(5, world.cell(4).metadata);
         assertEquals(0, world.tileWrites);
         assertEquals(0, job.blockCount);
+    }
+
+    @Test public void rejectedBlockWriteCannotFinishAsASuccessfulPaste() throws Exception {
+        FakeWorld world = world(65535);
+        world.rejectPlacement = true;
+        WorldEditJob job = paste(3);
+        com.github.lunatrius.schematica.util.MessageException error = assertThrows(
+            com.github.lunatrius.schematica.util.MessageException.class, () -> finish(job, world));
+        assertEquals("schematica.message.edit.block_failed", error.key());
+        assertSame(AIR, world.cell(4).block);
+        assertEquals(0, job.blockCount);
+        assertEquals(0, world.tileWrites);
+    }
+
+    @Test public void identicalOrdinaryBlocksDoNotWriteOrReportChanges() throws Exception {
+        FakeWorld world = world(65535);
+        world.cell(4).block = WALL;
+        WorldEditJob job = new WorldEditJob(UUID.randomUUID(), 0, WorldEditJob.Kind.FILL,
+            4, 70, 6, 1, 1, 1, WALL, 0, null, 0);
+        finish(job, world);
+        assertEquals(0, job.blockCount);
+        assertEquals(0, world.blockUpdates);
+        assertEquals("schematica.message.edit.no_changes",
+            ((net.minecraft.util.ChatComponentTranslation) job.finishedMessage(true)).getKey());
+    }
+
+    @Test public void matchingChestStateStillRestoresSavedTileData() throws Exception {
+        FakeWorld world = world(65535);
+        world.cell(4).block = CHEST;
+        world.cell(4).metadata = 3;
+        WorldEditJob job = paste(3);
+        finish(job, world);
+        assertEquals(1, job.blockCount);
+        assertEquals("Saved chest", ((TileEntityChest) world.cell(4).tile).getInventoryName());
+    }
+
+    @Test public void partialPasteStopsAtTheRejectedCellWithoutCountingIt() throws Exception {
+        FakeWorld world = world(65535);
+        WorldEditJob job = paste(3, 3, false);
+        job.step(world);
+        world.rejectPlacement = true;
+        assertThrows(com.github.lunatrius.schematica.util.MessageException.class, () -> finish(job, world));
+        assertEquals(1, job.blockCount);
+        assertEquals(1, world.tileWrites);
+        assertSame(AIR, world.cell(5).block);
+        assertSame(AIR, world.cell(6).block);
+    }
+
+    @Test public void silentPasteIntoAnEmptyChunkCannotClaimAWrittenBlock() throws Exception {
+        FakeWorld world = world(15);
+        world.chunk = new net.minecraft.world.chunk.EmptyChunk(world, 0, 0);
+        WorldEditJob job = paste(3, 1, true);
+        assertThrows(com.github.lunatrius.schematica.util.MessageException.class, () -> finish(job, world));
+        assertEquals(0, job.blockCount);
+        assertTrue(world.chunk.chunkTileEntityMap.isEmpty());
     }
 
     @Test public void commandPasteSkipsMatchingCellsButStillSendsDifferentMetadata() throws Exception {
@@ -398,7 +453,7 @@ public class WorldEditPlacementTest {
         Runnable onNotify;
         int mask, metadataAfterAdded, restorations, restoreFlags, restoreMetadata;
         int tileWrites, neighborUpdates, blockUpdates;
-        boolean adding, skipAdded, replaceOnAdded, replaceOnRestore, rejectRestore;
+        boolean adding, skipAdded, replaceOnAdded, replaceOnRestore, rejectRestore, rejectPlacement;
 
         private FakeWorld() { super(null, null, "", 0, null, null); }
 
@@ -416,6 +471,7 @@ public class WorldEditPlacementTest {
         @Override public void scheduleBlockUpdate(int x, int y, int z, Block block, int delay) {}
         @Override public void playSoundEffect(double x, double y, double z, String sound, float volume, float pitch) {}
         @Override public boolean setBlock(int x, int y, int z, Block value, int meta, int flags) {
+            if (rejectPlacement) return false;
             Cell cell = cell(x, y, z);
             cell.block = value;
             cell.metadata = meta & mask;

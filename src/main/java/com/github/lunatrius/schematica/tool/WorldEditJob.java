@@ -345,7 +345,11 @@ public final class WorldEditJob extends WorldEditTask {
             net.minecraft.util.AxisAlignedBB bounds = net.minecraft.util.AxisAlignedBB.getBoundingBox(box.minX, box.minY, box.minZ,
                 box.maxX + 1, box.maxY + 1, box.maxZ + 1);
             for (Object found : world.getEntitiesWithinAABBExcludingEntity(null, bounds)) {
-                if (!(found instanceof net.minecraft.entity.player.EntityPlayer)) ((Entity) found).setDead();
+                Entity entity = (Entity) found;
+                if (!(entity instanceof net.minecraft.entity.player.EntityPlayer) && !entity.isDead) {
+                    entity.setDead();
+                    entityCount++;
+                }
             }
         }
     }
@@ -383,6 +387,9 @@ public final class WorldEditJob extends WorldEditTask {
 
     @Override
     public net.minecraft.util.IChatComponent finishedMessage(boolean success) {
+        if (success && blockCount == 0 && entityCount == 0) {
+            return new net.minecraft.util.ChatComponentTranslation("schematica.message.edit.no_changes");
+        }
         if (kind != Kind.DELETE_PLACEMENT) return super.finishedMessage(success);
         return new net.minecraft.util.ChatComponentText(success ? String.format("Deleted %d blocks", blockCount) : "Deletion task failed");
     }
@@ -457,6 +464,8 @@ public final class WorldEditJob extends WorldEditTask {
                 || world.getBlockMetadata(wx, wy, wz) != targetMeta)) return false;
             if (kind == Kind.DELETE_PLACEMENT && !deletes(index, world, wx, wy, wz)) return false;
             if (!pastes(block, world.isAirBlock(wx, wy, wz))) return false;
+            if (!block.hasTileEntity(meta) && world.getBlock(wx, wy, wz) == block
+                && world.getBlockMetadata(wx, wy, wz) == meta) return false;
             if (silentPlacement != null) {
                 silentPlacement.setBlock(world, wx, wy, wz, block, meta);
             } else {
@@ -489,7 +498,7 @@ public final class WorldEditJob extends WorldEditTask {
                 }
                 placed.set(index);
                 blockCount++;
-            }
+            } else throw new MessageException("schematica.message.edit.block_failed", wx, wy, wz);
             return false;
         }
         if (cancelled || entityCursor == entities.size()) return true;

@@ -2284,3 +2284,13 @@ Observed in both GTNH 2.8.4 and 2.9.0-RC-2 on 2026-10-08:
 6. Capture seven actual EnderIO bundles (item/power curve and item T) with five endpoint chests. Check source connections, mode arrays, side filters and inventories from a saved-world copy before comparing both preview views. A stale in-memory source must be reloaded after replacing its file; the 2.9 final inspection used a fresh complete-file name. Transform/transport checks are separate.
 
 No external shader pack was installed; no shader or universal machine-animation result is claimed. Screenshots, source snapshots and native command records: `/workspace/release-issues/followup`.
+
+### Failed writes and edits with no changes
+
+1. On a Plus server using unloaded-chunk placeholders, paste a single stone far outside loaded chunks. It must fail with the target coordinates and must not show the successful-paste message. Travel there and verify the actual target is still air; load the area and retry, then verify stone was written.
+2. Repeat the same ordinary block paste. Expect a no-changes notice, not a successful-paste message. Check an air-only/replacement-filtered empty job too.
+3. Paste a long row extending from loaded chunks into an unavailable chunk. Expect failure at the first refused write; any already changed prefix may remain. Do not describe this operation as atomic or rolled back. Verify no later writes and that a subsequent small edit can run.
+4. Use forced commands in single player against identical blocks. The queue must send zero commands and report no changes. An empty project clear stage may continue to its following paste; a denied/failed stage must not.
+5. Overwrite a matching chest block with different saved contents/name. The tile data must still be restored. Repeat normal adjacent-chest/extended-metadata tests to ensure the no-op check did not skip tile restoration.
+
+The pre-fix dedicated 2.9 baseline at (4096,100,256) reported success while the real block remained air. Fixed cold-runtime checks passed: 2.9 remote zero-write failure, load/retry, no-op, stable 112-block partial prefix with an air failed cell, subsequent full-NBT recovery and matching-chest NBT replacement; 2.8.4 native/forced-command no-op and a following acknowledged one-block command paste. The remaining ungenerated chunks were not counted as air. HANDOUT section 6 records the exact scope; 586 automated tests pass.
