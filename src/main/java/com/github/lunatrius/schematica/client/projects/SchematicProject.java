@@ -20,6 +20,8 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonNull;
+import com.google.gson.JsonParser;
 
 /** A versioned area: its own area selections, a project origin and saved schematic versions in one directory. */
 public final class SchematicProject {
@@ -212,7 +214,7 @@ public final class SchematicProject {
     public boolean saveToFile() {
         if (!dirty) return true;
         try {
-            String json = new GsonBuilder().setPrettyPrinting().create().toJson(toJson());
+            String json = new GsonBuilder().setPrettyPrinting().serializeNulls().create().toJson(toJson());
             FileUtils.writeUtf8Atomically(projectFile, json);
             dirty = false;
             return true;
@@ -253,7 +255,7 @@ public final class SchematicProject {
         project.name = data.get("name").getAsString();
         project.origin = origin;
         JsonElement selections = data.get("selections");
-        if (selections != null && selections.isJsonObject()) project.selections = AreaSelectionLibrary.fromJson(selections.getAsJsonObject());
+        if (selections != null && selections.isJsonObject()) project.selections = readSelections(selections.getAsJsonObject());
         else project.selections = create(file.getParentFile(), project.name, origin).selections;
         JsonElement seen = data.get("last_seen_area");
         if (seen != null && seen.isJsonArray()) {
@@ -280,6 +282,26 @@ public final class SchematicProject {
         project.switchVersion(id, createPlacement);
         project.dirty = false;
         return project;
+    }
+
+    private static AreaSelectionLibrary readSelections(JsonObject saved) {
+        // Earlier project writers omitted explicit nulls required by the selection format.
+        JsonObject data = new JsonParser().parse(saved.toString()).getAsJsonObject();
+        if (!data.has("selected")) data.add("selected", JsonNull.INSTANCE);
+        if (data.has("simple") && data.get("simple").isJsonObject()) restoreNullSelectionFields(data.getAsJsonObject("simple"));
+        if (data.has("selections") && data.get("selections").isJsonArray()) {
+            for (JsonElement area : data.getAsJsonArray("selections")) {
+                if (area.isJsonObject()) restoreNullSelectionFields(area.getAsJsonObject());
+            }
+        }
+        return AreaSelectionLibrary.fromJson(data);
+    }
+
+    private static void restoreNullSelectionFields(JsonObject area) {
+        if (!area.has("selectedBox")) area.add("selectedBox", JsonNull.INSTANCE);
+        JsonElement selected = area.get("originSelected");
+        if (!area.has("origin") && selected != null && selected.isJsonPrimitive()
+            && selected.getAsJsonPrimitive().isBoolean() && !selected.getAsBoolean()) area.add("origin", JsonNull.INSTANCE);
     }
 
     static JsonObject pointJson(Vector3i point) {

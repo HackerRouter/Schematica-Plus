@@ -1241,6 +1241,29 @@ These checks supersede Phase 12's Simple-editor and bounding-box expectations.
 - Version placements are not written to LoadedSchematics.json; a schematic file that was
   already loaded by the user stays loaded when the project closes.
 
+### Project disk recovery and narrow layouts
+
+- Save a project with automatic origins in both normal/simple selections, multiple
+  versions and a multiline description. Quit the world and the client completely.
+  Reopen with VCS enabled; require the current version, origin, selection bounds and
+  paste history to return. Compare the schematic files' hashes and complete NBT.
+- Load an existing project written without explicit null origin/selectedBox/selected
+  fields. Automatic origins and unselected states must recover; a selected manual
+  origin without coordinates must still be rejected. Loading must not rewrite the
+  input just to repair its in-memory representation.
+- At 1280x960, check GUI scales 1, 2, 4 and Auto (scale 4 really gives 320x240).
+  Require every manager/browser action to stay on-screen and outside the version
+  list. Test English and Chinese; open Save Version, cancel it, select versions,
+  and exercise the browser with all action buttons visible.
+- In command mode with ENTIRE_VOLUME, put a gold sentinel in the destination.
+  Cancel blocks-only confirmation and verify no clearing/history update. Accept
+  and require acknowledged clear-then-paste, empty inventories and blank signs.
+  Slow the queue, switch the selected version while a paste is running, and verify
+  the old task cannot mark the newly selected version as pasted.
+- For command grid paste, use a base plus one repeat. Cancel the base confirmation
+  and inspect both destinations; accept the base but cancel the repeat and require
+  only the base; finally accept both and check both complete block layouts.
+
 ## VCS follow-ups: origin outline, multi-line description, entity deletion
 
 - With a project open, turn off area selection box rendering: the magenta 4 px project
@@ -1394,6 +1417,19 @@ compare with a server that does not have the mod and with each server option off
   a ladder/planks build resolves to logs; iron bars to iron ingots, packed into blocks plus remainder in
   the simplified file; glass to sand via smelting. Shift writes the _missing_only files for items not yet
   in the inventory. Check a GTNH build to see that it finishes and that the chosen recipes are sensible.
+
+### Material names after changing language
+
+- Open a persistent placement material list in English, enable its HUD and record
+  missing/available counts. Give part of a required stack and require the HUD to
+  subtract it; covering the requirement removes that item within the update interval.
+- Change to Chinese using the language screen, reopen the same list without pressing
+  Refresh, and require translated item names in the list and HUD. Include a material
+  replacement, ignored item, custom sort and multiplier; keep those settings/counts.
+  Switch back to English and repeat. This checks the persistent list, not a new scan
+  constructed only for the test.
+- Toggle renderMaterialListInGuis and verify visibility inside a screen, then close
+  it and require the world HUD to remain usable. Check narrow GUI scales too.
 
 ## Different blocks, inventory previews, Easy Place post-rewrite, NBT and Sponge import
 
@@ -2233,3 +2269,5 @@ Run in GTNH 2.8.4 and 2.9.0-RC-2, including a server without Plus:
 - With Ignore State disabled, a differently oriented gate remains missing. With it enabled, orientation is ignored, but a different gate item or missing second part remains missing. Unsupported/unknown picked items must be reported as skipped rather than silently counted as complete.
 - With no matching item in survival, or with the required backing block removed, Easy Place must fail without placing or consuming anything. Gate configurations that cannot be produced by normal placement still require the native screwdriver/configuration tools; this does not copy powered state, timers or arbitrary NBT.
 - On a Plus server with the accurate-placement protocol enabled, test a non-whitelisted mod block whose placement solver supports its orientation. The client must continue computing its placement direction instead of assuming the server will rewrite it. Recheck vanilla stairs, and repeat with protocol None.
+
+Project and material follow-up acceptance (2026-10-08): cold GTNH 2.9.0-RC-2 recovered an older two-version project, retained chest/sign NBT and Chinese descriptions, and restored the selected second version after leaving/re-entering the world. Opening alone left all three source file hashes unchanged. GTNH 2.8.4 opened a copied legacy project. Both packs refreshed an already-open English material list to Chinese automatically. In 2.8.4 the two-times multiplier, ignored material and gold-block replacement survived; verify the Chinese inventory HUD appears with `renderMaterialListInGuis` on and disappears with it off. These checks used the combined project/layout/material fix, with 580 automated tests passing.

@@ -10,6 +10,7 @@ import java.util.List;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.util.MathHelper;
 
+import com.github.lunatrius.schematica.client.gui.framework.UiBounds;
 import com.github.lunatrius.schematica.client.gui.framework.UiButton;
 import com.github.lunatrius.schematica.client.gui.framework.UiDraw;
 import com.github.lunatrius.schematica.client.gui.framework.UiList;
@@ -162,25 +163,31 @@ public final class GuiSchematicProjectManager extends UiScreen {
 
     @Override
     protected void layoutWidgets() {
+        int bottomHeight = layoutRow(bottom, height - 4);
+        int topHeight = layoutRow(top, height - 4 - bottomHeight);
         int infoWidth = 180;
         int listWidth = Math.max(40, width - 20 - infoWidth - 6);
-        int listHeight = Math.max(30, height - 74);
+        int listHeight = Math.max(30, height - 30 - topHeight - bottomHeight);
         frame.setBounds(10, 24, listWidth, listHeight);
         searchButton.setBounds(12, 28, 12, 12);
         search.setBounds(28, 27, listWidth - 22, 14);
         search.setVisible(searching);
         list.setBounds(12, 45, listWidth - 4, listHeight - 23);
         info.setBounds(10 + listWidth + 6, 24, infoWidth, Math.min(200, listHeight));
-        layoutRow(top, height - 46);
-        layoutRow(bottom, height - 24);
     }
 
-    private void layoutRow(List<UiButton> buttons, int y) {
-        int x = 10;
+    private int layoutRow(List<UiButton> buttons, int bottomEdge) {
+        int x = 10, y = 0;
         for (UiButton button : buttons) {
-            int w = button.preferredWidth(fontRendererObj.getStringWidth(button.label()));
+            int w = Math.min(width - 20, button.preferredWidth(fontRendererObj.getStringWidth(button.label())));
+            if (x > 10 && x + w > width - 10) { x = 10; y += 22; }
             button.setBounds(x, y, w, 20);
             x += w + 2;
         }
+        for (UiButton button : buttons) {
+            UiBounds bounds = button.bounds();
+            button.setBounds(bounds.x, bounds.y + bottomEdge - y - 20, bounds.width, bounds.height);
+        }
+        return y + 22;
     }
 }

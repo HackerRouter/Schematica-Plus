@@ -69,17 +69,6 @@ public final class GuiSchematicProjectsBrowser extends GuiSchematicBrowser {
         layoutActions();
     }
 
-    @Override
-    protected void layoutActions() {
-        int x = 12;
-        for (UiButton button : new UiButton[] {manager, create, load, delete, close}) {
-            if (!button.isVisible()) continue;
-            int w = button.preferredWidth(fontRendererObj.getStringWidth(button.label()));
-            button.setBounds(x, height - 26, w, 20);
-            x += w + 2;
-        }
-    }
-
     private void createProject() {
         if (browser == null) return;
         File directory = browser.directory();

@@ -40,6 +40,7 @@ public final class MaterialList {
     private boolean hasResult;
     private int skipped, unverified;
     private String scanError = "";
+    private String language = "";
     private int[] geometry;
     private long layerRevision;
     private Object source;
@@ -253,6 +254,17 @@ public final class MaterialList {
         if (!validContext()) {
             if (scan != null || hasResult) refresh();
             return;
+        }
+        String currentLanguage = Minecraft.getMinecraft().gameSettings.language;
+        if (!java.util.Objects.equals(language, currentLanguage)) {
+            language = currentLanguage;
+            for (java.util.Map.Entry<MaterialItemKey, MaterialListModel.Replacement<MaterialItemKey>> entry
+                : new ArrayList<>(model.replacements().entrySet())) {
+                MaterialListModel.Replacement<MaterialItemKey> replacement = entry.getValue();
+                model.replace(entry.getKey(), new MaterialListModel.Replacement<>(replacement.key,
+                    replacement.key.stack().getDisplayName(), replacement.registryName));
+            }
+            refresh();
         }
         if (scan == null && !hasResult && scanError.isEmpty() || geometryChanged()) refresh();
         if (scan != null) {

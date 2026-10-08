@@ -13,6 +13,8 @@ import com.github.lunatrius.schematica.client.selection.AreaSelectionLibrary;
 import com.github.lunatrius.schematica.internal.lunatriuscore.util.vector.Vector3i;
 import com.github.lunatrius.schematica.tool.PlacementDeletionMode;
 import com.google.gson.JsonObject;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonParser;
 
 public class SchematicProjectTest {
     @Rule public TemporaryFolder temporary = new TemporaryFolder();
@@ -86,6 +88,52 @@ public class SchematicProjectTest {
         assertEquals(new Vector3i(20, 60, -5), project.selections().simpleSelection().first());
         assertEquals(-1, project.lastPastedVersion());
         assertTrue(project.lastSeenArea().isEmpty());
+    }
+
+    @Test public void diskRoundTripKeepsAutomaticOriginsAndUnselectedBoxes() throws Exception {
+        SchematicProject project = project();
+        project.selections().setMode(AreaSelectionLibrary.Mode.NORMAL);
+        project.selections().selectBox(project.selections().selected(), null);
+        project.addVersion("v1", "house_00001.schemplus", "first\nsecond", new Vector3i(), 100L, false);
+        project.pasted();
+        assertTrue(project.saveToFile());
+        JsonObject data = new JsonParser().parse(new String(Files.readAllBytes(project.projectFile().toPath()),
+            java.nio.charset.StandardCharsets.UTF_8)).getAsJsonObject();
+        JsonObject area = data.getAsJsonObject("selections").getAsJsonArray("selections").get(0).getAsJsonObject();
+        assertTrue(area.has("origin"));
+        assertTrue(area.get("origin").isJsonNull());
+        assertTrue(area.get("selectedBox").isJsonNull());
+        SchematicProject restored = SchematicProject.fromJson(data, project.projectFile(), false);
+        assertNull(restored.selections().selected().selectedBox());
+        assertEquals(1, restored.versionCount());
+        assertEquals(0, restored.lastPastedVersion());
+        assertEquals("first\nsecond", restored.currentVersionDescription());
+    }
+
+    @Test public void oldProjectFilesRestoreOmittedNullsWithoutChangingTheirInput() {
+        SchematicProject project = project();
+        project.selections().setMode(AreaSelectionLibrary.Mode.NORMAL);
+        project.selections().selectBox(project.selections().selected(), null);
+        project.selections().select(null);
+        Vector3i manual = new Vector3i(12, 70, -4);
+        project.selections().setOrigin(project.selections().simpleSelection(), manual);
+        JsonObject data = new JsonParser().parse(new GsonBuilder().create().toJson(project.toJson())).getAsJsonObject();
+        String before = data.toString();
+        SchematicProject restored = SchematicProject.fromJson(data, project.projectFile(), false);
+        assertNull(restored.selections().selected());
+        assertNull(restored.selections().areas().get(0).selectedBox());
+        assertEquals(manual, restored.selections().simpleSelection().origin());
+        assertEquals(before, data.toString());
+    }
+
+    @Test public void missingSelectedManualOriginIsStillRejected() {
+        SchematicProject project = project();
+        JsonObject data = new JsonParser().parse(new GsonBuilder().create().toJson(project.toJson())).getAsJsonObject();
+        data.getAsJsonObject("selections").getAsJsonObject("simple").addProperty("originSelected", true);
+        try {
+            SchematicProject.fromJson(data, project.projectFile(), false);
+            fail("A selected manual origin must have coordinates");
+        } catch (IllegalArgumentException expected) {}
     }
 
     @Test public void renamingMovesTheProjectFileAndRefusesExistingNames() throws Exception {
