@@ -89,6 +89,19 @@ GTNH 2.8.4 and 2.9.0-RC-2; client-only installation was also checked against a
 in survival. Gate settings that require a screwdriver remain manual; this does
 not restore arbitrary NBT or promise automatic printer support for every part.
 
+## Backhand and inventory input
+
+Pick block, Easy Place and printer swaps resolve inventory indices through the
+player's container, including Backhand's appended offhand slot. With Inventory
+Bogo Sorter installed, each automated swap temporarily enables its client click
+prediction and restores the previous guard afterward. Native slot restrictions
+still apply. Printer material/tool searches include the offhand after ordinary
+inventory slots; a stack is not treated as selected until the local swap succeeds.
+
+The target combinations are Backhand 1.7.7 / Bogo Sorter 1.2.68 in GTNH 2.8.4 and
+Backhand 1.8.16 / Bogo Sorter 1.3.54 in GTNH 2.9.0-RC-2. Input and item-count
+acceptance steps and observations are recorded in [TESTING.md](../TESTING.md).
+
 ## Fluid printer
 
 Supported routes are native `ItemBucket` placement (including EnderIO/Tinkers'

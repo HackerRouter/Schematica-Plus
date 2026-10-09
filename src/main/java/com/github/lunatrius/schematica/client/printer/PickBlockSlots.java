@@ -19,6 +19,7 @@ import net.minecraft.item.ItemSword;
 import net.minecraft.item.ItemTool;
 
 import com.github.lunatrius.schematica.handler.ConfigurationHandler;
+import com.github.lunatrius.schematica.compat.InventoryClickCompat;
 
 /** Moves a picked item into the hand: its hotbar slot, else one of the pick-blockable hotbar slots. */
 public final class PickBlockSlots {
@@ -101,10 +102,16 @@ public final class PickBlockSlots {
 
     /** Swaps the stack at an inventory index with a hotbar slot through the player's own container. */
     public static boolean swapToHotbar(Minecraft mc, EntityPlayer player, int index, int hotbar) {
+        if (hotbar < 0 || hotbar >= 9 || player.openContainer != player.inventoryContainer) return false;
         int slot = containerSlot(player.inventoryContainer, player.inventory, index);
         if (slot < 0) return false;
-        mc.playerController.windowClick(player.inventoryContainer.windowId, slot, hotbar, 2, player);
-        return true;
+        return InventoryClickCompat.click(() -> {
+            Slot source = (Slot) player.inventoryContainer.inventorySlots.get(slot);
+            if (!source.canTakeStack(player) || source.getStack() == null) return false;
+            ItemStack expected = source.getStack().copy();
+            mc.playerController.windowClick(player.inventoryContainer.windowId, slot, hotbar, 2, player);
+            return ItemStack.areItemStacksEqual(expected, player.inventory.getStackInSlot(hotbar));
+        });
     }
 
     /** setPickedItemToHand; returns whether the item is in the hand now. */

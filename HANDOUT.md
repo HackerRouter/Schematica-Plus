@@ -2,13 +2,13 @@
 
 ```yaml
 document_schema: schematica-plus-handoff/2
-updated: 2026-10-08
+updated: 2026-10-09
 timezone: Asia/Singapore
 audience: the next developer, working in a cloud container that has the GitHub repository
 language: English context; communicate with the user in Chinese
 repository: https://github.com/HackerRouter/Schematica-Plus
 branch: master (all work is committed and pushed to origin/master; there is no other working branch)
-latest_validation: build + Checkstyle + 586 JUnit tests, 0 failures (run with LC_ALL=C.UTF-8)
+latest_validation: build + Checkstyle + 592 JUnit tests, 0 failures (run with LC_ALL=C.UTF-8)
 game_runs: development client (vanilla), GTNH 2.8.4 and GTNH 2.9.0-RC-2 under Xvfb + Mesa llvmpipe, see section 2A
 ```
 
@@ -55,8 +55,8 @@ product:
   incompatible_mod_id: schematica
   maintainer_credit: HackerRouter
   homepage: https://github.com/HackerRouter/Schematica-Plus
-  requested_release_name: Beta 1.0
-  configured_base_version: 1.0.0-beta.1
+  requested_release_name: 1.0.0.beta.2
+  configured_base_version: 1.0.0.beta.2 (derived from the release tag)
   legacy_java_package: com.github.lunatrius.schematica
 target:
   minecraft: 1.7.10
@@ -296,6 +296,8 @@ Still `OPEN`: persisting unsaved edits across sessions (memory-only, as upstream
 
 ## 6. Remaining feature/parity backlog
 
+- `VISUAL_CHECKED_HEADLESS` (2026-10-09): inventory swaps now cooperate with Inventory Bogo Sorter's client click guard (`compat/InventoryClickCompat`, `client/printer/PickBlockSlots`), preserve the prior guard in a finally block, respect native slot restrictions and verify local prediction. Both GTNH packs reproduced the old failure: selecting a stack held only in Backhand's offhand moved it on the server while the client kept it in the offhand. Ordinary inventory swaps use the same guarded path. Printer item/predicate searches now include the complete main-inventory array, including Backhand's appended slot (`client/printer/SchematicPrinter`). Four guard scope/exception/absence regressions and the exact `1.0.0.beta.2` handshake version are covered by automated tests; build, Checkstyle and all 592 tests pass. Cold 2.8.4 and 2.9.0-RC-2 clients passed native mouse/keyboard, M/M+C, rebound attack/use, focus/GUI release, inventory split/merge and creative pick precedence checks. Both passed offhand block swaps, occupied destination swaps, hotbar/offhand isolation, printer materials, a native TConstruct steel pickaxe and water/empty-bucket return, with matching client/server quantities. A cold matching 2.9 dedicated server also passed offhand pick, direct Easy Place, printer material and tool cases; saved player NBT retained exact stack counts, steel tool materials and one point of tool damage. Forge reports version `1.0.0.beta.2` in both clients. Tested runtime JAR SHA-256: `e8864e976a2ad7cff6296567405c541871e15091faaf45c6b332004859545f3d`. Evidence: TESTING.md, `/workspace/release-issues/input-backhand` and `followup/screenshots/input-*`.
+
 - `VISUAL_CHECKED_HEADLESS` (2026-10-08): pasted ForgeMultipart tiles now send their native description packet after installation (`nbt/ForgeMultipart`, `tool/WorldEditJob`, `tool/SilentBlockPlacement`). Both target packs reproduced four ProjectRed small lights disappearing from the client after paste while their saved server NBT remained complete; a 2.8.4 chunk reload restored them. Ordinary block updates do not carry Multipart descriptions. The native helper also covers silent paste and world-move writes. Two added cancellation/installation-order tests fail without the calls; build, Checkstyle and all 588 tests pass. Both cold GTNH clients passed ordinary paste, silent paste, cross-pack paste and world move: all four small lights appeared without chunk reload, and saved server NBT matched. A matching cold 2.9 dedicated server also passed remote paste and replacement of existing parts with different colours/inversion; the client immediately showed the changes, and ten saved tiles matched. The runtime JAR SHA-256 was `9dd76a64c17cdb26724e0ac5e6e36321bbadfaf3d06a9ade716bf9f11e6556df`. Evidence: `/workspace/release-issues/followup` (`lights-*`, `multipart-sync-*`).
 
 - `VISUAL_CHECKED_HEADLESS` (2026-10-08): both packs passed representative IC2 crop and ProjectRed high-ID checks. Native full lamps used registry IDs 10713 (2.8.4) and 11145 (2.9); six normal/inverted powered/unpowered cases retained identity, colour and state when native captures were exchanged in both directions. Four Multipart light types also retained their saved fields. Seven native IC2 crop-stick cases (wheat 1/4/7, coffee 1/5, redwheat 7 and empty) rendered without purple-black textures; immediately copied post-paste region data retained crop owner/name, stage and stats in both packs. Live crops subsequently grow or die, so later live-world state is not an exact paste snapshot. No crop or ID-decoding change was needed. The separate Multipart synchronization fix is recorded above. Evidence: `/workspace/release-issues/followup/lights284`, `lights290`, `multipart-final-284`, `multipart-final-290` and screenshots.
@@ -330,7 +332,7 @@ This is the reconciled known backlog, not a promise that every upstream Configs 
 - `PARITY_AUDIT` (partly done): scroll precedence now matches `InputHandler.handleMouseScroll` (grow modifier always consumes with upstream messages, nudge consumes only when something moved, `reverseOperationModeDirection`); `selectionModeCycle` cycles the corner mode / Delete target / paste replace mode instead of Normal/Simple; pickBlockFirst/Last follow `shouldPickBlock`; add/delete selection box print upstream messages and delete removes a selected manual origin first. Paste replace mode is upstream `pasteReplaceBehavior` (None/All/With non-air, default None); a legacy `pasteOnlyAir` is migrated once (true → None, false → With non-air, which was the old non-air-only paste). All now also clears world blocks where the schematic has air, inside enabled regions. Remaining: key conflict behavior, action contexts and a full Tool HUD comparison.
 - `IMPLEMENTED_HEADLESS`: Execute no longer cancels a running edit (busy is refused; remove tasks in the Task Manager), Fill/Replace without picked blocks fall through like upstream, Fill/Replace/Delete use only the selected box when one is selected, and Delete can target the selected placement (`ToolMode.deleteUsesPlacement`, toggled with selectionModeCycle).
 - `IMPLEMENTED_HEADLESS`: cloneSelection (with `cloneAtOriginalPosition`), saveAreaAsInMemorySchematic (in-memory sources, not persisted), placement rotation/mirror hotkeys, replace-selection, Delete placement target.
-- `PARITY_AUDIT`: Input plugin in installed obfuscated JAR, other coremods, GUI/focus transitions, custom vanilla mouse/keyboard bindings, held repeats and releases, no stuck attack/use keys. Investigate RELEASE matching when extra keys change a chord; exclusivity across GUI transitions; old custom I binding migration; user feedback on failed hotkey persistence. These are review targets, not confirmed runtime bugs.
+- `PARITY_AUDIT` (partly checked 2026-10-09): installed input plugin with both target packs, GUI/focus transitions, rebound vanilla attack/use, M/M+C release and native inventory clicks have recorded game checks above. Remaining: arbitrary extra-key chord changes, old custom I binding migration, user feedback on failed hotkey persistence and other coremod combinations. These are review targets, not confirmed runtime bugs.
 
 ### P2: Remaining original feature systems
 
@@ -501,7 +503,7 @@ Read `compatibility/README.md` and concrete `compat/` classes before adding dupl
 
 ## 9. Validation and acceptance obligations
 
-Latest: build + Checkstyle, 586 JUnit tests (`LC_ALL=C.UTF-8 ./gradlew test`), zero failures. Game checks so far are listed as `VISUAL_CHECKED_HEADLESS` in section 6. Rerun relevant checks after actual changes; do not rerun an unchanged suite just to report activity.
+Latest: build + Checkstyle, 592 JUnit tests (`LC_ALL=C.UTF-8 ./gradlew test`), zero failures. Game checks so far are listed as `VISUAL_CHECKED_HEADLESS` in section 6. Rerun relevant checks after actual changes; do not rerun an unchanged suite just to report activity.
 
 Required focused regression groups for continuation:
 

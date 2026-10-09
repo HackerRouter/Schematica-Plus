@@ -23,7 +23,7 @@ public class SchematicaPlusTest {
     }
 
     @Test public void acceptsSupportedReleaseClients() {
-        for (String version : Arrays.asList("1.0.0-beta.1", "1.0.0-beta.2", "1.0.0", "1.1.0")) {
+        for (String version : Arrays.asList("1.0.0-beta.1", "1.0.0-beta.2", "1.0.0.beta.2", "1.0.0", "1.1.0")) {
             assertTrue(version, SchematicaPlus.acceptsRemoteMods("db05cb5", Collections.singletonMap(Reference.MODID, version), Side.CLIENT));
         }
     }

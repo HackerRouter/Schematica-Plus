@@ -746,7 +746,7 @@ public class SchematicPrinter {
             inventory.currentItem = slot;
             return true;
         } else if (swapSlots && slot >= Constants.Inventory.InventoryOffset.INVENTORY
-            && slot < Constants.Inventory.InventoryOffset.INVENTORY + Constants.Inventory.Size.INVENTORY) {
+            && slot < inventory.mainInventory.length) {
                 if (swapSlots(inventory, slot)) {
                     return swapToItem(inventory, itemStack, false, matchNBT);
                 }
@@ -766,7 +766,7 @@ public class SchematicPrinter {
             }
             if (pass > 0) return false;
             int found = -1;
-            for (int i = Constants.Inventory.InventoryOffset.INVENTORY; i < Constants.Inventory.InventoryOffset.INVENTORY + Constants.Inventory.Size.INVENTORY && found < 0; i++) {
+            for (int i = Constants.Inventory.InventoryOffset.INVENTORY; i < inventory.mainInventory.length && found < 0; i++) {
                 if (wanted.test(inventory.mainInventory[i])) found = i;
             }
             if (found < 0 || !swapSlots(inventory, found)) return false;
