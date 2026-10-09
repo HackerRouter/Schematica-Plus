@@ -4,11 +4,13 @@
 
 ## TL;DR:
 
-## It is now a 95% [Litematica](https://modrinth.com/mod/litematica) backport for 1.7.10.
+## It is now a 120% [Litematica](https://modrinth.com/mod/litematica) backport for 1.7.10.
 
 ## NO MORE PREREQUISTE MOD.
 
-## It is currently a CLIENT mod. The SERVER mod DEVELOPMENT will be finished soon.
+## It can be installed in both the SERVER and the CLIENT
+
+## Add it to the SERVER for better paste support!
 
 ## For tutorials, check the description of [Litematica](https://modrinth.com/mod/litematica)
 
