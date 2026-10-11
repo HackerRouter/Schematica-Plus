@@ -15,7 +15,7 @@ public final class MaterialItemKey {
     public MaterialItemKey(ItemStack stack) {
         item = Objects.requireNonNull(stack.getItem());
         damage = stack.getItemDamage();
-        tag = stack.hasTagCompound() ? (NBTTagCompound) stack.getTagCompound().copy() : null;
+        tag = com.github.lunatrius.schematica.compat.AE2Items.materialTag(stack);
         hash = Objects.hash(item, damage, tag);
     }
 

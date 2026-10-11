@@ -1,3 +1,4 @@
+// Native machine update coordination, by HackerRouter, 2026.
 package com.github.lunatrius.schematica.compat;
 
 import java.util.concurrent.locks.Lock;

@@ -1,3 +1,4 @@
+// Machine update lock regressions, by HackerRouter, 2026.
 package com.github.lunatrius.schematica.compat;
 
 import java.util.concurrent.ExecutorService;

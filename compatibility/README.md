@@ -57,6 +57,16 @@ See [TESTING.md](../TESTING.md#powered-complex-structures-gregtech-and-ae2) for 
 fixtures, exact versions and limits. AE2 autocrafting/P2P and arbitrary active
 multiblocks are not covered by these samples.
 
+AE2 cable-host material lists use each native part's pick item and each facade's
+item, including multiple parts on one host and the facade's material NBT.
+Facade material keys normalize the registry fields omitted by native client
+streams so crafted inventory items and placed facades compare equally.
+Partial builds are matched by item, mounting side and panel spin. Ignoring block
+state relaxes side/spin comparisons but still requires every item and the correct
+facade material. Network inventories and installed upgrades are not building
+materials. This material counting does not add automatic AE2 part assembly to
+the printer.
+
 ## Native NBT and standard tile updates
 
 The generic path preserves canonical tile NBT and, where implemented, the S35

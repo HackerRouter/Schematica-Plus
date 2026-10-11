@@ -15,7 +15,7 @@ import net.minecraft.world.chunk.Chunk;
 import com.github.lunatrius.schematica.client.world.SchematicWorld;
 import com.github.lunatrius.schematica.reference.Reference;
 import com.github.lunatrius.schematica.compat.MultipartItems;
-import com.github.lunatrius.schematica.compat.MultipartItems.Part;
+import com.github.lunatrius.schematica.compat.AE2Items;
 
 import cpw.mods.fml.common.registry.GameData;
 
@@ -79,19 +79,22 @@ public final class MaterialScan implements MaterialScanner {
             boolean missing = unknown || real != block || !ignoreState && realMeta != meta
                 && !com.github.lunatrius.schematica.util.BlockGroups.tolerated(block, meta, real, realMeta);
             boolean mismatched = missing && !unknown && !world.isAirBlock(wx, wy, wz);
-            List<Part> missingParts = null;
+            List<ItemStack> missingParts = null;
             if (!unknown && MultipartItems.supports(schematic.getTileEntity(x, y, z))) {
-                missingParts = MultipartItems.missing(
+                missingParts = new ArrayList<>();
+                for (MultipartItems.Part part : MultipartItems.missing(
                     MultipartItems.parts(schematic.getTileEntity(x, y, z)),
-                    MultipartItems.parts(world.getTileEntity(wx, wy, wz)), ignoreState);
+                    MultipartItems.parts(world.getTileEntity(wx, wy, wz)), ignoreState)) missingParts.add(part.stack);
+            } else if (!unknown && AE2Items.supports(schematic.getTileEntity(x, y, z))) {
+                missingParts = AE2Items.missing(schematic.getTileEntity(x, y, z), world.getTileEntity(wx, wy, wz), ignoreState);
             }
             for (int i = 0; i < items.size(); i++) {
                 int amount = items.count(i);
                 int missingAmount = missing ? amount : 0;
                 if (missingParts != null) {
                     missingAmount = 0;
-                    for (MultipartItems.Part part : missingParts) {
-                        if (part.stack != null && items.key(i).equals(new MaterialItemKey(part.stack))) missingAmount++;
+                    for (ItemStack part : missingParts) {
+                        if (part != null && items.key(i).equals(new MaterialItemKey(part))) missingAmount++;
                     }
                 }
                 int[] count = counts.computeIfAbsent(items.key(i), ignored -> new int[4]);

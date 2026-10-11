@@ -102,9 +102,12 @@ public final class MaterialCache {
 
     private static BuildItems resolve(World world, int x, int y, int z, Block block, int meta, EntityPlayer player) {
         TileEntity tile = world == null ? null : world.getTileEntity(x, y, z);
-        if (com.github.lunatrius.schematica.compat.MultipartItems.supports(tile)) {
+        if (com.github.lunatrius.schematica.compat.MultipartItems.supports(tile)
+            || com.github.lunatrius.schematica.compat.AE2Items.supports(tile)) {
             try {
-                ItemStack[] parts = com.github.lunatrius.schematica.compat.MultipartItems.items(tile);
+                ItemStack[] parts = com.github.lunatrius.schematica.compat.MultipartItems.supports(tile)
+                    ? com.github.lunatrius.schematica.compat.MultipartItems.items(tile)
+                    : com.github.lunatrius.schematica.compat.AE2Items.items(tile);
                 return parts == null ? null : BuildItems.of(parts);
             } catch (ReflectiveOperationException e) {
                 return null;
