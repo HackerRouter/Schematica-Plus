@@ -69,6 +69,10 @@ public final class WorldEditQueue {
     }
 
     public void rollbackBeforeShutdown(MinecraftServer server) {
+        com.github.lunatrius.schematica.compat.MachineUpdateLock.run(() -> rollback(server));
+    }
+
+    private void rollback(MinecraftServer server) {
         Edit edit = pending.get();
         if (edit == null || edit.server != server || !edit.job.needsRollback()) return;
         edit.job.cancelled = true;
@@ -80,6 +84,11 @@ public final class WorldEditQueue {
     @SubscribeEvent
     public void onTick(TickEvent.ServerTickEvent event) {
         if (event.phase != TickEvent.Phase.END) return;
+        if (requests.isEmpty() && pending.get() == null) return;
+        com.github.lunatrius.schematica.compat.MachineUpdateLock.run(this::processTick);
+    }
+
+    private void processTick() {
         Runnable request = requests.poll();
         if (request != null) request.run();
         Edit edit = pending.get();

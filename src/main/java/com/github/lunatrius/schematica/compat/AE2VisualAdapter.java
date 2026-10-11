@@ -142,10 +142,28 @@ final class AE2VisualAdapter implements ISchematicVisualAdapter {
     /** The preview: orientation fields directly; a cable bus reads the transformed NBT, then its cable turns its client connections. */
     @Override public void transformPreview(TileEntity tile, char operation) throws Exception {
         if (Reflect.is(tile, "appeng.api.parts.IPartHost")) {
+            NBTTagCompound visual = captureObject(tile);
             NBTTagCompound data = new NBTTagCompound();
             tile.writeToNBT(data);
             transformTag(data, operation);
+            Map<String, NBTTagCompound> moved = new LinkedHashMap<>();
+            for (ForgeDirection side : ForgeDirection.VALID_DIRECTIONS) {
+                if (visual.hasKey(side.name(), 10)) {
+                    NBTTagCompound part = visual.getCompoundTag(side.name());
+                    // The transformed persistent NBT owns spin; the other fields retain the captured client state.
+                    part.removeTag("appeng.parts.reporting.AbstractPartReporting#spin");
+                    part.removeTag("com.glodblock.github.common.parts.base.FCPart#spin");
+                    moved.put(com.github.lunatrius.schematica.util.SchematicTransform.direction(operation, side).name(), part);
+                    visual.removeTag(side.name());
+                }
+                // AE2's NBT reader leaves an existing part in place when the new side has no definition.
+                if (!data.hasKey("def:" + side.ordinal())) {
+                    Reflect.call(tile, "removePart", new Class<?>[] {ForgeDirection.class, boolean.class}, side, true);
+                }
+            }
             tile.readFromNBT(data);
+            for (Map.Entry<String, NBTTagCompound> entry : moved.entrySet()) visual.setTag(entry.getKey(), entry.getValue());
+            restoreObject(tile, visual);
             Object cable = Reflect.call(tile, "getPart", new Class<?>[] {ForgeDirection.class}, ForgeDirection.UNKNOWN);
             if (Reflect.is(cable, "appeng.parts.networking.PartCable")) {
                 Field connections = Reflect.field(cable.getClass(), "connections");

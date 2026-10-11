@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Reads a 1.7.10 world's region files (vanilla or EndlessIDs sections) to check pastes without trusting the game UI.
+"""Reads a 1.7.10 world's region files (vanilla, NotEnoughIDs or EndlessIDs sections) to check pastes without trusting the game UI.
 
   tiles   REGION_DIR [--box x0,y0,z0,x1,y1,z1]              tile entity ids, counts and bounds
   verify  SCHEMATIC REGION_DIR --box ...                     finds the paste transform from tile positions and checks
@@ -76,6 +76,10 @@ def nibble(array, index):
     return 0 if array is None else (int(array[index >> 1]) >> (4 * (index & 1))) & 15
 
 
+def word16(array, index):
+    return ((int(array[index * 2]) & 255) << 8) | (int(array[index * 2 + 1]) & 255)
+
+
 def world_blocks(region_dir, wanted_chunks, keep):
     """{(x, y, z): (id, meta)} for positions keep() accepts in the given chunk columns."""
     result, skipped = {}, 0
@@ -86,18 +90,23 @@ def world_blocks(region_dir, wanted_chunks, keep):
             if (cx, cz) not in wanted_chunks:
                 continue
             for section in level['Sections']:
-                if 'Blocks' not in section:
+                wide = 'Blocks16' in section
+                if not wide and 'Blocks' not in section:
                     skipped += 1
                     continue
                 sy = int(section['Y'])
-                blocks, add, high = section['Blocks'], section.get('Add'), section.get('BlocksB2Hi')
-                data, data1, data2 = section['Data'], section.get('Data1High'), section.get('Data2')
+                blocks = section['Blocks16' if wide else 'Blocks']
+                data = section['Data16' if wide else 'Data']
+                if wide and (len(blocks) != 8192 or len(data) != 8192):
+                    raise ValueError('Invalid NotEnoughIDs section arrays')
+                add, high = section.get('Add'), section.get('BlocksB2Hi')
+                data1, data2 = section.get('Data1High'), section.get('Data2')
                 for index in range(4096):
                     pos = (cx * 16 + (index & 15), sy * 16 + (index >> 8), cz * 16 + ((index >> 4) & 15))
                     if not keep(pos):
                         continue
-                    block = (int(blocks[index]) & 255) | (nibble(add, index) << 8) | (nibble(high, index) << 12)
-                    meta = nibble(data, index) | (nibble(data1, index) << 4) | ((int(data2[index]) & 255) << 8 if data2 is not None else 0)
+                    block = word16(blocks, index) if wide else (int(blocks[index]) & 255) | (nibble(add, index) << 8) | (nibble(high, index) << 12)
+                    meta = word16(data, index) if wide else nibble(data, index) | (nibble(data1, index) << 4) | ((int(data2[index]) & 255) << 8 if data2 is not None else 0)
                     result[pos] = (block, meta)
     if skipped:
         print('note: skipped', skipped, 'sections without a Blocks array (other storage format)')

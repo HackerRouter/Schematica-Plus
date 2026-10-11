@@ -29,7 +29,7 @@ None of these mods becomes a required dependency.
 | Family | Captured/restored state and source entry points |
 | --- | --- |
 | GregTech and inherited machines | Standard tile update plus `getUpdateData`/`onValueUpdate`; client pipe connections, turbine/filter formed flags. Pipe rotations/mirrors also transform connection masks, covers, redstone sides and disabled fluid inputs. |
-| AE2 / AE2 Fluid Crafting | Client cable connections/channels, power flags, monitor/terminal state and machine indicators. Uses explicit visual fields instead of querying the client's absent server grid. Handles dynamic `TileCableBus` replacement without losing coordinates or saved NBT. |
+| AE2 / AE2 Fluid Crafting | Client cable connections/channels, power flags, monitor/terminal state and machine indicators. Uses explicit visual fields instead of querying the client's absent server grid. Rotation/mirroring removes vacated preview parts and moves their client state to the new side while retaining the transformed NBT spin. Handles dynamic `TileCableBus` replacement without losing coordinates or saved NBT. |
 | ForgeMultipart / ProjectRed / AE2 multipart | Native part factories and per-part `writeDesc`/`readDesc`; AE2 parts use the client-field adapter. Preserves lamp state, wires and multipart render state in matching environments. |
 | Forestry | `IStreamable.writeData/readData`, including inherited machines. |
 | Railcraft | `RailcraftTileEntity.writePacketData/readPacketData`. |
@@ -44,6 +44,18 @@ None of these mods becomes a required dependency.
 | MalisisDoors | Door state and animation timer, with visual completion that avoids operating neighboring doors. |
 | Steve's Addons | RF node input/output-side indicators. |
 | Thaumic Exploration | Bound chest/jar client seal colors and access/lid state without calling the shared-storage color setter. |
+
+Queued server edits and shutdown rollback also use GregTech's native `TICK_LOCK`
+when present. GTNH 2.8.4 runs machine scans asynchronously; without that lock, a
+scan can install an empty default tile over a machine being pasted. This guard
+does not disable machine updates and remains optional when GregTech is absent.
+
+Powered Electric Blast Furnaces and AE2 storage/bus networks passed native game
+checks in both target packs on 2026-10-11: Y rotation, Z mirror, combined Y/X
+transform, preview/export/reload, real processing/transfer and world reopening.
+See [TESTING.md](../TESTING.md#powered-complex-structures-gregtech-and-ae2) for the
+fixtures, exact versions and limits. AE2 autocrafting/P2P and arbitrary active
+multiblocks are not covered by these samples.
 
 ## Native NBT and standard tile updates
 
