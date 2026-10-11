@@ -1,5 +1,20 @@
 # Verification
 
+## Version support scope (2026-10-11)
+
+Use the current Schematica Plus version for acceptance. Older Plus releases,
+mixed-version connections and legacy-peer protocol compatibility are outside the
+support and follow-up test scope. Historical results below do not extend it.
+
+- Install the same current Plus JAR on client and server; verify their loaded
+  versions, join, download a schematic and perform a remote paste with NBT.
+- Separately test the current client against a server without Plus: verify the
+  documented command permissions and blocks-only consent for client-only paste.
+- Cover GTNH 2.8.4 and 2.9.0-RC-2 with their native dependency versions. This
+  support-scope change concerns Plus releases, not the two target modpacks.
+
+This is a documentation change; it records no new in-game test result.
+
 ## NEI recipe-button event dispatch
 
 - In GTNH 2.8.4 and 2.9.0-RC-2, enter a world and open the crafting-table recipe
@@ -619,12 +634,10 @@ These checks supersede Phase 12's Simple-editor and bounding-box expectations.
   returning from another screen and changing worlds while the editor is open.
   Hidden/disabled controls must not modify state. No native game tests have been
   run by the agent; source and headless test checks do not replace these checks.
-- Use /schematicaDownload on an updated server and client for a file with two
-  separated regions and an outside origin. Reload the downloaded file and check
-  gaps, origin and rotation. Repeat a plain legacy file with an older client;
-  it should still download. An older client requesting a metadata-bearing file
-  from a new server must receive an update notice and no incomplete saved file.
-  Older servers cannot transmit the origin or region metadata; update both ends.
+- Use /schematicaDownload with the same current Plus version on server and client
+  for a file with two separated regions and an outside origin. Reload it and check
+  gaps, origin and rotation. Repeat a plain flat file with the same current builds;
+  it should still download without acquiring independent-region metadata.
 
 ## Phase 15: independent placement subregions (native checks)
 
@@ -2095,8 +2108,8 @@ Dedicated GTNH server fixture (fresh disposable world, creative + op):
   block into known empty space: require the server's remote-edit rejection and an
   unchanged destination. Using a block without tile NBT ensures a command fallback
   cannot be concealed by a separate NBT validation error. Re-enable and reconnect;
-  the same operation must succeed. Legacy servers without the protocol retain their
-  documented command fallback.
+  the same operation must succeed. Test the documented command fallback separately
+  against a server without Plus.
 
 Adjacent double-chest placement callbacks (normal updates):
 
@@ -2174,14 +2187,12 @@ Save the world before reading region files; retain inputs, logs and screenshots.
   and no queued B writes. A cancellation packet from B using A's operation ID must
   not stop A. Once A finishes, B must work. Cancel another edit using A's Task
   Manager, compare stable partial-world snapshots, then require B to work again.
-- With a test peer advertising no geometry/region capability, require the explicit
-  upgrade message for independent-region data, no completed local file, and a
-  subsequent flat-file download to work. Restore capability and compare the full
-  region download. Label capability emulation separately from actual old binaries.
 
 Two-client scheduling/download checks and live legacy-capability emulation passed
-on 2026-10-08; HANDOUT.md records their scope. They do not establish compatibility
-with every older binary or server permission plugin.
+on 2026-10-08; HANDOUT.md records their scope. Legacy-capability emulation is now
+an archived result, outside future acceptance work. Two-client scheduling/download
+checks remain required for current matching builds; arbitrary server permission
+plugins are not covered by these results.
 
 
 ### GTNH 2.8.4 mouse input with lwjgl3ify 2.1.16

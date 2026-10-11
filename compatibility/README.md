@@ -4,6 +4,13 @@ Source manifest targets: Minecraft 1.7.10, GTNH **2.8.4** and **2.9.0-RC-1**.
 Game checks also cover selected fixtures in **2.9.0-RC-2**. The adapter tables
 describe implementation coverage, not a claim that every block renders identically.
 
+Schematica Plus support targets the current version. When installed on both sides,
+use the same current version on client and server. Older Plus releases,
+mixed-version interoperation and legacy peer protocols are not support or test
+targets. Client-only use on servers without Plus remains supported within the
+command/NBT limits below. Both target GTNH packs and their native dependency
+versions remain in scope.
+
 The official manifests are [2.8.4](https://github.com/GTNewHorizons/GT-New-Horizons-Modpack/blob/2.8.4/README.md)
 and [2.9.0-RC-1](https://github.com/GTNewHorizons/GT-New-Horizons-Modpack/blob/2.9.0-RC-1/README.md).
 [gtnh-mods.json](gtnh-mods.json) retains their 231 and 242 entries, respectively,
