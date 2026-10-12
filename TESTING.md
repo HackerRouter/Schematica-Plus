@@ -2294,7 +2294,7 @@ Observed in both GTNH 2.8.4 and 2.9.0-RC-2 on 2026-10-08:
 5. Compare stone against a real gold block, red wool against white wool, and schematic air against a real stone block. Enable overlays and inspect distinct wrong-block, wrong-state and extra colours in both packs.
 6. Capture seven actual EnderIO bundles (item/power curve and item T) with five endpoint chests. Check source connections, mode arrays, side filters and inventories from a saved-world copy before comparing both preview views. A stale in-memory source must be reloaded after replacing its file; the 2.9 final inspection used a fresh complete-file name. Transform/transport checks are separate.
 
-No external shader pack was installed; no shader or universal machine-animation result is claimed. Screenshots, source snapshots and native command records: `/workspace/release-issues/followup`.
+No external shader pack was installed in that run; no shader or universal machine-animation result is claimed for it. Screenshots, source snapshots and native command records: `/workspace/release-issues/followup`. External shader checks were added separately on 2026-10-12 below.
 
 ### Failed writes and edits with no changes
 
@@ -2355,3 +2355,53 @@ On 2026-10-11, cold integrated clients passed these three transforms in GTNH 2.8
 The original source-versus-transform comparison only established invariance: both lists omitted the six AE2 side parts, reporting five rows instead of eleven. `AE2Items` now reads native part pick stacks and facade stacks, counts each attached item, and matches partial hosts by item/NBT, installation side and panel spin. Ignore-state comparisons retain item identity and multiplicity. Native facade construction normalizes the redundant registry fields for material keys and part matching; this preserves material/other NBT and does not mutate the native stacks. An unnormalized client-stream facade and crafted facade reproduced unequal material keys in the 2.9 game, and a rotated/pasted 2.8 network incorrectly reported both facades missing. A regression covers equivalent keys, facade matching, distinct materials and unchanged source tags.
 
 On 2026-10-11, cold clients in both target packs passed the original 11-row/18-item and expanded 13-row/21-item checks with no skipped cells. Complete sources/copies reported zero missing items, empty placements reported 21, and the partial copies reported four with state comparison or two with Ignore State. Native crafted stone/glass facades each showed one available item. Both refreshed material GUIs were inspected and matched the scan results. All three transformed previews and exported/reloaded files retained the expected counts; pasted copies had zero missing items, including their facades. Reopening both worlds retained the complete and partial results. Independent region reads matched all 15 cable/side-part/facade definitions and their expected transformed sides per case, 90 across both packs. The disposable fixture setup was corrected to request actual facade items (`createFacadeForItem(..., false)`) and use native wrench activation for an already active panel; these setup corrections are not production fixes. Already-loaded files were given a new source name after recapture to avoid the intentional source cache. Build, Checkstyle and all 603 tests passed. Tested runtime JAR SHA-256: `6adb6251462d853c66265e620d0f5a74f09bcb7981cfe83c4869ea81f5df836f`. Evidence: `/workspace/release-issues/complex-structures/materials*-final.log`, `materials*-saved.log` and inspected `followup/screenshots/complex-ae-*-materials-*.png`. These material tests cover native cable hosts, not hosts converted to ForgeMultipart or automatic AE2 part placement; no new NEI recipe-tree or dedicated-server claim is made by this round.
+
+
+### External Angelica shader packs
+
+Use disposable copies of a generated world. Keep each pack's native Angelica
+(2.8.4: 1.0.0-beta66b; 2.9.0-RC-2: 2.2.28). Do not install OptiFine alongside it.
+Use unmodified Complementary Reimagined r5.2.2 in both packs; additionally test
+r5.9.2 in 2.9. Select VERYLOW, which retains terrain shadows. Exact upstream
+commits, archive hashes and environment details are in
+[the shader audit](compatibility/render-audit.md#external-shader-packs-2026-10-12).
+
+1. With shaders disabled, build paired source/empty-preview areas on the same
+   floor: single/double/ender chests, an empty crystal chest, clear/stained glass,
+   stairs, slabs, leaves, GT industrial glass, a filled TConstruct seared tank,
+   contained water, stone and glowstone. Capture the source and move its preview
+   beside it. Inspect front and reverse views with overlays disabled.
+2. Enable the shader pack. Verify a visibly changed sky/lighting and active
+   shader pipeline; merely selecting the pack is insufficient. When diagnosing,
+   check IrisApi.isShaderPackInUse and whether the pipeline is deferred or the
+   fixed-function fallback. Repeat the same cameras on real blocks and previews.
+3. Toggle schematic alpha and missing-block overlays; show/hide placement boxes
+   and all schematic rendering. Check the real scene after hiding the preview.
+   Compare apparently missing transparent faces against a dark real backdrop,
+   with shaders off/on and alpha off/on, before classifying a missing-face bug.
+4. Toggle shaders off and on again. Save, exit the world, wait until the integrated
+   server has fully stopped, and reopen it. Also verify a cold client with the
+   shader pack selected. Inspect representative mod geometry separately; this
+   does not validate machine operation or shader support for every renderer.
+5. Record failed pack loads separately. In 2.8.4, r5.9.2 was rejected during
+   Angelica's shadow-program transformation and fell back to ordinary rendering;
+   this case must never be counted as successful shader rendering.
+
+On 2026-10-12, actual Overworld views passed the representative shell/face checks
+with r5.2.2 in both native clients and r5.9.2 in 2.9. All successful cases reported
+an active deferred shader pipeline. Close black-background comparisons disproved
+an initial suspicion of missing translucent glass: its faces/textures were still
+present, but contrast was low against the bright floor. Preview lighting/water
+appearance differs from real blocks; no complete material/reflection/shadow parity
+is claimed. No new block/tile rendering exception was observed in the successful
+runs. The 2.9 world reopened with r5.9.2 active. A 2.8 scripted reentry attempted
+to start a server during SERVER_STOPPING; that attempt is invalid as a shader
+transition check. A complete 2.8 client restart with r5.2.2 already selected then
+reopened the world successfully, with shaders active and the inspected preview
+intact. Both packs also passed front/reverse preview checks for the existing
+18-shape ArchitectureCraft fixture, AE2 parts/facades and GT Electric Blast Furnace
+with alpha disabled; machine operation and material counts were not retested by
+these additional views. Evidence is in `/workspace/release-issues/shader-validation`.
+Build, Checkstyle and all 603 tests passed; no production code changed.
+Real GPUs, OptiFine, other shader families, higher presets and Nether/End shader
+effects remain untested.

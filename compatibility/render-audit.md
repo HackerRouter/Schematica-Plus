@@ -98,6 +98,82 @@ renderer showed ground dithering even with schematic rendering disabled; this
 was not classified as a newly observed missing-face defect. Evidence is under
 `/workspace/release-issues/followup`; see the follow-up steps in TESTING.md.
 
+## External shader packs (2026-10-12)
+
+Actual Overworld clients tested Plus `40778e9`, runtime JAR SHA-256
+`b75c9ed6f46aadc2fb740564c5430b472f9e2ceef5695ecee3e788ea0b5dfd50`,
+on separate copies of the generated worlds. Both used Mesa llvmpipe 25.0.7,
+OpenGL 4.5 and 854x480 captures. The native Angelica versions were retained;
+OptiFine was not installed. Build, Checkstyle and all 603 tests passed.
+
+Complementary Reimagined came from its
+[official repository](https://github.com/ComplementaryDevelopment/ComplementaryReimagined).
+Unmodified source archives were installed as shader packs, with the pack's
+`VERYLOW` preset selected through its external option file. This retains terrain
+shadows (`SHADOW_QUALITY=0`, `shadowDistance=64.0`); entity shadows and several
+reflection effects are disabled by this preset.
+
+| Native client | Complementary version | Observed result |
+| --- | --- | --- |
+| GTNH 2.8.4 / Angelica 1.0.0-beta66b | r5.2.2 | Active shader pipeline; inspected real blocks and previews |
+| GTNH 2.8.4 / Angelica 1.0.0-beta66b | r5.9.2 | Shader pipeline creation failed; ordinary rendering fallback |
+| GTNH 2.9.0-RC-2 / Angelica 2.2.28 | r5.2.2 and r5.9.2 | Both active; inspected real blocks and previews |
+
+Pack provenance:
+
+- r5.2.2: commit `3d69187a3569e08722e3aa85bb3131ac4ea04cca`, archive SHA-256
+  `6d1e41940cc4454e57ab9179aa1418f5da3c955c293562e2b6f429ec1ab156f0`.
+- r5.9.2: commit `c09950df0650b27dac260c1b0f69afc11387aa6f`, archive SHA-256
+  `1d161de33d8c9104ddd6c19124281fca5fe703b595a560adc11d425a75ad17fe`.
+
+A selected pack or `enableShaders=true` was not accepted as proof of activation.
+The successful cases reported `DeferredWorldRenderingPipeline` and
+`IrisApi.isShaderPackInUse()=true`, alongside visibly changed sky, lighting and
+real-world shadows. In the failed 2.8.4/r5.9.2 case, Angelica's shadow-program
+transform rejected the vertex shader profile with `Vertex shaders must be in
+the compatibility profile to run properly!`; the resulting pipeline was
+`FixedFunctionWorldRenderingPipeline` and the API returned false. That screenshot
+is a fallback, not a successful shader test. No renderer fix was inferred from
+this pack/loader compilation failure.
+
+The paired fixtures included single/double vanilla chests, an ender chest, an
+empty Iron Chest crystal chest, clear/stained glass, leaves, stairs, slabs, GT
+tinted industrial glass, a water-filled TConstruct seared tank, contained water,
+stone and glowstone. Front/reverse views, schematic transparency, placement boxes,
+missing-block overlays, hiding/restoring previews and shader off/on cycles were
+inspected. No new missing shell/face or block/tile rendering exception was found
+in these successful combinations. Front/reverse previews of the existing
+18-shape ArchitectureCraft fixture, AE2 cable/part/facade network and GT Electric
+Blast Furnace also remained visible in both packs (schematic alpha disabled,
+r5.2.2 in 2.8 and r5.9.2 in 2.9). These additional views check geometry, not
+machine processing, material counts or automatic placement under shaders.
+
+In 2.9, translucent glass initially looked absent against the brightly lit stone
+floor. Close views against real black-wool backdrops showed the glass texture and
+faces with both shader versions and with shaders disabled. This was low contrast,
+not confirmed missing geometry. Disabling schematic alpha made the preview easier
+to read. Preview water, glass and emissive blocks retained visibly different
+colour/lighting from real shader-rendered blocks; these tests do not establish
+full shader material, reflection or shadow parity. Existing terrain dithering
+also appeared with shaders disabled and with previews hidden; it was not counted
+as a newly introduced schematic defect.
+
+The 2.9 world reopened with r5.9.2 active and the preview visible. An initial 2.8
+reentry attempt was invalid: the test driver started another integrated server
+before the old one left `SERVER_STOPPING`, causing a Forge lifecycle error.
+This attempt is not a shader transition pass. A subsequent complete 2.8 client
+restart, with r5.2.2 already selected, successfully reopened the copied world
+with the deferred pipeline active and the inspected glass/chest preview intact.
+The first 2.9 world entry also needed a retry after a pre-shader client-thread
+handshake timeout.
+
+Evidence, option files, native probe logs and inspected screenshots are outside
+the repository at `/workspace/release-issues/shader-validation`. No shader-pack
+source or test world is distributed with Plus. Only these Overworld fixtures and
+this low preset were tested: real GPUs, OptiFine, other shader families, higher
+presets, Nether/End effects and general connected/animated mod structures remain
+unverified under external shaders.
+
 
 ## Historical fixtures and pasted Multipart tiles
 

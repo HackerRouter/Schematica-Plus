@@ -192,7 +192,9 @@ Small test fixtures do not reproduce entire upstream mods and are not packaged.
 Selected pack-level results and their limits are recorded in
 [HANDOUT.md](../HANDOUT.md) and the [render audit](render-audit.md). The latter
 checks the build after the chest depth fix and tracks the additional old-Angelica
-render-pass fix for TConstruct container shells and GT industrial glass.
+render-pass fix for TConstruct container shells and GT industrial glass. It also
+records actual Complementary Reimagined shader tests on both native Angelica
+versions, including the old loader's r5.9.2 fallback and the limited tested presets.
 Follow [TESTING.md](../TESTING.md) for scenarios still needing coverage, including
 multiplayer, Freecam, multiple instances, chunk boundaries, rotations, dimension
 changes, shaders and save/reload round trips. A passing fixture does not establish
