@@ -1579,6 +1579,21 @@ The fixed reader passes eight Sponge tests spanning v1/v2/v3 and all 615 project
 tests; build and Checkstyle pass. These are automated fixtures, not a claim of
 native WorldEdit/FAWE export or game acceptance.
 
+The same day's running-client reader probes in both target packs also checked
+12 constructed NBT cases each: v1/v2/v3 declared four stone cells, with block
+streams containing zero, one, four or five indices. Four indices loaded correctly;
+short and trailing streams were rejected. This exercises native game classes,
+but does not replace browser, placement or real WorldEdit/FAWE file acceptance.
+
+File-level probes then exercised `SchematicGuiLoader.load` in both native games.
+For each version, a compressed four-cell stone/air file loaded into a placement;
+empty, short, trailing and overflowing streams failed without changing the
+loaded-source count, placement count or active placement. All 15 input files
+retained their original checksums. These are constructed files and direct loader
+calls, not mouse-driven browser/conversion checks or real WorldEdit/FAWE exports.
+Evidence: `<evidence-dir>/sponge-nei/sponge-files290.log` and
+`cold-verify284-final.log`.
+
 ## Tool HUD, new generic/visuals options and boolean toggle hotkeys
 
 - Hold the tool: the Tool HUD text is in the bottom left with a dark background per line and shadowed
@@ -1733,6 +1748,75 @@ bookmark crafting chains; the latter also has the graphical crafting tree.
 - Without GTNH NEI, the optional button must not appear and normal materials/recipe screens must
   remain usable. This integration selects recipes manually; it does not choose a GT machine route,
   perform crafts or replace NEI's native tool, fluid, byproduct and ore-dictionary calculations.
+
+### Complex NEI chains in both native packs
+
+Use separate disposable bookmark files in each pack. Compare each Plus demand
+with an ordinary NEI bookmark group containing the same production recipes and
+batch counts. Recipe availability and probability handling differ between packs.
+
+- Send 17 iron plates from the material GUI and click the real S button on the
+  fluid-solidifier recipe. Expect 2448 mB molten iron and a zero-consumption plate
+  mold. The mold is still required equipment; zero consumption does not supply it.
+- Repeat with the metal bender (17 ingots, circuit 1 with zero consumption),
+  extruder (17 ingots, zero-consumption plate shape), forge hammer (27 ingots,
+  18 plates) and cutting saw (two iron blocks, 104 mB water, 18 plates).
+  In 2.9, switch the saw's fluid alternative to lubricant using NEI and compare
+  the recalculated amount with a native group.
+- Select the hand-hammer recipe, then change its single-use hammer alternative
+  to the generic GT hammer. Compare tool counts with native NEI; a generic tool
+  placeholder does not establish the durability of a particular crafted tool.
+- Request 17 iron dust through brown-limonite centrifuging. Preserve all outputs:
+  17 iron dust, 34 oxygen cells and 17000 mB hydrogen, using 68 brown-limonite dust
+  and 34 empty cells. Also request iron dust as the secondary, probabilistic
+  output of impure-magnetite centrifuging; compare with each version's native math.
+- Chain iron plates through the bender, iron-dust smelting and brown-limonite
+  centrifuging. Check intermediate amounts, zero-consumption circuit, fluid and
+  cell byproducts. Inspect the expanded graphical tree in 2.9.
+- Add both gold-nugget/ingot alloy-smelter conversions to a 17-ingot demand.
+  Recalculation must terminate, retain the seed material requirement, and match
+  the native group rather than supplying free material from the cycle.
+- Reload handler information and reopen the demand recipe. Its classification
+  must identify Schematica Plus with a book icon, without an Unknown label or
+  crafting-overlay button. Save bookmarks, cold-restart and reopen the world;
+  quantities, alternatives and recipe lookup must survive. S must remain unbound
+  until a new material list is sent.
+
+On 2026-10-12, both native clients completed ten saved groups: fluid solidifier,
+bender, extruder, forge hammer, saw, hand/generic hammer, brown limonite,
+probabilistic magnetite byproduct, gold conversion cycle and the three-stage
+plate chain. Quantities matched ordinary NEI control groups. Native mouse clicks
+exercised material export and S; further cases used the real handlers, bookmarks
+and chain math on the running client's main thread. Demand/recipe screens in both
+packs and the 2.9 fluid and multi-stage trees were visually inspected. Handler-info
+reload preserved the book icon and classification, without a crafting overlay.
+
+In 2.9 the saw's lubricant alternative used 26 mB for two batches instead of
+104 mB water. The 11.11% magnetite byproduct needed 154 batches for an expected
+17 iron dust; 153 yielded a displayed 16. In 2.8.4 native NEI instead used 17
+batches, ignoring that probability. Both native versions displayed 17 generic
+hammer placeholders for the 17-craft hand recipe. Plus matched those native
+limits; this does not validate concrete-tool durability or guarantee random yields.
+The gold cycle terminated and retained a 17-ingot seed requirement. Bookmark
+file reloads preserved all ten groups and resolved each demand recipe.
+
+Cold client restarts in both packs retained every group's amounts, alternatives
+and recipe lookup. NEI's native quantity edit doubled the multi-stage request to
+136 brown-limonite dust and 68 empty cells; reverting it restored the entire
+previous calculation. S was correctly unbound after rejoining. The restored
+demand pages and 2.9 multi-stage/cyclic trees were inspected, including a native
+cyclic control group. Startup probes waited for both the player and NEI bookmark
+loading; recipe-handler readiness alone does not establish bookmark readiness.
+
+Build, Checkstyle and all 615 automated tests passed. Tested runtime JAR SHA-256:
+`c86b8f52a56fb398b96ccd71177a756b06bb9020ae29ca6ae18714a8921f2417`.
+Evidence: `<evidence-dir>/sponge-nei/final-suite284.log`,
+`final-suite290-retry.log`, `checks284.json`, `checks290.json` and inspected
+`screenshots/nei-*-final-*.png`; cold-restart evidence is in
+`cold-verify284-final.log`, `cold-verify290-final.log` (through its cold-restart
+pass marker), `acceptance.json` and
+`screenshots/nei-*-cold-*.png`. These are named planning fixtures, not exhaustive
+coverage of every GT machine recipe or automated execution of the planned crafts.
 
 ## 3D schematic preview in the browsers
 

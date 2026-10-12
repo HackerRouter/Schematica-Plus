@@ -20,6 +20,7 @@ import codechicken.nei.NEIClientConfig;
 import codechicken.nei.bookmark.BookmarkGrid;
 import codechicken.nei.bookmark.BookmarkGroup;
 import codechicken.nei.api.API;
+import codechicken.nei.event.NEIRegisterHandlerInfosEvent;
 import codechicken.nei.recipe.GuiRecipeButton;
 import codechicken.nei.recipe.Recipe;
 import codechicken.nei.recipe.RecipeHandlerRef;
@@ -52,6 +53,12 @@ public final class NeiIntegration {
         group = -1;
         sentGrid = null;
         sentGroup = null;
+    }
+
+    @SubscribeEvent
+    public void onHandlerInfo(NEIRegisterHandlerInfosEvent event) {
+        event.registerHandlerInfo(MaterialDemandHandler.class, Reference.NAME, Reference.MODID,
+            info -> info.setDisplayStack("minecraft:written_book", null).setShowOverlayButton(false));
     }
 
     static int sendGroup(List<ItemStack> stacks) {

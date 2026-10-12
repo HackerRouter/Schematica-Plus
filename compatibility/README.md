@@ -110,6 +110,19 @@ current world and bookmark namespace; deleted groups and reused numeric IDs do
 not acquire that reference. Saved plans survive through NEI's normal storage;
 after restarting, use NEI's own controls or send a new list to bind S again.
 
+The demand handler registers its own NEI classification and book icon, including
+after handler-info reloads. Its page has no crafting-overlay button. Production
+recipes retain native NEI alternatives, multiple outputs, fluids and
+zero-consumption equipment. Plus does not replace NEI's recipe-chain arithmetic.
+
+Probability and generic tool placeholders need care. For the inspected impure
+magnetite recipe, 2.8.44 plans the displayed iron-dust stack without accounting for
+its chance; 2.8.155 uses the 11.11% chance in its batch calculation. The latter is
+a planning estimate, not a guaranteed yield. The generic GT hammer alternative
+has no concrete tool material/durability and can appear as one tool per craft in
+both versions. Ordinary NEI groups behave the same way. These are native planning
+limits, not automatic machine operation or a promise of exact tool wear.
+
 ## Multipart Easy Place
 
 ProjectRed Easy Place uses native multipart item factories and ordinary item use to
