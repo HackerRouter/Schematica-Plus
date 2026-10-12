@@ -47,15 +47,22 @@ public final class SpongeSchematic extends SchematicFormat {
         NBTTagCompound blocks = version == 3 ? tag.getCompoundTag("Blocks") : tag;
         NBTTagCompound paletteTag = blocks.getCompoundTag("Palette");
         byte[] data = blocks.getByteArray(version == 3 ? "Data" : "BlockData");
+        int volume = width * height * length;
+        if (data.length < volume) throw new IllegalArgumentException("Truncated Sponge block data");
         BlockStateTranslator translator = BlockStateTranslator.instance();
         int max = 0;
-        for (Object key : paletteTag.func_150296_c()) max = Math.max(max, paletteTag.getInteger((String) key) + 1);
-        if (max > 1 << 20) throw new IllegalArgumentException("Sponge palette too large");
+        for (Object key : paletteTag.func_150296_c()) {
+            int index = paletteTag.getInteger((String) key);
+            if (!paletteTag.hasKey((String) key, NBT.TAG_INT) || index < 0 || index >= 1 << 20) {
+                throw new IllegalArgumentException("Invalid Sponge palette index");
+            }
+            max = Math.max(max, index + 1);
+        }
         String[] states = new String[max];
         BlockMapping[] palette = new BlockMapping[max];
         for (Object key : paletteTag.func_150296_c()) {
             int index = paletteTag.getInteger((String) key);
-            if (index < 0) throw new IllegalArgumentException("Invalid Sponge palette index");
+            if (states[index] != null) throw new IllegalArgumentException("Duplicate Sponge palette index");
             states[index] = (String) key;
             palette[index] = translator.translate((String) key);
         }
@@ -63,12 +70,13 @@ public final class SpongeSchematic extends SchematicFormat {
         Schematic schematic = new Schematic(new ItemStack(Blocks.grass), width, height, length);
         int[] offset = origin(tag, version);
         schematic.setOrigin(new SchematicOrigin(-offset[0], -offset[1], -offset[2]));
-        int index = 0, volume = width * height * length;
-        for (int i = 0; i < data.length && index < volume; index++) {
+        int cursor = 0;
+        for (int index = 0; index < volume; index++) {
             int value = 0, shift = 0;
             while (true) {
-                if (i >= data.length) throw new IllegalArgumentException("Truncated Sponge block data");
-                byte b = data[i++];
+                if (cursor >= data.length) throw new IllegalArgumentException("Truncated Sponge block data");
+                byte b = data[cursor++];
+                if (shift == 28 && (b & 0xF8) != 0) throw new IllegalArgumentException("Invalid Sponge block data");
                 value |= (b & 0x7F) << shift;
                 if ((b & 0x80) == 0) break;
                 shift += 7;
@@ -80,6 +88,7 @@ public final class SpongeSchematic extends SchematicFormat {
             int y = index / (width * length), rest = index % (width * length);
             schematic.setBlock(rest % width, y, rest / width, mapping.block, mapping.metadata);
         }
+        if (cursor != data.length) throw new IllegalArgumentException("Trailing Sponge block data");
 
         NBTTagList tiles = blocks.getTagList("BlockEntities", NBT.TAG_COMPOUND);
         if (tiles.tagCount() == 0 && version < 3) tiles = tag.getTagList("TileEntities", NBT.TAG_COMPOUND);

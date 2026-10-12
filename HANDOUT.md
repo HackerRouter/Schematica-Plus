@@ -68,7 +68,7 @@ mod. Original Schematica conflicts with Plus and must be removed from the instan
   applicable tool action consumes the input.
 - `.schematic`, `.schemplus`, `.litematic` and structure `.nbt` support reading and
   writing. Sponge `.schem` v1-v3 is **import-only**; biomes are ignored and modern
-  block/NBT conversion is partial. Explicit automated Sponge fixtures cover v2/v3.
+  block/NBT conversion is partial. Automated Sponge fixtures cover v1/v2/v3 and reject malformed block streams.
 - `.schematic` automatically upgrades to `.schemplus` when IDs or Plus region/origin
   data require it. Report the real filename and avoid overwriting an existing
   alternate-format file. Unedited Save Source retains original bytes; edited
@@ -102,7 +102,7 @@ LC_ALL=C.UTF-8 ./gradlew test
 
 Build includes compilation, reobfuscation, Checkstyle and JUnit. Artifacts are in
 `build/libs/`; XML results in `build/test-results/test/`. The latest completed suite
-has **609 tests, no failures or skips**. These tests do not launch Minecraft.
+has **615 tests, no failures or skips**. These tests do not launch Minecraft.
 The generated MCP source is under `build/rfg/minecraft-src/java/`.
 First builds require network access; `--offline` only works with a populated cache.
 CI also starts and cleanly stops a dedicated development server. Branch pushes
@@ -323,6 +323,7 @@ steps and limitations are in TESTING; the full implementation history is in Git.
 | VISUAL_CHECKED_HEADLESS | 2026-10-12 | Limited Complementary/Angelica presets in both packs; separate OptiFine E7/r5.2.2 in 2.8.4. RC-2 OptiFine startup conflict reproduced without Plus; no RC-2 OptiFine rendering claim. See render audit. |
 | VISUAL_CHECKED_HEADLESS | 2026-10-12 | Report entry/author dialog, right-aligned footer, checkbox position and Chinese wrapping in both native packs; TESTING issue-report section. Automated suite: 609. |
 | VISUAL_CHECKED_HEADLESS | 2026-10-12 | Reconciled current documentation, removed machine/private references and obsolete UI test entry/handler/translations; HANDOUT, TESTING, compatibility guides and input/UI resources. Build and 609 tests pass; native menu/hotkey checks in both packs recorded in TESTING (no new gameplay claim). |
+| IMPLEMENTED_HEADLESS | 2026-10-12 | Reject incomplete/trailing Sponge block data, overflowing varints and invalid/duplicate palette indices; `SpongeSchematic` and its tests. Six new regressions fail before the fix; build and all 615 tests pass. Native import steps are in TESTING; game acceptance pending. |
 
 ## 7. Reported issues and current boundaries
 
@@ -389,7 +390,8 @@ concrete available fixtures:
 3. If original failing schematics/logs become available, reproduce rare invalid GT
    names and historical EnderIO cases on copies before claiming a fix.
 4. Add real WorldEdit/FAWE Sponge files to native import/placement acceptance,
-   including v1; current explicit automated fixtures cover v2/v3 only.
+   including v1; automated fixtures cover all three versions but do not replace
+   real exported builds with tile/entity data.
 5. Extend unknown mod orientation/link/entity cases and permission-plugin behavior
    when a concrete reproduction exists. Do not add older Plus interoperation work.
 

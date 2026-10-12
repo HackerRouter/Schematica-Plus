@@ -1,7 +1,7 @@
 # Verification
 
 Current scenario guide, reviewed 2026-10-12. Run `./gradlew build` and
-`LC_ALL=C.UTF-8 ./gradlew test`; the current suite contains **609 tests**.
+`LC_ALL=C.UTF-8 ./gradlew test`; the current suite contains **615 tests**.
 Steps below are regression scenarios, not claims that every combination passed.
 Only dated observation paragraphs record actual game checks; their test counts and
 artifact hashes describe that historical build. Use disposable copies and the
@@ -1558,6 +1558,26 @@ compare with a server that does not have the mod and with each server option off
   1.12.2 Litematica and re-import in Plus: items and the rider are kept.
 - Load .schem files from WorldEdit 7 (v2) and 7.3+ (v3) and from FAWE: blocks, chests with items, signs
   and entities appear; the placement origin matches where the copy was made from (//copy position).
+
+## Sponge block-stream validation
+
+- In both target packs, load valid Sponge v1/v2/v3 files with asymmetric stone,
+  stairs and air positions. Compare dimensions, copy origin, block positions and
+  orientations; rotate and reload. Keep valid files and worlds unchanged.
+- On disposable file copies, remove all block bytes, leave one complete index,
+  or truncate after a complete multi-byte index before the declared volume ends.
+  Loading must report an error without adding a source or placement. Existing
+  loaded sources and placements must remain usable.
+- Repeat with extra trailing indices/bytes, an unfinished or overflowing varint,
+  an unknown index, negative/oversized/non-integer palette indices and duplicate
+  palette IDs. All must fail explicitly; then load a valid file successfully.
+- Use the browser's import/conversion action on the same malformed copies. It must
+  not produce a normal-looking partial output file with missing cells filled by air.
+
+On 2026-10-12, six new automated regressions failed against the preceding reader.
+The fixed reader passes eight Sponge tests spanning v1/v2/v3 and all 615 project
+tests; build and Checkstyle pass. These are automated fixtures, not a claim of
+native WorldEdit/FAWE export or game acceptance.
 
 ## Tool HUD, new generic/visuals options and boolean toggle hotkeys
 

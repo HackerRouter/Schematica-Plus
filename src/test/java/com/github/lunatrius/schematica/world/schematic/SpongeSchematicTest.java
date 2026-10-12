@@ -36,10 +36,10 @@ public class SpongeSchematicTest {
         return tag;
     }
 
-    @Test public void readsVersionsTwoAndThreeWithVarintIndicesAndTheCopyOrigin() {
+    @Test public void readsVersionsOneTwoAndThreeWithVarintIndicesAndTheCopyOrigin() {
         // index 200 needs two varint bytes
         byte[] data = {0, (byte) 0xC8, 0x01, 0, 0};
-        for (int version : new int[] {2, 3}) {
+        for (int version : new int[] {1, 2, 3}) {
             NBTTagCompound tag = blocks(version, data);
             assertTrue(SpongeSchematic.isSponge(tag));
             ISchematic schematic = new SpongeSchematic().readFromNBT(tag);
@@ -51,9 +51,68 @@ public class SpongeSchematicTest {
     }
 
     @Test public void rejectsTruncatedDataAndUnknownIndices() {
-        try { new SpongeSchematic().readFromNBT(blocks(2, new byte[] {0, (byte) 0x80})); fail(); }
-        catch (IllegalArgumentException expected) {}
-        try { new SpongeSchematic().readFromNBT(blocks(2, new byte[] {5})); fail(); }
+        for (int version : new int[] {1, 2, 3}) {
+            assertInvalid(blocks(version, new byte[] {0, 0, 0, (byte) 0x80}));
+            assertInvalid(blocks(version, new byte[] {5, 0, 0, 0}));
+        }
+    }
+
+    @Test public void rejectsIncompleteVolumesIncludingWholeVarints() {
+        for (int version : new int[] {1, 2, 3}) {
+            for (byte[] data : new byte[][] {{}, {0}, {0, 0, (byte) 0xC8, 0x01}}) {
+                assertInvalid(blocks(version, data));
+            }
+        }
+    }
+
+    @Test public void rejectsTrailingBlockData() {
+        for (int version : new int[] {1, 2, 3}) {
+            assertInvalid(blocks(version, new byte[] {0, 0, 0, 0, 0}));
+            assertInvalid(blocks(version, new byte[] {0, 0, 0, 0, (byte) 0x80}));
+        }
+    }
+
+    @Test public void rejectsVarintsThatOverflowIntoValidPaletteIndices() {
+        for (int version : new int[] {1, 2, 3}) {
+            for (int last : new int[] {0x10, 0x20, 0x40, 0x80}) {
+                assertInvalid(blocks(version, new byte[] {(byte) 0x80, (byte) 0x80,
+                    (byte) 0x80, (byte) 0x80, (byte) last, 0, 0, 0}));
+            }
+        }
+    }
+
+    @Test public void rejectsOutOfRangePaletteIndicesBeforeAllocation() {
+        for (int version : new int[] {1, 2, 3}) {
+            for (int index : new int[] {-1, Integer.MIN_VALUE, 1 << 20, Integer.MAX_VALUE}) {
+                NBTTagCompound tag = blocks(version, new byte[] {0, 0, 0, 0});
+                palette(tag, version).setInteger("minecraft:cave_air", index);
+                assertInvalid(tag);
+            }
+        }
+    }
+
+    @Test public void rejectsNonIntegerPaletteIndices() {
+        for (int version : new int[] {1, 2, 3}) {
+            NBTTagCompound tag = blocks(version, new byte[] {0, 0, 0, 0});
+            palette(tag, version).setString("minecraft:air", "0");
+            assertInvalid(tag);
+        }
+    }
+
+    @Test public void rejectsDuplicatePaletteIndices() {
+        for (int version : new int[] {1, 2, 3}) {
+            NBTTagCompound tag = blocks(version, new byte[] {0, 0, 0, 0});
+            palette(tag, version).setInteger("minecraft:cave_air", 0);
+            assertInvalid(tag);
+        }
+    }
+
+    private static NBTTagCompound palette(NBTTagCompound tag, int version) {
+        return (version == 3 ? tag.getCompoundTag("Schematic").getCompoundTag("Blocks") : tag).getCompoundTag("Palette");
+    }
+
+    private static void assertInvalid(NBTTagCompound tag) {
+        try { new SpongeSchematic().readFromNBT(tag); fail("Accepted malformed Sponge block data"); }
         catch (IllegalArgumentException expected) {}
     }
 }
