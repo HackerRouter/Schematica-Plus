@@ -33,6 +33,7 @@ public final class GuiSchematicMainMenu extends UiScreen {
     private UiButton tasks;
     private UiButton projects;
     private UiButton mode;
+    private UiButton report;
 
     public GuiSchematicMainMenu(GuiScreen parent) {
         super(parent, Reference.NAME + " v" + Reference.VERSION);
@@ -44,6 +45,7 @@ public final class GuiSchematicMainMenu extends UiScreen {
 
     @Override
     protected void createWidgets() {
+        report = addIssueReportButton();
         placements = menu("show_schematic_placements", UiSprite.SCHEMATIC_PLACEMENTS,
             () -> mc.displayGuiScreen(new GuiSchematicPlacementsList(this)));
         loaded = menu("show_loaded_schematics", UiSprite.LOADED_SCHEMATICS,
@@ -81,6 +83,7 @@ public final class GuiSchematicMainMenu extends UiScreen {
 
     @Override
     protected void layoutWidgets() {
+        report.setBounds(width - 26, 4, 20, 20);
         int column = 0;
         UiButton[] buttons = {placements, loaded, load, area, selections, config, manager, tasks};
         for (UiButton button : buttons) column = Math.max(column, fontRendererObj.getStringWidth(button.label()) + 30);
@@ -100,4 +103,7 @@ public final class GuiSchematicMainMenu extends UiScreen {
         projects.setBounds(32 + column, 162, column, 20);
         mode.setBounds(12, height - 26, fontRendererObj.getStringWidth(mode.label()) + 10, 20);
     }
+
+    @Override
+    protected int titleRightMargin() { return 52; }
 }

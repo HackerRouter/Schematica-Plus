@@ -46,5 +46,13 @@ distributed in `META-INF/LICENSE-Litematica-LGPL-3.0.txt`,
 `META-INF/LICENSE-MaLiLib-LGPL-3.0.txt` and `META-INF/LICENSE-GPL-3.0.txt`.
 The modified source and build scripts are supplied in this repository and its
 source distribution: https://github.com/HackerRouter/Schematica-Plus.
-No modern Minecraft textures or MaLiLib runtime are bundled; button backgrounds
-are resolved from the running Minecraft 1.7.10 resource pack.
+No MaLiLib runtime is bundled; button backgrounds are resolved from the running
+Minecraft 1.7.10 resource pack.
+
+## Minecraft report icon
+
+`assets/schematica_plus/textures/gui/bug.png` is the unmodified 13x13 icon from
+Minecraft Java Edition 26.3, `assets/minecraft/textures/gui/sprites/pause_menu/bug.png`.
+Copyright Mojang Studios / Microsoft; it is not covered by this repository's MIT
+license or the UI's LGPL license. Source: the official 26.3 client distributed
+through https://piston-meta.mojang.com/mc/game/version_manifest_v2.json.

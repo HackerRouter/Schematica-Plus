@@ -82,6 +82,7 @@ public class GuiModConfig extends UiScreen implements HotkeyHooks.Capture {
     private UiRowList<Entry> rows;
     private RenderLayerPanel layers;
     private UiButton searchButton;
+    private UiButton report;
     private UiButton keySearch;
     private UiTextField search;
     private UiLabel status;
@@ -100,6 +101,7 @@ public class GuiModConfig extends UiScreen implements HotkeyHooks.Capture {
 
     @Override
     protected void createWidgets() {
+        report = addIssueReportButton();
         for (String categoryName : ConfigurationHandler.configuration.getCategoryNames()) {
             ConfigCategory category = ConfigurationHandler.configuration.getCategory(categoryName);
             for (Property property : category.values()) {
@@ -161,6 +163,7 @@ public class GuiModConfig extends UiScreen implements HotkeyHooks.Capture {
 
     @Override
     protected void layoutWidgets() {
+        report.setBounds(width - 26, 4, 20, 20);
         int x = 10;
         int y = 26;
         for (Tab value : Tab.values()) {
@@ -190,6 +193,9 @@ public class GuiModConfig extends UiScreen implements HotkeyHooks.Capture {
         rows.setBounds(12, rowY, Math.max(1, width - 24), Math.max(0, height - 30 - rowY));
         status.setBounds(10, height - 24, Math.max(0, width - 20), 16);
     }
+
+    @Override
+    protected int titleRightMargin() { return 52; }
 
     @Override
     protected void tickScreen() {

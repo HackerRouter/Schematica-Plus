@@ -20,6 +20,7 @@ public enum UiSprite {
     SPONGE(144, 24, 12, 12, false),
     VANILLA(144, 36, 12, 12, false),
     SCHEMPLUS(0, 0, 12, 12, false),
+    REPORT_ISSUE(0, 0, 13, 13, false),
     MEMORY(186, 0, 12, 12, false),
     JSON(144, 48, 12, 12, false),
     DIRECTORY(156, 0, 12, 12, false),
@@ -65,8 +66,9 @@ public enum UiSprite {
     public void draw(UiDraw draw, int x, int y, boolean enabled, boolean hovered) {
         int state = states ? !enabled ? 0 : hovered ? 2 : 1 : 0;
         String texture = this == SCHEMPLUS ? "schematica_plus:textures/gui/schemplus.png"
+            : this == REPORT_ISSUE ? "schematica_plus:textures/gui/bug.png"
             : malilib ? "schematica_plus:textures/gui/malilib_widgets.png" : TEXTURE;
-        int size = this == SCHEMPLUS ? 12 : 256;
+        int size = this == SCHEMPLUS ? 12 : this == REPORT_ISSUE ? 13 : 256;
         draw.texture(texture, new UiBounds(x, y, width, height), u + state * width, v, width, height, size, size);
     }
 

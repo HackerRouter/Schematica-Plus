@@ -1,5 +1,55 @@
 # Verification
 
+## Issue report entry and introduction
+
+- In GTNH 2.8.4 and 2.9.0-RC-2, enter a copied test world and press M. Check the
+  20x20 report button at the top right, its 26.3 bug icon and localized tooltip.
+  Open the configuration page and check the same entry above the tabs. Also open
+  configuration from Forge's Mods screen without joining a world.
+- In Chinese, require the exact maintainer-supplied introduction headed
+  `HackerRouter 的话`; English must show the corresponding translation. Check GUI
+  scales 1/2/Auto, Unicode font, a small window and resizing while the dialog is
+  open. The title, checkbox and OK/Cancel buttons must remain readable. Wheel,
+  scrollbar dragging and focused Up/Down/PageUp/PageDown/Home/End must expose the
+  entire message without scrolling the controls or interacting with the menu
+  behind the dialog.
+- With `skip_issue_report_introduction` absent or false in
+  `config/schematica_plus/UiState.json`, Cancel and Escape must close only the
+  introduction, launch no browser and leave the preference unchanged, even if
+  the checkbox was selected. OK without the checkbox must open
+  `https://github.com/HackerRouter/Schematica-Plus/issues` and show the introduction
+  again on the next report click.
+- Select Don't show this message again and OK. Reopen the entry from both menus,
+  then restart the client: each explicit report click should open the same URL
+  directly. Merely opening M/configuration or starting the game must never launch
+  a browser. Only the introduction preference is saved; no report, log or other
+  player data is uploaded automatically.
+- The default browser handles external links; tab/window behavior follows its
+  settings. If browser opening fails, require a visible fallback dialog whose
+  Copy link button places the exact URL on the clipboard. Cancel must dismiss it.
+- Recheck the existing blocks-only NBT paste confirmation after this shared
+  dialog change: no report checkbox, Cancel/Escape performs no paste, and OK
+  keeps the existing consent flow. Long confirmation text must remain scrollable.
+
+Cloud observations (2026-10-12): both native GTNH clients passed the Chinese and
+English introduction views, scales 1/2/Auto, 640x480 and odd 1001x563 windows,
+resizing an open dialog, wheel/keyboard/scrollbar navigation, checked Cancel and
+Escape, confirmation and the preference surviving a full client restart. The
+final build also opened the report entry from configuration without a world and
+from the in-world menu, and Chromium showed new tabs at the correct Issues URL.
+The environment could fetch the page HTML but not all GitHub stylesheets; this
+does not establish Windows/macOS browser behavior or force a browser's tab policy.
+The browser-failure Copy link path was checked in 2.8.4 with an intentionally
+failing system launcher; the 2.9 native fallback could still open the browser.
+In both packs, the actual blocks-only NBT prompt retained its existing controls:
+Cancel/Escape left a synthetic destination empty, while OK
+created an empty chest. Saved region files independently confirmed the result,
+and the input schematic still contained seven diamonds. Build, Checkstyle and
+603 tests passed. Evidence: `/workspace/release-issues/issue-report`, especially
+`screenshots/issue-*-final-full-zh.png`, `issue-browser-tabs.png`, final acceptance
+logs and `nbt*.log`. Game checks used Xvfb/Mesa software rendering on copied test
+worlds, not user saves or a physical GPU.
+
 ## Version support scope (2026-10-11)
 
 Use the current Schematica Plus version for acceptance. Older Plus releases,

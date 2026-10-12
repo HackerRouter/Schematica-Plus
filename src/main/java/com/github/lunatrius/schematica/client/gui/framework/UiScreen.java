@@ -4,6 +4,9 @@ package com.github.lunatrius.schematica.client.gui.framework;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
+
+import com.github.lunatrius.schematica.client.util.IssueReport;
 
 import net.minecraft.client.audio.PositionedSoundRecord;
 import net.minecraft.client.gui.GuiScreen;
@@ -217,6 +220,35 @@ public abstract class UiScreen extends GuiScreen {
         input.pushModal(panel);
     }
 
+    protected final UiButton addIssueReportButton() {
+        UiButton button = root.add(new UiButton(() -> "", mouseButton -> {
+            if (mouseButton != 0) return;
+            if (IssueReport.skipIntroduction()) {
+                openIssueTracker();
+                return;
+            }
+            UiPanel panel = new ConfirmationPanel(UiTranslations.format("schematica.ui.report.title"),
+                UiTranslations.format("schematica.ui.report.message").replace("\\n", "\n"), "malilib.gui.button.ok",
+                "schematica.ui.report.dont_show_again", skip -> {
+                    if (skip) IssueReport.rememberSkipIntroduction();
+                    openIssueTracker();
+                });
+            panel.layout(root.bounds());
+            input.pushModal(panel);
+        })).setSprite(UiSprite.REPORT_ISSUE);
+        button.setTooltip(UiTranslations.format("schematica.ui.report.tooltip"));
+        return button;
+    }
+
+    private void openIssueTracker() {
+        IssueReport.open(() -> {
+            if (mc.currentScreen == this) {
+                confirm(UiTranslations.format("schematica.ui.report.open_failed"), IssueReport.URL,
+                    "schematica.ui.report.copy_link", () -> GuiScreen.setClipboardString(IssueReport.URL));
+            }
+        });
+    }
+
     protected final void prompt(String title, String initial, java.util.function.Function<String, String> apply) {
         UiPanel panel = new TextInputPanel(fontRendererObj, input, title, initial, apply);
         panel.layout(root.bounds());
@@ -244,18 +276,30 @@ public abstract class UiScreen extends GuiScreen {
         private final String message;
         private final UiButton cancel;
         private final UiButton accept;
+        private final UiCheckBox remember;
+        private boolean checked;
         private List<String> lines;
+        private UiBounds content;
+        private int scroll;
+        private boolean dragging;
+        private int dragOffset;
 
         ConfirmationPanel(String title, String message, String acceptKey, Runnable confirmed) {
+            this(title, message, acceptKey, null, ignored -> confirmed.run());
+        }
+
+        ConfirmationPanel(String title, String message, String acceptKey, String rememberKey, Consumer<Boolean> confirmed) {
             this.dialogTitle = title;
             this.message = message;
+            remember = rememberKey == null ? null : add(new UiCheckBox(() -> UiTranslations.format(rememberKey),
+                () -> checked, value -> checked = value));
             cancel = add(new UiButton(() -> "\u00a7c" + UiTranslations.format("malilib.gui.button.cancel") + "\u00a7r", button -> {
                 if (button == 0) input.popModal();
             }));
             accept = add(new UiButton(() -> "\u00a7a" + UiTranslations.format(acceptKey) + "\u00a7r", button -> {
                 if (button == 0) {
                     input.popModal();
-                    confirmed.run();
+                    confirmed.accept(checked);
                 }
             }));
         }
@@ -264,25 +308,84 @@ public abstract class UiScreen extends GuiScreen {
         public void layout(UiBounds screen) {
             int width = Math.max(40, Math.min(400, screen.width - 24));
             lines = fontRendererObj.listFormattedStringToWidth(message, Math.max(1, width - 30));
-            int height = Math.min(screen.height - 16, 54 + lines.size() * (fontRendererObj.FONT_HEIGHT + 1));
+            int footer = remember == null ? 0 : 18;
+            int height = Math.min(screen.height - 16, 54 + footer + lines.size() * lineHeight());
             setBounds((screen.width - width) / 2, (screen.height - height) / 2, width, height);
+            content = new UiBounds(bounds().x + 10, bounds().y + 20, width - 20, height - 48 - footer);
+            setScroll(scroll);
             int buttonWidth = Math.max(fontRendererObj.getStringWidth(accept.label()), fontRendererObj.getStringWidth(cancel.label())) + 10;
             accept.setBounds(bounds().x + 10, bounds().bottom() - 24, buttonWidth, 20);
             cancel.setBounds(bounds().x + 20 + buttonWidth, bounds().bottom() - 24, buttonWidth, 20);
+            if (remember != null) remember.setBounds(bounds().x + 10, bounds().bottom() - 42, width - 20, 14);
         }
+
+        private int lineHeight() { return fontRendererObj.FONT_HEIGHT + 1; }
+        private int maxScroll() { return Math.max(0, lines.size() * lineHeight() - content.height); }
+        private void setScroll(int value) { scroll = Math.max(0, Math.min(maxScroll(), value)); }
+
+        private UiBounds thumb() {
+            int height = Math.min(content.height, Math.max(12, content.height * content.height / Math.max(1, lines.size() * lineHeight())));
+            int y = (content.height - height) * scroll / Math.max(1, maxScroll());
+            return new UiBounds(content.right() - 4, content.y + y, 4, height);
+        }
+
+        @Override public boolean isFocusable() { return maxScroll() > 0; }
+
+        @Override
+        public boolean scroll(int x, int y, int amount) {
+            setScroll(scroll - Integer.signum(amount) * lineHeight() * 3);
+            return true;
+        }
+
+        @Override
+        public boolean keyTyped(char character, int keyCode) {
+            switch (keyCode) {
+                case Keyboard.KEY_UP: setScroll(scroll - lineHeight()); return true;
+                case Keyboard.KEY_DOWN: setScroll(scroll + lineHeight()); return true;
+                case Keyboard.KEY_PRIOR: setScroll(scroll - content.height); return true;
+                case Keyboard.KEY_NEXT: setScroll(scroll + content.height); return true;
+                case Keyboard.KEY_HOME: setScroll(0); return true;
+                case Keyboard.KEY_END: setScroll(maxScroll()); return true;
+                default: return false;
+            }
+        }
+
+        @Override
+        public boolean mouseDown(int x, int y, int button) {
+            if (button != 0 || maxScroll() == 0 || !content.contains(x, y) || x < content.right() - 6) return false;
+            UiBounds thumb = thumb();
+            dragOffset = thumb.contains(x, y) ? y - thumb.y : thumb.height / 2;
+            dragging = true;
+            mouseDrag(x, y, button);
+            return true;
+        }
+
+        @Override
+        public void mouseDrag(int x, int y, int button) {
+            if (dragging) {
+                double fraction = (double) (y - content.y - dragOffset) / Math.max(1, content.height - thumb().height);
+                setScroll((int) Math.round(Math.max(0, Math.min(1, fraction)) * maxScroll()));
+            }
+        }
+
+        @Override public void mouseUp(int x, int y, int button) { dragging = false; }
+        @Override public void cancelMouse() { dragging = false; }
 
         @Override
         public void draw(UiDraw draw, int mouseX, int mouseY) {
             draw.fill(bounds(), 0xF0000000);
             draw.border(bounds(), UiTheme.BORDER);
             draw.text(draw.trim(dialogTitle, bounds().width - 20), bounds().x + 10, bounds().y + 4, UiTheme.TEXT);
-            try (UiDraw.Clip ignored = draw.clip(new UiBounds(bounds().x + 10, bounds().y + 20,
-                bounds().width - 20, bounds().height - 48))) {
-                int y = bounds().y + 20;
+            try (UiDraw.Clip ignored = draw.clip(new UiBounds(content.x, content.y, content.width - 6, content.height))) {
+                int y = content.y - scroll;
                 for (String line : lines) {
-                    draw.text(line, bounds().x + 10, y, 0xFFC0C0C0);
-                    y += fontRendererObj.FONT_HEIGHT + 1;
+                    if (y + lineHeight() > content.y && y < content.bottom()) draw.text(line, content.x, y, 0xFFC0C0C0);
+                    y += lineHeight();
                 }
+            }
+            if (maxScroll() > 0) {
+                draw.fill(new UiBounds(content.right() - 4, content.y, 4, content.height), UiTheme.CONTROL);
+                draw.fill(thumb(), dragging ? UiTheme.FOCUS : UiTheme.BORDER);
             }
             super.draw(draw, mouseX, mouseY);
         }
