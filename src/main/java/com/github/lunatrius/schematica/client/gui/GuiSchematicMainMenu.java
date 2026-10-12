@@ -83,7 +83,7 @@ public final class GuiSchematicMainMenu extends UiScreen {
 
     @Override
     protected void layoutWidgets() {
-        report.setBounds(width - 26, 4, 20, 20);
+        report.setBounds(width - 32, 10, 20, 20);
         int column = 0;
         UiButton[] buttons = {placements, loaded, load, area, selections, config, manager, tasks};
         for (UiButton button : buttons) column = Math.max(column, fontRendererObj.getStringWidth(button.label()) + 30);
@@ -105,5 +105,5 @@ public final class GuiSchematicMainMenu extends UiScreen {
     }
 
     @Override
-    protected int titleRightMargin() { return 52; }
+    protected int titleRightMargin() { return 62; }
 }

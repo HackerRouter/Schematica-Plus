@@ -228,7 +228,8 @@ public abstract class UiScreen extends GuiScreen {
                 return;
             }
             UiPanel panel = new ConfirmationPanel(UiTranslations.format("schematica.ui.report.title"),
-                UiTranslations.format("schematica.ui.report.message").replace("\\n", "\n"), "malilib.gui.button.ok",
+                UiTranslations.format("schematica.ui.report.message").replace("\\n", "\n")
+                    .replace("Pull Request", "Pull\u00a0Request"), "malilib.gui.button.ok",
                 "schematica.ui.report.dont_show_again", skip -> {
                     if (skip) IssueReport.rememberSkipIntroduction();
                     openIssueTracker();
@@ -307,16 +308,18 @@ public abstract class UiScreen extends GuiScreen {
         @Override
         public void layout(UiBounds screen) {
             int width = Math.max(40, Math.min(400, screen.width - 24));
-            lines = fontRendererObj.listFormattedStringToWidth(message, Math.max(1, width - 30));
-            int footer = remember == null ? 0 : 18;
+            lines = UiTextWrap.wrap(message, Math.max(1, width - 30), fontRendererObj::getStringWidth);
+            int buttonWidth = Math.max(fontRendererObj.getStringWidth(accept.label()), fontRendererObj.getStringWidth(cancel.label())) + 10;
+            int rememberWidth = remember == null ? 0 : fontRendererObj.getStringWidth(remember.label()) + 15;
+            int footer = remember != null && rememberWidth + 2 * buttonWidth + 40 > width ? 18 : 0;
             int height = Math.min(screen.height - 16, 54 + footer + lines.size() * lineHeight());
             setBounds((screen.width - width) / 2, (screen.height - height) / 2, width, height);
             content = new UiBounds(bounds().x + 10, bounds().y + 20, width - 20, height - 48 - footer);
             setScroll(scroll);
-            int buttonWidth = Math.max(fontRendererObj.getStringWidth(accept.label()), fontRendererObj.getStringWidth(cancel.label())) + 10;
-            accept.setBounds(bounds().x + 10, bounds().bottom() - 24, buttonWidth, 20);
-            cancel.setBounds(bounds().x + 20 + buttonWidth, bounds().bottom() - 24, buttonWidth, 20);
-            if (remember != null) remember.setBounds(bounds().x + 10, bounds().bottom() - 42, width - 20, 14);
+            cancel.setBounds(bounds().right() - 10 - buttonWidth, bounds().bottom() - 24, buttonWidth, 20);
+            accept.setBounds(cancel.bounds().x - 10 - buttonWidth, bounds().bottom() - 24, buttonWidth, 20);
+            if (remember != null) remember.setBounds(bounds().x + 10, bounds().bottom() - 21 - footer,
+                footer == 0 ? accept.bounds().x - bounds().x - 20 : width - 20, 14);
         }
 
         private int lineHeight() { return fontRendererObj.FONT_HEIGHT + 1; }

@@ -163,9 +163,9 @@ public class GuiModConfig extends UiScreen implements HotkeyHooks.Capture {
 
     @Override
     protected void layoutWidgets() {
-        report.setBounds(width - 26, 4, 20, 20);
+        report.setBounds(width - 32, 10, 20, 20);
         int x = 10;
-        int y = 26;
+        int y = 34;
         for (Tab value : Tab.values()) {
             UiButton button = tabs.get(value);
             int w = fontRendererObj.getStringWidth(button.label()) + 10;
@@ -195,7 +195,7 @@ public class GuiModConfig extends UiScreen implements HotkeyHooks.Capture {
     }
 
     @Override
-    protected int titleRightMargin() { return 52; }
+    protected int titleRightMargin() { return 62; }
 
     @Override
     protected void tickScreen() {

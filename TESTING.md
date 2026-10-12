@@ -13,6 +13,19 @@
   scrollbar dragging and focused Up/Down/PageUp/PageDown/Home/End must expose the
   entire message without scrolling the controls or interacting with the menu
   behind the dialog.
+- Align the report button's top with the version/title text and its right edge
+  with the configuration list's scrollbar. At 640x480 and 1280x720, verify that
+  the tabs remain below the button and the title never overlaps it.
+- Check the shared confirmation footer: OK followed by Cancel at the bottom
+  right, with Don't show again vertically centered on their row at the bottom
+  left. If a translation cannot fit beside the buttons, the checkbox may use
+  the row immediately above without overlapping them. Check the same right
+  alignment in the actual blocks-only NBT paste prompt, which has no checkbox.
+- In Chinese, read every paragraph at both window sizes: wrapping should use
+  available width after embedded English words, keep `Pull Request` together,
+  retain exactly one blank line between paragraphs, and show the complete text.
+  Check English word boundaries, scrollbar access to the final line, and resize
+  the open dialog at GUI scales 1/2/Auto.
 - With `skip_issue_report_introduction` absent or false in
   `config/schematica_plus/UiState.json`, Cancel and Escape must close only the
   introduction, launch no browser and leave the preference unchanged, even if
@@ -49,6 +62,25 @@ and the input schematic still contained seven diamonds. Build, Checkstyle and
 `screenshots/issue-*-final-full-zh.png`, `issue-browser-tabs.png`, final acceptance
 logs and `nbt*.log`. Game checks used Xvfb/Mesa software rendering on copied test
 worlds, not user saves or a physical GPU.
+
+Layout follow-up (2026-10-12): the updated entry alignment and confirmation
+footer were seen in native GTNH 2.8.4 and 2.9.0-RC-2. Both clients passed 13
+introduction layouts covering Chinese/English, 640x480/1280x720, scales 1/2/Auto
+and resizing an open dialog. Runtime measurements confirmed complete text and
+exactly four paragraph gaps; screenshots showed the previously broken mixed
+lines filled normally. Checkbox clicks, Cancel, Escape and scrolling remained
+usable. Actual NBT prompts had right-aligned buttons; Cancel/Escape left fresh
+destinations empty, and mouse confirmation produced empty chests while the
+source schematic retained its seven diamonds. During the first 2.8.4 NBT run,
+the X11 cursor and the client's cached cursor differed after opening the dialog.
+Moving away and back before clicking synchronized them; the complete sequence
+then passed at a new destination. Keep this input-driver detail separate from a
+mod failure when repeating headless mouse tests. Build, Checkstyle and 609 tests
+passed. Evidence: `/workspace/release-issues/issue-report-layout`, including
+`screenshots/layout-*-main-dialog-zh.png`, `layout-*-nbt-confirm.png`, acceptance
+logs, `input-sync284.txt` and `nbt*.log`. These checks used copied synthetic
+worlds and software rendering; browser/cold-start results above belong to the
+preceding feature validation.
 
 ## Version support scope (2026-10-11)
 
