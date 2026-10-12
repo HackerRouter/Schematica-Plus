@@ -2405,3 +2405,33 @@ these additional views. Evidence is in `/workspace/release-issues/shader-validat
 Build, Checkstyle and all 603 tests passed; no production code changed.
 Real GPUs, OptiFine, other shader families, higher presets and Nether/End shader
 effects remain untested.
+
+### Separate OptiFine shader validation (pending)
+
+On 2026-10-12, independent copies of both target packs and the synthetic shader
+worlds were prepared under `/workspace/release-issues/optifine-validation`.
+Angelica was removed from these copies; the original instances were preserved.
+Hodgepodge's `removeOptifineGLErrors` was disabled in the copies so diagnostics
+remain visible. Current Plus was installed, with its exact filename and checksum
+in `preparation.json`. Launch argument paths and missing-OptiFine guards were
+checked. Build, Checkstyle and 603 tests passed, but no OptiFine game run occurred:
+the environment proxy denied the official download site with CONNECT 403.
+
+1. Obtain a verified official Minecraft 1.7.10 OptiFine runtime, recording its
+   version and hash. Verify whether that release needs a separate compatible
+   ShadersMod, and record its version/source if needed. A dummy compile-time JAR
+   or modern-version documentation cannot establish runtime compatibility.
+2. Start each isolated pack with its native libraries and shaders disabled.
+   Verify that OptiFine actually loaded and Angelica is absent. Open only the
+   copied `Optifine284` / `Optifine290` world and capture a rendering baseline.
+3. Enable a shader pack supported by the actual installed shader loader. Verify
+   active shader rendering through native loader state/logs and visible effects;
+   do not reuse the Angelica/Iris activation check or count a fallback as a pass.
+4. Repeat the preceding shader section's paired block/preview checks, opposite
+   views, dark glass backdrops, alpha/overlays and representative mod structures.
+   Record any required configuration changes and keep native rendering errors.
+5. Check shader off/on, a completed integrated-server shutdown before reentry,
+   and cold startup. If either startup or rendering fails, compare a further
+   disposable copy without Plus before attributing the failure to this mod.
+6. Record successful, failed and unexecuted combinations separately. Until these
+   checks run, the preceding Angelica results say nothing about OptiFine support.
