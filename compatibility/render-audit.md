@@ -1,14 +1,15 @@
-# Render audit after the chest depth fix
+# Rendering compatibility observations
 
-Date: 2026-10-08. Baseline: `8b285a9`, with the chest depth fix already applied.
+Initial audit: 2026-10-08. Historical baseline: `8b285a9`, with the chest depth fix already applied.
 Targets: GTNH 2.8.4 / Angelica 1.0.0-beta66b and GTNH 2.9.0-RC-2 / Angelica 2.2.28.
 Actual clients ran under Xvfb and Mesa llvmpipe, using generated test worlds.
-No uploaded world or schematic was used.
+No uploaded world or schematic was used. `<evidence-dir>` below denotes private
+local artifacts outside the repository, not distributed files or download links.
 
 ## Findings
 
 The chest fix covers opaque tile renderers, but it did not fix every source of
-missing geometry. Two failures were observed in the current 2.8.4 preview:
+missing geometry. Two failures were observed in the pre-fix 2.8.4 baseline:
 
 - TConstruct seared tanks, windows and glass (all three `LavaTank` metadata
   variants): empty containers disappeared; filled containers showed only fluid.
@@ -48,7 +49,8 @@ pipes, 18 ArchitectureCraft shapes and two ProjectRed wires sharing one cell.
 
 ## Validation and limits
 
-Build and Checkstyle pass. All 570 tests pass; three added tests cover legacy pass
+At this revision, build and Checkstyle passed, with 570 passing tests. Three added
+tests cover legacy pass
 switching, independent restoration, nested/failed drawing, overlay handling and
 absence of the optional API. The two legacy scenarios fail against the preceding
 implementation. The test fixtures are not included in the runtime JAR.
@@ -66,15 +68,16 @@ These are representative fixtures, not an exhaustive test of every mod block.
 Empty/inactive machines do not cover all upgrades, inventories, orientations,
 active animations, connected networks or formed multiblocks. The unconnected GT
 pipe fixture does not validate every connection shape. Lighting and schematic
-alpha can differ from real blocks. Angelica shaders, other graphics drivers,
-resource packs and the user's own schematics remain untested here. The intermittent
+alpha can differ from real blocks. External shaders were outside this initial
+round; the 2026-10-12 shader sections below record later coverage. Other graphics
+drivers, resource packs and user schematics remain outside these fixtures. The intermittent
 crystal-chest item visibility was subsequently reproduced in
 a cold 2.9 client with Plus removed, on a copied world; the native inventory
 still contained all 64 diamonds. No Plus change was made for that observation.
 
 Follow the render checks in [TESTING.md](../TESTING.md). Scripts, native captures,
 pass readings, screenshots and logs are outside the repository at
-`/workspace/release-issues/render-audit`. Source references used to identify the
+`<evidence-dir>/render-audit`. Source references used to identify the
 pass API and tank behavior were Angelica `7059ee0eecbee9cc66a3b9a301bf42d7242669b3`
 and TConstruct `ba672fb6af0f71678a5c7aac2b2c4c05abf1e2de`; no upstream rendering
 implementation was copied.
@@ -93,10 +96,11 @@ kept its world position. Seven-bundle EnderIO curve/T fixtures with item/power
 conduits rendered completely in both packs after checking native source NBT.
 
 These expand the earlier coverage; they do not establish all machine animations,
-formed multiblocks, 2.8 Freecam or external shader compatibility. The 2.9 software
+formed multiblocks, 2.8 Freecam or external shader compatibility by themselves.
+Later powered-structure checks are in TESTING; shader checks follow below. The 2.9 software
 renderer showed ground dithering even with schematic rendering disabled; this
 was not classified as a newly observed missing-face defect. Evidence is under
-`/workspace/release-issues/followup`; see the follow-up steps in TESTING.md.
+`<evidence-dir>/followup`; see the follow-up steps in TESTING.md.
 
 ## External shader packs (2026-10-12)
 
@@ -168,7 +172,7 @@ The first 2.9 world entry also needed a retry after a pre-shader client-thread
 handshake timeout.
 
 Evidence, option files, native probe logs and inspected screenshots are outside
-the repository at `/workspace/release-issues/shader-validation`. No shader-pack
+the repository at `<evidence-dir>/shader-validation`. No shader-pack
 source or test world is distributed with Plus. Only these Overworld fixtures and
 this low preset were tested in that run. The later OptiFine checks are recorded
 below; real GPUs, other shader families, higher presets, Nether/End effects and
@@ -240,7 +244,7 @@ This is a pack/OptiFine startup conflict, not evidence of a Plus rendering bug.
 No third-party JAR was patched or downgraded to manufacture a passing result.
 
 Evidence, installed checksums, launchers, native state logs and inspected images
-are outside the repository at `/workspace/release-issues/optifine-validation`.
+are outside the repository at `<evidence-dir>/optifine-validation`.
 These results do not cover OptiFine with r5.9.2, other shader families, real GPUs,
 higher presets, Nether/End effects, or working OptiFine rendering in native 2.9.
 Build, main/test Checkstyle and 603 freshly rerun tests passed with zero failures,

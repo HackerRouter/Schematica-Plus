@@ -62,7 +62,7 @@ public final class Hotkey {
     public void resetSettings() { settings = defaultSettings.copy(); held = false; }
     public String translationKey() {
         if (toggleGroup != null) return "litematica.config." + toggleGroup + ".name." + id;
-        return id.equals("uiDemo") ? "schematica.key.uiDemo" : plusOnly() ? "schematica.key." + id : "litematica.config.hotkeys.name." + id;
+        return plusOnly() ? "schematica.key." + id : "litematica.config.hotkeys.name." + id;
     }
     public String commentKey() {
         if (toggleGroup != null) return "litematica.config." + toggleGroup + ".comment." + id;

@@ -81,7 +81,7 @@ GTNH fork, with features and UI adapted from Litematica and MaLiLib.
 3. LunatriusCore is no longer required. It may remain installed for other mods;
    the utilities used by Plus are bundled under an internal package.
 
-The compatibility targets are **GTNH 2.8.4** and **2.9.0-RC-1**. Mod-specific
+The compatibility targets are **GTNH 2.8.4** and **2.9.0-RC-2**. Mod-specific
 adapters and remaining limitations are documented separately; this is not a claim
 that every block in either pack has passed an in-game test.
 
@@ -165,13 +165,15 @@ use the adjacent face by default and target inside the block while sneaking.
   global range. Preview, printer and material layer scope are supported; Paste
   uses the whole enabled placement.
 - Litematica-style menus, file browsers and config tabs, with icon hover feedback,
-  click sounds, color editing and the original translation keys. Thirteen imported
+  click sounds, color editing and the original translation keys. Fourteen imported
   language catalogs are bundled; functionality displays the Schematica+ brand.
 - Block information, status, verifier and material-list HUDs; selected verifier
   markers and expected/found block overlays.
 - Material lists for placements, files and real-world selections, with search,
   sorting, ignored rows, inventory counts, multipliers, persistent placement-list
   settings, a build-item cache, TXT/CSV/JSON export and Raw Materials recipe reports.
+  NEI integration exports material-demand books for native crafting chains in 2.8.4
+  and also the graphical recipe tree in 2.9.0-RC-2.
 - Verifier categories for missing, extra, wrong block and wrong metadata, with
   ignored pairs, bounded scans, pause/resume and incremental rechecks. It compares
   block IDs/metadata, not full tile NBT or entity contents. Unloaded/unreadable
@@ -210,8 +212,10 @@ direct placement suppresses normal block/neighbor update hooks, but does not fre
 normal ticks or arbitrary mod logic.
 
 On other servers, the rate-limited command fallback cannot transfer general NBT,
-suppress updates or provide MOVE. It reports commands sent rather than confirmed
-world changes. Unsupported options are rejected before sending an edit.
+suppress updates or provide MOVE. It waits for native server command replies and stops on errors or unconfirmed
+results; failed/no-op placement must not report success. Servers that suppress
+those replies may stop the queue. Unsupported options are rejected before sending
+an edit. Schematics with NBT require explicit consent to paste blocks only.
 
 MOVE snapshots both areas and attempts restoration on cancellation or write failure,
 including overlapping selections. Other cancelled edits retain their completed
@@ -226,7 +230,7 @@ worlds used for large edits.
 | `.schemplus` | Read/write extended IDs, Plus metadata, visual payloads and independent overlapping regions |
 | `.litematic` | Import and export; newly written files use the version 4 / Minecraft 1.12.2 layout |
 | `.nbt` | Read/write vanilla structures; export uses the Minecraft 1.12 layout |
-| Sponge `.schem` | Not implemented |
+| Sponge `.schem` | Import v1–v3; no export; biomes are ignored |
 
 Saving as `.schematic` automatically upgrades to `.schemplus` when extended block
 IDs or Plus region/origin data require it. The actual filename is reported in chat;
@@ -234,6 +238,7 @@ automatic upgrades choose an unused name instead of overwriting another file.
 `.litematic` files show an **L** icon, `.schematic` files **S**, and `.schemplus`
 uses its own texture.
 
+Hold Shift while clicking Save to explicitly overwrite an existing file.
 Save options include entities/NBT, saving from the schematic world, visible blocks
 only and support blocks. A queued save is not yet complete; wait for its result.
 File management supports rename/copy/delete, folders, Litematic metadata and preview
@@ -264,10 +269,10 @@ Server downloads negotiate support for independent regions.
 - Rare GT invalid `.name` blocks and several mod rotation/rendering cases still
   require reproduction and pack-level regression testing. See
   [compatibility coverage](compatibility/README.md) and [test scenarios](TESTING.md).
-- Some original Litematica configuration, inventory overlays, Easy Place details
-  and visual parity remain unfinished. Subregion Slice remains an unavailable
-  upstream placeholder. Automated checks do not establish pixel-perfect UI or
-  compatibility with every GTNH renderer.
+- Automatic AE2 part assembly, arbitrary mod NBT/directional mappings and full
+  modern-format conversion remain limited. Subregion Slice is an unavailable
+  upstream placeholder. Automated checks do not establish pixel-perfect UI across
+  every locale/resource pack or compatibility with every GTNH renderer.
 
 ## Building and releases
 
@@ -289,10 +294,10 @@ checks and then publishes only `schematica_plus-<tag>.jar`. Release times are sh
 as `DD/MM/YYYY HH:mm:ss` in Singapore time (UTC+8). Branch pushes alone do not
 publish releases.
 
-Development references: [UI port history](compatibility/ui-port.md),
+Development references: [UI architecture](compatibility/ui-port.md),
 [test scenarios](TESTING.md), [pinned GTNH sources](compatibility/gtnh-mods.json)
-and [AI handoff](HANDOUT.md). The history/handoff retain older snapshots; later
-updates and current code take precedence over their superseded status lists.
+and [development handoff](HANDOUT.md). These guides describe current behavior;
+dated validation records identify the versions and fixtures actually tested.
 
 ## Credits and license
 

@@ -1,19 +1,21 @@
 Litematica / MaLiLib UI port
 
 Upstream authors: masa, Sakura-Ryoko and contributors.
-Litematica reference: supplied source snapshot 26.1.2-0.27.8.
-MaLiLib reference: 26.1.2-0.28.8, d194eb689d60f13ba39df4ab525dca64b1cf4478.
+Initial Litematica asset reference: source snapshot 26.1.2-0.27.8.
+Initial MaLiLib asset reference: 26.1.2-0.28.8, d194eb689d60f13ba39df4ab525dca64b1cf4478.
 https://github.com/maruohon/litematica
 https://github.com/maruohon/malilib
 https://github.com/sakura-ryoko/malilib
+Current behavior/translation targets: Litematica 26.1.2-0.27.12, MaLiLib 26.1.2-0.28.11.
 
 The Litematica GUI atlas is bundled without modification at
 assets/schematica_plus/textures/gui/litematica_widgets.png.
 The MaLiLib GUI atlas is bundled without modification at
 assets/schematica_plus/textures/gui/malilib_widgets.png.
 All language catalogs in assets/schematica_plus_litematica/lang were converted from
-upstream JSON (13 Litematica locales and 12 MaLiLib locales), retaining original
-keys, translations and translator credits. UI Java files marked LGPL-3.0-only adapt upstream screen layouts,
+upstream JSON (14 Litematica locales and 13 MaLiLib locales, combined into 14 files),
+retaining original keys and translator credits, with selected functional branding
+and legacy format-placeholder repairs. UI Java files marked LGPL-3.0-only adapt upstream screen layouts,
 layer-range/color-editor behavior, area-manager rows, Normal/subregion editors, file-manager/text/confirmation dialogs, color options and defaults, icon coordinates and drawing conventions to the Schematica Plus 1.7.10 UI layer.
 Adaptation and format conversion: HackerRouter, 2026.
 
@@ -23,4 +25,6 @@ LICENSE-MaLiLib-LGPL-3.0.txt and LICENSE-GPL-3.0.txt in this directory.
 Modified source and build scripts: https://github.com/HackerRouter/Schematica-Plus
 See THIRD_PARTY_NOTICES.md in the source repository for the scope of the port.
 
-No modern Minecraft textures or MaLiLib runtime are included.
+No MaLiLib runtime is included. The separate Minecraft 26.3 report icon
+(assets/schematica_plus/textures/gui/bug.png) is copyright Mojang Studios / Microsoft
+and is not covered by the project MIT or UI LGPL licenses; see THIRD_PARTY_NOTICES.md.

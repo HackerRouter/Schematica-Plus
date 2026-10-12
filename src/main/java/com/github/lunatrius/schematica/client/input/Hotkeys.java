@@ -60,7 +60,7 @@ public final class Hotkeys {
         add("addSelectionBox", normal(), Keyboard.KEY_M, Keyboard.KEY_A);
         for (String id : new String[] {"nudgeSelectionPositive", "nudgeSelectionNegative", "moveEntireSelection",
             "selectionGrow", "selectionShrink", "deleteSelectionBox", "setAreaOrigin", "setSelectionBoxPosition1",
-            "setSelectionBoxPosition2", "unloadCurrentSchematic", "uiDemo"}) add(id, normal());
+            "setSelectionBoxPosition2", "unloadCurrentSchematic"}) add(id, normal());
         for (String id : new String[] {"schematicEditBreakAllExcept", "schematicEditBreakPlaceAll", "schematicEditBreakPlaceDirection",
             "schematicEditReplaceAll", "schematicEditReplaceBlock", "schematicEditReplaceDirection"}) add(id, modifier());
         add("schematicEditReplaceSelection", modifier());
@@ -127,7 +127,7 @@ public final class Hotkeys {
         Map<String, String> old = new LinkedHashMap<>();
         old.put("save", "saveAreaAsSchematicToFile"); old.put("control", "openGuiMainMenu");
         old.put("layerInc", "layerNext"); old.put("layerDec", "layerPrevious"); old.put("execute", "executeOperation");
-        old.put("load", "openGuiLoadedSchematics"); old.put("manipulate", "openGuiPlacementSettings"); old.put("uiDemo", "uiDemo");
+        old.put("load", "openGuiLoadedSchematics"); old.put("manipulate", "openGuiPlacementSettings");
         for (String line : Files.readAllLines(options, StandardCharsets.UTF_8)) {
             for (Map.Entry<String, String> entry : old.entrySet()) {
                 String prefix = "key_schematica.key." + entry.getKey() + ":";

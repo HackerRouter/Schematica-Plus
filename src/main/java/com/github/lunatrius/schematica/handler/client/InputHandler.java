@@ -14,7 +14,6 @@ import com.github.lunatrius.schematica.client.world.RenderLayerSettings;
 import com.github.lunatrius.schematica.handler.VisualSettings;
 import com.github.lunatrius.schematica.client.world.RenderLayerRange;
 import com.github.lunatrius.schematica.SchematicaPlus;
-import com.github.lunatrius.schematica.client.gui.UiDemoScreen;
 import com.github.lunatrius.schematica.client.gui.GuiSchematicMainMenu;
 import com.github.lunatrius.schematica.client.gui.save.GuiSchematicSave;
 import com.github.lunatrius.schematica.client.world.SchematicWorld;
@@ -41,7 +40,6 @@ public class InputHandler {
         switch (key.id) {
             case "openGuiMainMenu": minecraft.displayGuiScreen(new GuiSchematicMainMenu(parent)); return true;
             case "openGuiSettings": minecraft.displayGuiScreen(new com.github.lunatrius.schematica.client.gui.GuiModConfig(parent)); return true;
-            case "uiDemo": minecraft.displayGuiScreen(new UiDemoScreen(parent)); return true;
             default: break;
         }
         if (minecraft.thePlayer == null || minecraft.theWorld == null) return false;

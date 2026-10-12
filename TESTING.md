@@ -1,5 +1,14 @@
 # Verification
 
+Current scenario guide, reviewed 2026-10-12. Run `./gradlew build` and
+`LC_ALL=C.UTF-8 ./gradlew test`; the current suite contains **609 tests**.
+Steps below are regression scenarios, not claims that every combination passed.
+Only dated observation paragraphs record actual game checks; their test counts and
+artifact hashes describe that historical build. Use disposable copies and the
+same current Plus build on both sides, except explicit client-only cases.
+`<evidence-dir>` denotes private, local validation artifacts outside the repository;
+these are scenario labels, not distributed files or public download links.
+
 ## Issue report entry and introduction
 
 - In GTNH 2.8.4 and 2.9.0-RC-2, enter a copied test world and press M. Check the
@@ -58,7 +67,7 @@ In both packs, the actual blocks-only NBT prompt retained its existing controls:
 Cancel/Escape left a synthetic destination empty, while OK
 created an empty chest. Saved region files independently confirmed the result,
 and the input schematic still contained seven diamonds. Build, Checkstyle and
-603 tests passed. Evidence: `/workspace/release-issues/issue-report`, especially
+603 tests passed. Evidence: `<evidence-dir>/issue-report`, especially
 `screenshots/issue-*-final-full-zh.png`, `issue-browser-tabs.png`, final acceptance
 logs and `nbt*.log`. Game checks used Xvfb/Mesa software rendering on copied test
 worlds, not user saves or a physical GPU.
@@ -76,7 +85,7 @@ the X11 cursor and the client's cached cursor differed after opening the dialog.
 Moving away and back before clicking synchronized them; the complete sequence
 then passed at a new destination. Keep this input-driver detail separate from a
 mod failure when repeating headless mouse tests. Build, Checkstyle and 609 tests
-passed. Evidence: `/workspace/release-issues/issue-report-layout`, including
+passed. Evidence: `<evidence-dir>/issue-report-layout`, including
 `screenshots/layout-*-main-dialog-zh.png`, `layout-*-nbt-confirm.png`, acceptance
 logs, `input-sync284.txt` and `nbt*.log`. These checks used copied synthetic
 worlds and software rendering; browser/cold-start results above belong to the
@@ -130,25 +139,34 @@ exercise bounded file/NBT inputs and pure transformation logic without starting
 Minecraft. Forge world initialization requires LaunchWrapper and is not exercised
 by the plain JUnit process.
 
-For the new UI foundation, bind `UI component test` in Controls (unbound by
-default), then open it in a world. This page only uses synthetic data.
+## Shared production UI and removed test entry
 
-- In both GTNH 2.8.4 and 2.9.0-RC-1, test English/Chinese, GUI scales 1/2/3/Auto,
-  Unicode font, window resizing, an odd window size, and the minimum scaled
-  viewport (320x240). Text, clipping and hit targets must agree.
-- Search `019`, clear, select rows, use arrows/Home/End/PageUp/PageDown/Enter,
-  double-click a row, scroll and drag the scrollbar outside its bounds. Scroll
-  must clamp after filtering, and only visible rows should render.
-- Use Tab/Shift+Tab, select text with Shift/arrows or mouse drag, and copy/paste.
-  Edit the number to an empty string, minus sign and out-of-range values, then
-  press Enter or move focus. Step with arrows/the focused mouse wheel.
-- Disable the list: it must not receive mouse/keyboard input. Open the reset
-  dialog: background controls must not react. Escape dismisses only the dialog;
-  Tab stays inside it. Confirm and cancel must have distinct effects.
-- Open a child page and return. Search, numeric value, selection and scrolling
-  must persist in the parent, including after resizing and reopening a dialog.
-- Close the page and inspect the world, NEI/inventory item textures and other
-  mod screens. No scissor, tint, blend, depth or keyboard-repeat state should leak.
+- In both target packs, open M and Configuration > Hotkeys. Search `uiDemo`,
+  `UI component test` and `UI 控件测试`; no registered action or launch button
+  may appear. An old unknown JSON entry must not launch a page or break loading.
+- Exercise the actual load/placement lists, configuration fields and report dialog
+  in English/Chinese, GUI scales 1/2/3/Auto, Unicode font, resized/odd windows and
+  a 320x240 scaled viewport. Text, clipping and hit targets must agree.
+- Filter real file/placement rows, clear search, select rows, use keyboard navigation,
+  double-click and drag scrollbars outside their bounds. Scroll clamps and a filtered
+  row cannot activate. Release a held row after filtering without acting on another.
+- Use Tab/Shift+Tab, selection and clipboard in configuration/rename fields. Test
+  empty/minus/out-of-range numeric drafts, Enter, focus loss and spinner controls.
+- Open a report or deletion confirmation: background controls must not react,
+  Escape dismisses the dialog, and confirm/cancel have distinct effects. Resize
+  and return to the parent without losing its drafts, selection or scroll position.
+- Close the page and inspect world/NEI/inventory textures. No scissor, tint, blend,
+  depth or keyboard-repeat state should leak.
+
+Observed on 2026-10-12: both native clients (GTNH 2.8.4 / lwjgl3ify 2.1.16
+and 2.9.0-RC-2 / lwjgl3ify 3.0.37) cold-started with the rebuilt main JAR.
+The configuration screen and main menu were opened through the runtime inspection
+helper without loading a world. A native mouse click selected Hotkeys in both;
+each listed 80 actions. Runtime checks found no `uiDemo` registration and no
+`UiDemoScreen` class. Searching the internal ID and English label yielded zero
+rows. The normal hotkey page, empty search and main-menu captures were inspected.
+This is menu acceptance, not a new world-edit or gameplay regression run. Build,
+Checkstyle and 609 automated tests passed. Evidence label: `<evidence-dir>/docs-refresh`.
 
 Headless UI tests cover input routing, focus/capture/modal isolation, clipping
 math and list state/visible-row behavior. They do not validate native GL drawing,
@@ -157,30 +175,32 @@ font/IME behavior or modpack rendering integrations; those require the checks ab
 Before a release, use a disposable 1.7.10 world to check:
 
 - Open M, load a schematic through a nested folder, search by name, double-click
-  a folder, refresh, and use the keyboard. Check `.schematic`, `.schemplus` and
-  `.litematic`, Unicode/spaced filenames, empty folders, and a corrupt schematic.
+  a folder, refresh, and use the keyboard. Check `.schematic`, `.schemplus`, `.litematic`, `.nbt` and
+  `.schem`, Unicode/spaced filenames, empty folders, and a corrupt schematic.
   Back must never load; a failed load must leave a useful message on the page.
-- Load the same file twice, return through the main menu, and verify the two
-  instances and previous placement/rotation restoration. Try the direct load and
-  controls bindings. Confirm that an existing customized M binding is retained.
+- Load the same path twice: keep one source row, with a new placement only when
+  Create Placement is checked. Create two placements, return through M and verify
+  their independent transforms/session restoration. Check the direct load binding
+  and retention of a customized M binding.
 - Test the new menu/load/save pages at 320x240 scaled size, larger windows,
   Unicode font and English/Chinese. Long names, paths and messages have tooltips.
-  Return from legacy instances/control/materials/config pages to the new menu.
-- Open N, edit both corner coordinates, commit with Enter and by clicking Save,
-  and move each point to the player. Turn on Selection, enter a name, select a
-  subfolder, return and resize: the name, coordinates and format must survive.
+  Return from source/placement/material/config pages to the main menu.
+- Open the area editor from M, edit corner coordinates, commit with Enter and
+  move each point to the player. Open Save (Ctrl+Alt+S by default), enter a name,
+  select a subfolder, return and resize: draft name, destination and format survive.
 - Save a small selection in each output format; also paste an existing suffix in
   the name field and ensure it is not doubled. Save high block IDs while selecting
   `.schematic` and verify the automatic `.schemplus` name reported in chat.
-- Save over an existing file, first cancel/Escape (file unchanged), then confirm.
+- Save over an existing file: ordinary Save refuses without changing it; Shift+Save
+  explicitly overwrites. Escape before submission must not write a file.
   Check invalid names, removed output folders, out-of-range Y, oversized selections,
   repeated saves during a pending job, and server-disallowed load/save actions.
   A queued message must not be mistaken for completion. After submission, change
   the NBT/entity toggles and confirm that the queued capture retains its options.
 
-- Run the compatibility scenarios in both GTNH 2.8.4 and 2.9.0-RC-1. Exact
-  upstream versions and inspected source tags are recorded in
-  `compatibility/gtnh-mods.json`; a source audit is not an in-game test.
+- Run the compatibility scenarios in both GTNH 2.8.4 and 2.9.0-RC-2. Use each pack's native versions. `compatibility/gtnh-mods.json` records the earlier
+  2.8.4/RC-1 source investigation; it is not an RC-2 installation manifest or an
+  in-game validation claim.
 - Save/reload Forestry machines and apiaries, Railcraft tanks/signals and
   BuildCraft pipes with wires, facades and gates, in singleplayer and multiplayer.
   Compare connections, fluid levels, active textures and covers. Loading a file
@@ -190,15 +210,15 @@ Before a release, use a disposable 1.7.10 world to check:
   ender-linked barrel; its real-world BSpace registration must remain unchanged.
 
 - Start the client and dedicated server without LunatriusCore; also start with it
-  installed for another mod. Open the load, save, control and materials screens.
+  installed for another mod. Open the load, save, placement configuration and materials screens.
 - Load a two-layer schematic, display one layer, rotate/mirror, then display all
   layers. Verify both layers and entity positions survive.
 - Load two differently colored/oriented schematics; switching or unloading one
   must not change the other instance.
 - Use two schematics wider/taller than 32 blocks. Switch repeatedly, then hide the
   selected instance and move the other one. Its chunks must continue rebuilding.
-- From Controls, open Instances, select another schematic and return. Coordinates,
-  movement and rotation must affect the newly selected instance. Rotate a 17x33x49
+- From M, open Schematic Placements, select another placement and configure it.
+  Coordinates, movement and rotation must affect that placement. Rotate a 17x33x49
   schematic around each axis and check the final partial chunks are present.
 - Move one schematic away from matching world blocks across X/Z=15/16 and -1/0;
   its previously hidden blocks must appear without rebuilding unrelated instances.
@@ -314,7 +334,7 @@ once to establish the new keys. Ordered transforms apply to newly saved sessions
 - IC2 2.2.828: save planted crop sticks at different growth stages, including crops from GTNH addons. Reopen, move and rotate the preview across chunk boundaries; crops must use their plant textures rather than missing textures, and pasting must retain the crop and growth stage. Test empty and crossbreeding sticks too.
 - GT pipes: rotate bends/junctions through all axes, mirror twice and resave. Connection arms, covers, per-side redstone and blocked fluid inputs must follow the pipe. Four turns must recover the original appearance. Other mods' custom orientation encodings still need individual checks.
 - EnderIO conduits: rotate/mirror mixed bundles with internal and machine connections. Verify input/output modes, filters/upgrades, channel colors, redstone settings and fluid round-robin sides. Resave/reload and paste; directions must match the preview, with stored energy and filter contents retained. Include empty side maps and disabled faces.
-- Tool settings: both paste options must default off. With air-only enabled, paste across air, stone, water, plants and filled chests; only air may change, including during multi-tick pastes. In command mode, commands must use `keep` so the server also checks the target.
+- Tool settings: `pasteWithoutUpdates` defaults off and `pasteReplaceBehavior` defaults to None (air-only). In that mode, paste across air, stone, water, plants and filled chests; only air may change, including during multi-tick pastes. In command mode, commands must use `keep` so the server also checks the target.
 - Mod identity: verify `schematica_plus`, the Schematica Plus name and HackerRouter attribution in the mod list. Install original or GTNH Schematica alongside Plus, in either jar order: the client must show the incompatibility screen and the dedicated server must stop with a clear message. Replace the old jar and check that legacy configuration is copied once, existing Plus settings are retained, and config labels/textures still work.
 - Mod details: select Schematica Plus in the Forge mod list. Credits must honor line breaks and wrap with the panel width, with Authors, URL and description positioned below them. Check different GUI scales, switch to other mods, and return from Config/Done without losing the expected navigation.
 - With block updates disabled in singleplayer, paste floating sand/gravel, redstone, fluids, machines and containers across chunk/section boundaries. Placement must not call block added/broken or neighbor notification hooks; lighting and client display must update and the world must reload correctly. Normal ticks, existing scheduled ticks and mod tile lifecycle hooks remain active. Cancel a large paste and check its completed portion. Command mode must reject this option before sending edits, since vanilla 1.7.10 commands cannot suppress updates.
@@ -322,13 +342,13 @@ once to establish the new keys. Ordered transforms apply to newly saved sessions
 - Multipart: test ProjectRed lamps, framed/unframed wires, gates, microblocks and AE2 parts sharing a multipart tile. Check part count, lamp state, covers and connections after reopening. Repeat with a different mod version to check binary payload rejection.
 - Printer: place Railcraft fluids using its own bucket alongside GT volumetric flasks, IC2 universal cells, Forestry buckets, EnderIO buckets and Tinkers' Construct buckets. Confirm survival consumes fluid and returns the native empty container.
 
-- Test GTNH 2.8.4 and 2.9.0-RC-1 separately: save powered AE2 smart/dense cables, terminals, storage/crafting monitors, drives and AE2 Fluid Crafting parts. Check connections, channel stripes, colors, indicators and displayed stacks after reopening. The original live network must keep its state after saving.
+- Test GTNH 2.8.4 and 2.9.0-RC-2 separately: save powered AE2 smart/dense cables, terminals, storage/crafting monitors, drives and AE2 Fluid Crafting parts. Check connections, channel stripes, colors, indicators and displayed stacks after reopening. The original live network must keep its state after saving.
 - Include an AE2 monitor away from local origin (0,0,0): its dynamic tile replacement must preserve its coordinates and saved NBT without interrupting loading of other tiles.
 - Save Galacticraft colored pipes, filled machines, solar panels and linked beam receivers/telepads. Check synchronized fields and rebased link coordinates after loading at another position.
 - Load an AE2/GT stream captured with a different mod version: incompatible binary state must be skipped while canonical NBT remains available. Named visual fields are separate from version-specific streams.
 
 
-## Litematica UI phase 3
+## UI: main menu and file loading
 
 - Compare M with the supplied Litematica at the same scaled resolution, in English
   and Chinese. Check the two button groups, icon states, title, bottom tool selector
@@ -342,24 +362,25 @@ once to establish the new keys. Ordered transforms apply to newly saved sessions
 - Check the load browser's root/up/search icons, 14-pixel file rows, side panel,
   bottom checkbox and action order. Search, Enter/double-click, F5 refresh and
   Backspace navigation must work. Check every supported extension and file deletion
-  between selection and Load. Metadata/preview and disabled operations are pending.
+  between selection and Load. Check metadata, thumbnail and 3D preview refresh
+  without publishing stale data from the previous selection.
 - In Area Editor, edit A/B coordinates, use the +/- icons and Move to player, then
   Save Schematic. The save page must use a file browser rather than coordinate fields.
   Select a file to fill its name, type a new name, navigate directories, open Options,
   switch format/NBT, resize and return; the draft and destination must survive.
 - Confirm saving with Ignore entities on/off, disabled selection, invalid bounds,
-  illegal paths/names, a full queue and overwrite cancellation/confirmation. The
-  output still uses .schematic/.schemplus, with automatic upgrade where required.
-- Check that unavailable operations stay in the source UI positions, show a clear
-  tooltip and cannot run. Configure and Forge Config are superseded by phases 4 and 5 below.
+  illegal paths/names, a full queue and explicit Shift overwrite. Check each output
+  format; .schematic automatically upgrades where required and .schem is import-only.
+- Check the explicit Subregion Slice placeholder explains its limitation. Open
+  placement configuration and Forge Config through their actual navigation paths.
 
 
-## Litematica UI phase 4: placement configuration
+## UI: placement configuration
 
 - In M > Schematic Placements > Configure, compare English/Chinese against the
   supplied Litematica at the same scaled resolution, especially heights below and
   above 328. Check the rename field, right-side origin controls, +/- icons, lock
-  checkboxes, merged region row, magnifier and the two footer arrangements.
+  checkboxes, named independent region rows, magnifier and the two footer arrangements.
 - Configure inactive placement B while A is selected/printing. Rename, move,
   transform, toggle visibility/entities and open Materials. Only B may change;
   its material list must describe B and A must stay selected. Reopen/relog: B's
@@ -377,26 +398,25 @@ once to establish the new keys. Ordered transforms apply to newly saved sessions
   feet block, without the old facing-dependent placement offset. Test coordinate
   typing, arrows/wheel, left/right nudges, Shift (8), Alt (4) and both (32), including
   coordinate limits. Invalid proposed minima must leave the placement unchanged.
-- Open legacy Controls and apply an X/Z tilt or vertical mirror; reopening the
-  new page must show CUSTOM instead of incorrect planar labels. The legacy binding
-  remains available. Four X turns that restore a planar orientation should allow
-  planar controls again.
+- Load a disposable session fixture with an X/Z tilt or vertical mirror; the
+  placement page must show CUSTOM instead of incorrect planar labels. Verify
+  retained non-planar geometry after reopening and session restoration.
 - While the page has a pending coordinate edit, unload the instance or change
   dimension/disconnect. Releasing a held button or closing the screen must not
   modify an instance belonging to the previous world. Navigation must still work.
-- The single merged region and unavailable locks, sub-region operations, independent
-  rendering/enclosing-box options and verifier must not imply supported behavior.
-  Hover text must explain the limitation; disabled controls must not mutate state.
+- Configure independent regions and coordinate locks. Toggle rendering, enabled
+  state and enclosing boxes separately, and open the verifier. Disabled controls
+  must not mutate state; check the dedicated subregion scenarios below.
 
 
-## Litematica UI phase 5: configuration
+## UI: configuration
 
 - Open Config from the Forge mod list with no world loaded, and M > Configuration
   in a world. Done/Escape must return to the correct parent. Compare English and
   Chinese tabs, search positions, rows, reset buttons and numeric-toggle icons with
   the supplied upstream. Resize at GUI scales 1/2/3; narrow layouts must wrap tabs
-  without hiding reachable controls. Advanced key settings remain unavailable and explain why.
-  Render Layers and Colors are enabled in phases 7 and 8 below.
+  without hiding reachable controls. Exercise advanced key contexts/triggers and
+  matching settings, plus Render Layers and Colors.
 - Edit a boolean, printer delay, alpha, directory and tool item. Change tabs, search,
   scroll offscreen and resize while editing; drafts must survive. Done must persist
   changes across restarting the game. Render changes must rebuild previews. Local
@@ -421,11 +441,11 @@ once to establish the new keys. Ordered transforms apply to newly saved sessions
   clear it with Escape, and scroll a capturing row out of view to cancel capture.
 
 
-## Litematica UI phase 6: placement materials
+## UI: placement materials
 
 - Open Materials from placement A's configuration while B is the active printer
   placement. All counts must describe A; neither the active placement nor the
-  printer may switch. Repeat through legacy Controls. Escape returns to the parent;
+  printer may switch. Repeat through the main-menu material entry. Escape returns to the parent;
   Main Menu opens M. Empty/unloaded placements must not crash the page.
 - Compare English/Chinese with the supplied upstream at wide and narrow scaled
   resolutions: top actions, multiplier, info icon, four sortable headers, alternating
@@ -444,7 +464,8 @@ once to establish the new keys. Ordered transforms apply to newly saved sessions
 - Click every header twice, search by translated name and registry ID, ignore a
   row, refresh, then Clear ignored. Toggle Hide available, change inventory while
   the page remains open, and confirm filtering updates. Reopen to check saved sort
-  order; ignore/search/multiplier state is local to this page. Test the magnifier,
+  order, ignored rows and multiplier for that placement. Search remains page state.
+  Test the magnifier,
   ordinary typing to search, Escape to hide it, and Shift+Escape to close.
 - Change multiplier to 2, back to 1, and Integer.MAX_VALUE. Counts must not overflow;
   larger multipliers must require full copies rather than crediting the current
@@ -455,13 +476,13 @@ once to establish the new keys. Ordered transforms apply to newly saved sessions
   order/counts, Unicode, CSV quotes/commas and JSON variant NBT. Repeated exports must
   create new UTF-8 files under dumps and retain old files. Test an unwritable directory
   and confirm error feedback. Export stays disabled during scanning or after world
-  invalidation. HUD/cache/raw-material actions must remain disabled with explanations.
+  invalidation. Exercise HUD/cache/Raw Materials using their dedicated checks below.
 - Render enchanted items, 3-D blocks and custom GTNH item renderers, then open other
   UI pages and return to the world. Check lighting/depth/scissor state, tooltip
   layering and clipped rows while scrolling. This requires native game testing.
 
 
-## Phase 7: render layers (native checks)
+## render layers (native checks)
 
 - Open M > Configuration > Render Layers. Compare English/Chinese with the supplied
   Litematica/MaLiLib editor: six tabs without All, mode/axis at (10,60), coordinate
@@ -495,15 +516,16 @@ once to establish the new keys. Ordered transforms apply to newly saved sessions
   server/save. Check RenderLayers.json isolation and restoration, including an All
   mode reset. With a backed-up deliberately malformed settings file, saving must
   log a failure and preserve it; restoration must fall back to All. Restore the
-  backup after testing. These checks have not been run in a live game by the agent.
+  backup after testing.
 
 
-## Phase 8: colors and HSV editor (native checks)
+## colors and HSV editor (native checks)
 
 - Open M > Configuration > Colors and the Forge mod-list Config entry. Compare
   English/Chinese list order, 100-pixel option area, 18x18 indicators and Reset
   positions with upstream. Search in Colors/All; scroll and resize with a color
-  draft in progress. The six pending-feature rows must be disabled with tooltips.
+  draft in progress. Supported color rows must edit/reset and update their
+  corresponding overlays, including REBUILD targeting colors.
 - Click a supported swatch. Compare the centered 300x180 dialog, square, vertical
   hue strip, seven component rows, hex field, current-color preview and markers.
   Test GUI scales 1/2/3 and supported resource packs. Mouse capture must clamp at
@@ -529,16 +551,16 @@ once to establish the new keys. Ordered transforms apply to newly saved sessions
   remain as before. Defaults must match the documented Litematica palette.
 - Open item/material screens after closing the picker, then return to the world.
   Check blend, lighting, alpha test, shade model and clipping for leaked GL state.
-  No live-game visual validation has been performed by the agent.
 
 
-## Phase 9: schematic manager and file dialogs (native checks)
+## schematic manager and file dialogs (native checks)
 
 - Use disposable copies in a test schematics folder. Open M > Schematic Manager;
   compare the (10,24) browser, footer order, labels and source icons in English and
   Chinese. Select each of .schematic/.schemplus/.litematic and a directory. Check
   GUI scales 1/2/3, narrow windows and resize: groups wrap without covering Main
-  Menu. Metadata/import/export execute buttons must remain disabled with tooltips.
+  Menu. Exercise metadata editing, import and export with their supported formats;
+  Sponge .schem must not become an export choice.
 - Cycle the File selector with left/right clicks. Rename/copy each format; verify
   file hashes and retained extension, then load the result. Existing names and
   attempts to change extensions must fail, including Shift-click. Errors keep
@@ -558,12 +580,10 @@ once to establish the new keys. Ordered transforms apply to newly saved sessions
 - Delete only disposable copies. Confirm the green OK/red Cancel positions and
   default focus on Cancel. Cancel/Escape must leave the file intact; confirmation
   removes only that file. Already loaded previews remain until unloaded, but a
-  deleted source cannot restore after leaving the world. Check the existing save
-  overwrite confirmation with its updated layout as well.
-- These native GUI and gameplay checks have not been run by the agent.
+  deleted source cannot restore after leaving the world. Check explicit Shift+Save
+  overwrite separately; it does not use a confirmation dialog.
 
-
-## Phase 10: loaded source / placement backend (native checks)
+## loaded source / placement backend (native checks)
 
 - Back up LoadedSchematics.json and use test schematic copies. Uncheck Create
   Placement on Load. The source appears in Loaded Schematics, no placement or
@@ -587,20 +607,18 @@ once to establish the new keys. Ordered transforms apply to newly saved sessions
   must still work from memory. Compare saved bytes/hashes with the backed-up
   original for .schematic/.schemplus/.litematic, including raw visual-state NBT and
   long arrays. It saves source data, not a placement's rotations or local edits.
-  Changing the extension must fail; overwriting requires confirmation. Cancelling
+  Changing the extension must fail; overwriting requires Shift+Save. Cancelling
   or switching world while the save dialog is open must not write a stale source.
 - Keep both a source with no placements and one with multiple placements. Visit
   two dimensions, reconnect and reopen the lists. Restore old session files too.
   Source-only records must not create previews; missing files and invalid entries
   must not block unrelated entries. Deselect every placement before disconnecting
   and verify it stays deselected. Unload a source, leave and return: it must stay
-  unloaded in that dimension. Check the legacy instance/control removal buttons.
+  unloaded in that dimension. Check removal from the current source/placement lists.
 - Rename both a placed and an unplaced source through Schematic Manager. Verify
   current library paths, Reload, future Create Placement, and session restoration.
   Saving a copy must not change the source path. Restore backups after testing.
-- The agent has not run these game/client/GL checks; automated tests are headless.
-
-## Phase 11: upstream translations (native checks)
+## upstream translations (native checks)
 
 - Switch between English, Simplified/Traditional Chinese, French, Japanese,
   Turkish and Literary Chinese in Minecraft's language menu. Reopen the main
@@ -617,7 +635,7 @@ once to establish the new keys. Ordered transforms apply to newly saved sessions
 - Check that legacy Schematica screens, key bindings and command messages still
   translate. Adding the upstream catalogs must not enable unavailable features.
 
-## Phase 12: area selection library (native checks)
+## area selection library (native checks)
 
 - Back up AreaSelection.json. Enter a world with an old-format saved selection:
   its corners and outline must be unchanged. Open Area Selection browser, create
@@ -627,29 +645,26 @@ once to establish the new keys. Ordered transforms apply to newly saved sessions
 - Copy an area, move one corner of the copy and toggle its outline. The original
   must not change. Search by selection or box name. Rename to an existing name
   (including different letter case) and try an empty name: the operation must
-  fail without changing either entry. Cancel a delete confirmation too.
+  fail without changing either entry. Remove only disposable entries: the area
+  manager's red minus removes immediately, without a confirmation dialog.
 - Unselect the active entry, reconnect and verify no outline reappears. Saving
   and area-based fill/delete/replace must refuse to run with no selected area.
   Delete the active entry and then the last entry; returning to this dimension
   must not recreate either. Other dimensions and servers keep their own lists.
-- Move and rotate a placement, then use From Placement. The new selection should
-  match its current bounding box, including the last block on each axis. Export
-  the selected area through the existing save screen and inspect the result.
-  It is one full box; gaps in a merged schematic are included. Placement bounds
-  extending outside Y=0..255 must be rejected, not clipped silently.
+- Move/rotate a placement and use From Placement. Preserve its enabled named
+  regions, including the last block on each axis, and exclude gaps between them.
+  Export through the save screen and inspect the result. Out-of-world bounds must
+  be rejected without clipping silently or creating a partial selection.
 - Enter a coordinate and press Enter, click another field, resize the window,
   and return from the save screen. Values must not reset or leak into another
   selection. World/dimension changes while a browser, editor, name dialog or
-  overwrite confirmation is open must disable actions from the old session.
+  save dialog is open must disable actions from the old session.
 - On disposable settings, test an unreadable file and an external edit to the
   current session. The mod must retain disk data and show a persistence failure;
-  reconnect to load the external edit. Restore backups after testing. Native
-  client/GL behavior has not been exercised by the agent.
+  reconnect to load the external edit. Restore backups after testing.
 
 
-## Phase 13: multiple subregions (native checks)
-
-These checks supersede Phase 12's Simple-editor and bounding-box expectations.
+## multiple subregions (native checks)
 
 - Back up AreaSelection.json and open a legacy or version=2 selection. In Area
   Editor, verify its first subregion retains both corners and its box name.
@@ -682,11 +697,10 @@ These checks supersede Phase 12's Simple-editor and bounding-box expectations.
   Overlapping selected positions must only be processed once. Test cancellation,
   single-block boxes, boxes crossing chunks, and saving with no active box.
 - Try two boxes whose enclosing bounds exceed the existing allocation limits;
-  save/edit must fail before queuing work. The agent has not run these native
-  game checks; automated checks do not prove rendered appearance or modded NBT.
+  save/edit must fail before queuing work.
 
 
-## Phase 14: manual origins (native checks)
+## manual origins (native checks)
 
 - Enable Manual Origin in Normal Area Editor. It starts at your feet. Edit XYZ,
   nudge, move it to the player, and select its checkbox. Both tool clicks should
@@ -714,14 +728,13 @@ These checks supersede Phase 12's Simple-editor and bounding-box expectations.
   reconnect: new records keep the world origin. Back up source/settings files.
 - Check origin controls at English/Chinese GUI scales 1-3, input focus, resize,
   returning from another screen and changing worlds while the editor is open.
-  Hidden/disabled controls must not modify state. No native game tests have been
-  run by the agent; source and headless test checks do not replace these checks.
+  Hidden/disabled controls must not modify state.
 - Use /schematicaDownload with the same current Plus version on server and client
   for a file with two separated regions and an outside origin. Reload it and check
   gaps, origin and rotation. Repeat a plain flat file with the same current builds;
   it should still download without acquiring independent-region metadata.
 
-## Phase 15: independent placement subregions (native checks)
+## independent placement subregions (native checks)
 
 - Load a two-region schematic with an outside origin. Verify the placement list
   has both names, search works, and Configure opens each region's own state.
@@ -752,12 +765,11 @@ These checks supersede Phase 12's Simple-editor and bounding-box expectations.
   Reload a changed source: matching names keep overrides, new names use defaults,
   removed names clear selection. Other placements of the same source are independent.
 - Attempt positions whose combined dimensions exceed allocation limits. The
-  rejected geometry must leave the previous placement usable. See Phase 16 for
-  signed-size region pivots and distinct overlapping Litematic payloads.
-  These native game checks have not been run by the agent.
+  rejected geometry must leave the previous placement usable. See the Litematic
+  source-preservation checks for signed pivots and overlapping region payloads.
 
 
-## Phase 16: Litematic source preservation and file icons (native checks)
+## Litematic source preservation and file icons (native checks)
 
 - Browse .litematic, .schematic and .schemplus files (including uppercase suffixes).
   Check L, S and the separate schemplus.png icon in browsers, loaded lists and
@@ -779,14 +791,12 @@ These checks supersede Phase 12's Simple-editor and bounding-box expectations.
 - Back up LoadedSchematics.json and restore an old version 1 subregions record
   with moved/rotated negative-size regions. Blocks must stay at the old positions;
   the displayed anchor coordinates can change. Saving upgrades the record to v2.
-- Save Source and compare the .litematic bytes with the original. Server download
-  and flat .schemplus exports do not preserve independent overlapping payloads or
-  signed anchors yet; do not use these as lossless Litematic source backups.
-- Headless build/tests cover data and geometry; the agent has not run these native
-  GUI, Forge rendering or paste checks in Minecraft.
+- Save Source and compare unedited .litematic bytes with the original. Export
+  independent regions to .schemplus and download them from the current Plus server:
+  verify distinct payloads and signed anchors survive. Flat files stay flat; format
+  conversion does not promise retention of arbitrary unknown Litematic fields.
 
-
-## Phase 17: placement activation, locks and enclosing boxes (native checks)
+## placement activation, locks and enclosing boxes (native checks)
 
 - In the placement list and configuration page, disable a placement. Its blocks,
   entities and outlines must disappear; pick-block and printing stop, material
@@ -816,9 +826,7 @@ These checks supersede Phase 12's Simple-editor and bounding-box expectations.
 - Pause an active printer by disabling or hiding the placement, then restore it.
   No blocks are placed and no completion notification occurs while paused. Resuming
   continues the existing job. Already queued world edits retain their captured data.
-- The agent has verified headless tests/builds, not these native Minecraft checks.
-
-## Selection operations (phase 18)
+## Selection operations
 
 - In the main menu, alternate Normal/Simple and edit different coordinates, names
   and origins. Neither selection should overwrite the other; reconnect and switch
@@ -860,7 +868,7 @@ These checks supersede Phase 12's Simple-editor and bounding-box expectations.
   or oversized selections should show the size-limit message without retry spam.
 - Simple: verify both corner checkboxes and coordinate inputs, manual-origin
   controls, Save/Analyze positions and the guide toggle with origin enabled.
-  Escape returns to the parent menu. Native checks remain unexecuted by the agent.
+  Escape returns to the parent menu.
 
 ## Icon button hover feedback
 
@@ -869,7 +877,8 @@ These checks supersede Phase 12's Simple-editor and bounding-box expectations.
   their click area; moving away removes it. Tab focus provides the same cue.
 - Disabled buttons do not highlight. Cropped list icons and icons behind a modal
   must not react outside the visible area. File/type icons and passive info icons
-  are unchanged. This visual change still requires an in-game check.
+  are unchanged. Compare native screenshots rather than inferring appearance from
+  the framework tests.
 
 ## Existing feature translation alignment
 
@@ -885,7 +894,7 @@ These checks supersede Phase 12's Simple-editor and bounding-box expectations.
 - Test invalid load paths and filenames containing percent signs or backslashes.
   Error tooltips must show the path intact, with no raw key or Format error.
 - Simple-mode help must describe its independent selection, without claiming it
-  is unavailable. Early mod-conflict errors and old-client download rejection
+  is unavailable. Early mod-conflict and download capability errors
   retain readable English fallback when language resources are unavailable.
 - Automated coverage checks source-referenced keys in English/Chinese and formats
   active templates across all 14 bundled locales with English fallback. These
@@ -917,8 +926,7 @@ These checks supersede Phase 12's Simple-editor and bounding-box expectations.
   world. Other HUDs, item lighting and world rendering must remain unaffected.
 - Automated tests cover voxel traversal, shape hits, range, occlusion, overlapping
   placements, coordinate translation, mutable trace inputs, state comparison,
-  configuration persistence/validation and scaled alignment. Native visual and
-  mod-compatibility checks above remain unexecuted by the agent.
+  configuration persistence/validation and scaled alignment.
 
 ## Task manager
 
@@ -937,20 +945,21 @@ These checks supersede Phase 12's Simple-editor and bounding-box expectations.
 - Test normal and no-update paste, multi-region gaps and entity placement. Cancel
   early and during the update pass; no-update paste must still honor its setting.
   An old row/button reference must never cancel a newly submitted task.
-- On multiplayer, command jobs show scanned positions and commands sent, without
-  claiming server execution. Remove stops further sends, including during the
-  send delay. Permission/syntax errors, disconnects and world changes clear them.
+- On multiplayer, command jobs wait for native server replies and track confirmed
+  results. Missing replies stop the queue instead of implying completion. Remove
+  stops further sends, including during the delay; already applied blocks remain.
+  Permission/syntax errors, disconnects and world changes terminate the task.
 - Cancel, finish and fail saves/edits, then start another. Change dimension or
   disconnect during capture/editing; old jobs must disappear and release their
   world references. Other players' tasks must not appear in this player's list.
   Client and integrated-server capture must run on their owning tick thread.
 - Scope: this page tracks queued area saves, world edits and verifier scans in this process.
-  It does not query tasks on a remote server. Material scans still belong to
+  Remote edit tasks receive progress/results for the requesting player; this is
+  not a browser of every remote server task. Material scans still belong to
   their material screen; synchronous source-file saves are not queued tasks.
 - Automated tests cover immutable progress publication, owner/dimension filters,
   stale handles, cancellation/write races, edit phases, command preflight/busy
-  rejection and queue cleanup. Native GUI, actual world writes and save-file
-  cancellation checks above remain unexecuted by the agent.
+  rejection and queue cleanup.
 
 
 ## Schematic verifier: backend and results UI
@@ -996,8 +1005,7 @@ These checks supersede Phase 12's Simple-editor and bounding-box expectations.
 - Automated coverage checks classifications, exact-pair ignores, cropped bounds,
   negative/chunk coordinates, finite work budgets, unloaded chunks and gaps,
   replacement counting, updates during partial scans, failed reads, allocation
-  limits and HUD configuration/translation persistence. Native GUI, lifecycle
-  integration and GTNH in-game checks above remain unexecuted by the agent.
+  limits and HUD configuration/translation persistence.
 
 
 ## Schematic verifier: selected markers and comparison overlays
@@ -1046,7 +1054,7 @@ These checks supersede Phase 12's Simple-editor and bounding-box expectations.
   correction/ignore invalidation, changes during partial searches, camera/limit
   changes, world-scan replacement, immutable output and selected-cell ray hits.
   Config defaults, normalization, persistence and dynamic upstream keys are also
-  tested. Native OpenGL, GUI and GTNH/Freecam checks remain unexecuted by the agent.
+  tested.
 
 
 ## Branding, Forge logo and pick-block fallback
@@ -1261,12 +1269,12 @@ These checks supersede Phase 12's Simple-editor and bounding-box expectations.
   switches at the bottom left; with statusInfoHudAuto it appears for 10 s after
   creating a placement or toggling a render switch while something is hidden.
 
-## Plus translation key audit (supersedes older confirm-dialog steps)
+## Plus translation keys and save behavior
 
 - Save Area as schematic and Save loaded source: saving onto an existing name now
   fails with the Litematica "file already exists" message; hold Shift while
-  clicking Save to overwrite (hover shows the Litematica hint). The old overwrite
-  confirmation dialogs (phases 3, 9, 10, 13) no longer exist.
+  clicking Save to overwrite (hover shows the Litematica hint). No overwrite
+  confirmation dialog is expected.
 - Area Selection browser: the red "-" removes the selection immediately, as in
   Litematica. Re-test that the removed selection does not return after reconnecting.
 - Area corner, origin and sub-region coordinate plus/minus buttons: right click
@@ -1276,9 +1284,10 @@ These checks supersede Phase 12's Simple-editor and bounding-box expectations.
   Multi-line MaLiLib messages appear on one status line and fully in its hover.
 - Paste/Fill/Delete/Replace finish messages are the Litematica ones (Schematic
   pasted in world / Area filled / Area cleared, and the failure variants after a
-  cancel or error). Multiplayer paste by commands reports "pasted using N setblock
-  commands"; queueing in multiplayer shows "Scheduled task added...". A paste of a
-  disabled placement reports the Litematica rendering-disabled message.
+  cancel or error). Command paste waits for native server replies before reporting
+  completion; permission failures and no-op edits must not announce successful
+  placement. Queueing shows "Scheduled task added...", not completion. A disabled
+  placement reports the rendering-disabled message.
 - Verifier: before starting or while paused the status line is empty (Litematica
   shows nothing); counts appear only after a finished pass. Clicking an error
   category with overlays off shows the Litematica warning naming Info Overlays,
@@ -1381,9 +1390,9 @@ compare with a server that does not have the mod and with each server option off
 - Development-build login: install the same untagged main JAR on a dedicated server
   and client, including a git-hash/dirty version. Join and require the world to open
   without a `Mod rejections [FMLMod:schematica_plus{...}]` screen. Check the client's
-  `Server capabilities{...}` log after joining. `SchematicaPlusTest` separately checks
-  the release-version floor and peers without Plus; matching hashes must not be
-  interpreted as release numbers below `1.0.0-beta.1`.
+  `Server capabilities{...}` log after joining. Matching development identifiers
+  must be accepted; test a server without Plus separately. This does not extend
+  the support scope to older or mixed Plus versions.
 - Download completion: download an ordinary single-region `.schematic` and a flat
   `.schemplus` with extended metadata. Both must finish, create usable client files
   and leave the dedicated server running. These files have no independent-region
@@ -1922,7 +1931,8 @@ bookmark crafting chains; the latter also has the graphical crafting tree.
 
 - Load a large schematic (tens of MB) from the load browser: the game keeps running (the status line says it is
   being read), then the placement appears and the status says it was read. Pressing load again while it is read
-  says it is still being read. Loading takes about half as long as before.
+  says it is still being read. Do not start a duplicate parse or freeze input; record
+  load time for the actual file and machine rather than assuming a fixed speedup.
 - Leave the world while a file is read: nothing appears in the next world.
 
 ## Printer mining in survival
@@ -2376,7 +2386,7 @@ Observed in both GTNH 2.8.4 and 2.9.0-RC-2 on 2026-10-08:
 5. Compare stone against a real gold block, red wool against white wool, and schematic air against a real stone block. Enable overlays and inspect distinct wrong-block, wrong-state and extra colours in both packs.
 6. Capture seven actual EnderIO bundles (item/power curve and item T) with five endpoint chests. Check source connections, mode arrays, side filters and inventories from a saved-world copy before comparing both preview views. A stale in-memory source must be reloaded after replacing its file; the 2.9 final inspection used a fresh complete-file name. Transform/transport checks are separate.
 
-No external shader pack was installed in that run; no shader or universal machine-animation result is claimed for it. Screenshots, source snapshots and native command records: `/workspace/release-issues/followup`. External shader checks were added separately on 2026-10-12 below.
+No external shader pack was installed in that run; no shader or universal machine-animation result is claimed for it. Screenshots, source snapshots and native command records: `<evidence-dir>/followup`. External shader checks were added separately on 2026-10-12 below.
 
 ### Failed writes and edits with no changes
 
@@ -2390,7 +2400,7 @@ The pre-fix dedicated 2.9 baseline at (4096,100,256) reported success while the 
 
 ### Crystal chest without Plus
 
-The 2026-10-08 GTNH 2.9.0-RC-2 control used a copied world and a cold client with the Plus JAR removed. Confirm the mod is absent, keep IronChest contents rendering enabled, and view a real crystal chest containing 64 diamonds from a fixed nearby camera over a full rotation cycle. The icon was visible, absent for several successive captures, then visible again without any input; opening the native inventory still showed 64 diamonds. Leave/reload its chunk and inspect the reverse side. The original world-region hash must remain unchanged; restore the JAR afterward. This reproduced the observation without Plus, so no Plus change was made. Evidence: `/workspace/release-issues/followup/screenshots/crystal-no-plus-*`.
+The 2026-10-08 GTNH 2.9.0-RC-2 control used a copied world and a cold client with the Plus JAR removed. Confirm the mod is absent, keep IronChest contents rendering enabled, and view a real crystal chest containing 64 diamonds from a fixed nearby camera over a full rotation cycle. The icon was visible, absent for several successive captures, then visible again without any input; opening the native inventory still showed 64 diamonds. Leave/reload its chunk and inspect the reverse side. The original world-region hash must remain unchanged; restore the JAR afterward. This reproduced the observation without Plus, so no Plus change was made. Evidence: `<evidence-dir>/followup/screenshots/crystal-no-plus-*`.
 
 
 ### Historical transforms and Multipart synchronization
@@ -2401,7 +2411,7 @@ The 2026-10-08 GTNH 2.9.0-RC-2 control used a copied world and a cold client wit
 4. Capture IC2 wheat at growth stages 1/4/7, coffee at 1/5, mature redwheat and empty crop sticks. Inspect real/preview textures and paste. Save and copy the result immediately before comparing crop owner/name, growth stage and stats: a live crop can subsequently grow or die, especially on unwatered farmland. Check preview loading with no purple-black textures.
 5. In 2.9, rotate/mirror a native GT metadata-316 frame fixture, save/reload and paste. Check every saved block name/metadata and inspect the frame textures. This representative case does not resolve a report involving an unavailable original schematic.
 
-The EnderIO matrix/NBT/transport cases passed both packs on 2026-10-08. The 2.9 GT fixture passed all 612 cells including twelve metadata-316 frames. Full ProjectRed lamps retained their type and state across both packs; the separate Multipart client-description omission was reproduced and repaired. Two automated installation/cancellation tests fail without the repair; all 588 tests pass with it. Both cold clients passed ordinary/silent/cross-pack paste and world move without a chunk reload, with client descriptions and saved tile NBT matching. Each pack also passed all seven immediately saved crop states and preview/pasted texture checks. A matching cold 2.9 dedicated server passed remote paste and replacement of existing Multipart lights with different colours/inversion; the new client appearance and ten saved tiles matched. Final screenshots were inspected. Runtime JAR SHA-256: `9dd76a64c17cdb26724e0ac5e6e36321bbadfaf3d06a9ade716bf9f11e6556df`. Evidence is under `/workspace/release-issues/followup/multipart-final-*` and `multipart-dedicated` (saved-world check: `multipart-dedicated-saved.log`).
+The EnderIO matrix/NBT/transport cases passed both packs on 2026-10-08. The 2.9 GT fixture passed all 612 cells including twelve metadata-316 frames. Full ProjectRed lamps retained their type and state across both packs; the separate Multipart client-description omission was reproduced and repaired. Two automated installation/cancellation tests fail without the repair; all 588 tests pass with it. Both cold clients passed ordinary/silent/cross-pack paste and world move without a chunk reload, with client descriptions and saved tile NBT matching. Each pack also passed all seven immediately saved crop states and preview/pasted texture checks. A matching cold 2.9 dedicated server passed remote paste and replacement of existing Multipart lights with different colours/inversion; the new client appearance and ten saved tiles matched. Final screenshots were inspected. Runtime JAR SHA-256: `9dd76a64c17cdb26724e0ac5e6e36321bbadfaf3d06a9ade716bf9f11e6556df`. Evidence is under `<evidence-dir>/followup/multipart-final-*` and `multipart-dedicated` (saved-world check: `multipart-dedicated-saved.log`).
 
 ### Input and Backhand release regression (1.0.0.beta.2)
 
@@ -2412,7 +2422,7 @@ The EnderIO matrix/NBT/transport cases passed both packs on 2026-10-08. The 2.9 
 5. Put eight torches in the offhand and eight stone in the hotbar. Easy Place and the printer must place stone, consume one stone and leave all torches. Run the printer with stone only in the offhand. Then configure swap slot 5 and auto-tool, put the only usable pickaxe in the offhand (a native TConstruct steel pickaxe in GTNH), and ask the printer to remove a wrong stone block. Verify the tool moves to slot 5, mines the block and remains a single tool with the expected durability change. Check an offhand water bucket and its returned empty bucket too.
 6. Repeat offhand block/tool swaps on a dedicated server. Save/reopen the inventory and inspect server-side quantities; a client picture alone cannot rule out ghost stacks. Test creative middle pick against a schematic, a closer real block, a coincident real block and hidden rendering. Release all input and restore test settings afterward.
 
-On 2026-10-09, cold clients in both target packs passed these input, inventory, creative pick, offhand material, occupied destination, tool and bucket cases under Xvfb/Mesa. Native mouse/key events drove the operations; client and integrated-server inventory inspection confirmed counts. A matching cold 2.9 dedicated server additionally passed offhand pick, direct Easy Place, printer stone and steel-pickaxe swaps. Saved player NBT confirmed seven sticks were preserved, eight stone became seven after one placement, and the single steel tool retained its materials with one point of damage after mining. The vanilla diamond pickaxe was not used for acceptance: the pack's native mining strength for it is zero. Forge loaded version `1.0.0.beta.2` in both clients. Build, Checkstyle and all 592 tests passed. Tested runtime JAR SHA-256: `e8864e976a2ad7cff6296567405c541871e15091faaf45c6b332004859545f3d`. Logs and fixtures are in `/workspace/release-issues/input-backhand`; inspected screenshots are `followup/screenshots/input-*`. This covers the named pack versions and cases, not every hotkey chord or third-party input mod.
+On 2026-10-09, cold clients in both target packs passed these input, inventory, creative pick, offhand material, occupied destination, tool and bucket cases under Xvfb/Mesa. Native mouse/key events drove the operations; client and integrated-server inventory inspection confirmed counts. A matching cold 2.9 dedicated server additionally passed offhand pick, direct Easy Place, printer stone and steel-pickaxe swaps. Saved player NBT confirmed seven sticks were preserved, eight stone became seven after one placement, and the single steel tool retained its materials with one point of damage after mining. The vanilla diamond pickaxe was not used for acceptance: the pack's native mining strength for it is zero. Forge loaded version `1.0.0.beta.2` in both clients. Build, Checkstyle and all 592 tests passed. Tested runtime JAR SHA-256: `e8864e976a2ad7cff6296567405c541871e15091faaf45c6b332004859545f3d`. Logs and fixtures are in `<evidence-dir>/input-backhand`; inspected screenshots are `followup/screenshots/input-*`. This covers the named pack versions and cases, not every hotkey chord or third-party input mod.
 
 ### Powered complex structures: GregTech and AE2
 
@@ -2425,7 +2435,7 @@ On 2026-10-09, cold clients in both target packs passed these input, inventory, 
 
 The pre-fix 2.8.4 run produced an empty muffler (`mID=0`) in one transformed furnace. A separate 20-cycle clear/paste run reproduced empty input and output buses together on cycle 8; a 20-cycle replacement-only control did not reproduce it. The schematic still contained the correct IDs. Native queue inspection found the GT tick lock released at edit time, and the pack's async scanner can create a default tile while an edit is installing its saved tile. `MachineUpdateLock` now guards queued changes and shutdown rollback; unit tests cover competing access, reentrant exception cleanup and absence of the optional mod. AE2's separate preview bug was reproduced in both packs: moved parts left an old-side copy and lost their power flags. Two regressions cover removal, state migration, spin preservation and repeated transforms.
 
-On 2026-10-11, cold integrated clients passed these three transforms in GTNH 2.8.4 (GT 5.09.51.482, AE2 rv3-beta-695-GTNH) and 2.9.0-RC-2 (GT 5.09.54.205, AE2 rv3-beta-1080-GTNH). Synthetic fixtures used native game APIs and recipes. Every transformed furnace formed and produced one cobalt ingot; every AE2 copy retained its filters and 64 diamonds and exported the additional 16 gold, reaching 32. Preview parts, power, monitor counts, spin, material totals and exported/reloaded files matched; inspected real GUIs showed the cobalt output, gold chest and diamond terminal. Both worlds reopened successfully with those quantities and active networks. With the native GT lock confirmed held during queued work, all nine machine IDs survived each of 40 clear/paste cycles in 2.8.4 and 20 in 2.9. The latter stress fixture was given normal player ownership after an initial native cleanup failure on an ownerless synthetic controller; that fixture correction is not a Plus fix. Saved-world checks passed 225 cells and 63 tile positions/definitions/directions per pack. The reader now handles the big-endian `Blocks16/Data16` arrays used by 2.8.4 as well as the existing 2.9/vanilla formats. Build, Checkstyle and all 597 tests passed. Tested runtime JAR SHA-256: `eed5646d2a702b2b8dd5dc2c001d0cd80ca504c305a84fca7119e002bc5e44dc`. Evidence: `/workspace/release-issues/complex-structures` (`final*-check`, `stress*-final`, `recheck*-final`, `verify*-final`) and inspected `followup/screenshots/complex-*`. Dedicated-server versions of these new fixtures, AE2 autocrafting/P2P and other active multiblocks remain untested by this round.
+On 2026-10-11, cold integrated clients passed these three transforms in GTNH 2.8.4 (GT 5.09.51.482, AE2 rv3-beta-695-GTNH) and 2.9.0-RC-2 (GT 5.09.54.205, AE2 rv3-beta-1080-GTNH). Synthetic fixtures used native game APIs and recipes. Every transformed furnace formed and produced one cobalt ingot; every AE2 copy retained its filters and 64 diamonds and exported the additional 16 gold, reaching 32. Preview parts, power, monitor counts, spin, material totals and exported/reloaded files matched; inspected real GUIs showed the cobalt output, gold chest and diamond terminal. Both worlds reopened successfully with those quantities and active networks. With the native GT lock confirmed held during queued work, all nine machine IDs survived each of 40 clear/paste cycles in 2.8.4 and 20 in 2.9. The latter stress fixture was given normal player ownership after an initial native cleanup failure on an ownerless synthetic controller; that fixture correction is not a Plus fix. Saved-world checks passed 225 cells and 63 tile positions/definitions/directions per pack. The reader now handles the big-endian `Blocks16/Data16` arrays used by 2.8.4 as well as the existing 2.9/vanilla formats. Build, Checkstyle and all 597 tests passed. Tested runtime JAR SHA-256: `eed5646d2a702b2b8dd5dc2c001d0cd80ca504c305a84fca7119e002bc5e44dc`. Evidence: `<evidence-dir>/complex-structures` (`final*-check`, `stress*-final`, `recheck*-final`, `verify*-final`) and inspected `followup/screenshots/complex-*`. Dedicated-server versions of these new fixtures, AE2 autocrafting/P2P and other active multiblocks remain untested by this round.
 
 ### AE2 cable-host materials and partial builds
 
@@ -2436,7 +2446,7 @@ On 2026-10-11, cold integrated clients passed these three transforms in GTNH 2.8
 
 The original source-versus-transform comparison only established invariance: both lists omitted the six AE2 side parts, reporting five rows instead of eleven. `AE2Items` now reads native part pick stacks and facade stacks, counts each attached item, and matches partial hosts by item/NBT, installation side and panel spin. Ignore-state comparisons retain item identity and multiplicity. Native facade construction normalizes the redundant registry fields for material keys and part matching; this preserves material/other NBT and does not mutate the native stacks. An unnormalized client-stream facade and crafted facade reproduced unequal material keys in the 2.9 game, and a rotated/pasted 2.8 network incorrectly reported both facades missing. A regression covers equivalent keys, facade matching, distinct materials and unchanged source tags.
 
-On 2026-10-11, cold clients in both target packs passed the original 11-row/18-item and expanded 13-row/21-item checks with no skipped cells. Complete sources/copies reported zero missing items, empty placements reported 21, and the partial copies reported four with state comparison or two with Ignore State. Native crafted stone/glass facades each showed one available item. Both refreshed material GUIs were inspected and matched the scan results. All three transformed previews and exported/reloaded files retained the expected counts; pasted copies had zero missing items, including their facades. Reopening both worlds retained the complete and partial results. Independent region reads matched all 15 cable/side-part/facade definitions and their expected transformed sides per case, 90 across both packs. The disposable fixture setup was corrected to request actual facade items (`createFacadeForItem(..., false)`) and use native wrench activation for an already active panel; these setup corrections are not production fixes. Already-loaded files were given a new source name after recapture to avoid the intentional source cache. Build, Checkstyle and all 603 tests passed. Tested runtime JAR SHA-256: `6adb6251462d853c66265e620d0f5a74f09bcb7981cfe83c4869ea81f5df836f`. Evidence: `/workspace/release-issues/complex-structures/materials*-final.log`, `materials*-saved.log` and inspected `followup/screenshots/complex-ae-*-materials-*.png`. These material tests cover native cable hosts, not hosts converted to ForgeMultipart or automatic AE2 part placement; no new NEI recipe-tree or dedicated-server claim is made by this round.
+On 2026-10-11, cold clients in both target packs passed the original 11-row/18-item and expanded 13-row/21-item checks with no skipped cells. Complete sources/copies reported zero missing items, empty placements reported 21, and the partial copies reported four with state comparison or two with Ignore State. Native crafted stone/glass facades each showed one available item. Both refreshed material GUIs were inspected and matched the scan results. All three transformed previews and exported/reloaded files retained the expected counts; pasted copies had zero missing items, including their facades. Reopening both worlds retained the complete and partial results. Independent region reads matched all 15 cable/side-part/facade definitions and their expected transformed sides per case, 90 across both packs. The disposable fixture setup was corrected to request actual facade items (`createFacadeForItem(..., false)`) and use native wrench activation for an already active panel; these setup corrections are not production fixes. Already-loaded files were given a new source name after recapture to avoid the intentional source cache. Build, Checkstyle and all 603 tests passed. Tested runtime JAR SHA-256: `6adb6251462d853c66265e620d0f5a74f09bcb7981cfe83c4869ea81f5df836f`. Evidence: `<evidence-dir>/complex-structures/materials*-final.log`, `materials*-saved.log` and inspected `followup/screenshots/complex-ae-*-materials-*.png`. These material tests cover native cable hosts, not hosts converted to ForgeMultipart or automatic AE2 part placement; no new NEI recipe-tree or dedicated-server claim is made by this round.
 
 
 ### External Angelica shader packs
@@ -2483,7 +2493,7 @@ reopened the world successfully, with shaders active and the inspected preview
 intact. Both packs also passed front/reverse preview checks for the existing
 18-shape ArchitectureCraft fixture, AE2 parts/facades and GT Electric Blast Furnace
 with alpha disabled; machine operation and material counts were not retested by
-these additional views. Evidence is in `/workspace/release-issues/shader-validation`.
+these additional views. Evidence is in `<evidence-dir>/shader-validation`.
 Build, Checkstyle and all 603 tests passed; no production code changed.
 The later OptiFine checks are recorded below. Real GPUs, other shader families,
 higher presets and Nether/End shader effects remain untested.
@@ -2491,7 +2501,7 @@ higher presets and Nether/End shader effects remain untested.
 ### Separate OptiFine shader validation
 
 On 2026-10-12, independent copies of both target packs and the synthetic shader
-worlds were prepared under `/workspace/release-issues/optifine-validation`.
+worlds were prepared under `<evidence-dir>/optifine-validation`.
 Angelica was removed from these copies; the original instances were preserved.
 Hodgepodge's `removeOptifineGLErrors` was disabled in the copies so diagnostics
 remain visible. Current Plus was installed, with its exact filename and checksum

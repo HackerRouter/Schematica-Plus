@@ -1,8 +1,8 @@
 # GTNH compatibility scope
 
-Source manifest targets: Minecraft 1.7.10, GTNH **2.8.4** and **2.9.0-RC-1**.
-Game checks also cover selected fixtures in **2.9.0-RC-2**. The adapter tables
-describe implementation coverage, not a claim that every block renders identically.
+Runtime support targets: Minecraft 1.7.10, GTNH **2.8.4** and **2.9.0-RC-2**,
+with each pack's native dependency versions. The adapter tables describe
+implementation coverage, not a claim that every block renders identically.
 
 Schematica Plus support targets the current version. When installed on both sides,
 use the same current version on client and server. Older Plus releases,
@@ -11,12 +11,14 @@ targets. Client-only use on servers without Plus remains supported within the
 command/NBT limits below. Both target GTNH packs and their native dependency
 versions remain in scope.
 
-The official manifests are [2.8.4](https://github.com/GTNewHorizons/GT-New-Horizons-Modpack/blob/2.8.4/README.md)
+The earlier source investigation used the official manifests [2.8.4](https://github.com/GTNewHorizons/GT-New-Horizons-Modpack/blob/2.8.4/README.md)
 and [2.9.0-RC-1](https://github.com/GTNewHorizons/GT-New-Horizons-Modpack/blob/2.9.0-RC-1/README.md).
 [gtnh-mods.json](gtnh-mods.json) retains their 231 and 242 entries, respectively,
 with a 256-entry union that includes renamed projects. `source_refs` records exact
 release tags and commit IDs for 90 repositories. A recorded revision means the
 source was acquired and version-pinned; it does not mean every class was reviewed.
+This registry is historical source provenance, not the RC-2 installation manifest.
+Use the exact official RC-2 distribution for that runtime.
 The source investigation followed tile persistence, client synchronization,
 render-state writers/readers and fluid-container placement paths.
 
@@ -145,6 +147,10 @@ accepted merely because they contain or interact with fluid.
 
 ## File behavior and limits
 
+Sponge `.schem` v1-v3 is import-only; biomes are ignored. The other supported
+formats are `.schematic`, `.schemplus`, `.litematic` and structure `.nbt`. Modern
+block/NBT conversion is partial; inspect import warnings and test converted copies.
+
 - Enable NBT saving and recapture the original build. Old schematics cannot
   recreate client fields that were never saved.
 - Singleplayer uses the integrated server world. Remote capture can preserve
@@ -154,8 +160,8 @@ accepted merely because they contain or interact with fluid.
   When saved tile/entity data is present, an explicit blocks-only confirmation
   explains that inventories, machine data, sign text and entities will be omitted.
   The source schematic is preserved. Complete NBT needs singleplayer or Plus on
-  the server; command-mode update suppression remains unsupported. This new
-  confirmation flow still needs the in-game checks in TESTING.md.
+  the server; command-mode update suppression remains unsupported. The consent
+  flow was checked in both native packs; see the dated results in TESTING.md.
 - Canonical NBT and visual state are separate. Loading a smaller client update
   must not overwrite unsynchronized inventories when saving again or pasting.
 - Binary adapters are version-guarded. Multipart/LogisticsPipes streams also use
@@ -165,16 +171,19 @@ accepted merely because they contain or interact with fluid.
 - World time, frame interpolation and selected safe visual updates advance.
   Full machine ticking is not enabled. Private tick counters, transient transport
   particles and entity-targeted effects are not universally reproduced.
-- Native block rotations remain in use. The added side-state transform covers EnderIO conduits and GT
-  pipes; AE2 multipart orientations, GT machine extended facings and other custom
-  encodings are not all transformed. Absolute links inside opaque NBT/streams,
-  including link rotation, need additional per-mod handling.
+- Native block rotations remain in use, with explicit transforms for supported
+  EnderIO/GT sides, GT extended facings, AE2 parts, ArchitectureCraft shapes and
+  other named adapters. Unknown directional encodings and absolute links inside
+  opaque NBT/streams still need per-mod handling. Supported samples are listed in
+  TESTING.md; representable transforms do not cover every machine or shape.
 - Neighbors outside the selection, layer-filtered neighbor queries, biome tint,
   original lighting and shader-specific output can still change the appearance.
-- As of 2026-09-30, the public source URLs for Catwalks-2, Galaxy-Space-GTNH,
-  harvestcraft and Automagy-GTNH were unavailable. They are not source-verified.
-  The manifests' binary-only entries such as Thaumcraft, Witchery, Extra Utilities
-  and BiblioCraft have not received a complete tile-render audit.
+- During the source investigation, public source URLs for Catwalks-2,
+  Galaxy-Space-GTNH, harvestcraft and Automagy-GTNH were unavailable. Binary-only
+  or restricted projects are not source-verified implementations. Later format,
+  transform and rendering fixtures cover selected examples in these families and
+  Thaumcraft, Witchery, Extra Utilities and BiblioCraft; they are not a complete
+  tile-render audit. Restricted source is not copied into Plus.
 
 Client-only command editing requires native server command replies. The queue
 waits for these replies and stops on permission errors or an unconfirmed result;
@@ -184,8 +193,9 @@ does not transfer inventories, sign text or entities to a server without Plus.
 
 ## Verification
 
-`gradlew build --offline --no-daemon` compiles, reobfuscates, runs Checkstyle and
-executes the unit tests. The tests cover bounded codecs, field restoration,
+`./gradlew build` compiles, reobfuscates, runs Checkstyle and executes the unit
+tests; also run `LC_ALL=C.UTF-8 ./gradlew test`. Offline mode requires a populated
+dependency cache. The tests cover bounded codecs, field restoration,
 client/server distinctions, snapshot isolation, stream framing and transformations.
 Small test fixtures do not reproduce entire upstream mods and are not packaged.
 
@@ -198,7 +208,9 @@ versions, including the old loader's r5.9.2 fallback and the limited tested pres
 Separate OptiFine E7/r5.2.2 views passed the sampled 2.8.4 face checks. Native
 2.9.0-RC-2 fails before the menu because of a Hodgepodge/OptiFine font mixin
 conflict, reproduced with Plus removed; its OptiFine rendering remains untested.
-Follow [TESTING.md](../TESTING.md) for scenarios still needing coverage, including
-multiplayer, Freecam, multiple instances, chunk boundaries, rotations, dimension
-changes, shaders and save/reload round trips. A passing fixture does not establish
-complete compatibility for its entire mod.
+Follow [TESTING.md](../TESTING.md) for repeatable regression scenarios and dated
+results. Multiplayer, chunk boundaries, transforms, dimensions and round trips
+have representative coverage. Remaining work includes new powered structures on
+dedicated servers, 2.8.4 Freecam, longer transition sequences, opaque cross-pack
+data and additional shader/driver combinations; see HANDOUT section 11. A passing
+fixture does not establish complete compatibility for its entire mod.

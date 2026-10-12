@@ -12,21 +12,24 @@ LunatriusCore installations. Its mod entry point and global GUI hooks are not bu
 
 ## Litematica and MaLiLib UI
 
-The UI port includes material from Litematica 26.1.2-0.27.8 and MaLiLib
+The original UI asset imports include material from Litematica 26.1.2-0.27.8 and MaLiLib
 26.1.2-0.28.8, by masa, Sakura-Ryoko and their contributors, under LGPL version 3.
 Upstream projects: https://github.com/maruohon/litematica and
 https://github.com/maruohon/malilib. The MaLiLib reference checkout is
 https://github.com/sakura-ryoko/malilib/tree/d194eb689d60f13ba39df4ab525dca64b1cf4478.
-Litematica was supplied as a local source snapshot with the version above.
+The initial Litematica assets came from the source snapshot at the version above.
+Current behavior and translation references are Litematica 26.1.2-0.27.12 and
+MaLiLib 26.1.2-0.28.11; their pinned revisions are recorded in HANDOUT.md.
 
 - `assets/schematica_plus/textures/gui/litematica_widgets.png` is the unmodified
   Litematica `assets/litematica/textures/gui/gui_widgets.png` atlas.
 - `assets/schematica_plus/textures/gui/malilib_widgets.png` is the unmodified
   MaLiLib `assets/malilib/textures/gui/gui_widgets.png` atlas.
 - `assets/schematica_plus_litematica/lang/*.lang` contains the complete upstream
-  language catalogs (13 Litematica locales and 12 MaLiLib locales), converted
-  from JSON to the 1.7.10 language format without renaming keys or rewriting translations.
-  The original translator-credit keys are included.
+  language catalogs (14 Litematica locales and 13 MaLiLib locales), combined into
+  14 locale files and converted from JSON to the 1.7.10 language format. Original
+  keys and translator credits are retained; `tools/import_translations.py` applies
+  selected functional branding and legacy format-placeholder repairs.
 - Java files carrying `SPDX-License-Identifier: LGPL-3.0-only` adapt upstream
   UI layouts, layer-range/color-editor behavior, area-manager rows, Normal/subregion editors, file-manager/text/confirmation dialogs, color options and defaults,
   icon coordinates and drawing conventions to the internal 1.7.10
