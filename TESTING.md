@@ -2403,10 +2403,10 @@ intact. Both packs also passed front/reverse preview checks for the existing
 with alpha disabled; machine operation and material counts were not retested by
 these additional views. Evidence is in `/workspace/release-issues/shader-validation`.
 Build, Checkstyle and all 603 tests passed; no production code changed.
-Real GPUs, OptiFine, other shader families, higher presets and Nether/End shader
-effects remain untested.
+The later OptiFine checks are recorded below. Real GPUs, other shader families,
+higher presets and Nether/End shader effects remain untested.
 
-### Separate OptiFine shader validation (pending)
+### Separate OptiFine shader validation
 
 On 2026-10-12, independent copies of both target packs and the synthetic shader
 worlds were prepared under `/workspace/release-issues/optifine-validation`.
@@ -2414,8 +2414,10 @@ Angelica was removed from these copies; the original instances were preserved.
 Hodgepodge's `removeOptifineGLErrors` was disabled in the copies so diagnostics
 remain visible. Current Plus was installed, with its exact filename and checksum
 in `preparation.json`. Launch argument paths and missing-OptiFine guards were
-checked. Build, Checkstyle and 603 tests passed, but no OptiFine game run occurred:
-the environment proxy denied the official download site with CONNECT 403.
+checked. The initial official download attempt was blocked by CONNECT 403;
+access succeeded on retry. The actual runtime was OptiFine 1.7.10 HD U E7,
+which includes ShadersMod. Exact binaries, hashes and results are recorded in
+`compatibility/render-audit.md` and the external directory's `runtime.json`.
 
 1. Obtain a verified official Minecraft 1.7.10 OptiFine runtime, recording its
    version and hash. Verify whether that release needs a separate compatible
@@ -2433,5 +2435,37 @@ the environment proxy denied the official download site with CONNECT 403.
 5. Check shader off/on, a completed integrated-server shutdown before reentry,
    and cold startup. If either startup or rendering fails, compare a further
    disposable copy without Plus before attributing the failure to this mod.
-6. Record successful, failed and unexecuted combinations separately. Until these
-   checks run, the preceding Angelica results say nothing about OptiFine support.
+6. Record successful, failed and unexecuted combinations separately. Angelica
+   results do not establish OptiFine support. Wait for native terrain to finish
+   rebuilding after a shader toggle before judging a screenshot: the first
+   2.8 post-toggle capture lacked terrain, while later settled views were intact.
+
+Actual 2.8.4 checks with E7 and Complementary r5.2.2 entered the copied world,
+initialized nonzero native shader programs and visibly rendered terrain shadows.
+Inspected paired real/preview chests, glass against black backdrops, GT glass,
+filled tank/water, alpha/overlays and hide/show. ArchitectureCraft's 18 shapes,
+AE2 parts/facades and the GT Electric Blast Furnace were inspected from both
+sides with alpha disabled. These samples showed no new missing face. Shader
+off/on returned to an active initialized pack and intact settled previews.
+A full cold client with r5.2.2 selected reopened the world with active shaders
+and intact inspected previews. Native state confirmed complete integrated-server
+shutdown before the restart. The cold run also logged repeated
+`GL error 0x0500: Invalid enum at pre-final` diagnostics.
+A cold control with only Plus removed, on a further copy of that world, activated
+the same shader pack and reproduced this diagnostic. Keep GL-error suppression
+disabled in both cases when repeating the comparison. The precise upstream/driver
+cause is unassigned; the error is not specific to Plus.
+Preview lighting/water remains different from real blocks; E7 also logs
+unsupported modern pack options/block mappings, so this is not full material
+or shader-feature parity.
+
+Native 2.9.0-RC-2 failed before the main menu with E7, even with shaders OFF.
+Removing only Plus reproduced Hodgepodge 2.7.215's
+`MixinFontRenderer_FallbackShadow` error: missing `@Shadow field_78286_d` in
+OptiFine `FontRenderer`. This is a pack/OptiFine startup conflict. No world or
+shader rendering was tested in that combination; no third-party mod was patched
+or downgraded. Recheck both with and without Plus when the upstream conflict is
+resolved. r5.9.2 on OptiFine, other shader families, real GPUs, higher settings
+and Nether/End remain untested.
+Build, main/test Checkstyle and a fresh run of all 603 tests passed with no
+failures, errors or skips; no production code changed.

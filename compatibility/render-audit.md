@@ -170,10 +170,81 @@ handshake timeout.
 Evidence, option files, native probe logs and inspected screenshots are outside
 the repository at `/workspace/release-issues/shader-validation`. No shader-pack
 source or test world is distributed with Plus. Only these Overworld fixtures and
-this low preset were tested: real GPUs, OptiFine, other shader families, higher
-presets, Nether/End effects and general connected/animated mod structures remain
-unverified under external shaders.
+this low preset were tested in that run. The later OptiFine checks are recorded
+below; real GPUs, other shader families, higher presets, Nether/End effects and
+general connected/animated mod structures remain unverified under external shaders.
 
+
+## Separate OptiFine shader validation (2026-10-12)
+
+The official download became accessible on retry. The independent pack copies
+used `OptiFine_1.7.10_HD_U_E7.jar` from `https://optifine.net/downloads`, SHA-256
+`8bcd9d83de001a0591f498105f369f070c47d2c9192774d5a5b69f646e44fab4`.
+The official E7 changelog and actual runtime confirm its built-in ShadersMod;
+no separate ShadersMod was installed. Angelica was absent in both copies.
+Native Java 21/lwjgl3ify and the remaining pack mods were retained, with
+Hodgepodge `removeOptifineGLErrors=false` to keep diagnostics visible.
+
+The tested Plus JAR was
+`schematica_plus-1.0.0.beta.2-master.7+2fc0cc9bf0.jar`, SHA-256
+`db337a5cde8035c2056748094af35675bfb40348840cc2aedf2673eb6234cd1b`.
+Rendering used Mesa 25.0.7 llvmpipe, OpenGL 4.5 compatibility profile, 854x480.
+Only synthetic copied worlds were opened; the original Angelica instances and
+user files were not changed.
+
+| Pack / renderer | Actual result |
+| --- | --- |
+| GTNH 2.8.4 / OptiFine E7 / shaders OFF | Entered the copied world and inspected the block/preview baseline. |
+| GTNH 2.8.4 / OptiFine E7 / Complementary Reimagined r5.2.2 | Shader programs initialized, visible terrain shadows; inspected the paired fixtures and representative mod previews. |
+| GTNH 2.9.0-RC-2 / OptiFine E7 / shaders OFF | Exits before the main menu, both with and without Plus. Shader rendering could not be tested. |
+
+The r5.2.2 archive and low-cost settings are those recorded in the preceding
+Angelica section. Native `shaderPackLoaded` and `isShaderPackInitialized` were
+true, with nonzero terrain/composite/shadow program IDs. There were no external
+pack shader compile/link errors in this run. E7 did log unsupported/ambiguous
+options, newer block names/metadata and custom-uniform warnings; initialization
+does not prove that every modern pack feature works on this old loader.
+
+Inspected 2.8 views included single/double/ender chests, glass against a real
+black backdrop, stained/GT glass, a filled TConstruct tank, IronChest crystal
+chest, enclosed water, stairs/slabs/leaves, alpha and missing-block overlays,
+and preview hide/show. ArchitectureCraft's existing 18-shape fixture, AE2
+parts/facades and the GT Electric Blast Furnace were inspected from both sides
+with alpha disabled. No new missing face was confirmed in these samples.
+Preview water and lighting still differ from real shader-rendered blocks;
+full shader material, reflection and shadow parity is not established.
+
+Shader off/on returned to initialized shader programs. An immediate post-toggle
+capture showed unreconstructed terrain while previews were already visible;
+later settled overview and close glass/tank views showed the real platform,
+backdrop and terrain intact. The early capture is not a transition pass by itself.
+A full 2.8 client restart with r5.2.2 already selected also opened the copied
+world with initialized shaders and intact inspected preview faces. Before
+restarting, native state confirmed `serverStopped=true` and `serverRunning=false`.
+This cold run emitted repeated `GL error 0x0500: Invalid enum at pre-final`
+diagnostics, unlike the earlier run that enabled shaders after entering the world.
+Another cold client with only Plus removed entered a further copy of the same
+world, initialized the same pack and reproduced that diagnostic. It is therefore
+not specific to Plus; the exact upstream/driver cause remains undetermined.
+The pack normally enables Hodgepodge's suppression of this OptiFine diagnostic;
+suppression stayed disabled in both test cases. No suppression change was used
+to make this check appear clean.
+
+The 2.9 startup failure names Hodgepodge 2.7.215's
+`minecraft.MixinFontRenderer_FallbackShadow`: its `@Shadow field_78286_d` is
+absent from OptiFine's `FontRenderer`. Removing only Plus reproduced the same
+fatal error before opening any world. The tagged Hodgepodge source registers
+this mixin unconditionally; its normal configuration has no individual switch
+([tagged registration](https://github.com/GTNewHorizons/Hodgepodge/blob/2.7.215/src/main/java/com/mitchej123/hodgepodge/mixins/Mixins.java#L697)).
+This is a pack/OptiFine startup conflict, not evidence of a Plus rendering bug.
+No third-party JAR was patched or downgraded to manufacture a passing result.
+
+Evidence, installed checksums, launchers, native state logs and inspected images
+are outside the repository at `/workspace/release-issues/optifine-validation`.
+These results do not cover OptiFine with r5.9.2, other shader families, real GPUs,
+higher presets, Nether/End effects, or working OptiFine rendering in native 2.9.
+Build, main/test Checkstyle and 603 freshly rerun tests passed with zero failures,
+errors or skips. Only validation documentation changed in the repository.
 
 ## Historical fixtures and pasted Multipart tiles
 

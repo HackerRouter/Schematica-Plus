@@ -195,6 +195,9 @@ checks the build after the chest depth fix and tracks the additional old-Angelic
 render-pass fix for TConstruct container shells and GT industrial glass. It also
 records actual Complementary Reimagined shader tests on both native Angelica
 versions, including the old loader's r5.9.2 fallback and the limited tested presets.
+Separate OptiFine E7/r5.2.2 views passed the sampled 2.8.4 face checks. Native
+2.9.0-RC-2 fails before the menu because of a Hodgepodge/OptiFine font mixin
+conflict, reproduced with Plus removed; its OptiFine rendering remains untested.
 Follow [TESTING.md](../TESTING.md) for scenarios still needing coverage, including
 multiplayer, Freecam, multiple instances, chunk boundaries, rotations, dimension
 changes, shaders and save/reload round trips. A passing fixture does not establish
