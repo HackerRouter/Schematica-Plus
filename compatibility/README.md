@@ -98,8 +98,10 @@ mods do not each need a tile-visual adapter.
 
 GTNH 2.8.4 (NEI 2.8.44) supports bookmark crafting chains; GTNH 2.9.0-RC-2
 (NEI 2.8.155) also supports the graphical crafting tree. Sending a material list
-creates a saved demand node, shown as a named book. Its ingredients are required
-materials, so they are not mistaken for existing inventory. Select production
+creates a saved demand node, shown as a book named after the source schematic file,
+including its extension. Lists without a single schematic source use their list name.
+Its ingredients are required materials, so they are not mistaken for existing
+inventory. Select production
 recipes with S or the native tree controls; NEI determines batches and further
 ingredients. A request for 17 iron bars with a three-bar recipe requires six
 batches, not one. The book is an informational plan, with no crafting overlay.

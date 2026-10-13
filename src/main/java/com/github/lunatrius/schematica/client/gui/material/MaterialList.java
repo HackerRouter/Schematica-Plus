@@ -149,6 +149,11 @@ public final class MaterialList {
         return kind == Kind.SCHEMATIC ? fileName : schematic == null ? "-" : schematic.name;
     }
 
+    public String sourceName() {
+        return schematic != null && schematic.sourceFilename != null && !schematic.sourceFilename.isEmpty()
+            ? schematic.sourceFilename : name();
+    }
+
     public String title() {
         switch (kind) {
             case AREA: return UiTranslations.format("litematica.gui.title.material_list.area_analyzer", area.name());

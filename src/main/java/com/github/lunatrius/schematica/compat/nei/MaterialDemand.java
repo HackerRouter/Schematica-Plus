@@ -18,11 +18,11 @@ final class MaterialDemand {
 
     private MaterialDemand() {}
 
-    static ItemStack marker(List<ItemStack> stacks) {
+    static ItemStack marker(String name, List<ItemStack> stacks) {
         ItemStack book = new ItemStack(Items.written_book);
         NBTTagCompound tag = new NBTTagCompound();
         tag.setTag(KEY, encode(stacks));
-        String title = UiTranslations.format("schematica.nei.demand");
+        String title = name == null || name.isEmpty() ? UiTranslations.format("schematica.nei.demand") : name;
         tag.setString("title", title);
         tag.setString("author", "Schematica Plus");
         NBTTagList pages = new NBTTagList();

@@ -1,6 +1,6 @@
 # Verification
 
-Current scenario guide, reviewed 2026-10-12. Run `./gradlew build` and
+Current scenario guide, reviewed 2026-10-13. Run `./gradlew build` and
 `LC_ALL=C.UTF-8 ./gradlew test`; the current suite contains **615 tests**.
 Steps below are regression scenarios, not claims that every combination passed.
 Only dated observation paragraphs record actual game checks; their test counts and
@@ -1728,6 +1728,12 @@ bookmark crafting chains; the latter also has the graphical crafting tree.
   Shift sends totals. Check a partially built placement, a multiplier greater than one, ignored rows
   and a material replacement. Zero demand must not create an empty group; excessive amounts must
   report the export limit instead of silently truncating the list.
+- Send materials from both the file browser and a placement. The book must use the source filename,
+  including `.schematic`, `.schemplus`, `.litematic`, `.schem` or `.nbt`; include a Chinese filename.
+  Renaming a placement must not replace the source filename with the placement name. Lists without
+  a single schematic source use their list name. Save/reload bookmarks and reopen the demand recipe:
+  the book name, extension and original material counts must survive. Send identical materials from
+  differently named files and confirm that each saved group retains its own book name.
 - Use 17 iron bars and three iron blocks as a fixture. Select the shaped iron-bar recipe producing
   three bars from six rods. Click S: the chain must request 36 rods and produce 18 bars (six batches),
   while still requesting the three iron blocks. Repeated S must not duplicate the recipe.
@@ -1748,6 +1754,24 @@ bookmark crafting chains; the latter also has the graphical crafting tree.
 - Without GTNH NEI, the optional button must not appear and normal materials/recipe screens must
   remain usable. This integration selects recipes manually; it does not choose a GT machine route,
   perform crafts or replace NEI's native tool, fluid, byproduct and ore-dictionary calculations.
+
+### NEI demand book filenames
+
+On 2026-10-13, both native clients passed file-browser exports for `.schematic`,
+`.schemplus`, `.litematic`, `.schem` and `.nbt`, including `原理图.schemplus`.
+Native mouse clicks on Send to NEI created seven groups per pack: five file
+formats, a renamed placement and a custom list. Each retained the expected name
+and three-stone demand after native bookmark-file save/reload. Reopening demand
+recipes succeeded; later groups did not change earlier books with identical
+materials. Both Chinese book tooltips were visually inspected. Source-less custom
+lists used their list name. Previously saved generic books need to be sent again
+to acquire a source filename; they did not store one when created.
+
+Build, Checkstyle and all 615 automated tests passed. Tested runtime JAR SHA-256:
+`1920a276611387c6992f52ae3f75fc74e5e7e3bb82608690e73efbff2b97f228`.
+Evidence: `<evidence-dir>/nei-book-name/verify*.log`, `post*.log`, saved bookmarks
+and `screenshots/nei-*-book-tooltip.png`. This run reloaded native bookmark files;
+the preceding complex-chain run separately covered full client restarts.
 
 ### Complex NEI chains in both native packs
 

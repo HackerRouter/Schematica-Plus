@@ -1,6 +1,6 @@
 # Schematica Plus: development handoff
 
-Current guide, reviewed 2026-10-12. Runtime baseline: Minecraft 1.7.10 / Forge
+Current guide, reviewed 2026-10-13. Runtime baseline: Minecraft 1.7.10 / Forge
 10.13.4.1614, release `1.0.0.beta.2`, with subsequent fixes on `master`.
 Support targets: GTNH **2.8.4** and **2.9.0-RC-2**, using each pack's native
 mod versions. See [README](README.md) for usage, [TESTING](TESTING.md) for regression
@@ -325,6 +325,7 @@ steps and limitations are in TESTING; the full implementation history is in Git.
 | VISUAL_CHECKED_HEADLESS | 2026-10-12 | Reconciled current documentation, removed machine/private references and obsolete UI test entry/handler/translations; HANDOUT, TESTING, compatibility guides and input/UI resources. Build and 609 tests pass; native menu/hotkey checks in both packs recorded in TESTING (no new gameplay claim). |
 | IMPLEMENTED_HEADLESS | 2026-10-12 | Reject incomplete/trailing Sponge block data, overflowing varints and invalid/duplicate palette indices; `SpongeSchematic` and its tests. Six new regressions fail before the fix; build and all 615 tests pass. Native constructed-file checks are recorded in TESTING; real WorldEdit/FAWE export acceptance remains pending. |
 | VISUAL_CHECKED_HEADLESS | 2026-10-12 | Register NEI demand classification/book icon and disable its crafting overlay; `compat/nei/NeiIntegration`. Both native packs passed ten complex groups against native controls, cold restarts and quantity edits. Demand pages and 2.9 multi-stage/cyclic trees inspected; build and 615 tests pass. TESTING records native probability/tool limits and Sponge reader/file-loader probes, including preservation of existing placements on rejection. |
+| VISUAL_CHECKED_HEADLESS | 2026-10-13 | Name NEI demand books after source filenames, retaining extensions; material-list/browser and `compat/nei` code. Both native packs passed five formats, Chinese names, renamed placements, custom-list fallback, bookmark-file reload and recipe lookup. Book tooltips inspected; build and all 615 tests pass. See TESTING NEI filename checks. |
 
 ## 7. Reported issues and current boundaries
 

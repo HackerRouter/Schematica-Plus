@@ -239,7 +239,7 @@ public class GuiSchematicMaterials extends UiScreen {
             stack.stackSize = (int) count;
             stacks.add(stack);
         }
-        int sent = com.github.lunatrius.schematica.compat.nei.NeiBridge.sendGroup(stacks);
+        int sent = com.github.lunatrius.schematica.compat.nei.NeiBridge.sendGroup(list.sourceName(), stacks);
         showNotice(UiTranslations.format(sent == -2 ? "schematica.nei.loading"
             : sent < 0 ? "schematica.nei.send_failed" : "schematica.nei.sent", Math.max(0, sent)));
     }

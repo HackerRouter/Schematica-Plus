@@ -48,10 +48,10 @@ public final class NeiBridge {
     }
 
     /** Creates a demand group; returns its material count, -1 on failure, or -2 while NEI loads its bookmarks. */
-    public static int sendGroup(List<ItemStack> stacks) {
+    public static int sendGroup(String name, List<ItemStack> stacks) {
         if (!available()) return -1;
         try {
-            return NeiIntegration.sendGroup(stacks);
+            return NeiIntegration.sendGroup(name, stacks);
         } catch (LinkageError | RuntimeException error) {
             Reference.logger.warn("Could not create the NEI bookmark group", error);
             return -1;

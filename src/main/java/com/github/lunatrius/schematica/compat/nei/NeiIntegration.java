@@ -61,7 +61,7 @@ public final class NeiIntegration {
             info -> info.setDisplayStack("minecraft:written_book", null).setShowOverlayButton(false));
     }
 
-    static int sendGroup(List<ItemStack> stacks) {
+    static int sendGroup(String name, List<ItemStack> stacks) {
         List<ItemStack> demands = new ArrayList<>();
         for (ItemStack stack : stacks) {
             if (stack != null && stack.getItem() != null && stack.stackSize > 0) demands.add(stack.copy());
@@ -72,7 +72,7 @@ public final class NeiIntegration {
         BookmarkGroup target = new BookmarkGroup(BookmarkPanel.BookmarkViewMode.DEFAULT, true);
         int id = grid.addGroup(target);
         try {
-            grid.addRecipe(MaterialDemandHandler.recipe(demands), 1, id);
+            grid.addRecipe(MaterialDemandHandler.recipe(name, demands), 1, id);
             ItemPanels.bookmarkPanel.save();
         } catch (RuntimeException | LinkageError error) {
             grid.removeGroup(id);

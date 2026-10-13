@@ -17,9 +17,9 @@ import codechicken.nei.recipe.TemplateRecipeHandler;
 public final class MaterialDemandHandler extends TemplateRecipeHandler {
     public MaterialDemandHandler() {}
 
-    static Recipe recipe(List<ItemStack> stacks) {
+    static Recipe recipe(String name, List<ItemStack> stacks) {
         MaterialDemandHandler handler = new MaterialDemandHandler();
-        handler.loadCraftingRecipes(MaterialDemand.marker(stacks));
+        handler.loadCraftingRecipes(MaterialDemand.marker(name, stacks));
         return Recipe.of(handler, 0);
     }
 

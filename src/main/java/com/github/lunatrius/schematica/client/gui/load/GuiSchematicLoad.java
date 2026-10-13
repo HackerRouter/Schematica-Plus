@@ -182,6 +182,7 @@ public final class GuiSchematicLoad extends GuiSchematicBrowser {
         }
         String name = file.getName().substring(0, file.getName().lastIndexOf('.'));
         SchematicWorld world = new SchematicWorld(schematic, file.getName());
+        world.sourceFilename = file.getName();
         List<SchematicRegion> regions = schematic.getRegions();
         if (isShiftKeyDown() && regions.size() > 1) {
             List<String> names = new ArrayList<>();
