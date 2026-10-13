@@ -299,8 +299,8 @@ public final class LegacyNbt {
     /** Numeric item ids in every nested stack become registry names. */
     private static void itemsTo112(NBTTagCompound tag, int depth) {
         if (depth > SchematicLimits.MAX_NBT_DEPTH) throw new IllegalArgumentException("NBT nesting is too deep");
-        if (itemStack(tag) && tag.hasKey("id", NBT.TAG_SHORT)) {
-            Item item = Item.getItemById(tag.getShort("id"));
+        if (itemStack(tag) && (tag.hasKey("id", NBT.TAG_SHORT) || tag.hasKey("id", NBT.TAG_INT))) {
+            Item item = Item.getItemById(tag.hasKey("id", NBT.TAG_INT) ? tag.getInteger("id") : tag.getShort("id") & 0xFFFF);
             String name = item == null ? null : GameData.getItemRegistry().getNameForObject(item);
             if (name != null) tag.setString("id", name);
         }
@@ -308,7 +308,7 @@ public final class LegacyNbt {
         for (Object key : tag.func_150296_c()) visit(tag.getTag((String) key), depth, true);
     }
 
-    /** Registry-name item ids become this game's numeric ids; names unknown here stay and load as nothing. */
+    /** Registry-name item ids become this game's numeric ids; missing items leave an empty slot and a warning. */
     private static void itemsFrom112(NBTTagCompound tag, int depth) {
         if (depth > SchematicLimits.MAX_NBT_DEPTH) throw new IllegalArgumentException("NBT nesting is too deep");
         if (itemStack(tag) && tag.hasKey("id", NBT.TAG_STRING)) itemDataFrom112(tag);
@@ -316,6 +316,13 @@ public final class LegacyNbt {
             Item item = (Item) GameData.getItemRegistry().getObject(tag.getString("id"));
             if (item != null && GameData.getItemRegistry().containsKey(tag.getString("id"))) {
                 tag.setShort("id", (short) Item.getIdFromItem(item));
+            } else {
+                if (tag.getByte("Count") != 0 && !"minecraft:air".equals(tag.getString("id"))) {
+                    ImportReport.items().removed++;
+                    ImportReport.items().unknownItems.add(tag.getString("id"));
+                }
+                tag.setShort("id", (short) 0);
+                tag.setByte("Count", (byte) 0);
             }
         }
         for (Object key : tag.func_150296_c()) visit(tag.getTag((String) key), depth, false);

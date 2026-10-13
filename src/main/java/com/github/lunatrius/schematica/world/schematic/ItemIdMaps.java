@@ -22,6 +22,7 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.function.IntUnaryOperator;
 
+import net.minecraft.block.Block;
 import net.minecraft.item.Item;
 import net.minecraft.nbt.CompressedStreamTools;
 import net.minecraft.nbt.NBTBase;
@@ -37,7 +38,7 @@ import com.github.lunatrius.schematica.util.SchematicLimits;
 import cpw.mods.fml.common.registry.GameData;
 
 /**
- * 1.7.10 stacks store numeric item ids, which differ between modpacks and worlds. Alpha files therefore also store
+ * 1.7.10 stacks store numeric item ids, which differ between modpacks and worlds. Saved files therefore also store
  * the names of the item ids their stacks use, and loading turns the ids into this game's. Older files only name
  * their block ids; their item ids are looked up in an id map whose block ids match those names: one archived when
  * a world was joined, or the level.dat of the world the file was saved in. Stacks of ids that cannot be resolved
@@ -60,6 +61,8 @@ public final class ItemIdMaps {
         int item(String name);
         /** The name of an item id, or null. */
         String itemName(int id);
+        /** The name of a block id, or null. */
+        default String blockName(int id) { return null; }
     }
 
     /** An id map read from an FML ItemData list (a level.dat or an archive). */
@@ -74,6 +77,10 @@ public final class ItemIdMaps {
         @Override public int block(String name) { Integer id = blocks.get(name); return id == null ? -1 : id; }
         @Override public int item(String name) { Integer id = items.get(name); return id == null ? -1 : id; }
         @Override public String itemName(int id) { return itemNames.get(id); }
+        @Override public String blockName(int id) {
+            for (Map.Entry<String, Integer> entry : blocks.entrySet()) if (entry.getValue() == id) return entry.getKey();
+            return null;
+        }
 
         void put(String key, int id) {
             if (key.isEmpty()) return;
@@ -110,6 +117,10 @@ public final class ItemIdMaps {
             Item item = Item.getItemById(id);
             return item == null ? null : GameData.getItemRegistry().getNameForObject(item);
         }
+        @Override public String blockName(int id) {
+            Block block = Block.getBlockById(id);
+            return block == null ? null : GameData.getBlockRegistry().getNameForObject(block);
+        }
     };
 
     static boolean vanilla(Ids ids, int id) {
@@ -117,7 +128,7 @@ public final class ItemIdMaps {
         return name != null && name.startsWith("minecraft:");
     }
 
-    /** Writes the names of the item ids the tile entities, entities and icon of an Alpha root use. */
+    /** Writes the names of numeric item references, including mod-specific fields in named formats. */
     public static void writeMapping(NBTTagCompound root, Ids ids) {
         NBTTagCompound mapping = new NBTTagCompound();
         visitRoot(root, id -> {
@@ -129,7 +140,7 @@ public final class ItemIdMaps {
         else root.setTag(ITEM_MAPPING, mapping);
     }
 
-    /** Turns the item ids of an Alpha root into this game's, then names them so a second load leaves them alone. */
+    /** Turns stored item ids into this game's, then names them so a second load leaves them alone. */
     public static void remap(NBTTagCompound root, Result result) {
         remap(root, CURRENT, ItemIdMaps::archives, result);
     }
@@ -150,9 +161,6 @@ public final class ItemIdMaps {
             NBTTagCompound mapping = root.getCompoundTag(ITEM_MAPPING);
             Map<Integer, String> names = new HashMap<>();
             for (Object key : mapping.func_150296_c()) names.put(mapping.getInteger((String) key), (String) key);
-            boolean identity = true;
-            for (Map.Entry<Integer, String> entry : names.entrySet()) identity &= current.item(entry.getValue()) == entry.getKey();
-            if (identity) return null;
             return id -> {
                 String name = names.get(id);
                 if (name == null) return vanilla(current, id) ? id : REMOVE;
@@ -195,10 +203,7 @@ public final class ItemIdMaps {
 
     /** Every stored stack of the tile entities, entities and icon; the operator gives the new id, or -1 to remove. */
     static void visitRoot(NBTTagCompound root, IntUnaryOperator ids) {
-        visitList(root.getTagList(Names.NBT.TILE_ENTITIES, NBT.TAG_COMPOUND), ids, 0, false);
-        visitList(root.getTagList(Names.NBT.ENTITIES, NBT.TAG_COMPOUND), ids, 0, false);
-        if (root.hasKey(Names.NBT.ICON, NBT.TAG_COMPOUND) && stack(root.getCompoundTag(Names.NBT.ICON))
-            && !apply(root.getCompoundTag(Names.NBT.ICON), "id", ids)) root.removeTag(Names.NBT.ICON);
+        visit(root, ids, 0);
     }
 
     private static boolean numeric(NBTTagCompound tag, String key) {
@@ -213,7 +218,7 @@ public final class ItemIdMaps {
     /** Sets the new id of a numeric field, keeping its type; false when the stack is to be removed. */
     private static boolean apply(NBTTagCompound tag, String key, IntUnaryOperator ids) {
         boolean wide = tag.hasKey(key, NBT.TAG_INT);
-        int next = ids.applyAsInt(wide ? tag.getInteger(key) : tag.getShort(key));
+        int next = ids.applyAsInt(wide ? tag.getInteger(key) : tag.getShort(key) & 0xFFFF);
         if (next == REMOVE) return false;
         if (wide) tag.setInteger(key, next);
         else tag.setShort(key, (short) next);
@@ -223,11 +228,11 @@ public final class ItemIdMaps {
     private static void visit(NBTTagCompound tag, IntUnaryOperator ids, int depth) {
         if (depth > SchematicLimits.MAX_NBT_DEPTH) throw new IllegalArgumentException("NBT nesting is too deep");
         String type = tag.getString("id");
-        if ("FlowerPot".equals(type) && tag.hasKey("Item", NBT.TAG_INT) && tag.getInteger("Item") != 0 && !apply(tag, "Item", ids)) {
+        if (("FlowerPot".equals(type) || "minecraft:flower_pot".equals(type)) && tag.hasKey("Item", NBT.TAG_INT) && tag.getInteger("Item") != 0 && !apply(tag, "Item", ids)) {
             tag.setInteger("Item", 0);
             tag.setInteger("Data", 0);
         }
-        if ("RecordPlayer".equals(type) && tag.hasKey("Record", NBT.TAG_INT) && tag.getInteger("Record") != 0 && !apply(tag, "Record", ids)) {
+        if (("RecordPlayer".equals(type) || "minecraft:jukebox".equals(type)) && tag.hasKey("Record", NBT.TAG_INT) && tag.getInteger("Record") != 0 && !apply(tag, "Record", ids)) {
             tag.setInteger("Record", 0);
         }
         // older GregTech covers: mCoverSides, one item id | damage << 16 per side
@@ -248,28 +253,39 @@ public final class ItemIdMaps {
             tag.setInteger("Count", 0);
         }
         for (Object key : tag.func_150296_c().toArray()) {
+            if (ITEM_MAPPING.equals(key)) continue;
             NBTBase child = tag.getTag((String) key);
             if (child instanceof NBTTagCompound) {
                 NBTTagCompound compound = (NBTTagCompound) child;
+                if (compound.hasKey(ITEM_MAPPING, NBT.TAG_COMPOUND)) continue;
                 if (stack(compound) && !apply(compound, "id", ids)) tag.removeTag((String) key);
                 else visit(compound, ids, depth + 1);
             } else if (child instanceof NBTTagList && ((NBTTagList) child).func_150303_d() == NBT.TAG_COMPOUND) {
-                visitList((NBTTagList) child, ids, depth + 1, COVERS.equals(key));
+                visitList((NBTTagList) child, ids, depth + 1, COVERS.equals(key),
+                    "Equipment".equals(key) || "ArmorItems".equals(key) || "HandItems".equals(key));
             }
         }
     }
 
-    private static void visitList(NBTTagList list, IntUnaryOperator ids, int depth, boolean covers) {
+    private static void visitList(NBTTagList list, IntUnaryOperator ids, int depth, boolean covers, boolean positional) {
         for (int i = list.tagCount() - 1; i >= 0; i--) {
             NBTTagCompound element = list.getCompoundTagAt(i);
+            if (element.hasKey(ITEM_MAPPING, NBT.TAG_COMPOUND)) continue;
             if (covers && element.hasKey("id", NBT.TAG_INT)) {
                 // GregTech covers: {s: side, id: item id | damage << 16}
                 int cover = element.getInteger("id");
                 int next = ids.applyAsInt(cover & 0xFFFF);
                 if (next == REMOVE) list.removeTag(i);
-                else element.setInteger("id", next | cover & 0xFFFF0000);
+                else {
+                    element.setInteger("id", next | cover & 0xFFFF0000);
+                    visit(element, ids, depth + 1);
+                }
             } else if (stack(element)) {
-                if (!apply(element, "id", ids)) list.removeTag(i);
+                if (!apply(element, "id", ids)) {
+                    if (positional) {
+                        for (Object key : element.func_150296_c().toArray()) element.removeTag((String) key);
+                    } else list.removeTag(i);
+                }
                 else visit(element, ids, depth + 1);
             } else {
                 visit(element, ids, depth + 1);

@@ -170,7 +170,8 @@ public class NBTHelper {
     }
 
     public static TileEntity readTileEntityFromCompound(final NBTTagCompound tileEntityCompound) {
-        NBTTagCompound data = (NBTTagCompound) tileEntityCompound.copy();
+        NBTTagCompound canonical = com.github.lunatrius.schematica.compat.StorageDrawerNbt.readable(tileEntityCompound);
+        NBTTagCompound data = (NBTTagCompound) canonical.copy();
         data.removeTag(TileUpdateData.KEY);
         TileEntity tile = data.getString("id").equals("savedMultipart")
             ? ForgeMultipart.createFromNBT(data) : TileEntity.createAndLoadEntity(data);
@@ -179,7 +180,7 @@ public class NBTHelper {
             tile.yCoord = data.getInteger("y");
             tile.zCoord = data.getInteger("z");
         }
-        TileEntitySnapshots.attach(tile, tileEntityCompound);
+        TileEntitySnapshots.attach(tile, canonical);
         return tile;
     }
 

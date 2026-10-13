@@ -77,6 +77,71 @@ public class ItemIdMapsTest {
 
     private static NBTTagCompound tile(NBTTagCompound root, int index) { return root.getTagList("TileEntities", 10).getCompoundTagAt(index); }
 
+    @Test public void numericReferencesInsideNamedFormatsCarryTheirOwnMapping() {
+        NBTTagCompound root = new NBTTagCompound(), regions = new NBTTagCompound(), region = schematic();
+        root.setTag("Regions", regions); regions.setTag("Main", region);
+        ItemIdMaps.writeMapping(root, OLD);
+        assertEquals(7495, root.getCompoundTag(ItemIdMaps.ITEM_MAPPING).getInteger("gregtech:gt.metaitem.01"));
+        ItemIdMaps.remap(root, NOW, Collections::emptyList, new ItemIdMaps.Result());
+        assertEquals(8000 | 5 << 16, tile(region, 0).getTagList("gt.covers", 10).getCompoundTagAt(0).getInteger("id"));
+        assertEquals(8000, tile(region, 1).getTagList("Slots", 10).getCompoundTagAt(0).getShort("Item"));
+    }
+
+    @Test public void unknownEquipmentKeepsTheRemainingSlotsInPlace() {
+        NBTTagCompound root = new NBTTagCompound(), zombie = new NBTTagCompound();
+        NBTTagList entities = new NBTTagList(), equipment = new NBTTagList();
+        equipment.appendTag(stack(7600, 0));
+        for (int i = 1; i < 4; i++) equipment.appendTag(new NBTTagCompound());
+        equipment.appendTag(stack(7495, 32)); zombie.setTag("Equipment", equipment);
+        entities.appendTag(zombie); root.setTag("Entities", entities);
+        ItemIdMaps.writeMapping(root, OLD); ItemIdMaps.remap(root, NOW, Collections::emptyList, new ItemIdMaps.Result());
+        assertEquals(5, equipment.tagCount()); assertTrue(equipment.getCompoundTagAt(0).hasNoTags());
+        assertEquals(8000, equipment.getCompoundTagAt(4).getShort("id"));
+    }
+
+    @Test public void coverDataRemapsItsNestedFilterItemsAsWellAsTheCover() {
+        NBTTagCompound root = schematic();
+        NBTTagCompound cover = tile(root, 0).getTagList(ItemIdMaps.COVERS, 10).getCompoundTagAt(0);
+        NBTTagCompound data = new NBTTagCompound();
+        data.setTag("filter", stack(7495, 45));
+        cover.setTag("d", data);
+        ItemIdMaps.writeMapping(root, OLD);
+        ItemIdMaps.remap(root, NOW, Collections::emptyList, new ItemIdMaps.Result());
+        assertEquals(8000 | 5 << 16, cover.getInteger("id"));
+        assertEquals(8000, data.getCompoundTag("filter").getShort("id"));
+        assertEquals(45, data.getCompoundTag("filter").getShort("Damage"));
+    }
+
+    @Test public void incompleteIdentityMapDoesNotTrustUnmappedModItems() {
+        NBTTagCompound root = schematic(), mapping = new NBTTagCompound();
+        mapping.setInteger("minecraft:diamond", 264); root.setTag(ItemIdMaps.ITEM_MAPPING, mapping);
+        ItemIdMaps.Result result = new ItemIdMaps.Result(); ItemIdMaps.remap(root, NOW, Collections::emptyList, result);
+        NBTTagList inventory = tile(root, 0).getTagList("Inventory", 10);
+        assertEquals(1, inventory.tagCount()); assertEquals(264, inventory.getCompoundTagAt(0).getShort("id"));
+        assertTrue(result.removed > 0);
+    }
+
+    @Test public void itemIdsUseTheUnsignedShortRange() {
+        ItemIdMaps.Archive source = ids("source", "\u0002example:tool", 40000);
+        ItemIdMaps.Archive target = ids("target", "\u0002example:tool", 45000);
+        NBTTagCompound root = new NBTTagCompound(); root.setTag("Icon", stack(40000, 7));
+        ItemIdMaps.writeMapping(root, source);
+        assertEquals(40000, root.getCompoundTag(ItemIdMaps.ITEM_MAPPING).getInteger("example:tool"));
+        ItemIdMaps.remap(root, target, Collections::emptyList, new ItemIdMaps.Result());
+        assertEquals(45000, root.getCompoundTag("Icon").getShort("id") & 65535);
+        assertEquals(7, root.getCompoundTag("Icon").getShort("Damage"));
+    }
+
+    @Test public void independentlyMappedRegionsAreRemappedExactlyOnce() {
+        NBTTagCompound root = schematic(), child = schematic(), holder = new NBTTagCompound();
+        ItemIdMaps.writeMapping(child, OLD); holder.setTag("Schematic", child);
+        NBTTagList regions = new NBTTagList(); regions.appendTag(holder); root.setTag("SchematicaPlusRegionData", regions);
+        ItemIdMaps.writeMapping(root, OLD); ItemIdMaps.remap(root, NOW, Collections::emptyList, new ItemIdMaps.Result());
+        assertEquals(7495, tile(child, 0).getTagList("Inventory", 10).getCompoundTagAt(0).getShort("id"));
+        ItemIdMaps.remap(child, NOW, Collections::emptyList, new ItemIdMaps.Result());
+        assertEquals(8000, tile(child, 0).getTagList("Inventory", 10).getCompoundTagAt(0).getShort("id"));
+    }
+
     @Test public void namedIdsBecomeThisGamesAndUnknownNamesAreRemoved() {
         NBTTagCompound root = schematic("gregtech:gt.blockmachines", 1200);
         ItemIdMaps.writeMapping(root, OLD);

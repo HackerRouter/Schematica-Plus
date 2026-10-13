@@ -8,6 +8,37 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 public class LegacyItemDataTest {
+    @Test public void emptyNamedSlotsDoNotReportMissingItems() {
+        NBTTagCompound slot = stack("minecraft:air", 0);
+        slot.setByte("Count", (byte) 0);
+        ImportReport.begin();
+        try { LegacyNbt.tileFrom112(slot); }
+        finally { ImportReport.end(); }
+        assertEquals(0, ImportReport.lastItems().removed);
+        assertTrue(ImportReport.lastItems().unknownItems.isEmpty());
+    }
+
+    @Test public void missingNamedEquipmentIsReportedWithoutMovingSlots() {
+        NBTTagCompound entity = new NBTTagCompound();
+        entity.setString("id", "minecraft:zombie");
+        NBTTagList hands = new NBTTagList(), armor = new NBTTagList();
+        hands.appendTag(stack("missingpack:tool", 0));
+        hands.appendTag(new NBTTagCompound());
+        for (int i = 0; i < 4; i++) armor.appendTag(new NBTTagCompound());
+        entity.setTag("HandItems", hands);
+        entity.setTag("ArmorItems", armor);
+        ImportReport.begin();
+        NBTTagCompound converted;
+        try { converted = LegacyNbt.entityFrom112(entity); }
+        finally { ImportReport.end(); }
+        NBTTagList equipment = converted.getTagList("Equipment", NBT.TAG_COMPOUND);
+        assertEquals(5, equipment.tagCount());
+        assertEquals(0, equipment.getCompoundTagAt(0).getByte("Count"));
+        assertEquals(1, ImportReport.lastItems().removed);
+        assertTrue(ImportReport.lastItems().unknownItems.contains("missingpack:tool"));
+        assertEquals("missingpack:tool", hands.getCompoundTagAt(0).getString("id"));
+    }
+
     private static NBTTagCompound stack(String id, int damage) {
         NBTTagCompound stack = new NBTTagCompound();
         stack.setString("id", id);

@@ -2047,19 +2047,88 @@ coverage of every GT machine recipe or automated execution of the planned crafts
   to the build, gates keep their input/output toward the same neighbors, wires stay on the same face. Paste:
   circuits work (wires reconnect after placement).
 
-## Item ids across packs (ItemIdMaps)
+## Schematic migration across packs (ItemIdMaps / PortableSchematicData)
 
-- Save a schematic with GT machines holding items in their inventories/output slots, covers, an EnderIO conduit
+- Install the current Plus version in both packs. Work in disposable world copies and transfer schematic files,
+  rather than opening one pack's world in another pack. Prefer `.schemplus` for complete 1.7.10 mod data.
+- Save in `.schemplus`, `.schematic`, `.litematic` and structure `.nbt`, with tile/entity data enabled.
+  An Alpha export requiring extended block IDs is automatically saved as `.schemplus`; use a vanilla chest
+  holding mod items for the classic `.schematic` case. Include GT machines holding items in their inventories/output slots, covers, an EnderIO conduit
   with a filter, Storage Drawers, chests and a flower pot. Load it in a different pack (or a new world with other
-  ids): every container shows the same items as before, no foreign items appear.
-- An older file saved without the item mapping (for example by 2.8.4): load it in 2.9.0. Expected: a chat line
+  ids): every container shows the same items as before, no foreign items appear. Check counts, damage, nested
+  item NBT, GT cover side/damage, BC pipe type, and the drawer prototype/count. Paste, save/reopen the world,
+  and check again. Resave in the recipient pack and return that file to the source pack; repeat in both directions.
+- Specifically migrate StorageDrawers 2.2 in GTNH 2.9.0-RC-2 back to StorageDrawers 2.1 in 2.8.4:
+  populated drawers, counts above 64, named/tagged prototypes and empty locked drawers must retain their data.
+  The newer nested `ItemStack` layout must not become an empty drawer in the older pack.
+- Include a custom-display minecart, an Enderman carrying a block, and falling-block/moving-piston NBT with
+  mod block references. Their block IDs must use block names, independently of item IDs. A missing block becomes
+  air with a warning. First confirm the native entity can retain the reference without a schematic round trip;
+  mapping does not lift that entity's own ID limits. Unknown mod-private numbers such as material indexes are
+  outside this mapping.
+- Remove a mapped item from a constructed copy, including the held item before a helmet in an equipment list.
+  Expect a missing-item report, an empty held slot and the helmet in its original slot. Empty slots do not warn.
+- With different block/item/fluid registries, inspect a file containing `SchematicaVisualState`: opaque binary
+  adapters and tile update packets are omitted with a report; canonical NBT and named visual fields remain.
+  Matching registries retain their visual cache, subject to the existing mod-version checks.
+- A file without the item mapping, captured in another pack: load it in the recipient pack. Expected: a chat line
   says how many stacks were removed and names `config/schematica_plus/id_maps`; no baked potatoes or other wrong
-  items. Copy the level.dat of the 2.8.4 world into that folder and reload the file: a chat line names the
-  level.dat and the items are the original ones. After once joining the 2.8.4 world with this version, a
-  `world-*.dat` there does the same without the level.dat.
+  items. Copy the source world's `level.dat` into that folder and reload the file: a chat line names the
+  mapping and the resolvable items are restored. An archived `world-*.dat` from joining that world with the current
+  Plus version serves the same purpose. The source block mapping must identify the source registry; a vanilla-only
+  palette cannot identify arbitrary mod item IDs. This fallback does not recover opaque mod-private indexes.
 - Reloading the same file again in the same session does not change the items again.
 - An existing world whose Simple selection was named "Simple selection": it now shows "Unnamed" (selection and
   box); a new Normal mode world creates "Unnamed".
+
+**2026-10-13 — native cross-pack acceptance.** Both packs ran the same current JAR
+under Xvfb/Mesa, with their native mod versions and disposable world copies.
+Native server APIs prepared the source fixtures; actual Plus capture, file loading,
+export and paste queues performed the migration. This was automated game execution,
+with the resulting world screenshots inspected, rather than a manual build session.
+
+| Check | 2.8.4 → 2.9.0-RC-2 | 2.9.0-RC-2 → 2.8.4 |
+| --- | --- | --- |
+| Capture and reload `.schemplus`, `.litematic`, structure `.nbt`, chest-only `.schematic` | Passed | Passed |
+| Import and paste all four files into the native recipient world | Passed | Passed |
+| Resave in the recipient pack, then reload in the source pack | Passed | Passed |
+| Read saved region files and check inventories, drawer data, covers and pipe type | Passed | Passed |
+| Compare every pasted block name and metadata against the source file | 86/86 cells | 86/86 cells |
+| Fully stop/restart the client, reopen the world and recheck the source and four pasted structures | Passed | Passed |
+
+The full fixture contained a chest, Storage Drawer, GT MV input bus with an UP-side
+LV conveyor cover, BC cobblestone item pipe and the pack's registered chest minecart.
+Checks retained chest stack counts/damage, a complete TConstruct steel pickaxe tag,
+the drawer's 64 IC2 ingots and named prototype, the bus's 13 GT items and NORTH facing,
+the cover item/damage, pipe type and one chest minecart. The classic Alpha case used
+a vanilla chest holding the same six item types; the full RC-2 sample requires
+extended block IDs and upgrades an Alpha export to `.schemplus`.
+Actual registry changes included GT metaitem `7495 → 7638`, IC2 ingot `4111 → 4112`,
+BC pipe item `6612 → 6753` and drawer block `3954 → 10717`. Source file hashes remained
+unchanged during recipient imports and return checks.
+
+Additional constructed files loaded in both native clients: raw StorageDrawers 2.2
+`ItemStack` slots retained their item/name/count through the 2.1-compatible layout;
+a missing IC2 registry name emptied the chest slot and drawer with a report;
+a falling-block entity carrying white glazed terracotta retained the recipient's
+block ID (`2268` or `2505`). The entity case checks native import/NBT, not a falling
+entity's later world simulation. Cross-registry BC binary visual data and tile update
+packets were omitted with warnings, while canonical pipe/inventory data survived.
+
+The automated suite passes **656 tests**, including 19 new cases for nested layouts,
+incomplete mappings, unsigned IDs, equipment positions, GT cover filters, typed block
+references, cache validation and drawer conversion. Counts above 64, empty locked
+drawers and the other typed block-reference fields have unit coverage in this change;
+they are not additional native-world acceptance claims. The 2.8.4 native Enderman control
+also loses the sampled high block ID without schematic loading; mapping does not fix
+that native limitation. Other packs, renamed registries, arbitrary mod-private material
+or machine indexes, and whole-world migration remain outside this acceptance.
+
+Evidence: `<evidence-dir>/cross-pack-migration/` contains source/returned files,
+registry dumps, acceptance/disk/reopen logs, and inspected
+`screenshots/*-migrated.png` / `screenshots/*-reopened.png`. Original local settings,
+placements and bookmarks were restored after the clients stopped.
+Tested JAR SHA-256: `5d0cde842ce38e5a9ddd880f5cc4e938859e633af9a2d7344139b20b977fed13`.
 
 ## Printer build order (printerBuildOrder)
 

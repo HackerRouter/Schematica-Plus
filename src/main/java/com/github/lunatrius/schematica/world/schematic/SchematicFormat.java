@@ -58,6 +58,7 @@ public abstract class SchematicFormat {
     private static ISchematic decode(NBTTagCompound tag, String filename) {
         ImportReport.begin();
         try {
+            PortableSchematicData.read(tag);
             return decodeFormat(tag, filename);
         } finally {
             ImportReport.end();
@@ -108,10 +109,13 @@ public abstract class SchematicFormat {
             if (fileName.toLowerCase(java.util.Locale.ROOT).endsWith(".litematic")) {
                 LitematicExport.Document document = LitematicExport.encode(schematic, backupWorld, includeNBT, includeEntities,
                     fileName.substring(0, fileName.length() - ".litematic".length()), author, System.currentTimeMillis());
+                PortableSchematicData.write(document.root);
                 return SchematicFileWriter.write(file, document);
             }
             if (fileName.toLowerCase(java.util.Locale.ROOT).endsWith(".nbt")) {
-                return SchematicFileWriter.write(file, VanillaStructure.encode(schematic, backupWorld, includeEntities, author));
+                NBTTagCompound tag = VanillaStructure.encode(schematic, backupWorld, includeEntities, author);
+                PortableSchematicData.write(tag);
+                return SchematicFileWriter.write(file, tag);
             }
 
             NBTTagCompound tagCompound = new NBTTagCompound();
@@ -122,6 +126,7 @@ public abstract class SchematicFormat {
                     file.getName().toLowerCase(java.util.Locale.ROOT).endsWith(".schemplus"))
                 : format.writeToNBT(tagCompound, schematic, backupWorld, includeNBT, includeEntities);
             if (!written) return null;
+            PortableSchematicData.write(tagCompound);
             return SchematicFileWriter.write(file, tagCompound);
         } catch (Exception ex) {
             Reference.logger.error("Failed to write schematic!", ex);

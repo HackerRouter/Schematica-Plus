@@ -206,9 +206,20 @@ See TESTING for constructed-file checks and the separate real-export limitation.
 - Canonical NBT and visual state are separate. Loading a smaller client update
   must not overwrite unsynchronized inventories when saving again or pasting.
 - Binary adapters are version-guarded. Multipart/LogisticsPipes streams also use
-  the loaded-mod version fingerprint. A mismatch skips that visual payload and
-  keeps canonical NBT. This is not a general numeric-registry migration mechanism;
-  cross-pack/world ID remapping inside opaque mod payloads remains unverified.
+  the loaded-mod version fingerprint. New schematic saves also record a block/item/fluid
+  registry fingerprint. A changed registry discards tile update packets and binary visual
+  adapters with an import warning, keeping canonical NBT and named visual fields.
+  Opaque payloads are not rewritten; their exact preview may require recapture in the target pack.
+- Cross-pack schematic saves carry item names in all four writable formats, including
+  numeric GT covers, BC pipe IDs and Storage Drawers slots inside `.litematic`/structure `.nbt`.
+  Vanilla piston/falling-block/Enderman/minecart NBT block references have a separate block map.
+  Missing items are omitted with a report and positional equipment slots remain in place.
+  StorageDrawers 2.2 `ItemStack` slots are normalized to the layout also understood by
+  2.1, preserving item tags, full counts and empty locked prototypes for reverse migration.
+  Prefer `.schemplus` and the current Plus version in both packs; save from a world copy,
+  transfer the file, inspect the import report and paste into a recipient world copy.
+  Arbitrary mod-private material indexes, machine IDs and opaque canonical payloads are
+  not universally portable. Registry-name changes require a specific adapter or manual replacement.
 - World time, frame interpolation and selected safe visual updates advance.
   Full machine ticking is not enabled. Private tick counters, transient transport
   particles and entity-targeted effects are not universally reproduced.

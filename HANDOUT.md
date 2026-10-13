@@ -88,6 +88,10 @@ mod. Original Schematica conflicts with Plus and must be removed from the instan
   announce successful placement. Plugins suppressing replies can stop the queue.
 - Preview captures retain canonical NBT and synchronized visual data separately.
   Client capture cannot recover data that the server never sent.
+- Cross-pack schematic saves retain registry names for supported numeric item and
+  NBT block references in all four writable formats. Prefer `.schemplus`, transfer
+  between world copies, and inspect import warnings. This is schematic migration;
+  arbitrary mod-private IDs and whole-world migration are outside its scope.
 - NEI integration sends a material-demand book to native bookmarks/recipe planning.
   GTNH 2.8.4 has crafting chains; 2.9.0-RC-2 also has a graphical crafting tree.
   The demand book is a plan, not existing inventory or a craftable recipe.
@@ -106,7 +110,7 @@ LC_ALL=C.UTF-8 ./gradlew test
 
 Build includes compilation, reobfuscation, Checkstyle and JUnit. Artifacts are in
 `build/libs/`; XML results in `build/test-results/test/`. The latest completed suite
-has **637 tests, no failures or skips**. These tests do not launch Minecraft.
+has **656 tests, no failures or skips**. These tests do not launch Minecraft.
 The generated MCP source is under `build/rfg/minecraft-src/java/`.
 First builds require network access; `--offline` only works with a populated cache.
 CI also starts and cleanly stops a dedicated development server. Branch pushes
@@ -331,6 +335,7 @@ steps and limitations are in TESTING; the full implementation history is in Git.
 | VISUAL_CHECKED_HEADLESS | 2026-10-12 | Register NEI demand classification/book icon and disable its crafting overlay; `compat/nei/NeiIntegration`. Both native packs passed ten complex groups against native controls, cold restarts and quantity edits. Demand pages and 2.9 multi-stage/cyclic trees inspected; build and 615 tests pass. TESTING records native probability/tool limits and Sponge reader/file-loader probes, including preservation of existing placements on rejection. |
 | VISUAL_CHECKED_HEADLESS | 2026-10-13 | Name NEI demand books after source filenames, retaining extensions; material-list/browser and `compat/nei` code. Both native packs passed five formats, Chinese names, renamed placements, custom-list fallback, bookmark-file reload and recipe lookup. Book tooltips inspected; build and all 615 tests pass. See TESTING NEI filename checks. |
 | VISUAL_CHECKED_HEADLESS | 2026-10-13 | Expand modern vanilla import in `compat` and `world/schematic`: item variants/components, versioned text, equipment/timers, note/skull data, quartz axes and mushroom faces; warn about omitted data. Build and 637 tests pass. Both native packs passed six constructed version layouts through 26.3, extra inventory cases and omission checks; previews/materials inspected. Import only; actual modern-client exports remain unverified. See TESTING modern import section. |
+| VISUAL_CHECKED_HEADLESS | 2026-10-13 | Preserve cross-pack schematic item/NBT block references and reject unsafe visual caches in `world/schematic`; normalize StorageDrawers 2.2 slots for 2.1 in `compat/StorageDrawerNbt` and `NBTHelper`. Build and 656 tests pass. Native 2.8.4 and 2.9.0-RC-2 passed four-format bidirectional paste, resave/return, saved-region checks and cold world reopen; world views inspected. TESTING records the fixtures, constructed missing-item/block-reference checks and remaining private-ID limits. |
 
 ## 7. Reported issues and current boundaries
 
@@ -401,7 +406,9 @@ concrete available fixtures:
    real exported builds with tile/entity data. Add actual modern Litematica exports
    to import acceptance; the modern vanilla matrix uses constructed versioned files.
 5. Extend unknown mod orientation/link/entity cases and permission-plugin behavior
-   when a concrete reproduction exists. Do not add older Plus interoperation work.
+   when a concrete reproduction exists. Expand cross-pack migration to other packs,
+   renamed registries and concrete mod-private material/machine ID changes; generic
+   registry remapping cannot interpret those private values. Do not add older Plus interoperation work.
 
 ## 12. Audit references
 
