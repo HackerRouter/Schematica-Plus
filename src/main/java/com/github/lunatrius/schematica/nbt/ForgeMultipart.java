@@ -37,6 +37,7 @@ public class ForgeMultipart {
     private static Method methodLoadParts;
     private static Method methodCreateFromNBT;
     private static Method methodSendDescription;
+    private static Method methodOnChunkLoad;
 
     public static void init() {
         enabled = Loader.isModLoaded("ForgeMultipart");
@@ -92,6 +93,7 @@ public class ForgeMultipart {
                     .findMethod(classTileMultipart, null, new String[] { "loadParts" }, Iterable.class);
                 methodCreateFromNBT = ReflectionHelper
                     .findMethod(classTileMultipart, null, new String[] { "createFromNBT" }, NBTTagCompound.class);
+                methodOnChunkLoad = classTileMultipart.getMethod("onChunkLoad");
                 methodSendDescription = classLoader.loadClass("codechicken.multipart.MultipartHelper")
                     .getMethod("sendDescPacket", World.class, TileEntity.class);
             } catch (final Exception e) {
@@ -101,13 +103,14 @@ public class ForgeMultipart {
         }
     }
 
-    public static void sendDescription(World world, TileEntity tile) {
+    public static void onPlaced(World world, TileEntity tile) {
         if (!enabled || world.isRemote || !methodLoadParts.getDeclaringClass().isInstance(tile)) return;
         try {
-            // Multipart tiles do not use the ordinary block-update description packet.
+            // NBT construction skips the chunk-load callbacks that connect multipart networks.
+            methodOnChunkLoad.invoke(tile);
             methodSendDescription.invoke(null, world, tile);
         } catch (ReflectiveOperationException e) {
-            throw new IllegalStateException("Could not synchronize pasted multipart tile", e);
+            throw new IllegalStateException("Could not initialize pasted multipart tile", e);
         }
     }
 

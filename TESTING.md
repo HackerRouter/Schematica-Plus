@@ -2902,6 +2902,67 @@ The original source-versus-transform comparison only established invariance: bot
 On 2026-10-11, cold clients in both target packs passed the original 11-row/18-item and expanded 13-row/21-item checks with no skipped cells. Complete sources/copies reported zero missing items, empty placements reported 21, and the partial copies reported four with state comparison or two with Ignore State. Native crafted stone/glass facades each showed one available item. Both refreshed material GUIs were inspected and matched the scan results. All three transformed previews and exported/reloaded files retained the expected counts; pasted copies had zero missing items, including their facades. Reopening both worlds retained the complete and partial results. Independent region reads matched all 15 cable/side-part/facade definitions and their expected transformed sides per case, 90 across both packs. The disposable fixture setup was corrected to request actual facade items (`createFacadeForItem(..., false)`) and use native wrench activation for an already active panel; these setup corrections are not production fixes. Already-loaded files were given a new source name after recapture to avoid the intentional source cache. Build, Checkstyle and all 603 tests passed. Tested runtime JAR SHA-256: `6adb6251462d853c66265e620d0f5a74f09bcb7981cfe83c4869ea81f5df836f`. Evidence: `<evidence-dir>/complex-structures/materials*-final.log`, `materials*-saved.log` and inspected `followup/screenshots/complex-ae-*-materials-*.png`. These material tests cover native cable hosts, not hosts converted to ForgeMultipart or automatic AE2 part placement; no new NEI recipe-tree or dedicated-server claim is made by this round.
 
 
+### Dedicated powered structures and Multipart initialization
+
+Use separate disposable GTNH 2.8.4 and 2.9.0-RC-2 dedicated servers and clients,
+with the identical current Plus JAR on both sides. This does not test older Plus
+network interoperability.
+
+1. Build a powered EBF with Cupronickel coils, MV input/output buses and hatches,
+   maintenance and a muffler. Run an available native recipe before capture.
+2. Build an AE2 controller, powered cell, drive with a storage cell, interface with
+   a valid crafting pattern, molecular assembler and crafting CPU. Request a job
+   and check the actual input consumption and output, not just the lit controller.
+3. Build a separate powered ME-P2P carrier connecting a storage network to a remote
+   export bus and chest. Put a stone microblock cover on a cable in the carrier;
+   verify that its host becomes ForgeMultipart and still transfers 17 diamonds.
+4. Use `/schematicaSave` from the connected player, then `/schematicaDownload` for
+   the server file. A local client capture cannot recover unsynchronized disks,
+   patterns or machine inventories, even when the server runs Plus.
+5. Paste ordinary, Y-rotated and X-mirrored copies. Each EBF must form and process
+   a new native recipe. Each AE2 copy must execute a new crafting job; each P2P copy
+   must transfer new input to its own output chest without re-pairing tunnels.
+6. Paste the Multipart network with `pasteWithoutUpdates` enabled, then move that
+   copy as a whole. Both copies must work immediately. Inspect the world view,
+   save the world and check the resulting tiles/parts on disk.
+
+Native observations on 2026-10-13:
+
+- Both packs reproduced a disconnected pasted ME-P2P carrier at the converted
+  AE2 cable/stone-cover host. NBT and appearance alone did not expose the missing
+  network registration. Invoking the native world-join callback restored the RC-2
+  control and delivered all 17 input diamonds.
+- With the repair installed in cold clients and servers, each pack passed three
+  server-downloaded crafting-network pastes (ordinary/Y rotation/X mirror), four
+  P2P/Multipart pastes (ordinary/Y rotation/X mirror/suppressed updates), and a
+  whole-network move. Crafting consumed one of four logs and produced two planks;
+  P2P delivered 17 newly supplied diamonds to each copy's own output chest.
+- Powered native EBF source processing passed. All three downloaded/transformed
+  EBF copies formed and produced the expected native recipe output in both packs.
+  AE2 disks and encoded patterns also passed server-side automatic crafting after
+  transferring the downloaded file in both directions between packs. Import
+  reports discarded incompatible client update packets while preserving canonical
+  disk/pattern inventories.
+- Final world views were inspected with server-authoritative camera positions.
+  Saved region checks confirmed cable/cover parts, output-chest contents, cleared
+  move sources and native GT products. Test-control save/camera calls were corrected
+  separately; their initial errors were not attributed to Plus.
+- Versions: GT 5.09.51.482 / 5.09.54.205, AE2 rv3-beta-695 / rv3-beta-1080,
+  ForgeMultipart 1.7.2 / 1.7.16 in 2.8.4 / RC-2 respectively.
+
+The repaired `ForgeMultipart.onPlaced` invokes native chunk-load initialization
+once after installing the tile and before sending its description. Both normal
+and silent placement use it; the move tool shares the silent writer. Automated
+checks cover ordering, cancellation without repeated initialization and a failed
+initialization not counting or synchronizing a successful paste.
+
+Evidence: `<evidence-dir>/dedicated-complex/`, including `baseline-{284,290}.log`,
+`fmp-join-control-290.log`, `accept-{284,290}.log`, `gt-{284,290}.log`, downloaded
+files, `saved-regions.log` and `screenshots/`. Tested JAR SHA-256:
+`a6eddc00feec9f2ba0e3949d6b679197219df2308fe15dd9d2a6452c82201498`.
+Build and all 672 automated tests passed. This covers the EBF and ME-P2P fixture,
+not every GT controller, P2P type or third-party multipart.
+
 ### External Angelica shader packs
 
 Use disposable copies of a generated world. Keep each pack's native Angelica

@@ -244,6 +244,11 @@ See TESTING for constructed-file checks and the separate real-export limitation.
 - World time, frame interpolation and selected safe visual updates advance.
   Full machine ticking is not enabled. Private tick counters, transient transport
   particles and entity-targeted effects are not universally reproduced.
+- Placed and moved Multipart tiles run native chunk-load initialization after
+  installation and before their native description packet. This restores network
+  registration for converted AE2 cable hosts. Both native packs passed dedicated
+  ME-P2P transfers with a microblock cover, including rotation, mirroring, suppressed
+  updates and a whole-network move; other multipart networks need concrete fixtures.
 - Native block rotations remain in use, with explicit transforms for supported
   EnderIO/GT sides, GT extended facings, AE2 parts, ArchitectureCraft shapes and
   other named adapters. Unknown directional encodings and absolute links inside

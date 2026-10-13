@@ -53,6 +53,9 @@ public class WorldEditPlacementTest {
     private static final Block LEVER = new BlockLever() {};
 
     @BeforeClass public static void register() throws Exception {
+        Method mapping = TileEntity.class.getDeclaredMethod("addMapping", Class.class, String.class);
+        mapping.setAccessible(true);
+        mapping.invoke(null, LifecycleChest.class, "test:lifecycle_chest");
         Method add = Block.blockRegistry.getClass().getDeclaredMethod("add", int.class, String.class, Object.class, BitSet.class);
         add.setAccessible(true);
         add.invoke(Block.blockRegistry, 4073, "test:placement_chest", CHEST, new BitSet());
@@ -348,29 +351,51 @@ public class WorldEditPlacementTest {
         assertEquals(2, job.blockCount);
     }
 
-    @Test public void normalPasteSynchronizesInstalledTilesBeforeCancellation() throws Exception {
+    @Test public void normalPasteInitializesAndSynchronizesTilesBeforeCancellation() throws Exception {
         assertDescriptionDelivery(false);
     }
 
-    @Test public void silentPasteSynchronizesInstalledTilesBeforeCancellation() throws Exception {
+    @Test public void silentPasteInitializesAndSynchronizesTilesBeforeCancellation() throws Exception {
         assertDescriptionDelivery(true);
     }
 
+    @Test public void failedMultipartInitializationDoesNotReportOrSynchronizeSuccess() throws Exception {
+        for (boolean silent : new boolean[] {false, true}) assertDescriptionDelivery(silent, true);
+    }
+
     private static int descriptions;
+    private static boolean failJoin;
+
+    public static final class LifecycleChest extends TileEntityChest {
+        int joins;
+        @Override public void markDirty() {}
+        public void onChunkLoad() {
+            assertSame(this, worldObj.getTileEntity(xCoord, yCoord, zCoord));
+            assertEquals("Saved chest 1", getInventoryName());
+            if (failJoin) throw new IllegalStateException("Initialization failed");
+            joins++;
+        }
+    }
 
     public static void receiveDescription(World world, TileEntity tile) {
         assertSame(tile, world.getTileEntity(tile.xCoord, tile.yCoord, tile.zCoord));
         assertEquals("Saved chest 1", ((TileEntityChest) tile).getInventoryName());
+        assertEquals(1, ((LifecycleChest) tile).joins);
         descriptions++;
     }
 
     private static void assertDescriptionDelivery(boolean silent) throws Exception {
+        assertDescriptionDelivery(silent, false);
+    }
+
+    private static void assertDescriptionDelivery(boolean silent, boolean fail) throws Exception {
         Class<?> bridge = com.github.lunatrius.schematica.nbt.ForgeMultipart.class;
         Map<Field, Object> previous = new HashMap<>();
         try {
-            Object[] values = {true, TileEntityChest.class.getMethod("getSizeInventory"),
-                WorldEditPlacementTest.class.getMethod("receiveDescription", World.class, TileEntity.class)};
-            String[] fields = {"enabled", "methodLoadParts", "methodSendDescription"};
+            Object[] values = {true, LifecycleChest.class.getMethod("onChunkLoad"),
+                WorldEditPlacementTest.class.getMethod("receiveDescription", World.class, TileEntity.class),
+                LifecycleChest.class.getMethod("onChunkLoad")};
+            String[] fields = {"enabled", "methodLoadParts", "methodSendDescription", "methodOnChunkLoad"};
             for (int i = 0; i < fields.length; i++) {
                 Field field = bridge.getDeclaredField(fields[i]);
                 field.setAccessible(true);
@@ -378,9 +403,23 @@ public class WorldEditPlacementTest {
                 field.set(null, values[i]);
             }
             descriptions = 0;
+            failJoin = fail;
             FakeWorld world = world(15);
             if (silent) world.chunk = new Chunk(world, 0, 0);
             WorldEditJob job = paste(3, 2, silent);
+            NBTTagCompound saved = job.write();
+            NBTTagList tiles = saved.getTagList("tiles", 10);
+            for (int i = 0; i < tiles.tagCount(); i++) {
+                tiles.getCompoundTagAt(i).getCompoundTag("data").setString("id", "test:lifecycle_chest");
+            }
+            job = WorldEditJob.read(saved, job.player, 0);
+            if (fail) {
+                WorldEditJob failedJob = job;
+                assertThrows(IllegalStateException.class, () -> failedJob.step(world));
+                assertEquals(0, job.blockCount);
+                assertEquals(0, descriptions);
+                return;
+            }
             job.step(world);
             assertEquals(1, descriptions);
             job.cancelled = true;
@@ -388,6 +427,7 @@ public class WorldEditPlacementTest {
             assertEquals(1, descriptions);
             assertEquals(1, job.blockCount);
         } finally {
+            failJoin = false;
             for (Map.Entry<Field, Object> entry : previous.entrySet()) entry.getKey().set(null, entry.getValue());
         }
     }
@@ -542,7 +582,7 @@ public class WorldEditPlacementTest {
         @Override public TileEntity getTileEntity(int x, int y, int z) {
             return chunk == null ? cell(x, y, z).tile : (TileEntity) chunk.chunkTileEntityMap.get(new ChunkPosition(x & 15, y, z & 15));
         }
-        @Override public void setTileEntity(int x, int y, int z, TileEntity value) { cell(x, y, z).tile = value; tileWrites++; }
+        @Override public void setTileEntity(int x, int y, int z, TileEntity value) { cell(x, y, z).tile = value; if (value instanceof LifecycleChest) value.setWorldObj(this); tileWrites++; }
         @Override public void markBlockForUpdate(int x, int y, int z) { blockUpdates++; }
         @Override public void notifyBlocksOfNeighborChange(int x, int y, int z, Block value) {
             if (onNotify != null) onNotify.run();

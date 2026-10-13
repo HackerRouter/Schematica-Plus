@@ -113,7 +113,7 @@ LC_ALL=C.UTF-8 ./gradlew test
 
 Build includes compilation, reobfuscation, Checkstyle and JUnit. Artifacts are in
 `build/libs/`; XML results in `build/test-results/test/`. The latest completed suite
-has **671 tests, no failures or skips**. These tests do not launch Minecraft.
+has **672 tests, no failures or skips**. These tests do not launch Minecraft.
 The generated MCP source is under `build/rfg/minecraft-src/java/`.
 First builds require network access; `--offline` only works with a populated cache.
 CI also starts and cleanly stops a dedicated development server. Branch pushes
@@ -345,6 +345,8 @@ steps and limitations are in TESTING; the full implementation history is in Git.
 
 | VISUAL_CHECKED_HEADLESS | 2026-10-13 | Fixed captured same-dimension links when pasting into another dimension in `CoordinateLinks`/`WorldEditJob`. Native Thaumcraft mirrors passed three formats and transported items in the Nether in both packs. Cross-world EnderStorage owner/frequency and recipient shared/personal inventories checked. Build and 671 tests pass; see TESTING cross-dimension section. |
 
+| VISUAL_CHECKED_HEADLESS | 2026-10-13 | Initialize restored Multipart tiles after installation and before client synchronization in `ForgeMultipart`, `WorldEditJob` and `SilentBlockPlacement`. Both native dedicated packs passed powered EBF, AE2 crafting, ME-P2P/converted hosts, ordinary/rotated/mirrored/silent pastes, move and cross-pack disk/pattern cases. Saved-world and final scene checks passed; build and 672 tests pass. See TESTING dedicated powered-structure section. |
+
 ## 7. Reported issues and current boundaries
 
 The reported ordinary-click failure, NEI recipe crash, missing ArchitectureCraft
@@ -402,9 +404,10 @@ this guide.
 The latest user request takes priority. Remaining useful coverage, in order of
 concrete available fixtures:
 
-1. Extend powered GT/AE2 tests to dedicated servers, more GT controllers and AE2
-   autocrafting/P2P; cover ForgeMultipart-converted AE2 hosts. Existing multiplayer
-   extended-metadata/download/paste tests are complete, not unit-test-only work.
+1. Expand native dedicated-server fixtures beyond the verified powered EBF, AE2
+   autocrafting, ME-P2P and ForgeMultipart-converted cable hosts to other concrete
+   GT controllers and P2P types. Extended-metadata/download/paste, transformed
+   powered fixtures and cross-pack AE2 disk/pattern tests are complete.
 2. Exercise GTNH 2.8.4 Freecam and longer repeated world/server/dimension transitions;
    expand GPU/driver/shader presets beyond the limited software-GL Overworld views.
 3. If original failing schematics/logs become available, reproduce rare invalid GT
