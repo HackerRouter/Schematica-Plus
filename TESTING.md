@@ -2130,6 +2130,41 @@ registry dumps, acceptance/disk/reopen logs, and inspected
 placements and bookmarks were restored after the clients stopped.
 Tested JAR SHA-256: `5d0cde842ce38e5a9ddd880f5cc4e938859e633af9a2d7344139b20b977fed13`.
 
+## Plain Forge, Java 8 and optional NEI
+
+1. Use a fresh Forge 10.13.4.1614 client with Java 8 and LWJGL 2.9.4, with the current
+   Plus JAR as its only mod. Use the launcher libraries for Minecraft 1.7.10; do not
+   copy a Java 21/lwjgl3ify launch classpath unchanged. Create a disposable world.
+2. Import `.schemplus`, `.schematic`, `.litematic` and structure `.nbt` captured in a
+   different mod selection. Include a vanilla chest with named/tagged items, a chest
+   minecart and missing mod blocks/items. Check the established format-specific
+   missing-block fallback, retained inventory slots and the omission report.
+3. Paste each format with tile/entity data enabled, export/reload it, and capture
+   a pasted region again. Check actual server blocks, tile inventories and entity
+   counts. Save, close the Java process, reopen the world and repeat those checks.
+4. Inspect the preview and pasted containers. Use native right/left clicks to place
+   and break a block, M to open the main menu, and E to open the vanilla inventory.
+   Repeat with a non-GTNH NEI build when its original artifact is available: normal
+   NEI recipes must load, while unsupported bookmark-demand integration stays off.
+
+Observed 2026-10-13: Java 8u504, Forge 1614 and LWJGL 2.9.4 passed steps 1–4 without
+NEI, GTNHLib, UniMixins or lwjgl3ify. Four source-B selective-mod files passed native
+import/paste/export/reload, recapture and cold world reopen. The chest retained seven
+diamonds and the written book text; the chest minecart retained eleven emeralds,
+with one cart per destination. Missing StorageDrawers/JABBA data used the previously
+recorded fallback. Preview, pasted-world, main-menu and inventory screenshots were
+inspected. Native mouse edits were checked against server block state; native M/E
+opened the expected screens. Fixtures and API-triggered schematic operations were
+prepared by an external harness; menu entry and input checks used native events.
+Headless audio was unavailable and was not tested. The original non-GTNH NEI artifact
+was unavailable, so that installed-NEI case remains pending; an absent-NEI pass does
+not replace it. No product change was needed for the tested configuration.
+
+Evidence: `<evidence-dir>/plain-forge/{acceptance-final,native-input,cold-verify}.log`
+and its `screenshots` directory. Tested JAR SHA-256:
+`d99db0218dfc86d54ef7f1da46c40d5018e66458d3302502895a4f03d3ddecbb`.
+Build and all 664 automated tests passed.
+
 ## Schematic migration between individually selected mods
 
 - Use separate Forge instances with fresh configs and disposable worlds. Install the current Plus JAR
