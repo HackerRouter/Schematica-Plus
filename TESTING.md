@@ -2242,7 +2242,7 @@ renamed fluid registries and shared world-owned storage are separate boundaries.
    counts. Save, close the Java process, reopen the world and repeat those checks.
 4. Inspect the preview and pasted containers. Use native right/left clicks to place
    and break a block, M to open the main menu, and E to open the vanilla inventory.
-   Repeat with a non-GTNH NEI build when its original artifact is available: normal
+   For the installed original-NEI case, follow the additional checks below: normal
    NEI recipes must load, while unsupported bookmark-demand integration stays off.
 
 Observed 2026-10-13: Java 8u504, Forge 1614 and LWJGL 2.9.4 passed steps 1–4 without
@@ -2254,14 +2254,60 @@ recorded fallback. Preview, pasted-world, main-menu and inventory screenshots we
 inspected. Native mouse edits were checked against server block state; native M/E
 opened the expected screens. Fixtures and API-triggered schematic operations were
 prepared by an external harness; menu entry and input checks used native events.
-Headless audio was unavailable and was not tested. The original non-GTNH NEI artifact
-was unavailable, so that installed-NEI case remains pending; an absent-NEI pass does
-not replace it. No product change was needed for the tested configuration.
+Headless audio was unavailable and was not tested. This first run covered the
+absent-NEI case only; installed original NEI is covered separately below.
+No product change was needed for the tested configuration.
 
 Evidence: `<evidence-dir>/plain-forge/{acceptance-final,native-input,cold-verify}.log`
 and its `screenshots` directory. Tested JAR SHA-256:
 `d99db0218dfc86d54ef7f1da46c40d5018e66458d3302502895a4f03d3ddecbb`.
 Build and all 664 automated tests passed.
+
+### Installed original NEI
+
+1. In a separate copy of the plain Forge/Java 8/LWJGL2 instance, install the current
+   Plus build with `NotEnoughItems-1.7.10-1.0.5.120-universal.jar` and
+   `CodeChickenCore-1.7.10-1.0.7.47-universal.jar` in `mods/`. Put
+   `CodeChickenLib-1.7.10-1.1.3.138-universal.jar` in `mods/1.7.10/`. Preserve uploaded
+   originals, record their hashes and use copies. Do not replace NEI inside a GTNH
+   instance to create this test; this checks the separately installed original mod.
+2. Enter a disposable world, open survival inventory and wait for NEI's item list.
+   Hover a crafting table and press R; require its four-plank recipe. Hover an iron
+   ingot and press U; require native crafting uses. Press R on that ingot, switch
+   recipe categories and inspect its furnace recipe. Check that no Plus S group
+   button or demand handler is registered.
+3. Type `redstone` into NEI's search box and verify that the item panel filters.
+   Right-click the search box to clear it and require the full item list again.
+   Leave inventory and import the public `SimpleHouse.litematic`
+   fixture described above; the material list must have 76 items and no Send to NEI
+   button. Missing bookmark/tree APIs must not prevent opening or using the list.
+4. In creative mode, place and break a block with actual mouse input, checking
+   server block state. Use native M/E to open the Plus menu and vanilla inventory.
+5. Save and close the world, stop the Java process, restart and reopen the world.
+   Repeat recipe lookup/category navigation and material-list checks. Inspect the
+   actual screens as well as native handler/item counts; retain startup logs.
+
+Observed 2026-10-13: both initial startup and a full Java-process restart passed
+with the three supplied original JARs, Forge 1614, Java 8u504 and LWJGL 2.9.4.
+NEI indexed 619 items; the unfiltered visible panel contained 589. Native R opened
+the workbench recipe; U on an iron ingot
+returned 25 shaped uses and one shapeless use. R on the ingot included its shaped
+and smelting recipes; native category navigation displayed the furnace recipe.
+Searching `redstone` returned seven items; clearing it restored the same 589 visible
+item identities. The material list retained all 76 required items; Send to NEI was absent, the bookmark bridge stayed disabled and neither the
+demand handler nor the S group button registered. Native placement/breaking and
+M/E checks passed, with block changes independently checked on the integrated server.
+The fixture harness prepared inventory/world state and opened the material list;
+recipe/search and input checks used native keyboard/mouse events. Recipe, search,
+material and menu/inventory screenshots were inspected. No product-code change
+was needed. This verifies the named original-NEI combination, not GTNH crafting
+chains or other NEI forks; the earlier GTNH acceptance remains separate.
+
+Build and all **675 automated tests** passed. Evidence:
+`<evidence-dir>/original-nei/{acceptance,cold-verify,search-reset}.log`,
+`uploads.json` (original/installed hashes) and `screenshots/`. Uploaded originals
+remained unchanged and were not added to the repository. Tested Plus JAR SHA-256:
+`ae9394250250892aee684ac2bc090ad0352f706493fe08418c42f177b73206ab`.
 
 ## Schematic migration between individually selected mods
 

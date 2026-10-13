@@ -96,6 +96,13 @@ mods do not each need a tile-visual adapter.
 
 ## NEI material planning
 
+Original ChickenBones NEI 1.0.5.120 can run alongside Plus with CodeChickenCore
+1.0.7.47 and CodeChickenLib 1.1.3.138. Native plain-Forge/Java 8 checks passed
+ordinary recipe/usage lookup, search and the material list, including cold restart.
+It lacks the GTNH bookmark-group APIs, so Send to NEI, demand recipes and the S
+button stay disabled. This combination does not provide the crafting-chain/tree
+integration described below.
+
 GTNH 2.8.4 (NEI 2.8.44) supports bookmark crafting chains; GTNH 2.9.0-RC-2
 (NEI 2.8.155) also supports the graphical crafting tree. Sending a material list
 creates a saved demand node, shown as a book named after the source schematic file,
