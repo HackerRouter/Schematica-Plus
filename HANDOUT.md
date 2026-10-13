@@ -113,7 +113,7 @@ LC_ALL=C.UTF-8 ./gradlew test
 
 Build includes compilation, reobfuscation, Checkstyle and JUnit. Artifacts are in
 `build/libs/`; XML results in `build/test-results/test/`. The latest completed suite
-has **672 tests, no failures or skips**. These tests do not launch Minecraft.
+has **675 tests, no failures or skips**. These tests do not launch Minecraft.
 The generated MCP source is under `build/rfg/minecraft-src/java/`.
 First builds require network access; `--offline` only works with a populated cache.
 CI also starts and cleanly stops a dedicated development server. Branch pushes
@@ -342,10 +342,9 @@ steps and limitations are in TESTING; the full implementation history is in Git.
 | VISUAL_CHECKED_HEADLESS | 2026-10-13 | Harden selective-mod migration in `world/schematic` and entity/tile translators: report unsupported content, omit orphan tile NBT, preserve native mod identifiers and avoid empty-slot loss warnings. Build and 664 tests pass. Three fresh Forge instances with different StorageDrawers/IronChest/JABBA selections passed 16 four-format import/paste/resave cases, 1,280 saved block/metadata checks and cold world reopen; the no-storage-mod instance also omits GTNHLib. World views inspected; constructed Sponge loading and exact scope are recorded in TESTING. |
 | VISUAL_CHECKED_HEADLESS | 2026-10-13 | Plain Forge 1614 with Java 8u504/LWJGL 2.9.4 and Plus as the only mod: four-format migration, recapture, cold reopen, native mouse edits and M/E screens passed. Preview/world views inspected; build and 664 tests pass. TESTING records exact scope; installed non-GTNH NEI remains unverified. |
 | VISUAL_CHECKED_HEADLESS | 2026-10-13 | Report unavailable named Forge fluids in `PortableSchematicData`. Native BC/EnderIO tanks, IC2 cells and nested EnderIO filter templates passed eight four-format migration cases, return files and world reopen in both packs; oil-cell migration and missing-fluid warnings also checked. World views inspected; build and 667 tests pass. See TESTING fluid-container section for scope and restart details. |
-
 | VISUAL_CHECKED_HEADLESS | 2026-10-13 | Fixed captured same-dimension links when pasting into another dimension in `CoordinateLinks`/`WorldEditJob`. Native Thaumcraft mirrors passed three formats and transported items in the Nether in both packs. Cross-world EnderStorage owner/frequency and recipient shared/personal inventories checked. Build and 671 tests pass; see TESTING cross-dimension section. |
-
 | VISUAL_CHECKED_HEADLESS | 2026-10-13 | Initialize restored Multipart tiles after installation and before client synchronization in `ForgeMultipart`, `WorldEditJob` and `SilentBlockPlacement`. Both native dedicated packs passed powered EBF, AE2 crafting, ME-P2P/converted hosts, ordinary/rotated/mirrored/silent pastes, move and cross-pack disk/pattern cases. Saved-world and final scene checks passed; build and 672 tests pass. See TESTING dedicated powered-structure section. |
+| VISUAL_CHECKED_HEADLESS | 2026-10-13 | Preserve all six modern double-plant species and upper/lower halves in `BlockStateTranslator`. Both cold native packs passed unchanged public Litemapy imports and FAWE v2/v3 pastes; exact large-fern blocks/materials and corrected screens checked. Build and 675 tests pass. TESTING records source commits, hashes, native scope and remaining fresh-export limits. |
 
 ## 7. Reported issues and current boundaries
 
@@ -402,7 +401,10 @@ this guide.
 ## 11. Suggested next steps
 
 The latest user request takes priority. Remaining useful coverage, in order of
-concrete available fixtures:
+concrete available fixtures. Installed original non-GTNH NEI still needs a native
+check when its artifact is available; plain Forge without NEI has passed. Original
+NEI downloads and a fresh modern WorldEdit build are currently limited by external
+artifact/dependency access, so do not mark those configurations verified.
 
 1. Expand native dedicated-server fixtures beyond the verified powered EBF, AE2
    autocrafting, ME-P2P and ForgeMultipart-converted cable hosts to other concrete
@@ -412,10 +414,11 @@ concrete available fixtures:
    expand GPU/driver/shader presets beyond the limited software-GL Overworld views.
 3. If original failing schematics/logs become available, reproduce rare invalid GT
    names and historical EnderIO cases on copies before claiming a fix.
-4. Add real WorldEdit/FAWE Sponge files to native import/placement acceptance,
-   including v1; automated fixtures cover all three versions but do not replace
-   real exported builds with tile/entity data. Add actual modern Litematica exports
-   to import acceptance; the modern vanilla matrix uses constructed versioned files.
+4. Add complete real Sponge v1 exports and richer WorldEdit/FAWE builds with
+   tile/entity data. Add fresh modern Litematica client exports to import acceptance;
+   public Litemapy imports and FAWE v2/v3 pastes have passed in both packs. They
+   supplement the constructed vanilla matrix but do not replace that exporter run.
+   Keep modern compatibility import-only.
 5. Extend unknown mod orientation/link/entity cases and permission-plugin behavior
    when a concrete reproduction exists. Expand cross-pack migration to other packs,
    renamed registries and concrete mod-private material/machine ID changes; generic

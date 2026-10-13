@@ -1623,6 +1623,58 @@ assuming that a successfully loaded file preserved every modern feature.
 - Actual modern-client exports and every vanilla block/entity combination remain
   unverified. No modern mod-content or new export compatibility is claimed.
 
+## Public upstream import fixtures
+
+Use unchanged copies of public files, record their source commit and SHA-256,
+and compare hashes again after loading. Run in native GTNH 2.8.4 and 2.9.0-RC-2.
+
+1. From [Litemapy](https://github.com/SmylerMC/litemapy/tree/e830fcd6c4c518adc097ac215e3390470a5c4686/tests/litematics/valid),
+   import `Lite.litematic`, `SimpleHouse.litematic`, `Subversion.litematic` and
+   `ArmorStand.litematic`. These cover v5/data version 2586 and v6/subversion 1/data
+   version 3465, negative region sizes and multiple regions. Expect respectively
+   122/78/8/9 non-air blocks and 4/1/1/1 regions. The armor stand has no vanilla
+   1.7.10 counterpart: require an omission warning and retain the nine stone blocks.
+2. Inspect the house preview and material list, not just the block count. Its
+   large fern must stay a large fern: lower block metadata 3, upper metadata 8,
+   exactly one `double_plant` item with damage 3. Stairs, slabs and the door must
+   retain their shapes. Do not paste or re-export these Litematic fixtures.
+3. From [FAWE](https://github.com/IntellectualSites/FastAsyncWorldEdit/tree/fbf5c91c5de175eb3f55ef8521a3e09c56950778/worldedit-core/src/test/resources/fastasyncworldedit/schematics),
+   import `sponge2.schem` and `sponge3.schem`. Their metadata identifies FAWE
+   `2.13.2-SNAPSHOT`, Bukkit-Official and data version 4440. Both are 2x1x2 and
+   contain gravel, grass block, granite and sandstone. In a disposable creative
+   world with a supporting floor, paste each and inspect the actual blocks with
+   schematic rendering disabled. Compare target registry names/metadata; modern
+   granite uses the existing stone fallback rather than a new 1.7.10 block.
+4. The same FAWE directory's `sponge1.schem` is a format-detection placeholder
+   with an empty palette/stream. Do not treat it as a valid complete volume or
+   weaken stream validation to accept it.
+
+Native observations on 2026-10-13:
+
+- An external harness invoked native loading, material scans and server paste;
+  screenshots supplied separate visual checks. Six unchanged public files passed
+  import in both packs. The four Litematic imports retained the expected block/region
+  counts, reported the unsupported armor stand, and were not pasted or re-exported.
+- The house exposed a real regression: the large fern became a sunflower in both
+  preview and materials. `BlockStateTranslator` now supplies the lower-half species
+  while keeping upper-half metadata 8. Automated tests cover all six species with
+  lower/upper states, propertyless names and ignored properties. Cold native clients
+  passed exact fern block/material assertions; both corrected preview/material
+  screens were inspected.
+- Both FAWE v2/v3 files passed full server paste and target block/metadata checks
+  in each pack. Actual world views were inspected with previews disabled. This
+  verifies these four-block files, which contain no tile or entity data.
+- Build and UTF-8 tests passed: **675 tests**, no failures or skips. Evidence:
+  `<evidence-dir>/upstream-exports/` (`provenance.json`, `accept-{284,290}.log`,
+  unchanged `fixtures/`, before/after screenshots). Runtime JAR SHA-256:
+  `fcbaaedd98314dc884e85063529386d920c4d9e45cac926c0097e96416aff68f`.
+
+Litemapy samples are public upstream fixtures, not exports produced by a modern
+Litematica client launched in this environment. A fresh WorldEdit 7.3.8 source
+build stopped at unresolved `fabric-loom:1.6.12`; dependency resolution prevented that
+exporter run. Fresh modern-client exports with inventories/entities and a complete
+real Sponge v1 export remain unverified. No new export support was added.
+
 ## Sponge block-stream validation
 
 - In both target packs, load valid Sponge v1/v2/v3 files with asymmetric stone,

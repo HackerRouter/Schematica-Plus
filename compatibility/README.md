@@ -173,10 +173,11 @@ still writes v7/subversion 1. Import uses `MinecraftDataVersion` to distinguish
 JSON text from 1.21.5+ NBT text. This work does not add a modern export format.
 
 Representable vanilla content includes flattened block/item variants, quartz
-pillar axes and native mushroom faces, note pitch and skull state, sign front
-text, container names/inventories and furnace timers. Item conversion supports
-legacy named enchantments and 1.20.5+ components for damage, names, lore, leather
-color, repair cost, unbreakable state, native enchantments, potions and books.
+pillar axes, native mushroom faces and all six double-plant species/halves,
+note pitch and skull state, sign front text, container names/inventories and
+furnace timers. Item conversion supports legacy named enchantments and 1.20.5+
+components for damage, names, lore, leather color, repair cost, unbreakable state,
+native enchantments, potions and books.
 Slabs, anvils and redstone components use item metadata/IDs rather than placed
 block metadata/IDs. Modern hand/armor lists and 1.21.5+ equipment compounds retain
 the native five equipment slots and drop chances.
@@ -190,7 +191,8 @@ text; sign lines retain the native 15-character limit. Note instruments remain
 dependent on the 1.7.10 supporting block. Rich text, arbitrary riding hierarchies,
 modern entity behavior, biomes and scheduled ticks are outside this coverage.
 Shared structure/Sponge import converters also receive their file's data version.
-See TESTING for constructed-file checks and the separate real-export limitation.
+See TESTING for constructed-file checks, public upstream samples and the
+remaining fresh-export limitations.
 
 - Enable NBT saving and recapture the original build. Old schematics cannot
   recreate client fields that were never saved.

@@ -359,6 +359,15 @@ public final class BlockStateTranslator {
             }
             // Skip normal property processing for doors
         }
+        else if ("minecraft:double_plant".equals(legacyName)) {
+            boolean upper = "upper".equals(props.get("half"));
+            result.put("half", upper ? "upper" : "lower");
+            if (!upper) {
+                String variant = props.get("variant");
+                if (variant == null) variant = inferDoublePlantVariant(modernName);
+                if (variant != null) result.put("variant", variant);
+            }
+        }
         // Special handling for lever: convert modern face+facing to 1.7.10 facing
         else if ("minecraft:lever".equals(legacyName)) {
             String face = props.get("face");
@@ -518,6 +527,18 @@ public final class BlockStateTranslator {
             }
         }
         return value;
+    }
+
+    private String inferDoublePlantVariant(String modernName) {
+        switch (modernName) {
+            case "minecraft:sunflower": return "sunflower";
+            case "minecraft:lilac": return "syringa";
+            case "minecraft:tall_grass": return "double_grass";
+            case "minecraft:large_fern": return "double_fern";
+            case "minecraft:rose_bush": return "double_rose";
+            case "minecraft:peony": return "paeonia";
+            default: return null;
+        }
     }
 
     /** Infers the 1.7.10 log variant from the modern block name */
