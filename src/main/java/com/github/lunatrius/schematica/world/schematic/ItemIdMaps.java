@@ -98,6 +98,7 @@ public final class ItemIdMaps {
     public static final class Result {
         public int removed;
         public final Set<String> unknownItems = new LinkedHashSet<>();
+        public final Set<String> omittedData = new LinkedHashSet<>();
         public String translatedWith;
     }
 

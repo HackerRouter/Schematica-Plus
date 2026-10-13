@@ -1559,6 +1559,70 @@ compare with a server that does not have the mod and with each server option off
 - Load .schem files from WorldEdit 7 (v2) and 7.3+ (v3) and from FAWE: blocks, chests with items, signs
   and entities appear; the placement origin matches where the copy was made from (//copy position).
 
+## Modern vanilla Litematic import
+
+Use copies of files and disposable worlds. This section tests import and preview;
+it does not require pasting into the world or changing the export format.
+
+1. In native GTNH 2.8.4 and 2.9.0-RC-2, import vanilla files with pre-component
+   items, 1.20.5+ item components, and 1.21.5+ NBT text/equipment. Record the root
+   `Version`, `SubVersion` and `MinecraftDataVersion`; container version alone does
+   not identify the item or text layout. Keep source hashes before/after loading.
+2. Include independent regions, negative dimensions, explicit air and a palette
+   large enough to cross packed-long boundaries. Check bounds, region origins,
+   positions and metadata for stairs, slabs, doors, trapdoors, beds, redstone,
+   logs, quartz pillars and giant mushroom caps/stems.
+3. Include a named chest with colored/wooden block items, half slabs, damaged
+   anvils, repeaters/comparators, an enchanted damaged tool, dyed armor, a splash
+   potion and a written book. Check item registry IDs, metadata, counts, slots,
+   display names, enchantment IDs/levels, dye color and readable book pages.
+4. Check old JSON sign text and new front-text compounds, including Chinese text.
+   Verify furnace timers and synthesized note-block pitch, skull type/rotation
+   and potted-plant data when the modern file has no corresponding block entity.
+5. Import an equipped named zombie using both `HandItems`/`ArmorItems` and the new
+   `equipment` compound. Check main hand/head and empty intermediate slots,
+   local entity coordinates and custom name. Do not infer passenger support.
+6. Include an unknown item, unsupported component, sign back text, a new note
+   instrument and offhand equipment. Loading must retain supported content and
+   report omissions; it must not silently replace missing items with stone.
+7. Inspect the preview and material list in each pack. Preserve screenshots and
+   the imported NBT checks separately. Constructed files test their encoded
+   layouts, not every block/entity or an actual upstream client's export path.
+
+Limits: conversion targets representable 1.7.10 vanilla content. New gameplay,
+rich text, back-side sign rendering, arbitrary riders and unknown mod content are
+not covered. Read compatibility/README.md before treating a warning as a crash or
+assuming that a successfully loaded file preserved every modern feature.
+
+2026-10-13 automated and native observations:
+
+- Build and UTF-8 JUnit run passed: **637 tests**, including 22 new regressions
+  for item forms/components, text, equipment/timers and mushroom faces.
+- Constructed gzip files with real packed long arrays covered these layouts in
+  both native packs: 1.13.2 (data version 1631/container 5), 1.20.4 (3700/6),
+  1.20.6 (3839/6), 1.21.5 (4325/7), 26.1.2 (4790/7) and 26.3 (5023/7).
+  These are versioned fixtures, not files exported by actual modern clients.
+- Native file-loader checks passed for both regions/origins, 26 representative
+  block states, container data, plain/Chinese sign text, note/skull/pot data,
+  old/new equipment layouts and normalized entity positions. Extra inventory
+  cases checked eight slab/anvil/redstone/wood item variants. Source hashes stayed
+  unchanged; no world paste was performed.
+- The omission fixture retained supported data and reported one removed
+  netherite item plus unsupported trim, sign back text, note instrument and
+  offhand equipment. The warnings appeared in native chat.
+- Inspected preview and material-list screenshots in both packs. In 2.8.4,
+  copied imported stacks were also displayed in native inventory/book screens;
+  the page showed `Imported page`. These screens used a detached inventory and
+  stack copies, not an interaction with a placed chest.
+- Runtime artifact SHA-256:
+  `556bfc5ee7e87892c2483a1f4990d389e5564b830a2fdf9c78cc79f268014300`.
+  Evidence: `<evidence-dir>/modern-litematic-import/`, including `final-284-*.log`,
+  `final-290-*.log`, versioned fixtures and `screenshots/`. An RC-2 startup attempt
+  hit a BetterLoadingScreen/Angelica mixin initialization race before import;
+  restarting the same artifact completed the acceptance checks.
+- Actual modern-client exports and every vanilla block/entity combination remain
+  unverified. No modern mod-content or new export compatibility is claimed.
+
 ## Sponge block-stream validation
 
 - In both target packs, load valid Sponge v1/v2/v3 files with asymmetric stone,

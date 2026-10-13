@@ -154,6 +154,23 @@ public final class BlockStateTranslator {
             return override;
         }
 
+        if ("minecraft:quartz_pillar".equals(blockName)) {
+            String axis = parseProperties(properties).get("axis");
+            return new BlockMapping(Blocks.quartz_block, "x".equals(axis) ? 3 : "z".equals(axis) ? 4 : 2);
+        }
+        boolean stem = "minecraft:mushroom_stem".equals(blockName);
+        if (stem || "minecraft:brown_mushroom_block".equals(blockName) || "minecraft:red_mushroom_block".equals(blockName)) {
+            int meta = properties.isEmpty() ? (stem ? 15 : 14)
+                : VanillaBlockMappings.mushroomMetadata(stem, parseProperties(properties));
+            Block block = "minecraft:red_mushroom_block".equals(blockName) ? Blocks.red_mushroom_block : Blocks.brown_mushroom_block;
+            BlockMapping mapping = new BlockMapping(block, meta < 0 ? (stem ? 10 : 14) : meta);
+            if (meta < 0) {
+                unresolved.add(blockStateString);
+                reportUnresolved(blockStateString, mapping);
+            }
+            return mapping;
+        }
+
         // 2. DirectBlockMappings for blocks without properties
         if (properties.isEmpty()) {
             BlockMapping direct = DirectBlockMappings.get(blockName);
@@ -207,6 +224,8 @@ public final class BlockStateTranslator {
                 legacyName = "minecraft:lit_furnace";
             } else if ("minecraft:redstone_lamp".equals(legacyName)) {
                 legacyName = "minecraft:lit_redstone_lamp";
+            } else if ("minecraft:redstone_ore".equals(legacyName)) {
+                return new BlockMapping(Blocks.lit_redstone_ore, 0);
             }
         }
 

@@ -539,7 +539,7 @@ public class ClientProxy extends CommonProxy {
         if (player == null) return;
         Map<String, String> unknown = source.data().takeUnknownBlocks();
         com.github.lunatrius.schematica.world.schematic.ItemIdMaps.Result items = source.data().takeItemIds();
-        if (unknown.isEmpty() && (items == null || items.removed == 0 && items.translatedWith == null)) return;
+        if (unknown.isEmpty() && (items == null || items.removed == 0 && items.translatedWith == null && items.omittedData.isEmpty())) return;
         java.util.function.Consumer<String> chat = line -> player.addChatMessage(new net.minecraft.util.ChatComponentText(
             net.minecraft.util.EnumChatFormatting.GOLD + line));
         if (items != null) reportItemIds(source.file().getName(), items, chat);
@@ -559,6 +559,11 @@ public class ClientProxy extends CommonProxy {
 
     private static void reportItemIds(String file, com.github.lunatrius.schematica.world.schematic.ItemIdMaps.Result items,
         java.util.function.Consumer<String> chat) {
+        if (!items.omittedData.isEmpty()) {
+            Reference.logger.warn("{}: unsupported imported data omitted: {}", file, items.omittedData);
+            chat.accept(com.github.lunatrius.schematica.client.gui.framework.UiTranslations.format("schematica.message.import.omitted_data", file,
+                String.join(", ", new java.util.ArrayList<>(items.omittedData).subList(0, Math.min(8, items.omittedData.size())))));
+        }
         if (items.translatedWith != null) {
             Reference.logger.info("{}: item ids translated with the id map {}", file, items.translatedWith);
             chat.accept(com.github.lunatrius.schematica.client.gui.framework.UiTranslations.format("schematica.message.import.items_translated", file, items.translatedWith));

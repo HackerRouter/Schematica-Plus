@@ -92,10 +92,10 @@ public final class SpongeSchematic extends SchematicFormat {
 
         NBTTagList tiles = blocks.getTagList("BlockEntities", NBT.TAG_COMPOUND);
         if (tiles.tagCount() == 0 && version < 3) tiles = tag.getTagList("TileEntities", NBT.TAG_COMPOUND);
-        for (int i = 0; i < tiles.tagCount(); i++) readTile(schematic, tiles.getCompoundTagAt(i), version == 3, states, width, height, length);
+        for (int i = 0; i < tiles.tagCount(); i++) readTile(schematic, tiles.getCompoundTagAt(i), version == 3, states, width, height, length, tag.getInteger("DataVersion"));
         NBTTagList entities = tag.getTagList("Entities", NBT.TAG_COMPOUND);
         int[] min = version == 3 ? new int[3] : ints(tag, "Offset");
-        for (int i = 0; i < entities.tagCount(); i++) readEntity(schematic, entities.getCompoundTagAt(i), version == 3, min);
+        for (int i = 0; i < entities.tagCount(); i++) readEntity(schematic, entities.getCompoundTagAt(i), version == 3, min, tag.getInteger("DataVersion"));
         return schematic;
     }
 
@@ -119,7 +119,7 @@ public final class SpongeSchematic extends SchematicFormat {
         return data;
     }
 
-    private static void readTile(Schematic schematic, NBTTagCompound entry, boolean nested, String[] states, int width, int height, int length) {
+    private static void readTile(Schematic schematic, NBTTagCompound entry, boolean nested, String[] states, int width, int height, int length, int dataVersion) {
         int[] pos = entry.getIntArray("Pos");
         if (pos.length != 3 || pos[0] < 0 || pos[1] < 0 || pos[2] < 0 || pos[0] >= width || pos[1] >= height || pos[2] >= length) return;
         NBTTagCompound tile = data(entry, nested);
@@ -128,7 +128,7 @@ public final class SpongeSchematic extends SchematicFormat {
         tile.setInteger("y", pos[1]);
         tile.setInteger("z", pos[2]);
         try {
-            if (!TileEntityTranslator.instance().translate(tile, stateAt(schematic, states, pos))) return;
+            if (!TileEntityTranslator.instance().translate(tile, stateAt(schematic, states, pos), dataVersion)) return;
             TileEntity entity = NBTHelper.readTileEntityFromCompound(tile);
             if (entity != null) schematic.setTileEntity(pos[0], pos[1], pos[2], entity);
         } catch (Exception e) {
@@ -149,7 +149,7 @@ public final class SpongeSchematic extends SchematicFormat {
         return null;
     }
 
-    private static void readEntity(Schematic schematic, NBTTagCompound entry, boolean nested, int[] min) {
+    private static void readEntity(Schematic schematic, NBTTagCompound entry, boolean nested, int[] min, int dataVersion) {
         NBTTagList pos = entry.getTagList("Pos", NBT.TAG_DOUBLE);
         if (pos.tagCount() != 3) return;
         NBTTagCompound entity = data(entry, nested);
@@ -158,7 +158,7 @@ public final class SpongeSchematic extends SchematicFormat {
         for (int i = 0; i < 3; i++) relative.appendTag(new NBTTagDouble(pos.func_150309_d(i) - min[i]));
         entity.setTag("Pos", relative);
         try {
-            if (!EntityTranslator.instance().translate(entity)) return;
+            if (!EntityTranslator.instance().translate(entity, dataVersion)) return;
             Entity created = SchematicLitematica.createEntity(entity);
             if (created != null) schematic.addEntity(created);
         } catch (Exception e) {

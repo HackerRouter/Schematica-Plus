@@ -32,6 +32,10 @@ public final class ImportReport {
         if (report != null && !report.containsKey(name)) report.put(name, replacement);
     }
 
+    public static void omittedData(String detail) {
+        items().omittedData.add(detail);
+    }
+
     /** The item id result of the decode running on this thread, or a detached one outside a decode. */
     static ItemIdMaps.Result items() {
         ItemIdMaps.Result items = ITEMS.get();

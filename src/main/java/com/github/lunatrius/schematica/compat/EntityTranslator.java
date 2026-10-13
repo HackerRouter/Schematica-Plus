@@ -8,9 +8,12 @@ import java.util.UUID;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
+import net.minecraft.nbt.NBTTagFloat;
 import net.minecraftforge.common.util.Constants;
 
 import com.github.lunatrius.schematica.reference.Reference;
+import com.github.lunatrius.schematica.world.schematic.ModernItemNbt;
+import com.github.lunatrius.schematica.world.schematic.ImportReport;
 
 /**
  * Translates modern (1.13+) Entity NBT data to 1.7.10 format.
@@ -65,6 +68,10 @@ public final class EntityTranslator {
      * Translates a modern entity NBT compound to 1.7.10 format in-place.
      */
     public boolean translate(NBTTagCompound entityTag) {
+        return translate(entityTag, 0);
+    }
+
+    public boolean translate(NBTTagCompound entityTag, int dataVersion) {
         if (entityTag == null || !entityTag.hasKey("id")) {
             return false;
         }
@@ -79,7 +86,11 @@ public final class EntityTranslator {
         }
 
         entityTag.setString("id", legacyId);
-        convertEntityNBT(modernId, entityTag);
+        ModernText.name(entityTag, dataVersion);
+        for (String key : new String[] {"Items", "Inventory"}) ModernItemNbt.list(entityTag, key, dataVersion);
+        if (entityTag.hasKey("Item", Constants.NBT.TAG_COMPOUND)) ModernItemNbt.convert(entityTag.getCompoundTag("Item"), dataVersion);
+        equipment(entityTag, dataVersion);
+        convertEntityNBT(modernId, entityTag, dataVersion);
         return true;
     }
 
@@ -88,7 +99,7 @@ public final class EntityTranslator {
      * Handles modern (1.20.5+/1.21+) snake_case NBT tag renames and
      * structural changes to convert back to 1.7.10 format.
      */
-    private void convertEntityNBT(String modernId, NBTTagCompound tag) {
+    private void convertEntityNBT(String modernId, NBTTagCompound tag, int dataVersion) {
         // Convert UUID from int array to Most/Least long pair
         if (tag.hasKey("UUID", Constants.NBT.TAG_INT_ARRAY)) {
             int[] uuid = tag.getIntArray("UUID");
@@ -109,7 +120,10 @@ public final class EntityTranslator {
 
         // LivingEntity tags
         renameTag(tag, "absorption_amount", "AbsorptionAmount");
-        renameTag(tag, "active_effects", "ActiveEffects");
+        if (tag.hasKey("active_effects", Constants.NBT.TAG_LIST)) {
+            tag.setTag("ActiveEffects", ModernItemNbt.effects(tag.getTagList("active_effects", Constants.NBT.TAG_COMPOUND)));
+            tag.removeTag("active_effects");
+        }
         renameTag(tag, "death_time", "DeathTime");
         renameTag(tag, "hurt_time", "HurtTime");
 
@@ -135,7 +149,7 @@ public final class EntityTranslator {
             NBTTagList passengers = tag.getTagList("Passengers", Constants.NBT.TAG_COMPOUND);
             if (passengers.tagCount() > 0) {
                 NBTTagCompound rider = passengers.getCompoundTagAt(0);
-                translate(rider); // Recursively translate the rider
+                translate(rider, dataVersion); // Recursively translate the rider
                 tag.setTag("Riding", rider);
             }
             tag.removeTag("Passengers");
@@ -200,6 +214,44 @@ public final class EntityTranslator {
         // Remove modern-only tags that don't exist in 1.7.10
         tag.removeTag("Brain");
         tag.removeTag("bukkit.updateLevel");
+    }
+
+    private static void equipment(NBTTagCompound tag, int version) {
+        NBTTagCompound modern = tag.getCompoundTag("equipment");
+        NBTTagList hand = tag.getTagList("HandItems", Constants.NBT.TAG_COMPOUND);
+        NBTTagList armor = tag.getTagList("ArmorItems", Constants.NBT.TAG_COMPOUND);
+        if (!modern.hasNoTags() || tag.hasKey("HandItems") || tag.hasKey("ArmorItems")) {
+            String[] slots = {"mainhand", "feet", "legs", "chest", "head"};
+            NBTTagList result = new NBTTagList();
+            for (int i = 0; i < slots.length; i++) {
+                NBTTagCompound stack = modern.hasKey(slots[i]) ? modern.getCompoundTag(slots[i])
+                    : i == 0 ? hand.getCompoundTagAt(0) : armor.getCompoundTagAt(i - 1);
+                stack = (NBTTagCompound) stack.copy();
+                ModernItemNbt.convert(stack, version);
+                result.appendTag(stack);
+            }
+            for (String slot : new String[] {"offhand", "body", "saddle"}) {
+                if (!modern.getCompoundTag(slot).hasNoTags()) ImportReport.omittedData("equipment: " + slot);
+            }
+            if (hand.tagCount() > 1 && !hand.getCompoundTagAt(1).hasNoTags()) ImportReport.omittedData("equipment: offhand");
+            tag.setTag("Equipment", result);
+            tag.removeTag("equipment"); tag.removeTag("HandItems"); tag.removeTag("ArmorItems");
+        }
+        if (tag.hasKey("drop_chances") || tag.hasKey("HandDropChances") || tag.hasKey("ArmorDropChances")) {
+            NBTTagCompound modernDrops = tag.getCompoundTag("drop_chances");
+            NBTTagList handDrops = tag.getTagList("HandDropChances", Constants.NBT.TAG_FLOAT);
+            NBTTagList armorDrops = tag.getTagList("ArmorDropChances", Constants.NBT.TAG_FLOAT), drops = new NBTTagList();
+            String[] slots = {"mainhand", "feet", "legs", "chest", "head"};
+            for (int i = 0; i < slots.length; i++) {
+                NBTTagList old = i == 0 ? handDrops : armorDrops;
+                int index = Math.max(0, i - 1);
+                float chance = modernDrops.hasKey(slots[i]) ? modernDrops.getFloat(slots[i])
+                    : old.tagCount() > index ? old.func_150308_e(index) : 0.085F;
+                drops.appendTag(new NBTTagFloat(chance));
+            }
+            tag.setTag("DropChances", drops);
+            tag.removeTag("drop_chances"); tag.removeTag("HandDropChances"); tag.removeTag("ArmorDropChances");
+        }
     }
 
     /**

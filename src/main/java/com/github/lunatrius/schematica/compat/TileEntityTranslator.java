@@ -47,6 +47,10 @@ public final class TileEntityTranslator {
      * @return true if translation succeeded
      */
     public boolean translate(NBTTagCompound teTag, String blockStateString) {
+        return translate(teTag, blockStateString, 0);
+    }
+
+    public boolean translate(NBTTagCompound teTag, String blockStateString, int dataVersion) {
         if (teTag == null || !teTag.hasKey("id")) {
             return false;
         }
@@ -85,18 +89,23 @@ public final class TileEntityTranslator {
         }
 
         teTag.setString("id", legacyId);
-        convertNBTData(modernId, teTag, blockStateString);
+        ModernText.name(teTag, dataVersion);
+        com.github.lunatrius.schematica.world.schematic.ModernItemNbt.list(teTag, "Items", dataVersion);
+        for (String key : new String[] {"RecordItem", "Book"}) {
+            if (teTag.hasKey(key, Constants.NBT.TAG_COMPOUND)) com.github.lunatrius.schematica.world.schematic.ModernItemNbt.convert(teTag.getCompoundTag(key), dataVersion);
+        }
+        convertNBTData(modernId, teTag, blockStateString, dataVersion);
         return true;
     }
 
-    private void convertNBTData(String modernId, NBTTagCompound teTag, String blockStateString) {
+    private void convertNBTData(String modernId, NBTTagCompound teTag, String blockStateString, int dataVersion) {
         // Categorize by type for variant-rich blocks
         if (isSkullId(modernId)) {
             convertSkull(teTag, blockStateString);
             return;
         }
         if (isSignId(modernId)) {
-            SignTextConverter.convertSign(teTag);
+            SignTextConverter.convertSign(teTag, dataVersion);
             return;
         }
         if (isBannerId(modernId)) {
@@ -300,6 +309,8 @@ public final class TileEntityTranslator {
 
     private void convertFurnace(NBTTagCompound teTag) {
         convertItemsGeneric(teTag);
+        if (teTag.hasKey("lit_time_remaining")) teTag.setShort("BurnTime", teTag.getShort("lit_time_remaining"));
+        if (teTag.hasKey("cooking_time_spent")) teTag.setShort("CookTime", teTag.getShort("cooking_time_spent"));
         if (teTag.hasKey("lit_time")) {
             teTag.setShort("BurnTime", teTag.getShort("lit_time"));
             teTag.removeTag("lit_time");
@@ -317,6 +328,7 @@ public final class TileEntityTranslator {
 
     private void convertBrewingStand(NBTTagCompound teTag) {
         convertItemsGeneric(teTag);
+        if (teTag.hasKey("brew_time")) teTag.setShort("BrewTime", teTag.getShort("brew_time"));
         if (teTag.hasKey("fuel")) {
             teTag.setByte("Fuel", teTag.getByte("fuel"));
             teTag.removeTag("fuel");
@@ -512,6 +524,27 @@ public final class TileEntityTranslator {
         return blockName.startsWith("minecraft:potted_");
     }
 
+    public NBTTagCompound createBlockStateTile(int x, int y, int z, String state) {
+        if (isPottedPlant(state)) return createFlowerPotTE(x, y, z, state);
+        String name = state.split("\\[", 2)[0];
+        NBTTagCompound tile = new NBTTagCompound();
+        if (name.equals("minecraft:note_block")) {
+            tile.setString("id", "Music");
+            NBTTagCompound props = com.github.lunatrius.schematica.world.schematic.LegacyBlockStates.tag(state).getCompoundTag("Properties");
+            try { tile.setByte("note", (byte) Math.max(0, Math.min(24, Integer.parseInt(props.getString("note"))))); }
+            catch (NumberFormatException ignored) { tile.setByte("note", (byte) 0); }
+            String instrument = props.getString("instrument");
+            if (!instrument.isEmpty() && !java.util.Arrays.asList("harp", "basedrum", "snare", "hat", "bass").contains(instrument)) {
+                com.github.lunatrius.schematica.world.schematic.ImportReport.omittedData("note block instrument: " + instrument);
+            }
+        } else if (name.startsWith("minecraft:") && (name.endsWith("_skull") || name.endsWith("_head"))) {
+            tile.setString("id", "Skull");
+            convertSkull(tile, state);
+        } else return null;
+        tile.setInteger("x", x); tile.setInteger("y", y); tile.setInteger("z", z);
+        return tile;
+    }
+
     private FlowerPotContent getFlowerPotContent(String modernBlockName) {
         // Map modern potted_xxx block names to 1.7.10 item ID + data
         switch (modernBlockName) {
@@ -594,38 +627,7 @@ public final class TileEntityTranslator {
     }
 
     private void convertItem(NBTTagCompound itemTag) {
-        if (itemTag == null) return;
-
-        if (itemTag.hasKey("id", Constants.NBT.TAG_STRING)) {
-            String itemId = itemTag.getString("id");
-            net.minecraft.item.Item item = (net.minecraft.item.Item) net.minecraft.item.Item.itemRegistry.getObject(itemId);
-            if (item == null) {
-                String legacyName = VanillaBlockMappings.getBlockName_1_7_10(itemId);
-                item = (net.minecraft.item.Item) net.minecraft.item.Item.itemRegistry.getObject(legacyName);
-            }
-            if (item != null) {
-                itemTag.setShort("id", (short) net.minecraft.item.Item.getIdFromItem(item));
-            } else {
-                net.minecraft.block.Block block = net.minecraft.block.Block.getBlockFromName(itemId);
-                if (block == null) {
-                    block = net.minecraft.block.Block.getBlockFromName(VanillaBlockMappings.getBlockName_1_7_10(itemId));
-                }
-                if (block != null) {
-                    itemTag.setShort("id", (short) net.minecraft.item.Item.getIdFromItem(net.minecraft.item.Item.getItemFromBlock(block)));
-                } else {
-                    itemTag.setShort("id", (short) 1);
-                    Reference.logger.debug("TileEntityTranslator: Unknown item '{}', using stone fallback", itemId);
-                }
-            }
-        }
-
-        if (itemTag.hasKey("count") && !itemTag.hasKey("Count")) {
-            itemTag.setByte("Count", itemTag.getByte("count"));
-            itemTag.removeTag("count");
-        }
-        if (!itemTag.hasKey("Count")) itemTag.setByte("Count", (byte) 1);
-        if (!itemTag.hasKey("Damage")) itemTag.setShort("Damage", (short) 0);
-        itemTag.removeTag("components");
+        com.github.lunatrius.schematica.world.schematic.ModernItemNbt.convert(itemTag, 0);
     }
 
     // ==================== Helpers ====================

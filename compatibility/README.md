@@ -166,6 +166,32 @@ Sponge `.schem` v1-v3 is import-only; biomes are ignored. The other supported
 formats are `.schematic`, `.schemplus`, `.litematic` and structure `.nbt`. Modern
 block/NBT conversion is partial; inspect import warnings and test converted copies.
 
+Modern vanilla `.litematic` import understands the existing v1-v7 container,
+including independent regions, negative sizes and packed block-state arrays.
+The [26.3 format writer](https://github.com/sakura-ryoko/litematica/blob/64e74592f631cfa5b084bedb0eda5dac8a3b3cb8/src/main/java/fi/dy/masa/litematica/schematic/LitematicaSchematic.java)
+still writes v7/subversion 1. Import uses `MinecraftDataVersion` to distinguish
+JSON text from 1.21.5+ NBT text. This work does not add a modern export format.
+
+Representable vanilla content includes flattened block/item variants, quartz
+pillar axes and native mushroom faces, note pitch and skull state, sign front
+text, container names/inventories and furnace timers. Item conversion supports
+legacy named enchantments and 1.20.5+ components for damage, names, lore, leather
+color, repair cost, unbreakable state, native enchantments, potions and books.
+Slabs, anvils and redstone components use item metadata/IDs rather than placed
+block metadata/IDs. Modern hand/armor lists and 1.21.5+ equipment compounds retain
+the native five equipment slots and drop chances.
+
+This is partial conversion to 1.7.10 content, not a backport of modern gameplay.
+New blocks/items/entities, unsupported enchantments/effects/components, offhand
+and other new equipment slots cannot be reconstructed universally. Missing items
+are removed with a warning; omitted components and sign back text are reported.
+Unrepresentable mushroom faces use a warned approximation. Text becomes plain
+text; sign lines retain the native 15-character limit. Note instruments remain
+dependent on the 1.7.10 supporting block. Rich text, arbitrary riding hierarchies,
+modern entity behavior, biomes and scheduled ticks are outside this coverage.
+Shared structure/Sponge import converters also receive their file's data version.
+See TESTING for constructed-file checks and the separate real-export limitation.
+
 - Enable NBT saving and recapture the original build. Old schematics cannot
   recreate client fields that were never saved.
 - Singleplayer uses the integrated server world. Remote capture can preserve

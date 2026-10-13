@@ -64,7 +64,7 @@ public class SchematicLitematica extends SchematicFormat {
         for (LitematicRegions.Region region : document.regions) {
             Schematic part = new Schematic(schematic.getIcon(), region.width, region.height, region.length);
             part.setOrigin(region.origin);
-            readRegion(region, part, translator, legacy);
+            readRegion(region, part, translator, legacy, root.getInteger("MinecraftDataVersion"));
             schematic.addRegion(region.box.offset(-min.x, -min.y, -min.z), part);
         }
         return schematic;
@@ -103,7 +103,7 @@ public class SchematicLitematica extends SchematicFormat {
         return translated.block == block ? translated : new BlockMapping(block, 0);
     }
 
-    private void readRegion(LitematicRegions.Region rd, ISchematic schematic, BlockStateTranslator translator, boolean legacy) {
+    private void readRegion(LitematicRegions.Region rd, ISchematic schematic, BlockStateTranslator translator, boolean legacy, int dataVersion) {
         int absSizeX = rd.width, absSizeY = rd.height, absSizeZ = rd.length;
         NBTTagList paletteList = rd.palette;
         int paletteSize = paletteList.tagCount();
@@ -168,13 +168,13 @@ public class SchematicLitematica extends SchematicFormat {
                         teTag.setInteger("z", teZ);
 
                         long posKey = ((long) teX & 0xFFFFL) | (((long) teY & 0xFFFFL) << 16) | (((long) teZ & 0xFFFFL) << 32);
-                        existingTEPositions.add(posKey);
                         String blockStateStr = posToBlockState.get(posKey);
 
                         String originalId = teTag.hasKey("id") ? teTag.getString("id") : "unknown";
                         if (legacy) {
                             teTag = LegacyNbt.tileFrom112(teTag);
-                        } else if (!teTranslator.translate(teTag, blockStateStr)) {
+                        } else if (!teTranslator.translate(teTag, blockStateStr, dataVersion)) {
+                            ImportReport.omittedData("block entity: " + originalId);
                             Reference.logger.debug("TileEntity '{}' could not be translated, skipping", originalId);
                             teSkipped++;
                             continue;
@@ -183,8 +183,10 @@ public class SchematicLitematica extends SchematicFormat {
                         TileEntity te = NBTHelper.readTileEntityFromCompound(teTag);
                         if (te != null) {
                             schematic.setTileEntity(te.xCoord, te.yCoord, te.zCoord, te);
+                            existingTEPositions.add(posKey);
                             teLoaded++;
                         } else {
+                            ImportReport.omittedData("block entity: " + originalId);
                             Reference.logger.debug("TileEntity '{}' translated to '{}' but failed to instantiate",
                                 originalId, teTag.getString("id"));
                             teSkipped++;
@@ -203,12 +205,13 @@ public class SchematicLitematica extends SchematicFormat {
         int synthCount = 0;
         for (Map.Entry<Long, String> entry : posToBlockState.entrySet()) {
             String stateStr = entry.getValue();
-            if (!legacy && teTranslator.isPottedPlant(stateStr) && !existingTEPositions.contains(entry.getKey())) {
+            if (!legacy && !existingTEPositions.contains(entry.getKey())) {
                 long posKey = entry.getKey();
                 int px = (int) (posKey & 0xFFFFL);
                 int py = (int) ((posKey >> 16) & 0xFFFFL);
                 int pz = (int) ((posKey >> 32) & 0xFFFFL);
-                NBTTagCompound synthTE = teTranslator.createFlowerPotTE(px, py, pz, stateStr);
+                NBTTagCompound synthTE = teTranslator.createBlockStateTile(px, py, pz, stateStr);
+                if (synthTE == null) continue;
                 TileEntity te = NBTHelper.readTileEntityFromCompound(synthTE);
                 if (te != null) {
                     schematic.setTileEntity(px, py, pz, te);
@@ -217,7 +220,7 @@ public class SchematicLitematica extends SchematicFormat {
             }
         }
         if (synthCount > 0) {
-            Reference.logger.info("Region '{}': synthesized {} FlowerPot TileEntities for potted plants", rd.box.name, synthCount);
+            Reference.logger.info("Region '{}': synthesized {} block entities from block states", rd.box.name, synthCount);
         }
 
         EntityTranslator entityTranslator = EntityTranslator.instance();
@@ -232,7 +235,8 @@ public class SchematicLitematica extends SchematicFormat {
                     String originalId = entityTag.hasKey("id") ? entityTag.getString("id") : "unknown";
                     if (legacy) {
                         entityTag = LegacyNbt.entityFrom112(entityTag);
-                    } else if (!entityTranslator.translate(entityTag)) {
+                    } else if (!entityTranslator.translate(entityTag, dataVersion)) {
+                        ImportReport.omittedData("entity: " + originalId);
                         Reference.logger.debug("Entity '{}' could not be translated, skipping", originalId);
                         entSkipped++;
                         continue;
@@ -243,6 +247,7 @@ public class SchematicLitematica extends SchematicFormat {
                         schematic.addEntity(entity);
                         entLoaded++;
                     } else {
+                        ImportReport.omittedData("entity: " + originalId);
                         entSkipped++;
                     }
                 } catch (Exception e) {
@@ -288,7 +293,7 @@ public class SchematicLitematica extends SchematicFormat {
     private boolean needsBlockStateForTE(String stateStr) {
         return stateStr.contains("skull") || stateStr.contains("head")
             || stateStr.contains("sign") || stateStr.contains("banner")
-            || stateStr.contains("potted_");
+            || stateStr.contains("potted_") || stateStr.startsWith("minecraft:note_block[");
     }
 
     private String buildPropertiesString(NBTTagCompound props) {

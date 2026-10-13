@@ -35,6 +35,7 @@ public final class LegacyBlockStates {
 
     private static Map<String, String> written;
     private static Map<String, Entry> states;
+    private static Map<String, Entry> modernItems;
 
     private LegacyBlockStates() {}
 
@@ -42,6 +43,7 @@ public final class LegacyBlockStates {
         if (states != null) return;
         Map<String, String> byBlock = new HashMap<>();
         Map<String, Entry> byState = new HashMap<>();
+        Map<String, Entry> items = new HashMap<>();
         try (InputStream stream = LegacyBlockStates.class.getResourceAsStream(RESOURCE)) {
             if (stream == null) throw new IOException("Missing " + RESOURCE);
             BufferedReader reader = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8));
@@ -52,6 +54,12 @@ public final class LegacyBlockStates {
                 int idMeta = Integer.parseInt(parts[0]);
                 String name = name(parts[2]);
                 Entry entry = new Entry(idMeta, name, parts[1]);
+                if ((idMeta >> 4) <= 175 && !(name.equals("minecraft:stone") && entry.meta() != 0)
+                    && !(name.equals("minecraft:sponge") && entry.meta() != 0)) {
+                    String modernName = name(entry.modern);
+                    Entry previous = items.get(modernName);
+                    if (previous == null || entry.meta() < previous.meta()) items.put(modernName, entry);
+                }
                 byBlock.putIfAbsent(name + '\0' + (idMeta & 15), parts[2]);
                 for (int i = 2; i < parts.length; i++) byState.putIfAbsent(parts[i], entry);
             }
@@ -60,6 +68,7 @@ public final class LegacyBlockStates {
         }
         written = byBlock;
         states = byState;
+        modernItems = items;
     }
 
     static String name(String state) {
@@ -77,6 +86,11 @@ public final class LegacyBlockStates {
     public static Entry entry(String state) {
         load();
         return states.get(state);
+    }
+
+    static Entry modernItem(String name) {
+        load();
+        return modernItems.get(name);
     }
 
     /** name[key=value,...] with sorted keys, the form used by the table. */

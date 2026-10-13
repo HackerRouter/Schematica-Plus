@@ -408,3 +408,4 @@ schematica.ui.report.message=Schematica Plus started on a whim as a small projec
 schematica.ui.report.dont_show_again=Don't show this message again
 schematica.ui.report.open_failed=Could not open the browser; copy the link
 schematica.ui.report.copy_link=Copy link
+schematica.message.import.omitted_data=%s: some imported data cannot be represented in 1.7.10 and was omitted: %s. See the log for details.

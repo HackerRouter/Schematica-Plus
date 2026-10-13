@@ -40,6 +40,19 @@ public final class VanillaBlockMappings {
         PROPERTY_TO_META.put(block + "[" + props + "]", meta);
     }
 
+    /** Returns -1 for face combinations that 1.7.10 cannot represent. */
+    static int mushroomMetadata(boolean stem, Map<String, String> properties) {
+        String[] faces = {"up", "down", "north", "south", "west", "east"};
+        int mask = 0;
+        for (int i = 0; i < faces.length; i++) if ("true".equals(properties.get(faces[i]))) mask |= 1 << i;
+        if (mask == 0) return 0;
+        if (stem) return mask == 60 ? 10 : mask == 63 ? 15 : -1;
+        if (mask == 63) return 14;
+        int[] caps = {0, 21, 5, 37, 17, 1, 33, 25, 9, 41};
+        for (int meta = 1; meta <= 9; meta++) if (mask == caps[meta]) return meta;
+        return -1;
+    }
+
     static void registerColorMeta(String block) {
         p(block, "color=white", 0);
         p(block, "color=orange", 1);

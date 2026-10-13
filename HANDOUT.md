@@ -69,6 +69,10 @@ mod. Original Schematica conflicts with Plus and must be removed from the instan
 - `.schematic`, `.schemplus`, `.litematic` and structure `.nbt` support reading and
   writing. Sponge `.schem` v1-v3 is **import-only**; biomes are ignored and modern
   block/NBT conversion is partial. Automated Sponge fixtures cover v1/v2/v3 and reject malformed block streams.
+- Modern vanilla `.litematic` import uses the file's data version for item
+  components, text, equipment and native block-state conversion. The container
+  remains v1-v7; export behavior is unchanged. Unsupported modern content still
+  requires warnings or approximations; see compatibility scope and TESTING.
 - `.schematic` automatically upgrades to `.schemplus` when IDs or Plus region/origin
   data require it. Report the real filename and avoid overwriting an existing
   alternate-format file. Unedited Save Source retains original bytes; edited
@@ -102,7 +106,7 @@ LC_ALL=C.UTF-8 ./gradlew test
 
 Build includes compilation, reobfuscation, Checkstyle and JUnit. Artifacts are in
 `build/libs/`; XML results in `build/test-results/test/`. The latest completed suite
-has **615 tests, no failures or skips**. These tests do not launch Minecraft.
+has **637 tests, no failures or skips**. These tests do not launch Minecraft.
 The generated MCP source is under `build/rfg/minecraft-src/java/`.
 First builds require network access; `--offline` only works with a populated cache.
 CI also starts and cleanly stops a dedicated development server. Branch pushes
@@ -326,6 +330,7 @@ steps and limitations are in TESTING; the full implementation history is in Git.
 | IMPLEMENTED_HEADLESS | 2026-10-12 | Reject incomplete/trailing Sponge block data, overflowing varints and invalid/duplicate palette indices; `SpongeSchematic` and its tests. Six new regressions fail before the fix; build and all 615 tests pass. Native constructed-file checks are recorded in TESTING; real WorldEdit/FAWE export acceptance remains pending. |
 | VISUAL_CHECKED_HEADLESS | 2026-10-12 | Register NEI demand classification/book icon and disable its crafting overlay; `compat/nei/NeiIntegration`. Both native packs passed ten complex groups against native controls, cold restarts and quantity edits. Demand pages and 2.9 multi-stage/cyclic trees inspected; build and 615 tests pass. TESTING records native probability/tool limits and Sponge reader/file-loader probes, including preservation of existing placements on rejection. |
 | VISUAL_CHECKED_HEADLESS | 2026-10-13 | Name NEI demand books after source filenames, retaining extensions; material-list/browser and `compat/nei` code. Both native packs passed five formats, Chinese names, renamed placements, custom-list fallback, bookmark-file reload and recipe lookup. Book tooltips inspected; build and all 615 tests pass. See TESTING NEI filename checks. |
+| VISUAL_CHECKED_HEADLESS | 2026-10-13 | Expand modern vanilla import in `compat` and `world/schematic`: item variants/components, versioned text, equipment/timers, note/skull data, quartz axes and mushroom faces; warn about omitted data. Build and 637 tests pass. Both native packs passed six constructed version layouts through 26.3, extra inventory cases and omission checks; previews/materials inspected. Import only; actual modern-client exports remain unverified. See TESTING modern import section. |
 
 ## 7. Reported issues and current boundaries
 
@@ -393,7 +398,8 @@ concrete available fixtures:
    names and historical EnderIO cases on copies before claiming a fix.
 4. Add real WorldEdit/FAWE Sponge files to native import/placement acceptance,
    including v1; automated fixtures cover all three versions but do not replace
-   real exported builds with tile/entity data.
+   real exported builds with tile/entity data. Add actual modern Litematica exports
+   to import acceptance; the modern vanilla matrix uses constructed versioned files.
 5. Extend unknown mod orientation/link/entity cases and permission-plugin behavior
    when a concrete reproduction exists. Do not add older Plus interoperation work.
 

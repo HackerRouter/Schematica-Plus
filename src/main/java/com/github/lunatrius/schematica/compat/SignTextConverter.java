@@ -36,45 +36,24 @@ public final class SignTextConverter {
      * 1.7.10: Text1-Text4 as plain strings, with a 15-character limit per line.
      */
     public static void convertSign(NBTTagCompound teTag) {
-        // Modern 1.20+ format: front_text.messages[]
-        if (teTag.hasKey("front_text", Constants.NBT.TAG_COMPOUND)) {
-            NBTTagCompound frontText = teTag.getCompoundTag("front_text");
-            if (frontText.hasKey("messages", Constants.NBT.TAG_LIST)) {
-                // Try reading as TAG_STRING first
-                NBTTagList messagesStr = frontText.getTagList("messages", Constants.NBT.TAG_STRING);
-                if (messagesStr.tagCount() > 0) {
-                    for (int i = 0; i < Math.min(messagesStr.tagCount(), 4); i++) {
-                        String jsonText = messagesStr.getStringTagAt(i);
-                        teTag.setString("Text" + (i + 1), jsonText);
-                    }
-                } else {
-                    // Try reading as TAG_COMPOUND (NBT text components from litematic)
-                    NBTTagList messagesCompound = frontText.getTagList("messages", Constants.NBT.TAG_COMPOUND);
-                    if (messagesCompound.tagCount() > 0) {
-                        for (int i = 0; i < Math.min(messagesCompound.tagCount(), 4); i++) {
-                            NBTTagCompound textComponent = messagesCompound.getCompoundTagAt(i);
-                            String jsonText = nbtTextComponentToJson(textComponent);
-                            teTag.setString("Text" + (i + 1), jsonText);
-                        }
-                    }
-                }
-            }
-            teTag.removeTag("front_text");
-            teTag.removeTag("back_text");
-            teTag.removeTag("is_waxed");
-        }
+        convertSign(teTag, 0);
+    }
 
-        // Ensure all 4 text lines exist; convert any remaining JSON format
-        for (int i = 1; i <= 4; i++) {
-            String key = "Text" + i;
-            if (teTag.hasKey(key, Constants.NBT.TAG_STRING)) {
-                String text = teTag.getString(key);
-                text = convertJsonTextTo1710(text);
-                teTag.setString(key, text.substring(0, Math.min(15, text.length())));
-            } else {
-                teTag.setString(key, "");
-            }
+    public static void convertSign(NBTTagCompound teTag, int dataVersion) {
+        NBTTagCompound front = teTag.getCompoundTag("front_text");
+        NBTTagList messages = front.hasKey("messages", Constants.NBT.TAG_LIST) ? (NBTTagList) front.getTag("messages") : null;
+        for (int i = 0; i < 4; i++) {
+            NBTBase value = messages != null && i < messages.tagCount() ? ModernText.element(messages, i) : teTag.getTag("Text" + (i + 1));
+            String text = ModernText.plain(value, dataVersion);
+            teTag.setString("Text" + (i + 1), text.substring(0, Math.min(15, text.length())));
         }
+        NBTTagCompound back = teTag.getCompoundTag("back_text");
+        if (!ModernText.plain(back.getTag("messages"), dataVersion).isEmpty()) {
+            com.github.lunatrius.schematica.world.schematic.ImportReport.omittedData("sign back text");
+        }
+        teTag.removeTag("front_text");
+        teTag.removeTag("back_text");
+        teTag.removeTag("is_waxed");
     }
 
     /**

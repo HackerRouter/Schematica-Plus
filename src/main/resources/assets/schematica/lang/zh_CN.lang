@@ -408,3 +408,4 @@ schematica.ui.report.message=Schematica Plus 最初只是我一时兴起，用�
 schematica.ui.report.dont_show_again=不再显示此提示
 schematica.ui.report.open_failed=无法打开浏览器，请复制链接
 schematica.ui.report.copy_link=复制链接
+schematica.message.import.omitted_data=%s：部分导入数据无法在 1.7.10 中表示，已略过：%s。详情见日志。

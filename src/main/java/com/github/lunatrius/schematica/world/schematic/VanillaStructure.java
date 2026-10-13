@@ -82,7 +82,7 @@ public final class VanillaStructure extends SchematicFormat {
                 tile.setInteger("z", pos[2]);
                 try {
                     if (legacy) tile = LegacyNbt.tileFrom112(tile);
-                    else if (!TileEntityTranslator.instance().translate(tile, states[state])) continue;
+                    else if (!TileEntityTranslator.instance().translate(tile, states[state], dataVersion)) continue;
                     TileEntity entity = NBTHelper.readTileEntityFromCompound(tile);
                     if (entity != null) schematic.setTileEntity(pos[0], pos[1], pos[2], entity);
                 } catch (Exception e) {
@@ -99,7 +99,7 @@ public final class VanillaStructure extends SchematicFormat {
             entity.setTag("Pos", pos.copy());
             try {
                 if (legacy) entity = LegacyNbt.entityFrom112(entity);
-                else if (!EntityTranslator.instance().translate(entity)) continue;
+                else if (!EntityTranslator.instance().translate(entity, dataVersion)) continue;
                 Entity created = SchematicLitematica.createEntity(entity);
                 if (created != null) schematic.addEntity(created);
             } catch (Exception e) {
