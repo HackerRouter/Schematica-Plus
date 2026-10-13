@@ -10,6 +10,77 @@ import vazkii.botania.common.block.tile.TileLightRelay;
 import static org.junit.Assert.*;
 
 public class CoordinateLinksTest {
+    private static NBTTagCompound mirror(int dimension) {
+        NBTTagCompound tag = new NBTTagCompound();
+        tag.setInteger(CoordinateLinks.MARKER, 0);
+        tag.setInteger("x", 2); tag.setInteger("y", 1); tag.setInteger("z", 3);
+        tag.setInteger("linkX", 5); tag.setInteger("linkY", 4); tag.setInteger("linkZ", 6);
+        tag.setInteger("linkDim", dimension);
+        return tag;
+    }
+
+    @Test public void pastedLocalMirrorUsesTheDestinationDimension() {
+        NBTTagCompound tag = mirror(0);
+        tag.setString("owner", "fixture-owner");
+        tag.setInteger("frequency", 37);
+        CoordinateLinks.paste(CoordinateLinks.rulesFor("thaumcraft.common.tiles.TileMirror"), tag, 102, 71, 203, -1);
+        assertEquals(105, tag.getInteger("linkX"));
+        assertEquals(74, tag.getInteger("linkY"));
+        assertEquals(206, tag.getInteger("linkZ"));
+        assertEquals(-1, tag.getInteger("linkDim"));
+        assertFalse(CoordinateLinks.local(tag));
+        assertEquals("fixture-owner", tag.getString("owner"));
+        assertEquals(37, tag.getInteger("frequency"));
+    }
+
+    @Test public void foreignUnboundAndUnmarkedMirrorLinksAreNotRebound() {
+        java.util.List<CoordinateLinks.Spec> rules = CoordinateLinks.rulesFor("thaumcraft.common.tiles.TileMirror");
+        NBTTagCompound foreign = mirror(-1);
+        CoordinateLinks.paste(rules, foreign, 102, 71, 203, -1);
+        assertEquals(5, foreign.getInteger("linkX"));
+        assertEquals(-1, foreign.getInteger("linkDim"));
+        NBTTagCompound unbound = mirror(0);
+        unbound.setInteger("linkY", -1);
+        CoordinateLinks.paste(rules, unbound, 102, 71, 203, -1);
+        assertEquals(5, unbound.getInteger("linkX"));
+        assertEquals(0, unbound.getInteger("linkDim"));
+        NBTTagCompound unmarked = mirror(0);
+        unmarked.removeTag(CoordinateLinks.MARKER);
+        NBTTagCompound before = (NBTTagCompound) unmarked.copy();
+        CoordinateLinks.paste(rules, unmarked, 102, 71, 203, -1);
+        assertEquals(before, unmarked);
+    }
+
+    @Test public void changingOnlyTheDimensionStillRebindsALocalLink() {
+        NBTTagCompound tag = mirror(0);
+        CoordinateLinks.paste(CoordinateLinks.rulesFor("thaumcraft.common.tiles.TileMirror"), tag, 2, 1, 3, -1);
+        assertEquals(5, tag.getInteger("linkX"));
+        assertEquals(-1, tag.getInteger("linkDim"));
+    }
+
+    @Test public void pastedRailcraftPairingsAndNestedTrackCacheUseTheirOriginalDimension() {
+        NBTTagCompound tag = new NBTTagCompound(), block = new NBTTagCompound();
+        tag.setInteger(CoordinateLinks.MARKER, 0);
+        net.minecraft.nbt.NBTTagList pairings = new net.minecraft.nbt.NBTTagList();
+        NBTTagCompound local = new NBTTagCompound(), foreign = new NBTTagCompound();
+        local.setIntArray("coords", new int[]{0, 3, 2, 5});
+        foreign.setIntArray("coords", new int[]{-1, 110, 64, 200});
+        pairings.appendTag(local); pairings.appendTag(foreign);
+        block.setTag("pairings", pairings);
+        net.minecraft.nbt.NBTTagList cache = new net.minecraft.nbt.NBTTagList();
+        NBTTagCompound entry = new NBTTagCompound(), key = new NBTTagCompound();
+        key.setInteger("dim", 0); key.setInteger("x", 3); key.setInteger("y", 2); key.setInteger("z", 5);
+        entry.setTag("key", key); entry.setTag("value", key.copy());
+        entry.getCompoundTag("value").setInteger("dim", -1);
+        cache.appendTag(entry); block.setTag("trackCache", cache); tag.setTag("SignalBlock", block);
+        CoordinateLinks.paste(CoordinateLinks.rulesFor("mods.railcraft.common.blocks.signals.TileSignalBase"), tag, 100, 70, 200, -1);
+        assertArrayEquals(new int[]{-1, 103, 72, 205}, local.getIntArray("coords"));
+        assertArrayEquals(new int[]{-1, 110, 64, 200}, foreign.getIntArray("coords"));
+        assertEquals(-1, key.getInteger("dim"));
+        assertEquals(103, key.getInteger("x"));
+        assertEquals(3, entry.getCompoundTag("value").getInteger("x"));
+    }
+
     private static NBTTagCompound relay(int x, int y, int z) {
         NBTTagCompound tag = new NBTTagCompound();
         tag.setString("id", "schematicaTestLightRelay");
@@ -38,7 +109,7 @@ public class CoordinateLinksTest {
         tag.setInteger("x", 2);
         tag.setInteger("y", 1);
         tag.setInteger("z", 3);
-        CoordinateLinks.paste(tag, 202, 71, 303);
+        CoordinateLinks.paste(tag, 202, 71, 303, 0);
         assertFalse(CoordinateLinks.local(tag));
         assertEquals(201, tag.getInteger("bindX"));
         assertEquals(74, tag.getInteger("bindY"));

@@ -2524,6 +2524,41 @@ Tested JAR SHA-256: `b1ec8425c66721151bb9ac1e103af62d89b3619cd859ad0961fbf736473
   Backpack sleeping bag, a Railcraft world anchor, a Galacticraft launch controller and Storage Drawers with a
   controller and controller slaves: links follow the copy (the copied slaves serve the copied controller).
 
+### Cross-dimension links and world-owned storage
+
+1. In disposable GTNH 2.8.4 and 2.9.0-RC-2 worlds, place and link two
+   Thaumcraft mirrors on supported walls in the Overworld. Include the supports,
+   an owned EnderStorage chest and a vanilla Ender Chest in a full-NBT capture.
+2. Save `.schemplus`, `.litematic` and structure `.nbt`. Paste each into a cleared
+   Nether location (or explicitly select replacement of all blocks). Both mirrors
+   must target the copied partner in dimension -1. Send items through a copied
+   mirror and verify the other mirror actually receives them.
+3. Put different contents in the same owner's EnderStorage frequency and personal
+   Ender Chest in each world. Transfer the schematic between packs. Frequency and
+   owner should remain intact, while the recipient world's shared and personal
+   inventories remain its own. Schematics do not contain those world-owned stores.
+4. Preserve references originally pointing into a different dimension, unbound
+   links and unmarked tags. Numeric mod-dimension identities can differ between
+   packs; inspect and manually rebind those references where necessary.
+
+Native checks on 2026-10-13 used the same current Plus build in both packs.
+Before the fix, a real Nether paste moved mirror coordinates but retained
+`linkDim=0`; native mirrors invalidated the links. After the fix, all three full-NBT
+formats in both packs produced valid native links with `linkDim=-1`. Calling each
+copied mirror's native transport with three diamonds populated the partner's
+buffer; the emitted items and both Nether scenes were inspected. Cross-pack
+pastes retained frequency 1725 and the test player's owner while preserving the
+recipient's distinct shared and personal inventories. Saved region data was also
+checked. Foreign-dimension/list-encoded links and zero-offset dimension changes
+are covered by automated tests; arbitrary third-party link formats remain outside
+these native checks.
+
+Evidence: `<evidence-dir>/world-links/{baseline-290,accept-290,accept-284,nether-accept-284,scene-284,scene-290}.log`,
+`saved-regions.log`, and `screenshots/nether-{284,290}.png`.
+Tested JAR SHA-256:
+`d6a80fbebaaccb8853707ab6c602a29e552226bb1d88fb7a7d6ed3621b74ff55`.
+Build and all 671 automated tests passed.
+
 ## Thaumcraft, BiblioCraft, Witchery and Extra Utilities under rotation and mirroring
 
 - Thaumcraft: alembics on a crucible, essentia jars with labels, centrifuge, thaumatorium, reservoir and crystallizer,

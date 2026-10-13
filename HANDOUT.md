@@ -113,7 +113,7 @@ LC_ALL=C.UTF-8 ./gradlew test
 
 Build includes compilation, reobfuscation, Checkstyle and JUnit. Artifacts are in
 `build/libs/`; XML results in `build/test-results/test/`. The latest completed suite
-has **667 tests, no failures or skips**. These tests do not launch Minecraft.
+has **671 tests, no failures or skips**. These tests do not launch Minecraft.
 The generated MCP source is under `build/rfg/minecraft-src/java/`.
 First builds require network access; `--offline` only works with a populated cache.
 CI also starts and cleanly stops a dedicated development server. Branch pushes
@@ -342,6 +342,8 @@ steps and limitations are in TESTING; the full implementation history is in Git.
 | VISUAL_CHECKED_HEADLESS | 2026-10-13 | Harden selective-mod migration in `world/schematic` and entity/tile translators: report unsupported content, omit orphan tile NBT, preserve native mod identifiers and avoid empty-slot loss warnings. Build and 664 tests pass. Three fresh Forge instances with different StorageDrawers/IronChest/JABBA selections passed 16 four-format import/paste/resave cases, 1,280 saved block/metadata checks and cold world reopen; the no-storage-mod instance also omits GTNHLib. World views inspected; constructed Sponge loading and exact scope are recorded in TESTING. |
 | VISUAL_CHECKED_HEADLESS | 2026-10-13 | Plain Forge 1614 with Java 8u504/LWJGL 2.9.4 and Plus as the only mod: four-format migration, recapture, cold reopen, native mouse edits and M/E screens passed. Preview/world views inspected; build and 664 tests pass. TESTING records exact scope; installed non-GTNH NEI remains unverified. |
 | VISUAL_CHECKED_HEADLESS | 2026-10-13 | Report unavailable named Forge fluids in `PortableSchematicData`. Native BC/EnderIO tanks, IC2 cells and nested EnderIO filter templates passed eight four-format migration cases, return files and world reopen in both packs; oil-cell migration and missing-fluid warnings also checked. World views inspected; build and 667 tests pass. See TESTING fluid-container section for scope and restart details. |
+
+| VISUAL_CHECKED_HEADLESS | 2026-10-13 | Fixed captured same-dimension links when pasting into another dimension in `CoordinateLinks`/`WorldEditJob`. Native Thaumcraft mirrors passed three formats and transported items in the Nether in both packs. Cross-world EnderStorage owner/frequency and recipient shared/personal inventories checked. Build and 671 tests pass; see TESTING cross-dimension section. |
 
 ## 7. Reported issues and current boundaries
 

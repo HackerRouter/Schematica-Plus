@@ -213,11 +213,17 @@ public final class CoordinateLinks {
             operation);
     }
 
-    /** A pasted tile's NBT (x/y/z still in the schematic) put at (x, y, z) in the world; returns the tag. */
-    public static NBTTagCompound paste(NBTTagCompound tag, int x, int y, int z) {
+    /** Places marked tile links at the destination position and dimension, preserving links into other dimensions. */
+    public static NBTTagCompound paste(NBTTagCompound tag, int x, int y, int z, int dimension) {
         if (!local(tag)) return tag;
         Class<?> type = typeOf(tag.getString("id"));
-        if (type != null) shift(specs(type), tag, x - tag.getInteger("x"), y - tag.getInteger("y"), z - tag.getInteger("z"));
+        return paste(type == null ? Collections.emptyList() : specs(type), tag, x, y, z, dimension);
+    }
+
+    static NBTTagCompound paste(List<Spec> specs, NBTTagCompound tag, int x, int y, int z, int dimension) {
+        if (!local(tag)) return tag;
+        int dx = x - tag.getInteger("x"), dy = y - tag.getInteger("y"), dz = z - tag.getInteger("z");
+        apply(specs, tag, p -> new double[] {p[0] + dx, p[1] + dy, p[2] + dz}, (char) 0, dimension);
         tag.removeTag(MARKER);
         return tag;
     }
@@ -250,11 +256,15 @@ public final class CoordinateLinks {
      * X, Z and y; y-only positions (in the tile's column) skip X and Z.
      */
     private static void apply(List<Spec> specs, NBTTagCompound root, Mapping mapping, char operation) {
+        apply(specs, root, mapping, operation, root.getInteger(MARKER));
+    }
+
+    private static void apply(List<Spec> specs, NBTTagCompound root, Mapping mapping, char operation, int destination) {
         boolean vertical = operation != 0 && "XZy".indexOf(operation) >= 0, tilting = operation == 'X' || operation == 'Z';
         int dimension = root.getInteger(MARKER);
         for (Spec spec : specs) {
             if (spec.list) {
-                positions(root, spec, mapping, dimension);
+                positions(root, spec, mapping, dimension, destination);
                 continue;
             }
             NBTTagCompound tag = spec.path.isEmpty() ? root : root.hasKey(spec.path, 10) ? root.getCompoundTag(spec.path) : null;
@@ -282,13 +292,14 @@ public final class CoordinateLinks {
                     put(tag, x, moved[0]);
                     if (y != null) put(tag, y, moved[1]);
                     put(tag, z, moved[2]);
+                    if (spec.dimension != null && tag.hasKey(spec.dimension)) tag.setInteger(spec.dimension, destination);
                 }
                 if (!list) break;
             }
         }
     }
 
-    private static void positions(NBTTagCompound root, Spec spec, Mapping mapping, int dimension) {
+    private static void positions(NBTTagCompound root, Spec spec, Mapping mapping, int dimension, int destination) {
         NBTTagCompound holder = root;
         String path = spec.path;
         int split = path.lastIndexOf('/');
@@ -314,6 +325,7 @@ public final class CoordinateLinks {
                 put(entry, x, moved[0]);
                 put(entry, y, moved[1]);
                 put(entry, z, moved[2]);
+                if (dim != null && entry.hasKey(dim)) entry.setInteger(dim, destination);
                 continue;
             }
             int[] pos = entry.getIntArray(spec.x);
@@ -322,6 +334,7 @@ public final class CoordinateLinks {
             if (at != 0 && at != 1 || pos[at + 1] < 0 || at == 1 && pos[0] != dimension) continue;
             double[] moved = mapping.map(new double[] {pos[at], pos[at + 1], pos[at + 2]});
             int[] result = pos.clone();
+            if (at == 1) result[0] = destination;
             for (int j = 0; j < 3; j++) result[at + j] = (int) Math.round(moved[j]);
             entry.setIntArray(spec.x, result);
         }

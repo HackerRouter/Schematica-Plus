@@ -235,6 +235,12 @@ See TESTING for constructed-file checks and the separate real-export limitation.
   mod data into an older mod's schema. Keep the original schematic: exporting a
   partially supported import saves the converted contents, including omissions and
   placeholders. Installing the missing mod later requires reloading the original file.
+- Captured supported links within the source dimension follow the paste destination's
+  coordinates and dimension. Links originally targeting another dimension remain
+  unchanged. Mod-dimension numeric IDs are not a portable identity across packs;
+  inspect and rebind affected external links manually. Ownership and shared-storage
+  frequencies are preserved, not reassigned. EnderStorage and personal Ender Chest
+  contents belong to the recipient world/player save and are not cloned by a schematic.
 - World time, frame interpolation and selected safe visual updates advance.
   Full machine ticking is not enabled. Private tick counters, transient transport
   particles and entity-targeted effects are not universally reproduced.
