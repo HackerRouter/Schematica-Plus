@@ -57,8 +57,8 @@ public final class TileEntityTranslator {
 
         String modernId = teTag.getString("id");
 
-        // Already a 1.7.10 short ID (no colon)
-        if (!modernId.contains(":")) {
+        // Only vanilla IDs use the modern-to-legacy translation table.
+        if (!modernId.startsWith("minecraft:")) {
             return true;
         }
 

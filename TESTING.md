@@ -2130,6 +2130,82 @@ registry dumps, acceptance/disk/reopen logs, and inspected
 placements and bookmarks were restored after the clients stopped.
 Tested JAR SHA-256: `5d0cde842ce38e5a9ddd880f5cc4e938859e633af9a2d7344139b20b977fed13`.
 
+## Schematic migration between individually selected mods
+
+- Use separate Forge instances with fresh configs and disposable worlds. Install the current Plus JAR
+  in each; a complete GTNH pack is not required. Use two versions of a shared storage mod, a storage mod
+  present only on each side, and a third instance without any of those mods.
+- Capture a vanilla chest containing shared and missing mod items, a written book, a populated drawer,
+  another mod container and a mod inventory entity. Save all four writable formats with NBT/entities.
+  Deliberately include a numeric ID used by different registry names in the two instances. Import by name:
+  a missing IronChest must never become JABBA just because both have ID 165.
+- Import and paste in both directions and into the instance without the storage mods. Check surviving
+  block/item names, counts, damage, book pages and drawer prototypes; check missing-content reports.
+  Unsupported entities are skipped with a report. Missing blocks use the selected format's existing
+  fallback; neither air nor a non-tile placeholder may retain orphaned container NBT.
+- Export the converted result to a new file and reload it. Already cleared inventory slots must not
+  cause another missing-item or missing-ID-map warning. Save, stop the client, restart and inspect the
+  actual pasted world again, including entities. Inspect saved region files independently.
+- Keep the source files unchanged. Reload them in their original instance to verify their complete
+  contents still exist. A converted export cannot recover omitted content after installing a missing mod;
+  return to the original source. Unedited Save Source's byte-preserving behavior is separate from conversion.
+- Check a constructed Sponge v2 input with equivalent native mod data in an instance with the mods and
+  one without them. This is import coverage, not a real WorldEdit/FAWE export or modern mod backport claim.
+- Unit fixtures additionally cover a missing optional tile API and lowercase namespaced mod entity/tile
+  IDs with private NBT. Those IDs must not undergo vanilla naming/text/health conversion.
+
+**2026-10-13 — selective-mod native acceptance.** Three fresh Forge 1614 instances
+ran under Xvfb/Mesa with Java 21, UniMixins 0.1.23 and lwjgl3ify 2.1.16. A and B
+also used GTNHLib 0.7.10. These were selected JARs with fresh configs, without NEI,
+Angelica, GregTech, Backhand or a complete pack installation.
+
+| Instance | Gameplay mods |
+| --- | --- |
+| A | StorageDrawers 2.1.10-GTNH, IronChest 6.1.6, IronChestMinecarts 1.2.0 |
+| B | StorageDrawers 2.2.31-GTNH, JABBA 1.5.10 |
+| C | None; the final checks also omit GTNHLib |
+
+Native server APIs prepared fixtures; actual Plus capture, loading, export and paste
+queues performed the migrations. Each direction B → A, A → B, A → C and B → C
+passed `.schemplus`, classic `.schematic`, `.litematic` and structure `.nbt` import,
+world paste and recipient export/reload: **16 cases**. Unlike the full-pack fixture,
+the selected block IDs fit classic Alpha, so these `.schematic` files did not upgrade.
+The source files remained unchanged and reloaded with all contents in their original
+instances. A constructed Sponge v2 file additionally passed native loading in A and C;
+it was not a real WorldEdit/FAWE export or an additional Sponge world-paste test.
+
+The shared drawer retained 64 iron ingots with a named prototype in both directions;
+its upgrade item moved between IDs `4116` and `4105`, retaining count 5 and damage 2.
+The vanilla chest retained seven diamonds and the written book's title/pages.
+ID `165` meant IronChest in A and JABBA in B: the absent registry name yielded missing
+content, never the unrelated local block/item. A's missing mod minecart was reported
+and omitted; B's vanilla chest minecart retained eleven emeralds in A and C.
+Missing blocks became air in Alpha formats and stone under the existing default
+fallback in named formats. Neither placeholder retained orphaned tile NBT.
+
+All 16 recipient exports reloaded with zero additional removed-item warnings,
+including empty slots left by missing items. Independent saved-region checks matched
+all **1,280 block/metadata cells** (A: 320, B: 320, C: 640), chest inventories and
+surviving drawer data. All three clients were then fully stopped and restarted;
+native world checks passed for all 16 pasted structures, inventories and nearby
+minecart counts. C also reloaded all eight original inputs without GTNHLib.
+World views before and after restarting were inspected. Build, Checkstyle and **664 automated tests** pass, including
+eight added regressions for orphan tile NBT, missing entity/tile types, unavailable
+optional APIs, unchanged native mod identifiers/private NBT and cleared-slot reloads.
+
+This covers the named selected-mod combinations, not every Forge mod or every storage
+feature. Drawer counts above 64 and locked slots retain the earlier unit-only status.
+Mod registry renames, arbitrary private IDs/schema changes and whole-world migration
+still need specific handling. Missing content is not recoverable from a converted
+export; retain the original schematic.
+
+Evidence: `<evidence-dir>/selective-mods/` contains native source/recipient files,
+registry dumps, `acceptance-final-*.log`, `extras-final-*.log`, `cold-final.log`,
+`reopen-final-*.log`, source hashes and inspected `screenshots/*-accepted.png` /
+`screenshots/*-reopened.png` views. Fixtures were generated
+in new disposable instances; original pack settings and user worlds were not changed.
+Tested JAR SHA-256: `b1ec8425c66721151bb9ac1e103af62d89b3619cd859ad0961fbf736473f8b62`.
+
 ## Printer build order (printerBuildOrder)
 
 - Layers (default): print a small house with torches on the walls, rails and flowers on the floor, standing

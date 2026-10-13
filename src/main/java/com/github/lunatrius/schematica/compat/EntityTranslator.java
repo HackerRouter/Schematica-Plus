@@ -41,7 +41,7 @@ public final class EntityTranslator {
      */
     public String getLegacyId(String modernId) {
         if (modernId == null) return null;
-        if (!modernId.contains(":")) return modernId;
+        if (!modernId.startsWith("minecraft:")) return modernId;
 
         String legacyId = idMap.get(modernId);
         if (legacyId != null) return legacyId;
@@ -77,7 +77,7 @@ public final class EntityTranslator {
         }
 
         String modernId = entityTag.getString("id");
-        if (!modernId.contains(":")) return true;
+        if (!modernId.startsWith("minecraft:")) return true;
 
         String legacyId = getLegacyId(modernId);
         if (legacyId == null) {

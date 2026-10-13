@@ -220,6 +220,17 @@ See TESTING for constructed-file checks and the separate real-export limitation.
   transfer the file, inspect the import report and paste into a recipient world copy.
   Arbitrary mod-private material indexes, machine IDs and opaque canonical payloads are
   not universally portable. Registry-name changes require a specific adapter or manual replacement.
+- Migration resolves the target's Forge registry, so it also applies to individually
+  selected mods without the GTNH pack. Missing content follows the existing block
+  fallback and item-removal reports; mapped names take precedence over coincidentally
+  equal numeric IDs. Unsupported entities and block entities are reported, and NBT is not attached
+  to a replacement block that cannot host a tile entity. A missing optional API in one
+  imported tile/entity does not abort the other supported content.
+  Non-vanilla entity/tile identifiers and private NBT bypass vanilla modern-format
+  conversion. This preserves native mod names; it does not translate arbitrary modern
+  mod data into an older mod's schema. Keep the original schematic: exporting a
+  partially supported import saves the converted contents, including omissions and
+  placeholders. Installing the missing mod later requires reloading the original file.
 - World time, frame interpolation and selected safe visual updates advance.
   Full machine ticking is not enabled. Private tick counters, transient transport
   particles and entity-targeted effects are not universally reproduced.

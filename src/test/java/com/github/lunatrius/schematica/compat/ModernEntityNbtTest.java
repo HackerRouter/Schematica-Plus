@@ -10,6 +10,27 @@ public class ModernEntityNbtTest {
     private static NBTTagCompound item(int id) {
         NBTTagCompound tag = new NBTTagCompound(); tag.setShort("id", (short) id); tag.setByte("Count", (byte) 1); return tag;
     }
+    @Test public void nativeModTileIdentifiersAndPrivateDataStayUnchanged() {
+        NBTTagCompound tile = new NBTTagCompound();
+        tile.setString("id", "example:storage_drawer");
+        tile.setString("CustomName", "{private format}");
+        tile.setInteger("mID", 37);
+        NBTTagCompound before = (NBTTagCompound) tile.copy();
+        assertTrue(TileEntityTranslator.instance().translate(tile, "example:storage_drawer", 1343));
+        assertEquals(before, tile);
+    }
+
+    @Test public void nativeModEntityIdentifiersAndPrivateDataStayUnchanged() {
+        NBTTagCompound entity = new NBTTagCompound();
+        entity.setString("id", "example:storage_cart");
+        entity.setString("CustomName", "{private format}");
+        entity.setInteger("Health", 31);
+        NBTTagCompound before = (NBTTagCompound) entity.copy();
+        assertEquals("example:storage_cart", EntityTranslator.instance().getLegacyId("example:storage_cart"));
+        assertTrue(EntityTranslator.instance().translate(entity, 1343));
+        assertEquals(before, entity);
+    }
+
     @Test public void equipmentCompoundPreservesSlotPositionsAndDropChances() {
         NBTTagCompound entity = new NBTTagCompound(), equipment = new NBTTagCompound(), chances = new NBTTagCompound(), name = new NBTTagCompound();
         entity.setString("id", "minecraft:zombie"); equipment.setTag("mainhand", item(276)); equipment.setTag("head", item(310));

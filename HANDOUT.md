@@ -3,7 +3,8 @@
 Current guide, reviewed 2026-10-13. Runtime baseline: Minecraft 1.7.10 / Forge
 10.13.4.1614, release `1.0.0.beta.2`, with subsequent fixes on `master`.
 Support targets: GTNH **2.8.4** and **2.9.0-RC-2**, using each pack's native
-mod versions. See [README](README.md) for usage, [TESTING](TESTING.md) for regression
+mod versions. Named combinations of individually installed mods are also checked
+in TESTING's selective-mod migration section. See [README](README.md) for usage, [TESTING](TESTING.md) for regression
 scenarios and dated observations, and [compatibility](compatibility/README.md) for
 adapter coverage. Git history retains the earlier development milestones.
 
@@ -92,6 +93,8 @@ mod. Original Schematica conflicts with Plus and must be removed from the instan
   NBT block references in all four writable formats. Prefer `.schemplus`, transfer
   between world copies, and inspect import warnings. This is schematic migration;
   arbitrary mod-private IDs and whole-world migration are outside its scope.
+  Individually selected Forge mods use the same mapping. Missing content is reported;
+  keep the original file because a converted export retains omissions/placeholders.
 - NEI integration sends a material-demand book to native bookmarks/recipe planning.
   GTNH 2.8.4 has crafting chains; 2.9.0-RC-2 also has a graphical crafting tree.
   The demand book is a plan, not existing inventory or a craftable recipe.
@@ -110,7 +113,7 @@ LC_ALL=C.UTF-8 ./gradlew test
 
 Build includes compilation, reobfuscation, Checkstyle and JUnit. Artifacts are in
 `build/libs/`; XML results in `build/test-results/test/`. The latest completed suite
-has **656 tests, no failures or skips**. These tests do not launch Minecraft.
+has **664 tests, no failures or skips**. These tests do not launch Minecraft.
 The generated MCP source is under `build/rfg/minecraft-src/java/`.
 First builds require network access; `--offline` only works with a populated cache.
 CI also starts and cleanly stops a dedicated development server. Branch pushes
@@ -336,6 +339,7 @@ steps and limitations are in TESTING; the full implementation history is in Git.
 | VISUAL_CHECKED_HEADLESS | 2026-10-13 | Name NEI demand books after source filenames, retaining extensions; material-list/browser and `compat/nei` code. Both native packs passed five formats, Chinese names, renamed placements, custom-list fallback, bookmark-file reload and recipe lookup. Book tooltips inspected; build and all 615 tests pass. See TESTING NEI filename checks. |
 | VISUAL_CHECKED_HEADLESS | 2026-10-13 | Expand modern vanilla import in `compat` and `world/schematic`: item variants/components, versioned text, equipment/timers, note/skull data, quartz axes and mushroom faces; warn about omitted data. Build and 637 tests pass. Both native packs passed six constructed version layouts through 26.3, extra inventory cases and omission checks; previews/materials inspected. Import only; actual modern-client exports remain unverified. See TESTING modern import section. |
 | VISUAL_CHECKED_HEADLESS | 2026-10-13 | Preserve cross-pack schematic item/NBT block references and reject unsafe visual caches in `world/schematic`; normalize StorageDrawers 2.2 slots for 2.1 in `compat/StorageDrawerNbt` and `NBTHelper`. Build and 656 tests pass. Native 2.8.4 and 2.9.0-RC-2 passed four-format bidirectional paste, resave/return, saved-region checks and cold world reopen; world views inspected. TESTING records the fixtures, constructed missing-item/block-reference checks and remaining private-ID limits. |
+| VISUAL_CHECKED_HEADLESS | 2026-10-13 | Harden selective-mod migration in `world/schematic` and entity/tile translators: report unsupported content, omit orphan tile NBT, preserve native mod identifiers and avoid empty-slot loss warnings. Build and 664 tests pass. Three fresh Forge instances with different StorageDrawers/IronChest/JABBA selections passed 16 four-format import/paste/resave cases, 1,280 saved block/metadata checks and cold world reopen; the no-storage-mod instance also omits GTNHLib. World views inspected; constructed Sponge loading and exact scope are recorded in TESTING. |
 
 ## 7. Reported issues and current boundaries
 

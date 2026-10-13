@@ -14,7 +14,6 @@ import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
-import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.Constants;
 
@@ -23,7 +22,6 @@ import com.github.lunatrius.schematica.compat.BlockMapping;
 import com.github.lunatrius.schematica.compat.BlockStateTranslator;
 import com.github.lunatrius.schematica.compat.EntityTranslator;
 import com.github.lunatrius.schematica.compat.TileEntityTranslator;
-import com.github.lunatrius.schematica.nbt.NBTHelper;
 import com.github.lunatrius.schematica.reference.Reference;
 import com.github.lunatrius.schematica.world.WorldDummy;
 import com.github.lunatrius.schematica.world.storage.Schematic;
@@ -180,9 +178,7 @@ public class SchematicLitematica extends SchematicFormat {
                             continue;
                         }
 
-                        TileEntity te = NBTHelper.readTileEntityFromCompound(teTag);
-                        if (te != null) {
-                            schematic.setTileEntity(te.xCoord, te.yCoord, te.zCoord, te);
+                        if (SchematicImport.tile(schematic, teTag)) {
                             existingTEPositions.add(posKey);
                             teLoaded++;
                         } else {
@@ -192,7 +188,8 @@ public class SchematicLitematica extends SchematicFormat {
                             teSkipped++;
                         }
                     }
-                } catch (Exception e) {
+                } catch (Exception | LinkageError e) {
+                    ImportReport.omittedData("block entity: " + tileEntitiesList.getCompoundTagAt(i).getString("id"));
                     Reference.logger.debug("Failed to load TileEntity from litematic region '{}': {}", rd.box.name, e.getMessage());
                     teSkipped++;
                 }
@@ -212,9 +209,7 @@ public class SchematicLitematica extends SchematicFormat {
                 int pz = (int) ((posKey >> 32) & 0xFFFFL);
                 NBTTagCompound synthTE = teTranslator.createBlockStateTile(px, py, pz, stateStr);
                 if (synthTE == null) continue;
-                TileEntity te = NBTHelper.readTileEntityFromCompound(synthTE);
-                if (te != null) {
-                    schematic.setTileEntity(px, py, pz, te);
+                if (SchematicImport.tile(schematic, synthTE)) {
                     synthCount++;
                 }
             }
@@ -250,7 +245,8 @@ public class SchematicLitematica extends SchematicFormat {
                         ImportReport.omittedData("entity: " + originalId);
                         entSkipped++;
                     }
-                } catch (Exception e) {
+                } catch (Exception | LinkageError e) {
+                    ImportReport.omittedData("entity: " + entitiesList.getCompoundTagAt(i).getString("id"));
                     Reference.logger.debug("Failed to load Entity from litematic region '{}': {}", rd.box.name, e.getMessage());
                     entSkipped++;
                 }
@@ -266,8 +262,18 @@ public class SchematicLitematica extends SchematicFormat {
 
     /** An entity from NBT with its previous position and rotation equal to the current ones, for still rendering. */
     static Entity createEntity(NBTTagCompound entityTag) {
-        Entity entity = EntityList.createEntityFromNBT(entityTag, WorldDummy.instance());
-        if (entity == null) return null;
+        Entity entity = null;
+        try {
+            if (EntityList.stringToClassMapping.containsKey(entityTag.getString("id"))) {
+                entity = EntityList.createEntityFromNBT(entityTag, WorldDummy.instance());
+            }
+        } catch (Exception | LinkageError e) {
+            Reference.logger.debug("Skipped entity '{}'", entityTag.getString("id"), e);
+        }
+        if (entity == null) {
+            ImportReport.omittedData("entity: " + entityTag.getString("id"));
+            return null;
+        }
         entity.prevRotationYaw = entity.rotationYaw;
         entity.prevRotationPitch = entity.rotationPitch;
         entity.prevPosX = entity.posX;

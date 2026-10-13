@@ -218,7 +218,8 @@ public final class ItemIdMaps {
     /** Sets the new id of a numeric field, keeping its type; false when the stack is to be removed. */
     private static boolean apply(NBTTagCompound tag, String key, IntUnaryOperator ids) {
         boolean wide = tag.hasKey(key, NBT.TAG_INT);
-        int next = ids.applyAsInt(wide ? tag.getInteger(key) : tag.getShort(key) & 0xFFFF);
+        int id = wide ? tag.getInteger(key) : tag.getShort(key) & 0xFFFF;
+        int next = id == 0 ? 0 : ids.applyAsInt(id);
         if (next == REMOVE) return false;
         if (wide) tag.setInteger(key, next);
         else tag.setShort(key, (short) next);

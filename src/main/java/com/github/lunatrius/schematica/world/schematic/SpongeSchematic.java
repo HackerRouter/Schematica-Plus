@@ -7,7 +7,6 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagDouble;
 import net.minecraft.nbt.NBTTagList;
-import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.Constants.NBT;
 
@@ -17,7 +16,6 @@ import com.github.lunatrius.schematica.compat.BlockMapping;
 import com.github.lunatrius.schematica.compat.BlockStateTranslator;
 import com.github.lunatrius.schematica.compat.EntityTranslator;
 import com.github.lunatrius.schematica.compat.TileEntityTranslator;
-import com.github.lunatrius.schematica.nbt.NBTHelper;
 import com.github.lunatrius.schematica.reference.Reference;
 import com.github.lunatrius.schematica.util.SchematicLimits;
 import com.github.lunatrius.schematica.world.storage.Schematic;
@@ -128,10 +126,13 @@ public final class SpongeSchematic extends SchematicFormat {
         tile.setInteger("y", pos[1]);
         tile.setInteger("z", pos[2]);
         try {
-            if (!TileEntityTranslator.instance().translate(tile, stateAt(schematic, states, pos), dataVersion)) return;
-            TileEntity entity = NBTHelper.readTileEntityFromCompound(tile);
-            if (entity != null) schematic.setTileEntity(pos[0], pos[1], pos[2], entity);
-        } catch (Exception e) {
+            if (!TileEntityTranslator.instance().translate(tile, stateAt(schematic, states, pos), dataVersion)) {
+                ImportReport.omittedData("block entity: " + tile.getString("id"));
+                return;
+            }
+            SchematicImport.tile(schematic, tile);
+        } catch (Exception | LinkageError e) {
+            ImportReport.omittedData("block entity: " + tile.getString("id"));
             Reference.logger.debug("Skipped a Sponge block entity at {} {} {}", pos[0], pos[1], pos[2], e);
         }
     }
@@ -158,10 +159,14 @@ public final class SpongeSchematic extends SchematicFormat {
         for (int i = 0; i < 3; i++) relative.appendTag(new NBTTagDouble(pos.func_150309_d(i) - min[i]));
         entity.setTag("Pos", relative);
         try {
-            if (!EntityTranslator.instance().translate(entity, dataVersion)) return;
+            if (!EntityTranslator.instance().translate(entity, dataVersion)) {
+                ImportReport.omittedData("entity: " + entity.getString("id"));
+                return;
+            }
             Entity created = SchematicLitematica.createEntity(entity);
             if (created != null) schematic.addEntity(created);
-        } catch (Exception e) {
+        } catch (Exception | LinkageError e) {
+            ImportReport.omittedData("entity: " + entity.getString("id"));
             Reference.logger.debug("Skipped a Sponge entity", e);
         }
     }

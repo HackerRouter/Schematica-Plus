@@ -167,6 +167,24 @@ public class ItemIdMapsTest {
         assertEquals(0, again.removed);
     }
 
+    @Test public void clearedSlotsDoNotReportAnotherMissingItemOnReload() {
+        NBTTagCompound root = new NBTTagCompound(), empty = stack(0, 0);
+        empty.setByte("Count", (byte) 0);
+        NBTTagList equipment = new NBTTagList();
+        equipment.appendTag(empty);
+        equipment.appendTag(stack(264, 0));
+        root.setTag("Equipment", equipment);
+        root.setTag("Filter", empty.copy());
+        root.setTag(ItemIdMaps.ITEM_MAPPING, new NBTTagCompound());
+        ItemIdMaps.Result result = new ItemIdMaps.Result();
+        ItemIdMaps.remap(root, NOW, Collections::emptyList, result);
+        assertEquals(0, result.removed);
+        assertTrue(result.unknownItems.isEmpty());
+        assertEquals(2, equipment.tagCount());
+        assertEquals(264, equipment.getCompoundTagAt(1).getShort("id"));
+        assertEquals(empty, root.getCompoundTag("Filter"));
+    }
+
     @Test public void unnamedIdsAreTranslatedWithTheIdMapWhoseBlockIdsMatch() {
         NBTTagCompound root = schematic("minecraft:stone", 1, "gregtech:gt.blockmachines", 1200);
         ItemIdMaps.Archive other = ids("other", "\u0001gregtech:gt.blockmachines", 1100, "\u0002gregtech:gt.metaitem.01", 7000);

@@ -82,10 +82,13 @@ public final class VanillaStructure extends SchematicFormat {
                 tile.setInteger("z", pos[2]);
                 try {
                     if (legacy) tile = LegacyNbt.tileFrom112(tile);
-                    else if (!TileEntityTranslator.instance().translate(tile, states[state], dataVersion)) continue;
-                    TileEntity entity = NBTHelper.readTileEntityFromCompound(tile);
-                    if (entity != null) schematic.setTileEntity(pos[0], pos[1], pos[2], entity);
-                } catch (Exception e) {
+                    else if (!TileEntityTranslator.instance().translate(tile, states[state], dataVersion)) {
+                        ImportReport.omittedData("block entity: " + tile.getString("id"));
+                        continue;
+                    }
+                    SchematicImport.tile(schematic, tile);
+                } catch (Exception | LinkageError e) {
+                    ImportReport.omittedData("block entity: " + tile.getString("id"));
                     Reference.logger.debug("Skipped a structure block entity at {} {} {}", pos[0], pos[1], pos[2], e);
                 }
             }
@@ -99,10 +102,14 @@ public final class VanillaStructure extends SchematicFormat {
             entity.setTag("Pos", pos.copy());
             try {
                 if (legacy) entity = LegacyNbt.entityFrom112(entity);
-                else if (!EntityTranslator.instance().translate(entity, dataVersion)) continue;
+                else if (!EntityTranslator.instance().translate(entity, dataVersion)) {
+                    ImportReport.omittedData("entity: " + entity.getString("id"));
+                    continue;
+                }
                 Entity created = SchematicLitematica.createEntity(entity);
                 if (created != null) schematic.addEntity(created);
-            } catch (Exception e) {
+            } catch (Exception | LinkageError e) {
+                ImportReport.omittedData("entity: " + entity.getString("id"));
                 Reference.logger.debug("Skipped a structure entity", e);
             }
         }
