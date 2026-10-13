@@ -1,7 +1,7 @@
 # Schematica Plus: development handoff
 
 Current guide, reviewed 2026-10-13. Runtime baseline: Minecraft 1.7.10 / Forge
-10.13.4.1614, release `1.0.0.beta.2`, with subsequent fixes on `master`.
+10.13.4.1614, release target `1.0.0-beta.3`.
 Support targets: GTNH **2.8.4** and **2.9.0-RC-2**, using each pack's native
 mod versions. Named combinations of individually installed mods are also checked
 in TESTING's selective-mod migration section. See [README](README.md) for usage, [TESTING](TESTING.md) for regression
@@ -324,6 +324,7 @@ steps and limitations are in TESTING; the full implementation history is in Git.
 
 | Status | Date | Work and location |
 | --- | --- | --- |
+| DONE | 2026-10-13 | Prepare `1.0.0-beta.3` using tag-derived runtime version and the existing GitHub Actions release workflow; release verification procedure in TESTING. |
 | IMPLEMENTED_HEADLESS | 2026-10-04 | Sponge v1-v3 reader, v2/v3 varint/origin and malformed-input tests; `world/schematic/SpongeSchematic.java`, `SpongeSchematicTest`. |
 | VISUAL_CHECKED_HEADLESS | 2026-10-07–08 | Dedicated-server extended metadata, independent-region download, full-NBT paste, permissions, cancellation/disconnect/retry, entities and two-player cases; TESTING multiplayer sections. |
 | VISUAL_CHECKED_HEADLESS | 2026-10-08 | Native pack mouse input, NEI recipe dispatch/demands, ArchitectureCraft preview/materials/mirrors, ProjectRed placement; TESTING named sections. |

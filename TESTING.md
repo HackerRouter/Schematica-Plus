@@ -3173,3 +3173,18 @@ resolved. r5.9.2 on OptiFine, other shader families, real GPUs, higher settings
 and Nether/End remain untested.
 Build, main/test Checkstyle and a fresh run of all 603 tests passed with no
 failures, errors or skips; no production code changed.
+
+### Release 1.0.0-beta.3 verification
+
+The release uses the Git tag as the version source for generated
+`SchematicaVersion.VERSION`, `mcmod.info` and the runtime JAR name. Run
+`./gradlew build` and `LC_ALL=C.UTF-8 ./gradlew test`, then repeat the build
+on tag `1.0.0-beta.3` and check `schematica_plus-1.0.0-beta.3.jar`.
+Run the dedicated-server startup gate and require normal startup and clean stop.
+Push the tag to trigger `.github/workflows/release-tags.yml`; its verification
+job must pass before the runtime JAR is published as a GitHub prerelease.
+
+For a game version check, install that runtime JAR in a disposable instance,
+open Mods and confirm Schematica Plus reports `1.0.0-beta.3`. Existing dated
+pack acceptance above remains scoped to its recorded builds and fixtures;
+a version-only release does not imply those game scenarios were rerun.
