@@ -12,6 +12,52 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 public class PortableSchematicDataTest {
+    private static NBTTagCompound fluid(String name, int amount) {
+        NBTTagCompound tag = new NBTTagCompound();
+        tag.setString("FluidName", name);
+        tag.setInteger("Amount", amount);
+        return tag;
+    }
+
+    @Test public void unavailableFluidsInTanksAndNestedItemsAreReportedWithoutRewritingNbt() {
+        NBTTagCompound root = new NBTTagCompound(), item = new NBTTagCompound();
+        NBTTagList items = new NBTTagList();
+        root.setTag("tank", fluid("missing.oil", 4000));
+        item.setTag("tag", fluid("missing.oil", 1000));
+        items.appendTag(item);
+        root.setTag("Items", items);
+        NBTTagCompound before = (NBTTagCompound) root.copy();
+        ImportReport.begin();
+        try { PortableSchematicData.reportMissingFluids(root, name -> false); }
+        finally { ImportReport.end(); }
+        assertEquals(before, root);
+        assertEquals(java.util.Collections.singleton("unavailable fluid: missing.oil"), ImportReport.lastItems().omittedData);
+    }
+
+    @Test public void availableFluidKeepsAmountAndCustomTags() {
+        NBTTagCompound root = fluid("water", 750), custom = new NBTTagCompound();
+        custom.setString("label", "sample");
+        root.setTag("Tag", custom);
+        NBTTagCompound before = (NBTTagCompound) root.copy();
+        ImportReport.begin();
+        try { PortableSchematicData.reportMissingFluids(root, "water"::equals); }
+        finally { ImportReport.end(); }
+        assertEquals(before, root);
+        assertTrue(ImportReport.lastItems().omittedData.isEmpty());
+    }
+
+    @Test public void emptyTanksAndUnrelatedFluidNamesDoNotWarn() {
+        NBTTagCompound root = new NBTTagCompound(), settings = new NBTTagCompound();
+        settings.setString("FluidName", "preferred.fluid");
+        root.setTag("settings", settings);
+        root.setTag("empty", fluid("missing.fluid", 0));
+        root.setTag("unnamed", fluid("", 1000));
+        ImportReport.begin();
+        try { PortableSchematicData.reportMissingFluids(root, name -> false); }
+        finally { ImportReport.end(); }
+        assertTrue(ImportReport.lastItems().omittedData.isEmpty());
+    }
+
     private static ItemIdMaps.Archive ids(int block, int item) {
         ItemIdMaps.Archive ids = new ItemIdMaps.Archive("fixture");
         ids.put("\u0001example:block", block);

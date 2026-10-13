@@ -220,6 +220,10 @@ See TESTING for constructed-file checks and the separate real-export limitation.
   transfer the file, inspect the import report and paste into a recipient world copy.
   Arbitrary mod-private material indexes, machine IDs and opaque canonical payloads are
   not universally portable. Registry-name changes require a specific adapter or manual replacement.
+- Standard Forge fluid stacks use `FluidName`, so matching registered names retain their
+  amount and tags even when numeric fluid IDs differ. Unknown nonempty named fluid stacks
+  are reported on import before the container's native reader can discard them. This
+  does not invent replacement fluids or translate mod-private numeric fluid encodings.
 - Migration resolves the target's Forge registry, so it also applies to individually
   selected mods without the GTNH pack. Missing content follows the existing block
   fallback and item-removal reports; mapped names take precedence over coincidentally

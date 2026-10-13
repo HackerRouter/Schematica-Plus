@@ -2130,6 +2130,52 @@ registry dumps, acceptance/disk/reopen logs, and inspected
 placements and bookmarks were restored after the clients stopped.
 Tested JAR SHA-256: `5d0cde842ce38e5a9ddd880f5cc4e938859e633af9a2d7344139b20b977fed13`.
 
+## Fluid containers and nested filters across packs
+
+- In disposable copies of both target packs, prepare a BuildCraft tank with 8,000 mB water,
+  an EnderIO tank with 4,000 mB lava, a chest with a 1,000 mB IC2 universal fluid cell,
+  and an EnderIO item conduit with an advanced filter. Also put a configured filter
+  upgrade inside the chest. Include a named IC2 ingot in filter slot 0, an empty slot 1,
+  and a GT item with damage 32001 in slot 2; enable NBT matching.
+- Save the full group as `.schemplus`, `.litematic` and structure `.nbt`; save the chest
+  alone as classic `.schematic`. Import each in the other pack, paste it, resave it,
+  and return the resaved file to its original pack. Check fluid names/amounts, item
+  names/damage, named-item NBT and the empty filter slot. Check the native filter API
+  accepts the named ingot and rejects both an unnamed ingot and a diamond.
+- Save, unload and reopen both worlds, then verify every pasted group again. Inspect
+  the actual world display separately from server inventory/NBT checks.
+- Repeat with a universal cell filled through its native fluid API with 1,000 mB of
+  registered mod oil. Transfer that chest in `.schemplus` in both directions.
+- In a separate constructed copy, replace only the EnderIO tank's `FluidName` with an
+  unregistered name. Loading must report the unavailable fluid. Paste and confirm the
+  native tank is empty while the BC water tank, cell and filters remain intact. Keep
+  the original file unchanged; adding a missing fluid later requires reloading it.
+
+Observed 2026-10-13: all eight four-format cross-pack cases passed native loading,
+paste, recipient resave/reload and return to the source pack. Server-side reads
+confirmed tank/cell amounts, nested filter templates (including native count-zero
+stacks), empty slot 1 and actual filter acceptance/rejection. Item IDs differed:
+IC2 fluid cell 4098/4099, IC2 ingot 4111/4112, filter upgrade 5270/5265 and GT metaitem
+7495/7638. Both oil-cell migration directions passed. Constructed missing-fluid
+copies produced the chat warning and empty EnderIO tanks in both packs; unrelated
+water/cell/filter data remained intact. No replacement fluid was invented.
+
+The runtime versions were BuildCraft 7.1.44/7.1.64, EnderIO 2.9.28/2.10.48 and IC2
+2.2.828 in GTNH 2.8.4/2.9.0-RC-2. Source and pasted world views were inspected. RC-2
+passed world unload/reopen; 2.8.4 passed a full Java-process restart and world reopen.
+An earlier scripted 2.8.4 reopen began while FML was still `SERVER_STOPPING`; that
+failed harness sequence is not recorded as a native menu or product failure. Tests
+used API-prepared fixtures and real in-game capture/import/paste operations; the
+filter checks used the mod's live server objects, not a simulated filter.
+
+Evidence: `<evidence-dir>/complex-migration` contains the source/returned files,
+`prepare-*`, `accept-*`, `post-accept-*`, `finish-290`, `cold-verify-284`, `oil-*` and
+`negatives-*` logs, plus a native display screenshot. Additional world screenshots
+are in `<evidence-dir>/cross-pack-migration/screenshots`. Tested JAR SHA-256:
+`e801925ab973ef8737b772d5c7ed0b332c40b9226b6876a3150c8a88e0077c38`.
+Build and all 667 automated tests passed. Mod-private machine/material indexes,
+renamed fluid registries and shared world-owned storage are separate boundaries.
+
 ## Plain Forge, Java 8 and optional NEI
 
 1. Use a fresh Forge 10.13.4.1614 client with Java 8 and LWJGL 2.9.4, with the current

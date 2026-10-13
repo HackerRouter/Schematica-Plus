@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
@@ -47,8 +48,18 @@ final class PortableSchematicData {
     }
 
     static void read(NBTTagCompound root) {
+        reportMissingFluids(root, FluidRegistry::isFluidRegistered);
         if (root.hasKey(ItemIdMaps.ITEM_MAPPING, NBT.TAG_COMPOUND)) ItemIdMaps.remap(root, ImportReport.items());
         readExtra(root, ItemIdMaps.CURRENT, root.hasKey(REGISTRY, NBT.TAG_STRING) ? registry() : "");
+    }
+
+    static void reportMissingFluids(NBTTagCompound root, Predicate<String> registered) {
+        walk(root, tag -> {
+            if (!tag.hasKey("FluidName", NBT.TAG_STRING) || !tag.hasKey("Amount", NBT.TAG_INT)
+                || tag.getInteger("Amount") <= 0) return;
+            String name = tag.getString("FluidName");
+            if (!name.isEmpty() && !registered.test(name)) ImportReport.omittedData("unavailable fluid: " + name);
+        }, 0);
     }
 
     static void readExtra(NBTTagCompound root, ItemIdMaps.Ids ids, String registry) {
