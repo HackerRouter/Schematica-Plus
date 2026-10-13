@@ -1,16 +1,16 @@
 # Schematica Plus
 
-**Beta.2** (`1.0.0-beta.2`) for **Minecraft 1.7.10 / Forge 10.13.4.1614**.
+**Beta.3** (`1.0.0-beta.3`) for **Minecraft 1.7.10 / Forge 10.13.4.1614**.
 
 ## TL;DR:
 
-## It is now a 120% [Litematica](https://modrinth.com/mod/litematica) backport for 1.7.10.
+## [Litematica](https://modrinth.com/mod/litematica) backport for 1.7.10, added with compatibilities/optimizations/functions.
 
 ## NO MORE PREREQUISTE MOD.
 
 ## It can be installed in both the SERVER and the CLIENT
 
-## Add it to the SERVER for better paste support!
+## Add it to the SERVER for better paste/easy placement support!
 
 ## For tutorials, check the description of [Litematica](https://modrinth.com/mod/litematica)
 
@@ -26,6 +26,10 @@ Drop the mod jar into your `mods` folder.
 If you are playing GTNH, replace the existing `Schematica-1.12.6-GTNH.jar` with this mod.
 
 ## It is NOT COMPATIBLE with the original [Schematica](https://legacy.curseforge.com/minecraft/mc-mods/schematica) and [Schematica-GTNH](https://github.com/GTNewHorizons/Schematica)
+
+It can read files with `.schematic`/`.schemplus`/`.litematic`/`.nbt`/`.schem`  format.
+
+We also have a built-in printer and an export-to-NEI option, yay!
 
 ------
 
