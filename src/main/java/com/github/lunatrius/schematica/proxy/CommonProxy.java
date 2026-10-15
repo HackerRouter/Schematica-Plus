@@ -48,6 +48,7 @@ public abstract class CommonProxy {
     public volatile boolean supportsRemoteEdit;
     /** The server runs Plus and applies placement intents (accurate placement protocol). */
     public volatile boolean supportsAccuratePlacement;
+    public volatile double printerMaxRange;
     public void worldMoveFinished(long id, boolean success) {}
 
     public void remoteEditStatus(com.github.lunatrius.schematica.network.message.MessageEditStatus status) {}
@@ -62,6 +63,7 @@ public abstract class CommonProxy {
 
     public void init(FMLInitializationEvent event) {
         PacketHandler.init();
+        FMLCommonHandler.instance().bus().register(com.github.lunatrius.schematica.handler.PrinterActions.INSTANCE);
         FMLCommonHandler.instance().bus().register(com.github.lunatrius.schematica.handler.WorldEditQueue.INSTANCE);
         net.minecraftforge.common.MinecraftForge.EVENT_BUS.register(com.github.lunatrius.schematica.handler.AccuratePlacement.INSTANCE);
 
@@ -122,6 +124,7 @@ public abstract class CommonProxy {
         supportsWorldMove = false;
         supportsRemoteEdit = false;
         supportsAccuratePlacement = false;
+        printerMaxRange = 0;
         this.isSaveEnabled = true;
         this.isLoadEnabled = true;
     }

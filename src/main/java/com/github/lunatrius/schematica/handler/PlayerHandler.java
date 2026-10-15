@@ -23,13 +23,14 @@ public class PlayerHandler {
             ConfigurationHandler.printerEnabled,
             ConfigurationHandler.saveEnabled,
             ConfigurationHandler.loadEnabled);
+        capabilities.printerMaxRange = ConfigurationHandler.printerEnabled ? PrinterRange.clamp(ConfigurationHandler.printerMaxRange) : 0;
         capabilities.supportsRemoteEdit = true;
         capabilities.supportsAccuratePlacement = ConfigurationHandler.accuratePlacementEnabled;
         return capabilities;
     }
 
     private static String key(MessageCapabilities c) {
-        return c.isPrinterEnabled + "," + c.isSaveEnabled + "," + c.isLoadEnabled + "," + c.supportsRemoteEdit + "," + c.supportsAccuratePlacement;
+        return c.isPrinterEnabled + "," + c.isSaveEnabled + "," + c.isLoadEnabled + "," + c.supportsRemoteEdit + "," + c.supportsAccuratePlacement + "," + c.printerMaxRange;
     }
 
     @SubscribeEvent
@@ -70,6 +71,7 @@ public class PlayerHandler {
         if (event.player instanceof EntityPlayerMP) {
             DownloadHandler.INSTANCE.transferMap.remove(event.player);
             AccuratePlacement.INSTANCE.forget(event.player);
+            PrinterActions.INSTANCE.forget((EntityPlayerMP) event.player);
             RemoteEdits.INSTANCE.forget(event.player);
         }
     }

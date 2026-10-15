@@ -56,6 +56,7 @@ public class SchematicPrinter {
     private final java.util.Map<Long, Long> cooldowns = new java.util.HashMap<>();
     private long tick;
     private Pass pass;
+    private final PrinterIteration.Cursor scan = new PrinterIteration.Cursor();
     /** The block being mined (x, y, z), after litematica-printer's printBreakWrongBlock/ExtraBlock. */
     private int[] mining;
     private final BlockMiner miner = new BlockMiner();
@@ -125,6 +126,7 @@ public class SchematicPrinter {
 
     public void refresh() {
         this.cooldowns.clear();
+        this.scan.reset();
         stopMining();
     }
 
@@ -281,8 +283,7 @@ public class SchematicPrinter {
 
         double eyeX = player.posX, eyeY = player.posY + player.getEyeHeight() - player.getDefaultEyeHeight(), eyeZ = player.posZ;
         double feetY = player.boundingBox.minY;
-        double range = ConfigurationHandler.printerWorkRange > 0 ? ConfigurationHandler.printerWorkRange
-            : this.minecraft.playerController.getBlockReachDistance();
+        double range = PrinterReach.range();
         int bx = MathHelper.floor_double(eyeX), by = MathHelper.floor_double(eyeY), bz = MathHelper.floor_double(eyeZ);
         List<int[]> offsets = PrinterIteration.offsets((int) Math.ceil(range), ConfigurationHandler.printerIteratorShape,
             ConfigurationHandler.printerIteratorMode, ConfigurationHandler.printerXAxisReverse,
@@ -294,10 +295,13 @@ public class SchematicPrinter {
         if (DestroyAssist.active() || continueMining(world, eyeX, eyeY, eyeZ, range)) return 0;
         boolean layers = "layers".equals(ConfigurationHandler.printerBuildOrder);
         List<PrinterBuildOrder.Candidate> candidates = new ArrayList<>();
-        for (int[] offset : offsets) {
-            if (System.nanoTime() > deadline) break;
+        long scanDeadline = ConfigurationHandler.printerIterationTimeLimit > 0
+            ? System.nanoTime() + ConfigurationHandler.printerIterationTimeLimit * 500_000L : Long.MAX_VALUE;
+        for (int visited = 0, limit = Math.min(offsets.size(), 32768); visited < limit; visited++) {
+            if (visited > 0 && System.nanoTime() > scanDeadline) break;
+            int[] offset = offsets.get(scan.next(offsets.size()));
             int x = bx + offset[0], y = by + offset[1], z = bz + offset[2];
-            if (y < 0 || y > 255) continue;
+            if (y < 0 || y > 255 || !world.blockExists(x, y, z)) continue;
             double dx = x + 0.5 - eyeX, dy = y + 0.5 - eyeY, dz = z + 0.5 - eyeZ;
             if (dx * dx + dy * dy + dz * dz > range * range) continue;
             if (!selected(x, y, z, feetY, area)) continue;
@@ -315,8 +319,9 @@ public class SchematicPrinter {
         this.pass = new Pass(player);
         int placed = 0;
         try {
+            int attempted = 0;
             for (PrinterBuildOrder.Candidate candidate : candidates) {
-                if (System.nanoTime() > deadline) break;
+                if (attempted++ > 0 && System.nanoTime() > deadline) break;
                 int x = candidate.x, y = candidate.y, z = candidate.z;
                 long key = key(x, y, z);
                 SchematicWorld placement = (SchematicWorld) candidate.placement;
@@ -417,6 +422,7 @@ public class SchematicPrinter {
         }
 
         if (FluidPrinter.isFluid(block)) {
+            if (PrinterReach.remote(wx, wy, wz)) return false;
             if (FluidPrinter.matches(schematic, x, y, z, world, wx, wy, wz)) return false;
             if (!world.isAirBlock(wx, wy, wz) && !FluidPrinter.isFluid(realBlock)) return false;
             if (FluidPrinter.isFluid(realBlock) && !FluidPrinter.sameFluid(block, realBlock)) return false;
@@ -430,7 +436,8 @@ public class SchematicPrinter {
 
         if (ConfigurationHandler.destroyBlocks && !world.isAirBlock(wx, wy, wz)
             && this.minecraft.playerController.isInCreativeMode()) {
-            this.minecraft.playerController.clickBlock(wx, wy, wz, 0);
+            if (PrinterReach.remote(wx, wy, wz)) this.miner.start(wx, wy, wz, 0);
+            else this.minecraft.playerController.clickBlock(wx, wy, wz, 0);
             return !ConfigurationHandler.destroyInstantly;
         }
 
@@ -702,6 +709,11 @@ public class SchematicPrinter {
         Vec3 hitVec) {
         boolean success = !ForgeEventFactory.onPlayerInteract(player, Action.RIGHT_CLICK_BLOCK, x, y, z, side, world)
             .isCanceled();
+        if (success && PrinterReach.remote(x, y, z)) {
+            PrinterReach.send(com.github.lunatrius.schematica.network.message.MessagePrinterAction.PLACE, x, y, z, side, hitVec);
+            player.swingItem();
+            return true;
+        }
         if (success) {
             success = this.minecraft.playerController
                 .onPlayerRightClick(player, world, itemStack, x, y, z, side, hitVec);

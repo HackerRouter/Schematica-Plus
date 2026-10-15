@@ -31,6 +31,19 @@ public class PrinterIterationTest {
         for (int[] o : PrinterIteration.build(5, "sphere", "zyx", true, true, true)) assertTrue(o[0] * o[0] + o[1] * o[1] + o[2] * o[2] <= 25);
     }
 
+    @Test public void interruptedScansEventuallyVisitTheWholeRange() {
+        PrinterIteration.Cursor cursor = new PrinterIteration.Cursor();
+        List<int[]> offsets = PrinterIteration.build(32, "cube", "xzy", false, false, false);
+        java.util.Set<Integer> visited = new java.util.HashSet<>();
+        for (int pass = 0; pass < 300; pass++) {
+            for (int i = 0; i < 1000; i++) visited.add(cursor.next(offsets.size()));
+        }
+        assertEquals(offsets.size(), visited.size());
+        assertTrue(cursor.next(27) < 27);
+        cursor.reset();
+        assertEquals(0, cursor.next(27));
+    }
+
     @Test public void unknownValuesFallBackToTheDefaults() {
         assertEquals(PrinterIteration.build(2, "sphere", "xzy", false, false, false).size(),
             PrinterIteration.build(2, "blob", "abc", false, false, false).size());

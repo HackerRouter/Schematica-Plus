@@ -18,6 +18,8 @@ public class PacketHandler {
         .newSimpleChannel(Reference.MODID.toLowerCase());
 
     public static void init() {
+        INSTANCE.registerMessage(com.github.lunatrius.schematica.network.message.MessagePrinterAction.class,
+            com.github.lunatrius.schematica.network.message.MessagePrinterAction.class, 13, Side.SERVER);
         INSTANCE.registerMessage(MessageCapabilities.class, MessageCapabilities.class, 0, Side.CLIENT);
 
         INSTANCE.registerMessage(MessageDownloadBegin.class, MessageDownloadBegin.class, 1, Side.CLIENT);

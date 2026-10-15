@@ -67,6 +67,10 @@ mod. Original Schematica conflicts with Plus and must be removed from the instan
   defaults to a stick. Chords, mouse input, contexts and advanced matching settings
   are editable in configuration. Ordinary attack/use must keep working when no
   applicable tool action consumes the input.
+- Printer working-switch bindings are in Hotkeys. Work radius accepts 0..32 blocks;
+  0 retains normal reach. Extended printing requires the server to advertise its
+  `printerMaxRange` (default 32); ordinary input and fluid ray tracing retain normal
+  reach. Native survival item use, mining and permission checks still apply.
 - `.schematic`, `.schemplus`, `.litematic` and structure `.nbt` support reading and
   writing. Sponge `.schem` v1-v3 is **import-only**; biomes are ignored and modern
   block/NBT conversion is partial. Automated Sponge fixtures cover v1/v2/v3 and reject malformed block streams.
@@ -122,7 +126,7 @@ LC_ALL=C.UTF-8 ./gradlew test
 
 Build includes compilation, reobfuscation, Checkstyle and JUnit. Artifacts are in
 `build/libs/`; XML results in `build/test-results/test/`. The latest completed suite
-has **694 tests, no failures or skips**. These tests do not launch Minecraft.
+has **700 tests, no failures or skips**. These tests do not launch Minecraft.
 The generated MCP source is under `build/rfg/minecraft-src/java/`.
 First builds require network access; `--offline` only works with a populated cache.
 CI also starts and cleanly stops a dedicated development server. Branch pushes
@@ -358,6 +362,7 @@ steps and limitations are in TESTING; the full implementation history is in Git.
 | VISUAL_CHECKED_HEADLESS | 2026-10-13 | Original NEI 1.0.5.120 with CodeChickenCore 1.0.7.47/CodeChickenLib 1.1.3.138 passed native recipes, search, material fallback, mouse edits and M/E on plain Forge/Java 8/LWJGL2; cold restart and actual screens checked. GTNH-only demand/tree entry stays hidden. No product-code change; build and 675 tests pass. See TESTING installed-original-NEI section. |
 | VISUAL_CHECKED_HEADLESS | 2026-10-15 | Add descriptive metadata across the four writable formats in `world/schematic`, source/copy/download paths and browser/manager UI: author/name, multiline description, dates and embedded previews. Build and 684 tests pass. Both native packs passed 16 format conversions each, metadata editing, source REBUILD API saves, four-format dedicated downloads, F2/PNG previews and scrolled 3D-panel checks. Detailed scenarios and limitations are recorded in TESTING. |
 | VISUAL_CHECKED_HEADLESS | 2026-10-15 | Add image/3D sliding selection, expanded viewing, rotation pause/resume, reset and focused WASD/Space/Shift/right-drag navigation in `client/gui/browser` and `framework/UiSlideSwitch`. Build and 694 tests pass. Both native packs passed movement, unchanged player/file checks, modal/search isolation, repeated expanded views and scale/window layouts. See TESTING for runtime hashes, final framing checks and renderer limits. |
+| VISUAL_CHECKED_HEADLESS | 2026-10-15 | Extend printer radius to 32 with a synchronized server cap, bounded resumable scans and native server interaction/mining in `client/printer`, `handler/PrinterActions` and `network/message`; move the existing working-switch binding to Hotkeys in `GuiModConfig`. Build and 700 tests pass. Both native packs passed dedicated survival distance/material/facing checks, limit/disable refusals, ordinary-reach restoration, Forge cancellation, 1 ms scanning and native key persistence/context checks. See TESTING for the runtime hash and tool/fluid limits. |
 
 ## 7. Reported issues and current boundaries
 

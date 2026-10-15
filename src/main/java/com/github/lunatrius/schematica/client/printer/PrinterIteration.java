@@ -17,6 +17,16 @@ public final class PrinterIteration {
 
     private PrinterIteration() {}
 
+    /** Resume a time-limited scan so distant offsets are eventually visited. */
+    static final class Cursor {
+        private int index;
+        int next(int size) {
+            if (index >= size) index = 0;
+            return index++;
+        }
+        void reset() { index = 0; }
+    }
+
     public static synchronized List<int[]> offsets(int radius, String shape, String order, boolean reverseX, boolean reverseY, boolean reverseZ) {
         String key = radius + shape + order + reverseX + reverseY + reverseZ;
         if (!key.equals(cachedKey)) {
@@ -27,7 +37,7 @@ public final class PrinterIteration {
     }
 
     static List<int[]> build(int radius, String shape, String order, boolean reverseX, boolean reverseY, boolean reverseZ) {
-        radius = Math.max(0, radius);
+        radius = Math.max(0, Math.min((int) com.github.lunatrius.schematica.handler.PrinterRange.MAX, radius));
         String axes = valid(order, ORDERS, "xzy");
         String form = valid(shape, SHAPES, "sphere");
         boolean[] reverse = {reverseX, reverseY, reverseZ};

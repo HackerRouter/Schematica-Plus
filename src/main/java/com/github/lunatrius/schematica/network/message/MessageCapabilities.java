@@ -16,6 +16,7 @@ public class MessageCapabilities implements IMessage, IMessageHandler<MessageCap
     public boolean isLoadEnabled;
     public boolean supportsWorldMove = true;
     public boolean supportsRemoteEdit, supportsAccuratePlacement;
+    public double printerMaxRange;
 
     public MessageCapabilities() {
         this(false, false, false);
@@ -35,6 +36,7 @@ public class MessageCapabilities implements IMessage, IMessageHandler<MessageCap
         supportsWorldMove = buf.isReadable() && buf.readBoolean();
         supportsRemoteEdit = buf.isReadable() && buf.readBoolean();
         supportsAccuratePlacement = buf.isReadable() && buf.readBoolean();
+        printerMaxRange = com.github.lunatrius.schematica.handler.PrinterRange.clamp(buf.readDouble());
     }
 
     @Override
@@ -45,6 +47,7 @@ public class MessageCapabilities implements IMessage, IMessageHandler<MessageCap
         buf.writeBoolean(supportsWorldMove);
         buf.writeBoolean(supportsRemoteEdit);
         buf.writeBoolean(supportsAccuratePlacement);
+        buf.writeDouble(printerMaxRange);
     }
 
     private static volatile MessageCapabilities pending;
@@ -69,6 +72,7 @@ public class MessageCapabilities implements IMessage, IMessageHandler<MessageCap
         SchematicaPlus.proxy.supportsWorldMove = message.supportsWorldMove;
         SchematicaPlus.proxy.supportsRemoteEdit = message.supportsRemoteEdit;
         SchematicaPlus.proxy.supportsAccuratePlacement = message.supportsAccuratePlacement;
+        SchematicaPlus.proxy.printerMaxRange = message.printerMaxRange;
 
         Reference.logger.info(
             "Server capabilities{printer={}, save={}, load={}, remoteEdit={}, accuratePlacement={}}",

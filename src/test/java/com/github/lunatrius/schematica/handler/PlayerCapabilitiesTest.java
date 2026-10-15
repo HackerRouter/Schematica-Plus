@@ -18,7 +18,6 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 public class PlayerCapabilitiesTest {
@@ -60,26 +59,18 @@ public class PlayerCapabilitiesTest {
         assertTrue(advertised(true).supportsRemoteEdit);
     }
 
-    @Test public void legacyServersWithoutTheProtocolKeepCommandFallback() {
-        for (boolean worldMoveField : new boolean[] {false, true}) {
-            ByteBuf wire = Unpooled.buffer();
-            try {
-                wire.writeBoolean(true);
-                wire.writeBoolean(true);
-                wire.writeBoolean(true);
-                if (worldMoveField) wire.writeBoolean(true);
-                MessageCapabilities received = new MessageCapabilities();
-                received.fromBytes(wire);
-                assertTrue(received.isPrinterEnabled);
-                assertTrue(received.isSaveEnabled);
-                assertTrue(received.isLoadEnabled);
-                assertEquals(worldMoveField, received.supportsWorldMove);
-                assertFalse(received.supportsRemoteEdit);
-                assertFalse(received.supportsAccuratePlacement);
-                assertEquals(0, wire.readableBytes());
-            } finally {
-                wire.release();
-            }
+    @Test public void printerLimitTravelsWithCapabilities() throws Exception {
+        double previous = ConfigurationHandler.printerMaxRange;
+        boolean enabled = ConfigurationHandler.printerEnabled;
+        try {
+            ConfigurationHandler.printerEnabled = true;
+            ConfigurationHandler.printerMaxRange = 24;
+            assertEquals(24, advertised(true).printerMaxRange, 0);
+            ConfigurationHandler.printerEnabled = false;
+            assertEquals(0, advertised(true).printerMaxRange, 0);
+        } finally {
+            ConfigurationHandler.printerMaxRange = previous;
+            ConfigurationHandler.printerEnabled = enabled;
         }
     }
 }

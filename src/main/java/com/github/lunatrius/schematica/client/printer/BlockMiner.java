@@ -23,7 +23,7 @@ public final class BlockMiner {
     /** PlayerControllerMP.blockHitDelay: five ticks after a block broke before the next one is started. */
     private long readyAt;
     private float progress;
-    private boolean active;
+    private boolean active, remote;
 
     public boolean active() { return active; }
     public boolean at(int bx, int by, int bz) { return active && bx == x && by == y && bz == z; }
@@ -39,7 +39,8 @@ public final class BlockMiner {
         slot = -1;
         syncSlot(player);
         x = bx; y = by; z = bz; side = face; progress = 0; ticks = 0;
-        player.sendQueue.addToSendQueue(new C07PacketPlayerDigging(0, x, y, z, side));
+        remote = PrinterReach.remote(x, y, z);
+        send(0, side);
         if (mc.playerController.isInCreativeMode()) {
             mc.playerController.onPlayerDestroyBlock(x, y, z, side);
             readyAt = System.nanoTime() + 250_000_000L;
@@ -73,7 +74,7 @@ public final class BlockMiner {
         }
         player.swingItem();
         if (progress >= 1.0F) {
-            player.sendQueue.addToSendQueue(new C07PacketPlayerDigging(2, x, y, z, side));
+            send(2, side);
             mc.playerController.onPlayerDestroyBlock(x, y, z, side);
             clear();
             readyAt = System.nanoTime() + 250_000_000L;
@@ -86,8 +87,13 @@ public final class BlockMiner {
     /** Stops mining and tells the server, like PlayerControllerMP.resetBlockRemoving. */
     public void abort() {
         if (!active) return;
-        if (mc.thePlayer != null) mc.thePlayer.sendQueue.addToSendQueue(new C07PacketPlayerDigging(1, x, y, z, -1));
+        if (mc.thePlayer != null) send(1, -1);
         clear();
+    }
+
+    private void send(int action, int face) {
+        if (remote) PrinterReach.send(action, x, y, z, face, null);
+        else mc.thePlayer.sendQueue.addToSendQueue(new C07PacketPlayerDigging(action, x, y, z, face));
     }
 
     private void clear() {

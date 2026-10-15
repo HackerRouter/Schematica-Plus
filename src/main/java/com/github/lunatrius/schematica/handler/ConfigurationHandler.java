@@ -73,6 +73,7 @@ public class ConfigurationHandler {
     public static int timeout = TIMEOUT_DEFAULT;
     // Printer pass, after the behavior of litematica-printer and the Entropy5 Schematica fork
     public static double printerWorkRange;
+    public static double printerMaxRange = 32;
     public static int printerIterationTimeLimit = 8, placeBlocksPerTick = 1, printerLagCheckMax = 20;
     public static String printerIteratorShape = "sphere", printerIteratorMode = "xzy", printSelectionType = "render_layers";
     public static String printerBuildOrder = "layers";
@@ -464,6 +465,11 @@ public class ConfigurationHandler {
             Names.Config.PRINTER_ENABLED_DESC);
         propPrinterEnabled.setLanguageKey(Names.Config.LANG_PREFIX + "." + Names.Config.PRINTER_ENABLED);
         printerEnabled = propPrinterEnabled.getBoolean(PRINTER_ENABLED_DEFAULT);
+        Property maxRange = configuration.get(Names.Config.Category.SERVER, "printerMaxRange", PrinterRange.MAX,
+            "Maximum printer distance in blocks. 0 keeps normal reach; extended reach requires Plus on both sides.");
+        maxRange.setLanguageKey(Names.Config.LANG_PREFIX + ".printerMaxRange");
+        maxRange.setMinValue(0.0).setMaxValue(PrinterRange.MAX);
+        printerMaxRange = PrinterRange.clamp(maxRange.getDouble(PrinterRange.MAX));
         remoteEditsEnabled = serverFlag(Names.Config.REMOTE_EDITS_ENABLED, Names.Config.REMOTE_EDITS_ENABLED_DESC);
         accuratePlacementEnabled = serverFlag(Names.Config.ACCURATE_PLACEMENT_ENABLED, Names.Config.ACCURATE_PLACEMENT_ENABLED_DESC);
 
@@ -513,8 +519,8 @@ public class ConfigurationHandler {
         printer.remove("placeInstantly");
         printer.remove("placeAdjacent");
         Property range = printerProperty(configuration.get(Names.Config.Category.PRINTER, "printerWorkRange", 0.0), "printerWorkRange");
-        range.setMinValue(0.0).setMaxValue(6.0);
-        printerWorkRange = Math.max(0, Math.min(6, range.getDouble(0)));
+        range.setMinValue(0.0).setMaxValue(PrinterRange.MAX);
+        printerWorkRange = PrinterRange.clamp(range.getDouble(0));
         printerIterationTimeLimit = printerInt("printerIterationTimeLimit", 8, 0, 32);
         placeBlocksPerTick = printerInt("placeBlocksPerTick", 1, 1, 64);
         printerBuildOrder = printerChoice("printerBuildOrder", "layers", "layers", "iterator");

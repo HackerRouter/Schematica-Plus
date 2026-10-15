@@ -155,6 +155,16 @@ The target combinations are Backhand 1.7.7 / Bogo Sorter 1.2.68 in GTNH 2.8.4 an
 Backhand 1.8.16 / Bogo Sorter 1.3.54 in GTNH 2.9.0-RC-2. Input and item-count
 acceptance steps and observations are recorded in [TESTING.md](../TESTING.md).
 
+## Printer distance
+
+The current client/server protocol supports a printer radius up to 32 blocks,
+subject to server `printerMaxRange` and `printerEnabled`. Default client radius 0
+keeps normal reach; a server without Plus cannot grant the extension. Requests
+use native server placement/mining handlers and actual inventory items. Temporary
+printer reach does not extend ordinary mouse interactions. Protection events,
+spawn restrictions and loaded-chunk checks remain in force. Mod items with their
+own distance checks may still refuse extended interactions.
+
 ## Fluid printer
 
 Supported routes are native `ItemBucket` placement (including EnderIO/Tinkers'

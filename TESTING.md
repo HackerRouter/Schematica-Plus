@@ -1735,7 +1735,7 @@ Evidence: `<evidence-dir>/sponge-nei/sponge-files290.log` and
 
 ## Printer switch and server permission
 
-- Single player: bind workingSwitch (Printer tab, unbound by default) and press it with a placement visible: the action bar shows the
+- Single player: bind workingSwitch (Hotkeys tab, unbound by default) and press it with a placement visible: the action bar shows the
   printer toggle message and blocks are placed around you; press again to stop. Changing the selected
   placement keeps printing (with the new placement).
 - Turn off Allow Printer (printerEnabled) in the config screen while printing: printing stops with
@@ -1747,9 +1747,64 @@ Evidence: `<evidence-dir>/sponge-nei/sponge-files290.log` and
 - Single player now receives the server capabilities: Easy Place uses the accurate placement protocol
   (stairs/pistons get the schematic facing without turning).
 
+## Extended printer distance
+
+- Use the same current JAR on both sides. In Hotkeys, bind the printer working
+  switch, close/reopen configuration, and confirm the binding survives. Check
+  that its advanced matching/reset controls work and GUI typing does not print.
+- Leave `printerWorkRange=0`: ordinary reach remains the default. Set it to 32
+  with server `printerMaxRange=32` and a loaded schematic extending past 32 blocks.
+  From a fixed position, print survival blocks at 12, 24 and 31 blocks; confirm
+  server blocks, exact inventory consumption, and rejection beyond the limit.
+- Reduce server `printerMaxRange` to 16 while connected. The client must receive
+  the limit and leave farther blocks untouched. Disable `printerEnabled` while
+  printing; it must stop, and direct requests must also be rejected.
+- Include a wrong block at 12 blocks: enable breaking and confirm normal mining
+  progress, drops/tool wear and replacement. Toggle off mid-dig, walk outside the
+  limit, and check cancellation. Ordinary clicks must retain normal reach.
+- Reject out-of-range, unloaded-chunk and protected-block requests; exercise native
+  placement/break event cancellation with installed protection mods where available.
+  No inventory item or block NBT comes from the printer request.
+- Set a 1 ms scan budget and use the 32-block cube: distant offsets must eventually
+  be visited. Try top-down/axis-reversed traversal, chunks loading after a scan,
+  reconnecting and changing dimensions. Large scans resume over successive passes;
+  layer sorting applies to each collected batch.
+- Without Plus on the server, or with server `printerMaxRange=0`, the effective
+  printer radius stays at normal reach. Fluid containers continue using native
+  ray tracing and normal reach, including on a server allowing extended printing.
+
+Observed 2026-10-15 in native GTNH 2.8.4 and 2.9.0-RC-2 clients connected to
+matching dedicated servers, with the same current JAR on both sides (SHA-256
+`ff982fc917fbf2afbdd374f0879c745621bc761bb7ac573bafb803ff1eaa5342`):
+
+- The Hotkeys page showed the printer working switch; a real mouse/keyboard F8
+  binding survived closing configuration and a cold client restart. F8 started
+  and stopped printing in the world.
+- Generated survival fixtures placed stone at 2, 12, 24 and 31 blocks while the
+  33-block target stayed air. A 20-block stair retained metadata 6. Server readback
+  and client inventory agreed: stone 64 to 60, stairs 8 to 7. A wrong dirt block
+  at 12 blocks was mined and replaced, consuming one further stone and wearing
+  the selected tool. The ordinary server reach returned to 5 after requests.
+- A live server limit of 16 reached the client and rejected a direct 24-block
+  request. Disabling the printer stopped it and rejected a direct 12-block
+  request. Server limit 0 restored the client's ordinary 4.5-block radius.
+- With stone selected, an ordinary native placement packet at 12 blocks was
+  rejected while the printer request succeeded. A synthetic Forge interaction
+  cancellation fixture refused placement without consuming stone; interaction
+  and break-event cancellation also kept the protected wrong block intact.
+- At a 1 ms scan budget and cube shape, every in-range stone target was eventually
+  visited while the 33-block target stayed air. F8 in chat did not start printing.
+  Fixtures were prepared through runtime APIs; key capture/toggling used native
+  mouse/keyboard input. Screenshots were inspected and results read from the
+  actual dedicated worlds. This is not acceptance of every protection plugin.
+- An iron hoe refused both ordinary nearby native use and the extended request
+  in these packs; dirt stayed dirt. No successful tilling claim or workaround
+  follows from this fixture. Fluids and arbitrary mod-private reach checks remain
+  outside the extended-distance acceptance.
+
 ## Printer pass (litematica-printer style)
 
-- Printer tab: all printer options, the swap slots and the workingSwitch binding are there.
+- Printer tab: printer options and swap slots; the workingSwitch binding is in Hotkeys.
 - Default settings: standing next to a placement the printer places one block per tick, bottom layer first,
   only within reach; several visible placements are all printed.
 - Stairs, chests, furnaces, pumpkins, repeaters, doors and horizontal pistons/dispensers get the schematic
