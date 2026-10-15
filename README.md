@@ -257,6 +257,15 @@ are added explicitly. Conversion and REBUILD saves retain existing attribution,
 description, creation time and preview. Metadata edits also update an already loaded
 source without discarding its unsaved block edits.
 
+The browser's Image/3D slider switches between an embedded thumbnail and the live
+model when both are available. Expand opens the model across the window; Escape
+or Back returns with the same camera. Click the model to select it and pause its
+rotation: left-drag rotates, right-drag pans, and the wheel zooms. W/S move
+forward/back, A/D left/right, Space up and Shift down. Clicking elsewhere releases
+keyboard control. Pause/Rotate controls automatic rotation; Reset View restores
+position, zoom and angles while keeping the rotation setting. These controls move
+only the preview, not the player or schematic placement.
+
 Litematic uses its native Metadata compound. Other writable formats use the
 optional `ExtendedMetadata.SchematicaPlus` compound; structure files also retain
 their native `author` field. Adding this information does not change block encoding

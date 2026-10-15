@@ -26,6 +26,7 @@ import com.github.lunatrius.schematica.client.gui.framework.UiList;
 import com.github.lunatrius.schematica.client.gui.framework.UiListModel;
 import com.github.lunatrius.schematica.client.gui.framework.UiScreen;
 import com.github.lunatrius.schematica.client.gui.framework.UiTextField;
+import com.github.lunatrius.schematica.client.gui.framework.UiPanel;
 import com.github.lunatrius.schematica.handler.ConfigurationHandler;
 import com.github.lunatrius.schematica.reference.Reference;
 import com.github.lunatrius.schematica.util.FileUtils;
@@ -47,7 +48,8 @@ public abstract class GuiSchematicBrowser extends UiScreen {
     private UiButton back;
     private UiTextField search;
     private UiWidget frame;
-    private UiWidget info;
+    private UiPanel info;
+    private SchematicPreviewPane previewPane;
     private boolean searching;
     private UiList<SchematicBrowserModel.Entry> list;
     private UiLabel message;
@@ -55,10 +57,7 @@ public abstract class GuiSchematicBrowser extends UiScreen {
     private String status = "";
     private SchematicBrowserModel.Entry lastSelection;
     private final SchematicInfoCache infoCache = new SchematicInfoCache();
-    private static final long PREVIEW_3D_MAX_FILE = 32L << 20;
-    private int infoMouseX, infoMouseY;
     private int infoScroll, infoMaxScroll, infoContentBottom;
-    private UiBounds preview3DBox;
     private static final java.text.SimpleDateFormat DATE_FORMAT = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
     protected GuiSchematicBrowser(GuiScreen parent, String title, boolean directoriesOnly) {
@@ -115,16 +114,15 @@ public abstract class GuiSchematicBrowser extends UiScreen {
             : UiSprite.schematicFile(entry.name()),
             entry -> entry.directory ? entry.name() : (collections() && com.github.lunatrius.schematica.client.util.UiState.favorite(entry.file)
                 ? "\u00a7e\u2605\u00a7r " : "") + entry.name().substring(0, entry.name().lastIndexOf('.')));
-        info = root.add(new UiWidget() {
+        info = root.add(new UiPanel() {
             @Override public void draw(UiDraw draw, int mouseX, int mouseY) {
                 draw.fill(bounds(), 0xA0000000);
                 draw.border(bounds(), 0xFF999999);
-                infoMouseX = mouseX;
-                infoMouseY = mouseY;
-                preview3DBox = null;
+                previewPane.setVisible(false);
                 infoContentBottom = bounds().y;
                 try (UiDraw.Clip ignored = draw.clip(new UiBounds(bounds().x + 1, bounds().y + 1, bounds().width - 2, bounds().height - 2))) {
                     drawInfo(draw, bounds().x + 3, bounds().y + 3 - infoScroll, bounds().width - 4, selection());
+                    super.draw(draw, mouseX, mouseY);
                 }
                 infoMaxScroll = Math.max(0, infoContentBottom + infoScroll - bounds().bottom() + 4);
                 infoScroll = Math.min(infoScroll, infoMaxScroll);
@@ -137,14 +135,12 @@ public abstract class GuiSchematicBrowser extends UiScreen {
             }
 
             @Override public boolean scroll(int x, int y, int amount) {
-                SchematicPreview3D preview = preview3DBox != null && preview3DBox.contains(x, y) && selection() != null
-                    ? infoCache.preview3D(selection().file) : null;
-                if (preview != null) { preview.zoom(amount); return true; }
                 if (infoMaxScroll == 0) return false;
                 infoScroll = Math.max(0, Math.min(infoMaxScroll, infoScroll - Integer.signum(amount) * 24));
                 return true;
             }
         });
+        previewPane = info.add(new SchematicPreviewPane(input, false, this::expandPreview));
         message = root.add(new UiLabel(() -> status));
         createActions();
         back = addButton(directoriesOnly ? "gui.back" : "litematica.gui.button.change_menu.to_main_menu",
@@ -161,7 +157,7 @@ public abstract class GuiSchematicBrowser extends UiScreen {
             draw.text(FileUtils.humanReadableByteCount(entry.size), x, y + 36, 0xC0C0C0C0);
             draw.text(draw.trim(DATE_FORMAT.format(new Date(entry.modified)), width - 6), x, y + 48, 0xC0C0C0C0);
             infoContentBottom = y + 60;
-            if (infoCache.infoDone(entry.file)) drawPreview3D(draw, entry, x, y + 72, width, -1);
+            if (infoCache.infoDone(entry.file)) drawPreview(x, y + 72, width);
             return;
         }
         int text = 0xC0C0C0C0, value = 0xFFFFFFFF, limit = width - 8;
@@ -205,39 +201,31 @@ public abstract class GuiSchematicBrowser extends UiScreen {
             }
         }
         infoContentBottom = y + 12;
-        net.minecraft.util.ResourceLocation preview = infoCache.preview(entry.file, meta);
-        if (preview == null || ConfigurationHandler.schematicPreview3DReplacesImage) {
-            drawPreview3D(draw, entry, x, y + 24, width, meta.volume);
-        } else {
-            y += 24;
-            int iconSize = Math.min(SchematicPreview.SIZE, width - 14);
-            if (iconSize > 8) {
-                UiBounds box = new UiBounds(x + 4, y, iconSize, iconSize);
-                draw.fill(box, 0xA0000000);
-                draw.texture(preview.toString(), box, 0, 0, 1, 1, 1, 1);
-                draw.border(new UiBounds(box.x - 1, box.y - 1, iconSize + 2, iconSize + 2), 0xFF999999);
-                infoContentBottom = box.bottom() + 4;
-            }
-        }
+        drawPreview(x, y + 24, width);
     }
 
-    /** The selected file drawn in 3D into the square below the info, when enabled and not too large. */
-    private void drawPreview3D(UiDraw draw, SchematicBrowserModel.Entry entry, int x, int y, int width, long volume) {
-        if (!ConfigurationHandler.schematicPreview3D || volume > SchematicPreview3D.MAX_VOLUME || entry.size > PREVIEW_3D_MAX_FILE
-            || !SchematicBrowserModel.supported(entry.name())) return;
-        int size = Math.min(SchematicPreview.SIZE, width - 14);
+    private void drawPreview(int x, int y, int width) {
+        SchematicPreviewPane.Content content = previewPane.content();
+        if (content == null || !content.available()) return;
+        int size = width - 14;
         if (size <= 8) return;
-        UiBounds box = new UiBounds(x + 4, y, size, size);
-        infoContentBottom = box.bottom() + 4;
-        draw.fill(box, 0xA0000000);
-        draw.border(new UiBounds(box.x - 1, box.y - 1, size + 2, size + 2), 0xFF999999);
-        preview3DBox = box;
-        SchematicPreview3D preview = infoCache.preview3D(entry.file);
-        if (preview == null) {
-            draw.text("...", box.x + 3, box.bottom() - 11, 0xFFAAAAAA);
-            return;
-        }
-        preview.draw(mc, box.x, box.y, size, infoMouseX, infoMouseY);
+        previewPane.setVisible(true);
+        int viewHeight = Math.min(SchematicPreview.SIZE, Math.max(32, info.bounds().height - 54));
+        previewPane.setBounds(x + 4, y, size, viewHeight + 43);
+        previewPane.layout(root.bounds());
+        infoContentBottom = previewPane.bounds().bottom() + 4;
+    }
+
+    private void expandPreview() {
+        SchematicPreviewPane.Content content = previewPane.content();
+        if (content == null || !content.canModel()) return;
+        content.modelSelected = true;
+        SchematicPreviewPane fullscreen = new SchematicPreviewPane(input, true, () -> input.popModal());
+        fullscreen.setContent(content);
+        fullscreen.layout(root.bounds());
+        input.focus(previewPane.viewport);
+        input.pushModal(fullscreen);
+        input.focus(fullscreen.viewport);
     }
 
     /** Whether the browser offers favorite and recent files (the load browser). */
@@ -439,6 +427,7 @@ public abstract class GuiSchematicBrowser extends UiScreen {
 
     protected final void refreshFiles() {
         infoCache.clear();
+        previewPane.setContent(null);
         try {
             if (browser == null) {
                 browser = createModel();
@@ -491,6 +480,10 @@ public abstract class GuiSchematicBrowser extends UiScreen {
         star.setVisible(collections() && selected != null && !selected.directory);
         info.setTooltip(selectionInfo());
         SchematicBrowserModel.Entry current = selection();
+        if (current == null || current.directory) previewPane.setContent(null);
+        else if (previewPane.content() == null || !previewPane.content().file.equals(current.file)) {
+            previewPane.setContent(new SchematicPreviewPane.Content(current, infoCache));
+        }
         if (!java.util.Objects.equals(current, lastSelection)) {
             lastSelection = current;
             infoScroll = 0;

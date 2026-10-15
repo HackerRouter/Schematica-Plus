@@ -13,7 +13,6 @@ import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.init.Blocks;
 import net.minecraft.tileentity.TileEntity;
 
-import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.GL11;
 
 import com.github.lunatrius.schematica.api.ISchematic;
@@ -23,7 +22,7 @@ import com.github.lunatrius.schematica.reference.Reference;
 
 /**
  * A loaded schematic drawn into a square of a GUI: its blocks are compiled into display lists one 16^3 section at a
- * time within a per-frame budget, then shown turning slowly; dragging inside the square turns it, the wheel zooms.
+ * time within a per-frame budget. Navigation is local to the preview widget.
  * Blocks drawn only by tile entity renderers (chests, signs) are not shown.
  */
 final class SchematicPreview3D {
@@ -37,15 +36,15 @@ final class SchematicPreview3D {
     private final List<int[]> lists = new ArrayList<>();
     private int next;
     private boolean failed;
-    private float yaw = 45, pitch = 30, zoom = 1;
-    private int dragX = -1, dragY;
-    private long lastFrame;
+    final PreviewCamera camera;
 
     SchematicPreview3D(ISchematic schematic) {
         this.schematic = schematic;
         sectionsX = (schematic.getWidth() + SECTION - 1) / SECTION;
         sectionsY = (schematic.getHeight() + SECTION - 1) / SECTION;
         sectionsZ = (schematic.getLength() + SECTION - 1) / SECTION;
+        camera = new PreviewCamera((float) Math.sqrt((double) schematic.getWidth() * schematic.getWidth()
+            + (double) schematic.getHeight() * schematic.getHeight() + (double) schematic.getLength() * schematic.getLength()));
     }
 
     private int sections() { return sectionsX * sectionsY * sectionsZ; }
@@ -114,8 +113,10 @@ final class SchematicPreview3D {
         }
     }
 
-    /** Draws the preview into the square (GUI coordinates), building more of it first. */
-    void draw(Minecraft mc, int x, int y, int size, int mouseX, int mouseY) {
+    boolean failed() { return failed; }
+
+    /** Uses a separate perspective viewport, retaining the GUI's matrices and clipping. */
+    void draw(Minecraft mc, int x, int y, int width, int height) {
         if (failed) return;
         boolean building;
         try {
@@ -125,26 +126,12 @@ final class SchematicPreview3D {
             Reference.logger.warn("Could not build the schematic preview", error);
             return;
         }
-        long now = System.currentTimeMillis();
-        boolean inside = mouseX >= x && mouseY >= y && mouseX < x + size && mouseY < y + size;
-        if (inside && Mouse.isButtonDown(0)) {
-            if (dragX >= 0) { yaw += (mouseX - dragX) * 1.5f; pitch = Math.max(-90, Math.min(90, pitch + (mouseY - dragY) * 1.5f)); }
-            dragX = mouseX; dragY = mouseY;
-        } else {
-            dragX = -1;
-            if (lastFrame > 0) yaw += (now - lastFrame) * 0.02f;
-        }
-        lastFrame = now;
-
         ScaledResolution scaled = new ScaledResolution(mc, mc.displayWidth, mc.displayHeight);
         int factor = scaled.getScaleFactor();
-        float extent = (float) Math.sqrt((double) schematic.getWidth() * schematic.getWidth()
-            + (double) schematic.getHeight() * schematic.getHeight() + (double) schematic.getLength() * schematic.getLength());
-        float scale = size / Math.max(1, extent) * zoom;
-
-        GL11.glPushAttrib(GL11.GL_ENABLE_BIT | GL11.GL_DEPTH_BUFFER_BIT | GL11.GL_SCISSOR_BIT | GL11.GL_COLOR_BUFFER_BIT | GL11.GL_CURRENT_BIT);
-        int left = x * factor, bottom = mc.displayHeight - (y + size) * factor;
-        int right = left + size * factor, top = bottom + size * factor;
+        GL11.glPushAttrib(GL11.GL_ENABLE_BIT | GL11.GL_DEPTH_BUFFER_BIT | GL11.GL_SCISSOR_BIT | GL11.GL_COLOR_BUFFER_BIT
+            | GL11.GL_CURRENT_BIT | GL11.GL_VIEWPORT_BIT | GL11.GL_TRANSFORM_BIT | GL11.GL_TEXTURE_BIT);
+        int left = x * factor, bottom = mc.displayHeight - (y + height) * factor;
+        int right = left + width * factor, top = bottom + height * factor;
         if (GL11.glIsEnabled(GL11.GL_SCISSOR_TEST)) {
             java.nio.IntBuffer clip = org.lwjgl.BufferUtils.createIntBuffer(16);
             GL11.glGetInteger(GL11.GL_SCISSOR_BOX, clip);
@@ -153,35 +140,50 @@ final class SchematicPreview3D {
         }
         GL11.glEnable(GL11.GL_SCISSOR_TEST);
         GL11.glScissor(left, bottom, Math.max(0, right - left), Math.max(0, top - bottom));
-        GL11.glClear(GL11.GL_DEPTH_BUFFER_BIT);
-        GL11.glEnable(GL11.GL_DEPTH_TEST);
-        GL11.glDepthFunc(GL11.GL_LEQUAL);
-        GL11.glDepthMask(true);
-        GL11.glDisable(GL11.GL_LIGHTING);
-        GL11.glDisable(GL11.GL_CULL_FACE);
-        GL11.glEnable(GL11.GL_TEXTURE_2D);
-        GL11.glEnable(GL11.GL_ALPHA_TEST);
-        GL11.glAlphaFunc(GL11.GL_GREATER, 0.1f);
-        GL11.glColor4f(1, 1, 1, 1);
-        mc.getTextureManager().bindTexture(TextureMap.locationBlocksTexture);
+        GL11.glViewport(x * factor, mc.displayHeight - (y + height) * factor, width * factor, height * factor);
+        GL11.glMatrixMode(GL11.GL_PROJECTION);
         GL11.glPushMatrix();
-        GL11.glTranslatef(x + size / 2f, y + size / 2f, 0);
-        GL11.glScalef(scale, -scale, scale);
-        GL11.glRotatef(pitch, 1, 0, 0);
-        GL11.glRotatef(yaw, 0, 1, 0);
-        GL11.glTranslatef(-schematic.getWidth() / 2f, -schematic.getHeight() / 2f, -schematic.getLength() / 2f);
-        for (int[] list : lists) if (list[0] >= 0) call(mc, list[0]);
-        GL11.glEnable(GL11.GL_BLEND);
-        GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
-        GL11.glDepthMask(false);
-        for (int[] list : lists) if (list[1] >= 0) call(mc, list[1]);
-        GL11.glDepthMask(true);
-        GL11.glPopMatrix();
-        GL11.glClear(GL11.GL_DEPTH_BUFFER_BIT);
-        GL11.glPopAttrib();
+        GL11.glLoadIdentity();
+        double near = 0.05, half = near * PreviewCamera.TAN_HALF_FOV, aspect = (double) width / Math.max(1, height);
+        GL11.glFrustum(-half * aspect, half * aspect, -half, half, near,
+            camera.extent * 8 + camera.distance() + Math.abs(camera.z));
+        GL11.glMatrixMode(GL11.GL_MODELVIEW);
+        GL11.glPushMatrix();
+        GL11.glLoadIdentity();
+        try {
+            GL11.glClear(GL11.GL_DEPTH_BUFFER_BIT);
+            GL11.glEnable(GL11.GL_DEPTH_TEST);
+            GL11.glDepthFunc(GL11.GL_LEQUAL);
+            GL11.glDepthMask(true);
+            GL11.glDisable(GL11.GL_LIGHTING);
+            GL11.glDisable(GL11.GL_FOG);
+            GL11.glDisable(GL11.GL_CULL_FACE);
+            GL11.glEnable(GL11.GL_TEXTURE_2D);
+            GL11.glEnable(GL11.GL_ALPHA_TEST);
+            GL11.glAlphaFunc(GL11.GL_GREATER, 0.1f);
+            GL11.glColor4f(1, 1, 1, 1);
+            mc.getTextureManager().bindTexture(TextureMap.locationBlocksTexture);
+            GL11.glTranslatef(camera.x, camera.y, camera.z - camera.distance());
+            GL11.glRotatef(camera.pitch, 1, 0, 0);
+            GL11.glRotatef(camera.yaw, 0, 1, 0);
+            GL11.glTranslatef(-schematic.getWidth() / 2f, -schematic.getHeight() / 2f, -schematic.getLength() / 2f);
+            for (int[] list : lists) if (list[0] >= 0) call(mc, list[0]);
+            GL11.glEnable(GL11.GL_BLEND);
+            GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
+            GL11.glDepthMask(false);
+            for (int[] list : lists) if (list[1] >= 0) call(mc, list[1]);
+            GL11.glDepthMask(true);
+            GL11.glClear(GL11.GL_DEPTH_BUFFER_BIT);
+        } finally {
+            GL11.glMatrixMode(GL11.GL_MODELVIEW);
+            GL11.glPopMatrix();
+            GL11.glMatrixMode(GL11.GL_PROJECTION);
+            GL11.glPopMatrix();
+            GL11.glPopAttrib();
+        }
         if (building) {
             String text = (next * 100 / Math.max(1, sections())) + "%";
-            mc.fontRenderer.drawStringWithShadow(text, x + 3, y + size - 11, 0xFFAAAAAA);
+            mc.fontRenderer.drawStringWithShadow(text, x + 3, y + height - 11, 0xFFAAAAAA);
         }
     }
 
@@ -190,9 +192,6 @@ final class SchematicPreview3D {
         mc.getTextureManager().bindTexture(TextureMap.locationBlocksTexture);
         GL11.glCallList(list);
     }
-
-    /** Mouse wheel over the preview: zoom in or out. */
-    void zoom(int wheel) { zoom = Math.max(0.25f, Math.min(4f, zoom * (wheel > 0 ? 1.25f : 0.8f))); }
 
     void delete() {
         for (int[] list : lists) for (int id : list) if (id >= 0) GL11.glDeleteLists(id, 1);

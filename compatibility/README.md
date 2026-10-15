@@ -319,3 +319,11 @@ still performs the normal content conversion and is not a lossless rewrite of
 unsupported modern/modded content. Preview images are embedded, not linked to the
 source PNG. Browser textures accept square images up to 512x512; newly set images
 use the Litematica-style centered 120x120 crop. Invalid previews are not rendered.
+
+The browser can switch between an embedded image and a navigable 3D model, expand
+the view, pause rotation and reset the camera. Its movement input is scoped to the
+focused viewport and never edits a placement or moves the game player. The
+lightweight model renderer uses a separate perspective viewport and restores the
+GUI's matrices, viewport and clipping. It keeps the existing 4-million-cell/32-MB
+limits and excludes blocks that require tile entity renderers; those limits do
+not describe the separate world hologram renderer.

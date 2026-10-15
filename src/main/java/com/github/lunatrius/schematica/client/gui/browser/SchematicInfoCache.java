@@ -77,6 +77,8 @@ final class SchematicInfoCache {
         preview3D = null;
     }
 
+    boolean modelDone(File file) { return file.equals(modelFile) && model != null && model.isDone(); }
+
     /** A texture of the square preview image, or null when the file has none. */
     ResourceLocation preview(File file, SchematicFiles.Info info) {
         if (previews.containsKey(file)) return previews.get(file);

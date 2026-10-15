@@ -1,7 +1,7 @@
 # Verification
 
-Current scenario guide, reviewed 2026-10-13. Run `./gradlew build` and
-`LC_ALL=C.UTF-8 ./gradlew test`; the current suite contains **615 tests**.
+Current scenario guide, reviewed 2026-10-15. Run `./gradlew build` and
+`LC_ALL=C.UTF-8 ./gradlew test`; the current suite contains **694 tests**.
 Steps below are regression scenarios, not claims that every combination passed.
 Only dated observation paragraphs record actual game checks; their test counts and
 artifact hashes describe that historical build. Use disposable copies and the
@@ -1960,15 +1960,71 @@ coverage of every GT machine recipe or automated execution of the planned crafts
 
 ## 3D schematic preview in the browsers
 
-- Load Schematic browser: select a .schematic, .schem or .schemplus file and a .litematic without a preview
-  image: below the info a square fills in (percentage at the bottom left while building) and the schematic
-  turns slowly. Drag inside the square to turn it, scroll over it to zoom; the file list still scrolls
-  elsewhere. Glass, water and ice are see-through; chests and signs are missing (expected).
-- A .litematic with a preview image still shows the image; with "3D Preview Replaces Image" on it shows the
-  3D model instead. With "3D Schematic Preview" off no square appears.
-- Switching quickly between files, F5, leaving the screen: no stutter beyond the first frames, no GL errors
-  in the log, other menus draw normally afterwards (no missing text or buttons, no depth artifacts).
-- A very large file (over 4 million blocks or 32 MB) shows no square and does not freeze the browser.
+1. In each target GTNH pack, select a supported schematic with an embedded image.
+   The Image/3D slider must switch by clicking either half or dragging the thumb;
+   keyboard Left/Right and Space work only when the switch has focus. With no
+   embedded image the switch is absent and 3D is used. The existing replacement
+   option determines the initial choice, not whether switching is possible.
+2. Click the model to select it and pause automatic rotation. Left-drag rotates;
+   right-drag pans with the cursor. Wheel zoom works only over the model; wheel
+   outside it still scrolls the information panel or file list. Test a partially
+   scrolled viewport: controls and model must stay within the panel's clipping.
+3. With the viewport selected, hold W/S to move forward/back, A/D to move left/right,
+   Space to move up and either Shift to move down. Movement is relative to the
+   view. Inspect an asymmetric hollow fixture at close range. Observe the actual
+   player position before and after: only the preview may move.
+4. Click the search field and type WASD/Space: the field receives text and the model
+   stops moving. Repeat while a rename/confirmation modal is open, after switching
+   to Image, and after leaving the screen or changing files. Release held keys
+   before selecting a viewport; returning focus must not resume an old movement.
+5. Pause freezes the current angle; Rotate resumes it. Reset View restores the
+   original position, zoom and angles while keeping the current pause/rotation
+   setting. Move beyond the model, then reset to recover it.
+6. Expand opens a full-window 3D view with the same camera and controls. Test
+   movement, drag, zoom, reset and image switching there. Escape/Back returns to
+   the browser with the camera preserved; it must not close the browser or unload
+   a placement. Repeated opening/closing must leave other menus and textures intact.
+7. Repeat English/Chinese, small and resized windows, and GUI scales 1/2/Auto.
+   Check all controls remain accessible, the model is not stretched, and input
+   outside the viewport does not activate its navigation. Refresh with F5, switch
+   files quickly and close/reopen the screen; no stale preview or GL errors.
+8. The existing performance limits remain: files over 4 million enclosing cells
+   or 32 MB do not get a 3D view. Disabling 3D keeps an embedded image available.
+   Chests/signs and other blocks drawn only by tile entity renderers remain absent
+   in this lightweight browser renderer. This is separate from placed holograms.
+
+Dated observations (2026-10-15): build, Checkstyle and all **694 tests** pass.
+Ten new regressions cover view-relative navigation, diagonal speed, bounded zoom
+and travel, reset/pause behavior, complete perspective framing in landscape and
+portrait viewports, and slider capture/focus/modal isolation.
+
+Native GTNH 2.8.4 and 2.9.0-RC-2 were cold-started with runtime JAR SHA-256
+`701fa80358ba700290cd7d99a645f818afe2333b27d62f83b3f120185fdca16b`.
+The fixture is a constructed 17x9x17 `.schemplus` wool/glass enclosure with a
+stone-brick floor and gold pillar, saved with and without an embedded image.
+Real mouse/key input passed W/S/A/D, Space, both Shift keys, left rotation,
+right-drag pan, wheel zoom, pause/resume and reset. The actual player coordinates
+stayed unchanged during preview navigation. Expanded views retained camera state
+on return. Native image-slider dragging, no-image files, search typing and a real
+file-rename modal passed; cancelling the modal wrote no file. Repeated expand/back,
+F5, Chinese/English controls, GUI scales 1/2/Auto and 640x480/854x480/1280x720
+windows passed. File hashes stayed unchanged, and ordinary world movement and the
+M menu worked after closing the preview. Screenshots of the model, pan, expanded
+views and Chinese layouts were inspected. These runs used disposable world copies,
+Java 21/LWJGL 3, software GL and disabled shaders; they do not establish additional
+OptiFine, shader or physical-GPU coverage.
+
+Both packs were then cold-started with final runtime JAR SHA-256
+`ea129ce23171d566ae76344d02d81a95be1ab2cf044f3190a351d726ade02e5d`, which
+adjusts the embedded control margins and fits the initial perspective view around
+the entire model. Native checks confirmed every control stays inside the info
+panel at all three window sizes, full-model framing after reset, movement into
+the enclosure, right-drag pan, return from the expanded view, image/no-image
+switching and unchanged schematic bytes. Final Chinese screenshots were inspected,
+including `checked-image-640-290.png`, `checked-model-290.png`,
+`checked-fullscreen-284.png` and both `checked-closeup` images. Evidence is under
+`<evidence-dir>/preview-navigation`; a virtual window extending beyond the display
+and a test-helper reload race were corrected before the successful final reruns.
 
 ## Printer missing material HUD and auto tool
 
