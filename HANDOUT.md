@@ -70,7 +70,7 @@ mod. Original Schematica conflicts with Plus and must be removed from the instan
 - The `printerWorkingSwitch` binding is in Hotkeys and searchable by `printer`.
   Existing working-switch bindings are retained. Work radius accepts 0..128 blocks;
   0 retains normal reach. Extended printing requires the server to advertise its
-  `printerMaxRange` (default 32); ordinary input and fluid ray tracing retain normal
+  `printerMaxRange` (default 128); ordinary input and fluid ray tracing retain normal
   reach. Native survival item use, mining and permission checks still apply.
 - `.schematic`, `.schemplus`, `.litematic` and structure `.nbt` support reading and
   writing. Sponge `.schem` v1-v3 is **import-only**; biomes are ignored and modern
@@ -365,6 +365,7 @@ steps and limitations are in TESTING; the full implementation history is in Git.
 | VISUAL_CHECKED_HEADLESS | 2026-10-15 | Add image/3D sliding selection, expanded viewing, rotation pause/resume, reset and focused WASD/Space/Shift/right-drag navigation in `client/gui/browser` and `framework/UiSlideSwitch`. Build and 694 tests pass. Both native packs passed movement, unchanged player/file checks, modal/search isolation, repeated expanded views and scale/window layouts. See TESTING for runtime hashes, final framing checks and renderer limits. |
 | VISUAL_CHECKED_HEADLESS | 2026-10-15 | Extend printer radius to 32 with a synchronized server cap, bounded resumable scans and native server interaction/mining in `client/printer`, `handler/PrinterActions` and `network/message`; move the existing working-switch binding to Hotkeys in `GuiModConfig`. Build and 700 tests pass. Both native packs passed dedicated survival distance/material/facing checks, limit/disable refusals, ordinary-reach restoration, Forge cancellation, 1 ms scanning and native key persistence/context checks. See TESTING for the runtime hash and tool/fluid limits. |
 | VISUAL_CHECKED_HEADLESS | 2026-10-15 | Raise the configurable printer radius to 128 on both sides while retaining the server default of 32; index scan rows lazily and clip scans to nearby placement bounds in `client/printer/PrinterIteration`. Rename the binding to `printerWorkingSwitch`, retaining saved chords/settings in `client/input/HotkeyStore`; clarify the existing per-pass placement limit. Build and 705 tests pass. Both native packs passed dedicated 127-block placement, 129-block refusal, live caps, key migration/search/context checks and exact per-pass target/material counts; see TESTING for the runtime hash and limits. |
+| IMPLEMENTED_HEADLESS | 2026-10-15 | Set the server printer distance default to 128 in `handler/ConfigurationHandler`, including initialization and configuration fallback; update both tooltips and current guidance. Existing configured limits are retained. Build and 705 tests pass; no additional game validation was requested for this default-only change. |
 
 ## 7. Reported issues and current boundaries
 

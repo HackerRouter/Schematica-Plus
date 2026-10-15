@@ -428,4 +428,4 @@ schematica.ui.preview.controls=点击选中并暂停旋转。左键拖动旋转�
 schematica.ui.preview.loading=正在加载预览……
 schematica.ui.preview.unavailable=无法显示 3D 预览
 schematica.config.printerMaxRange=打印机最大距离
-schematica.config.printerMaxRange.tooltip=服务端允许的打印距离上限（0-128 格）；0 保持普通交互距离。远距离打印需要两端安装 Plus，普通点击的距离不变。
+schematica.config.printerMaxRange.tooltip=服务端允许的打印距离上限（0-128 格，默认 128）；0 保持普通交互距离。远距离打印需要两端安装 Plus，普通点击的距离不变。

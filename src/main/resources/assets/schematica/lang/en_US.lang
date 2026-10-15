@@ -428,4 +428,4 @@ schematica.ui.preview.controls=Click to select and pause rotation. Left-drag: ro
 schematica.ui.preview.loading=Loading preview...
 schematica.ui.preview.unavailable=3D preview unavailable
 schematica.config.printerMaxRange=Maximum printer distance
-schematica.config.printerMaxRange.tooltip=Server limit for printer interactions (0-128 blocks). 0 keeps normal reach. Requires Plus on both sides; ordinary clicks keep their normal reach.
+schematica.config.printerMaxRange.tooltip=Server limit for printer interactions (0-128 blocks, default 128). 0 keeps normal reach. Requires Plus on both sides; ordinary clicks keep their normal reach.

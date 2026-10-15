@@ -1749,6 +1749,11 @@ Evidence: `<evidence-dir>/sponge-nei/sponge-files290.log` and
 
 ## Extended printer distance
 
+- With a fresh server configuration, or after removing only `printerMaxRange`,
+  start the server and check that the generated value and advertised cap are 128.
+  An existing explicit value such as 32 must survive a restart unchanged.
+  The default changed to 128 on 2026-10-15; build and 705 automated tests passed.
+  No new game run was requested for this default-only change.
 - Use the same current JAR on both sides. In Hotkeys, bind the printer working
   switch by searching `printer`, close/reopen configuration, and confirm the
   binding survives. Also start with an existing `workingSwitch` chord and advanced
@@ -1810,7 +1815,7 @@ current clients and dedicated servers (JAR SHA-256
 `e22561693592fb4be7cfa7ff9932fb62aa537b40b184231c74a1f660a3e40f57`):
 
 - Servers loaded `printerMaxRange=128` from configuration and advertised 128.
-  The default remains 32; clients still default to ordinary reach unless configured.
+  Clients still default to ordinary reach unless configured.
 - Existing `workingSwitch=F8` files loaded as `printerWorkingSwitch=F8`. Native
   GUI input found the binding by searching `printer` in Chinese; saving retained
   F8 under the new name. Native F8 input toggled printing, and F8 in chat did not.
