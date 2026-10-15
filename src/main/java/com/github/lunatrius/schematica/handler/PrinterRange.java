@@ -2,7 +2,7 @@
 package com.github.lunatrius.schematica.handler;
 
 public final class PrinterRange {
-    public static final double MAX = 32;
+    public static final double MAX = 128;
 
     private PrinterRange() {}
 

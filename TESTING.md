@@ -1735,7 +1735,7 @@ Evidence: `<evidence-dir>/sponge-nei/sponge-files290.log` and
 
 ## Printer switch and server permission
 
-- Single player: bind workingSwitch (Hotkeys tab, unbound by default) and press it with a placement visible: the action bar shows the
+- Single player: bind printerWorkingSwitch (Hotkeys tab, unbound by default) and press it with a placement visible: the action bar shows the
   printer toggle message and blocks are placed around you; press again to stop. Changing the selected
   placement keeps printing (with the new placement).
 - Turn off Allow Printer (printerEnabled) in the config screen while printing: printing stops with
@@ -1750,11 +1750,14 @@ Evidence: `<evidence-dir>/sponge-nei/sponge-files290.log` and
 ## Extended printer distance
 
 - Use the same current JAR on both sides. In Hotkeys, bind the printer working
-  switch, close/reopen configuration, and confirm the binding survives. Check
+  switch by searching `printer`, close/reopen configuration, and confirm the
+  binding survives. Also start with an existing `workingSwitch` chord and advanced
+  settings: `printerWorkingSwitch` must retain both after saving/reopening. Check
   that its advanced matching/reset controls work and GUI typing does not print.
-- Leave `printerWorkRange=0`: ordinary reach remains the default. Set it to 32
-  with server `printerMaxRange=32` and a loaded schematic extending past 32 blocks.
-  From a fixed position, print survival blocks at 12, 24 and 31 blocks; confirm
+- Leave `printerWorkRange=0`: ordinary reach remains the default. Set it to 128
+  with server `printerMaxRange=128` and a loaded schematic extending past 128 blocks.
+  Keep the target chunks loaded on both sides. From a fixed position, print survival
+  blocks at 32, 64, 96 and 127 blocks; confirm
   server blocks, exact inventory consumption, and rejection beyond the limit.
 - Reduce server `printerMaxRange` to 16 while connected. The client must receive
   the limit and leave farther blocks untouched. Disable `printerEnabled` while
@@ -1765,7 +1768,7 @@ Evidence: `<evidence-dir>/sponge-nei/sponge-files290.log` and
 - Reject out-of-range, unloaded-chunk and protected-block requests; exercise native
   placement/break event cancellation with installed protection mods where available.
   No inventory item or block NBT comes from the printer request.
-- Set a 1 ms scan budget and use the 32-block cube: distant offsets must eventually
+- Set a 1 ms scan budget and use the 128-block cube: distant offsets must eventually
   be visited. Try top-down/axis-reversed traversal, chunks loading after a scan,
   reconnecting and changing dimensions. Large scans resume over successive passes;
   layer sorting applies to each collected batch.
@@ -1802,9 +1805,40 @@ matching dedicated servers, with the same current JAR on both sides (SHA-256
   follows from this fixture. Fluids and arbitrary mod-private reach checks remain
   outside the extended-distance acceptance.
 
+Observed 2026-10-15 for the 128-block update in both native packs, using matching
+current clients and dedicated servers (JAR SHA-256
+`e22561693592fb4be7cfa7ff9932fb62aa537b40b184231c74a1f660a3e40f57`):
+
+- Servers loaded `printerMaxRange=128` from configuration and advertised 128.
+  The default remains 32; clients still default to ordinary reach unless configured.
+- Existing `workingSwitch=F8` files loaded as `printerWorkingSwitch=F8`. Native
+  GUI input found the binding by searching `printer` in Chinese; saving retained
+  F8 under the new name. Native F8 input toggled printing, and F8 in chat did not.
+  Screenshots of the search results were inspected in both packs.
+- With target chunks loaded, a generated survival fixture and a 1 ms cube scan
+  placed stone at horizontal offsets 2, 32, 64, 96 and 127; the 129-block target
+  stayed air. The 20-block stair retained metadata 6. Actual server readback and
+  client inventory matched: stone 64 to 59, stairs 8 to 7. Ordinary server reach
+  returned to 5. Screenshots of the resulting worlds were inspected.
+- Reducing the live server cap to 64 updated the client and rejected a direct
+  request at 127 without consuming stone. Restoring 128 allowed it; a direct
+  129-block request was still refused. Cap 0 restored ordinary client reach (4.5).
+- In a reset stone-only fixture with printing stopped, one explicitly invoked
+  pass at `placeBlocksPerTick=3` placed exactly three targets and consumed three
+  stone. A second pass at limit 1 added exactly one target and consumed one more.
+  These are per-pass checks, not a measurement of tick rate or a strict limit on
+  multi-block structures. Fixture setup and readback used native runtime APIs.
+
+Build, Checkstyle and all 705 tests pass, including lazy 128-radius indexing,
+shape/order/reversal clipping and saved-binding migration. Initial launcher-free
+logins required reconnects after timeouts; acceptance used established connections.
+Evidence: `<evidence-dir>/printer128` (`accept-290.log`, `accept-284-final.log`,
+`hotkey-*` and `printed-*` screenshots). This round does not extend the earlier
+fluid, private item-distance or protection-plugin coverage.
+
 ## Printer pass (litematica-printer style)
 
-- Printer tab: printer options and swap slots; the workingSwitch binding is in Hotkeys.
+- Printer tab: printer options and swap slots; the printerWorkingSwitch binding is in Hotkeys.
 - Default settings: standing next to a placement the printer places one block per tick, bottom layer first,
   only within reach; several visible placements are all printed.
 - Stairs, chests, furnaces, pumpkins, repeaters, doors and horizontal pistons/dispensers get the schematic
@@ -1817,8 +1851,14 @@ matching dedicated servers, with the same current JAR on both sides (SHA-256
 - Skip Blocks with minecraft:stone: stone is never placed. Always Sneak: no container opens when clicked.
 - Lag check: on a server, freeze the connection (e.g. suspend the server process): printing pauses after
   about a second and continues afterwards. Pause While Moving stops printing while walking.
-- Blocks Per Pass 8 with Placement Interval 1 fills quickly; Position Cooldown keeps failed spots from
-  being retried every tick.
+- `placeBlocksPerTick` accepts 1..64 targets per pass (default 1). `placeDelay`
+  is the interval in client ticks; 0/1 runs each tick, 2 runs every other tick.
+  With printing stopped and a fixture of simple stone targets, invoke one printer
+  pass at limit 3: exactly three targets should be attempted successfully, with
+  matching server blocks and item consumption. Repeat at limit 1. Double slabs
+  may require an extra click, and doors/plants can create multiple blocks from
+  one target; this is not a strict count of world cells or network packets.
+  Position Cooldown keeps failed spots from being retried every tick.
 
 ## Menu focus, first frame, pick block on entities, data folder
 

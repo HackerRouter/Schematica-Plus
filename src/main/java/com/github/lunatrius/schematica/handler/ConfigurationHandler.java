@@ -465,11 +465,11 @@ public class ConfigurationHandler {
             Names.Config.PRINTER_ENABLED_DESC);
         propPrinterEnabled.setLanguageKey(Names.Config.LANG_PREFIX + "." + Names.Config.PRINTER_ENABLED);
         printerEnabled = propPrinterEnabled.getBoolean(PRINTER_ENABLED_DEFAULT);
-        Property maxRange = configuration.get(Names.Config.Category.SERVER, "printerMaxRange", PrinterRange.MAX,
+        Property maxRange = configuration.get(Names.Config.Category.SERVER, "printerMaxRange", 32.0,
             "Maximum printer distance in blocks. 0 keeps normal reach; extended reach requires Plus on both sides.");
         maxRange.setLanguageKey(Names.Config.LANG_PREFIX + ".printerMaxRange");
         maxRange.setMinValue(0.0).setMaxValue(PrinterRange.MAX);
-        printerMaxRange = PrinterRange.clamp(maxRange.getDouble(PrinterRange.MAX));
+        printerMaxRange = PrinterRange.clamp(maxRange.getDouble(32.0));
         remoteEditsEnabled = serverFlag(Names.Config.REMOTE_EDITS_ENABLED, Names.Config.REMOTE_EDITS_ENABLED_DESC);
         accuratePlacementEnabled = serverFlag(Names.Config.ACCURATE_PLACEMENT_ENABLED, Names.Config.ACCURATE_PLACEMENT_ENABLED_DESC);
 

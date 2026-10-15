@@ -157,8 +157,9 @@ acceptance steps and observations are recorded in [TESTING.md](../TESTING.md).
 
 ## Printer distance
 
-The current client/server protocol supports a printer radius up to 32 blocks,
-subject to server `printerMaxRange` and `printerEnabled`. Default client radius 0
+The current client/server protocol supports a printer radius up to 128 blocks,
+subject to server `printerMaxRange` (default 32, configurable up to 128) and
+`printerEnabled`. Default client radius 0
 keeps normal reach; a server without Plus cannot grant the extension. Requests
 use native server placement/mining handlers and actual inventory items. Temporary
 printer reach does not extend ordinary mouse interactions. Protection events,

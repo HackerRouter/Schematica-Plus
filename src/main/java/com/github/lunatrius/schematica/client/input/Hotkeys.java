@@ -84,7 +84,7 @@ public final class Hotkeys {
         add("schematicVersionCycleModifier", modifier());
         add("schematicVersionCycleNext", normal());
         add("schematicVersionCyclePrevious", normal());
-        add("workingSwitch", extra());
+        add("printerWorkingSwitch", extra());
         add("refreshMaterialList", normal());
         for (String id : new String[] {"enableRendering", "enableSchematicRendering", "enableSchematicBlocksRendering",
             "enableSchematicFluidRendering", "enableSchematicOverlay", "enableSchematicOverlayCulling", "enableSchematicEntityHitboxes",

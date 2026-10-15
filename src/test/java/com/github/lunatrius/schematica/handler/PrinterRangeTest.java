@@ -29,16 +29,20 @@ public class PrinterRangeTest {
     }
 
     @Test public void clientHonorsServerLimitAndFallsBackWithoutServerSupport() {
-        assertEquals(24, PrinterRange.effective(32, 4.5, 24), 0);
+        assertEquals(24, PrinterRange.effective(128, 4.5, 24), 0);
+        assertEquals(128, PrinterRange.effective(128, 4.5, 128), 0);
+        assertEquals(32, PrinterRange.effective(128, 4.5, 32), 0);
         assertEquals(4.5, PrinterRange.effective(32, 4.5, 0), 0);
         assertEquals(5, PrinterRange.effective(0, 5, 32), 0);
         assertEquals(3, PrinterRange.effective(0, 5, 3), 0);
-        assertEquals(32, PrinterRange.effective(1000, 5, 1000), 0);
+        assertEquals(128, PrinterRange.effective(1000, 5, 1000), 0);
         assertEquals(0, PrinterRange.clamp(Double.NaN), 0);
         assertEquals(0, PrinterRange.clamp(Double.POSITIVE_INFINITY), 0);
     }
 
     @Test public void distanceUsesEyesAndRejectsUnrepresentableWorldCoordinates() {
+        assertTrue(PrinterRange.contains(.5, 65.5, .5, 128, 65, 0, 128));
+        assertFalse(PrinterRange.contains(.5, 65.5, .5, 129, 65, 0, 128));
         assertTrue(PrinterRange.contains(.5, 65.5, .5, 32, 65, 0, 32));
         assertFalse(PrinterRange.contains(.5, 65.5, .5, 32, 65, 1, 32));
         assertFalse(PrinterRange.contains(.5, 65.5, .5, 33, 65, 0, 32));

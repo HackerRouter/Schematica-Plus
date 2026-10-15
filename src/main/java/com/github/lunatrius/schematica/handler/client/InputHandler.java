@@ -97,7 +97,7 @@ public class InputHandler {
                 if (minecraft.ingameGUI != null) minecraft.ingameGUI.func_110326_a(com.github.lunatrius.schematica.client.gui.framework.UiTranslations.format("schematica.message.material_list.refreshed"), false);
                 return true;
             }
-            case "workingSwitch": com.github.lunatrius.schematica.client.printer.SchematicPrinter.INSTANCE.toggleWithMessage(); return true;
+            case "printerWorkingSwitch": com.github.lunatrius.schematica.client.printer.SchematicPrinter.INSTANCE.toggleWithMessage(); return true;
             case "easyPlaceUseKey": return com.github.lunatrius.schematica.client.printer.EasyPlace.handle();
             case "easyPlaceFirst": ToolManager.toggleConfig("easyPlaceFirst", true); break;
             case "easyPlaceToggle": ToolManager.toggleConfig("easyPlaceMode", true); break;

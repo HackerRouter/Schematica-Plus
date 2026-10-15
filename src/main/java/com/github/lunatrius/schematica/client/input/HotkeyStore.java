@@ -26,6 +26,9 @@ public final class HotkeyStore {
             root = new JsonParser().parse(new String(Files.readAllBytes(file), StandardCharsets.UTF_8)).getAsJsonObject();
             if (root.get("version").getAsInt() != 1) throw new IllegalArgumentException("Unsupported hotkey version");
             JsonObject values = root.getAsJsonObject("hotkeys");
+            if (!values.has("printerWorkingSwitch") && values.has("workingSwitch")) {
+                values.add("printerWorkingSwitch", values.get("workingSwitch"));
+            }
             List<List<Integer>> keys = new ArrayList<>();
             List<Hotkey.Settings> settings = new ArrayList<>();
             for (Hotkey binding : bindings) {
@@ -55,6 +58,7 @@ public final class HotkeyStore {
             entry.add("keys", keys);
             entry.add("settings", new com.google.gson.Gson().toJsonTree(binding.settings));
             values.add(binding.id, entry);
+            if (binding.id.equals("printerWorkingSwitch")) values.remove("workingSwitch");
         }
         root.addProperty("version", 1); root.add("hotkeys", values);
         Path directory = file.toAbsolutePath().getParent(); Files.createDirectories(directory);

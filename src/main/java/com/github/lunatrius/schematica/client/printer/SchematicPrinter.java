@@ -76,7 +76,7 @@ public class SchematicPrinter {
         this.isEnabled = isEnabled;
     }
 
-    /** The workingSwitch hotkey: toggles printing with the MaLiLib toggle message, unless the server forbids it. */
+    /** The printerWorkingSwitch hotkey: toggles printing with the MaLiLib toggle message, unless the server forbids it. */
     public void toggleWithMessage() {
         if (!this.isEnabled) {
             this.isPrinting = false;
@@ -285,9 +285,7 @@ public class SchematicPrinter {
         double feetY = player.boundingBox.minY;
         double range = PrinterReach.range();
         int bx = MathHelper.floor_double(eyeX), by = MathHelper.floor_double(eyeY), bz = MathHelper.floor_double(eyeZ);
-        List<int[]> offsets = PrinterIteration.offsets((int) Math.ceil(range), ConfigurationHandler.printerIteratorShape,
-            ConfigurationHandler.printerIteratorMode, ConfigurationHandler.printerXAxisReverse,
-            ConfigurationHandler.printerYAxisReverse, ConfigurationHandler.printerZAxisReverse);
+        List<int[]> offsets = PrinterIteration.offsets(placements, bx, by, bz, (int) Math.ceil(range));
         long deadline = ConfigurationHandler.printerIterationTimeLimit > 0
             ? System.nanoTime() + ConfigurationHandler.printerIterationTimeLimit * 1_000_000L : Long.MAX_VALUE;
         AreaSelectionLibrary.Area area = "selection".equals(ConfigurationHandler.printSelectionType) ? AreaSelections.library().selected() : null;
