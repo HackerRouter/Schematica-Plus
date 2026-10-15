@@ -1436,7 +1436,7 @@ compare with a server that does not have the mod and with each server option off
   1.12 states). Check stairs shapes, fence/pane connections, double plants, doors, chests with items,
   signs, the spawner and entities. Modded blocks are expected to be missing in other packs.
 - Load a .litematic made by 1.12.2 Litematica and one made by modern Litematica in Plus.
-- Schematic Manager on a .litematic: Schematic Edit → Rename Schematic / Change Author update the info
+- Schematic Manager on a writable schematic: Schematic Edit → Rename Schematic / Change Author update the info
   panel (name, author, Modified time) without changing blocks or the version line; Set Preview closes
   the GUI, the next screenshot key sets the preview (chat success), right click on the Edit button
   cancels a pending preview, Ctrl+Alt+Shift click uses thumb.png from the same folder. The preview
@@ -1453,7 +1453,7 @@ compare with a server that does not have the mod and with each server option off
 - Load screen: Material List on a file opens "Material List for schematic '<name>' (n of m regions)"
   without loading it; totals equal Missing, Available follows the inventory. Shift+click on a
   multi-region file asks for the sub-regions first (OK disabled until one is ticked). Rename Schematic
-  changes the .litematic name shown in the info panel; other file types show the edit error.
+  changes the metadata name shown in the info panel for writable formats; Sponge files remain import-only.
 - Save Area as Schematic: Save from schematic world with one or two placements overlapping the area
   saves the placement blocks, chests with contents and entities instead of the world (also with the
   real world empty there). Visible blocks only on a solid 5x5x5 cube saves only the shell; with
@@ -3188,3 +3188,93 @@ For a game version check, install that runtime JAR in a disposable instance,
 open Mods and confirm Schematica Plus reports `1.0.0-beta.3`. Existing dated
 pack acceptance above remains scoped to its recorded builds and fixtures;
 a version-only release does not imply those game scenarios were rerun.
+
+## Descriptive metadata across writable formats
+
+1. In both native target packs, save a small vanilla selection as `.schematic`,
+   `.schemplus` and `.litematic`; use Manager conversion for structure `.nbt`.
+   Check the saving player's author name, file-stem title, creation/modification
+   time, dimensions and an initially absent preview. Keep classic Alpha fixtures
+   within its block-ID/region limits so unrelated format upgrades are distinguishable.
+2. In Manager, change the author and metadata name. Add a Chinese/English multiline
+   description, exercise Reset/Cancel, then confirm. Reopen the file and inspect
+   the info panel and the stored tags. At large GUI scale, scroll the info panel to
+   inspect the entire thumbnail; 3D preview zoom must still work over the model.
+   File names and block data must be unchanged.
+3. Set Preview, close the GUI and press the normal screenshot key. Reopen Manager
+   and inspect the embedded image. Repeat using a non-square `thumb.png` beside the
+   file and Ctrl+Alt+Shift-click Set Preview. Require a centered 120x120 image; move
+   the PNG away and confirm the embedded preview remains. Remove Preview and verify
+   attribution/description survive. Right-click Edit cancels a pending screenshot.
+4. Load a source before editing its metadata, then edit blocks with REBUILD and
+   save to `.schemplus`. Both edits must survive, including the original creation
+   time and author. Metadata-only changes must not mark a source's blocks as edited.
+   An untouched source saved to another file must retain the original bytes.
+5. Convert each writable format into the others. Preserve name, author, description,
+   creation time and preview; advance modification time and recompute dimensions
+   and available format statistics.
+   Existing extended-ID/independent-region upgrades still apply. Check `.nbt` native
+   `author` agrees with its optional metadata. Reopen after a complete client restart.
+6. Download a decorated file from a matching current server, including a flat file
+   without independent regions. Repeat with explicit `.litematic` and `.nbt`
+   command arguments. Check the final downloaded file's description and
+   preview, not just a successful download message. Incomplete payloads must not save.
+7. For `.schematic`, compare block/metadata arrays and encoding before/after editing;
+   no `.schemplus` file may be created solely for descriptive metadata. Preserve
+   unrelated root/extension tags. For modern `.litematic`, preserve data version and
+   long block-state arrays during metadata-only edits. Invalid/non-square/oversized
+   thumbnail arrays must not create a browser texture.
+
+Automated codec tests exercise all 16 writable-format pairs, new-save defaults,
+classic block-array preservation, metadata copy isolation, loaded-source REBUILD
+saves, unknown long-array preservation, native structure-author synchronization,
+flat download payloads and preview validation. These checks do not establish
+that external schematic editors retain the optional metadata.
+
+Dated observations (2026-10-15): `./gradlew build` and
+`LC_ALL=C.UTF-8 ./gradlew test` pass all **684 tests**, with no failures, errors or
+skips. Native GTNH 2.8.4 and 2.9.0-RC-2 runs use their own mod sets,
+Java 21/LWJGL 3 and software GL on disposable instances.
+
+The native fixtures contain a 3x2x2 stone grid. Game-thread calls exercised the
+public save/convert APIs, while real mouse/keyboard input exercised metadata
+name/author editing, Chinese/English multiline descriptions, Reset/Cancel and
+PNG import. All 16 conversion pairs per pack retained the descriptive fields and
+embedded pixels. An export to classic Alpha that needs independent regions still
+uses the existing `.schemplus` upgrade. SourceEditor REBUILD changes to both flat
+and Litematic region sources retained metadata and the changed gold block on readback;
+this exercised the actual working-copy API, not a manual REBUILD-tool click test.
+The 160x120 PNG's centered 120x120 crop was verified pixel by pixel.
+
+Both clients and matching dedicated servers were cold-started with runtime JAR
+SHA-256 `e90ed86db95136641c1a55463043c34df11cefae47530411efcf9a37a53b1980`.
+Eight downloads, one per writable format per pack, retained names, authors,
+multiline descriptions, creation times and all embedded preview pixels. The
+explicit `.litematic`/`.nbt` command cases exposed and verified the filename lookup
+fix. Initial test connection failures came from bypassing Forge's multiplayer
+initialization; the successful runs use its normal connection entry.
+
+Both clients were then cold-started with the final runtime JAR SHA-256
+`2918c054a949f53a36ddb03274d1b761d9c60d84f7b8dbcfea1f0dd19aeed2e8`.
+This includes native structure-author synchronization and the 3D preview scissor
+intersection. Earlier live replacement of graphics classes bypassed the packs'
+OpenGL transformation and is excluded from graphical acceptance. The final cold
+runs verify the actual pack-transformed classes.
+
+In both final clients, real `/schematicaSave` captures and subsequent downloads
+write the saving player, file-stem title, creation time and empty description;
+previews remain absent until explicitly set. Native structure-author edits made
+outside the optional namespace survive a subsequent description change. The
+scrolled information panel, partial/full 3D preview and wheel zoom were visually
+checked in both packs. Both runs also exercised native preview removal, PNG import
+and right-click cancellation, including Chinese labels. GTNH 2.8.4 had cloud
+connection read timeouts; its remaining file-only manager checks were completed
+from the menu. These timeouts are not reported as fixed by this change.
+
+F2 capture was also verified visually in the final clients: GTNH 2.9.0-RC-2 while
+connected to the dedicated server, and GTNH 2.8.4 in a disposable local-world copy
+after its connection timed out. Reopening the browser displayed the captured world
+thumbnail. File readback confirmed 120x120 pixels with the existing author and
+multiline description preserved. Evidence includes `verified-f2-290.png` and
+`verified-local-f2-284.png`; the earlier PNG import, removal and cancellation checks
+were performed separately from these F2 captures.

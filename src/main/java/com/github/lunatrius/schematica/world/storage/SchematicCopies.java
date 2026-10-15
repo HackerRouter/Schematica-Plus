@@ -23,6 +23,7 @@ public final class SchematicCopies {
         Schematic result = independent ? new MultiRegionSchematic(icon, source.getWidth(), source.getHeight(), source.getLength())
             : new Schematic(icon, source.getWidth(), source.getHeight(), source.getLength());
         result.setOrigin(source.getOrigin());
+        result.setSchematicMetadata(source.getSchematicMetadata());
         result.setRegions(source.getRegions());
         overlay(source, result, 0, 0, 0, true);
         if (independent) for (SchematicRegion region : source.getRegions()) {

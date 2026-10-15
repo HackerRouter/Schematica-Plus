@@ -14,12 +14,13 @@ import net.minecraftforge.common.util.Constants.NBT;
 
 import com.github.lunatrius.schematica.api.ISchematic;
 
-/** Schematic file metadata for the browsers, in-place .litematic metadata edits and format conversions. */
+/** Schematic file metadata for the browsers, in-place metadata edits and format conversions. */
 public final class SchematicFiles {
 
-    /** What the browser shows about a .litematic or vanilla structure file. */
+    /** What the browser shows about a writable schematic file. */
     public static final class Info {
         public final boolean litematic;
+        public String format;
         public String name = "", author = "", description = "";
         public long created, modified, volume, blocks = -1;
         public int regions = 1, version = -1, dataVersion = -1, sizeX, sizeY, sizeZ;
@@ -36,99 +37,97 @@ public final class SchematicFiles {
         return file.getName().toLowerCase(Locale.ROOT).endsWith(extension);
     }
 
-    /** Metadata of a .litematic or .nbt file, or null for other formats. */
+    public static boolean editable(File file) {
+        return extension(file, ".litematic") || extension(file, ".schematic")
+            || extension(file, ".schemplus") || extension(file, ".nbt");
+    }
+
+    private static boolean valid(NBTTagCompound root, File file) {
+        if (extension(file, ".litematic")) return SchematicLitematica.isLitematicFormat(root);
+        if (extension(file, ".nbt")) return VanillaStructure.isStructure(root);
+        if (!"Alpha".equals(root.getString("Materials"))) return false;
+        int width = root.getShort("Width"), height = root.getShort("Height"), length = root.getShort("Length");
+        long volume = (long) width * height * length;
+        return width > 0 && height > 0 && length > 0 && volume <= com.github.lunatrius.schematica.util.SchematicLimits.MAX_BLOCKS
+            && root.getByteArray("Blocks").length == volume && root.getByteArray("Data").length == volume;
+    }
+
     public static Info info(File file) throws IOException {
-        boolean litematic = extension(file, ".litematic");
-        if (!litematic && !extension(file, ".nbt")) return null;
+        if (!editable(file)) return null;
         try {
             NBTTagCompound root = LitematicaNBTReader.readFromFile(file);
+            if (!valid(root, file)) return null;
+            boolean litematic = extension(file, ".litematic"), structure = extension(file, ".nbt");
+            NBTTagCompound metadata = SchematicMetadata.read(root, litematic);
             Info info = new Info(litematic);
+            info.format = structure ? "nbt" : litematic ? "litematic" : extension(file, ".schemplus") ? "schemplus" : "schematic";
+            info.name = metadata.hasKey("Name", NBT.TAG_STRING) ? metadata.getString("Name") : SchematicMetadata.stem(file.getName());
+            info.author = metadata.getString("Author");
+            info.description = metadata.getString("Description");
+            info.created = metadata.hasKey("TimeCreated", NBT.TAG_ANY_NUMERIC) ? metadata.getLong("TimeCreated") : file.lastModified();
+            info.modified = metadata.hasKey("TimeModified", NBT.TAG_ANY_NUMERIC) ? metadata.getLong("TimeModified") : info.created;
+            info.regions = metadata.hasKey("RegionCount") ? metadata.getInteger("RegionCount") : 1;
+            info.blocks = metadata.hasKey("TotalBlocks") ? metadata.getLong("TotalBlocks") : -1;
             if (litematic) {
-                NBTTagCompound metadata = root.getCompoundTag("Metadata");
-                info.name = metadata.getString("Name");
-                info.author = metadata.getString("Author");
-                info.description = metadata.getString("Description");
-                info.created = metadata.getLong("TimeCreated");
-                info.modified = metadata.getLong("TimeModified");
-                info.regions = metadata.getInteger("RegionCount");
-                info.volume = metadata.getLong("TotalVolume");
-                info.blocks = metadata.hasKey("TotalBlocks") ? metadata.getLong("TotalBlocks") : -1;
                 NBTTagCompound size = metadata.getCompoundTag("EnclosingSize");
                 info.sizeX = size.getInteger("x"); info.sizeY = size.getInteger("y"); info.sizeZ = size.getInteger("z");
-                if (metadata.hasKey("PreviewImageData", NBT.TAG_INT_ARRAY)) info.preview = metadata.getIntArray("PreviewImageData");
                 info.version = root.getInteger("Version");
                 info.dataVersion = root.hasKey("MinecraftDataVersion") ? root.getInteger("MinecraftDataVersion") : -1;
-            } else {
-                if (!VanillaStructure.isStructure(root)) return null;
+            } else if (structure) {
                 NBTTagList size = (NBTTagList) root.getTagList("size", NBT.TAG_INT).copy();
                 if (size.tagCount() != 3) return null;
                 info.sizeZ = ((NBTTagInt) size.removeTag(2)).func_150287_d();
                 info.sizeY = ((NBTTagInt) size.removeTag(1)).func_150287_d();
                 info.sizeX = ((NBTTagInt) size.removeTag(0)).func_150287_d();
-                info.name = file.getName().substring(0, file.getName().length() - 4);
-                info.author = root.getString("author");
-                info.volume = (long) info.sizeX * info.sizeY * info.sizeZ;
-                info.created = info.modified = file.lastModified();
                 info.dataVersion = root.hasKey("DataVersion") ? root.getInteger("DataVersion") : -1;
+            } else {
+                info.sizeX = root.getShort("Width"); info.sizeY = root.getShort("Height"); info.sizeZ = root.getShort("Length");
             }
+            info.volume = metadata.hasKey("TotalVolume") ? metadata.getLong("TotalVolume") : (long) info.sizeX * info.sizeY * info.sizeZ;
+            int[] preview = metadata.getIntArray("PreviewImageData");
+            if (SchematicMetadata.validPreview(preview)) info.preview = preview;
             return info;
         } finally {
             LitematicaNBTReader.clearLongArrayStore();
         }
     }
 
-    /** Changes the Metadata of a .litematic file in place, keeping every other tag (TimeModified is updated). */
     public static void editLitematicMetadata(File file, Consumer<NBTTagCompound> edit) throws IOException {
         if (!extension(file, ".litematic")) throw new IOException("Not a litematic file");
-        try {
-            NBTTagCompound root = LitematicaNBTReader.readFromFile(file);
-            if (!SchematicLitematica.isLitematicFormat(root)) throw new IOException("Not a litematic schematic");
-            if (LitematicaNBTReader.droppedData()) throw new IOException("The file holds data this version cannot rewrite");
-            NBTTagCompound metadata = root.getCompoundTag("Metadata");
-            edit.accept(metadata);
-            metadata.setLong("TimeModified", System.currentTimeMillis());
-            root.setTag("Metadata", metadata);
-            SchematicFileWriter.write(file, new LitematicExport.Document(root, LitematicaNBTReader.longArrays()));
-        } finally {
-            LitematicaNBTReader.clearLongArrayStore();
-        }
+        editMetadata(file, edit);
     }
 
-    private static NBTTagCompound litematicMetadata(File file) {
+    /** Rewrites only descriptive fields; preserves all block data, unknown tags and the file's encoding. */
+    public static NBTTagCompound editMetadata(File file, Consumer<NBTTagCompound> edit) throws IOException {
+        if (!editable(file)) throw new IOException("Unsupported metadata format");
         try {
-            return LitematicaNBTReader.readFromFile(file).getCompoundTag("Metadata");
-        } catch (IOException | RuntimeException e) {
-            return null;
+            NBTTagCompound root = LitematicaNBTReader.readFromFile(file);
+            if (!valid(root, file)) throw new IOException("Not a valid schematic");
+            if (LitematicaNBTReader.droppedData()) throw new IOException("The file holds data this version cannot rewrite");
+            boolean litematic = extension(file, ".litematic");
+            NBTTagCompound metadata = litematic ? root.getCompoundTag("Metadata")
+                : root.getCompoundTag("ExtendedMetadata").getCompoundTag(SchematicMetadata.EXTENSION);
+            if (VanillaStructure.isStructure(root) && root.hasKey("author", NBT.TAG_STRING)) metadata.setString("Author", root.getString("author"));
+            SchematicMetadata.defaults(metadata, SchematicMetadata.stem(file.getName()), root.getString("author"), file.lastModified());
+            edit.accept(metadata);
+            metadata.setLong("TimeModified", System.currentTimeMillis());
+            SchematicMetadata.write(root, metadata, litematic);
+            SchematicFileWriter.write(file, new LitematicExport.Document(root, LitematicaNBTReader.longArrays()));
+            return (NBTTagCompound) metadata.copy();
         } finally {
             LitematicaNBTReader.clearLongArrayStore();
         }
     }
 
     /**
-     * Converts a readable schematic file to the target's format (.litematic, .schematic or .nbt) with block entities,
-     * and entities unless ignored. A .litematic source keeps its name, author, description, preview and creation time.
+     * Converts a readable schematic file to the target's format (.litematic, .schematic, .schemplus or .nbt) with block entities,
+     * and entities unless ignored. Descriptive metadata follows the source across the writable formats.
      * Returns the written file; a .schematic needing extended IDs becomes .schemplus.
      */
     public static File convert(File source, File target, boolean includeEntities, String author) throws IOException {
         ISchematic schematic = SchematicFormat.readFromFile(source);
         if (schematic == null) throw new IOException("Unreadable schematic " + source.getName());
-        NBTTagCompound sourceMetadata = extension(source, ".litematic") ? litematicMetadata(source) : null;
-        String sourceAuthor = sourceMetadata != null && !sourceMetadata.getString("Author").isEmpty() ? sourceMetadata.getString("Author") : author;
-        if (extension(target, ".litematic")) {
-            String stem = target.getName().substring(0, target.getName().length() - ".litematic".length());
-            LitematicExport.Document document = LitematicExport.encode(schematic, null, true, includeEntities, stem, sourceAuthor,
-                System.currentTimeMillis());
-            if (sourceMetadata != null) {
-                NBTTagCompound metadata = document.root.getCompoundTag("Metadata");
-                for (String key : new String[] {"Name", "Description"}) metadata.setString(key, sourceMetadata.getString(key));
-                if (sourceMetadata.hasKey("TimeCreated")) metadata.setLong("TimeCreated", sourceMetadata.getLong("TimeCreated"));
-                if (sourceMetadata.hasKey("PreviewImageData", NBT.TAG_INT_ARRAY)) {
-                    metadata.setIntArray("PreviewImageData", sourceMetadata.getIntArray("PreviewImageData"));
-                }
-            }
-            return SchematicFileWriter.write(target, document);
-        }
-        File written = SchematicFormat.saveToFile(target, schematic, null, true, includeEntities, sourceAuthor);
+        File written = SchematicFormat.saveToFile(target, schematic, null, true, includeEntities, author);
         if (written == null) throw new IOException("Could not write " + target.getName());
         return written;
     }

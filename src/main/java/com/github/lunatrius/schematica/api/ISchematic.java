@@ -9,6 +9,10 @@ import net.minecraft.tileentity.TileEntity;
 
 public interface ISchematic {
 
+    default net.minecraft.nbt.NBTTagCompound getSchematicMetadata() { return new net.minecraft.nbt.NBTTagCompound(); }
+
+    default void setSchematicMetadata(net.minecraft.nbt.NBTTagCompound metadata) {}
+
     default SchematicOrigin getOrigin() { return SchematicOrigin.ZERO; }
 
     default ISchematic getRegionSchematic(String name) { return null; }

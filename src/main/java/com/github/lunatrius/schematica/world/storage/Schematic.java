@@ -23,6 +23,15 @@ public class Schematic implements ISchematic {
     private static final FMLControlledNamespacedRegistry<Block> BLOCK_REGISTRY = GameData.getBlockRegistry();
 
     private ItemStack icon;
+    private net.minecraft.nbt.NBTTagCompound schematicMetadata = new net.minecraft.nbt.NBTTagCompound();
+
+    @Override public net.minecraft.nbt.NBTTagCompound getSchematicMetadata() {
+        return (net.minecraft.nbt.NBTTagCompound) schematicMetadata.copy();
+    }
+
+    @Override public void setSchematicMetadata(net.minecraft.nbt.NBTTagCompound metadata) {
+        schematicMetadata = (net.minecraft.nbt.NBTTagCompound) metadata.copy();
+    }
     private final short[][][] blocks;
     /** 16 bits, for EndlessIDs extended metadata. */
     private final short[][][] metadata;

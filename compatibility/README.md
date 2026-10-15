@@ -301,3 +301,21 @@ have representative coverage. Remaining work includes new powered structures on
 dedicated servers, 2.8.4 Freecam, longer transition sequences, opaque cross-pack
 data and additional shader/driver combinations; see HANDOUT section 11. A passing
 fixture does not establish complete compatibility for its entire mod.
+
+## Descriptive schematic metadata
+
+Names, authors, multiline descriptions, creation/modification times and embedded
+previews are preserved between `.schematic`, `.schemplus`, `.litematic` and structure
+`.nbt`, including source copies, REBUILD saves and current-protocol downloads.
+Litematic uses its native Metadata fields. The other formats carry optional data
+under `ExtendedMetadata.SchematicaPlus`; `.nbt` also writes native `author`.
+This does not modify their block encodings or trigger a format upgrade by itself.
+It is not a standard author/thumbnail extension understood by every external editor;
+other tools may ignore or discard those fields. Sponge `.schem` stays import-only.
+
+Pure metadata editing retains the original data version, block arrays/palettes and
+unknown tags, and refuses files whose NBT cannot be rewritten safely. Conversion
+still performs the normal content conversion and is not a lossless rewrite of
+unsupported modern/modded content. Preview images are embedded, not linked to the
+source PNG. Browser textures accept square images up to 512x512; newly set images
+use the Litematica-style centered 120x120 crop. Invalid previews are not rendered.

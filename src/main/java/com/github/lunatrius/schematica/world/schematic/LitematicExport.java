@@ -87,15 +87,10 @@ public final class LitematicExport {
             minX = Math.min(minX, box.minX); minY = Math.min(minY, box.minY); minZ = Math.min(minZ, box.minZ);
             maxX = Math.max(maxX, box.maxX); maxY = Math.max(maxY, box.maxY); maxZ = Math.max(maxZ, box.maxZ);
         }
-        NBTTagCompound metadata = new NBTTagCompound();
-        metadata.setString("Name", name);
-        metadata.setString("Author", author);
-        metadata.setString("Description", "");
+        NBTTagCompound metadata = SchematicMetadata.forSave(schematic, name, author, time);
         metadata.setInteger("RegionCount", boxes.size());
         metadata.setLong("TotalVolume", volume);
         metadata.setLong("TotalBlocks", blocks);
-        metadata.setLong("TimeCreated", time);
-        metadata.setLong("TimeModified", time);
         metadata.setTag("EnclosingSize", vector(maxX - minX + 1, maxY - minY + 1, maxZ - minZ + 1));
         document.root.setInteger("Version", VERSION);
         document.root.setInteger("MinecraftDataVersion", DATA_VERSION);

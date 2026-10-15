@@ -47,9 +47,35 @@ public final class SchematicFileSnapshot {
     }
 
     public String extension() { return extension; }
+
+    public SchematicFileSnapshot withMetadata(NBTTagCompound metadata) throws IOException {
+        try {
+            NBTTagCompound root = readNBT();
+            if (LitematicaNBTReader.droppedData()) throw new IOException("Unsupported source data");
+            boolean litematic = extension.equals(".litematic");
+            NBTTagCompound current = litematic ? root.getCompoundTag("Metadata")
+                : root.getCompoundTag("ExtendedMetadata").getCompoundTag(SchematicMetadata.EXTENSION);
+            SchematicMetadata.updateDescription(current, metadata);
+            SchematicMetadata.write(root, current, litematic);
+            ByteArrayOutputStream output = new ByteArrayOutputStream();
+            LitematicaNBTWriter.writeCompressed(root, LitematicaNBTReader.longArrays(), output);
+            if (output.size() > SchematicLimits.MAX_NBT_BYTES) throw new IOException("Source file exceeds memory limit");
+            return new SchematicFileSnapshot(output.toByteArray(), extension);
+        } finally {
+            LitematicaNBTReader.clearLongArrayStore();
+        }
+    }
+
     public static SchematicFileSnapshot capture(ISchematic schematic) throws IOException {
+        return capture(schematic, "", "");
+    }
+
+    public static SchematicFileSnapshot capture(ISchematic schematic, String name, String author) throws IOException {
         NBTTagCompound tag = new NBTTagCompound();
         if (!new SchematicAlpha().writeToNBT(tag, schematic, null, true, true, true)) throw new IOException("Unable to encode edited schematic");
+        NBTTagCompound metadata = SchematicMetadata.read(tag, false);
+        SchematicMetadata.defaults(metadata, name, author, System.currentTimeMillis());
+        SchematicMetadata.write(tag, metadata, false);
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
         CompressedStreamTools.writeCompressed(tag, bytes);
         if (bytes.size() > SchematicLimits.MAX_NBT_BYTES) throw new IOException("Edited schematic exceeds file limit");

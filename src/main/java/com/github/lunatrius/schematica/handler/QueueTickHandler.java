@@ -99,7 +99,8 @@ public class QueueTickHandler {
             }
             if (container.memory != null) {
                 com.github.lunatrius.schematica.world.schematic.SchematicFileSnapshot snapshot =
-                    com.github.lunatrius.schematica.world.schematic.SchematicFileSnapshot.capture(container.schematic);
+                    com.github.lunatrius.schematica.world.schematic.SchematicFileSnapshot.capture(container.schematic,
+                        com.github.lunatrius.schematica.world.schematic.SchematicMetadata.stem(container.file.getName()), player.getCommandSenderName());
                 java.util.function.Consumer<com.github.lunatrius.schematica.world.schematic.SchematicFileSnapshot> memory = container.memory;
                 SchematicaPlus.proxy.runSaveCallback(() -> memory.accept(snapshot));
                 return;

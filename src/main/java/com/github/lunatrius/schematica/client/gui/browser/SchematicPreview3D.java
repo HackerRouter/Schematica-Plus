@@ -143,8 +143,16 @@ final class SchematicPreview3D {
         float scale = size / Math.max(1, extent) * zoom;
 
         GL11.glPushAttrib(GL11.GL_ENABLE_BIT | GL11.GL_DEPTH_BUFFER_BIT | GL11.GL_SCISSOR_BIT | GL11.GL_COLOR_BUFFER_BIT | GL11.GL_CURRENT_BIT);
+        int left = x * factor, bottom = mc.displayHeight - (y + size) * factor;
+        int right = left + size * factor, top = bottom + size * factor;
+        if (GL11.glIsEnabled(GL11.GL_SCISSOR_TEST)) {
+            java.nio.IntBuffer clip = org.lwjgl.BufferUtils.createIntBuffer(16);
+            GL11.glGetInteger(GL11.GL_SCISSOR_BOX, clip);
+            left = Math.max(left, clip.get(0)); bottom = Math.max(bottom, clip.get(1));
+            right = Math.min(right, clip.get(0) + clip.get(2)); top = Math.min(top, clip.get(1) + clip.get(3));
+        }
         GL11.glEnable(GL11.GL_SCISSOR_TEST);
-        GL11.glScissor(x * factor, mc.displayHeight - (y + size) * factor, size * factor, size * factor);
+        GL11.glScissor(left, bottom, Math.max(0, right - left), Math.max(0, top - bottom));
         GL11.glClear(GL11.GL_DEPTH_BUFFER_BIT);
         GL11.glEnable(GL11.GL_DEPTH_TEST);
         GL11.glDepthFunc(GL11.GL_LEQUAL);

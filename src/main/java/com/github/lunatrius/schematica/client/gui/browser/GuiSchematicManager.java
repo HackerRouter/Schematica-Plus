@@ -6,7 +6,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 
 import net.minecraft.client.gui.GuiScreen;
 
@@ -20,11 +19,11 @@ public final class GuiSchematicManager extends GuiSchematicBrowser {
     private final List<UiButton[]> groups = new ArrayList<>();
     private final int[] choices = {0, 1, 0};
     private static final String[][] OPTIONS = {
-        {"edit_type.rename_schematic", "edit_type.change_author", "edit_type.set_preview"},
-        {"export_type.schematic", "export_type.litematic_v4", "export_type.vanilla"},
+        {"edit_type.rename_schematic", "edit_type.change_author", "edit_type.set_preview", "edit_type.change_description", "edit_type.remove_preview"},
+        {"export_type.schematic", "export_type.litematic_v4", "export_type.vanilla", "export_type.schemplus"},
         {"file_op_type.rename", "file_op_type.copy", "file_op_type.delete"}
     };
-    private static final String[] EXPORT_EXTENSIONS = {".schematic", ".litematic", ".nbt"};
+    private static final String[] EXPORT_EXTENSIONS = {".schematic", ".litematic", ".nbt", ".schemplus"};
 
     public GuiSchematicManager(GuiScreen parent) {
         super(parent, UiTranslations.format("litematica.gui.title.schematic_manager"), false);
@@ -66,10 +65,6 @@ public final class GuiSchematicManager extends GuiSchematicBrowser {
         return entry.file;
     }
 
-    private static boolean litematic(File file) {
-        return file.getName().toLowerCase(Locale.ROOT).endsWith(".litematic");
-    }
-
     /** Schematic Edit: rename or change the author in the metadata, or set the preview image. */
     private void edit(int mouse) {
         if (choices[0] == 2 && mouse == 1) {
@@ -79,8 +74,18 @@ public final class GuiSchematicManager extends GuiSchematicBrowser {
         if (mouse != 0) return;
         File file = selectedFile();
         if (file == null) return;
-        if (!litematic(file)) {
-            setStatus(UiTranslations.format("litematica.error.schematic_manager.schematic_edit.unsupported_type"));
+        if (!SchematicFiles.editable(file)) {
+            setStatus(UiTranslations.format("schematica.ui.files.metadata_unsupported"));
+            return;
+        }
+        if (choices[0] == 4) {
+            try {
+                com.github.lunatrius.schematica.client.gui.browser.SchematicFileEdits.edit(file, metadata -> metadata.removeTag("PreviewImageData"));
+                refreshFiles();
+                setStatus(UiTranslations.format("schematica.ui.files.preview_removed"));
+            } catch (IOException e) {
+                fail("litematica.error.schematic_load.cant_read_file", e, file.getName());
+            }
             return;
         }
         if (choices[0] == 2) {
@@ -112,10 +117,14 @@ public final class GuiSchematicManager extends GuiSchematicBrowser {
             fail("litematica.error.schematic_load.cant_read_file", e, file.getName());
             return;
         }
+        if (choices[0] == 3) {
+            mc.displayGuiScreen(new GuiSchematicDescription(this, file, info == null ? "" : info.description));
+            return;
+        }
         prompt(UiTranslations.format(author ? "litematica.gui.title.schematic_change_author" : "litematica.gui.title.rename_schematic"),
             info == null ? "" : author ? info.author : info.name, value -> {
                 try {
-                    SchematicFiles.editLitematicMetadata(file, metadata -> metadata.setString(author ? "Author" : "Name", value));
+                    com.github.lunatrius.schematica.client.gui.browser.SchematicFileEdits.edit(file, metadata -> metadata.setString(author ? "Author" : "Name", value));
                     refreshFiles();
                     return null;
                 } catch (IOException e) {
@@ -135,8 +144,8 @@ public final class GuiSchematicManager extends GuiSchematicBrowser {
     private void export() {
         File file = selectedFile();
         if (file == null) return;
-        if (!litematic(file)) {
-            setStatus(UiTranslations.format("litematica.error.schematic_manager.schematic_export.unsupported_type"));
+        if (!SchematicFiles.editable(file)) {
+            setStatus(UiTranslations.format("schematica.ui.files.metadata_unsupported"));
             return;
         }
         mc.displayGuiScreen(new GuiSchematicConvert(this, UiTranslations.format("litematica.gui.title.save_exported_schematic",
@@ -154,15 +163,16 @@ public final class GuiSchematicManager extends GuiSchematicBrowser {
 
     private String optionKey(int type) {
         String option = OPTIONS[type][choices[type]];
-        return (option.equals("export_type.litematic_v4") ? "schematica.ui.files." : "litematica.gui.label.schematic_manager.") + option;
+        return (option.equals("export_type.litematic_v4") || option.equals("export_type.schemplus")
+            || option.equals("edit_type.change_description") || option.equals("edit_type.remove_preview") ? "schematica.ui.files." : "litematica.gui.label.schematic_manager.") + option;
     }
 
     private void updateVisibility() {
         SchematicBrowserModel.Entry entry = selection();
         boolean selected = entry != null && !entry.directory;
-        boolean litematic = selected && entry.name().toLowerCase(Locale.ROOT).endsWith(".litematic");
+        boolean editable = selected && SchematicFiles.editable(entry.file);
         for (int i = 0; i < groups.size(); i++) {
-            for (UiButton button : groups.get(i)) button.setVisible(selected && (i == 1 || i == 3 || litematic));
+            for (UiButton button : groups.get(i)) button.setVisible(selected && (i == 1 || i == 3 || editable));
         }
         for (int type = 0; type < 3; type++) {
             int group = type == 0 ? 0 : type == 1 ? 2 : 3;
@@ -172,7 +182,7 @@ public final class GuiSchematicManager extends GuiSchematicBrowser {
                 selector.setTooltip(UiTranslations.format(option.equals("delete")
                     ? "litematica.gui.label.schematic_manager.file_op_type.delete.hover" : "schematica.ui.files.option." + option));
             } else {
-                selector.setTooltip(UiTranslations.format(optionKey(type) + ".hover").split("\n"));
+                selector.setTooltip(UiTranslations.format(type == 0 ? "schematica.ui.files.edit_option.hover" : optionKey(type) + ".hover").split("\n"));
             }
         }
         String editHover = UiTranslations.format("schematica.ui.files.edit_schematic.hover");

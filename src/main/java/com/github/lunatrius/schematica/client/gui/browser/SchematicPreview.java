@@ -29,7 +29,7 @@ import com.github.lunatrius.schematica.world.schematic.SchematicFiles;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.gameevent.TickEvent;
 
-/** Sets a .litematic preview from the next screenshot key press, or from a thumb.png beside the file. */
+/** Sets a schematic preview from the next screenshot key press, or from a thumb.png beside the file. */
 public final class SchematicPreview {
     public static final SchematicPreview INSTANCE = new SchematicPreview();
     public static final int SIZE = 120;
@@ -64,7 +64,8 @@ public final class SchematicPreview {
     }
 
     public static void store(File file, int[] pixels) throws IOException {
-        SchematicFiles.editLitematicMetadata(file, metadata -> metadata.setIntArray("PreviewImageData", pixels));
+        if (!com.github.lunatrius.schematica.world.schematic.SchematicMetadata.validPreview(pixels)) throw new IOException("Invalid preview dimensions");
+        com.github.lunatrius.schematica.client.gui.browser.SchematicFileEdits.edit(file, metadata -> metadata.setIntArray("PreviewImageData", pixels));
     }
 
     /** Ctrl + Alt + Shift on the button: thumb.png from the schematic's directory. */

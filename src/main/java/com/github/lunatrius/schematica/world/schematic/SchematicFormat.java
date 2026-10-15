@@ -59,7 +59,9 @@ public abstract class SchematicFormat {
         ImportReport.begin();
         try {
             PortableSchematicData.read(tag);
-            return decodeFormat(tag, filename);
+            ISchematic schematic = decodeFormat(tag, filename);
+            schematic.setSchematicMetadata(SchematicMetadata.read(tag, SchematicLitematica.isLitematicFormat(tag)));
+            return schematic;
         } finally {
             ImportReport.end();
         }
@@ -105,33 +107,44 @@ public abstract class SchematicFormat {
             final PostSchematicCaptureEvent event = new PostSchematicCaptureEvent(schematic);
             MinecraftForge.EVENT_BUS.post(event);
 
-            String fileName = file.getName();
-            if (fileName.toLowerCase(java.util.Locale.ROOT).endsWith(".litematic")) {
-                LitematicExport.Document document = LitematicExport.encode(schematic, backupWorld, includeNBT, includeEntities,
-                    fileName.substring(0, fileName.length() - ".litematic".length()), author, System.currentTimeMillis());
-                PortableSchematicData.write(document.root);
-                return SchematicFileWriter.write(file, document);
-            }
-            if (fileName.toLowerCase(java.util.Locale.ROOT).endsWith(".nbt")) {
-                NBTTagCompound tag = VanillaStructure.encode(schematic, backupWorld, includeEntities, author);
-                PortableSchematicData.write(tag);
-                return SchematicFileWriter.write(file, tag);
-            }
-
-            NBTTagCompound tagCompound = new NBTTagCompound();
-
-            SchematicFormat format = FORMATS.get(FORMAT_DEFAULT);
-            boolean written = format instanceof SchematicAlpha
-                ? ((SchematicAlpha) format).writeToNBT(tagCompound, schematic, backupWorld, includeNBT, includeEntities,
-                    file.getName().toLowerCase(java.util.Locale.ROOT).endsWith(".schemplus"))
-                : format.writeToNBT(tagCompound, schematic, backupWorld, includeNBT, includeEntities);
-            if (!written) return null;
-            PortableSchematicData.write(tagCompound);
-            return SchematicFileWriter.write(file, tagCompound);
+            LitematicExport.Document document = encode(file, schematic, backupWorld, includeNBT, includeEntities, author);
+            PortableSchematicData.write(document.root);
+            return file.getName().toLowerCase(java.util.Locale.ROOT).endsWith(".litematic")
+                ? SchematicFileWriter.write(file, document) : SchematicFileWriter.write(file, document.root);
         } catch (Exception ex) {
             Reference.logger.error("Failed to write schematic!", ex);
         }
         return null;
+    }
+
+    static LitematicExport.Document encode(File file, ISchematic schematic, World backupWorld,
+        boolean includeNBT, boolean includeEntities, String author) {
+        String fileName = file.getName();
+        if (fileName.toLowerCase(java.util.Locale.ROOT).endsWith(".litematic")) {
+            LitematicExport.Document document = LitematicExport.encode(schematic, backupWorld, includeNBT, includeEntities,
+                fileName.substring(0, fileName.length() - ".litematic".length()), author, System.currentTimeMillis());
+            return document;
+        }
+        if (fileName.toLowerCase(java.util.Locale.ROOT).endsWith(".nbt")) {
+            NBTTagCompound tag = VanillaStructure.encode(schematic, backupWorld, includeEntities, author);
+            NBTTagCompound metadata = SchematicMetadata.forSave(schematic, SchematicMetadata.stem(fileName), author, System.currentTimeMillis());
+            SchematicMetadata.size(metadata, schematic, -1);
+            SchematicMetadata.write(tag, metadata, false);
+            return new LitematicExport.Document(tag, java.util.Collections.emptyMap());
+        }
+
+        NBTTagCompound tagCompound = new NBTTagCompound();
+
+        SchematicFormat format = FORMATS.get(FORMAT_DEFAULT);
+        boolean written = format instanceof SchematicAlpha
+            ? ((SchematicAlpha) format).writeToNBT(tagCompound, schematic, backupWorld, includeNBT, includeEntities,
+                file.getName().toLowerCase(java.util.Locale.ROOT).endsWith(".schemplus"))
+            : format.writeToNBT(tagCompound, schematic, backupWorld, includeNBT, includeEntities);
+        if (!written) throw new IllegalStateException("Unable to encode schematic");
+        NBTTagCompound metadata = SchematicMetadata.read(tagCompound, false);
+        SchematicMetadata.defaults(metadata, SchematicMetadata.stem(fileName), author, System.currentTimeMillis());
+        SchematicMetadata.write(tagCompound, metadata, false);
+        return new LitematicExport.Document(tagCompound, java.util.Collections.emptyMap());
     }
 
     public static boolean writeToFile(File directory, String filename, ISchematic schematic, World backupWorld) {

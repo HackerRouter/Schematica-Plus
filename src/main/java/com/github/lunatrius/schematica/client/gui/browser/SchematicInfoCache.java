@@ -32,7 +32,7 @@ final class SchematicInfoCache {
     private Future<ISchematic> model;
     private SchematicPreview3D preview3D;
 
-    /** The metadata of a .litematic or .nbt file once read, else null (also for other formats and unreadable files). */
+    /** The metadata of a supported file once read, else null. */
     SchematicFiles.Info get(File file) {
         Future<SchematicFiles.Info> future = infos.computeIfAbsent(file, key -> READER.submit(() -> SchematicFiles.info(key)));
         if (!future.isDone()) return null;

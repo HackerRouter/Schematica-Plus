@@ -245,8 +245,23 @@ uses its own texture.
 Hold Shift while clicking Save to explicitly overwrite an existing file.
 Save options include entities/NBT, saving from the schematic world, visible blocks
 only and support blocks. A queued save is not yet complete; wait for its result.
-File management supports rename/copy/delete, folders, Litematic metadata and preview
-editing, and import/export conversion. Saving an unedited loaded source preserves
+File management supports rename/copy/delete, folders, metadata/preview editing
+and import/export conversion. `.schematic`, `.schemplus`, `.litematic` and structure
+`.nbt` save names, authors, creation/modification times and dimensions. The manager
+can change the name/author, edit a multiline description, and set or remove the
+embedded preview. Scroll the info panel when details or the preview extend below
+the window. Set Preview uses the next screenshot key press; Ctrl+Alt+Shift
+click imports `thumb.png` beside the schematic, cropped to a centered 120x120 square.
+New area saves use the saving player's name; descriptions start empty and previews
+are added explicitly. Conversion and REBUILD saves retain existing attribution,
+description, creation time and preview. Metadata edits also update an already loaded
+source without discarding its unsaved block edits.
+
+Litematic uses its native Metadata compound. Other writable formats use the
+optional `ExtendedMetadata.SchematicaPlus` compound; structure files also retain
+their native `author` field. Adding this information does not change block encoding
+or force a `.schematic` to become `.schemplus`. Other tools may ignore or discard
+these optional fields when saving. Saving an unedited loaded source preserves
 its original bytes and format; edited sources are saved as `.schemplus`.
 
 Vanilla blocks/NBT are translated between the supported versions where possible.

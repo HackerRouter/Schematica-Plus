@@ -208,8 +208,8 @@ public final class GuiSchematicLoad extends GuiSchematicBrowser {
     private void renameSchematic() {
         File file = selectedFile();
         if (file == null) return;
-        if (!file.getName().toLowerCase(Locale.ROOT).endsWith(".litematic")) {
-            setStatus(UiTranslations.format("litematica.error.schematic_manager.schematic_edit.unsupported_type"));
+        if (!SchematicFiles.editable(file)) {
+            setStatus(UiTranslations.format("schematica.ui.files.metadata_unsupported"));
             return;
         }
         SchematicFiles.Info info;
@@ -221,7 +221,7 @@ public final class GuiSchematicLoad extends GuiSchematicBrowser {
         }
         prompt(UiTranslations.format("litematica.gui.title.rename_schematic"), info == null ? "" : info.name, value -> {
             try {
-                SchematicFiles.editLitematicMetadata(file, metadata -> metadata.setString("Name", value));
+                com.github.lunatrius.schematica.client.gui.browser.SchematicFileEdits.edit(file, metadata -> metadata.setString("Name", value));
                 refreshFiles();
                 return null;
             } catch (IOException e) {

@@ -57,6 +57,7 @@ public abstract class GuiSchematicBrowser extends UiScreen {
     private final SchematicInfoCache infoCache = new SchematicInfoCache();
     private static final long PREVIEW_3D_MAX_FILE = 32L << 20;
     private int infoMouseX, infoMouseY;
+    private int infoScroll, infoMaxScroll, infoContentBottom;
     private UiBounds preview3DBox;
     private static final java.text.SimpleDateFormat DATE_FORMAT = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
@@ -121,14 +122,26 @@ public abstract class GuiSchematicBrowser extends UiScreen {
                 infoMouseX = mouseX;
                 infoMouseY = mouseY;
                 preview3DBox = null;
-                drawInfo(draw, bounds().x + 3, bounds().y + 3, bounds().width, selection());
+                infoContentBottom = bounds().y;
+                try (UiDraw.Clip ignored = draw.clip(new UiBounds(bounds().x + 1, bounds().y + 1, bounds().width - 2, bounds().height - 2))) {
+                    drawInfo(draw, bounds().x + 3, bounds().y + 3 - infoScroll, bounds().width - 4, selection());
+                }
+                infoMaxScroll = Math.max(0, infoContentBottom + infoScroll - bounds().bottom() + 4);
+                infoScroll = Math.min(infoScroll, infoMaxScroll);
+                if (infoMaxScroll > 0) {
+                    int track = bounds().height - 4;
+                    int thumb = Math.max(8, track * track / (track + infoMaxScroll));
+                    int offset = (track - thumb) * infoScroll / infoMaxScroll;
+                    draw.fill(new UiBounds(bounds().right() - 4, bounds().y + 2 + offset, 2, thumb), 0xFF999999);
+                }
             }
 
             @Override public boolean scroll(int x, int y, int amount) {
                 SchematicPreview3D preview = preview3DBox != null && preview3DBox.contains(x, y) && selection() != null
                     ? infoCache.preview3D(selection().file) : null;
-                if (preview == null) return false;
-                preview.zoom(amount);
+                if (preview != null) { preview.zoom(amount); return true; }
+                if (infoMaxScroll == 0) return false;
+                infoScroll = Math.max(0, Math.min(infoMaxScroll, infoScroll - Integer.signum(amount) * 24));
                 return true;
             }
         });
@@ -138,7 +151,7 @@ public abstract class GuiSchematicBrowser extends UiScreen {
             directoriesOnly ? this::closeScreen : this::mainMenu);
     }
 
-    /** Draws the info panel for the selected entry: Litematica metadata and preview for .litematic and .nbt files. */
+    /** Draws the info panel for the selected entry: descriptive metadata and preview for writable schematic formats. */
     protected void drawInfo(UiDraw draw, int x, int y, int width, SchematicBrowserModel.Entry entry) {
         if (entry == null || entry.directory) return;
         com.github.lunatrius.schematica.world.schematic.SchematicFiles.Info meta = infoCache.get(entry.file);
@@ -147,6 +160,7 @@ public abstract class GuiSchematicBrowser extends UiScreen {
             draw.text(draw.trim(entry.name(), width - 10), x + 4, y + 12, 0xFFFFFFFF);
             draw.text(FileUtils.humanReadableByteCount(entry.size), x, y + 36, 0xC0C0C0C0);
             draw.text(draw.trim(DATE_FORMAT.format(new Date(entry.modified)), width - 6), x, y + 48, 0xC0C0C0C0);
+            infoContentBottom = y + 60;
             if (infoCache.infoDone(entry.file)) drawPreview3D(draw, entry, x, y + 72, width, -1);
             return;
         }
@@ -174,22 +188,35 @@ public abstract class GuiSchematicBrowser extends UiScreen {
             draw.text(UiTranslations.format("litematica.gui.label.schematic_info.enclosing_size_value", size), x, y += 12, text);
         }
         draw.text(meta.litematic ? UiTranslations.format("litematica.gui.label.schematic_info.version", meta.version)
-            : UiTranslations.format("litematica.gui.label.schematic_info.vanilla_version"), x, y += 12, text);
+            : "nbt".equals(meta.format) ? UiTranslations.format("litematica.gui.label.schematic_info.vanilla_version")
+            : "." + meta.format, x, y += 12, text);
         String schema = meta.dataVersion < 0 ? null : com.github.lunatrius.schematica.world.schematic.DataVersions.name(meta.dataVersion);
         if (schema != null) {
             draw.text(draw.trim(UiTranslations.format("litematica.gui.label.schematic_info.schema", schema, meta.dataVersion), limit), x, y += 12, text);
         }
+        if (!meta.description.isEmpty()) {
+            draw.text(UiTranslations.format("litematica.gui.label.schematic_info.description"), x, y += 12, text);
+            java.util.List<String> lines = com.github.lunatrius.schematica.client.gui.framework.UiTextWrap.wrap(
+                meta.description.substring(0, Math.min(meta.description.length(), 8192)), limit, fontRendererObj::getStringWidth);
+            for (int i = 0; i < Math.min(3, lines.size()); i++) {
+                String line = lines.get(i);
+                if (i == 2 && lines.size() > 3) line = draw.trim(line, Math.max(1, limit - 12)) + "...";
+                draw.text(line, x, y += 12, value);
+            }
+        }
+        infoContentBottom = y + 12;
         net.minecraft.util.ResourceLocation preview = infoCache.preview(entry.file, meta);
         if (preview == null || ConfigurationHandler.schematicPreview3DReplacesImage) {
             drawPreview3D(draw, entry, x, y + 24, width, meta.volume);
         } else {
             y += 24;
-            int iconSize = Math.min(SchematicPreview.SIZE, Math.min(width - 14, info.bounds().bottom() - y - 30));
+            int iconSize = Math.min(SchematicPreview.SIZE, width - 14);
             if (iconSize > 8) {
                 UiBounds box = new UiBounds(x + 4, y, iconSize, iconSize);
                 draw.fill(box, 0xA0000000);
                 draw.texture(preview.toString(), box, 0, 0, 1, 1, 1, 1);
                 draw.border(new UiBounds(box.x - 1, box.y - 1, iconSize + 2, iconSize + 2), 0xFF999999);
+                infoContentBottom = box.bottom() + 4;
             }
         }
     }
@@ -198,9 +225,10 @@ public abstract class GuiSchematicBrowser extends UiScreen {
     private void drawPreview3D(UiDraw draw, SchematicBrowserModel.Entry entry, int x, int y, int width, long volume) {
         if (!ConfigurationHandler.schematicPreview3D || volume > SchematicPreview3D.MAX_VOLUME || entry.size > PREVIEW_3D_MAX_FILE
             || !SchematicBrowserModel.supported(entry.name())) return;
-        int size = Math.min(SchematicPreview.SIZE, Math.min(width - 14, info.bounds().bottom() - y - 30));
+        int size = Math.min(SchematicPreview.SIZE, width - 14);
         if (size <= 8) return;
         UiBounds box = new UiBounds(x + 4, y, size, size);
+        infoContentBottom = box.bottom() + 4;
         draw.fill(box, 0xA0000000);
         draw.border(new UiBounds(box.x - 1, box.y - 1, size + 2, size + 2), 0xFF999999);
         preview3DBox = box;
@@ -465,6 +493,7 @@ public abstract class GuiSchematicBrowser extends UiScreen {
         SchematicBrowserModel.Entry current = selection();
         if (!java.util.Objects.equals(current, lastSelection)) {
             lastSelection = current;
+            infoScroll = 0;
             selectionChanged(current);
         }
     }

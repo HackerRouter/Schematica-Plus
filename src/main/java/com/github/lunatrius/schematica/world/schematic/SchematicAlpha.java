@@ -132,10 +132,12 @@ public class SchematicAlpha extends SchematicFormat {
     /** Download payload of the independent regions (compressed), or null for schematics without them. */
     public static byte[] regionPayload(ISchematic schematic) throws java.io.IOException {
         NBTTagList entries = new SchematicAlpha().regionEntries(schematic, null, true, true);
-        if (entries == null) return null;
+        NBTTagCompound metadata = schematic.getSchematicMetadata();
+        if (entries == null && metadata.hasNoTags()) return null;
         NBTTagCompound tag = new NBTTagCompound();
         tag.setInteger("Version", 1);
-        tag.setTag("Regions", entries);
+        if (entries != null) tag.setTag("Regions", entries);
+        tag.setTag("Metadata", metadata);
         return net.minecraft.nbt.CompressedStreamTools.compress(tag);
     }
 
@@ -144,8 +146,11 @@ public class SchematicAlpha extends SchematicFormat {
         NBTTagCompound tag = LitematicaNBTReader.readFromStream(new java.io.ByteArrayInputStream(payload));
         LitematicaNBTReader.clearLongArrayStore();
         if (tag.getInteger("Version") != 1) throw new java.io.IOException("Unsupported region payload");
-        return new SchematicAlpha().independent(merged.getIcon(), merged.getWidth(), merged.getHeight(), merged.getLength(),
-            merged.getOrigin(), merged.getRegions(), tag.getTagList("Regions", Constants.NBT.TAG_COMPOUND));
+        ISchematic result = tag.hasKey("Regions", Constants.NBT.TAG_LIST)
+            ? new SchematicAlpha().independent(merged.getIcon(), merged.getWidth(), merged.getHeight(), merged.getLength(),
+                merged.getOrigin(), merged.getRegions(), tag.getTagList("Regions", Constants.NBT.TAG_COMPOUND)) : merged;
+        result.setSchematicMetadata(tag.getCompoundTag("Metadata"));
+        return result;
     }
 
     @Override
@@ -181,11 +186,13 @@ public class SchematicAlpha extends SchematicFormat {
         byte[] extraBlocks = new byte[size];
 
         Map<String, Short> mappings = new HashMap<>();
+        long blockCount = 0;
         for (int x = 0; x < schematic.getWidth(); x++) {
             for (int y = 0; y < schematic.getHeight(); y++) {
                 for (int z = 0; z < schematic.getLength(); z++) {
                     final int index = x + (y * schematic.getLength() + z) * schematic.getWidth();
                     final Block block = schematic.getBlock(x, y, z);
+                    if (block != Blocks.air && schematic.containsBlock(x, y, z)) blockCount++;
                     int blockId = BLOCK_REGISTRY.getId(block);
                     localBlocks[index] = BlockIdCodec.low(blockId);
                     extraBlocks[index] = BlockIdCodec.high(blockId);
@@ -269,6 +276,9 @@ public class SchematicAlpha extends SchematicFormat {
         if (!extendedMetadata.hasNoTags()) {
             tagCompound.setTag(Names.NBT.EXTENDED_METADATA, extendedMetadata);
         }
+        NBTTagCompound metadataInfo = SchematicMetadata.forSave(schematic, "", "", System.currentTimeMillis());
+        SchematicMetadata.size(metadataInfo, schematic, blockCount);
+        SchematicMetadata.write(tagCompound, metadataInfo, false);
 
         return true;
     }

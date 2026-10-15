@@ -15,7 +15,7 @@ import com.github.lunatrius.schematica.world.storage.SchematicCopies;
 
 public final class SchematicSourceData {
 
-    public final SchematicFileSnapshot snapshot;
+    public SchematicFileSnapshot snapshot;
     public final int width;
     public final int height;
     public final int length;
@@ -76,7 +76,7 @@ public final class SchematicSourceData {
     public long modifiedTime() { return modifiedTime; }
     public String saveExtension() { return modified() ? ".schemplus" : snapshot.extension(); }
 
-    /** The in-memory working copy edited by the rebuild tool; the original file snapshot is never changed. */
+    /** The working copy edited by REBUILD; the snapshot's block contents stay unchanged. */
     public Schematic editable() throws IOException {
         if (edited == null) {
             ISchematic data = SchematicFormat.readFromSnapshot(snapshot);
@@ -91,8 +91,20 @@ public final class SchematicSourceData {
     }
 
     public void save(File file, boolean replace) throws IOException {
+        save(file, replace, "");
+    }
+
+    public void save(File file, boolean replace, String author) throws IOException {
         if (!modified()) { snapshot.write(file, replace); return; }
-        SchematicFileSnapshot.capture(edited).write(file, replace);
+        SchematicFileSnapshot.capture(edited,
+            com.github.lunatrius.schematica.world.schematic.SchematicMetadata.stem(file.getName()), author).write(file, replace);
         savedRevision = revision;
+    }
+
+    public synchronized void updateMetadata(net.minecraft.nbt.NBTTagCompound metadata) throws IOException {
+        snapshot = snapshot.withMetadata(metadata);
+        if (edited != null) edited.setSchematicMetadata(metadata);
+        ISchematic first = decoded == null ? null : decoded.get();
+        if (first != null) first.setSchematicMetadata(metadata);
     }
 }

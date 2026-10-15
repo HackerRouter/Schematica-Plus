@@ -97,7 +97,7 @@ public class SchematicFilesTest {
         } finally {
             LitematicaNBTReader.clearLongArrayStore();
         }
-        assertNull(SchematicFiles.info(temporary.newFile("other.schematic")));
+        assertNull(SchematicFiles.info(temporary.newFile("other.schem")));
         assertThrows(java.io.IOException.class, () -> SchematicFiles.editLitematicMetadata(temporary.newFile("x.nbt"), metadata -> {}));
     }
 

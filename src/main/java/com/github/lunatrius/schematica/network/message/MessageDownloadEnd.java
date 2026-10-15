@@ -42,7 +42,9 @@ public class MessageDownloadEnd implements IMessage, IMessageHandler<MessageDown
         File saved = null;
         try {
             com.github.lunatrius.schematica.api.ISchematic downloaded = DownloadHandler.INSTANCE.completedSchematic();
-            if (downloaded != null) saved = SchematicFormat.saveToFile(directory, message.name, downloaded, null, true, true);
+            if (downloaded != null) saved = SchematicFormat.saveToFile(
+                com.github.lunatrius.schematica.util.FileUtils.resolveSchematicFile(directory, message.name), downloaded, null, true, true,
+                Minecraft.getMinecraft().thePlayer != null ? Minecraft.getMinecraft().thePlayer.getCommandSenderName() : "");
         } catch (java.io.IOException | RuntimeException e) {
             com.github.lunatrius.schematica.reference.Reference.logger.warn("Could not restore the downloaded regions", e);
         }

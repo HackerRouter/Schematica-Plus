@@ -1,7 +1,7 @@
 # Schematica Plus: development handoff
 
-Current guide, reviewed 2026-10-13. Runtime baseline: Minecraft 1.7.10 / Forge
-10.13.4.1614, release target `1.0.0-beta.3`.
+Current guide, reviewed 2026-10-15. Runtime baseline: Minecraft 1.7.10 / Forge
+10.13.4.1614, release `1.0.0-beta.3`, with subsequent fixes on `master`.
 Support targets: GTNH **2.8.4** and **2.9.0-RC-2**, using each pack's native
 mod versions. Named combinations of individually installed mods are also checked
 in TESTING's selective-mod migration section. See [README](README.md) for usage, [TESTING](TESTING.md) for regression
@@ -95,6 +95,11 @@ mod. Original Schematica conflicts with Plus and must be removed from the instan
   arbitrary mod-private IDs and whole-world migration are outside its scope.
   Individually selected Forge mods use the same mapping. Missing content is reported;
   keep the original file because a converted export retains omissions/placeholders.
+- All four writable formats retain descriptive metadata through conversion and
+  REBUILD saves. The manager edits names/authors, multiline descriptions and
+  embedded previews; loaded sources receive metadata edits without losing block
+  edits. Alpha/Plus/structure files use optional `ExtendedMetadata.SchematicaPlus`,
+  which does not change their block encoding. External tools may discard it.
 - NEI integration sends a material-demand book to native bookmarks/recipe planning.
   GTNH 2.8.4 has crafting chains; 2.9.0-RC-2 also has a graphical crafting tree.
   The demand book is a plan, not existing inventory or a craftable recipe.
@@ -113,7 +118,7 @@ LC_ALL=C.UTF-8 ./gradlew test
 
 Build includes compilation, reobfuscation, Checkstyle and JUnit. Artifacts are in
 `build/libs/`; XML results in `build/test-results/test/`. The latest completed suite
-has **675 tests, no failures or skips**. These tests do not launch Minecraft.
+has **684 tests, no failures or skips**. These tests do not launch Minecraft.
 The generated MCP source is under `build/rfg/minecraft-src/java/`.
 First builds require network access; `--offline` only works with a populated cache.
 CI also starts and cleanly stops a dedicated development server. Branch pushes
@@ -347,6 +352,8 @@ steps and limitations are in TESTING; the full implementation history is in Git.
 | VISUAL_CHECKED_HEADLESS | 2026-10-13 | Initialize restored Multipart tiles after installation and before client synchronization in `ForgeMultipart`, `WorldEditJob` and `SilentBlockPlacement`. Both native dedicated packs passed powered EBF, AE2 crafting, ME-P2P/converted hosts, ordinary/rotated/mirrored/silent pastes, move and cross-pack disk/pattern cases. Saved-world and final scene checks passed; build and 672 tests pass. See TESTING dedicated powered-structure section. |
 | VISUAL_CHECKED_HEADLESS | 2026-10-13 | Preserve all six modern double-plant species and upper/lower halves in `BlockStateTranslator`. Both cold native packs passed unchanged public Litemapy imports and FAWE v2/v3 pastes; exact large-fern blocks/materials and corrected screens checked. Build and 675 tests pass. TESTING records source commits, hashes, native scope and remaining fresh-export limits. |
 | VISUAL_CHECKED_HEADLESS | 2026-10-13 | Original NEI 1.0.5.120 with CodeChickenCore 1.0.7.47/CodeChickenLib 1.1.3.138 passed native recipes, search, material fallback, mouse edits and M/E on plain Forge/Java 8/LWJGL2; cold restart and actual screens checked. GTNH-only demand/tree entry stays hidden. No product-code change; build and 675 tests pass. See TESTING installed-original-NEI section. |
+
+| VISUAL_CHECKED_HEADLESS | 2026-10-15 | Add descriptive metadata across the four writable formats in `world/schematic`, source/copy/download paths and browser/manager UI: author/name, multiline description, dates and embedded previews. Build and 684 tests pass. Both native packs passed 16 format conversions each, metadata editing, source REBUILD API saves, four-format dedicated downloads, F2/PNG previews and scrolled 3D-panel checks. Detailed scenarios and limitations are recorded in TESTING. |
 
 ## 7. Reported issues and current boundaries
 

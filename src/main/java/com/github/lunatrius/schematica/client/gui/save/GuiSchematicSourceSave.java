@@ -70,7 +70,7 @@ public final class GuiSchematicSourceSave extends GuiSchematicBrowser {
         }
         try {
             File checked = SchematicSaveTarget.sourceCopy(browser.root(), file.getParentFile(), file.getName(), source.data().saveExtension());
-            source.data().save(checked, replace);
+            source.data().save(checked, replace, mc.thePlayer != null ? mc.thePlayer.getCommandSenderName() : mc.getSession().getUsername());
             refreshFiles();
             setStatus(UiTranslations.format("litematica.message.schematic_saved_as", file.getName()));
         } catch (com.github.lunatrius.schematica.util.MessageException e) {
