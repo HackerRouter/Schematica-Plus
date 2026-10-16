@@ -144,10 +144,16 @@ public class CommandEditQueueTest {
     }
 
     private FakeClient start(int size) {
+        return start(size, WorldEditJob.Kind.FILL);
+    }
+
+    private FakeClient start(int size, WorldEditJob.Kind kind) {
         queue.cancel();
         FakeClient client = new FakeClient();
         queue = new CommandEditQueue(client);
-        WorldEditJob job = new WorldEditJob(owner, 0, WorldEditJob.Kind.FILL, 0, 64, 0, size, 1, 1, null, 0, null, 0);
+        WorldEditJob job = new WorldEditJob(owner, 0, kind, 0, 64, 0, size, 1, 1, null, 0, null, 0);
+        if (kind == WorldEditJob.Kind.PASTE) job.capture(new com.github.lunatrius.schematica.world.storage.Schematic(null, size, 1, 1), false, false);
+        client.job = job;
         job.completion = client.completed::add;
         queue.submit(job, null);
         return client;
@@ -163,6 +169,51 @@ public class CommandEditQueueTest {
             ((net.minecraft.util.ChatComponentTranslation) client.messages.get(0)).getKey());
     }
 
+    @Test public void pasteCommandErrorsContinueAndReportOnlyAcknowledgedWrites() {
+        for (String key : new String[] {"commands.setblock.noChange", "commands.setblock.outOfWorld", "commands.generic.exception"}) {
+            FakeClient client = start(3, WorldEditJob.Kind.PASTE);
+            tick();
+            chat(new net.minecraft.util.ChatComponentTranslation(key));
+            tick();
+            assertEquals(3, client.commands.size());
+            assertTrue(client.completed.isEmpty());
+            chat(new net.minecraft.util.ChatComponentTranslation("commands.setblock.success"));
+            chat(new net.minecraft.util.ChatComponentTranslation("commands.setblock.success"));
+            tick();
+            assertEquals(java.util.Collections.singletonList(false), client.completed);
+            assertEquals(2, client.job.blockCount);
+            assertEquals(1, client.job.failedBlockCount());
+            assertTrue(client.job.completedTraversal);
+            assertEquals("schematica.message.edit.paste_errors",
+                ((net.minecraft.util.ChatComponentTranslation) client.messages.get(0)).getKey());
+        }
+    }
+
+    @Test public void pasteCommandCreationAndSendErrorsDoNotLoseLaterReplies() {
+        FakeClient client = start(3, WorldEditJob.Kind.PASTE);
+        client.failSend = true;
+        client.failAt = 1;
+        for (int i = 0; i < 8; i++) tick();
+        assertEquals(1, client.commands.size());
+        assertTrue(client.completed.isEmpty());
+        chat(new net.minecraft.util.ChatComponentTranslation("commands.setblock.success"));
+        tick();
+        assertEquals(java.util.Collections.singletonList(false), client.completed);
+        assertEquals(1, client.job.blockCount);
+        assertEquals(2, client.job.failedBlockCount());
+        assertTrue(client.job.completedTraversal);
+    }
+
+    @Test public void pastePermissionLossStillCancelsWithoutCompletingTheTraversal() {
+        FakeClient client = start(3, WorldEditJob.Kind.PASTE);
+        tick();
+        chat(new net.minecraft.util.ChatComponentTranslation("commands.generic.permission"));
+        tick();
+        assertEquals(1, client.commands.size());
+        assertEquals(java.util.Collections.singletonList(false), client.completed);
+        assertFalse(client.job.completedTraversal);
+    }
+
     private void tick() { queue.onTick(new TickEvent.ClientTickEvent(TickEvent.Phase.END)); }
 
     private void chat(net.minecraft.util.IChatComponent message) {
@@ -170,13 +221,21 @@ public class CommandEditQueueTest {
     }
 
     private static final class FakeClient implements CommandEditQueue.Client {
-        boolean valid = true, skip;
+        boolean valid = true, skip, failSend;
+        int failAt = -1;
+        WorldEditJob job;
         final java.util.List<String> commands = new java.util.ArrayList<>();
         final java.util.List<Boolean> completed = new java.util.ArrayList<>();
         final java.util.List<net.minecraft.util.IChatComponent> messages = new java.util.ArrayList<>();
         public boolean valid(WorldEditJob job, net.minecraft.world.World world) { return valid; }
-        public String command(WorldEditJob job, int index, net.minecraft.world.World world) { return skip ? null : "/setblock " + index + " 64 0 minecraft:stone"; }
-        public void send(String command) { commands.add(command); }
+        public String command(WorldEditJob job, int index, net.minecraft.world.World world) {
+            if (index == failAt) throw new IllegalStateException("Command creation failed");
+            return skip ? null : "/setblock " + index + " 64 0 minecraft:stone";
+        }
+        public void send(String command) {
+            if (failSend) { failSend = false; throw new IllegalStateException("Send failed"); }
+            commands.add(command);
+        }
         public void message(net.minecraft.util.IChatComponent message) { messages.add(message); }
     }
 }

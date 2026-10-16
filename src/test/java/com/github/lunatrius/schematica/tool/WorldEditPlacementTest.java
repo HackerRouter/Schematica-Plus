@@ -35,9 +35,9 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
 public class WorldEditPlacementTest {
@@ -51,6 +51,15 @@ public class WorldEditPlacementTest {
     private static final BlockDynamicLiquid FLOWING_LAVA = new BlockDynamicLiquid(Material.lava) {};
     private static final Block STILL_LAVA = new BlockStaticLiquid(Material.lava) {};
     private static final Block LEVER = new BlockLever() {};
+    private static final Block SELF_REMOVING = new Block(Material.rock) {
+        @Override public boolean hasTileEntity(int metadata) { return true; }
+        @Override public void onBlockAdded(World world, int x, int y, int z) {
+            world.setBlock(x, y, z, AIR, 0, 2);
+        }
+    };
+    private static final Block MISSING_TILE = new Block(Material.rock) {
+        @Override public boolean hasTileEntity(int metadata) { return true; }
+    };
 
     @BeforeClass public static void register() throws Exception {
         Method mapping = TileEntity.class.getDeclaredMethod("addMapping", Class.class, String.class);
@@ -64,6 +73,8 @@ public class WorldEditPlacementTest {
         add.invoke(Block.blockRegistry, 4076, "test:placement_flowing_lava", FLOWING_LAVA, new BitSet());
         add.invoke(Block.blockRegistry, 4077, "test:placement_still_lava", STILL_LAVA, new BitSet());
         add.invoke(Block.blockRegistry, 4078, "test:placement_lever", LEVER, new BitSet());
+        add.invoke(Block.blockRegistry, 4079, "test:placement_self_removing", SELF_REMOVING, new BitSet());
+        add.invoke(Block.blockRegistry, 4080, "test:placement_missing_tile", MISSING_TILE, new BitSet());
     }
 
     @Test public void chestFacingCallbackDoesNotDiscardSavedTileDataOrFinalUpdates() throws Exception {
@@ -112,7 +123,8 @@ public class WorldEditPlacementTest {
         FakeWorld world = world(65535);
         world.replaceOnAdded = true;
         WorldEditJob job = paste(3);
-        assertThrows(com.github.lunatrius.schematica.util.MessageException.class, () -> job.step(world));
+        job.step(world);
+        assertTrue(job.failure() instanceof com.github.lunatrius.schematica.util.MessageException);
         assertSame(WALL, world.cell(4).block);
         assertEquals(5, world.cell(4).metadata);
         assertEquals(0, world.restorations);
@@ -124,7 +136,8 @@ public class WorldEditPlacementTest {
         FakeWorld world = world(65535);
         world.replaceOnRestore = true;
         WorldEditJob job = paste(3);
-        assertThrows(com.github.lunatrius.schematica.util.MessageException.class, () -> job.step(world));
+        job.step(world);
+        assertTrue(job.failure() instanceof com.github.lunatrius.schematica.util.MessageException);
         assertEquals(1, world.restorations);
         assertSame(WALL, world.cell(4).block);
         assertEquals(0, world.tileWrites);
@@ -135,7 +148,8 @@ public class WorldEditPlacementTest {
         FakeWorld world = world(65535);
         world.rejectRestore = true;
         WorldEditJob job = paste(3);
-        assertThrows(com.github.lunatrius.schematica.util.MessageException.class, () -> job.step(world));
+        job.step(world);
+        assertTrue(job.failure() instanceof com.github.lunatrius.schematica.util.MessageException);
         assertEquals(1, world.restorations);
         assertEquals(5, world.cell(4).metadata);
         assertEquals(0, world.tileWrites);
@@ -146,12 +160,84 @@ public class WorldEditPlacementTest {
         FakeWorld world = world(65535);
         world.rejectPlacement = true;
         WorldEditJob job = paste(3);
-        com.github.lunatrius.schematica.util.MessageException error = assertThrows(
-            com.github.lunatrius.schematica.util.MessageException.class, () -> finish(job, world));
+        finish(job, world);
+        com.github.lunatrius.schematica.util.MessageException error =
+            (com.github.lunatrius.schematica.util.MessageException) job.failure();
         assertEquals("schematica.message.edit.block_failed", error.key());
         assertSame(AIR, world.cell(4).block);
         assertEquals(0, job.blockCount);
         assertEquals(0, world.tileWrites);
+    }
+
+    @Test public void selfRemovingBlockDoesNotAbortLaterPasteOrReceiveTileData() throws Exception {
+        FakeWorld world = world(65535);
+        WorldEditJob job = pasteBesideChest("test:placement_self_removing", 0);
+        finish(job, world);
+        assertSame(AIR, world.cell(4).block);
+        assertSame(CHEST, world.cell(5).block);
+        assertEquals("Saved chest 2", ((TileEntityChest) world.cell(5).tile).getInventoryName());
+        assertEquals(1, job.blockCount);
+        assertEquals(1, world.tileWrites);
+        assertEquals(1, world.neighborUpdates);
+        assertEquals(1, world.blockUpdates);
+    }
+
+    @Test public void onlySelfRemovingBlocksDoNotAnnounceSuccessfulPlacement() throws Exception {
+        FakeWorld world = world(65535);
+        WorldEditJob job = pasteBesideChest("test:placement_self_removing", 0);
+        job.setRegions(Collections.singletonList(new SchematicRegion("first", 0, 0, 0, 0, 0, 0)));
+        finish(job, world);
+        assertEquals(0, job.blockCount);
+        assertEquals(0, world.tileWrites);
+        assertEquals(0, world.neighborUpdates);
+        assertEquals("schematica.message.edit.no_changes",
+            ((net.minecraft.util.ChatComponentTranslation) job.finishedMessage(true)).getKey());
+    }
+
+    @Test public void rejectedWriteIntoAirIsNotMistakenForSelfRemoval() throws Exception {
+        FakeWorld world = world(65535);
+        world.rejectPlacement = true;
+        WorldEditJob job = pasteBesideChest("test:placement_self_removing", 0);
+        finish(job, world);
+        com.github.lunatrius.schematica.util.MessageException error =
+            (com.github.lunatrius.schematica.util.MessageException) job.failure();
+        assertEquals("schematica.message.edit.block_failed", error.key());
+        assertArrayEquals(new Object[] {4, 70, 6, "test:placement_self_removing:0"}, error.arguments());
+        assertEquals(0, job.blockCount);
+        assertSame(AIR, world.cell(5).block);
+    }
+
+    @Test public void missingSavedTileIdDoesNotPreventLaterBlocksAndReportsDiagnostics() throws Exception {
+        FakeWorld world = world(65535);
+        WorldEditJob original = paste(3, 2, false);
+        NBTTagCompound tag = original.write();
+        tag.getTagList("tiles", 10).getCompoundTagAt(0).getCompoundTag("data").setString("id", "test:missing_tile");
+        WorldEditJob job = WorldEditJob.read(tag, original.player, 0);
+        finish(job, world);
+        com.github.lunatrius.schematica.util.MessageException error =
+            (com.github.lunatrius.schematica.util.MessageException) job.failure();
+        assertEquals("schematica.message.edit.tile_failed", error.key());
+        assertArrayEquals(new Object[] {4, 70, 6, "test:placement_chest:3", "test:missing_tile"}, error.arguments());
+        assertEquals(1, job.blockCount);
+        assertEquals(1, job.failedBlockCount());
+        assertEquals(1, world.tileWrites);
+    }
+
+    @Test public void missingDefaultTileDoesNotPreventLaterBlocksAndReportsDiagnostics() throws Exception {
+        FakeWorld world = world(65535);
+        WorldEditJob original = pasteBesideChest("test:placement_missing_tile", 0);
+        NBTTagCompound tag = original.write();
+        tag.removeTag("tiles");
+        WorldEditJob job = WorldEditJob.read(tag, original.player, 0);
+        finish(job, world);
+        com.github.lunatrius.schematica.util.MessageException error =
+            (com.github.lunatrius.schematica.util.MessageException) job.failure();
+        assertEquals("schematica.message.edit.tile_factory_failed", error.key());
+        assertArrayEquals(new Object[] {4, 70, 6, "test:placement_missing_tile:0"}, error.arguments());
+        assertEquals(1, job.blockCount);
+        assertEquals(1, job.failedBlockCount());
+        assertEquals(1, world.tileWrites);
+        assertSame(CHEST, world.cell(5).block);
     }
 
     @Test public void identicalOrdinaryBlocksDoNotWriteOrReportChanges() throws Exception {
@@ -176,23 +262,83 @@ public class WorldEditPlacementTest {
         assertEquals("Saved chest", ((TileEntityChest) world.cell(4).tile).getInventoryName());
     }
 
-    @Test public void partialPasteStopsAtTheRejectedCellWithoutCountingIt() throws Exception {
+    @Test public void partialPasteContinuesAfterTheRejectedCellWithoutCountingIt() throws Exception {
         FakeWorld world = world(65535);
         WorldEditJob job = paste(3, 3, false);
         job.step(world);
         world.rejectPlacement = true;
-        assertThrows(com.github.lunatrius.schematica.util.MessageException.class, () -> finish(job, world));
+        job.step(world);
+        world.rejectPlacement = false;
+        finish(job, world);
+        assertEquals(2, job.blockCount);
+        assertEquals(1, job.failedBlockCount());
+        assertEquals(2, world.tileWrites);
+        assertEquals(2, world.neighborUpdates);
+        assertSame(AIR, world.cell(5).block);
+        assertSame(CHEST, world.cell(6).block);
+        assertEquals("schematica.message.edit.paste_errors",
+            ((net.minecraft.util.ChatComponentTranslation) job.finishedMessage(false)).getKey());
+    }
+
+    @Test public void placementCallbackExceptionDoesNotPreventLaterBlocksOrLeakSnapshotFlag() throws Exception {
+        FakeWorld world = world(65535);
+        world.throwAt = 4;
+        WorldEditJob job = paste(3, 2, false);
+        finish(job, world);
+        assertEquals(1, job.failedBlockCount());
         assertEquals(1, job.blockCount);
         assertEquals(1, world.tileWrites);
-        assertSame(AIR, world.cell(5).block);
-        assertSame(AIR, world.cell(6).block);
+        assertFalse(world.restoringBlockSnapshots);
+        assertEquals("Saved chest 2", ((TileEntityChest) world.cell(5).tile).getInventoryName());
+    }
+
+    @Test public void failedNeighborCallbackStillUpdatesTheOtherBlocks() throws Exception {
+        FakeWorld world = world(65535);
+        world.onNotify = () -> { if (world.neighborUpdates == 0) { world.neighborUpdates++; throw new IllegalStateException("Update failed"); } };
+        WorldEditJob job = paste(3, 2, false);
+        finish(job, world);
+        assertEquals(1, job.failedBlockCount());
+        assertEquals(1, job.blockCount);
+        assertEquals(2, world.neighborUpdates);
+        assertEquals(2, world.blockUpdates);
+    }
+
+    @Test public void failedEntitiesDoNotPreventRemainingEntitiesOrLoseBlockResults() throws Exception {
+        FakeWorld world = world(65535);
+        WorldEditJob original = paste(3);
+        NBTTagCompound tag = original.write();
+        NBTTagList entities = new NBTTagList();
+        for (int i = 0; i < 2; i++) {
+            NBTTagCompound entity = new NBTTagCompound();
+            entity.setString("id", "test:missing_entity_" + i);
+            entities.appendTag(entity);
+        }
+        tag.setTag("entities", entities);
+        WorldEditJob job = WorldEditJob.read(tag, original.player, 0);
+        finish(job, world);
+        assertEquals(2, job.failedEntityCount());
+        assertEquals(0, job.failedBlockCount());
+        assertEquals(1, job.blockCount);
+        assertTrue(job.completedTraversal);
+        assertEquals("schematica.message.edit.paste_errors",
+            ((net.minecraft.util.ChatComponentTranslation) job.finishedMessage(false)).getKey());
+    }
+
+    @Test public void nonPasteEditsStillPropagateWriteFailures() throws Exception {
+        FakeWorld world = world(65535);
+        world.rejectPlacement = true;
+        WorldEditJob job = new WorldEditJob(UUID.randomUUID(), 0, WorldEditJob.Kind.FILL,
+            4, 70, 6, 1, 1, 1, WALL, 0, null, 0);
+        org.junit.Assert.assertThrows(com.github.lunatrius.schematica.util.MessageException.class, () -> finish(job, world));
+        assertEquals(0, job.blockCount);
     }
 
     @Test public void silentPasteIntoAnEmptyChunkCannotClaimAWrittenBlock() throws Exception {
         FakeWorld world = world(15);
         world.chunk = new net.minecraft.world.chunk.EmptyChunk(world, 0, 0);
         WorldEditJob job = paste(3, 1, true);
-        assertThrows(com.github.lunatrius.schematica.util.MessageException.class, () -> finish(job, world));
+        finish(job, world);
+        assertTrue(job.failure() instanceof com.github.lunatrius.schematica.util.MessageException);
         assertEquals(0, job.blockCount);
         assertTrue(world.chunk.chunkTileEntityMap.isEmpty());
     }
@@ -286,12 +432,13 @@ public class WorldEditPlacementTest {
         job.step(world);
         job.step(world);
         world.rejectRestore = true;
-        IllegalStateException failure = assertThrows(IllegalStateException.class, () -> finish(job, world));
-        assertTrue(failure.getMessage().contains("4, 70, 6"));
+        finish(job, world);
+        assertTrue(job.failure().getCause().getMessage().contains("4, 70, 6"));
+        assertEquals(1, job.failedBlockCount());
         assertEquals(3, world.cell(4).metadata);
         assertEquals(2, world.tileWrites);
-        assertEquals(0, world.neighborUpdates);
-        assertEquals(2, job.blockCount);
+        assertEquals(1, world.neighborUpdates);
+        assertEquals(1, job.blockCount);
     }
 
     @Test public void flowingLiquidsCanSettleDuringPasteWithoutBlockingUpdatesOrEntities() throws Exception {
@@ -415,7 +562,9 @@ public class WorldEditPlacementTest {
             job = WorldEditJob.read(saved, job.player, 0);
             if (fail) {
                 WorldEditJob failedJob = job;
-                assertThrows(IllegalStateException.class, () -> failedJob.step(world));
+                failedJob.step(world);
+                assertTrue(failedJob.failure().getCause() instanceof IllegalStateException);
+                assertEquals(1, failedJob.failedBlockCount());
                 assertEquals(0, job.blockCount);
                 assertEquals(0, descriptions);
                 return;
@@ -536,7 +685,7 @@ public class WorldEditPlacementTest {
         Chunk chunk;
         Runnable onNotify;
         int mask, metadataAfterAdded, restorations, restoreFlags, restoreMetadata;
-        int tileWrites, neighborUpdates, blockUpdates;
+        int tileWrites, neighborUpdates, blockUpdates, throwAt;
         boolean adding, skipAdded, replaceOnAdded, replaceOnRestore, rejectRestore, rejectPlacement;
 
         private FakeWorld() { super(null, null, "", 0, null, null); }
@@ -560,6 +709,7 @@ public class WorldEditPlacementTest {
             cell.block = value;
             cell.metadata = meta & mask;
             cell.tile = value.createTileEntity(this, meta);
+            if (x == throwAt) throw new IllegalStateException("Placement callback failed");
             adding = true;
             if (!skipAdded) value.onBlockAdded(this, x, y, z);
             adding = false;

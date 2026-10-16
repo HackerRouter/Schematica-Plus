@@ -59,7 +59,14 @@ final class SilentBlockPlacement {
         com.github.lunatrius.schematica.nbt.ForgeMultipart.onPlaced(world, tile);
     }
 
+    interface FailureHandler { void failed(int x, int y, int z, Throwable error); }
+
     void flush(WorldServer world) {
+        flush(world, (x, y, z, error) -> { throw error instanceof RuntimeException
+            ? (RuntimeException) error : new IllegalStateException("Could not update pasted block lighting", error); });
+    }
+
+    void flush(WorldServer world, FailureHandler failures) {
         for (Map.Entry<Chunk, BitSet> entry : changed.entrySet()) {
             Chunk chunk = entry.getKey();
             BitSet cells = entry.getValue();
@@ -70,14 +77,19 @@ final class SilentBlockPlacement {
             for (int column = 0; column < tops.length; column++) {
                 if (tops[column] == 0) continue;
                 try { RELIGHT.invoke(chunk, column & 15, tops[column], column >> 4); }
-                catch (ReflectiveOperationException e) { throw new IllegalStateException("Could not update pasted block lighting", e); }
+                catch (Exception | LinkageError error) {
+                    failures.failed((chunk.xPosition << 4) + (column & 15), tops[column] - 1,
+                        (chunk.zPosition << 4) + (column >> 4), error);
+                }
             }
             for (int cell = cells.nextSetBit(0); cell >= 0; cell = cells.nextSetBit(cell + 1)) {
                 int x = (chunk.xPosition << 4) + (cell & 15);
                 int y = cell >> 8;
                 int z = (chunk.zPosition << 4) + ((cell >> 4) & 15);
-                world.func_147451_t(x, y, z);
-                world.markBlockForUpdate(x, y, z);
+                try {
+                    world.func_147451_t(x, y, z);
+                    world.markBlockForUpdate(x, y, z);
+                } catch (RuntimeException | LinkageError error) { failures.failed(x, y, z, error); }
             }
         }
         changed.clear();

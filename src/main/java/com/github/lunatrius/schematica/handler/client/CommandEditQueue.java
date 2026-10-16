@@ -28,6 +28,7 @@ public final class CommandEditQueue {
     private World world;
     private TaskRegistry.Task task;
     private int cursor, sent, delay, pending, waiting;
+    private final java.util.ArrayDeque<Integer> pendingCells = new java.util.ArrayDeque<>();
 
     public CommandEditQueue() {
         this(new Client() {
@@ -59,6 +60,7 @@ public final class CommandEditQueue {
         task = null;
         job = null;
         world = null;
+        pendingCells.clear();
         finished.completion.accept(success);
         return true;
     }
@@ -73,6 +75,7 @@ public final class CommandEditQueue {
         task = TaskRegistry.INSTANCE.start(next.player, next.dimension, next.taskKind(), TaskRegistry.Backend.COMMANDS,
             next.x + ", " + next.y + ", " + next.z);
         job = next; world = targetWorld; cursor = 0; sent = 0; delay = 0; pending = 0; waiting = 0;
+        pendingCells.clear();
     }
 
     @SubscribeEvent(priority = EventPriority.HIGHEST, receiveCanceled = true)
@@ -81,7 +84,14 @@ public final class CommandEditQueue {
         String key = reply(event.message);
         if ("commands.setblock.success".equals(key)) {
             pending--;
+            pendingCells.removeFirst();
             job.blockCount++;
+            waiting = 0;
+        } else if (key != null && job.kind == WorldEditJob.Kind.PASTE && !"commands.generic.permission".equals(key)) {
+            pending--;
+            int index = pendingCells.removeFirst();
+            job.recordBlockFailure(index, new MessageException("schematica.message.edit.command_failed",
+                job.x + index % job.width, job.y + index / job.width / job.length, job.z + index / job.width % job.length, event.message));
             waiting = 0;
         } else if (key != null) {
             client.message(job.finishedMessage(false));
@@ -122,19 +132,33 @@ public final class CommandEditQueue {
             // commandLimitPerTick commands every commandTaskInterval ticks
             int limit = sent == 0 ? 1 : com.github.lunatrius.schematica.handler.ConfigurationHandler.commandLimitPerTick, issued = 0;
             for (int scanned = 0; scanned < 65536 && cursor < job.volume && issued < limit; scanned++) {
-                String command = client.command(job, cursor++, world);
-                if (command != null) {
-                    pending++; sent++; issued++;
-                    client.send(command);
+                int index = cursor++;
+                boolean queued = false;
+                try {
+                    String command = client.command(job, index, world);
+                    if (command != null) {
+                        pending++; pendingCells.addLast(index); queued = true;
+                        issued++;
+                        client.send(command);
+                        sent++;
+                    }
+                } catch (RuntimeException | LinkageError error) {
+                    if (job.kind != WorldEditJob.Kind.PASTE) throw error;
+                    if (queued) { pending--; pendingCells.removeLast(); }
+                    else issued++;
+                    job.recordBlockFailure(index, error);
                 }
             }
             delay = com.github.lunatrius.schematica.handler.ConfigurationHandler.commandTaskInterval - 1;
-            task.update(TaskRegistry.Stage.COMMANDS, cursor, job.volume, sent, 0);
+            task.update(TaskRegistry.Stage.COMMANDS, cursor, job.volume, job.blockCount, 0);
             if (cursor == job.volume && pending == 0) {
-                client.message(job.kind == WorldEditJob.Kind.PASTE && sent != 0
-                    ? new ChatComponentTranslation("litematica.message.schematic_pasted_using_setblock", sent)
-                    : job.finishedMessage(true));
-                end(true);
+                job.completedTraversal = true;
+                boolean success = job.failure() == null;
+                client.message(success && job.kind == WorldEditJob.Kind.PASTE && job.blockCount != 0
+                    ? new ChatComponentTranslation("litematica.message.schematic_pasted_using_setblock", job.blockCount)
+                    : job.finishedMessage(success));
+                if (!success) Reference.logger.error("Command paste finished with errors", job.failure());
+                end(success);
             }
         } catch (RuntimeException e) {
             Reference.logger.error("Command edit stopped after partial completion", e);

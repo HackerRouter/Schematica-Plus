@@ -13,7 +13,7 @@ import io.netty.buffer.ByteBuf;
 
 /** Server to client: an upload was accepted, refused, progressed or finished. */
 public final class MessageEditStatus implements IMessage, IMessageHandler<MessageEditStatus, IMessage> {
-    public enum State { ACCEPTED, REJECTED, PROGRESS, FINISHED, FAILED }
+    public enum State { ACCEPTED, REJECTED, PROGRESS, FINISHED, FAILED, PARTIAL }
 
     public long id;
     public State state = State.REJECTED;

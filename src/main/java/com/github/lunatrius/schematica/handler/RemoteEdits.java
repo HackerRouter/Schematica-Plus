@@ -163,7 +163,8 @@ public final class RemoteEdits {
         long[] lastProgress = {0};
         job.completion = success -> {
             operations.finish(operation);
-            send(player, new MessageEditStatus(id, success ? MessageEditStatus.State.FINISHED : MessageEditStatus.State.FAILED));
+            send(player, new MessageEditStatus(id, success ? MessageEditStatus.State.FINISHED
+                : job.completedTraversal ? MessageEditStatus.State.PARTIAL : MessageEditStatus.State.FAILED));
         };
         job.progress = progress -> {
             long now = System.nanoTime();

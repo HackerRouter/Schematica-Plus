@@ -48,6 +48,10 @@ public final class WorldEditJob extends WorldEditTask {
     private final Map<Integer, NBTTagCompound> tiles = new HashMap<>();
     private final List<NBTTagCompound> entities = new ArrayList<>();
     private final BitSet placed = new BitSet();
+    private final BitSet failedBlocks = new BitSet();
+    private int failedEntities;
+    private RuntimeException firstFailure;
+    public boolean completedTraversal;
     private BitSet selected;
     private final SilentBlockPlacement silentPlacement;
     private int cursor, phase, entityCursor;
@@ -382,11 +386,40 @@ public final class WorldEditJob extends WorldEditTask {
     }
 
     public void flushBlockChanges(WorldServer world) {
-        if (silentPlacement != null) silentPlacement.flush(world);
+        if (silentPlacement != null) silentPlacement.flush(world, (wx, wy, wz, error) ->
+            recordBlockFailure(wx - x + width * (wz - z + length * (wy - y)), error));
+    }
+
+    public int failedBlockCount() { return failedBlocks.cardinality(); }
+    public int failedEntityCount() { return failedEntities; }
+    @Override public RuntimeException failure() { return firstFailure; }
+
+    public void recordBlockFailure(int index, Throwable error) {
+        failedBlocks.set(index);
+        if (placed.get(index)) { placed.clear(index); blockCount--; }
+        if (!(error instanceof MessageException)) {
+            MessageException detail = new MessageException("schematica.message.edit.cell_failed",
+                x + index % width, y + index / width / length, z + index / width % length, error.getClass().getSimpleName());
+            detail.initCause(error);
+            error = detail;
+        }
+        rememberFailure(error);
+    }
+
+    private void rememberFailure(Throwable error) {
+        if (firstFailure == null) firstFailure = error instanceof RuntimeException
+            ? (RuntimeException) error : new IllegalStateException("Paste callback failed", error);
     }
 
     @Override
     public net.minecraft.util.IChatComponent finishedMessage(boolean success) {
+        if (kind == Kind.PASTE && firstFailure != null) {
+            net.minecraft.util.IChatComponent detail = firstFailure instanceof MessageException
+                ? new net.minecraft.util.ChatComponentTranslation(((MessageException) firstFailure).key(), ((MessageException) firstFailure).arguments())
+                : new net.minecraft.util.ChatComponentText(firstFailure.getClass().getSimpleName());
+            return new net.minecraft.util.ChatComponentTranslation("schematica.message.edit.paste_errors",
+                blockCount, entityCount, failedBlockCount(), failedEntities, detail);
+        }
         if (success && blockCount == 0 && entityCount == 0) {
             return new net.minecraft.util.ChatComponentTranslation("schematica.message.edit.no_changes");
         }
@@ -423,6 +456,10 @@ public final class WorldEditJob extends WorldEditTask {
         return world.getBlock(wx, wy, wz) == block && (stored == meta || stored == (meta & 15));
     }
 
+    private static String blockState(Block block, int metadata) {
+        return GameData.getBlockRegistry().getNameForObject(block) + ":" + metadata;
+    }
+
     /** Process one cell/entity, returning true only when all phases are finished. */
     public boolean step(WorldServer world) {
         if (cancelled && phase < 2) { phase = 2; cursor = 0; }
@@ -438,71 +475,98 @@ public final class WorldEditJob extends WorldEditTask {
                 return false;
             }
             int index = cursor++;
-            if (selected != null && !selected.get(index)) return false;
-            int wx = x + index % width, wz = z + index / width % length, wy = y + index / width / length;
-            Block block = kind == Kind.PASTE ? GameData.getBlockRegistry().getObjectById(blocks[index] & 0xffff) : replacement;
-            int meta = kind == Kind.PASTE ? metadata[index] & 0xffff : replacementMeta;
-            if (block == null) return false;
-            if (phase == 2) {
-                if (!placed.get(index) || pasteWithoutUpdates) return false;
-                // Later chest placement can turn the other half; preserve normal changes to other blocks.
-                if (!metadataPassComplete) {
-                    if (block instanceof BlockChest && world.getBlock(wx, wy, wz) == block
-                        && !restoreMetadata(world, wx, wy, wz, block, meta) && world.getBlock(wx, wy, wz) == block) {
-                        throw new IllegalStateException("Could not restore pasted chest metadata at " + wx + ", " + wy + ", " + wz);
-                    }
-                    return false;
-                }
-                world.markBlockForUpdate(wx, wy, wz);
-                world.notifyBlocksOfNeighborChange(wx, wy, wz, block);
-                return false;
-            }
-            // Structural blocks first, then decorations. Neighbour notifications wait until phase 2.
-            boolean structural = block.getMaterial().isSolid();
-            if ((phase == 0) != structural) return false;
-            if (kind == Kind.REPLACE && (world.getBlock(wx, wy, wz) != target
-                || world.getBlockMetadata(wx, wy, wz) != targetMeta)) return false;
-            if (kind == Kind.DELETE_PLACEMENT && !deletes(index, world, wx, wy, wz)) return false;
-            if (!pastes(block, world.isAirBlock(wx, wy, wz))) return false;
-            if (!block.hasTileEntity(meta) && world.getBlock(wx, wy, wz) == block
-                && world.getBlockMetadata(wx, wy, wz) == meta) return false;
-            if (silentPlacement != null) {
-                silentPlacement.setBlock(world, wx, wy, wz, block, meta);
-            } else {
-                if (kind == Kind.PASTE) world.removeTileEntity(wx, wy, wz);
-                boolean previous = world.restoringBlockSnapshots;
-                try {
-                    world.restoringBlockSnapshots = true; // Suppress item drops from replaced inventories.
-                    world.setBlock(wx, wy, wz, block, meta, 2);
-                } finally {
-                    world.restoringBlockSnapshots = previous;
-                }
-            }
-            if (restoreMetadata(world, wx, wy, wz, block, meta)) {
-                if (kind == Kind.PASTE && block.hasTileEntity(meta)) {
-                    NBTTagCompound tag = tiles.get(index);
-                    TileEntity tile;
-                    if (tag != null) {
-                        tag = com.github.lunatrius.schematica.compat.CoordinateLinks.paste((NBTTagCompound) tag.copy(), wx, wy, wz, world.provider.dimensionId);
-                        tag.setInteger("x", wx); tag.setInteger("y", wy); tag.setInteger("z", wz);
-                        tile = "savedMultipart".equals(tag.getString("id"))
-                            ? ForgeMultipart.createFromNBT(tag, false) : TileEntity.createAndLoadEntity(tag);
-                    } else tile = block.createTileEntity(world, meta);
-                    if (tile == null) throw new MessageException("schematica.message.edit.tile_failed", wx, wy, wz);
-                    tile.xCoord = wx; tile.yCoord = wy; tile.zCoord = wz;
-                    if (silentPlacement != null) silentPlacement.setTile(world, tile);
-                    else {
-                        world.setTileEntity(wx, wy, wz, tile);
-                        tile.markDirty();
-                        ForgeMultipart.onPlaced(world, tile);
-                    }
-                }
-                placed.set(index);
-                blockCount++;
-            } else throw new MessageException("schematica.message.edit.block_failed", wx, wy, wz);
+            if (kind != Kind.PASTE) return stepCell(world, index);
+            try { return stepCell(world, index); }
+            catch (RuntimeException | LinkageError error) { recordBlockFailure(index, error); return false; }
+        }
+        if (cancelled) return true;
+        if (entityCursor == entities.size()) { completedTraversal = true; return true; }
+        if (kind != Kind.PASTE) return stepEntity(world);
+        try { return stepEntity(world); }
+        catch (RuntimeException | LinkageError error) {
+            failedEntities++;
+            rememberFailure(error);
             return false;
         }
-        if (cancelled || entityCursor == entities.size()) return true;
+    }
+
+    private boolean stepCell(WorldServer world, int index) {
+        if (failedBlocks.get(index) || (selected != null && !selected.get(index))) return false;
+        int wx = x + index % width, wz = z + index / width % length, wy = y + index / width / length;
+        Block block = kind == Kind.PASTE ? GameData.getBlockRegistry().getObjectById(blocks[index] & 0xffff) : replacement;
+        int meta = kind == Kind.PASTE ? metadata[index] & 0xffff : replacementMeta;
+        if (block == null) return false;
+        if (phase == 2) {
+            if (!placed.get(index) || failedBlocks.get(index) || pasteWithoutUpdates) return false;
+            // Later chest placement can turn the other half; preserve normal changes to other blocks.
+            if (!metadataPassComplete) {
+                if (block instanceof BlockChest && world.getBlock(wx, wy, wz) == block
+                    && !restoreMetadata(world, wx, wy, wz, block, meta) && world.getBlock(wx, wy, wz) == block) {
+                    throw new IllegalStateException("Could not restore pasted chest metadata at " + wx + ", " + wy + ", " + wz);
+                }
+                return false;
+            }
+            world.markBlockForUpdate(wx, wy, wz);
+            world.notifyBlocksOfNeighborChange(wx, wy, wz, block);
+            return false;
+        }
+        // Structural blocks first, then decorations. Neighbour notifications wait until phase 2.
+        boolean structural = block.getMaterial().isSolid();
+        if ((phase == 0) != structural) return false;
+        if (kind == Kind.REPLACE && (world.getBlock(wx, wy, wz) != target
+            || world.getBlockMetadata(wx, wy, wz) != targetMeta)) return false;
+        if (kind == Kind.DELETE_PLACEMENT && !deletes(index, world, wx, wy, wz)) return false;
+        if (!pastes(block, world.isAirBlock(wx, wy, wz))) return false;
+        if (!block.hasTileEntity(meta) && world.getBlock(wx, wy, wz) == block
+            && world.getBlockMetadata(wx, wy, wz) == meta) return false;
+        boolean written = false;
+        if (silentPlacement != null) {
+            silentPlacement.setBlock(world, wx, wy, wz, block, meta);
+        } else {
+            if (kind == Kind.PASTE) world.removeTileEntity(wx, wy, wz);
+            boolean previous = world.restoringBlockSnapshots;
+            try {
+                world.restoringBlockSnapshots = true; // Suppress item drops from replaced inventories.
+                written = world.setBlock(wx, wy, wz, block, meta, 2);
+            } finally {
+                world.restoringBlockSnapshots = previous;
+            }
+        }
+        if (restoreMetadata(world, wx, wy, wz, block, meta)) {
+            if (kind == Kind.PASTE && block.hasTileEntity(meta)) {
+                NBTTagCompound tag = tiles.get(index);
+                TileEntity tile;
+                if (tag != null) {
+                    tag = com.github.lunatrius.schematica.compat.CoordinateLinks.paste((NBTTagCompound) tag.copy(), wx, wy, wz, world.provider.dimensionId);
+                    tag.setInteger("x", wx); tag.setInteger("y", wy); tag.setInteger("z", wz);
+                    tile = "savedMultipart".equals(tag.getString("id"))
+                        ? ForgeMultipart.createFromNBT(tag, false) : TileEntity.createAndLoadEntity(tag);
+                } else tile = block.createTileEntity(world, meta);
+                if (tile == null) {
+                    if (tag == null) throw new MessageException("schematica.message.edit.tile_factory_failed",
+                        wx, wy, wz, blockState(block, meta));
+                    throw new MessageException("schematica.message.edit.tile_failed",
+                        wx, wy, wz, blockState(block, meta), tag.getString("id"));
+                }
+                tile.xCoord = wx; tile.yCoord = wy; tile.zCoord = wz;
+                if (silentPlacement != null) silentPlacement.setTile(world, tile);
+                else {
+                    world.setTileEntity(wx, wy, wz, tile);
+                    tile.markDirty();
+                    ForgeMultipart.onPlaced(world, tile);
+                }
+            }
+            placed.set(index);
+            blockCount++;
+        } else {
+            // Placement callbacks can remove unsupported blocks after a successful write.
+            if (kind == Kind.PASTE && written && block != Blocks.air && world.isAirBlock(wx, wy, wz)) return false;
+            throw new MessageException("schematica.message.edit.block_failed", wx, wy, wz, blockState(block, meta));
+        }
+        return false;
+    }
+
+    private boolean stepEntity(WorldServer world) {
         NBTTagCompound tag = (NBTTagCompound) entities.get(entityCursor++).copy();
         NBTTagList oldPos = tag.getTagList("Pos", 6);
         NBTTagList pos = new NBTTagList();
@@ -518,6 +582,7 @@ public final class WorldEditJob extends WorldEditTask {
         tag.removeTag("UUIDMost"); tag.removeTag("UUIDLeast");
         Entity entity = EntityList.createEntityFromNBT(tag, world);
         if (entity != null && world.spawnEntityInWorld(entity)) entityCount++;
+        else throw new MessageException("schematica.message.edit.entity_failed", tag.getString("id"));
         return false;
     }
 }

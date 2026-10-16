@@ -1,6 +1,6 @@
 # Schematica Plus: development handoff
 
-Current guide, reviewed 2026-10-15. Runtime baseline: Minecraft 1.7.10 / Forge
+Current guide, reviewed 2026-10-16. Runtime baseline: Minecraft 1.7.10 / Forge
 10.13.4.1614, release `1.0.0-beta.3`, with subsequent fixes on `master`.
 Support targets: GTNH **2.8.4** and **2.9.0-RC-2**, using each pack's native
 mod versions. Named combinations of individually installed mods are also checked
@@ -87,6 +87,12 @@ mod. Original Schematica conflicts with Plus and must be removed from the instan
   available through Schematic Manager conversion.
 - Paste defaults to `pasteReplaceBehavior=None` (existing air only), with
   `pasteWithoutUpdates=false`. All and With non-air have distinct source-air rules.
+- Paste continues after per-position block, tile, entity and update failures,
+  including silent refresh and native command errors. Failed positions are not
+  counted as successful writes; finish with counts and the first error. Unsupported
+  blocks removed by their placement callbacks are skipped. Grid copies continue
+  after partial results; project stages still require complete success. Cancellation,
+  lost permission/context and unconfirmed command replies still stop the operation.
 - Full NBT edits use the integrated server or the current Plus server protocol.
   Client-only command paste requires permission and blocks-only consent for NBT
   schematics. It omits inventories, sign text, entities and machine data, preserves
@@ -295,6 +301,8 @@ Paths below are relative to `src/main/java/com/github/lunatrius/schematica/`.
   shared registries/storage or alter the real world.
 - Unloaded/unreadable chunks are not air or verified matches. Check permission,
   write/readback results and cancellation before reporting success.
+- A paste error belongs to its position: record it and continue the remaining
+  positions. Preserve the distinction between full traversal and full success.
 - Validate before allocation: 16,777,216 blocks, 32,767 per axis, 1,048,576 X/Y rows;
   NBT budget 128 MiB/depth 64; world Y=0..255. MOVE caps the enclosing volume at
   1,048,576 cells. Save queues accept one per player and four globally.
@@ -366,6 +374,7 @@ steps and limitations are in TESTING; the full implementation history is in Git.
 | VISUAL_CHECKED_HEADLESS | 2026-10-15 | Extend printer radius to 32 with a synchronized server cap, bounded resumable scans and native server interaction/mining in `client/printer`, `handler/PrinterActions` and `network/message`; move the existing working-switch binding to Hotkeys in `GuiModConfig`. Build and 700 tests pass. Both native packs passed dedicated survival distance/material/facing checks, limit/disable refusals, ordinary-reach restoration, Forge cancellation, 1 ms scanning and native key persistence/context checks. See TESTING for the runtime hash and tool/fluid limits. |
 | VISUAL_CHECKED_HEADLESS | 2026-10-15 | Raise the configurable printer radius to 128 on both sides while retaining the server default of 32; index scan rows lazily and clip scans to nearby placement bounds in `client/printer/PrinterIteration`. Rename the binding to `printerWorkingSwitch`, retaining saved chords/settings in `client/input/HotkeyStore`; clarify the existing per-pass placement limit. Build and 705 tests pass. Both native packs passed dedicated 127-block placement, 129-block refusal, live caps, key migration/search/context checks and exact per-pass target/material counts; see TESTING for the runtime hash and limits. |
 | IMPLEMENTED_HEADLESS | 2026-10-15 | Set the server printer distance default to 128 in `handler/ConfigurationHandler`, including initialization and configuration fallback; update both tooltips and current guidance. Existing configured limits are retained. Build and 705 tests pass; no additional game validation was requested for this default-only change. |
+| VISUAL_CHECKED_HEADLESS | 2026-10-16 | Continue pastes after per-position block/tile/entity/update failures in `tool/WorldEditJob` and `SilentBlockPlacement`, native command refusals in `handler/client/CommandEditQueue`, and partial grid results through `ToolHandler` and the current remote protocol. Report counts and the first error without counting failed positions as successful writes. Build and 719 tests pass. Both native packs passed unsupported/supported normal and silent pastes, injected NBT failure, grid continuation and forced-command refusal; saved-region readback matched six supported structures. See TESTING for scope and remaining unreproduced tile report. |
 
 ## 7. Reported issues and current boundaries
 
@@ -374,6 +383,13 @@ preview/materials, representable ArchitectureCraft mirrors, ProjectRed placement
 orientation, initial layer position and missing chest faces have fixes and named
 regression cases. The client-only NBT warning now offers explicit blocks-only paste;
 full machine/inventory NBT still requires Plus server support.
+
+The reported private paste fixture's unsupported torch previously stopped normal
+pasting. Per-position errors now continue with a partial-result summary, and
+self-removing blocks do not interrupt the traversal. All 322 tile entities in that
+fixture load and paste with suitable support in both packs. The separate report
+that every tile fails to create remains unreproduced; failed tile diagnostics now
+include the block/metadata and saved NBT ID.
 
 Original rare GT invalid `.name` and EnderIO reproduction files are unavailable.
 Constructed transform tests passed, but do not prove those original files fixed.

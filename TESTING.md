@@ -3099,7 +3099,7 @@ No external shader pack was installed in that run; no shader or universal machin
 
 1. On a Plus server using unloaded-chunk placeholders, paste a single stone far outside loaded chunks. It must fail with the target coordinates and must not show the successful-paste message. Travel there and verify the actual target is still air; load the area and retry, then verify stone was written.
 2. Repeat the same ordinary block paste. Expect a no-changes notice, not a successful-paste message. Check an air-only/replacement-filtered empty job too.
-3. Paste a long row extending from loaded chunks into an unavailable chunk. Expect failure at the first refused write; any already changed prefix may remain. Do not describe this operation as atomic or rolled back. Verify no later writes and that a subsequent small edit can run.
+3. Paste a long row through loaded, unavailable and loaded chunks. Record refused writes, continue to the later writable cells, and finish with a partial-result summary. Failed cells must not increase the successful-block count. Do not describe the operation as atomic or rolled back. Verify a subsequent small edit can run.
 4. Use forced commands in single player against identical blocks. The queue must send zero commands and report no changes. An empty project clear stage may continue to its following paste; a denied/failed stage must not.
 5. Overwrite a matching chest block with different saved contents/name. The tile data must still be restored. Repeat normal adjacent-chest/extended-metadata tests to ensure the no-op check did not skip tile restoration.
 
@@ -3434,3 +3434,95 @@ thumbnail. File readback confirmed 120x120 pixels with the existing author and
 multiline description preserved. Evidence includes `verified-f2-290.png` and
 `verified-local-f2-284.png`; the earlier PNG import, removal and cancellation checks
 were performed separately from these F2 captures.
+
+### Paste continuation and Tile Entity diagnostics
+
+Use disposable world copies and copies of reproduction schematics. Run these
+cases with each pack's native mods in GTNH 2.8.4 and 2.9.0-RC-2. Use the same
+current Plus build on both sides of any dedicated-server test.
+
+1. Paste a structure containing unsupported standing torches and crops, followed
+   by ordinary blocks and machines. In normal mode, a successful write that turns
+   back into air during its placement callback must not interrupt later cells or
+   count as a successful placement. Plants may also disappear during later native
+   updates. Repeat with suitable soil/support and check the resulting blocks and
+   tile entities independently of the chat message.
+2. In a disposable captured job, replace one early tile's NBT `id` with a nonexistent
+   test identifier. Test normal and no-update pastes. The bad tile must be reported
+   with coordinates, block metadata and NBT ID; later tiles must still be restored.
+   Finish with a partial-result summary, without counting the failed tile as a
+   successful block. Keep the original schematic untouched.
+3. Force one block write, metadata restoration, tile initialization, neighbor
+   callback or silent light/client refresh to fail. Continue other positions and
+   count each failed position once. Restore temporary snapshot/drop-suppression
+   flags even after exceptions. A failed entity spawn must not prevent later
+   entity attempts. Non-paste edit and MOVE rollback behavior retain their rules.
+4. Check a job where every position fails, one where all placed blocks immediately
+   remove themselves, replacement-filtered jobs and ordinary repeats. Distinguish
+   a partial/error result from a no-changes result; neither may claim all blocks
+   were successfully placed.
+5. Force command paste and return a native error for one position, then success
+   for subsequent commands. The queue must continue and count acknowledged writes,
+   including mixed replies in the last batch. Command construction/send errors
+   must not leave phantom pending replies. Missing replies, lost permission,
+   disconnects and explicit cancellation still end the task.
+6. Make an early grid copy partially fail and verify later copies run. Repeat with
+   the current server protocol and its partial-result status. Project stages that
+   require a successful paste must not advance on a partial result. Cancellation
+   must not trigger the next grid copy.
+
+Automated coverage includes placement/readback refusals, self-removal, missing
+saved/default tile factories, callback exceptions, metadata and neighbor failures,
+failed entity attempts, silent refresh continuation, command failures and replies,
+partial-result serialization and grid continuation/cancellation policy. These
+checks alone do not establish compatibility with every mod's callbacks.
+
+Dated observations (2026-10-16): build and all **719 automated tests** pass with
+zero failures, errors or skips. Both native packs were cold-started with runtime
+JAR SHA-256 `c4a23f1d60a109fbcb26d20da9cacbcdee26c006cf729c4f14d3fc2d200e7ed7`.
+Tests used generated world copies and an unmodified private schematic copy; no
+private input or ownership fields are included in the repository. Game-thread
+fixture setup and the actual paste queues were used; this is not a keyboard-only
+workflow test or a claim that every pasted machine was functionally exercised.
+
+The reported file has 674 non-air cells and 322 tile entities. On the baseline
+whose paste implementation matches beta.3, normal pasting into unsupported air
+stopped at a standing torch after 570 counted blocks. All 322 saved tile entities
+could be read and recreated in both packs. Suitable ground/support allowed all
+674 blocks and 322 tiles to remain, so the separate report that every tile entity
+fails to create was not reproduced by this file.
+
+With the changed build, both packs produced these results:
+
+| Case | Observed result |
+| --- | --- |
+| Normal paste without external support | Traversed the whole schematic; 649 writes counted, excluding 25 torches removed immediately by placement callbacks. Native crop updates later left 451 matching blocks and 288 tiles. This is not a guarantee of unsupported plants surviving. |
+| Normal and no-update paste with suitable support | 674 matching blocks and 322 tiles; no recorded errors. |
+| No-update paste without support | Traversed all cells and counted 674 initial writes; later native plant updates still apply. |
+| One early tile given an invalid NBT ID in a captured job, normal and no-update modes | Traversal completed with 673 successful blocks and one failed tile position. Chat showed the partial result, coordinates, block/metadata and invalid ID. The block's default tile can remain at the failed position; its presence is not counted as successful NBT restoration. |
+| Two grid jobs, with the first containing the invalid tile | First job reported 673 successful positions and one failure; the second still ran and retained all 674 blocks and 322 tiles. |
+
+The Chinese partial-result chat and resulting structures were inspected in both
+clients. Evidence names include `fixed-284-normal-bad-tile.png` and
+`fixed-290-normal-bad-tile.png`. The dedicated-server partial-result packet and
+client continuation policy have automated coverage; this round's native paste
+and grid runs used integrated servers.
+
+Independent saved-region readback using `tools/headless/regions.py` also matched
+all 674 non-air block names and all 322 tile IDs for the supported normal paste,
+supported no-update paste and successful second grid copy in each pack (six saved
+structures). This confirms persistence of those blocks and tile types, not every
+machine's operating state or every mod-private NBT field.
+
+Forced-command acceptance also passed in both native packs after cold restart
+with the same JAR. A temporary test command returned `commands.setblock.noChange`
+for the first cell and delegated the following two cells to native `setblock`.
+The first remained air, the next two became stone, and chat reported two successful
+blocks and one failure with traversal complete. Actual reply packets drove the
+queue; success was not simulated in the client. Screenshots include
+`fixed-284-command-partial.png` and `fixed-290-command-partial.png`.
+Earlier incomplete test-command interface implementations caused test-instance
+crashes and are excluded from acceptance. The corrected cases used fresh generated
+world copies and were saved and closed normally. No corresponding product-code
+change was needed. Standalone server-without-Plus acceptance was not repeated in
+this round; the forced-command tests exercised the same client fallback queue.

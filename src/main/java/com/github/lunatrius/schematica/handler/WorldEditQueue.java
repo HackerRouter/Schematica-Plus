@@ -123,7 +123,7 @@ public final class WorldEditQueue {
             if (job.progress != null) job.progress.accept(edit.task.progress());
             if (done) {
                 boolean success = !job.cancelled && job.failure() == null;
-                if (job.failure() != null) Reference.logger.error("World move restored after failure", job.failure());
+                if (job.failure() != null) Reference.logger.error("World edit finished with errors", job.failure());
                 net.minecraft.util.IChatComponent message = job.finishedMessage(success);
                 if (player != null && message != null) player.addChatMessage(message);
                 finish(edit, success);
