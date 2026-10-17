@@ -140,6 +140,8 @@ public final class ContainerVerifier {
             for (int[] click : clicks) mc.playerController.windowClick(gui.inventorySlots.windowId, click[0], click[1], 0, mc.thePlayer);
         } catch (RuntimeException error) {
             Reference.logger.warn("Container autofill stopped", error);
+        } finally {
+            returnCursor(mc, gui);
         }
         int filled = 0;
         for (ContainerComparison.Target target : targets) {
@@ -150,6 +152,20 @@ public final class ContainerVerifier {
     }
 
     /** Keeps what the opened container holds for the in-world labels (ContainerLabels). */
+    private static void returnCursor(Minecraft mc, GuiContainer gui) {
+        for (boolean empty : new boolean[] {false, true}) {
+            for (Object object : gui.inventorySlots.inventorySlots) {
+                ItemStack held = mc.thePlayer.inventory.getItemStack();
+                if (held == null) return;
+                Slot slot = (Slot) object;
+                if (!(slot.inventory instanceof InventoryPlayer) || !slot.isItemValid(held)) continue;
+                ItemStack stack = slot.getStack();
+                if (empty ? stack != null : stack == null || !ContainerComparison.stackable(held, stack) || stack.stackSize >= stack.getMaxStackSize()) continue;
+                mc.playerController.windowClick(gui.inventorySlots.windowId, slot.slotNumber, 0, 0, mc.thePlayer);
+            }
+        }
+    }
+
     private void remember(GuiContainer gui) {
         List<ItemStack> contents = new ArrayList<>();
         for (Object object : gui.inventorySlots.inventorySlots) {

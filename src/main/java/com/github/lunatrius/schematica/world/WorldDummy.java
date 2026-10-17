@@ -35,7 +35,7 @@ public class WorldDummy extends World {
         return null;
     }
 
-    public static WorldDummy instance() {
+    public static synchronized WorldDummy instance() {
         if (instance == null) {
             final WorldSettings worldSettings = new WorldSettings(
                 0,

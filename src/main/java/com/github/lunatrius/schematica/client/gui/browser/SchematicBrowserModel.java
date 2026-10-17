@@ -195,8 +195,7 @@ public final class SchematicBrowserModel {
             char c = name.charAt(i);
             if (c < 32 || "<>:\"/\\|?*".indexOf(c) >= 0) throw FileOperationException.name(name);
         }
-        String stem = name.split("\\.", 2)[0].toUpperCase(Locale.ROOT);
-        if (stem.matches("CON|PRN|AUX|NUL|COM[1-9¹²³]|LPT[1-9¹²³]")) throw FileOperationException.name(name);
+        if (com.github.lunatrius.schematica.util.FileUtils.isReservedName(name)) throw FileOperationException.name(name);
     }
 
     public static final class FileOperationException extends IOException {

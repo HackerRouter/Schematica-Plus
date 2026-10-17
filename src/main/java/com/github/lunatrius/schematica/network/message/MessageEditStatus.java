@@ -5,6 +5,7 @@ package com.github.lunatrius.schematica.network.message;
 import java.nio.charset.StandardCharsets;
 
 import com.github.lunatrius.schematica.SchematicaPlus;
+import com.github.lunatrius.schematica.tool.WorldEditTask;
 
 import cpw.mods.fml.common.network.simpleimpl.IMessage;
 import cpw.mods.fml.common.network.simpleimpl.IMessageHandler;
@@ -13,7 +14,13 @@ import io.netty.buffer.ByteBuf;
 
 /** Server to client: an upload was accepted, refused, progressed or finished. */
 public final class MessageEditStatus implements IMessage, IMessageHandler<MessageEditStatus, IMessage> {
-    public enum State { ACCEPTED, REJECTED, PROGRESS, FINISHED, FAILED, PARTIAL }
+    public enum State {
+        ACCEPTED, REJECTED, PROGRESS, FINISHED, FAILED, PARTIAL;
+
+        public static State of(WorldEditTask.Outcome outcome) {
+            return outcome == WorldEditTask.Outcome.FINISHED ? FINISHED : outcome == WorldEditTask.Outcome.PARTIAL ? PARTIAL : FAILED;
+        }
+    }
 
     public long id;
     public State state = State.REJECTED;

@@ -6,6 +6,7 @@ import net.minecraft.util.IChatComponent;
 import net.minecraft.world.World;
 import net.minecraftforge.client.event.ClientChatReceivedEvent;
 import com.github.lunatrius.schematica.tool.WorldEditJob;
+import com.github.lunatrius.schematica.tool.WorldEditTask;
 import com.github.lunatrius.schematica.task.TaskRegistry;
 import com.github.lunatrius.schematica.util.MessageException;
 import com.github.lunatrius.schematica.reference.Reference;
@@ -17,6 +18,8 @@ import cpw.mods.fml.common.gameevent.TickEvent;
 public final class CommandEditQueue {
     public static final CommandEditQueue INSTANCE = new CommandEditQueue();
     private static final int REPLY_TIMEOUT = 200;
+    private static final java.util.Set<String> JOB_ERRORS = new java.util.HashSet<>(java.util.Arrays.asList(
+        "commands.generic.permission", "commands.generic.notFound", "commands.generic.usage", "commands.generic.snytax"));
     interface Client {
         boolean valid(WorldEditJob job, World world);
         String command(WorldEditJob job, int index, World world);
@@ -49,11 +52,11 @@ public final class CommandEditQueue {
 
     CommandEditQueue(Client client) { this.client = client; }
 
-    public synchronized boolean cancel() { return end(false); }
+    public synchronized boolean cancel() { return end(WorldEditTask.Outcome.FAILED); }
 
     public synchronized boolean busy() { return job != null; }
 
-    private boolean end(boolean success) {
+    private boolean end(WorldEditTask.Outcome outcome) {
         if (job == null) return false;
         WorldEditJob finished = job;
         task.finish();
@@ -61,7 +64,7 @@ public final class CommandEditQueue {
         job = null;
         world = null;
         pendingCells.clear();
-        finished.completion.accept(success);
+        finished.completion.accept(outcome);
         return true;
     }
 
@@ -87,7 +90,7 @@ public final class CommandEditQueue {
             pendingCells.removeFirst();
             job.blockCount++;
             waiting = 0;
-        } else if (key != null && job.kind == WorldEditJob.Kind.PASTE && !"commands.generic.permission".equals(key)) {
+        } else if (key != null && job.kind == WorldEditJob.Kind.PASTE && !JOB_ERRORS.contains(key)) {
             pending--;
             int index = pendingCells.removeFirst();
             job.recordBlockFailure(index, new MessageException("schematica.message.edit.command_failed",
@@ -104,7 +107,7 @@ public final class CommandEditQueue {
         if (message instanceof ChatComponentTranslation) {
             String key = ((ChatComponentTranslation) message).getKey();
             if (key.startsWith("commands.setblock.") || key.startsWith("commands.generic.")
-                || key.startsWith("commands.block.")) return key;
+                || key.startsWith("commands.block.") || "commands.give.notFound".equals(key)) return key;
             // Admin broadcasts contain another player's command result, not this queue's reply.
             return null;
         }
@@ -153,12 +156,13 @@ public final class CommandEditQueue {
             task.update(TaskRegistry.Stage.COMMANDS, cursor, job.volume, job.blockCount, 0);
             if (cursor == job.volume && pending == 0) {
                 job.completedTraversal = true;
-                boolean success = job.failure() == null;
+                WorldEditTask.Outcome outcome = job.outcome();
+                boolean success = outcome == WorldEditTask.Outcome.FINISHED;
                 client.message(success && job.kind == WorldEditJob.Kind.PASTE && job.blockCount != 0
                     ? new ChatComponentTranslation("litematica.message.schematic_pasted_using_setblock", job.blockCount)
                     : job.finishedMessage(success));
                 if (!success) Reference.logger.error("Command paste finished with errors", job.failure());
-                end(success);
+                end(outcome);
             }
         } catch (RuntimeException e) {
             Reference.logger.error("Command edit stopped after partial completion", e);

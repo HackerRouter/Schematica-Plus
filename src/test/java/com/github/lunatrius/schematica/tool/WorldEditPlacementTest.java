@@ -37,6 +37,7 @@ import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
@@ -297,8 +298,9 @@ public class WorldEditPlacementTest {
         world.onNotify = () -> { if (world.neighborUpdates == 0) { world.neighborUpdates++; throw new IllegalStateException("Update failed"); } };
         WorldEditJob job = paste(3, 2, false);
         finish(job, world);
-        assertEquals(1, job.failedBlockCount());
-        assertEquals(1, job.blockCount);
+        assertNotNull(job.failure());
+        assertEquals(0, job.failedBlockCount());
+        assertEquals(2, job.blockCount);
         assertEquals(2, world.neighborUpdates);
         assertEquals(2, world.blockUpdates);
     }
@@ -434,11 +436,11 @@ public class WorldEditPlacementTest {
         world.rejectRestore = true;
         finish(job, world);
         assertTrue(job.failure().getCause().getMessage().contains("4, 70, 6"));
-        assertEquals(1, job.failedBlockCount());
+        assertEquals(0, job.failedBlockCount());
         assertEquals(3, world.cell(4).metadata);
         assertEquals(2, world.tileWrites);
-        assertEquals(1, world.neighborUpdates);
-        assertEquals(1, job.blockCount);
+        assertEquals(2, world.neighborUpdates);
+        assertEquals(2, job.blockCount);
     }
 
     @Test public void flowingLiquidsCanSettleDuringPasteWithoutBlockingUpdatesOrEntities() throws Exception {

@@ -1,7 +1,12 @@
 package com.github.lunatrius.schematica.handler;
 
+import java.io.File;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import net.minecraft.entity.player.EntityPlayerMP;
 
@@ -10,9 +15,14 @@ import com.github.lunatrius.schematica.network.PacketHandler;
 import com.github.lunatrius.schematica.network.message.MessageDownloadBegin;
 import com.github.lunatrius.schematica.network.message.MessageDownloadChunk;
 import com.github.lunatrius.schematica.network.message.MessageDownloadEnd;
+import com.github.lunatrius.schematica.network.message.MessageDownloadRegions;
 import com.github.lunatrius.schematica.network.transfer.SchematicTransfer;
+import com.github.lunatrius.schematica.network.transfer.SliceAssembler;
 import com.github.lunatrius.schematica.reference.Constants;
 import com.github.lunatrius.schematica.reference.Reference;
+import com.github.lunatrius.schematica.world.schematic.LitematicaNBTReader;
+import com.github.lunatrius.schematica.world.schematic.SchematicFileSnapshot;
+import com.github.lunatrius.schematica.world.schematic.SchematicFormat;
 
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.gameevent.TickEvent;
@@ -24,45 +34,29 @@ public class DownloadHandler {
     public ISchematic schematic = null;
     private final java.util.BitSet receivedChunks = new java.util.BitSet();
     private static final int MAX_REGION_BYTES = 32 * 1024 * 1024;
-    private byte[][] regionParts;
-    private int regionReceived, regionBytes;
+    private SliceAssembler regions;
     private boolean regionFailed;
 
     public synchronized void beginDownload(ISchematic schematic) {
         this.schematic = schematic;
         receivedChunks.clear();
-        regionParts = null;
-        regionReceived = regionBytes = 0;
+        regions = null;
         regionFailed = false;
     }
 
     /** Client: one slice of the independent region contents, sent after the block chunks. */
-    public synchronized void receivedRegions(com.github.lunatrius.schematica.network.message.MessageDownloadRegions message) {
+    public synchronized void receivedRegions(MessageDownloadRegions message) {
         if (schematic == null || regionFailed) return;
-        if (regionParts == null) {
-            if ((long) message.count * com.github.lunatrius.schematica.network.message.MessageDownloadRegions.CHUNK_SIZE > MAX_REGION_BYTES + 30000L) {
-                regionFailed = true;
-                return;
-            }
-            regionParts = new byte[message.count][];
-        }
-        if (message.count != regionParts.length || regionParts[message.index] != null
-            || (regionBytes += message.data.length) > MAX_REGION_BYTES) {
-            regionFailed = true;
-            return;
-        }
-        regionParts[message.index] = message.data;
-        regionReceived++;
+        if (regions == null) regions = SliceAssembler.create(message.count, MessageDownloadRegions.CHUNK_SIZE, MAX_REGION_BYTES);
+        if (regions == null || !regions.add(message.index, message.count, message.data)) regionFailed = true;
     }
 
     /** Client, at the end: the downloaded schematic, with independent regions when they were sent; null when incomplete. */
     public synchronized ISchematic completedSchematic() throws java.io.IOException {
         if (!isDownloadComplete() || regionFailed) return null;
-        if (regionParts == null) return schematic;
-        if (regionReceived != regionParts.length) return null;
-        java.io.ByteArrayOutputStream payload = new java.io.ByteArrayOutputStream(regionBytes);
-        for (byte[] part : regionParts) payload.write(part);
-        return com.github.lunatrius.schematica.world.schematic.SchematicAlpha.withRegionPayload(schematic, payload.toByteArray());
+        if (regions == null) return schematic;
+        if (!regions.complete()) return null;
+        return com.github.lunatrius.schematica.world.schematic.SchematicAlpha.withRegionPayload(schematic, regions.join());
     }
 
     public boolean validChunk(int x, int y, int z) {
@@ -89,7 +83,81 @@ public class DownloadHandler {
             * ((schematic.getHeight() + 15) / 16) * ((schematic.getLength() + 15) / 16);
     }
 
-    public final Map<EntityPlayerMP, SchematicTransfer> transferMap = new LinkedHashMap<>();
+    private final Map<EntityPlayerMP, SchematicTransfer> transferMap = new LinkedHashMap<>();
+    private final Map<EntityPlayerMP, Read> reading = new LinkedHashMap<>();
+    private final ExecutorService reader = Executors.newSingleThreadExecutor(runnable -> {
+        Thread thread = new Thread(runnable, "Schematica Plus download reader");
+        thread.setDaemon(true);
+        return thread;
+    });
+
+    private static final class Loaded {
+        final SchematicFileSnapshot snapshot;
+        final LitematicaNBTReader.Parsed parsed;
+
+        Loaded(SchematicFileSnapshot snapshot) throws java.io.IOException {
+            this.snapshot = snapshot; this.parsed = snapshot.parse();
+        }
+    }
+
+    private static final class Read {
+        final String name;
+        final Future<Loaded> loaded;
+
+        Read(String name, Future<Loaded> loaded) { this.name = name; this.loaded = loaded; }
+    }
+
+    public synchronized void start(EntityPlayerMP player, SchematicTransfer transfer) { transferMap.put(player, transfer); }
+
+    public synchronized void read(EntityPlayerMP player, File file) {
+        reading.put(player, new Read(file.getName(), reader.submit(() -> new Loaded(SchematicFileSnapshot.read(file)))));
+    }
+
+    public synchronized void stop(EntityPlayerMP player) {
+        transferMap.remove(player);
+        reading.remove(player);
+    }
+
+    public synchronized void stopAll() {
+        transferMap.clear();
+        reading.clear();
+    }
+
+    private void finishReads() {
+        Iterator<Map.Entry<EntityPlayerMP, Read>> entries = reading.entrySet().iterator();
+        while (entries.hasNext()) {
+            Map.Entry<EntityPlayerMP, Read> entry = entries.next();
+            Read read = entry.getValue();
+            if (!read.loaded.isDone()) continue;
+            entries.remove();
+            ISchematic schematic = null;
+            try {
+                Loaded loaded = read.loaded.get();
+                schematic = SchematicFormat.readFromSnapshot(loaded.snapshot, loaded.parsed);
+            } catch (Exception e) {
+                Reference.logger.warn("Could not read the download {}", read.name, e);
+            }
+            if (schematic != null) transferMap.put(entry.getKey(), new SchematicTransfer(schematic, read.name));
+            else entry.getKey().addChatMessage(new net.minecraft.util.ChatComponentTranslation(
+                com.github.lunatrius.schematica.reference.Names.Command.Download.Message.DOWNLOAD_FAILED, read.name));
+        }
+    }
+
+    public synchronized boolean acceptBegin(EntityPlayerMP player, boolean geometry, boolean regions) {
+        SchematicTransfer transfer = transferMap.get(player);
+        if (transfer == null || transfer.state != SchematicTransfer.State.BEGIN) return true;
+        if (!transfer.acceptGeometrySupport(geometry) || !transfer.acceptRegionSupport(regions)) {
+            transferMap.remove(player);
+            return false;
+        }
+        transfer.setState(SchematicTransfer.State.CHUNK_WAIT);
+        return true;
+    }
+
+    public synchronized void acceptChunk(EntityPlayerMP player, int x, int y, int z) {
+        SchematicTransfer transfer = transferMap.get(player);
+        if (transfer != null) transfer.confirmChunk(x, y, z);
+    }
 
     private DownloadHandler() {}
 
@@ -102,7 +170,8 @@ public class DownloadHandler {
         processQueue();
     }
 
-    private void processQueue() {
+    private synchronized void processQueue() {
+        if (!reading.isEmpty()) finishReads();
         if (this.transferMap.isEmpty()) {
             return;
         }

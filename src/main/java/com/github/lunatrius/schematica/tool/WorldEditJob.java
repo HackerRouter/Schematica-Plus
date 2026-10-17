@@ -394,9 +394,14 @@ public final class WorldEditJob extends WorldEditTask {
     public int failedEntityCount() { return failedEntities; }
     @Override public RuntimeException failure() { return firstFailure; }
 
+    @Override public Outcome outcome() {
+        if (cancelled || !completedTraversal) return Outcome.FAILED;
+        return firstFailure == null ? Outcome.FINISHED : Outcome.PARTIAL;
+    }
+
     public void recordBlockFailure(int index, Throwable error) {
-        failedBlocks.set(index);
-        if (placed.get(index)) { placed.clear(index); blockCount--; }
+        if (!placed.get(index)) failedBlocks.set(index);
+        if (firstFailure != null) return;
         if (!(error instanceof MessageException)) {
             MessageException detail = new MessageException("schematica.message.edit.cell_failed",
                 x + index % width, y + index / width / length, z + index / width % length, error.getClass().getSimpleName());

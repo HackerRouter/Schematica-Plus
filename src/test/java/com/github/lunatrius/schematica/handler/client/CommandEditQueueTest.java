@@ -154,7 +154,7 @@ public class CommandEditQueueTest {
         WorldEditJob job = new WorldEditJob(owner, 0, kind, 0, 64, 0, size, 1, 1, null, 0, null, 0);
         if (kind == WorldEditJob.Kind.PASTE) job.capture(new com.github.lunatrius.schematica.world.storage.Schematic(null, size, 1, 1), false, false);
         client.job = job;
-        job.completion = client.completed::add;
+        job.completion = outcome -> client.completed.add(outcome == com.github.lunatrius.schematica.tool.WorldEditTask.Outcome.FINISHED);
         queue.submit(job, null);
         return client;
     }
@@ -170,7 +170,7 @@ public class CommandEditQueueTest {
     }
 
     @Test public void pasteCommandErrorsContinueAndReportOnlyAcknowledgedWrites() {
-        for (String key : new String[] {"commands.setblock.noChange", "commands.setblock.outOfWorld", "commands.generic.exception"}) {
+        for (String key : new String[] {"commands.setblock.noChange", "commands.setblock.outOfWorld", "commands.generic.exception", "commands.give.notFound"}) {
             FakeClient client = start(3, WorldEditJob.Kind.PASTE);
             tick();
             chat(new net.minecraft.util.ChatComponentTranslation(key));
@@ -204,14 +204,16 @@ public class CommandEditQueueTest {
         assertTrue(client.job.completedTraversal);
     }
 
-    @Test public void pastePermissionLossStillCancelsWithoutCompletingTheTraversal() {
-        FakeClient client = start(3, WorldEditJob.Kind.PASTE);
-        tick();
-        chat(new net.minecraft.util.ChatComponentTranslation("commands.generic.permission"));
-        tick();
-        assertEquals(1, client.commands.size());
-        assertEquals(java.util.Collections.singletonList(false), client.completed);
-        assertFalse(client.job.completedTraversal);
+    @Test public void jobWideCommandErrorsCancelWithoutCompletingTheTraversal() {
+        for (String key : new String[] {"commands.generic.permission", "commands.generic.notFound", "commands.generic.usage", "commands.generic.snytax"}) {
+            FakeClient client = start(3, WorldEditJob.Kind.PASTE);
+            tick();
+            chat(new net.minecraft.util.ChatComponentTranslation(key));
+            tick();
+            assertEquals(key, 1, client.commands.size());
+            assertEquals(key, java.util.Collections.singletonList(false), client.completed);
+            assertFalse(key, client.job.completedTraversal);
+        }
     }
 
     private void tick() { queue.onTick(new TickEvent.ClientTickEvent(TickEvent.Phase.END)); }

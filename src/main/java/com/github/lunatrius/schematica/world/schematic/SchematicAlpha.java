@@ -101,13 +101,23 @@ public class SchematicAlpha extends SchematicFormat {
             new com.github.lunatrius.schematica.world.storage.MultiRegionSchematic(icon, width, height, length);
         schematic.setOrigin(origin);
         schematic.setRegions(regions);
+        long total = 0;
         for (int i = 0; i < entries.tagCount(); i++) {
-            NBTTagCompound entry = entries.getCompoundTagAt(i);
             com.github.lunatrius.schematica.api.SchematicRegion region = regions.get(i);
-            if (!region.name.equals(entry.getString("Name")) || entry.getCompoundTag("Schematic").hasKey(REGION_DATA)) {
+            NBTTagCompound nested = entries.getCompoundTagAt(i).getCompoundTag("Schematic");
+            int sizeX = region.maxX - region.minX + 1, sizeY = region.maxY - region.minY + 1, sizeZ = region.maxZ - region.minZ + 1;
+            if (!region.name.equals(entries.getCompoundTagAt(i).getString("Name")) || nested.hasKey(REGION_DATA)
+                || nested.getShort(Names.NBT.WIDTH) != sizeX || nested.getShort(Names.NBT.HEIGHT) != sizeY
+                || nested.getShort(Names.NBT.LENGTH) != sizeZ) {
                 throw new IllegalArgumentException("Invalid region data");
             }
-            schematic.addRegion(region, readFromNBT(entry.getCompoundTag("Schematic")));
+            total += (long) sizeX * sizeY * sizeZ;
+            if (total > com.github.lunatrius.schematica.util.SchematicLimits.MAX_BLOCKS) {
+                throw new IllegalArgumentException("Combined region contents exceed allocation limit");
+            }
+        }
+        for (int i = 0; i < entries.tagCount(); i++) {
+            schematic.addRegion(regions.get(i), readFromNBT(entries.getCompoundTagAt(i).getCompoundTag("Schematic")));
         }
         return schematic;
     }

@@ -69,7 +69,7 @@ public class PlayerHandler {
     @SubscribeEvent
     public void onPlayerLoggedOut(PlayerEvent.PlayerLoggedOutEvent event) {
         if (event.player instanceof EntityPlayerMP) {
-            DownloadHandler.INSTANCE.transferMap.remove(event.player);
+            DownloadHandler.INSTANCE.stop((EntityPlayerMP) event.player);
             AccuratePlacement.INSTANCE.forget(event.player);
             PrinterActions.INSTANCE.forget((EntityPlayerMP) event.player);
             RemoteEdits.INSTANCE.forget(event.player);

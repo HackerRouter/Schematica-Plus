@@ -78,8 +78,9 @@ final class SilentBlockPlacement {
                 if (tops[column] == 0) continue;
                 try { RELIGHT.invoke(chunk, column & 15, tops[column], column >> 4); }
                 catch (Exception | LinkageError error) {
+                    Throwable cause = error instanceof java.lang.reflect.InvocationTargetException && error.getCause() != null ? error.getCause() : error;
                     failures.failed((chunk.xPosition << 4) + (column & 15), tops[column] - 1,
-                        (chunk.zPosition << 4) + (column >> 4), error);
+                        (chunk.zPosition << 4) + (column >> 4), cause);
                 }
             }
             for (int cell = cells.nextSetBit(0); cell >= 0; cell = cells.nextSetBit(cell + 1)) {

@@ -32,7 +32,7 @@ public class TickHandler {
     @SubscribeEvent
     public void onClientDisconnect(FMLNetworkEvent.ClientDisconnectionFromServerEvent event) {
         com.github.lunatrius.schematica.handler.DownloadHandler.INSTANCE.beginDownload(null);
-        CommandEditQueue.INSTANCE.cancel();
+        this.minecraft.func_152344_a(CommandEditQueue.INSTANCE::cancel);
         com.github.lunatrius.schematica.network.message.MessageCapabilities.clearPending();
         Reference.logger.info("Scheduling client settings reset.");
         ClientProxy.isPendingReset = true;

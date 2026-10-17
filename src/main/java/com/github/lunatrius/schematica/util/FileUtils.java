@@ -34,10 +34,14 @@ public class FileUtils {
         }
     }
 
+    public static boolean isReservedName(String name) {
+        return name.split("\\.", 2)[0].toUpperCase(java.util.Locale.ROOT).matches("CON|PRN|AUX|NUL|COM[1-9¹²³]|LPT[1-9¹²³]");
+    }
+
     public static File resolveSchematicFile(File directory, String filename) throws IOException {
         if (directory == null || filename == null || filename.isEmpty() || filename.equals(".")
             || filename.equals("..") || filename.indexOf('/') >= 0 || filename.indexOf('\\') >= 0
-            || filename.indexOf(':') >= 0 || filename.indexOf('\0') >= 0) {
+            || filename.indexOf(':') >= 0 || filename.indexOf('\0') >= 0 || isReservedName(filename)) {
             throw new IOException("Invalid schematic filename");
         }
         String lowerName = filename.toLowerCase(java.util.Locale.ROOT);

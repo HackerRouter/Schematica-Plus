@@ -3,7 +3,6 @@
 package com.github.lunatrius.schematica.handler;
 
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -24,6 +23,7 @@ import net.minecraft.server.MinecraftServer;
 import com.github.lunatrius.schematica.network.PacketHandler;
 import com.github.lunatrius.schematica.network.message.MessageEditStatus;
 import com.github.lunatrius.schematica.network.message.MessageEditUpload;
+import com.github.lunatrius.schematica.network.transfer.SliceAssembler;
 import com.github.lunatrius.schematica.reference.Reference;
 import com.github.lunatrius.schematica.task.TaskRegistry;
 import com.github.lunatrius.schematica.tool.WorldEditJob;
@@ -38,13 +38,12 @@ public final class RemoteEdits {
 
     private static final class Upload {
         final RemoteEditOperations.Operation<WorldEditJob> operation;
-        final int dimension, count;
-        final byte[][] parts;
-        int received, bytes;
+        final int dimension;
+        final SliceAssembler slices;
         long touched = System.nanoTime();
 
-        Upload(RemoteEditOperations.Operation<WorldEditJob> operation, int dimension, int count) {
-            this.operation = operation; this.dimension = dimension; this.count = count; this.parts = new byte[count][];
+        Upload(RemoteEditOperations.Operation<WorldEditJob> operation, int dimension, SliceAssembler slices) {
+            this.operation = operation; this.dimension = dimension; this.slices = slices;
         }
     }
 
@@ -77,6 +76,10 @@ public final class RemoteEdits {
             if (message.index == 0) send(player, MessageEditStatus.rejected(message.id, "schematica.message.edit.remote_disabled"));
             return;
         }
+        if (message.index == 0 && !WorldEditQueue.mayEdit(player)) {
+            send(player, MessageEditStatus.rejected(message.id, "schematica.message.edit.permissions"));
+            return;
+        }
         Received received;
         synchronized (uploads) { received = accept(player.getUniqueID(), player.dimension, message); }
         if (received.error != null) send(player, MessageEditStatus.rejected(message.id, received.error));
@@ -87,35 +90,25 @@ public final class RemoteEdits {
         if (message.dimension != dimension) return new Received(null, "schematica.message.edit.remote_invalid");
         Upload upload = uploads.get(owner);
         if (message.index == 0) {
-            if (message.count < 1 || (long) message.count * MessageEditUpload.CHUNK_SIZE > MAX_UPLOAD_BYTES + MessageEditUpload.CHUNK_SIZE) {
-                return new Received(null, "schematica.message.edit.remote_too_large");
-            }
+            SliceAssembler slices = SliceAssembler.create(message.count, MessageEditUpload.CHUNK_SIZE, MAX_UPLOAD_BYTES);
+            if (slices == null) return new Received(null, "schematica.message.edit.remote_too_large");
             if (upload != null && System.nanoTime() - upload.touched > IDLE_NANOS) {
                 uploads.remove(owner);
                 operations.finish(upload.operation);
             }
             RemoteEditOperations.Operation<WorldEditJob> operation = operations.begin(owner, message.id);
             if (operation == null) return new Received(null, "schematica.message.edit.busy");
-            upload = new Upload(operation, message.dimension, message.count);
+            upload = new Upload(operation, message.dimension, slices);
             uploads.put(owner, upload);
         }
         if (upload == null || upload.operation.id != message.id) return new Received(null, "schematica.message.edit.remote_invalid");
-        if (upload.count != message.count || message.index < 0 || message.index >= upload.count
-            || upload.parts[message.index] != null || System.nanoTime() - upload.touched > IDLE_NANOS) {
+        if (System.nanoTime() - upload.touched > IDLE_NANOS || !upload.slices.add(message.index, message.count, message.data)) {
             uploads.remove(owner);
             operations.finish(upload.operation);
-            return new Received(null, "schematica.message.edit.remote_invalid");
+            return new Received(null, upload.slices.bytes() > MAX_UPLOAD_BYTES ? "schematica.message.edit.remote_too_large" : "schematica.message.edit.remote_invalid");
         }
-        upload.parts[message.index] = message.data;
-        upload.received++;
-        upload.bytes += message.data.length;
         upload.touched = System.nanoTime();
-        if (upload.bytes > MAX_UPLOAD_BYTES) {
-            uploads.remove(owner);
-            operations.finish(upload.operation);
-            return new Received(null, "schematica.message.edit.remote_too_large");
-        }
-        if (upload.received < upload.count) return new Received(null, null);
+        if (!upload.slices.complete()) return new Received(null, null);
         uploads.remove(owner);
         operations.uploaded(upload.operation);
         return new Received(upload, null);
@@ -125,9 +118,7 @@ public final class RemoteEdits {
         if (!operations.active(upload.operation)) return;
         WorldEditJob job;
         try {
-            ByteArrayOutputStream joined = new ByteArrayOutputStream(upload.bytes);
-            for (byte[] part : upload.parts) joined.write(part);
-            job = WorldEditJob.read(read(joined.toByteArray()), player.getUniqueID(), upload.dimension);
+            job = WorldEditJob.read(read(upload.slices.join()), player.getUniqueID(), upload.dimension);
         } catch (IOException | RuntimeException e) {
             Reference.logger.warn("Rejected an invalid remote edit from {}", player.getCommandSenderName(), e);
             if (operations.finish(upload.operation)) send(player, MessageEditStatus.rejected(upload.operation.id, "schematica.message.edit.remote_invalid"));
@@ -155,16 +146,15 @@ public final class RemoteEdits {
             operations.finish(operation);
             return;
         }
-        if (!player.capabilities.isCreativeMode || !player.canCommandSenderUseCommand(2, "setblock")) {
+        if (!WorldEditQueue.mayEdit(player)) {
             operations.finish(operation);
             send(player, MessageEditStatus.rejected(id, "schematica.message.edit.permissions"));
             return;
         }
         long[] lastProgress = {0};
-        job.completion = success -> {
+        job.completion = outcome -> {
             operations.finish(operation);
-            send(player, new MessageEditStatus(id, success ? MessageEditStatus.State.FINISHED
-                : job.completedTraversal ? MessageEditStatus.State.PARTIAL : MessageEditStatus.State.FAILED));
+            send(player, new MessageEditStatus(id, MessageEditStatus.State.of(outcome)));
         };
         job.progress = progress -> {
             long now = System.nanoTime();

@@ -17,8 +17,6 @@ import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.event.FMLServerStartingEvent;
 import cpw.mods.fml.common.network.NetworkCheckHandler;
-import cpw.mods.fml.common.versioning.ArtifactVersion;
-import cpw.mods.fml.common.versioning.DefaultArtifactVersion;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
@@ -35,8 +33,6 @@ public class SchematicaPlus {
 
     @SidedProxy(serverSide = Reference.PROXY_SERVER, clientSide = Reference.PROXY_CLIENT)
     public static CommonProxy proxy;
-
-    private static final ArtifactVersion MINIMUM_CLIENT_JOIN_VERSION = new DefaultArtifactVersion("1.0.0-beta.1");
 
     public SchematicaPlus() {
         String conflict = findLegacyMod(Loader.instance().getIndexedModList().keySet());
@@ -65,16 +61,12 @@ public class SchematicaPlus {
     @SuppressWarnings("unused")
     @NetworkCheckHandler
     public boolean checkModList(Map<String, String> versions, Side side) {
-        return acceptsRemoteMods(Reference.VERSION, versions, side);
+        return acceptsRemoteMods(Reference.VERSION, versions);
     }
 
-    static boolean acceptsRemoteMods(String localVersion, Map<String, String> versions, Side side) {
-        if (side == Side.CLIENT && versions.containsKey(Reference.MODID)) {
-            String remoteVersion = versions.get(Reference.MODID);
-            return localVersion.equals(remoteVersion)
-                || MINIMUM_CLIENT_JOIN_VERSION.compareTo(new DefaultArtifactVersion(remoteVersion)) <= 0;
-        }
-        return true;
+    static boolean acceptsRemoteMods(String localVersion, Map<String, String> versions) {
+        String remoteVersion = versions.get(Reference.MODID);
+        return remoteVersion == null || localVersion.equals(remoteVersion);
     }
 
     @EventHandler
@@ -107,6 +99,6 @@ public class SchematicaPlus {
         com.github.lunatrius.schematica.handler.RemoteEdits.INSTANCE.clear();
         com.github.lunatrius.schematica.handler.WorldEditQueue.INSTANCE.clear();
         com.github.lunatrius.schematica.handler.QueueTickHandler.INSTANCE.clear();
-        com.github.lunatrius.schematica.handler.DownloadHandler.INSTANCE.transferMap.clear();
+        com.github.lunatrius.schematica.handler.DownloadHandler.INSTANCE.stopAll();
     }
 }

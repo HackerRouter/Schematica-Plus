@@ -111,6 +111,16 @@ public class RendererSchematicGlobal {
 
     public void renderAll(float partialTicks) {
         GL11.glPushMatrix();
+        try {
+            renderPlacements(partialTicks);
+        } finally {
+            GL11.glDisable(GL11.GL_BLEND);
+            GL11.glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+            GL11.glPopMatrix();
+        }
+    }
+
+    private void renderPlacements(float partialTicks) {
         GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
         GL11.glEnable(GL11.GL_BLEND);
 
@@ -130,27 +140,11 @@ public class RendererSchematicGlobal {
             if (data == null || data.chunks.isEmpty()) continue;
 
             GL11.glPushMatrix();
-
-            Vector3d playerPos = this.cameraPosition.clone();
-            playerPos.sub(sw.position.toVector3d());
-            GL11.glTranslated(-playerPos.x, -playerPos.y, -playerPos.z);
-
-            // Render passes
-            for (int pass = 0; sw.isRenderingEnabled() && pass < 3; pass++) {
-                boolean reverse = pass == 1 || (pass == 0 &&
-                    com.github.lunatrius.schematica.handler.ConfigurationHandler.enableAlpha);
-                for (int i = 0; i < data.chunks.size(); i++) {
-                    int index = reverse ? data.chunks.size() - 1 - i : i;
-                    data.chunks.get(index).render(pass, partialTicks);
-                }
+            try {
+                renderPlacement(sw, data, partialTicks);
+            } finally {
+                GL11.glPopMatrix();
             }
-
-            // Render entities if enabled
-            if (sw.isRenderingEnabled() && sw.isRenderingEntities && VisualSettings.frameSchematic && VisualSettings.renderEntities) {
-                renderEntities(sw);
-            }
-
-            GL11.glPopMatrix();
         }
 
         this.profiler.endStartSection("boxes");
@@ -162,10 +156,27 @@ public class RendererSchematicGlobal {
         this.profiler.endStartSection("projects");
         renderProjectOrigin();
         this.profiler.endSection();
+    }
 
-        GL11.glDisable(GL11.GL_BLEND);
-        GL11.glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-        GL11.glPopMatrix();
+    private void renderPlacement(SchematicWorld sw, SchematicRenderData data, float partialTicks) {
+        Vector3d playerPos = this.cameraPosition.clone();
+        playerPos.sub(sw.position.toVector3d());
+        GL11.glTranslated(-playerPos.x, -playerPos.y, -playerPos.z);
+
+        // Render passes
+        for (int pass = 0; sw.isRenderingEnabled() && pass < 3; pass++) {
+            boolean reverse = pass == 1 || (pass == 0 &&
+                com.github.lunatrius.schematica.handler.ConfigurationHandler.enableAlpha);
+            for (int i = 0; i < data.chunks.size(); i++) {
+                int index = reverse ? data.chunks.size() - 1 - i : i;
+                data.chunks.get(index).render(pass, partialTicks);
+            }
+        }
+
+        // Render entities if enabled
+        if (sw.isRenderingEnabled() && sw.isRenderingEntities && VisualSettings.frameSchematic && VisualSettings.renderEntities) {
+            renderEntities(sw);
+        }
     }
 
     /** OverlayRenderer render_projects: the open project's origin, whether or not area boxes are shown. */

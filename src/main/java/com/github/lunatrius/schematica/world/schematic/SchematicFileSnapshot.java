@@ -87,6 +87,10 @@ public final class SchematicFileSnapshot {
         return LitematicaNBTReader.readFromStream(new ByteArrayInputStream(bytes));
     }
 
+    public LitematicaNBTReader.Parsed parse() throws IOException {
+        return LitematicaNBTReader.parse(new ByteArrayInputStream(bytes));
+    }
+
     public void write(File target, boolean replace) throws IOException {
         if (!target.getName().toLowerCase(Locale.ROOT).endsWith(extension)) throw new IOException("Keep the original source extension");
         Path destination = target.toPath().toAbsolutePath();

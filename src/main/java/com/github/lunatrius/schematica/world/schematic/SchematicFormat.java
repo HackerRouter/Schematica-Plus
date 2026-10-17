@@ -44,8 +44,18 @@ public abstract class SchematicFormat {
     }
 
     public static ISchematic readFromSnapshot(SchematicFileSnapshot snapshot) throws java.io.IOException {
+        LitematicaNBTReader.Parsed parsed;
         try {
-            ISchematic data = decode(snapshot.readNBT(), snapshot.extension());
+            parsed = snapshot.parse();
+        } catch (RuntimeException ex) {
+            throw new java.io.IOException("Unable to decode schematic source", ex);
+        }
+        return readFromSnapshot(snapshot, parsed);
+    }
+
+    public static ISchematic readFromSnapshot(SchematicFileSnapshot snapshot, LitematicaNBTReader.Parsed parsed) throws java.io.IOException {
+        try {
+            ISchematic data = decode(LitematicaNBTReader.restore(parsed), snapshot.extension());
             if (data == null) throw new java.io.IOException("Unable to decode schematic source");
             return data;
         } catch (RuntimeException ex) {

@@ -35,8 +35,7 @@ public final class SchematicSaveTarget {
                 throw new IllegalArgumentException("Invalid schematic filename");
             }
         }
-        String stem = name.split("\\.", 2)[0].toUpperCase(Locale.ROOT);
-        if (stem.matches("CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9]")) {
+        if (com.github.lunatrius.schematica.util.FileUtils.isReservedName(name)) {
             throw new IllegalArgumentException("Reserved schematic filename");
         }
         return name + extension;

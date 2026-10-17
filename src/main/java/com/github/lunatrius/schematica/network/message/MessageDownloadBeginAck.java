@@ -5,7 +5,6 @@ import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.StatCollector;
 
 import com.github.lunatrius.schematica.handler.DownloadHandler;
-import com.github.lunatrius.schematica.network.transfer.SchematicTransfer;
 
 import cpw.mods.fml.common.network.simpleimpl.IMessage;
 import cpw.mods.fml.common.network.simpleimpl.IMessageHandler;
@@ -32,16 +31,10 @@ public class MessageDownloadBeginAck implements IMessage, IMessageHandler<Messag
     @Override
     public IMessage onMessage(MessageDownloadBeginAck message, MessageContext ctx) {
         EntityPlayerMP player = ctx.getServerHandler().playerEntity;
-        SchematicTransfer transfer = DownloadHandler.INSTANCE.transferMap.get(player);
-        if (transfer != null && transfer.state == SchematicTransfer.State.BEGIN) {
-            if (!transfer.acceptGeometrySupport(message.supportsGeometry) || !transfer.acceptRegionSupport(message.supportsRegions)) {
-                DownloadHandler.INSTANCE.transferMap.remove(player);
-                String key = "schematica.message.download.update_client";
-                player.addChatMessage(new ChatComponentText(StatCollector.canTranslate(key) ? StatCollector.translateToLocal(key)
-                    : "Schematica Plus: update the client to download schematics with subregions or custom origins."));
-                return null;
-            }
-            transfer.setState(SchematicTransfer.State.CHUNK_WAIT);
+        if (!DownloadHandler.INSTANCE.acceptBegin(player, message.supportsGeometry, message.supportsRegions)) {
+            String key = "schematica.message.download.update_client";
+            player.addChatMessage(new ChatComponentText(StatCollector.canTranslate(key) ? StatCollector.translateToLocal(key)
+                : "Schematica Plus: update the client to download schematics with subregions or custom origins."));
         }
 
         return null;

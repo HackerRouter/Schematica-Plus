@@ -21,6 +21,10 @@ public final class WorldEditQueue {
 
     public boolean enqueue(Runnable request) { return requests.offer(request); }
 
+    public static boolean mayEdit(EntityPlayerMP player) {
+        return player.capabilities.isCreativeMode && player.canCommandSenderUseCommand(2, "setblock");
+    }
+
     private static final class Edit {
         final MinecraftServer server;
         final WorldEditTask job;
@@ -63,9 +67,9 @@ public final class WorldEditQueue {
         return true;
     }
 
-    private void finish(Edit edit) { finish(edit, false); }
-    private void finish(Edit edit, boolean success) {
-        pending.compareAndSet(edit, null); edit.task.finish(); edit.job.completion.accept(success);
+    private void finish(Edit edit) { finish(edit, WorldEditTask.Outcome.FAILED); }
+    private void finish(Edit edit, WorldEditTask.Outcome outcome) {
+        pending.compareAndSet(edit, null); edit.task.finish(); edit.job.completion.accept(outcome);
     }
 
     public void rollbackBeforeShutdown(MinecraftServer server) {
@@ -100,8 +104,7 @@ public final class WorldEditQueue {
         for (EntityPlayerMP candidate : server.getConfigurationManager().playerEntityList) {
             if (candidate.getUniqueID().equals(job.player)) { player = candidate; break; }
         }
-        boolean authorized = player != null && player.dimension == job.dimension && player.capabilities.isCreativeMode
-            && player.canCommandSenderUseCommand(2, "setblock");
+        boolean authorized = player != null && player.dimension == job.dimension && mayEdit(player);
         if (!authorized) {
             if (player != null && !job.cancelled) player.addChatMessage(new ChatComponentTranslation("schematica.message.edit.permissions"));
             job.cancelled = true;
@@ -122,11 +125,11 @@ public final class WorldEditQueue {
             job.publishProgress(edit.task);
             if (job.progress != null) job.progress.accept(edit.task.progress());
             if (done) {
-                boolean success = !job.cancelled && job.failure() == null;
+                WorldEditTask.Outcome outcome = job.outcome();
                 if (job.failure() != null) Reference.logger.error("World edit finished with errors", job.failure());
-                net.minecraft.util.IChatComponent message = job.finishedMessage(success);
+                net.minecraft.util.IChatComponent message = job.finishedMessage(outcome == WorldEditTask.Outcome.FINISHED);
                 if (player != null && message != null) player.addChatMessage(message);
-                finish(edit, success);
+                finish(edit, outcome);
             }
         } catch (Exception e) {
             Reference.logger.error("World edit stopped after partial completion", e);

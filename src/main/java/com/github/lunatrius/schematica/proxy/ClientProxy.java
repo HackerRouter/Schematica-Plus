@@ -1,9 +1,7 @@
 package com.github.lunatrius.schematica.proxy;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.lang.reflect.Type;
 import java.nio.charset.Charset;
@@ -252,56 +250,6 @@ public class ClientProxy extends CommonProxy {
         return coordinates;
     }
 
-    private static boolean saveCoordinatesFile(Map<String, Map<String, SchematicData>> map) {
-        File coordinatesFile = new File(ConfigurationHandler.schematicDirectory, Constants.Files.Coordinates + ".json");
-        try (OutputStreamWriter writer = new OutputStreamWriter(
-            new FileOutputStream(coordinatesFile.getAbsoluteFile()),
-            StandardCharsets.UTF_8)) {
-            gson.toJson(map, schematicDataType, writer);
-            writer.flush();
-            Reference.logger.info("Successfully written to coordinates file");
-            return true;
-        } catch (IOException e) {
-            Reference.logger.info("Failed to write to coordinates file");
-            return false;
-        }
-    }
-
-    public static boolean addCoordinatesAndRotation(String worldServerName, String schematicName, Integer X, Integer Y,
-        Integer Z, Integer rotationX, Integer rotationY, Integer rotationZ, Integer flipX, Integer flipY,
-        Integer flipZ) {
-        try {
-            Map<String, Map<String, SchematicData>> coordinates = openCoordinatesFile();
-            SchematicData schematicData = new SchematicData();
-            schematicData.X = X;
-            schematicData.Y = Y;
-            schematicData.Z = Z;
-            schematicData.RotationX = rotationX; // This value is left as "Rotation" to provide backwards compat
-            schematicData.Rotation = rotationY;
-            schematicData.RotationZ = rotationZ;
-            schematicData.FlipX = flipX;
-            schematicData.FlipY = flipY;
-            schematicData.FlipZ = flipZ;
-
-            if (coordinates.containsKey(worldServerName)) {
-                coordinates.get(worldServerName)
-                    .put(schematicName, schematicData);
-            } else {
-                coordinates.put(worldServerName, new HashMap<>() {
-
-                    {
-                        put(schematicName, schematicData);
-                    }
-                });
-            }
-            saveCoordinatesFile(coordinates);
-            return true;
-        } catch (IOException e) {
-            e.printStackTrace();
-            return false;
-        }
-    }
-
     /**
      * gets the coordinates if present
      *
@@ -490,8 +438,8 @@ public class ClientProxy extends CommonProxy {
     private static final java.util.Set<File> READING = java.util.Collections.synchronizedSet(new java.util.HashSet<>());
 
     /**
-     * Reads and decodes a file on a worker thread so that the game keeps running, then adds it on the client thread
-     * and passes it on; false when the file is already being read. A file loaded before is passed on right away.
+     * Reads and parses a file on a worker thread so that the game keeps running, then decodes and adds it on the client
+     * thread and passes it on; false when the file is already being read. A file loaded before is passed on right away.
      */
     public static boolean loadSourceAsync(File file, java.util.function.Consumer<SchematicLibrary.Source<SchematicSourceData>> loaded,
         java.util.function.Consumer<Exception> failed) throws IOException {
@@ -505,21 +453,21 @@ public class ClientProxy extends CommonProxy {
         Minecraft mc = Minecraft.getMinecraft();
         net.minecraft.world.World world = mc.theWorld;
         SOURCE_READER.execute(() -> {
-            SchematicSourceData data = null;
+            SchematicSourceData.Prepared data = null;
             Exception error = null;
             try {
-                data = SchematicSourceData.read(canonical);
+                data = SchematicSourceData.prepare(canonical);
             } catch (IOException | RuntimeException e) {
                 error = e;
             }
-            SchematicSourceData read = data;
+            SchematicSourceData.Prepared prepared = data;
             Exception problem = error;
             mc.func_152344_a(() -> {
                 READING.remove(canonical);
                 if (problem != null) { failed.accept(problem); return; }
                 if (mc.theWorld != world) return;
                 try {
-                    SchematicLibrary.Source<SchematicSourceData> source = SCHEMATICS.add(canonical, read);
+                    SchematicLibrary.Source<SchematicSourceData> source = SCHEMATICS.add(canonical, SchematicSourceData.of(prepared));
                     reportUnknownBlocks(source);
                     loaded.accept(source);
                 } catch (IOException | RuntimeException e) {

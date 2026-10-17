@@ -73,7 +73,8 @@ public class CommandSchematicaList extends CommandSchematicaBase {
             }
         }
 
-        final File[] files = schematicDirectory.listFiles(FILE_FILTER_SCHEMATIC);
+        File[] files = schematicDirectory.listFiles(FILE_FILTER_SCHEMATIC);
+        if (files == null) files = new File[0];
         for (File path : files) {
             if (currentFile >= pageStart && currentFile < pageEnd) {
                 IChatComponent chatComponent = new ChatComponentText(

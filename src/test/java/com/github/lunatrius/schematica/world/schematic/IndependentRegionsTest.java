@@ -21,6 +21,7 @@ import cpw.mods.fml.common.registry.GameData;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
 public class IndependentRegionsTest {
@@ -68,6 +69,18 @@ public class IndependentRegionsTest {
         assertEquals(-1, first.getOrigin().x);
         assertSame(blue, read.getBlock(1, 0, 0));
         assertSame(red, read.getBlock(0, 0, 1));
+    }
+
+    @Test public void regionContentsWithAnotherSizeAreRejectedBeforeDecoding() {
+        MultiRegionSchematic schematic = new MultiRegionSchematic(null, 3, 1, 2);
+        SchematicRegion a = new SchematicRegion("A", 0, 0, 0, 1, 0, 1), b = new SchematicRegion("B", 1, 0, 0, 2, 0, 1);
+        schematic.setRegions(Arrays.asList(a, b));
+        schematic.addRegion(a, filled(red, 1));
+        schematic.addRegion(b, filled(blue, 2));
+        NBTTagCompound tag = new NBTTagCompound();
+        assertTrue(new SchematicAlpha().writeToNBT(tag, schematic, null, true, true, false));
+        tag.getTagList(SchematicAlpha.REGION_DATA, 10).getCompoundTagAt(1).getCompoundTag("Schematic").setShort("Width", (short) 300);
+        assertThrows(IllegalArgumentException.class, () -> new SchematicAlpha().readFromNBT(tag));
     }
 
     @Test public void downloadsRestoreRegionsFromTheirPayload() throws Exception {

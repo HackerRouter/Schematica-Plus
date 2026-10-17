@@ -103,7 +103,7 @@ public class ToolHandler {
         submit(player, jobs.get(index), index + 1 < jobs.size() ? () -> {
             EntityPlayer current = Minecraft.getMinecraft().thePlayer;
             if (current != null) request(current, TaskRegistry.Kind.PASTE, p -> submitAll(p, jobs, index + 1));
-        } : null, true);
+        } : null);
     }
 
     private static WorldEditJob pasteJob(EntityPlayer player, SchematicWorld schematic) {
@@ -140,16 +140,10 @@ public class ToolHandler {
      * to any other server; onSuccess runs on the client thread.
      */
     private static void submit(EntityPlayer player, WorldEditJob job, Runnable onSuccess) {
-        submit(player, job, onSuccess, false);
-    }
-
-    private static void submit(EntityPlayer player, WorldEditJob job, Runnable onSuccess, boolean continueOnPartial) {
         MinecraftServer server = Minecraft.getMinecraft().getIntegratedServer();
         boolean commands = com.github.lunatrius.schematica.handler.ConfigurationHandler.pasteUsingCommandsInSp && job.kind == WorldEditJob.Kind.PASTE;
         if (server != null && !commands) {
-            if (onSuccess != null) job.completion = success -> {
-                if (success || (continueOnPartial && job.completedTraversal)) Minecraft.getMinecraft().func_152344_a(onSuccess);
-            };
+            continueWith(job, onSuccess);
             if (!com.github.lunatrius.schematica.handler.WorldEditQueue.INSTANCE.submit(server, job)) {
                 throw new MessageException("schematica.message.edit.busy");
             }
@@ -159,19 +153,23 @@ public class ToolHandler {
                 throw new MessageException("schematica.message.edit.busy");
             }
             if (SchematicaPlus.proxy.supportsRemoteEdit && server == null) {
-                com.github.lunatrius.schematica.handler.client.RemoteEditClient.INSTANCE.submit(job, player.worldObj, onSuccess, continueOnPartial);
+                com.github.lunatrius.schematica.handler.client.RemoteEditClient.INSTANCE.submit(job, player.worldObj, onSuccess);
             } else {
                 if (prepareCommandPaste(job)) {
-                    confirmCommandPaste(player, job, () -> submit(player, job, onSuccess, continueOnPartial));
+                    confirmCommandPaste(player, job, () -> submit(player, job, onSuccess));
                     return;
                 }
-                if (onSuccess != null) job.completion = success -> {
-                    if (success || (continueOnPartial && job.completedTraversal)) Minecraft.getMinecraft().func_152344_a(onSuccess);
-                };
+                continueWith(job, onSuccess);
                 com.github.lunatrius.schematica.handler.client.CommandEditQueue.INSTANCE.submit(job, player.worldObj);
             }
         }
         sendChat(player, UiTranslations.format("litematica.message.scheduled_task_added"));
+    }
+
+    private static void continueWith(WorldEditJob job, Runnable next) {
+        if (next != null) job.completion = outcome -> {
+            if (outcome.completed()) Minecraft.getMinecraft().func_152344_a(next);
+        };
     }
 
     private static boolean prepareCommandPaste(WorldEditJob job) {

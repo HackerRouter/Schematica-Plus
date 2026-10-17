@@ -40,6 +40,24 @@ public final class SchematicSourceData {
         decoded = new java.lang.ref.SoftReference<>(data);
     }
 
+    public static final class Prepared {
+        final SchematicFileSnapshot snapshot;
+        final com.github.lunatrius.schematica.world.schematic.LitematicaNBTReader.Parsed parsed;
+
+        private Prepared(SchematicFileSnapshot snapshot, com.github.lunatrius.schematica.world.schematic.LitematicaNBTReader.Parsed parsed) {
+            this.snapshot = snapshot; this.parsed = parsed;
+        }
+    }
+
+    public static Prepared prepare(File file) throws IOException {
+        SchematicFileSnapshot snapshot = SchematicFileSnapshot.read(file);
+        return new Prepared(snapshot, snapshot.parse());
+    }
+
+    public static SchematicSourceData of(Prepared prepared) throws IOException {
+        return new SchematicSourceData(prepared.snapshot, SchematicFormat.readFromSnapshot(prepared.snapshot, prepared.parsed));
+    }
+
     public static SchematicSourceData read(File file) throws IOException {
         return of(SchematicFileSnapshot.read(file));
     }

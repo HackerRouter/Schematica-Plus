@@ -9,6 +9,7 @@ import net.minecraft.server.MinecraftServer;
 import com.github.lunatrius.schematica.api.SchematicRegion;
 import com.github.lunatrius.schematica.handler.WorldEditQueue;
 import com.github.lunatrius.schematica.network.PacketHandler;
+import com.github.lunatrius.schematica.tool.WorldEditTask;
 import com.github.lunatrius.schematica.tool.WorldMoveJob;
 
 import cpw.mods.fml.common.network.simpleimpl.IMessage;
@@ -46,9 +47,9 @@ public final class MessageMoveRequest implements IMessage, IMessageHandler<Messa
             boolean submitted = false;
             try {
                 if (server != null && server.getConfigurationManager().playerEntityList.contains(player) && player.dimension == message.dimension
-                    && player.capabilities.isCreativeMode && player.canCommandSenderUseCommand(2, "setblock")) {
+                    && WorldEditQueue.mayEdit(player)) {
                     WorldMoveJob job = new WorldMoveJob(player.getUniqueID(), message.dimension, message.regions, message.dx, message.dy, message.dz);
-                    job.completion = success -> PacketHandler.INSTANCE.sendTo(new MessageMoveResult(message.id, success), player);
+                    job.completion = outcome -> PacketHandler.INSTANCE.sendTo(new MessageMoveResult(message.id, outcome == WorldEditTask.Outcome.FINISHED), player);
                     submitted = WorldEditQueue.INSTANCE.submit(server, job);
                 }
             } catch (IllegalArgumentException | ArithmeticException error) {

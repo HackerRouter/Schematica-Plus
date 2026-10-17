@@ -164,11 +164,15 @@ public class MessageDownloadChunk implements IMessage, IMessageHandler<MessageDo
     @Override
     public IMessage onMessage(MessageDownloadChunk message, MessageContext ctx) {
         if (!DownloadHandler.INSTANCE.validChunk(message.baseX, message.baseY, message.baseZ)) return null;
-        // A lost acknowledgement may resend this chunk. Acknowledge it again without duplicating entities.
-        if (!DownloadHandler.INSTANCE.hasReceivedChunk(message.baseX, message.baseY, message.baseZ)) {
-            message.copyToSchematic(DownloadHandler.INSTANCE.schematic);
-            DownloadHandler.INSTANCE.receivedChunk(message.baseX, message.baseY, message.baseZ);
-        }
+        ISchematic target = DownloadHandler.INSTANCE.schematic;
+        net.minecraft.client.Minecraft.getMinecraft().func_152344_a(() -> {
+            // A lost acknowledgement may resend this chunk. Acknowledge it again without duplicating entities.
+            if (DownloadHandler.INSTANCE.schematic == target
+                && !DownloadHandler.INSTANCE.hasReceivedChunk(message.baseX, message.baseY, message.baseZ)) {
+                message.copyToSchematic(target);
+                DownloadHandler.INSTANCE.receivedChunk(message.baseX, message.baseY, message.baseZ);
+            }
+        });
 
         return new MessageDownloadChunkAck(message.baseX, message.baseY, message.baseZ);
     }

@@ -8,11 +8,17 @@ import net.minecraft.world.WorldServer;
 import com.github.lunatrius.schematica.task.TaskRegistry;
 
 public abstract class WorldEditTask {
+    public enum Outcome {
+        FINISHED, PARTIAL, FAILED;
+
+        public boolean completed() { return this != FAILED; }
+    }
+
     public final UUID player;
     public final int dimension, x, y, z;
     public volatile boolean cancelled;
     public int blockCount, entityCount;
-    public Consumer<Boolean> completion = success -> {};
+    public Consumer<Outcome> completion = outcome -> {};
     /** Called on the server thread with each published progress, for remote clients. */
     public Consumer<TaskRegistry.Progress> progress;
 
@@ -25,6 +31,10 @@ public abstract class WorldEditTask {
     public abstract void publishProgress(TaskRegistry.Task task);
     public boolean needsRollback() { return false; }
     public RuntimeException failure() { return null; }
+
+    public Outcome outcome() {
+        return cancelled || failure() != null ? Outcome.FAILED : Outcome.FINISHED;
+    }
 
     /** The upstream task end message for this edit, or null when upstream shows none. */
     public net.minecraft.util.IChatComponent finishedMessage(boolean success) {

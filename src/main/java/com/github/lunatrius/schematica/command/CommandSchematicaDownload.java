@@ -13,14 +13,11 @@ import net.minecraft.util.ChatComponentTranslation;
 
 import com.github.lunatrius.schematica.FileFilterSchematic;
 import com.github.lunatrius.schematica.SchematicaPlus;
-import com.github.lunatrius.schematica.api.ISchematic;
 import com.github.lunatrius.schematica.handler.ConfigurationHandler;
 import com.github.lunatrius.schematica.handler.DownloadHandler;
-import com.github.lunatrius.schematica.network.transfer.SchematicTransfer;
 import com.github.lunatrius.schematica.reference.Names;
 import com.github.lunatrius.schematica.reference.Reference;
 import com.github.lunatrius.schematica.util.FileUtils;
-import com.github.lunatrius.schematica.world.schematic.SchematicFormat;
 
 public class CommandSchematicaDownload extends CommandSchematicaBase {
 
@@ -76,15 +73,8 @@ public class CommandSchematicaDownload extends CommandSchematicaBase {
             Reference.logger.warn("Rejected schematic download filename", e);
             throw new CommandException(Names.Command.Download.Message.DOWNLOAD_FAILED);
         }
-        final String filename = file.getName();
-        final ISchematic schematic = SchematicFormat.readFromFile(file);
-
-        if (schematic != null) {
-            DownloadHandler.INSTANCE.transferMap.put(player, new SchematicTransfer(schematic, filename));
-            sender.addChatMessage(
-                new ChatComponentTranslation(Names.Command.Download.Message.DOWNLOAD_STARTED, filename));
-        } else {
-            throw new CommandException(Names.Command.Download.Message.DOWNLOAD_FAILED);
-        }
+        if (!file.isFile()) throw new CommandException(Names.Command.Download.Message.DOWNLOAD_FAILED);
+        DownloadHandler.INSTANCE.read(player, file);
+        sender.addChatMessage(new ChatComponentTranslation(Names.Command.Download.Message.DOWNLOAD_STARTED, file.getName()));
     }
 }

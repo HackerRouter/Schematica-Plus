@@ -38,6 +38,11 @@ public class MessageDownloadEnd implements IMessage, IMessageHandler<MessageDown
 
     @Override
     public IMessage onMessage(MessageDownloadEnd message, MessageContext ctx) {
+        Minecraft.getMinecraft().func_152344_a(() -> finish(message));
+        return null;
+    }
+
+    private static void finish(MessageDownloadEnd message) {
         File directory = SchematicaPlus.proxy.getPlayerSchematicDirectory(null, true);
         File saved = null;
         try {
@@ -56,7 +61,5 @@ public class MessageDownloadEnd implements IMessage, IMessageHandler<MessageDown
         }
 
         DownloadHandler.INSTANCE.beginDownload(null);
-
-        return null;
     }
 }

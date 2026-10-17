@@ -35,7 +35,6 @@ public final class RemoteEditClient {
     private World world;
     private Runnable onSuccess;
     private boolean accepted, cancelSent;
-    private boolean continueOnPartial;
 
     private RemoteEditClient() {}
 
@@ -43,10 +42,6 @@ public final class RemoteEditClient {
 
     /** Compresses the edit and starts uploading it; onSuccess runs on the client thread after the server finishes. */
     public synchronized void submit(WorldEditJob job, World targetWorld, Runnable onSuccess) {
-        submit(job, targetWorld, onSuccess, false);
-    }
-
-    public synchronized void submit(WorldEditJob job, World targetWorld, Runnable onSuccess, boolean continueOnPartial) {
         if (task != null) throw new MessageException("schematica.message.edit.busy");
         byte[] bytes;
         try {
@@ -61,7 +56,6 @@ public final class RemoteEditClient {
         count = Math.max(1, (bytes.length + MessageEditUpload.CHUNK_SIZE - 1) / MessageEditUpload.CHUNK_SIZE);
         world = targetWorld;
         this.onSuccess = onSuccess;
-        this.continueOnPartial = continueOnPartial;
         accepted = cancelSent = false;
         task = TaskRegistry.INSTANCE.start(job.player, job.dimension, job.taskKind(), TaskRegistry.Backend.SERVER, job.x + ", " + job.y + ", " + job.z);
         task.update(TaskRegistry.Stage.UPLOAD, 0, bytes.length, 0, 0);
@@ -124,7 +118,7 @@ public final class RemoteEditClient {
                 break;
             case FINISHED:
             case PARTIAL: {
-                Runnable done = !cancelSent && (status.state == MessageEditStatus.State.FINISHED || continueOnPartial) ? onSuccess : null;
+                Runnable done = cancelSent ? null : onSuccess;
                 end();
                 if (done != null) done.run();
                 break;

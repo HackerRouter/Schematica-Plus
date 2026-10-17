@@ -57,6 +57,31 @@ public final class LitematicaNBTReader {
         }
     }
 
+    public static final class Parsed {
+        final NBTTagCompound tag;
+        final Map<NBTTagCompound, Map<String, long[]>> longArrays;
+        final boolean dropped;
+
+        private Parsed(NBTTagCompound tag, Map<NBTTagCompound, Map<String, long[]>> longArrays, boolean dropped) {
+            this.tag = tag; this.longArrays = longArrays; this.dropped = dropped;
+        }
+    }
+
+    public static Parsed parse(InputStream source) throws IOException {
+        try {
+            NBTTagCompound tag = readFromStream(source);
+            return new Parsed(tag, LONG_ARRAY_STORE.get(), DROPPED.get());
+        } finally {
+            clearLongArrayStore();
+        }
+    }
+
+    static NBTTagCompound restore(Parsed parsed) {
+        LONG_ARRAY_STORE.set(parsed.longArrays);
+        DROPPED.set(parsed.dropped);
+        return parsed.tag;
+    }
+
     public static void clearLongArrayStore() {
         LONG_ARRAY_STORE.remove();
         DROPPED.remove();
