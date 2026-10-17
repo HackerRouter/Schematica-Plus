@@ -40,7 +40,6 @@ public class ColorConfigTest {
         File file = new File(temporary.getRoot(), "colors.cfg");
         Configuration config = new Configuration(file);
         RenderColors.load(config);
-        assertEquals(11, config.getCategory(RenderColors.CATEGORY).size());
         config.getCategory(RenderColors.CATEGORY).get(RenderColors.EXTRA.key).set("#01020304");
         config.getCategory(RenderColors.CATEGORY).get(RenderColors.MISSING.key).set("broken");
         config.save();

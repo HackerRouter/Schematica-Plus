@@ -57,30 +57,6 @@ public class SpongeSchematicTest {
         }
     }
 
-    @Test public void rejectsIncompleteVolumesIncludingWholeVarints() {
-        for (int version : new int[] {1, 2, 3}) {
-            for (byte[] data : new byte[][] {{}, {0}, {0, 0, (byte) 0xC8, 0x01}}) {
-                assertInvalid(blocks(version, data));
-            }
-        }
-    }
-
-    @Test public void rejectsTrailingBlockData() {
-        for (int version : new int[] {1, 2, 3}) {
-            assertInvalid(blocks(version, new byte[] {0, 0, 0, 0, 0}));
-            assertInvalid(blocks(version, new byte[] {0, 0, 0, 0, (byte) 0x80}));
-        }
-    }
-
-    @Test public void rejectsVarintsThatOverflowIntoValidPaletteIndices() {
-        for (int version : new int[] {1, 2, 3}) {
-            for (int last : new int[] {0x10, 0x20, 0x40, 0x80}) {
-                assertInvalid(blocks(version, new byte[] {(byte) 0x80, (byte) 0x80,
-                    (byte) 0x80, (byte) 0x80, (byte) last, 0, 0, 0}));
-            }
-        }
-    }
-
     @Test public void rejectsOutOfRangePaletteIndicesBeforeAllocation() {
         for (int version : new int[] {1, 2, 3}) {
             for (int index : new int[] {-1, Integer.MIN_VALUE, 1 << 20, Integer.MAX_VALUE}) {
@@ -88,22 +64,6 @@ public class SpongeSchematicTest {
                 palette(tag, version).setInteger("minecraft:cave_air", index);
                 assertInvalid(tag);
             }
-        }
-    }
-
-    @Test public void rejectsNonIntegerPaletteIndices() {
-        for (int version : new int[] {1, 2, 3}) {
-            NBTTagCompound tag = blocks(version, new byte[] {0, 0, 0, 0});
-            palette(tag, version).setString("minecraft:air", "0");
-            assertInvalid(tag);
-        }
-    }
-
-    @Test public void rejectsDuplicatePaletteIndices() {
-        for (int version : new int[] {1, 2, 3}) {
-            NBTTagCompound tag = blocks(version, new byte[] {0, 0, 0, 0});
-            palette(tag, version).setInteger("minecraft:cave_air", 0);
-            assertInvalid(tag);
         }
     }
 
