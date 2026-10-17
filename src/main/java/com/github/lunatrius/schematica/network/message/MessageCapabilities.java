@@ -2,6 +2,7 @@ package com.github.lunatrius.schematica.network.message;
 
 import com.github.lunatrius.schematica.SchematicaPlus;
 import com.github.lunatrius.schematica.client.printer.SchematicPrinter;
+import com.github.lunatrius.schematica.handler.PrinterRange;
 import com.github.lunatrius.schematica.reference.Reference;
 
 import cpw.mods.fml.common.network.simpleimpl.IMessage;
@@ -36,7 +37,7 @@ public class MessageCapabilities implements IMessage, IMessageHandler<MessageCap
         supportsWorldMove = buf.isReadable() && buf.readBoolean();
         supportsRemoteEdit = buf.isReadable() && buf.readBoolean();
         supportsAccuratePlacement = buf.isReadable() && buf.readBoolean();
-        printerMaxRange = com.github.lunatrius.schematica.handler.PrinterRange.clamp(buf.readDouble());
+        printerMaxRange = PrinterRange.clamp(buf.readDouble());
     }
 
     @Override

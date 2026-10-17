@@ -1,25 +1,38 @@
 package com.github.lunatrius.schematica.client.verifier;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.WorldClient;
+import net.minecraft.util.Vec3;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
+import net.minecraft.world.chunk.EmptyChunk;
 
 import com.github.lunatrius.schematica.api.ISchematic;
+import com.github.lunatrius.schematica.api.SchematicRegion;
 import com.github.lunatrius.schematica.client.gui.framework.UiTranslations;
+import com.github.lunatrius.schematica.client.renderer.RendererSchematicChunk;
 import com.github.lunatrius.schematica.client.world.SchematicWorld;
+import com.github.lunatrius.schematica.handler.ConfigurationHandler;
+import com.github.lunatrius.schematica.handler.VerifierOverlaySettings;
+import com.github.lunatrius.schematica.handler.VisualSettings;
 import com.github.lunatrius.schematica.proxy.ClientProxy;
 import com.github.lunatrius.schematica.reference.Reference;
 import com.github.lunatrius.schematica.task.TaskRegistry;
+import com.github.lunatrius.schematica.util.BlockGroups;
 import com.github.lunatrius.schematica.util.MessageException;
+
 import cpw.mods.fml.common.registry.GameData;
 
 public final class VerificationManager {
@@ -35,7 +48,7 @@ public final class VerificationManager {
     }
 
     public Session focused() { return focused; }
-    public java.util.Collection<Session> sessions() { return java.util.Collections.unmodifiableCollection(sessions.values()); }
+    public Collection<Session> sessions() { return Collections.unmodifiableCollection(sessions.values()); }
     public Session overlay(Minecraft mc) {
         Session selected = sessions.get(ClientProxy.schematic);
         return selected != null && selected.scan != null && selected.valid(mc) ? selected : null;
@@ -81,13 +94,13 @@ public final class VerificationManager {
         for (int i = 0; i < pending.size(); i++) pending.get(Math.floorMod(next + i, pending.size())).step(mc, deadline);
         next = pending.isEmpty() ? 0 : Math.floorMod(next + 1, pending.size());
         Session overlay = overlay(mc);
-        if (mc.renderViewEntity != null && com.github.lunatrius.schematica.handler.VerifierOverlaySettings.enabled) {
-            net.minecraft.util.Vec3 camera = mc.renderViewEntity.getPosition(1);
+        if (mc.renderViewEntity != null && VerifierOverlaySettings.enabled) {
+            Vec3 camera = mc.renderViewEntity.getPosition(1);
             long markerDeadline = System.nanoTime() + 1_000_000L;
             for (Session session : sessions.values()) {
                 if (session.scan == null || session != overlay && !(session.hud && session.valid(mc))) continue;
                 session.markers.update(session.scan, (int) Math.floor(camera.xCoord), (int) Math.floor(camera.yCoord), (int) Math.floor(camera.zCoord),
-                    com.github.lunatrius.schematica.handler.VerifierOverlaySettings.maxPositions, 16384, markerDeadline);
+                    VerifierOverlaySettings.maxPositions, 16384, markerDeadline);
             }
         }
     }
@@ -141,8 +154,8 @@ public final class VerificationManager {
                 ensureTask(mc);
                 return;
             }
-            java.util.Set<VerificationScan.Pair> ignored = scan == null ? java.util.Collections.emptySet()
-                : new java.util.HashSet<>(scan.ignored());
+            Set<VerificationScan.Pair> ignored = scan == null ? Collections.emptySet()
+                : new HashSet<>(scan.ignored());
             reset();
             world = mc.theWorld;
             source = placement.getSchematic();
@@ -157,7 +170,7 @@ public final class VerificationManager {
             }
             scan.addIgnored(ignored);
             // Only the enabled sub-regions are verified, and only their chunks are waited for (RequiredEnabled.PLACEMENT_ENABLED)
-            final java.util.List<com.github.lunatrius.schematica.api.SchematicRegion> enabled = enabledBoxes(placement, x, y, z);
+            final List<SchematicRegion> enabled = enabledBoxes(placement, x, y, z);
             reader = new VerificationScan.Reader() {
                 private final Map<Long, VerificationScan.State> states = new HashMap<>();
                 private final Map<VerificationScan.State, Block> blocks = new HashMap<>();
@@ -166,15 +179,15 @@ public final class VerificationManager {
                 @Override public boolean loaded(int cx, int cz) {
                     if (!world.getChunkProvider().chunkExists(cx, cz)) return false;
                     Chunk chunk = world.getChunkFromChunkCoords(cx, cz);
-                    return chunk != null && chunk.isChunkLoaded && !(chunk instanceof net.minecraft.world.chunk.EmptyChunk);
+                    return chunk != null && chunk.isChunkLoaded && !(chunk instanceof EmptyChunk);
                 }
                 @Override public VerificationScan.State expected(int x, int y, int z) { return state(placement, x, y, z); }
                 @Override public VerificationScan.State found(int x, int y, int z) { return state(world, x, y, z); }
                 @Override public boolean ignorable(VerificationScan.State found) {
                     Block block = blocks.get(found);
-                    return block != null && (com.github.lunatrius.schematica.handler.ConfigurationHandler.isExtraAirBlock(block)
-                        || com.github.lunatrius.schematica.handler.VisualSettings.ignoreExistingFluids
-                        && com.github.lunatrius.schematica.client.renderer.RendererSchematicChunk.isFluid(block));
+                    return block != null && (ConfigurationHandler.isExtraAirBlock(block)
+                        || VisualSettings.ignoreExistingFluids
+                        && RendererSchematicChunk.isFluid(block));
                 }
                 @Override public void failed(int x, int y, int z, RuntimeException error) {
                     if (logged++ < 3) Reference.logger.debug("Could not verify block at {}, {}, {}", x, y, z, error);
@@ -197,16 +210,16 @@ public final class VerificationManager {
         }
 
         /** The enabled sub-region boxes in placement coordinates; null when the placement has no sub-region layout. */
-        private java.util.List<com.github.lunatrius.schematica.api.SchematicRegion> enabledBoxes(SchematicWorld placement, int x, int y, int z) {
+        private List<SchematicRegion> enabledBoxes(SchematicWorld placement, int x, int y, int z) {
             if (placement.subregions() == null) return null;
-            java.util.List<com.github.lunatrius.schematica.api.SchematicRegion> boxes = new java.util.ArrayList<>();
-            for (com.github.lunatrius.schematica.api.SchematicRegion box : placement.enabledRegionBounds()) boxes.add(box.offset(-x, -y, -z));
+            List<SchematicRegion> boxes = new ArrayList<>();
+            for (SchematicRegion box : placement.enabledRegionBounds()) boxes.add(box.offset(-x, -y, -z));
             return boxes;
         }
 
-        private boolean inside(java.util.List<com.github.lunatrius.schematica.api.SchematicRegion> boxes, int x, int y, int z) {
+        private boolean inside(List<SchematicRegion> boxes, int x, int y, int z) {
             if (boxes == null) return true;
-            for (com.github.lunatrius.schematica.api.SchematicRegion box : boxes) if (box.contains(x, y, z)) return true;
+            for (SchematicRegion box : boxes) if (box.contains(x, y, z)) return true;
             return false;
         }
 
@@ -245,7 +258,7 @@ public final class VerificationManager {
             if (!notice.isEmpty()) return UiTranslations.format(notice);
             if (scan == null || !running && !scan.done()) return "";
             if (!scan.done()) return UiTranslations.format("litematica.gui.label.schematic_verifier.status.verifying", scan.remainingChunks(), scan.totalChunks());
-            if (com.github.lunatrius.schematica.util.BlockGroups.enabled) {
+            if (BlockGroups.enabled) {
                 return UiTranslations.format("litematica.gui.label.schematic_verifier.status.done_errors",
                     scan.count(VerificationScan.Type.WRONG_BLOCK), scan.count(VerificationScan.Type.WRONG_STATE),
                     scan.count(VerificationScan.Type.MISSING), scan.count(VerificationScan.Type.EXTRA), scan.count(VerificationScan.Type.DIFF_BLOCK));

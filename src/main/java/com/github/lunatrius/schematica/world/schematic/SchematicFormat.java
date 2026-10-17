@@ -1,7 +1,10 @@
 package com.github.lunatrius.schematica.world.schematic;
 
 import java.io.File;
+import java.io.IOException;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 import net.minecraft.nbt.NBTTagCompound;
@@ -12,6 +15,7 @@ import com.github.lunatrius.schematica.api.ISchematic;
 import com.github.lunatrius.schematica.api.event.PostSchematicCaptureEvent;
 import com.github.lunatrius.schematica.reference.Names;
 import com.github.lunatrius.schematica.reference.Reference;
+import com.github.lunatrius.schematica.util.FileUtils;
 
 public abstract class SchematicFormat {
 
@@ -43,23 +47,23 @@ public abstract class SchematicFormat {
         }
     }
 
-    public static ISchematic readFromSnapshot(SchematicFileSnapshot snapshot) throws java.io.IOException {
+    public static ISchematic readFromSnapshot(SchematicFileSnapshot snapshot) throws IOException {
         LitematicaNBTReader.Parsed parsed;
         try {
             parsed = snapshot.parse();
         } catch (RuntimeException ex) {
-            throw new java.io.IOException("Unable to decode schematic source", ex);
+            throw new IOException("Unable to decode schematic source", ex);
         }
         return readFromSnapshot(snapshot, parsed);
     }
 
-    public static ISchematic readFromSnapshot(SchematicFileSnapshot snapshot, LitematicaNBTReader.Parsed parsed) throws java.io.IOException {
+    public static ISchematic readFromSnapshot(SchematicFileSnapshot snapshot, LitematicaNBTReader.Parsed parsed) throws IOException {
         try {
             ISchematic data = decode(LitematicaNBTReader.restore(parsed), snapshot.extension());
-            if (data == null) throw new java.io.IOException("Unable to decode schematic source");
+            if (data == null) throw new IOException("Unable to decode schematic source");
             return data;
         } catch (RuntimeException ex) {
-            throw new java.io.IOException("Unable to decode schematic source", ex);
+            throw new IOException("Unable to decode schematic source", ex);
         } finally {
             LitematicaNBTReader.clearLongArrayStore();
         }
@@ -78,7 +82,7 @@ public abstract class SchematicFormat {
     }
 
     private static ISchematic decodeFormat(NBTTagCompound tag, String filename) {
-        String name = filename.toLowerCase(java.util.Locale.ROOT);
+        String name = filename.toLowerCase(Locale.ROOT);
         if (name.endsWith(".litematic")) return FORMATS.get("Litematica").readFromNBT(tag);
         if (name.endsWith(".nbt")) return FORMATS.get("Structure").readFromNBT(tag);
         if (name.endsWith(".schem") || !tag.hasKey(Names.NBT.MATERIALS) && SpongeSchematic.isSponge(tag)) return FORMATS.get("Sponge").readFromNBT(tag);
@@ -119,7 +123,7 @@ public abstract class SchematicFormat {
 
             LitematicExport.Document document = encode(file, schematic, backupWorld, includeNBT, includeEntities, author);
             PortableSchematicData.write(document.root);
-            return file.getName().toLowerCase(java.util.Locale.ROOT).endsWith(".litematic")
+            return file.getName().toLowerCase(Locale.ROOT).endsWith(".litematic")
                 ? SchematicFileWriter.write(file, document) : SchematicFileWriter.write(file, document.root);
         } catch (Exception ex) {
             Reference.logger.error("Failed to write schematic!", ex);
@@ -130,17 +134,17 @@ public abstract class SchematicFormat {
     static LitematicExport.Document encode(File file, ISchematic schematic, World backupWorld,
         boolean includeNBT, boolean includeEntities, String author) {
         String fileName = file.getName();
-        if (fileName.toLowerCase(java.util.Locale.ROOT).endsWith(".litematic")) {
+        if (fileName.toLowerCase(Locale.ROOT).endsWith(".litematic")) {
             LitematicExport.Document document = LitematicExport.encode(schematic, backupWorld, includeNBT, includeEntities,
                 fileName.substring(0, fileName.length() - ".litematic".length()), author, System.currentTimeMillis());
             return document;
         }
-        if (fileName.toLowerCase(java.util.Locale.ROOT).endsWith(".nbt")) {
+        if (fileName.toLowerCase(Locale.ROOT).endsWith(".nbt")) {
             NBTTagCompound tag = VanillaStructure.encode(schematic, backupWorld, includeEntities, author);
             NBTTagCompound metadata = SchematicMetadata.forSave(schematic, SchematicMetadata.stem(fileName), author, System.currentTimeMillis());
             SchematicMetadata.size(metadata, schematic, -1);
             SchematicMetadata.write(tag, metadata, false);
-            return new LitematicExport.Document(tag, java.util.Collections.emptyMap());
+            return new LitematicExport.Document(tag, Collections.emptyMap());
         }
 
         NBTTagCompound tagCompound = new NBTTagCompound();
@@ -148,13 +152,13 @@ public abstract class SchematicFormat {
         SchematicFormat format = FORMATS.get(FORMAT_DEFAULT);
         boolean written = format instanceof SchematicAlpha
             ? ((SchematicAlpha) format).writeToNBT(tagCompound, schematic, backupWorld, includeNBT, includeEntities,
-                file.getName().toLowerCase(java.util.Locale.ROOT).endsWith(".schemplus"))
+                file.getName().toLowerCase(Locale.ROOT).endsWith(".schemplus"))
             : format.writeToNBT(tagCompound, schematic, backupWorld, includeNBT, includeEntities);
         if (!written) throw new IllegalStateException("Unable to encode schematic");
         NBTTagCompound metadata = SchematicMetadata.read(tagCompound, false);
         SchematicMetadata.defaults(metadata, SchematicMetadata.stem(fileName), author, System.currentTimeMillis());
         SchematicMetadata.write(tagCompound, metadata, false);
-        return new LitematicExport.Document(tagCompound, java.util.Collections.emptyMap());
+        return new LitematicExport.Document(tagCompound, Collections.emptyMap());
     }
 
     public static boolean writeToFile(File directory, String filename, ISchematic schematic, World backupWorld) {
@@ -169,9 +173,9 @@ public abstract class SchematicFormat {
     public static File saveToFile(File directory, String filename, ISchematic schematic, World backupWorld,
         boolean includeNBT, boolean includeEntities) {
         try {
-            return saveToFile(com.github.lunatrius.schematica.util.FileUtils.resolveSchematicFile(directory, filename),
+            return saveToFile(FileUtils.resolveSchematicFile(directory, filename),
                 schematic, backupWorld, includeNBT, includeEntities);
-        } catch (java.io.IOException e) {
+        } catch (IOException e) {
             Reference.logger.warn("Rejected schematic filename", e);
             return null;
         }

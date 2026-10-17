@@ -1,12 +1,13 @@
 package com.github.lunatrius.schematica.client.util;
 
+import java.awt.Desktop;
 import java.io.File;
 
 import net.minecraft.util.Util;
 
-import org.lwjgl.Sys;
-
 import com.github.lunatrius.schematica.reference.Reference;
+
+import org.lwjgl.Sys;
 
 /** Opens a directory in the system file manager, the way the resource pack screen's "Open folder" does. */
 public final class FolderOpener {
@@ -19,8 +20,8 @@ public final class FolderOpener {
                 case OSX: Runtime.getRuntime().exec(new String[] {"/usr/bin/open", path}); return;
                 case WINDOWS: Runtime.getRuntime().exec(new String[] {"explorer.exe", path}); return;
                 default:
-                    if (java.awt.Desktop.isDesktopSupported()) {
-                        java.awt.Desktop.getDesktop().open(directory);
+                    if (Desktop.isDesktopSupported()) {
+                        Desktop.getDesktop().open(directory);
                         return;
                     }
                     Runtime.getRuntime().exec(new String[] {"xdg-open", path});

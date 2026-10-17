@@ -2,7 +2,7 @@ package com.github.lunatrius.schematica;
 
 import java.io.File;
 import java.io.FileFilter;
-
+import java.util.Locale;
 
 public class FileFilterSchematic implements FileFilter {
 
@@ -17,7 +17,7 @@ public class FileFilterSchematic implements FileFilter {
         if (this.directory) {
             return file.isDirectory();
         }
-        final String name = file.getName().toLowerCase(java.util.Locale.ROOT);
+        final String name = file.getName().toLowerCase(Locale.ROOT);
         return name.endsWith(".litematic") || name.endsWith(".schemplus") || name.endsWith(".schematic") || name.endsWith(".nbt") || name.endsWith(".schem");
     }
 }

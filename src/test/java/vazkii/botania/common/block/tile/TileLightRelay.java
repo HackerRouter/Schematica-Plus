@@ -1,3 +1,5 @@
 package vazkii.botania.common.block.tile;
 
-public class TileLightRelay extends net.minecraft.tileentity.TileEntity {}
+import net.minecraft.tileentity.TileEntity;
+
+public class TileLightRelay extends TileEntity {}

@@ -3,6 +3,8 @@ package com.github.lunatrius.schematica.tool;
 import java.util.UUID;
 import java.util.function.Consumer;
 
+import net.minecraft.util.ChatComponentTranslation;
+import net.minecraft.util.IChatComponent;
 import net.minecraft.world.WorldServer;
 
 import com.github.lunatrius.schematica.task.TaskRegistry;
@@ -37,8 +39,8 @@ public abstract class WorldEditTask {
     }
 
     /** The upstream task end message for this edit, or null when upstream shows none. */
-    public net.minecraft.util.IChatComponent finishedMessage(boolean success) {
+    public IChatComponent finishedMessage(boolean success) {
         String key = taskKind().finishedKey(success);
-        return key == null ? null : new net.minecraft.util.ChatComponentTranslation(key);
+        return key == null ? null : new ChatComponentTranslation(key);
     }
 }

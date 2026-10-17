@@ -1,5 +1,8 @@
 package chylex.hee.block;
 
-public class BlockObsidianSpecial extends net.minecraft.block.Block {
-    public BlockObsidianSpecial() { super(net.minecraft.block.material.Material.rock); }
+import net.minecraft.block.Block;
+import net.minecraft.block.material.Material;
+
+public class BlockObsidianSpecial extends Block {
+    public BlockObsidianSpecial() { super(Material.rock); }
 }

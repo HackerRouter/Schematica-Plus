@@ -1,15 +1,16 @@
 // NEI (GTNH NotEnoughItems 2.8.44 and later) bookmark group and recipe button integration, by HackerRouter, 2026.
 package com.github.lunatrius.schematica.compat.nei;
 
-import java.util.List;
-import java.util.ArrayList;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.item.ItemStack;
+import net.minecraftforge.common.MinecraftForge;
 
 import com.github.lunatrius.schematica.client.gui.framework.UiTranslations;
 import com.github.lunatrius.schematica.reference.Reference;
@@ -17,9 +18,9 @@ import com.github.lunatrius.schematica.reference.Reference;
 import codechicken.nei.BookmarkPanel;
 import codechicken.nei.ItemPanels;
 import codechicken.nei.NEIClientConfig;
+import codechicken.nei.api.API;
 import codechicken.nei.bookmark.BookmarkGrid;
 import codechicken.nei.bookmark.BookmarkGroup;
-import codechicken.nei.api.API;
 import codechicken.nei.event.NEIRegisterHandlerInfosEvent;
 import codechicken.nei.recipe.GuiRecipeButton;
 import codechicken.nei.recipe.Recipe;
@@ -46,7 +47,7 @@ public final class NeiIntegration {
 
     static void register() {
         API.registerRecipeHandler(new MaterialDemandHandler());
-        net.minecraftforge.common.MinecraftForge.EVENT_BUS.register(INSTANCE);
+        MinecraftForge.EVENT_BUS.register(INSTANCE);
     }
 
     static void clear() {

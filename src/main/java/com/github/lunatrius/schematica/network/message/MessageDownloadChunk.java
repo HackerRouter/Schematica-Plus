@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import net.minecraft.block.Block;
+import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
@@ -165,7 +166,7 @@ public class MessageDownloadChunk implements IMessage, IMessageHandler<MessageDo
     public IMessage onMessage(MessageDownloadChunk message, MessageContext ctx) {
         if (!DownloadHandler.INSTANCE.validChunk(message.baseX, message.baseY, message.baseZ)) return null;
         ISchematic target = DownloadHandler.INSTANCE.schematic;
-        net.minecraft.client.Minecraft.getMinecraft().func_152344_a(() -> {
+        Minecraft.getMinecraft().func_152344_a(() -> {
             // A lost acknowledgement may resend this chunk. Acknowledge it again without duplicating entities.
             if (DownloadHandler.INSTANCE.schematic == target
                 && !DownloadHandler.INSTANCE.hasReceivedChunk(message.baseX, message.baseY, message.baseZ)) {

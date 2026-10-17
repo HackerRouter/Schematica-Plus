@@ -1,13 +1,17 @@
 package com.github.lunatrius.schematica.network.message;
 
 import java.io.File;
+import java.io.IOException;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.ChatComponentTranslation;
 
 import com.github.lunatrius.schematica.SchematicaPlus;
+import com.github.lunatrius.schematica.api.ISchematic;
 import com.github.lunatrius.schematica.handler.DownloadHandler;
 import com.github.lunatrius.schematica.reference.Names;
+import com.github.lunatrius.schematica.reference.Reference;
+import com.github.lunatrius.schematica.util.FileUtils;
 import com.github.lunatrius.schematica.world.schematic.SchematicFormat;
 
 import cpw.mods.fml.common.network.ByteBufUtils;
@@ -46,12 +50,12 @@ public class MessageDownloadEnd implements IMessage, IMessageHandler<MessageDown
         File directory = SchematicaPlus.proxy.getPlayerSchematicDirectory(null, true);
         File saved = null;
         try {
-            com.github.lunatrius.schematica.api.ISchematic downloaded = DownloadHandler.INSTANCE.completedSchematic();
+            ISchematic downloaded = DownloadHandler.INSTANCE.completedSchematic();
             if (downloaded != null) saved = SchematicFormat.saveToFile(
-                com.github.lunatrius.schematica.util.FileUtils.resolveSchematicFile(directory, message.name), downloaded, null, true, true,
+                FileUtils.resolveSchematicFile(directory, message.name), downloaded, null, true, true,
                 Minecraft.getMinecraft().thePlayer != null ? Minecraft.getMinecraft().thePlayer.getCommandSenderName() : "");
-        } catch (java.io.IOException | RuntimeException e) {
-            com.github.lunatrius.schematica.reference.Reference.logger.warn("Could not restore the downloaded regions", e);
+        } catch (IOException | RuntimeException e) {
+            Reference.logger.warn("Could not restore the downloaded regions", e);
         }
 
         if (Minecraft.getMinecraft().thePlayer != null) {

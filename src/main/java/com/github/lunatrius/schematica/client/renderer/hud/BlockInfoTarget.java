@@ -1,9 +1,12 @@
 package com.github.lunatrius.schematica.client.renderer.hud;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.util.Vec3;
+import net.minecraft.world.World;
 
 public final class BlockInfoTarget {
     public abstract static class Layer {
@@ -13,7 +16,7 @@ public final class BlockInfoTarget {
         public abstract State state(int x, int y, int z);
         private State at(int wx, int wy, int wz) { return state(wx - x, wy - y, wz - z); }
         /** The world this layer reads, for inventory previews; null when it has none. */
-        public net.minecraft.world.World world() { return null; }
+        public World world() { return null; }
     }
 
     public static final class State {
@@ -44,7 +47,7 @@ public final class BlockInfoTarget {
         Layer closestLayer = null;
         MovingObjectPosition closest = null;
         double distance = Double.POSITIVE_INFINITY;
-        for (List<? extends Layer> layers : java.util.Arrays.asList(schematics, Collections.singletonList(client))) {
+        for (List<? extends Layer> layers : Arrays.asList(schematics, Collections.singletonList(client))) {
             for (Layer layer : layers) {
                 MovingObjectPosition hit = layer.trace(start.addVector(-layer.x, -layer.y, -layer.z), end.addVector(-layer.x, -layer.y, -layer.z), fluids);
                 if (hit == null || hit.typeOfHit != MovingObjectPosition.MovingObjectType.BLOCK || hit.hitVec == null) continue;

@@ -1,6 +1,7 @@
 package com.github.lunatrius.schematica.client.align;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -69,7 +70,7 @@ public class AutoAlignTest {
 
             AutoAlign.Plan plan = AutoAlign.plan(house, new HashSet<Object>(Collections.singleton(STONE)));
             // gold and the torch occur once each: the rarest kinds come first
-            assertEquals(new HashSet<Object>(java.util.Arrays.asList(GOLD, TORCH)), new HashSet<>(plan.ids.subList(0, 2)));
+            assertEquals(new HashSet<Object>(Arrays.asList(GOLD, TORCH)), new HashSet<>(plan.ids.subList(0, 2)));
             assertFalse(plan.ids.contains(STONE));
             List<long[]> hits = new ArrayList<>();
             for (Object id : plan.ids) {

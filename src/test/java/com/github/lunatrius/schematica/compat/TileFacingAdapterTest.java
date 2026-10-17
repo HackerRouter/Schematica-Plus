@@ -1,6 +1,14 @@
 package com.github.lunatrius.schematica.compat;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraftforge.common.util.Constants;
+import net.minecraftforge.common.util.ForgeDirection;
+
+import com.github.lunatrius.schematica.util.SchematicTransform;
+
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -13,7 +21,7 @@ public class TileFacingAdapterTest {
         tag.setByte("hasFaces", (byte) 1);
         TileFacingAdapter.apply(TileFacingAdapter.rulesFor("crazypants.enderio.machine.AbstractMachineEntity"), tag, 'Y');
         assertEquals(5, tag.getShort("facing"));
-        assertEquals(net.minecraftforge.common.util.Constants.NBT.TAG_SHORT, tag.getTag("facing").getId());
+        assertEquals(Constants.NBT.TAG_SHORT, tag.getTag("facing").getId());
         assertEquals(1, tag.getShort("face5"));
         assertFalse(tag.hasKey("face2"));
         assertEquals(1, tag.getByte("hasFaces"));
@@ -40,7 +48,7 @@ public class TileFacingAdapterTest {
     }
 
     @Test public void galacticraftAsteroidMinerBaseUsesItsOwnSideTable() {
-        net.minecraft.nbt.NBTTagCompound data = new net.minecraft.nbt.NBTTagCompound();
+        NBTTagCompound data = new NBTTagCompound();
         data.setInteger("facing", 0);
         TileFacingAdapter.apply(TileFacingAdapter.rulesFor("micdoodle8.mods.galacticraft.planets.asteroids.tile.TileEntityMinerBase"), data, 'Y');
         // facing 0 is north (ForgeDirection 0 + 2); turned it faces east, value 3
@@ -68,7 +76,7 @@ public class TileFacingAdapterTest {
         assertEquals(4, banner.getByte("facing"));
         turned("thaumcraft.common.tiles.TileBanner", banner, "x");
         assertEquals(12, banner.getByte("facing"));
-        assertEquals(net.minecraftforge.common.util.Constants.NBT.TAG_BYTE, banner.getTag("facing").getId());
+        assertEquals(Constants.NBT.TAG_BYTE, banner.getTag("facing").getId());
     }
 
     @Test public void biblioCraftAnglesKeepTheirFlatFlag() {
@@ -207,11 +215,11 @@ public class TileFacingAdapterTest {
         assertEquals(2, TileFacingAdapter.arcLamp(2, 2, 'Y'));
         for (int side = 0; side < 6; side++) for (int facing = 0; facing < 4; facing++) {
             for (char op : "XYZxyz".toCharArray()) {
-                int turnedSide = com.github.lunatrius.schematica.util.SchematicTransform.direction(op, net.minecraftforge.common.util.ForgeDirection.getOrientation(side)).ordinal();
+                int turnedSide = SchematicTransform.direction(op, ForgeDirection.getOrientation(side)).ordinal();
                 int turned = TileFacingAdapter.arcLamp(turnedSide, facing, op);
                 assertTrue(turned >= 0);
-                assertEquals(com.github.lunatrius.schematica.util.SchematicTransform.direction(op,
-                    net.minecraftforge.common.util.ForgeDirection.getOrientation(TileFacingAdapter.arcLampSide(side, facing))).ordinal(),
+                assertEquals(SchematicTransform.direction(op,
+                    ForgeDirection.getOrientation(TileFacingAdapter.arcLampSide(side, facing))).ordinal(),
                     TileFacingAdapter.arcLampSide(turnedSide, turned));
             }
         }
@@ -261,7 +269,7 @@ public class TileFacingAdapterTest {
         tile.setInteger("Shape", 50);
         tile.setByte("offsetX", (byte) 4);
         tile.setInteger("Disconnected", 1 << 2);
-        java.util.List<TileFacingAdapter.Rule> rules = new java.util.ArrayList<>(TileFacingAdapter.rulesFor("gcewing.architecture.common.tile.TileArchitecture"));
+        List<TileFacingAdapter.Rule> rules = new ArrayList<>(TileFacingAdapter.rulesFor("gcewing.architecture.common.tile.TileArchitecture"));
         rules.addAll(TileFacingAdapter.rulesFor("gcewing.architecture.common.tile.TileShape"));
         TileFacingAdapter.apply(rules, tile, 'z');
         assertEquals(51, tile.getInteger("Shape"));

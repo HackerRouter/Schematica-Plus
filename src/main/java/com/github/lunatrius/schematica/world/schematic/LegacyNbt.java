@@ -3,8 +3,11 @@
 package com.github.lunatrius.schematica.world.schematic;
 
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityList;
 import net.minecraft.item.Item;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
@@ -12,13 +15,12 @@ import net.minecraft.nbt.NBTTagFloat;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraftforge.common.util.Constants.NBT;
 
+import com.github.lunatrius.schematica.util.SchematicLimits;
+
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
-
-import com.github.lunatrius.schematica.util.SchematicLimits;
-
 import cpw.mods.fml.common.registry.GameData;
 
 /**
@@ -113,7 +115,7 @@ public final class LegacyNbt {
     public static NBTTagCompound tileFrom112(NBTTagCompound source) {
         NBTTagCompound tag = (NBTTagCompound) source.copy();
         String id = tag.getString("id");
-        String legacy = TILES_BACK.get(id.indexOf(':') < 0 ? "minecraft:" + id.toLowerCase(java.util.Locale.ROOT) : id);
+        String legacy = TILES_BACK.get(id.indexOf(':') < 0 ? "minecraft:" + id.toLowerCase(Locale.ROOT) : id);
         if (legacy != null) tag.setString("id", legacy);
         if ("Sign".equals(legacy)) {
             for (int i = 1; i <= 4; i++) tag.setString("Text" + i, plain(tag.getString("Text" + i)));
@@ -342,7 +344,7 @@ public final class LegacyNbt {
             if ((damage & 16384) != 0) stack.setString("id", "minecraft:splash_potion");
             stack.setShort("Damage", (short) 0);
         } else if ("minecraft:spawn_egg".equals(id)) {
-            String legacy = net.minecraft.entity.EntityList.getStringFromID(damage);
+            String legacy = EntityList.getStringFromID(damage);
             String modern = legacy == null ? null : ENTITIES.get(legacy);
             if (modern == null && legacy != null) modern = legacy;
             NBTTagCompound tag = stack.getCompoundTag("tag");
@@ -393,9 +395,9 @@ public final class LegacyNbt {
 
     @SuppressWarnings("unchecked")
     private static int entityNumericId(String legacy) {
-        Class<?> type = net.minecraft.entity.EntityList.stringToClassMapping.get(legacy);
+        Class<?> type = EntityList.stringToClassMapping.get(legacy);
         if (type == null) return -1;
-        for (Map.Entry<Integer, Class<? extends net.minecraft.entity.Entity>> entry : net.minecraft.entity.EntityList.IDtoClassMapping.entrySet()) {
+        for (Map.Entry<Integer, Class<? extends Entity>> entry : EntityList.IDtoClassMapping.entrySet()) {
             if (entry.getValue() == type) return entry.getKey();
         }
         return -1;

@@ -1,13 +1,16 @@
 package com.github.lunatrius.schematica.client.selection;
 
-import org.junit.Test;
-import static org.junit.Assert.*;
 import com.github.lunatrius.schematica.client.selection.AreaSelectionLibrary.Area;
 import com.github.lunatrius.schematica.client.selection.AreaSelectionLibrary.Corner;
 import com.github.lunatrius.schematica.client.selection.AreaSelectionLibrary.CornerMode;
 import com.github.lunatrius.schematica.client.selection.AreaSelectionLibrary.Mode;
 import com.github.lunatrius.schematica.internal.lunatriuscore.util.vector.Vector3i;
+
+import com.google.gson.JsonNull;
 import com.google.gson.JsonObject;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
 
 public class SelectionOperationsTest {
     @Test public void modeSwitchPreservesIndependentGeometryOriginsAndSelectedCorners() {
@@ -94,7 +97,7 @@ public class SelectionOperationsTest {
         assertEquals(Mode.NORMAL, migrated.mode());
         assertEquals(Corner.NONE, migrated.selected().selectedCorner());
         data = migrated.toJson();
-        data.getAsJsonObject("simple").add("selectedBox", com.google.gson.JsonNull.INSTANCE);
+        data.getAsJsonObject("simple").add("selectedBox", JsonNull.INSTANCE);
         final JsonObject invalidSimple = data;
         assertThrows(IllegalArgumentException.class, () -> AreaSelectionLibrary.fromJson(invalidSimple));
         data = migrated.toJson(); data.addProperty("mode", "unknown");

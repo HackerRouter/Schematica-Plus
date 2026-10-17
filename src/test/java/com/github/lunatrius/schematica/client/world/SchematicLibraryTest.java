@@ -2,7 +2,9 @@ package com.github.lunatrius.schematica.client.world;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
+import java.util.Collections;
 import java.util.Map;
 
 import org.junit.Rule;
@@ -59,8 +61,8 @@ public class SchematicLibraryTest {
         SchematicLibrary.Source<byte[]> second = library.load(source("b.schematic", 2));
         byte[] one = library.create(first, (data, previous) -> data.clone());
         byte[] two = library.create(second, (data, previous) -> data.clone());
-        assertEquals(java.util.Collections.singletonList(one), library.unload(first));
-        assertEquals(java.util.Collections.singletonList(two), library.placements());
+        assertEquals(Collections.singletonList(one), library.unload(first));
+        assertEquals(Collections.singletonList(two), library.placements());
         assertThrows(IllegalArgumentException.class, () -> library.create(first, (data, previous) -> data.clone()));
         library.clear();
         assertTrue(library.sources().isEmpty());
@@ -140,8 +142,8 @@ public class SchematicLibraryTest {
         SchematicLibrary.Source<byte[]> second = library.load(source("b.schematic", 2));
         File original = first.file();
         Files.delete(second.file().toPath());
-        assertThrows(java.nio.file.FileAlreadyExistsException.class, () -> library.checkRename(original, second.file()));
-        assertThrows(java.nio.file.FileAlreadyExistsException.class, () -> library.renamed(original, second.file()));
+        assertThrows(FileAlreadyExistsException.class, () -> library.checkRename(original, second.file()));
+        assertThrows(FileAlreadyExistsException.class, () -> library.renamed(original, second.file()));
         assertEquals(original, first.file());
         assertEquals(1, first.data()[0]);
         assertEquals(2, second.data()[0]);

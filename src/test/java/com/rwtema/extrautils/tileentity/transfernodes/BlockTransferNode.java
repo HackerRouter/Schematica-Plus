@@ -1,5 +1,8 @@
 package com.rwtema.extrautils.tileentity.transfernodes;
 
-public class BlockTransferNode extends net.minecraft.block.Block {
-    public BlockTransferNode() { super(net.minecraft.block.material.Material.rock); }
+import net.minecraft.block.Block;
+import net.minecraft.block.material.Material;
+
+public class BlockTransferNode extends Block {
+    public BlockTransferNode() { super(Material.rock); }
 }

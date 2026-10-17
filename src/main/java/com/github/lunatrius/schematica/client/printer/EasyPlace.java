@@ -11,13 +11,12 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityClientPlayerMP;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.network.play.client.C03PacketPlayer;
+import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ChatComponentTranslation;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.util.Vec3;
 import net.minecraft.world.World;
-import net.minecraft.tileentity.TileEntity;
-
-import com.github.lunatrius.schematica.compat.MultipartItems;
 import net.minecraftforge.common.util.ForgeDirection;
 import net.minecraftforge.event.ForgeEventFactory;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent.Action;
@@ -28,6 +27,7 @@ import com.github.lunatrius.schematica.client.printer.registry.PlacementData;
 import com.github.lunatrius.schematica.client.printer.registry.PlacementRegistry;
 import com.github.lunatrius.schematica.client.util.BlockToItemStack;
 import com.github.lunatrius.schematica.client.world.SchematicWorld;
+import com.github.lunatrius.schematica.compat.MultipartItems;
 import com.github.lunatrius.schematica.handler.BlockInfoHudSettings;
 import com.github.lunatrius.schematica.handler.ConfigurationHandler;
 import com.github.lunatrius.schematica.proxy.ClientProxy;
@@ -214,7 +214,7 @@ public final class EasyPlace {
     private static void look(EntityClientPlayerMP player, float yaw, float pitch) {
         player.rotationYaw = yaw;
         player.rotationPitch = pitch;
-        player.sendQueue.addToSendQueue(new net.minecraft.network.play.client.C03PacketPlayer.C05PacketPlayerLook(yaw, pitch, player.onGround));
+        player.sendQueue.addToSendQueue(new C03PacketPlayer.C05PacketPlayerLook(yaw, pitch, player.onGround));
     }
 
     private static Result multipart(EntityClientPlayerMP player, World world, TileEntity template, int x, int y, int z) {

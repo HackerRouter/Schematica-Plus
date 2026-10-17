@@ -8,9 +8,12 @@ import java.io.Reader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.List;
+import java.util.Locale;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.ChatComponentTranslation;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.MathHelper;
@@ -33,6 +36,8 @@ import com.github.lunatrius.schematica.reference.Reference;
 import com.github.lunatrius.schematica.tool.PlacementDeletionMode;
 import com.github.lunatrius.schematica.tool.ToolHandler;
 import com.github.lunatrius.schematica.util.FileUtils;
+import com.github.lunatrius.schematica.util.PlusDataFiles;
+
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -81,7 +86,7 @@ public final class SchematicProjects {
 
     public static void create(File directory, String name) {
         close();
-        net.minecraft.entity.player.EntityPlayer player = mc().thePlayer;
+        EntityPlayer player = mc().thePlayer;
         Vector3i origin = player == null ? new Vector3i() : new Vector3i(MathHelper.floor_double(player.posX),
             MathHelper.floor_double(player.boundingBox.minY), MathHelper.floor_double(player.posZ));
         current = SchematicProject.create(directory, name, origin);
@@ -102,7 +107,7 @@ public final class SchematicProjects {
 
     /** loadProjectFromFile: a project file, optionally checking out its current version as a placement. */
     public static SchematicProject load(File file, boolean createPlacement) {
-        if (file == null || !file.isFile() || !file.getName().toLowerCase(java.util.Locale.ROOT).endsWith(".json") || file.length() > MAX_FILE_SIZE) return null;
+        if (file == null || !file.isFile() || !file.getName().toLowerCase(Locale.ROOT).endsWith(".json") || file.length() > MAX_FILE_SIZE) return null;
         try (Reader reader = Files.newBufferedReader(file.toPath(), StandardCharsets.UTF_8)) {
             JsonElement data = new JsonParser().parse(reader);
             return data != null && data.isJsonObject() ? SchematicProject.fromJson(data.getAsJsonObject(), file, createPlacement) : null;
@@ -220,7 +225,7 @@ public final class SchematicProjects {
             ToolHandler.pasteAfterClearing(mc().thePlayer, project.currentPlacement(), project.lastSeenArea(), () -> pasted(project, version));
         } else {
             if (project.lastPastedVersion() < 0 || project.lastPastedVersion() >= project.versionCount()) {
-                mc().thePlayer.addChatMessage(new net.minecraft.util.ChatComponentText(EnumChatFormatting.RED + "No previous pasted version known, skipping delete"));
+                mc().thePlayer.addChatMessage(new ChatComponentText(EnumChatFormatting.RED + "No previous pasted version known, skipping delete"));
             }
             pasteCurrentPlacement(project);
         }
@@ -300,7 +305,7 @@ public final class SchematicProjects {
 
     // --- Session: the open project per world, like the per-world schematic_projects_manager data.
 
-    private static File sessionFile() { return com.github.lunatrius.schematica.util.PlusDataFiles.file("SchematicProjects.json"); }
+    private static File sessionFile() { return PlusDataFiles.file("SchematicProjects.json"); }
 
     public static void saveSession(String key) {
         if (key == null || key.isEmpty()) return;

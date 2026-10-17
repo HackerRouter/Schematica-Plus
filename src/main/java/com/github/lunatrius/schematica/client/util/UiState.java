@@ -1,17 +1,22 @@
 package com.github.lunatrius.schematica.client.util;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.github.lunatrius.schematica.reference.Reference;
 import com.github.lunatrius.schematica.util.FileUtils;
 import com.github.lunatrius.schematica.util.PlusDataFiles;
+
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import com.google.gson.JsonPrimitive;
 
 /**
  * What Litematica's DataManager remembers between sessions: the config GUI tab, create_placement_on_load, the
@@ -77,8 +82,8 @@ public final class UiState {
     public static void setLastDirectory(String browser, File directory) { setEntry("last_directories", browser, directory.getAbsolutePath()); }
 
     /** The paths of a list, newest or first added first. */
-    public static synchronized java.util.List<String> paths(String key) {
-        java.util.List<String> result = new java.util.ArrayList<>();
+    public static synchronized List<String> paths(String key) {
+        List<String> result = new ArrayList<>();
         JsonElement list = root().get(key);
         if (list != null && list.isJsonArray()) {
             for (JsonElement value : list.getAsJsonArray()) if (value.isJsonPrimitive()) result.add(value.getAsString());
@@ -86,9 +91,9 @@ public final class UiState {
         return result;
     }
 
-    private static synchronized void setPaths(String key, java.util.List<String> paths) {
-        com.google.gson.JsonArray array = new com.google.gson.JsonArray();
-        for (String path : paths) array.add(new com.google.gson.JsonPrimitive(path));
+    private static synchronized void setPaths(String key, List<String> paths) {
+        JsonArray array = new JsonArray();
+        for (String path : paths) array.add(new JsonPrimitive(path));
         root().add(key, array);
         save();
     }
@@ -96,7 +101,7 @@ public final class UiState {
     private static String canonical(File file) {
         try {
             return file.getCanonicalPath();
-        } catch (java.io.IOException e) {
+        } catch (IOException e) {
             return file.getAbsolutePath();
         }
     }
@@ -105,7 +110,7 @@ public final class UiState {
 
     /** Stars or unstars a file; returns whether it is a favorite now. */
     public static synchronized boolean toggleFavorite(File file) {
-        java.util.List<String> paths = paths("favorite_schematics");
+        List<String> paths = paths("favorite_schematics");
         boolean added = !paths.remove(canonical(file));
         if (added) paths.add(canonical(file));
         setPaths("favorite_schematics", paths);
@@ -114,7 +119,7 @@ public final class UiState {
 
     /** Puts a loaded file at the top of the recent list, which keeps the last 20. */
     public static synchronized void addRecent(File file) {
-        java.util.List<String> paths = paths("recent_schematics");
+        List<String> paths = paths("recent_schematics");
         paths.remove(canonical(file));
         paths.add(0, canonical(file));
         while (paths.size() > 20) paths.remove(paths.size() - 1);

@@ -12,6 +12,7 @@ import java.util.Map;
 
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
+import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.world.World;
 
@@ -19,6 +20,7 @@ import com.github.lunatrius.schematica.api.ISchematic;
 import com.github.lunatrius.schematica.api.SchematicOrigin;
 import com.github.lunatrius.schematica.api.SchematicRegion;
 import com.github.lunatrius.schematica.client.renderer.RendererSchematicGlobal;
+import com.github.lunatrius.schematica.client.renderer.hud.InventoryPreview;
 import com.github.lunatrius.schematica.client.world.CellState;
 import com.github.lunatrius.schematica.client.world.SchematicLibrary;
 import com.github.lunatrius.schematica.client.world.SchematicSourceData;
@@ -30,6 +32,7 @@ import com.github.lunatrius.schematica.client.world.SubRegionPlacements;
 import com.github.lunatrius.schematica.proxy.ClientProxy;
 import com.github.lunatrius.schematica.reference.Reference;
 import com.github.lunatrius.schematica.task.TaskRegistry;
+import com.github.lunatrius.schematica.world.storage.SchematicCopies;
 
 /** Runs schematic edits of unbounded size in per-tick time slices; the first slice runs immediately. */
 public final class RebuildJobs {
@@ -287,14 +290,14 @@ public final class RebuildJobs {
             try { hasTile = block.hasTileEntity(meta); }
             catch (RuntimeException | LinkageError error) { hasTile = false; }
             if (!hasTile) return null;
-            World source = com.github.lunatrius.schematica.client.renderer.hud.InventoryPreview.bestWorld(Minecraft.getMinecraft());
-            net.minecraft.tileentity.TileEntity tile = source == null ? null : source.getTileEntity(px, py, pz);
+            World source = InventoryPreview.bestWorld(Minecraft.getMinecraft());
+            TileEntity tile = source == null ? null : source.getTileEntity(px, py, pz);
             if (tile == null && source != world) tile = world.getTileEntity(px, py, pz);
             if (tile == null) return null;
             try {
-                return new CellState(block, meta, com.github.lunatrius.schematica.world.storage.SchematicCopies.tile(tile, px, py, pz, true));
+                return new CellState(block, meta, SchematicCopies.tile(tile, px, py, pz, true));
             } catch (IllegalArgumentException error) {
-                com.github.lunatrius.schematica.reference.Reference.logger.warn("Could not copy the tile entity at {}, {}, {}", px, py, pz, error);
+                Reference.logger.warn("Could not copy the tile entity at {}, {}, {}", px, py, pz, error);
                 return null;
             }
         }

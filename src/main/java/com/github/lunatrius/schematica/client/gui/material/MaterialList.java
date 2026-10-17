@@ -2,10 +2,14 @@
 // Litematica MaterialListBase / MaterialListPlacement / MaterialListSchematic / MaterialListAreaAnalyzer, adapted for 1.7.10 by HackerRouter, 2026.
 package com.github.lunatrius.schematica.client.gui.material;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.WorldClient;
@@ -20,7 +24,13 @@ import com.github.lunatrius.schematica.client.world.RenderLayerSettings;
 import com.github.lunatrius.schematica.client.world.SchematicWorld;
 import com.github.lunatrius.schematica.handler.ConfigurationHandler;
 import com.github.lunatrius.schematica.proxy.ClientProxy;
+import com.github.lunatrius.schematica.reference.Reference;
+
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
+import cpw.mods.fml.common.registry.GameData;
 
 /** A material list that outlives its screen: the last viewed one is reopened by the hotkey and drawn by the info HUD. */
 public final class MaterialList {
@@ -50,7 +60,7 @@ public final class MaterialList {
     private int ticks;
     private long lastTick = -1;
     private String customName;
-    private java.io.File customFile;
+    private File customFile;
     private List<CustomMaterialListFile.Item> customItems = Collections.emptyList();
 
     private MaterialList(Kind kind, SchematicWorld schematic, Area area, String fileName, List<SchematicRegion> fileRegions) {
@@ -82,7 +92,7 @@ public final class MaterialList {
     public static MaterialList area(Area area) { return new MaterialList(Kind.AREA, null, area, null, null); }
 
     /** MaterialListCustom: items and counts from a file or another list; nothing is placed, so all are missing. */
-    public static MaterialList custom(String name, java.io.File file, List<CustomMaterialListFile.Item> items) {
+    public static MaterialList custom(String name, File file, List<CustomMaterialListFile.Item> items) {
         MaterialList list = new MaterialList(Kind.CUSTOM, null, null, null, null);
         list.customName = name;
         list.customFile = file;
@@ -94,7 +104,7 @@ public final class MaterialList {
     public List<CustomMaterialListFile.Item> customItems() {
         List<CustomMaterialListFile.Item> items = new ArrayList<>();
         for (MaterialListModel.Entry<MaterialItemKey> entry : model.entries()) {
-            Object id = cpw.mods.fml.common.registry.GameData.getItemRegistry().getNameForObject(entry.key.stack().getItem());
+            Object id = GameData.getItemRegistry().getNameForObject(entry.key.stack().getItem());
             if (id != null) items.add(new CustomMaterialListFile.Item(id.toString(), entry.key.stack().getItemDamage(), entry.total));
         }
         return items;
@@ -230,7 +240,7 @@ public final class MaterialList {
             // reCreateMaterialList reads the source file again
             if (customFile != null && customFile.isFile()) {
                 try { customItems = new ArrayList<>(CustomMaterialListFile.read(customFile).items); }
-                catch (java.io.IOException error) { com.github.lunatrius.schematica.reference.Reference.logger.warn("Could not reload {}", customFile, error); }
+                catch (IOException error) { Reference.logger.warn("Could not reload {}", customFile, error); }
             }
             scan = new CustomMaterialScan(customItems, mc.thePlayer);
             return;
@@ -261,9 +271,9 @@ public final class MaterialList {
             return;
         }
         String currentLanguage = Minecraft.getMinecraft().gameSettings.language;
-        if (!java.util.Objects.equals(language, currentLanguage)) {
+        if (!Objects.equals(language, currentLanguage)) {
             language = currentLanguage;
-            for (java.util.Map.Entry<MaterialItemKey, MaterialListModel.Replacement<MaterialItemKey>> entry
+            for (Map.Entry<MaterialItemKey, MaterialListModel.Replacement<MaterialItemKey>> entry
                 : new ArrayList<>(model.replacements().entrySet())) {
                 MaterialListModel.Replacement<MaterialItemKey> replacement = entry.getValue();
                 model.replace(entry.getKey(), new MaterialListModel.Replacement<>(replacement.key,
@@ -293,13 +303,13 @@ public final class MaterialList {
         json.addProperty("sort_reverse", !model.descending());
         json.addProperty("hide_available", model.hideAvailable());
         json.addProperty("multiplier", model.multiplier());
-        com.google.gson.JsonArray ignored = new com.google.gson.JsonArray(), starred = new com.google.gson.JsonArray();
+        JsonArray ignored = new JsonArray(), starred = new JsonArray();
         for (MaterialItemKey key : model.ignored()) add(ignored, key);
         for (MaterialItemKey key : model.starred()) add(starred, key);
         if (ignored.size() > 0) json.add("ignored", ignored);
         if (starred.size() > 0) json.add("starred", starred);
         JsonObject replacements = new JsonObject();
-        for (java.util.Map.Entry<MaterialItemKey, MaterialListModel.Replacement<MaterialItemKey>> entry : model.replacements().entrySet()) {
+        for (Map.Entry<MaterialItemKey, MaterialListModel.Replacement<MaterialItemKey>> entry : model.replacements().entrySet()) {
             String from = entry.getKey().encode(), to = entry.getValue().key.encode();
             if (from == null || to == null) continue;
             JsonObject target = new JsonObject();
@@ -312,9 +322,9 @@ public final class MaterialList {
         return json;
     }
 
-    private static void add(com.google.gson.JsonArray array, MaterialItemKey key) {
+    private static void add(JsonArray array, MaterialItemKey key) {
         String value = key.encode();
-        if (value != null) array.add(new com.google.gson.JsonPrimitive(value));
+        if (value != null) array.add(new JsonPrimitive(value));
     }
 
     public void fromJson(JsonObject json) {
@@ -329,15 +339,15 @@ public final class MaterialList {
             }
             if (json.has("hide_available")) model.setHideAvailable(json.get("hide_available").getAsBoolean());
             if (json.has("multiplier")) model.setMultiplier(json.get("multiplier").getAsInt());
-            if (json.has("ignored")) for (com.google.gson.JsonElement value : json.getAsJsonArray("ignored")) {
+            if (json.has("ignored")) for (JsonElement value : json.getAsJsonArray("ignored")) {
                 MaterialItemKey key = MaterialItemKey.decode(value.getAsString());
                 if (key != null) model.ignore(key);
             }
-            if (json.has("starred")) for (com.google.gson.JsonElement value : json.getAsJsonArray("starred")) {
+            if (json.has("starred")) for (JsonElement value : json.getAsJsonArray("starred")) {
                 MaterialItemKey key = MaterialItemKey.decode(value.getAsString());
                 if (key != null && !model.isStarred(key)) model.toggleStar(key);
             }
-            if (json.has("replacements")) for (java.util.Map.Entry<String, com.google.gson.JsonElement> entry : json.getAsJsonObject("replacements").entrySet()) {
+            if (json.has("replacements")) for (Map.Entry<String, JsonElement> entry : json.getAsJsonObject("replacements").entrySet()) {
                 JsonObject target = entry.getValue().getAsJsonObject();
                 MaterialItemKey from = MaterialItemKey.decode(entry.getKey()), to = MaterialItemKey.decode(target.get("item").getAsString());
                 if (from != null && to != null) model.replace(from, new MaterialListModel.Replacement<>(to, target.get("name").getAsString(), target.get("registry").getAsString()));

@@ -14,7 +14,6 @@ import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.util.Vec3;
 import net.minecraft.world.World;
 import net.minecraftforge.fluids.IFluidBlock;
-import org.lwjgl.opengl.GL11;
 
 import com.github.lunatrius.schematica.client.gui.VerifierBlockInfo;
 import com.github.lunatrius.schematica.client.gui.framework.UiTranslations;
@@ -23,11 +22,14 @@ import com.github.lunatrius.schematica.client.verifier.VerificationScan;
 import com.github.lunatrius.schematica.client.verifier.VerificationScan.Pair;
 import com.github.lunatrius.schematica.client.world.SchematicWorld;
 import com.github.lunatrius.schematica.handler.BlockInfoHudSettings;
+import com.github.lunatrius.schematica.handler.VerifierOverlaySettings;
 import com.github.lunatrius.schematica.handler.VisualSettings;
 import com.github.lunatrius.schematica.proxy.ClientProxy;
 import com.github.lunatrius.schematica.reference.Reference;
 import com.github.lunatrius.schematica.util.VoxelRayTrace;
+
 import cpw.mods.fml.common.registry.GameData;
+import org.lwjgl.opengl.GL11;
 
 public final class BlockInfoHud {
     public static final BlockInfoHud INSTANCE = new BlockInfoHud();
@@ -85,8 +87,8 @@ public final class BlockInfoHud {
             ScaledResolution screen = new ScaledResolution(mc, mc.displayWidth, mc.displayHeight);
             World layer = target.schematicLayer == null ? null : target.schematicLayer.world();
             int inventories = InventoryPreview.render(mc, layer instanceof SchematicWorld ? (SchematicWorld) layer : null, target.x, target.y, target.z,
-                "center".equals(com.github.lunatrius.schematica.handler.VerifierOverlaySettings.alignment),
-                com.github.lunatrius.schematica.handler.VerifierOverlaySettings.offsetY, screen.getScaledWidth(), screen.getScaledHeight());
+                "center".equals(VerifierOverlaySettings.alignment),
+                VerifierOverlaySettings.offsetY, screen.getScaledWidth(), screen.getScaledHeight());
             if (panel != null) VerifierHud.drawPanel(mc, panel, inventories);
         }
     }

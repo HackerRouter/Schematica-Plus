@@ -3,6 +3,7 @@
 package com.github.lunatrius.schematica.tool;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.world.World;
 
 import com.github.lunatrius.schematica.SchematicaPlus;
 import com.github.lunatrius.schematica.client.gui.framework.UiTranslations;
@@ -105,7 +106,7 @@ final class ToolSelectionActions {
     }
     private static boolean emptySlice(int[] min, int[] max, int axis, int coordinate, int[] budget) {
         int[] start = min.clone(), end = max.clone(); start[axis] = end[axis] = coordinate;
-        net.minecraft.world.World world = Minecraft.getMinecraft().theWorld;
+        World world = Minecraft.getMinecraft().theWorld;
         for (int y = start[1]; y <= end[1]; y++) for (int z = start[2]; z <= end[2]; z++) for (int x = start[0]; x <= end[0]; x++) {
             if (--budget[0] < 0 || !world.blockExists(x, y, z)) throw new IllegalArgumentException("Selection scan exceeds loaded bounds");
             if (!world.isAirBlock(x, y, z)) return false;

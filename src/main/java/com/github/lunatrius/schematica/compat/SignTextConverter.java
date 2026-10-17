@@ -14,6 +14,12 @@ import net.minecraft.nbt.NBTTagShort;
 import net.minecraft.nbt.NBTTagString;
 import net.minecraftforge.common.util.Constants;
 
+import com.github.lunatrius.schematica.world.schematic.ImportReport;
+
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+
 /**
  * Converts modern sign text NBT to 1.7.10 format.
  * Extracted from TileEntityTranslator for maintainability.
@@ -49,7 +55,7 @@ public final class SignTextConverter {
         }
         NBTTagCompound back = teTag.getCompoundTag("back_text");
         if (!ModernText.plain(back.getTag("messages"), dataVersion).isEmpty()) {
-            com.github.lunatrius.schematica.world.schematic.ImportReport.omittedData("sign back text");
+            ImportReport.omittedData("sign back text");
         }
         teTag.removeTag("front_text");
         teTag.removeTag("back_text");
@@ -292,20 +298,20 @@ public final class SignTextConverter {
             if (!quoted && (ch == '}' || ch == ']')) depth--;
         }
         try {
-            return plainText(new com.google.gson.JsonParser().parse(input));
+            return plainText(new JsonParser().parse(input));
         } catch (RuntimeException malformed) {
             return jsonText;
         }
     }
 
-    private static String plainText(com.google.gson.JsonElement element) {
+    private static String plainText(JsonElement element) {
         if (element == null || element.isJsonNull()) return "";
         if (element.isJsonPrimitive()) return element.getAsString();
         StringBuilder text = new StringBuilder();
         if (element.isJsonArray()) {
-            for (com.google.gson.JsonElement child : element.getAsJsonArray()) text.append(plainText(child));
+            for (JsonElement child : element.getAsJsonArray()) text.append(plainText(child));
         } else {
-            com.google.gson.JsonObject object = element.getAsJsonObject();
+            JsonObject object = element.getAsJsonObject();
             if (object.has("text")) text.append(plainText(object.get("text")));
             else if (object.has("translate")) text.append(plainText(object.get("translate")));
             if (object.has("extra")) text.append(plainText(object.get("extra")));

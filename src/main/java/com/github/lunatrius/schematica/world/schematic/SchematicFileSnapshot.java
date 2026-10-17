@@ -5,6 +5,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.AtomicMoveNotSupportedException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
@@ -100,7 +101,7 @@ public final class SchematicFileSnapshot {
             if (replace) {
                 try {
                     Files.move(temporary, destination, StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);
-                } catch (java.nio.file.AtomicMoveNotSupportedException e) {
+                } catch (AtomicMoveNotSupportedException e) {
                     Files.move(temporary, destination, StandardCopyOption.REPLACE_EXISTING);
                 }
             } else Files.move(temporary, destination);

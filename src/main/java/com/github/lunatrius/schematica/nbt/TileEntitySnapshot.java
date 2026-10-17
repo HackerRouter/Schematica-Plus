@@ -1,7 +1,9 @@
 package com.github.lunatrius.schematica.nbt;
 
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
+
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 
@@ -46,7 +48,7 @@ final class TileEntitySnapshot {
         for (Object key : after.func_150296_c()) keys.add((String) key);
         for (String key : keys) {
             NBTBase oldValue = before.getTag(key), newValue = after.getTag(key);
-            if (java.util.Objects.equals(oldValue, newValue)) continue;
+            if (Objects.equals(oldValue, newValue)) continue;
             if (newValue == null) {
                 target.removeTag(key);
             } else if (oldValue instanceof NBTTagCompound && newValue instanceof NBTTagCompound

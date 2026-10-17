@@ -1,5 +1,7 @@
 package com.github.lunatrius.schematica.world.schematic;
 
+import com.github.lunatrius.schematica.util.SchematicLimits;
+
 /**
  * Unpacks bit-packed long arrays used by the Litematica schematic format.
  * <p>
@@ -27,7 +29,7 @@ public final class LitematicBitArray {
      */
     public LitematicBitArray(int bitsPerEntry, long totalEntries, long[] data) {
         if (bitsPerEntry < 2 || bitsPerEntry > 32 || totalEntries < 0
-            || totalEntries > com.github.lunatrius.schematica.util.SchematicLimits.MAX_BLOCKS
+            || totalEntries > SchematicLimits.MAX_BLOCKS
             || data == null || data.length < (totalEntries * bitsPerEntry + 63) / 64) {
             throw new IllegalArgumentException("Invalid or truncated litematic block states");
         }

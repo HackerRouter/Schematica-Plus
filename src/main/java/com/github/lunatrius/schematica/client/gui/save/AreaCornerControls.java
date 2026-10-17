@@ -1,9 +1,11 @@
 package com.github.lunatrius.schematica.client.gui.save;
 
 import java.util.function.Consumer;
+
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.client.gui.GuiScreen;
-import org.lwjgl.input.Keyboard;
+
 import com.github.lunatrius.schematica.client.gui.framework.UiBounds;
 import com.github.lunatrius.schematica.client.gui.framework.UiButton;
 import com.github.lunatrius.schematica.client.gui.framework.UiCheckBox;
@@ -17,6 +19,8 @@ import com.github.lunatrius.schematica.client.selection.AreaSelectionLibrary.Are
 import com.github.lunatrius.schematica.client.selection.AreaSelectionLibrary.Box;
 import com.github.lunatrius.schematica.client.selection.AreaSelectionLibrary.Corner;
 import com.github.lunatrius.schematica.internal.lunatriuscore.util.vector.Vector3i;
+
+import org.lwjgl.input.Keyboard;
 
 final class AreaCornerControls extends UiPanel {
     private final Box box;
@@ -90,6 +94,6 @@ final class AreaCornerControls extends UiPanel {
             coordinates[axis].setBounds(x + 12, y + 16 + axis * 20, 68, 16);
             nudges[axis].setBounds(x + 84, y + 16 + axis * 20, 16, 16);
         }
-        move.setBounds(x + 10, y + 76, net.minecraft.client.Minecraft.getMinecraft().fontRenderer.getStringWidth(move.label()) + 10, 20);
+        move.setBounds(x + 10, y + 76, Minecraft.getMinecraft().fontRenderer.getStringWidth(move.label()) + 10, 20);
     }
 }

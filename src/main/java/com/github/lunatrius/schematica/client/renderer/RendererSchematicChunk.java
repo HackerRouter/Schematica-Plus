@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import net.minecraft.block.Block;
+import net.minecraft.block.BlockLiquid;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.renderer.RenderBlocks;
@@ -15,21 +16,23 @@ import net.minecraft.profiler.Profiler;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.world.IBlockAccess;
+import net.minecraftforge.fluids.IFluidBlock;
+
+import com.github.lunatrius.schematica.client.renderer.shader.ShaderProgram;
+import com.github.lunatrius.schematica.client.world.RenderLayerSettings;
+import com.github.lunatrius.schematica.client.world.SchematicWorld;
+import com.github.lunatrius.schematica.compat.VisualAdapters;
+import com.github.lunatrius.schematica.handler.ConfigurationHandler;
+import com.github.lunatrius.schematica.handler.RenderColors;
+import com.github.lunatrius.schematica.handler.VisualSettings;
+import com.github.lunatrius.schematica.internal.lunatriuscore.util.vector.Vector3d;
+import com.github.lunatrius.schematica.internal.lunatriuscore.util.vector.Vector3f;
+import com.github.lunatrius.schematica.reference.Constants;
+import com.github.lunatrius.schematica.reference.Reference;
+import com.github.lunatrius.schematica.util.BlockGroups;
 
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL20;
-
-import com.github.lunatrius.schematica.client.world.RenderLayerSettings;
-import com.github.lunatrius.schematica.internal.lunatriuscore.util.vector.Vector3d;
-import com.github.lunatrius.schematica.internal.lunatriuscore.util.vector.Vector3f;
-import com.github.lunatrius.schematica.client.renderer.shader.ShaderProgram;
-import com.github.lunatrius.schematica.client.world.SchematicWorld;
-import com.github.lunatrius.schematica.handler.ConfigurationHandler;
-import com.github.lunatrius.schematica.handler.VisualSettings;
-import com.github.lunatrius.schematica.handler.RenderColors;
-import com.github.lunatrius.schematica.reference.Constants;
-import com.github.lunatrius.schematica.reference.Reference;
-import com.github.lunatrius.schematica.compat.VisualAdapters;
 
 public class RendererSchematicChunk {
 
@@ -235,7 +238,7 @@ public class RendererSchematicChunk {
     }
 
     public static boolean isFluid(Block block) {
-        return block instanceof net.minecraft.block.BlockLiquid || block instanceof net.minecraftforge.fluids.IFluidBlock;
+        return block instanceof BlockLiquid || block instanceof IFluidBlock;
     }
 
     /** Air in the world for the overlay: air, an extra air block, or a fluid with ignoreExistingFluids. */
@@ -299,7 +302,7 @@ public class RendererSchematicChunk {
 
     /** The overlay of a schematic block standing where another block is, or null when that overlay type is off. */
     static RenderColors overlayColor(Block expected, int expectedMeta, Block found, int foundMeta) {
-        switch (com.github.lunatrius.schematica.util.BlockGroups.compare(expected, expectedMeta, found, foundMeta, com.github.lunatrius.schematica.util.BlockGroups.enabled)) {
+        switch (BlockGroups.compare(expected, expectedMeta, found, foundMeta, BlockGroups.enabled)) {
             case WRONG_BLOCK: return VisualSettings.overlayWrongBlock ? RenderColors.WRONG_BLOCK : null;
             case WRONG_STATE: return VisualSettings.overlayWrongState ? RenderColors.WRONG_STATE : null;
             case DIFFERENT_BLOCK: return VisualSettings.overlayDiffBlock ? RenderColors.DIFFERENT_TYPE : null;

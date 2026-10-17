@@ -1,6 +1,9 @@
 
 package com.github.lunatrius.schematica.tool;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
@@ -8,16 +11,31 @@ import net.minecraft.init.Blocks;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.EnumChatFormatting;
+import net.minecraft.world.World;
 
-import com.github.lunatrius.schematica.internal.lunatriuscore.util.vector.Vector3i;
-import com.github.lunatrius.schematica.client.world.SchematicWorld;
 import com.github.lunatrius.schematica.SchematicaPlus;
-import com.github.lunatrius.schematica.proxy.ClientProxy;
-import com.github.lunatrius.schematica.client.selection.AreaSelections;
+import com.github.lunatrius.schematica.api.SchematicRegion;
+import com.github.lunatrius.schematica.client.gui.GuiConfirmAction;
 import com.github.lunatrius.schematica.client.gui.framework.UiTranslations;
+import com.github.lunatrius.schematica.client.projects.SchematicProjects;
+import com.github.lunatrius.schematica.client.selection.AreaSelectionLibrary;
+import com.github.lunatrius.schematica.client.selection.AreaSelections;
+import com.github.lunatrius.schematica.client.world.GridPlacements;
+import com.github.lunatrius.schematica.client.world.RenderLayerRange;
+import com.github.lunatrius.schematica.client.world.RenderLayerSettings;
+import com.github.lunatrius.schematica.client.world.SchematicWorld;
+import com.github.lunatrius.schematica.client.world.SubRegionPlacements;
+import com.github.lunatrius.schematica.handler.ConfigurationHandler;
+import com.github.lunatrius.schematica.handler.WorldEditQueue;
+import com.github.lunatrius.schematica.handler.client.CommandEditQueue;
+import com.github.lunatrius.schematica.handler.client.RemoteEditClient;
+import com.github.lunatrius.schematica.internal.lunatriuscore.util.vector.Vector3i;
+import com.github.lunatrius.schematica.proxy.ClientProxy;
 import com.github.lunatrius.schematica.reference.Reference;
 import com.github.lunatrius.schematica.task.TaskRegistry;
 import com.github.lunatrius.schematica.util.MessageException;
+import com.github.lunatrius.schematica.util.SchematicLimits;
+import com.github.lunatrius.schematica.world.storage.RegionSelection;
 
 public class ToolHandler {
 
@@ -26,8 +44,8 @@ public class ToolHandler {
     /** Litematica's executeOperation: returns whether the key was used. A second press does not cancel a running edit. */
     public static boolean onExecute(EntityPlayer player) {
         if (player == null) return false;
-        if (com.github.lunatrius.schematica.client.projects.SchematicProjects.hasProjectOpen()) {
-            com.github.lunatrius.schematica.client.projects.SchematicProjects.pasteCurrentVersionToWorld();
+        if (SchematicProjects.hasProjectOpen()) {
+            SchematicProjects.pasteCurrentVersionToWorld();
             return true;
         }
         ToolMode mode = ToolManager.getCurrentMode();
@@ -40,24 +58,24 @@ public class ToolHandler {
     }
 
     /** World boxes of an operation: the selected box only, else every box (AreaSelection.getSelectedSubRegionBox). */
-    private static java.util.List<com.github.lunatrius.schematica.api.SchematicRegion> targetBoxes(ToolMode mode) {
-        java.util.List<com.github.lunatrius.schematica.api.SchematicRegion> boxes = new java.util.ArrayList<>();
+    private static List<SchematicRegion> targetBoxes(ToolMode mode) {
+        List<SchematicRegion> boxes = new ArrayList<>();
         if (mode == ToolMode.DELETE && ToolMode.deleteUsesPlacement) {
             SchematicWorld placement = ClientProxy.schematic;
             if (placement == null) throw new MessageException("litematica.message.error.no_area_selected");
-            if (placement.subregions() != null) for (com.github.lunatrius.schematica.client.world.SubRegionPlacements.Region region : placement.subregions().regions()) {
+            if (placement.subregions() != null) for (SubRegionPlacements.Region region : placement.subregions().regions()) {
                 if (region.enabled) boxes.add(placement.subregionBounds(region.name()));
             }
             if (boxes.isEmpty()) throw new MessageException("litematica.message.error.empty_area_selection");
             return boxes;
         }
-        com.github.lunatrius.schematica.client.selection.AreaSelectionLibrary.Area area = AreaSelections.library().selected();
+        AreaSelectionLibrary.Area area = AreaSelections.library().selected();
         if (area == null) throw new MessageException("litematica.message.error.no_area_selected");
         AreaSelections.capture();
-        java.util.List<com.github.lunatrius.schematica.api.SchematicRegion> regions = area.regions();
+        List<SchematicRegion> regions = area.regions();
         if (regions.isEmpty()) throw new MessageException("litematica.message.error.empty_area_selection");
         String selected = area.selectedBox() == null ? null : area.boxName();
-        if (selected != null) for (com.github.lunatrius.schematica.api.SchematicRegion region : regions) if (region.name.equals(selected)) boxes.add(region);
+        if (selected != null) for (SchematicRegion region : regions) if (region.name.equals(selected)) boxes.add(region);
         return boxes.isEmpty() ? regions : boxes;
     }
 
@@ -71,7 +89,7 @@ public class ToolHandler {
             return;
         }
         Block replacement = mode == ToolMode.DELETE ? Blocks.air : mode.getPrimaryBlock();
-        java.util.List<com.github.lunatrius.schematica.api.SchematicRegion> boxes = targetBoxes(mode);
+        List<SchematicRegion> boxes = targetBoxes(mode);
         WorldEditJob job = areaJob(player, mode == ToolMode.REPLACE_BLOCK ? WorldEditJob.Kind.REPLACE : WorldEditJob.Kind.FILL, boxes,
             replacement, mode == ToolMode.DELETE ? 0 : mode.getPrimaryMeta(), mode.getSecondaryBlock(), mode.getSecondaryMeta());
         if (mode == ToolMode.DELETE) job.removeEntitiesIn(boxes);
@@ -85,20 +103,20 @@ public class ToolHandler {
     private static void gridPaste(EntityPlayer player) {
         SchematicWorld base = ClientProxy.schematic;
         if (base == null) throw new MessageException("litematica.message.error.no_placement_selected");
-        java.util.List<SchematicWorld> placements = new java.util.ArrayList<>();
+        List<SchematicWorld> placements = new ArrayList<>();
         placements.add(base);
         if (base.grid.isEnabled()) {
-            placements.addAll(com.github.lunatrius.schematica.client.world.GridPlacements.INSTANCE.copiesOf(base));
+            placements.addAll(GridPlacements.INSTANCE.copiesOf(base));
         } else {
             sendChat(player, EnumChatFormatting.GOLD + UiTranslations.format("schematica.message.grid_paste.grid_disabled"));
         }
-        java.util.List<WorldEditJob> jobs = new java.util.ArrayList<>();
+        List<WorldEditJob> jobs = new ArrayList<>();
         for (SchematicWorld placement : placements) jobs.add(pasteJob(player, placement));
         submitAll(player, jobs, 0);
     }
 
     /** Grid copies continue after per-cell errors; cancellation and rejected requests still stop the batch. */
-    private static void submitAll(EntityPlayer player, java.util.List<WorldEditJob> jobs, int index) {
+    private static void submitAll(EntityPlayer player, List<WorldEditJob> jobs, int index) {
         if (index >= jobs.size()) return;
         submit(player, jobs.get(index), index + 1 < jobs.size() ? () -> {
             EntityPlayer current = Minecraft.getMinecraft().thePlayer;
@@ -113,23 +131,23 @@ public class ToolHandler {
         WorldEditJob job = new WorldEditJob(player.getUniqueID(), player.dimension, WorldEditJob.Kind.PASTE,
             schematic.position.x, schematic.position.y, schematic.position.z,
             schematic.getWidth(), schematic.getHeight(), schematic.getLength(), null, 0, null, 0,
-            com.github.lunatrius.schematica.handler.ConfigurationHandler.pasteWithoutUpdates,
-            com.github.lunatrius.schematica.handler.ConfigurationHandler.pasteReplaceBehavior);
+            ConfigurationHandler.pasteWithoutUpdates,
+            ConfigurationHandler.pasteReplaceBehavior);
         job.capture(schematic.getSchematic(), schematic.isPastingBlockNBT,
-            schematic.isRenderingEntities && !com.github.lunatrius.schematica.handler.ConfigurationHandler.pasteIgnoreEntities,
-            com.github.lunatrius.schematica.handler.ConfigurationHandler.pasteRenderLayersOnly ? schematic.renderBounds() : null,
-            com.github.lunatrius.schematica.handler.ConfigurationHandler.pasteIgnoreInventories);
+            schematic.isRenderingEntities && !ConfigurationHandler.pasteIgnoreEntities,
+            ConfigurationHandler.pasteRenderLayersOnly ? schematic.renderBounds() : null,
+            ConfigurationHandler.pasteIgnoreInventories);
         return job;
     }
 
-    private static WorldEditJob areaJob(EntityPlayer player, WorldEditJob.Kind kind, java.util.List<com.github.lunatrius.schematica.api.SchematicRegion> boxes,
+    private static WorldEditJob areaJob(EntityPlayer player, WorldEditJob.Kind kind, List<SchematicRegion> boxes,
         Block replacement, int replacementMeta, Block target, int targetMeta) {
         if (boxes.isEmpty()) throw new MessageException("litematica.message.error.empty_area_selection");
-        com.github.lunatrius.schematica.world.storage.RegionSelection selection = new com.github.lunatrius.schematica.world.storage.RegionSelection(boxes);
+        RegionSelection selection = new RegionSelection(boxes);
         WorldEditJob job = new WorldEditJob(player.getUniqueID(), player.dimension, kind, selection.minX, selection.minY, selection.minZ,
-            com.github.lunatrius.schematica.util.SchematicLimits.dimension(selection.minX, selection.maxX),
-            com.github.lunatrius.schematica.util.SchematicLimits.dimension(selection.minY, selection.maxY),
-            com.github.lunatrius.schematica.util.SchematicLimits.dimension(selection.minZ, selection.maxZ),
+            SchematicLimits.dimension(selection.minX, selection.maxX),
+            SchematicLimits.dimension(selection.minY, selection.maxY),
+            SchematicLimits.dimension(selection.minZ, selection.maxZ),
             replacement, replacementMeta, target, targetMeta);
         job.setRegions(selection.localRegions);
         return job;
@@ -141,26 +159,26 @@ public class ToolHandler {
      */
     private static void submit(EntityPlayer player, WorldEditJob job, Runnable onSuccess) {
         MinecraftServer server = Minecraft.getMinecraft().getIntegratedServer();
-        boolean commands = com.github.lunatrius.schematica.handler.ConfigurationHandler.pasteUsingCommandsInSp && job.kind == WorldEditJob.Kind.PASTE;
+        boolean commands = ConfigurationHandler.pasteUsingCommandsInSp && job.kind == WorldEditJob.Kind.PASTE;
         if (server != null && !commands) {
             continueWith(job, onSuccess);
-            if (!com.github.lunatrius.schematica.handler.WorldEditQueue.INSTANCE.submit(server, job)) {
+            if (!WorldEditQueue.INSTANCE.submit(server, job)) {
                 throw new MessageException("schematica.message.edit.busy");
             }
         } else {
-            if (com.github.lunatrius.schematica.handler.client.RemoteEditClient.INSTANCE.busy()
-                || com.github.lunatrius.schematica.handler.client.CommandEditQueue.INSTANCE.busy()) {
+            if (RemoteEditClient.INSTANCE.busy()
+                || CommandEditQueue.INSTANCE.busy()) {
                 throw new MessageException("schematica.message.edit.busy");
             }
             if (SchematicaPlus.proxy.supportsRemoteEdit && server == null) {
-                com.github.lunatrius.schematica.handler.client.RemoteEditClient.INSTANCE.submit(job, player.worldObj, onSuccess);
+                RemoteEditClient.INSTANCE.submit(job, player.worldObj, onSuccess);
             } else {
                 if (prepareCommandPaste(job)) {
                     confirmCommandPaste(player, job, () -> submit(player, job, onSuccess));
                     return;
                 }
                 continueWith(job, onSuccess);
-                com.github.lunatrius.schematica.handler.client.CommandEditQueue.INSTANCE.submit(job, player.worldObj);
+                CommandEditQueue.INSTANCE.submit(job, player.worldObj);
             }
         }
         sendChat(player, UiTranslations.format("litematica.message.scheduled_task_added"));
@@ -173,15 +191,15 @@ public class ToolHandler {
     }
 
     private static boolean prepareCommandPaste(WorldEditJob job) {
-        if (job.kind == WorldEditJob.Kind.PASTE && com.github.lunatrius.schematica.handler.ConfigurationHandler.pasteIgnoreBlockEntitiesEntirely) job.dropTiles();
+        if (job.kind == WorldEditJob.Kind.PASTE && ConfigurationHandler.pasteIgnoreBlockEntitiesEntirely) job.dropTiles();
         job.validateCommandFallback(true);
         return job.hasCommandNbt();
     }
 
     private static void confirmCommandPaste(EntityPlayer player, WorldEditJob job, Runnable accepted) {
         Minecraft mc = Minecraft.getMinecraft();
-        net.minecraft.world.World world = player.worldObj;
-        mc.displayGuiScreen(new com.github.lunatrius.schematica.client.gui.GuiConfirmAction(mc.currentScreen,
+        World world = player.worldObj;
+        mc.displayGuiScreen(new GuiConfirmAction(mc.currentScreen,
             UiTranslations.format("schematica.ui.command_paste.title"),
             UiTranslations.format("schematica.ui.command_paste.message"), "schematica.ui.command_paste.accept", () -> {
                 if (mc.thePlayer != player || mc.theWorld != world || player.dimension != job.dimension) return;
@@ -211,16 +229,16 @@ public class ToolHandler {
     }
 
     /** PositionUtils.getClampedBox: the parts of the boxes inside the render layer range and world height. */
-    static java.util.List<com.github.lunatrius.schematica.api.SchematicRegion> clampToLayers(java.util.List<com.github.lunatrius.schematica.api.SchematicRegion> boxes) {
-        com.github.lunatrius.schematica.client.world.RenderLayerRange range = com.github.lunatrius.schematica.client.world.RenderLayerSettings.RANGE;
-        java.util.List<com.github.lunatrius.schematica.api.SchematicRegion> clamped = new java.util.ArrayList<>();
-        for (com.github.lunatrius.schematica.api.SchematicRegion box : boxes) {
+    static List<SchematicRegion> clampToLayers(List<SchematicRegion> boxes) {
+        RenderLayerRange range = RenderLayerSettings.RANGE;
+        List<SchematicRegion> clamped = new ArrayList<>();
+        for (SchematicRegion box : boxes) {
             long[] min = {box.minX, Math.max(0, box.minY), box.minZ}, max = {box.maxX, Math.min(255, box.maxY), box.maxZ};
             int axis = range.axis().ordinal();
             min[axis] = Math.max(min[axis], range.minimum());
             max[axis] = Math.min(max[axis], range.maximum());
             if (min[0] > max[0] || min[1] > max[1] || min[2] > max[2]) continue;
-            clamped.add(new com.github.lunatrius.schematica.api.SchematicRegion(box.name, (int) min[0], (int) min[1], (int) min[2], (int) max[0], (int) max[1], (int) max[2]));
+            clamped.add(new SchematicRegion(box.name, (int) min[0], (int) min[1], (int) min[2], (int) max[0], (int) max[1], (int) max[2]));
         }
         return clamped;
     }
@@ -232,21 +250,21 @@ public class ToolHandler {
 
     /** Project replacement confirms any command-mode data omission before clearing the old area. */
     public static boolean pasteAfterClearing(EntityPlayer player, SchematicWorld placement,
-        java.util.List<com.github.lunatrius.schematica.api.SchematicRegion> boxes, Runnable onSuccess) {
+        List<SchematicRegion> boxes, Runnable onSuccess) {
         return request(player, TaskRegistry.Kind.PASTE, p -> {
             WorldEditJob job = pasteJob(p, placement);
-            java.util.List<com.github.lunatrius.schematica.api.SchematicRegion> clear = new java.util.ArrayList<>(boxes);
+            List<SchematicRegion> clear = new ArrayList<>(boxes);
             Runnable start = () -> deleteBoxes(p, clear, () -> request(p, TaskRegistry.Kind.PASTE, current -> submit(current, job, onSuccess)));
             MinecraftServer server = Minecraft.getMinecraft().getIntegratedServer();
             boolean commands = server == null ? !SchematicaPlus.proxy.supportsRemoteEdit
-                : com.github.lunatrius.schematica.handler.ConfigurationHandler.pasteUsingCommandsInSp;
+                : ConfigurationHandler.pasteUsingCommandsInSp;
             if (commands && prepareCommandPaste(job)) confirmCommandPaste(p, job, start);
             else start.run();
         });
     }
 
     /** Clears whole boxes, as deleteSelectionVolumes. */
-    public static boolean deleteBoxes(EntityPlayer player, java.util.List<com.github.lunatrius.schematica.api.SchematicRegion> boxes, Runnable onSuccess) {
+    public static boolean deleteBoxes(EntityPlayer player, List<SchematicRegion> boxes, Runnable onSuccess) {
         return request(player, TaskRegistry.Kind.DELETE,
             p -> {
                 WorldEditJob job = areaJob(p, WorldEditJob.Kind.FILL, boxes, Blocks.air, 0, null, 0);
@@ -264,7 +282,7 @@ public class ToolHandler {
                 placement.getWidth(), placement.getHeight(), placement.getLength(), Blocks.air, 0, null, 0);
             job.capture(placement.getSchematic(), false, false);
             job.deletion = mode;
-            job.restrict((x, y, z) -> y >= 0 && y < 256 && com.github.lunatrius.schematica.client.world.RenderLayerSettings.RANGE.contains(x, y, z));
+            job.restrict((x, y, z) -> y >= 0 && y < 256 && RenderLayerSettings.RANGE.contains(x, y, z));
             job.removeEntitiesIn(clampToLayers(placement.enabledRegionBounds()));
             submit(p, job, null);
         });

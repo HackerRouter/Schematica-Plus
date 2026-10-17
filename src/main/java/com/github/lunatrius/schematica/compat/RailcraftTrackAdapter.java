@@ -1,6 +1,7 @@
 // Railcraft track directions turned with the schematic, by HackerRouter, 2026.
 package com.github.lunatrius.schematica.compat;
 
+import net.minecraft.block.BlockRailBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraftforge.common.util.Constants.NBT;
@@ -41,7 +42,7 @@ final class RailcraftTrackAdapter implements ISchematicVisualAdapter {
 
     private static int shape(TileEntity tile) {
         int meta = tile.getWorldObj().getBlockMetadata(tile.xCoord, tile.yCoord, tile.zCoord);
-        boolean flexible = ((net.minecraft.block.BlockRailBase) tile.getWorldObj().getBlock(tile.xCoord, tile.yCoord, tile.zCoord))
+        boolean flexible = ((BlockRailBase) tile.getWorldObj().getBlock(tile.xCoord, tile.yCoord, tile.zCoord))
             .isFlexibleRail(tile.getWorldObj(), tile.xCoord, tile.yCoord, tile.zCoord);
         return flexible ? meta : meta & 7;
     }

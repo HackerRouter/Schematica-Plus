@@ -5,14 +5,16 @@ package com.github.lunatrius.schematica.client.gui.save;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.world.World;
-import org.lwjgl.input.Keyboard;
 
 import com.github.lunatrius.schematica.SchematicaPlus;
+import com.github.lunatrius.schematica.api.SchematicOrigin;
+import com.github.lunatrius.schematica.api.SchematicRegion;
 import com.github.lunatrius.schematica.client.gui.framework.UiBounds;
 import com.github.lunatrius.schematica.client.gui.framework.UiButton;
 import com.github.lunatrius.schematica.client.gui.framework.UiDraw;
@@ -31,6 +33,8 @@ import com.github.lunatrius.schematica.client.world.SchematicWorld;
 import com.github.lunatrius.schematica.internal.lunatriuscore.util.vector.Vector3i;
 import com.github.lunatrius.schematica.proxy.ClientProxy;
 
+import org.lwjgl.input.Keyboard;
+
 public final class GuiAreaSelectionManager extends UiScreen {
     private final AreaSelectionLibrary library = AreaSelections.library();
     private final World world = Minecraft.getMinecraft().theWorld;
@@ -45,7 +49,7 @@ public final class GuiAreaSelectionManager extends UiScreen {
     }
 
     private final UiListModel<Row> model = new UiListModel<>(22, row -> row.area == null ? row.name()
-        : row.name() + " " + row.area.boxes().stream().map(box -> box.name()).collect(java.util.stream.Collectors.joining(" ")));
+        : row.name() + " " + row.area.boxes().stream().map(box -> box.name()).collect(Collectors.joining(" ")));
     private UiRowList<Row> list;
     private UiButton home, up, createFolder;
     private UiLabel path;
@@ -177,15 +181,15 @@ public final class GuiAreaSelectionManager extends UiScreen {
             Vector3i first = placement.position.clone();
             Vector3i second = new Vector3i(Math.addExact(first.x, placement.getWidth() - 1),
                 Math.addExact(first.y, placement.getHeight() - 1), Math.addExact(first.z, placement.getLength() - 1));
-            List<com.github.lunatrius.schematica.api.SchematicRegion> regions = new ArrayList<>();
+            List<SchematicRegion> regions = new ArrayList<>();
             if (!placement.isEnabled()) throw new IllegalArgumentException(UiTranslations.format("schematica.ui.placement.disabled"));
             if (!placement.hasEnabledRegions()) throw new IllegalArgumentException(UiTranslations.format("schematica.ui.placement.no_regions"));
-            for (com.github.lunatrius.schematica.api.SchematicRegion region : placement.getSchematic().getRegions()) {
+            for (SchematicRegion region : placement.getSchematic().getRegions()) {
                 regions.add(region.offset(first.x, first.y, first.z));
             }
-            if (regions.isEmpty()) regions.add(new com.github.lunatrius.schematica.api.SchematicRegion(name,
+            if (regions.isEmpty()) regions.add(new SchematicRegion(name,
                 first.x, first.y, first.z, second.x, second.y, second.z));
-            com.github.lunatrius.schematica.api.SchematicOrigin origin = placement.originPosition();
+            SchematicOrigin origin = placement.originPosition();
             AreaSelections.select(library.createFromRegions(name, regions, new Vector3i(origin.x, origin.y, origin.z)));
         });
     }

@@ -1,24 +1,32 @@
 package com.github.lunatrius.schematica.handler.client;
 
+import java.util.ArrayDeque;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.ChatComponentTranslation;
 import net.minecraft.util.IChatComponent;
 import net.minecraft.world.World;
 import net.minecraftforge.client.event.ClientChatReceivedEvent;
+
+import com.github.lunatrius.schematica.handler.ConfigurationHandler;
+import com.github.lunatrius.schematica.reference.Reference;
+import com.github.lunatrius.schematica.task.TaskRegistry;
 import com.github.lunatrius.schematica.tool.WorldEditJob;
 import com.github.lunatrius.schematica.tool.WorldEditTask;
-import com.github.lunatrius.schematica.task.TaskRegistry;
 import com.github.lunatrius.schematica.util.MessageException;
-import com.github.lunatrius.schematica.reference.Reference;
-import cpw.mods.fml.common.eventhandler.SubscribeEvent;
+
 import cpw.mods.fml.common.eventhandler.EventPriority;
+import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.gameevent.TickEvent;
 
 /** Vanilla-server fallback, waiting for native command replies before advancing. */
 public final class CommandEditQueue {
     public static final CommandEditQueue INSTANCE = new CommandEditQueue();
     private static final int REPLY_TIMEOUT = 200;
-    private static final java.util.Set<String> JOB_ERRORS = new java.util.HashSet<>(java.util.Arrays.asList(
+    private static final Set<String> JOB_ERRORS = new HashSet<>(Arrays.asList(
         "commands.generic.permission", "commands.generic.notFound", "commands.generic.usage", "commands.generic.snytax"));
     interface Client {
         boolean valid(WorldEditJob job, World world);
@@ -31,7 +39,7 @@ public final class CommandEditQueue {
     private World world;
     private TaskRegistry.Task task;
     private int cursor, sent, delay, pending, waiting;
-    private final java.util.ArrayDeque<Integer> pendingCells = new java.util.ArrayDeque<>();
+    private final ArrayDeque<Integer> pendingCells = new ArrayDeque<>();
 
     public CommandEditQueue() {
         this(new Client() {
@@ -70,7 +78,7 @@ public final class CommandEditQueue {
 
     public synchronized void submit(WorldEditJob next, World targetWorld) {
         if (job != null) throw new MessageException("schematica.message.edit.busy");
-        if (next.kind == WorldEditJob.Kind.PASTE && com.github.lunatrius.schematica.handler.ConfigurationHandler.pasteIgnoreBlockEntitiesEntirely) next.dropTiles();
+        if (next.kind == WorldEditJob.Kind.PASTE && ConfigurationHandler.pasteIgnoreBlockEntitiesEntirely) next.dropTiles();
         next.validateCommandFallback(); // Preflight before sending the first command.
         if (next.removesEntities()) {
             client.message(new ChatComponentTranslation("schematica.message.edit.entities_require_singleplayer"));
@@ -133,7 +141,7 @@ public final class CommandEditQueue {
         if (delay-- > 0) return;
         try {
             // commandLimitPerTick commands every commandTaskInterval ticks
-            int limit = sent == 0 ? 1 : com.github.lunatrius.schematica.handler.ConfigurationHandler.commandLimitPerTick, issued = 0;
+            int limit = sent == 0 ? 1 : ConfigurationHandler.commandLimitPerTick, issued = 0;
             for (int scanned = 0; scanned < 65536 && cursor < job.volume && issued < limit; scanned++) {
                 int index = cursor++;
                 boolean queued = false;
@@ -152,7 +160,7 @@ public final class CommandEditQueue {
                     job.recordBlockFailure(index, error);
                 }
             }
-            delay = com.github.lunatrius.schematica.handler.ConfigurationHandler.commandTaskInterval - 1;
+            delay = ConfigurationHandler.commandTaskInterval - 1;
             task.update(TaskRegistry.Stage.COMMANDS, cursor, job.volume, job.blockCount, 0);
             if (cursor == job.volume && pending == 0) {
                 job.completedTraversal = true;

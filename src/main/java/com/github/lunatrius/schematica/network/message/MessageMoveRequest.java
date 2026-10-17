@@ -9,6 +9,7 @@ import net.minecraft.server.MinecraftServer;
 import com.github.lunatrius.schematica.api.SchematicRegion;
 import com.github.lunatrius.schematica.handler.WorldEditQueue;
 import com.github.lunatrius.schematica.network.PacketHandler;
+import com.github.lunatrius.schematica.reference.Reference;
 import com.github.lunatrius.schematica.tool.WorldEditTask;
 import com.github.lunatrius.schematica.tool.WorldMoveJob;
 
@@ -53,7 +54,7 @@ public final class MessageMoveRequest implements IMessage, IMessageHandler<Messa
                     submitted = WorldEditQueue.INSTANCE.submit(server, job);
                 }
             } catch (IllegalArgumentException | ArithmeticException error) {
-                com.github.lunatrius.schematica.reference.Reference.logger.warn("Rejected invalid move request", error);
+                Reference.logger.warn("Rejected invalid move request", error);
             }
             if (!submitted) PacketHandler.INSTANCE.sendTo(new MessageMoveResult(message.id, false), player);
         });

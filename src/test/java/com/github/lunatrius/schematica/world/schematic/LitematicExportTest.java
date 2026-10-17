@@ -7,7 +7,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Collections;
+import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 import net.minecraft.block.Block;
@@ -18,15 +20,15 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.tileentity.TileEntity;
 
-import org.junit.BeforeClass;
-import org.junit.Test;
-
 import com.github.lunatrius.schematica.api.ISchematic;
 import com.github.lunatrius.schematica.api.SchematicOrigin;
 import com.github.lunatrius.schematica.api.SchematicRegion;
 import com.github.lunatrius.schematica.compat.BlockMapping;
 
 import cpw.mods.fml.common.registry.GameData;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -102,7 +104,7 @@ public class LitematicExportTest {
         regions.setTag("A", region);
         root.setTag("Regions", regions);
         root.setInteger("Version", 4);
-        java.util.Map<NBTTagCompound, java.util.Map<String, long[]>> arrays = new java.util.IdentityHashMap<>();
+        Map<NBTTagCompound, Map<String, long[]>> arrays = new IdentityHashMap<>();
         arrays.put(region, Collections.singletonMap("BlockStates", new long[] {1L, -1L, Long.MIN_VALUE}));
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
         LitematicaNBTWriter.writeCompressed(root, arrays, bytes);

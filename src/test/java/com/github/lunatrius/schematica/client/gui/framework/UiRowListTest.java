@@ -1,6 +1,8 @@
 package com.github.lunatrius.schematica.client.gui.framework;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -47,7 +49,7 @@ public class UiRowListTest {
 
     @Test public void partialRowsCannotReceiveClicksOutsideTheViewport() {
         UiListModel<Integer> model = new UiListModel<>(22, Object::toString);
-        model.setEntries(java.util.Arrays.asList(1, 2, 3, 4));
+        model.setEntries(Arrays.asList(1, 2, 3, 4));
         AtomicInteger activated = new AtomicInteger();
         UiRowList<Integer> list = new UiRowList<>(model, (value, index) -> new UiPanel() {
             final UiButton button = add(new UiButton(() -> "test", mouse -> activated.incrementAndGet()));
@@ -61,7 +63,7 @@ public class UiRowListTest {
         input.mouseUp(15, 40, 0);
         assertEquals(0, activated.get());
         list.setBounds(10, 10, 100, 0);
-        model.setEntries(java.util.Collections.emptyList());
+        model.setEntries(Collections.emptyList());
         list.sync();
         assertEquals(0, model.offset());
     }

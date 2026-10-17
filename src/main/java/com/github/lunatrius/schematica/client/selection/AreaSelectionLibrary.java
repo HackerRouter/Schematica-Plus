@@ -3,15 +3,25 @@ package com.github.lunatrius.schematica.client.selection;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
+import java.util.Objects;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.UUID;
 
+import com.github.lunatrius.schematica.api.SchematicOrigin;
+import com.github.lunatrius.schematica.api.SchematicRegion;
 import com.github.lunatrius.schematica.internal.lunatriuscore.util.vector.Vector3i;
 import com.github.lunatrius.schematica.util.SchematicLimits;
+import com.github.lunatrius.schematica.world.storage.RegionSelection;
+
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonNull;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.google.gson.JsonPrimitive;
 
 public final class AreaSelectionLibrary {
     private final List<Area> areas = new ArrayList<>();
@@ -25,7 +35,7 @@ public final class AreaSelectionLibrary {
     private JsonObject extra = new JsonObject();
     /** The browser directory new selections go to ("" is the root, segments joined by '/'). */
     private String targetFolder = "";
-    private final java.util.Set<String> folders = new java.util.TreeSet<>();
+    private final Set<String> folders = new TreeSet<>();
 
     public enum Mode { NORMAL, SIMPLE }
     public enum CornerMode { CORNERS, EXPAND }
@@ -49,16 +59,16 @@ public final class AreaSelectionLibrary {
     public Area simpleSelection() { return simple; }
     public Mode mode() { return mode; }
     public CornerMode cornerMode() { return cornerMode; }
-    public void setMode(Mode value) { mode = java.util.Objects.requireNonNull(value); }
-    public void setCornerMode(CornerMode value) { cornerMode = java.util.Objects.requireNonNull(value); }
+    public void setMode(Mode value) { mode = Objects.requireNonNull(value); }
+    public void setCornerMode(CornerMode value) { cornerMode = Objects.requireNonNull(value); }
     public boolean contains(Area area) { return area == simple || areas.contains(area); }
 
     public String targetFolder() { return targetFolder; }
     public void setTargetFolder(String folder) { targetFolder = validFolder(folder); }
 
     /** Every folder holding selections or created in the browser, with their parents. */
-    public java.util.SortedSet<String> folders() {
-        java.util.SortedSet<String> result = new java.util.TreeSet<>();
+    public SortedSet<String> folders() {
+        SortedSet<String> result = new TreeSet<>();
         List<String> all = new ArrayList<>(folders);
         for (Area area : areas) all.add(area.folder);
         for (String folder : all) {
@@ -103,7 +113,7 @@ public final class AreaSelectionLibrary {
         }
         String value = result.toString().trim();
         while (value.endsWith(".")) value = value.substring(0, value.length() - 1);
-        if (value.split("\\.", 2)[0].toUpperCase(java.util.Locale.ROOT).matches("CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9]")) value = "_" + value;
+        if (value.split("\\.", 2)[0].toUpperCase(Locale.ROOT).matches("CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9]")) value = "_" + value;
         return value;
     }
 
@@ -141,16 +151,16 @@ public final class AreaSelectionLibrary {
         return area;
     }
 
-    public Area createFromRegions(String name, List<com.github.lunatrius.schematica.api.SchematicRegion> regions) {
+    public Area createFromRegions(String name, List<SchematicRegion> regions) {
         return createFromRegions(name, regions, null);
     }
 
-    public Area createFromRegions(String name, List<com.github.lunatrius.schematica.api.SchematicRegion> regions, Vector3i origin) {
+    public Area createFromRegions(String name, List<SchematicRegion> regions, Vector3i origin) {
         if (origin != null) checkPoint(origin);
         if (areas.size() >= 4096 || regions.isEmpty() || regions.size() > 256) throw new IllegalArgumentException("Invalid selection size");
         Area area = new Area(UUID.randomUUID().toString(), uniqueName(name, null, targetFolder));
         area.folder = targetFolder;
-        for (com.github.lunatrius.schematica.api.SchematicRegion region : regions) {
+        for (SchematicRegion region : regions) {
             Vector3i first = new Vector3i(region.minX, region.minY, region.minZ);
             Vector3i second = new Vector3i(region.maxX, region.maxY, region.maxZ);
             checkPoint(first); checkPoint(second);
@@ -242,7 +252,7 @@ public final class AreaSelectionLibrary {
     }
 
     public void selectCorner(Area area, Box box, Corner corner) {
-        java.util.Objects.requireNonNull(corner);
+        Objects.requireNonNull(corner);
         requireBox(area, box);
         selectBox(area, box);
         area.corner = corner;
@@ -375,7 +385,7 @@ public final class AreaSelectionLibrary {
         data.addProperty("mode", mode.name());
         data.addProperty("cornerMode", cornerMode.name());
         data.add("simple", writeArea(simple));
-        data.add("selected", selected == null ? JsonNull.INSTANCE : new com.google.gson.JsonPrimitive(selected.id));
+        data.add("selected", selected == null ? JsonNull.INSTANCE : new JsonPrimitive(selected.id));
         JsonArray entries = new JsonArray();
         for (Area area : areas) entries.add(writeArea(area));
         data.add("selections", entries);
@@ -398,7 +408,7 @@ public final class AreaSelectionLibrary {
             boxes.add(value);
         }
         entry.add("boxes", boxes);
-        entry.add("selectedBox", area.selectedBox == null ? JsonNull.INSTANCE : new com.google.gson.JsonPrimitive(area.selectedBox.name));
+        entry.add("selectedBox", area.selectedBox == null ? JsonNull.INSTANCE : new JsonPrimitive(area.selectedBox.name));
         for (String key : new String[] {"boxName", "ax", "ay", "az", "bx", "by", "bz"}) entry.remove(key);
         entry.addProperty("renderingGuide", area.guide);
         JsonObject origin = new JsonObject();
@@ -419,7 +429,7 @@ public final class AreaSelectionLibrary {
         data.addProperty("mode", mode.name());
         data.addProperty("cornerMode", cornerMode.name());
         data.add("simple", writeArea(simple));
-        data.add("selected", selectedFile == null ? JsonNull.INSTANCE : new com.google.gson.JsonPrimitive(selectedFile));
+        data.add("selected", selectedFile == null ? JsonNull.INSTANCE : new JsonPrimitive(selectedFile));
         return data;
     }
 
@@ -456,9 +466,9 @@ public final class AreaSelectionLibrary {
 
     private static JsonArray position(Vector3i point) {
         JsonArray array = new JsonArray();
-        array.add(new com.google.gson.JsonPrimitive(point.x));
-        array.add(new com.google.gson.JsonPrimitive(point.y));
-        array.add(new com.google.gson.JsonPrimitive(point.z));
+        array.add(new JsonPrimitive(point.x));
+        array.add(new JsonPrimitive(point.y));
+        array.add(new JsonPrimitive(point.z));
         return array;
     }
 
@@ -675,14 +685,14 @@ public final class AreaSelectionLibrary {
             }
             return min;
         }
-        public com.github.lunatrius.schematica.world.storage.RegionSelection snapshot() {
+        public RegionSelection snapshot() {
             Vector3i point = origin();
-            return new com.github.lunatrius.schematica.world.storage.RegionSelection(regions(),
-                new com.github.lunatrius.schematica.api.SchematicOrigin(point.x, point.y, point.z));
+            return new RegionSelection(regions(),
+                new SchematicOrigin(point.x, point.y, point.z));
         }
-        public List<com.github.lunatrius.schematica.api.SchematicRegion> regions() {
-            List<com.github.lunatrius.schematica.api.SchematicRegion> result = new ArrayList<>();
-            for (Box box : boxes) result.add(new com.github.lunatrius.schematica.api.SchematicRegion(box.name,
+        public List<SchematicRegion> regions() {
+            List<SchematicRegion> result = new ArrayList<>();
+            for (Box box : boxes) result.add(new SchematicRegion(box.name,
                 box.first.x, box.first.y, box.first.z, box.second.x, box.second.y, box.second.z));
             return result;
         }

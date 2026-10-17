@@ -7,15 +7,16 @@ import java.io.IOException;
 
 import net.minecraft.client.gui.GuiScreen;
 
-import com.github.lunatrius.schematica.client.gui.framework.UiTranslations;
 import com.github.lunatrius.schematica.client.gui.browser.GuiSchematicBrowser;
 import com.github.lunatrius.schematica.client.gui.browser.SchematicBrowserModel;
 import com.github.lunatrius.schematica.client.gui.framework.UiButton;
 import com.github.lunatrius.schematica.client.gui.framework.UiLabel;
 import com.github.lunatrius.schematica.client.gui.framework.UiTextField;
+import com.github.lunatrius.schematica.client.gui.framework.UiTranslations;
 import com.github.lunatrius.schematica.client.world.SchematicLibrary.Source;
 import com.github.lunatrius.schematica.client.world.SchematicSourceData;
 import com.github.lunatrius.schematica.proxy.ClientProxy;
+import com.github.lunatrius.schematica.util.MessageException;
 
 public final class GuiSchematicSourceSave extends GuiSchematicBrowser {
 
@@ -73,7 +74,7 @@ public final class GuiSchematicSourceSave extends GuiSchematicBrowser {
             source.data().save(checked, replace, mc.thePlayer != null ? mc.thePlayer.getCommandSenderName() : mc.getSession().getUsername());
             refreshFiles();
             setStatus(UiTranslations.format("litematica.message.schematic_saved_as", file.getName()));
-        } catch (com.github.lunatrius.schematica.util.MessageException e) {
+        } catch (MessageException e) {
             setStatus(UiTranslations.format(e.key(), e.arguments()));
         } catch (IOException | IllegalArgumentException e) {
             fail("schematica.ui.source.save_failed", e);

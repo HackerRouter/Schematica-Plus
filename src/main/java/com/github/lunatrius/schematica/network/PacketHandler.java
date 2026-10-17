@@ -6,6 +6,14 @@ import com.github.lunatrius.schematica.network.message.MessageDownloadBeginAck;
 import com.github.lunatrius.schematica.network.message.MessageDownloadChunk;
 import com.github.lunatrius.schematica.network.message.MessageDownloadChunkAck;
 import com.github.lunatrius.schematica.network.message.MessageDownloadEnd;
+import com.github.lunatrius.schematica.network.message.MessageDownloadRegions;
+import com.github.lunatrius.schematica.network.message.MessageEditCancel;
+import com.github.lunatrius.schematica.network.message.MessageEditStatus;
+import com.github.lunatrius.schematica.network.message.MessageEditUpload;
+import com.github.lunatrius.schematica.network.message.MessageMoveRequest;
+import com.github.lunatrius.schematica.network.message.MessageMoveResult;
+import com.github.lunatrius.schematica.network.message.MessagePlacementIntent;
+import com.github.lunatrius.schematica.network.message.MessagePrinterAction;
 import com.github.lunatrius.schematica.reference.Reference;
 
 import cpw.mods.fml.common.network.NetworkRegistry;
@@ -18,8 +26,8 @@ public class PacketHandler {
         .newSimpleChannel(Reference.MODID.toLowerCase());
 
     public static void init() {
-        INSTANCE.registerMessage(com.github.lunatrius.schematica.network.message.MessagePrinterAction.class,
-            com.github.lunatrius.schematica.network.message.MessagePrinterAction.class, 13, Side.SERVER);
+        INSTANCE.registerMessage(MessagePrinterAction.class,
+            MessagePrinterAction.class, 13, Side.SERVER);
         INSTANCE.registerMessage(MessageCapabilities.class, MessageCapabilities.class, 0, Side.CLIENT);
 
         INSTANCE.registerMessage(MessageDownloadBegin.class, MessageDownloadBegin.class, 1, Side.CLIENT);
@@ -27,19 +35,19 @@ public class PacketHandler {
         INSTANCE.registerMessage(MessageDownloadChunk.class, MessageDownloadChunk.class, 3, Side.CLIENT);
         INSTANCE.registerMessage(MessageDownloadChunkAck.class, MessageDownloadChunkAck.class, 4, Side.SERVER);
         INSTANCE.registerMessage(MessageDownloadEnd.class, MessageDownloadEnd.class, 5, Side.CLIENT);
-        INSTANCE.registerMessage(com.github.lunatrius.schematica.network.message.MessageMoveRequest.class,
-            com.github.lunatrius.schematica.network.message.MessageMoveRequest.class, 6, Side.SERVER);
-        INSTANCE.registerMessage(com.github.lunatrius.schematica.network.message.MessageMoveResult.class,
-            com.github.lunatrius.schematica.network.message.MessageMoveResult.class, 7, Side.CLIENT);
-        INSTANCE.registerMessage(com.github.lunatrius.schematica.network.message.MessageEditUpload.class,
-            com.github.lunatrius.schematica.network.message.MessageEditUpload.class, 8, Side.SERVER);
-        INSTANCE.registerMessage(com.github.lunatrius.schematica.network.message.MessageEditCancel.class,
-            com.github.lunatrius.schematica.network.message.MessageEditCancel.class, 9, Side.SERVER);
-        INSTANCE.registerMessage(com.github.lunatrius.schematica.network.message.MessageEditStatus.class,
-            com.github.lunatrius.schematica.network.message.MessageEditStatus.class, 10, Side.CLIENT);
-        INSTANCE.registerMessage(com.github.lunatrius.schematica.network.message.MessagePlacementIntent.class,
-            com.github.lunatrius.schematica.network.message.MessagePlacementIntent.class, 11, Side.SERVER);
-        INSTANCE.registerMessage(com.github.lunatrius.schematica.network.message.MessageDownloadRegions.class,
-            com.github.lunatrius.schematica.network.message.MessageDownloadRegions.class, 12, Side.CLIENT);
+        INSTANCE.registerMessage(MessageMoveRequest.class,
+            MessageMoveRequest.class, 6, Side.SERVER);
+        INSTANCE.registerMessage(MessageMoveResult.class,
+            MessageMoveResult.class, 7, Side.CLIENT);
+        INSTANCE.registerMessage(MessageEditUpload.class,
+            MessageEditUpload.class, 8, Side.SERVER);
+        INSTANCE.registerMessage(MessageEditCancel.class,
+            MessageEditCancel.class, 9, Side.SERVER);
+        INSTANCE.registerMessage(MessageEditStatus.class,
+            MessageEditStatus.class, 10, Side.CLIENT);
+        INSTANCE.registerMessage(MessagePlacementIntent.class,
+            MessagePlacementIntent.class, 11, Side.SERVER);
+        INSTANCE.registerMessage(MessageDownloadRegions.class,
+            MessageDownloadRegions.class, 12, Side.CLIENT);
     }
 }

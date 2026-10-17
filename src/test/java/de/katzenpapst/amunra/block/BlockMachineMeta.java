@@ -1,5 +1,8 @@
 package de.katzenpapst.amunra.block;
 
-public class BlockMachineMeta extends net.minecraft.block.Block {
-    public BlockMachineMeta() { super(net.minecraft.block.material.Material.rock); }
+import net.minecraft.block.Block;
+import net.minecraft.block.material.Material;
+
+public class BlockMachineMeta extends Block {
+    public BlockMachineMeta() { super(Material.rock); }
 }

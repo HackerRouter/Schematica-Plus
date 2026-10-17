@@ -2,7 +2,14 @@
 package com.github.lunatrius.schematica.world.schematic;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockAnvil;
@@ -33,9 +40,12 @@ import net.minecraft.block.BlockTorch;
 import net.minecraft.block.BlockTrapDoor;
 import net.minecraft.block.BlockTripWireHook;
 import net.minecraft.block.BlockVine;
+import net.minecraft.init.Blocks;
 import net.minecraftforge.common.util.ForgeDirection;
 
 import com.github.lunatrius.schematica.util.SchematicTransform;
+
+import cpw.mods.fml.common.registry.GameData;
 
 import static net.minecraftforge.common.util.ForgeDirection.*;
 
@@ -63,13 +73,13 @@ public final class BlockMetaTransform {
     private static Field standingSign;
 
     /** Mod blocks facing a horizontal ForgeDirection 2-5 in bits 0-2 (chest and furnace layout). */
-    private static final java.util.Set<String> MOD_WALL = new java.util.HashSet<>();
+    private static final Set<String> MOD_WALL = new HashSet<>();
     /** Mod blocks facing any ForgeDirection in bits 0-2. */
-    private static final java.util.Set<String> MOD_ANY_SIDE = new java.util.HashSet<>();
+    private static final Set<String> MOD_ANY_SIDE = new HashSet<>();
     /** Mod blocks with the torch layout (1 E, 2 W, 3 S, 4 N, 5 standing). */
-    private static final java.util.Set<String> MOD_TORCH = new java.util.HashSet<>();
+    private static final Set<String> MOD_TORCH = new HashSet<>();
     /** Mod blocks (by class, subclasses included) with a horizontal direction in the low two metadata bits. */
-    private static final java.util.Map<String, ForgeDirection[]> MOD_HORIZONTAL = new java.util.HashMap<>();
+    private static final Map<String, ForgeDirection[]> MOD_HORIZONTAL = new HashMap<>();
     /** Galacticraft machines: the direction the placing player looked. */
     private static final ForgeDirection[] GALACTICRAFT = {EAST, WEST, NORTH, SOUTH};
 
@@ -131,8 +141,8 @@ public final class BlockMetaTransform {
         }
     }
 
-    private static final java.util.Set<String> HARVESTCRAFT_MACHINES = new java.util.HashSet<>(
-        java.util.Arrays.asList("Churn", "Grinder", "Oven", "Presser", "Quern"));
+    private static final Set<String> HARVESTCRAFT_MACHINES = new HashSet<>(
+        Arrays.asList("Churn", "Grinder", "Oven", "Presser", "Quern"));
     private static final ForgeDirection[] CATWALK_SIDES = {EAST, WEST, SOUTH, NORTH};
     private static final String[] LADDER_FACINGS = {"north", "south", "west", "east"};
 
@@ -146,11 +156,11 @@ public final class BlockMetaTransform {
         if (block == null || "XZy".indexOf(op) >= 0 || !block.getClass().getName().equals("com.thecodewarrior.catwalks.block.BlockCagedLadder")) {
             return block;
         }
-        String name = cpw.mods.fml.common.registry.GameData.getBlockRegistry().getNameForObject(block);
+        String name = GameData.getBlockRegistry().getNameForObject(block);
         String turned = ladderName(name, op);
         if (turned == null || turned.equals(name)) return block;
-        Block result = cpw.mods.fml.common.registry.GameData.getBlockRegistry().getObject(turned);
-        return result == null || result == net.minecraft.init.Blocks.air ? block : result;
+        Block result = GameData.getBlockRegistry().getObject(turned);
+        return result == null || result == Blocks.air ? block : result;
     }
 
     /** "catwalks:cagedLadder_north_lit..." with its side turned; null when the name has no side. */
@@ -161,8 +171,8 @@ public final class BlockMetaTransform {
         start += "cagedLadder_".length();
         for (String facing : LADDER_FACINGS) {
             if (!name.startsWith(facing, start)) continue;
-            ForgeDirection side = ForgeDirection.valueOf(facing.toUpperCase(java.util.Locale.ROOT));
-            String turned = turn(op, side).name().toLowerCase(java.util.Locale.ROOT);
+            ForgeDirection side = ForgeDirection.valueOf(facing.toUpperCase(Locale.ROOT));
+            String turned = turn(op, side).name().toLowerCase(Locale.ROOT);
             return name.substring(0, start) + turned + name.substring(start + facing.length());
         }
         return null;
@@ -210,7 +220,7 @@ public final class BlockMetaTransform {
             Class<?> orientationType = orientation.getClass();
             Object x = orientationType.getField("x").get(orientation), y = orientationType.getField("y").get(orientation);
             Class<?> axis = x.getClass();
-            java.lang.reflect.Method fromDirection = axis.getMethod("fromDirection", ForgeDirection.class);
+            Method fromDirection = axis.getMethod("fromDirection", ForgeDirection.class);
             Object tx = fromDirection.invoke(null, turn(op, (ForgeDirection) axis.getField("dir").get(x)));
             Object ty = fromDirection.invoke(null, turn(op, (ForgeDirection) axis.getField("dir").get(y)));
             Object turned = orientationType.getMethod("lookupXY", axis, axis).invoke(null, tx, ty);

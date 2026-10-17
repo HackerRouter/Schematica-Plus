@@ -3,23 +3,23 @@ package com.github.lunatrius.schematica.world.schematic;
 import java.io.File;
 import java.nio.file.Files;
 import java.util.Arrays;
+import java.util.Collections;
 
 import net.minecraft.block.Block;
 import net.minecraft.nbt.NBTTagCompound;
 
-import org.junit.BeforeClass;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
-
 import com.github.lunatrius.schematica.api.ISchematic;
+import com.github.lunatrius.schematica.client.world.CellState;
 import com.github.lunatrius.schematica.client.world.SchematicSourceData;
 import com.github.lunatrius.schematica.client.world.SourceEditor;
-import com.github.lunatrius.schematica.client.world.CellState;
 import com.github.lunatrius.schematica.world.storage.Schematic;
 import com.github.lunatrius.schematica.world.storage.SchematicCopies;
 
 import cpw.mods.fml.common.registry.GameData;
+import org.junit.BeforeClass;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
@@ -149,7 +149,7 @@ public class SchematicMetadataTest {
             SchematicSourceData source = SchematicSourceData.read(file);
             Schematic contents = source.editable();
             String region = SchematicCopies.independent(contents) ? contents.getRegions().get(0).name : null;
-            SourceEditor.apply(source, java.util.Collections.singletonMap(new SourceEditor.Cell(region, 1, 0, 0), new CellState(block, 3, null)));
+            SourceEditor.apply(source, Collections.singletonMap(new SourceEditor.Cell(region, 1, 0, 0), new CellState(block, 3, null)));
             decorate(file);
             source.updateMetadata(SchematicFormat.readFromFile(file).getSchematicMetadata());
             File saved = new File(temporary.getRoot(), "edited-" + ext.substring(1) + ".schemplus");
@@ -165,7 +165,7 @@ public class SchematicMetadataTest {
         NBTTagCompound root = LitematicaNBTReader.readFromFile(file);
         NBTTagCompound metadata = root.getCompoundTag("Metadata");
         long[] unknown = {1L, Long.MAX_VALUE, Long.MIN_VALUE};
-        LitematicaNBTReader.longArrays().put(metadata, java.util.Collections.singletonMap("OtherToolData", unknown));
+        LitematicaNBTReader.longArrays().put(metadata, Collections.singletonMap("OtherToolData", unknown));
         SchematicFileWriter.write(file, new LitematicExport.Document(root, LitematicaNBTReader.longArrays()));
         LitematicaNBTReader.clearLongArrayStore();
         SchematicSourceData source = SchematicSourceData.read(file);

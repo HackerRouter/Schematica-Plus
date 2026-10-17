@@ -8,19 +8,25 @@ import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.ChatComponentText;
+import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.MathHelper;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.util.Vec3;
+import net.minecraftforge.common.config.Property;
 import net.minecraftforge.common.util.ForgeDirection;
 
 import com.github.lunatrius.schematica.SchematicaPlus;
 import com.github.lunatrius.schematica.api.SchematicOrigin;
 import com.github.lunatrius.schematica.api.SchematicRegion;
+import com.github.lunatrius.schematica.client.gui.framework.UiTranslations;
 import com.github.lunatrius.schematica.client.input.Hotkeys;
+import com.github.lunatrius.schematica.client.projects.SchematicProjects;
 import com.github.lunatrius.schematica.client.selection.AreaSelectionLibrary;
 import com.github.lunatrius.schematica.client.selection.AreaSelectionLibrary.Area;
 import com.github.lunatrius.schematica.client.selection.AreaSelections;
 import com.github.lunatrius.schematica.client.selection.SelectionRayTrace;
+import com.github.lunatrius.schematica.client.util.UiState;
 import com.github.lunatrius.schematica.client.world.SchematicWorld;
 import com.github.lunatrius.schematica.client.world.SubRegionPlacements;
 import com.github.lunatrius.schematica.handler.ConfigurationHandler;
@@ -28,6 +34,8 @@ import com.github.lunatrius.schematica.handler.VisualSettings;
 import com.github.lunatrius.schematica.handler.client.WorldHandler;
 import com.github.lunatrius.schematica.internal.lunatriuscore.util.vector.Vector3i;
 import com.github.lunatrius.schematica.proxy.ClientProxy;
+
+import org.lwjgl.opengl.Display;
 
 public final class ToolManager {
     public static final ToolManager INSTANCE = new ToolManager();
@@ -52,10 +60,10 @@ public final class ToolManager {
     public static void cycleMode(boolean forward) { setCurrentMode(currentMode.cycle(forward)); WorldHandler.INSTANCE.saveSession(); }
 
     /** DataManager's operation_mode: the tool mode is remembered per world. */
-    public static void saveMode(String world) { com.github.lunatrius.schematica.client.util.UiState.setToolMode(worldName(world), currentMode.name()); }
+    public static void saveMode(String world) { UiState.setToolMode(worldName(world), currentMode.name()); }
 
     public static void restoreMode(String world) {
-        String mode = com.github.lunatrius.schematica.client.util.UiState.toolMode(worldName(world));
+        String mode = UiState.toolMode(worldName(world));
         setCurrentMode(mode == null ? ToolMode.AREA_SELECTION : ToolMode.fromString(mode));
     }
 
@@ -65,7 +73,7 @@ public final class ToolManager {
 
     /** Flips a boolean option of the tool category, as KeyCallbackToggleBooleanConfigWithMessage when message is set. */
     public static boolean toggleConfig(String name, boolean message) {
-        net.minecraftforge.common.config.Property p = ConfigurationHandler.configuration.getCategory("tool").get(name);
+        Property p = ConfigurationHandler.configuration.getCategory("tool").get(name);
         boolean value = !p.getBoolean();
         p.set(value);
         ConfigurationHandler.loadConfiguration();
@@ -120,8 +128,8 @@ public final class ToolManager {
         if (Hotkeys.held("selectionNudgeModifier")) return nudge(amount);
         if (Hotkeys.held("operationModeChangeModifier")) { cycleMode(amount < 0 != ConfigurationHandler.reverseOperationModeDirection); return true; }
         if (Hotkeys.held("schematicVersionCycleModifier")) {
-            if (com.github.lunatrius.schematica.client.projects.SchematicProjects.hasProjectOpen()) {
-                com.github.lunatrius.schematica.client.projects.SchematicProjects.cycleVersion(-amount);
+            if (SchematicProjects.hasProjectOpen()) {
+                SchematicProjects.cycleVersion(-amount);
             }
             return true;
         }
@@ -153,8 +161,8 @@ public final class ToolManager {
     }
 
     private static void message(String key) {
-        if (mc().thePlayer != null) mc().thePlayer.addChatMessage(new net.minecraft.util.ChatComponentText(
-            net.minecraft.util.EnumChatFormatting.RED + com.github.lunatrius.schematica.client.gui.framework.UiTranslations.format(key)));
+        if (mc().thePlayer != null) mc().thePlayer.addChatMessage(new ChatComponentText(
+            EnumChatFormatting.RED + UiTranslations.format(key)));
     }
     static void moveEntire(Area area, Vector3i delta) {
         if (!SchematicaPlus.proxy.isSaveEnabled) return;
@@ -279,7 +287,7 @@ public final class ToolManager {
     public static void tick() {
         WorldMoveController.tick();
         if (grabbed == null) return;
-        if (mc().theWorld != grabWorld || mc().currentScreen != null || !toolActive() || grabbed != AreaSelections.library().selected() || !org.lwjgl.opengl.Display.isActive()) { releaseGrab(); return; }
+        if (mc().theWorld != grabWorld || mc().currentScreen != null || !toolActive() || grabbed != AreaSelections.library().selected() || !Display.isActive()) { releaseGrab(); return; }
         Vector3i next = grabPosition();
         if (!next.equals(grabPoint)) {
             try {

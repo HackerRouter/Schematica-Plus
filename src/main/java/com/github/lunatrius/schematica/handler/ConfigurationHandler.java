@@ -3,6 +3,7 @@ package com.github.lunatrius.schematica.handler;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayDeque;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Queue;
 import java.util.Set;
@@ -15,11 +16,17 @@ import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.common.config.Property;
 
 import com.github.lunatrius.schematica.SchematicaPlus;
+import com.github.lunatrius.schematica.client.selection.AreaSelectionLibrary;
 import com.github.lunatrius.schematica.reference.Names;
 import com.github.lunatrius.schematica.reference.Reference;
+import com.github.lunatrius.schematica.tool.PlacementDeletionMode;
 import com.github.lunatrius.schematica.tool.ReplaceBehavior;
+import com.github.lunatrius.schematica.tool.WorldEditJob;
+import com.github.lunatrius.schematica.util.BlockGroups;
+import com.github.lunatrius.schematica.util.FileUtils;
 
 import cpw.mods.fml.client.event.ConfigChangedEvent;
+import cpw.mods.fml.common.LoaderException;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.registry.GameData;
 
@@ -114,7 +121,7 @@ public class ConfigurationHandler {
     public static boolean materialListIgnoreState, materialListRecipeDetails = true, renderMaterialListInGuis = true, highlightBlockInInventory;
     public static int materialListHudMaxLines = 10;
     public static double materialListHudScale = 1;
-    public static com.github.lunatrius.schematica.tool.PlacementDeletionMode schematicVcsDeleteMode = com.github.lunatrius.schematica.tool.PlacementDeletionMode.MATCHING_BLOCK;
+    public static PlacementDeletionMode schematicVcsDeleteMode = PlacementDeletionMode.MATCHING_BLOCK;
     public static boolean printerEnabled = PRINTER_ENABLED_DEFAULT;
     public static boolean remoteEditsEnabled = true;
     public static boolean accuratePlacementEnabled = true;
@@ -159,9 +166,9 @@ public class ConfigurationHandler {
     public static void init(File configFile) {
         if (configuration == null) {
             try {
-                com.github.lunatrius.schematica.util.FileUtils.migrateLegacyConfiguration(configFile);
+                FileUtils.migrateLegacyConfiguration(configFile);
             } catch (IOException e) {
-                throw new cpw.mods.fml.common.LoaderException("Cannot migrate the Schematica configuration to " + configFile + ": " + e);
+                throw new LoaderException("Cannot migrate the Schematica configuration to " + configFile + ": " + e);
             }
             configuration = new Configuration(configFile, VERSION);
             loadConfiguration();
@@ -380,21 +387,21 @@ public class ConfigurationHandler {
         pasteUsingCommandsInSp = toolFlag("pasteUsingCommandsInSp", false);
         layerModeFollowsPlayer = toolFlag("layerModeFollowsPlayer", false);
         generateLowercaseNames = toolFlag("generateLowercaseNames", false);
-        com.github.lunatrius.schematica.client.selection.AreaSelectionLibrary.changeSelectedCornerOnMove = toolFlag("changeSelectedCornerOnMove", true);
+        AreaSelectionLibrary.changeSelectedCornerOnMove = toolFlag("changeSelectedCornerOnMove", true);
         commandLimitPerTick = toolInt("commandLimitPerTick", 8, 1, 256);
         commandTaskInterval = toolInt("commandTaskInterval", 1, 1, 1000);
         Property setblock = configuration.get(Names.Config.Category.TOOL, "commandNameSetblock", "setblock");
         setblock.setLanguageKey("litematica.config.generic.name.commandNameSetblock");
         String setblockName = setblock.getString().trim().replaceFirst("^/+", "");
-        com.github.lunatrius.schematica.tool.WorldEditJob.setblockCommand = setblockName.matches("[A-Za-z0-9_:.-]{1,64}") ? setblockName : "setblock";
+        WorldEditJob.setblockCommand = setblockName.matches("[A-Za-z0-9_:.-]{1,64}") ? setblockName : "setblock";
         Property selectionMode = configuration.get(BlockInfoHudSettings.CATEGORY, "defaultSelectionMode", "simple");
         selectionMode.setLanguageKey("litematica.config.info_overlays.name.defaultSelectionMode");
         selectionMode.setValidValues(new String[] {"normal", "simple"});
         boolean normal = "normal".equals(selectionMode.getString());
         selectionMode.set(normal ? "normal" : "simple");
-        com.github.lunatrius.schematica.client.selection.AreaSelectionLibrary.defaultMode = normal
-            ? com.github.lunatrius.schematica.client.selection.AreaSelectionLibrary.Mode.NORMAL
-            : com.github.lunatrius.schematica.client.selection.AreaSelectionLibrary.Mode.SIMPLE;
+        AreaSelectionLibrary.defaultMode = normal
+            ? AreaSelectionLibrary.Mode.NORMAL
+            : AreaSelectionLibrary.Mode.SIMPLE;
         Property warnRendering = configuration.get(BlockInfoHudSettings.CATEGORY, "warnDisabledRendering", true);
         warnRendering.setLanguageKey("litematica.config.info_overlays.name.warnDisabledRendering");
         warnDisabledRendering = warnRendering.getBoolean(true);
@@ -409,7 +416,7 @@ public class ConfigurationHandler {
         Property pickSlots = configuration.get(Names.Config.Category.TOOL, "pickBlockableSlots", "1,2,3,4,5");
         pickSlots.setLanguageKey("litematica.config.generic.name.pickBlockableSlots");
         pickBlockableSlots = pickSlots.getString();
-        com.github.lunatrius.schematica.util.BlockGroups.enabled = toolFlag("enableDifferentBlocks", false);
+        BlockGroups.enabled = toolFlag("enableDifferentBlocks", false);
         materialListRecipeDetails = toolFlag("materialListRecipeDetails", true);
         renderMaterialListInGuis = toolFlag("renderMaterialListInGuis", true);
         highlightBlockInInventory = toolFlag("highlightBlockInInventory", false);
@@ -425,12 +432,12 @@ public class ConfigurationHandler {
         Property protocol = configuration.get(Names.Config.Category.TOOL, "easyPlaceProtocolVersion", "auto");
         protocol.setLanguageKey("litematica.config.generic.name.easyPlaceProtocolVersion");
         protocol.setValidValues(new String[] {"auto", "v3", "v2", "slabs_only", "none"});
-        easyPlaceProtocolVersion = java.util.Arrays.asList(protocol.getValidValues()).contains(protocol.getString()) ? protocol.getString() : "auto";
+        easyPlaceProtocolVersion = Arrays.asList(protocol.getValidValues()).contains(protocol.getString()) ? protocol.getString() : "auto";
         protocol.set(easyPlaceProtocolVersion);
         Property vcsDelete = configuration.get(Names.Config.Category.TOOL, "schematicVcsDeleteMode", "matching_block");
         vcsDelete.setLanguageKey("litematica.config.generic.name.schematicVcsDeleteMode");
-        vcsDelete.setValidValues(com.github.lunatrius.schematica.tool.PlacementDeletionMode.names());
-        schematicVcsDeleteMode = com.github.lunatrius.schematica.tool.PlacementDeletionMode.parse(vcsDelete.getString());
+        vcsDelete.setValidValues(PlacementDeletionMode.names());
+        schematicVcsDeleteMode = PlacementDeletionMode.parse(vcsDelete.getString());
         vcsDelete.set(schematicVcsDeleteMode.value);
         Property swapInterval = configuration.get(Names.Config.Category.TOOL, "easyPlaceSwapInterval", 0);
         swapInterval.setLanguageKey("litematica.config.generic.name.easyPlaceSwapInterval");
@@ -439,7 +446,7 @@ public class ConfigurationHandler {
         Property warn = configuration.get(Names.Config.Category.TOOL, "placementRestrictionWarn", "actionbar");
         warn.setLanguageKey("litematica.config.generic.name.placementRestrictionWarn");
         warn.setValidValues(new String[] {"none", "message", "actionbar"});
-        placementRestrictionWarn = java.util.Arrays.asList("none", "message", "actionbar").contains(warn.getString()) ? warn.getString() : "actionbar";
+        placementRestrictionWarn = Arrays.asList("none", "message", "actionbar").contains(warn.getString()) ? warn.getString() : "actionbar";
         warn.set(placementRestrictionWarn);
         Property status = configuration.get(BlockInfoHudSettings.CATEGORY, "statusInfoHud", false);
         status.setLanguageKey("litematica.config.info_overlays.name.statusInfoHud");
@@ -608,7 +615,7 @@ public class ConfigurationHandler {
      * the old default, which pasted non-air blocks over anything, becomes With non-air.
      */
     static ReplaceBehavior loadPasteReplaceBehavior(Configuration config) {
-        net.minecraftforge.common.config.ConfigCategory tool = config.getCategory(Names.Config.Category.TOOL);
+        ConfigCategory tool = config.getCategory(Names.Config.Category.TOOL);
         Property legacy = tool.get("pasteOnlyAir");
         boolean migrate = legacy != null && !tool.containsKey("pasteReplaceBehavior");
         Property property = config.get(Names.Config.Category.TOOL, "pasteReplaceBehavior", ReplaceBehavior.NONE.value);

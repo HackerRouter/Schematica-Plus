@@ -8,16 +8,18 @@ import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.nbt.NBTTagCompound;
 
-import org.junit.BeforeClass;
-import org.junit.Test;
-
 import com.github.lunatrius.schematica.api.ISchematic;
 import com.github.lunatrius.schematica.api.SchematicOrigin;
 import com.github.lunatrius.schematica.api.SchematicRegion;
+import com.github.lunatrius.schematica.handler.DownloadHandler;
+import com.github.lunatrius.schematica.network.message.MessageDownloadRegions;
 import com.github.lunatrius.schematica.world.storage.MultiRegionSchematic;
 import com.github.lunatrius.schematica.world.storage.Schematic;
 
 import cpw.mods.fml.common.registry.GameData;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertSame;
@@ -92,14 +94,14 @@ public class IndependentRegionsTest {
         byte[] payload = SchematicAlpha.regionPayload(schematic);
         Schematic flat = new Schematic(null, 3, 1, 2);
         flat.setRegions(Arrays.asList(a, b));
-        com.github.lunatrius.schematica.handler.DownloadHandler handler = com.github.lunatrius.schematica.handler.DownloadHandler.INSTANCE;
+        DownloadHandler handler = DownloadHandler.INSTANCE;
         handler.beginDownload(flat);
         handler.receivedChunk(0, 0, 0);
-        int size = com.github.lunatrius.schematica.network.message.MessageDownloadRegions.CHUNK_SIZE;
+        int size = MessageDownloadRegions.CHUNK_SIZE;
         int count = (payload.length + size - 1) / size;
         for (int i = 0; i < count; i++) {
-            handler.receivedRegions(new com.github.lunatrius.schematica.network.message.MessageDownloadRegions(i, count,
-                java.util.Arrays.copyOfRange(payload, i * size, Math.min(payload.length, (i + 1) * size))));
+            handler.receivedRegions(new MessageDownloadRegions(i, count,
+                Arrays.copyOfRange(payload, i * size, Math.min(payload.length, (i + 1) * size))));
         }
         ISchematic restored = handler.completedSchematic();
         assertSame(red, restored.getRegionSchematic("A").getBlock(1, 0, 0));

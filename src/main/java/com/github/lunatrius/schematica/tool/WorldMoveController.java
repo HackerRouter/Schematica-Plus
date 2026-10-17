@@ -9,6 +9,7 @@ import com.github.lunatrius.schematica.SchematicaPlus;
 import com.github.lunatrius.schematica.api.SchematicRegion;
 import com.github.lunatrius.schematica.client.selection.AreaSelectionLibrary.Area;
 import com.github.lunatrius.schematica.client.selection.AreaSelections;
+import com.github.lunatrius.schematica.handler.WorldEditQueue;
 import com.github.lunatrius.schematica.internal.lunatriuscore.util.vector.Vector3i;
 import com.github.lunatrius.schematica.network.PacketHandler;
 import com.github.lunatrius.schematica.network.message.MessageMoveRequest;
@@ -40,7 +41,7 @@ public final class WorldMoveController {
         WorldMoveJob job = new WorldMoveJob(mc.thePlayer.getUniqueID(), mc.thePlayer.dimension, selected.regions(), shift.x, shift.y, shift.z);
         if (mc.getIntegratedServer() != null) {
             job.completion = outcome -> finished(request, outcome == WorldEditTask.Outcome.FINISHED);
-            if (!com.github.lunatrius.schematica.handler.WorldEditQueue.INSTANCE.submit(mc.getIntegratedServer(), job)) { message("litematica.message.error.move.pending_tasks"); return; }
+            if (!WorldEditQueue.INSTANCE.submit(mc.getIntegratedServer(), job)) { message("litematica.message.error.move.pending_tasks"); return; }
         } else PacketHandler.INSTANCE.sendToServer(new MessageMoveRequest(request, mc.thePlayer.dimension, selected.regions(), shift.x, shift.y, shift.z));
         area = selected; world = mc.theWorld; library = AreaSelections.library(); geometry = geometry(selected); delta = shift; id = request;
     }

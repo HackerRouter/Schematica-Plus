@@ -2,6 +2,8 @@
 // Litematica/MaLiLib visual conventions, adapted for 1.7.10 by HackerRouter, 2026.
 package com.github.lunatrius.schematica.client.gui.framework;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.function.IntConsumer;
 import java.util.function.Supplier;
 
@@ -91,9 +93,9 @@ public class UiButton extends UiWidget {
     }
 
     @Override
-    public java.util.List<String> tooltip(int mouseX, int mouseY) {
-        java.util.List<String> lines = super.tooltip(mouseX, mouseY);
-        return lines.isEmpty() && cut ? java.util.Collections.singletonList(label.get()) : lines;
+    public List<String> tooltip(int mouseX, int mouseY) {
+        List<String> lines = super.tooltip(mouseX, mouseY);
+        return lines.isEmpty() && cut ? Collections.singletonList(label.get()) : lines;
     }
 
     @Override

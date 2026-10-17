@@ -1,13 +1,21 @@
 package com.github.lunatrius.schematica.client.input;
 
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.stream.Stream;
+
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import com.google.gson.JsonPrimitive;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+
 import static org.junit.Assert.*;
 
 public class HotkeyStoreTest {
@@ -34,10 +42,10 @@ public class HotkeyStoreTest {
         new HotkeyStore(file).save(Arrays.asList(new Hotkey("workingSwitch", new Hotkey.Settings(), 66),
             new Hotkey("printerWorkingSwitch", new Hotkey.Settings(), 67)));
         String saved = new String(Files.readAllBytes(file), StandardCharsets.UTF_8);
-        com.google.gson.JsonObject data = new com.google.gson.JsonParser().parse(saved).getAsJsonObject();
-        com.google.gson.JsonObject entries = data.getAsJsonObject("hotkeys");
-        com.google.gson.JsonObject old = new com.google.gson.JsonParser().parse(entries.get("printerWorkingSwitch").toString()).getAsJsonObject();
-        com.google.gson.JsonArray keys = new com.google.gson.JsonArray(); keys.add(new com.google.gson.JsonPrimitive(66));
+        JsonObject data = new JsonParser().parse(saved).getAsJsonObject();
+        JsonObject entries = data.getAsJsonObject("hotkeys");
+        JsonObject old = new JsonParser().parse(entries.get("printerWorkingSwitch").toString()).getAsJsonObject();
+        JsonArray keys = new JsonArray(); keys.add(new JsonPrimitive(66));
         old.add("keys", keys); entries.add("workingSwitch", old);
         Files.write(file, data.toString().getBytes(StandardCharsets.UTF_8));
         Hotkey renamed = new Hotkey("printerWorkingSwitch", new Hotkey.Settings());
@@ -62,8 +70,8 @@ public class HotkeyStoreTest {
         for (String text : new String[] {"{", "{\"version\":2}", "{\"version\":1,\"hotkeys\":{\"action\":{\"keys\":[30,30],\"settings\":{}}}}"}) {
             byte[] original = text.getBytes(StandardCharsets.UTF_8); Files.write(file, original);
             Hotkey key = new Hotkey("action", new Hotkey.Settings(), 50); HotkeyStore store = new HotkeyStore(file);
-            assertThrows(java.io.IOException.class, () -> store.load(Collections.singletonList(key)));
-            assertFalse(key.modified()); assertThrows(java.io.IOException.class, () -> store.save(Collections.singletonList(key)));
+            assertThrows(IOException.class, () -> store.load(Collections.singletonList(key)));
+            assertFalse(key.modified()); assertThrows(IOException.class, () -> store.save(Collections.singletonList(key)));
             assertArrayEquals(original, Files.readAllBytes(file));
         }
     }
@@ -72,9 +80,9 @@ public class HotkeyStoreTest {
         Files.write(file, "{\"version\":1,\"extra\":42,\"hotkeys\":{\"future\":{\"value\":7}}}".getBytes(StandardCharsets.UTF_8));
         HotkeyStore store = new HotkeyStore(file); Hotkey key = new Hotkey("action", new Hotkey.Settings());
         store.load(Collections.singletonList(key)); store.save(Collections.singletonList(key));
-        com.google.gson.JsonObject data = new com.google.gson.JsonParser().parse(new String(Files.readAllBytes(file), StandardCharsets.UTF_8)).getAsJsonObject();
+        JsonObject data = new JsonParser().parse(new String(Files.readAllBytes(file), StandardCharsets.UTF_8)).getAsJsonObject();
         assertEquals(42, data.get("extra").getAsInt()); assertEquals(7, data.getAsJsonObject("hotkeys").getAsJsonObject("future").get("value").getAsInt());
-        try (java.util.stream.Stream<Path> paths = Files.list(temporary.getRoot().toPath())) {
+        try (Stream<Path> paths = Files.list(temporary.getRoot().toPath())) {
             assertFalse(paths.anyMatch(path -> path.toString().endsWith(".tmp")));
         }
     }

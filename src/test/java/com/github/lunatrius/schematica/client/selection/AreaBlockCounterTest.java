@@ -1,13 +1,18 @@
 package com.github.lunatrius.schematica.client.selection;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
-import org.junit.Test;
-import static org.junit.Assert.*;
+
 import com.github.lunatrius.schematica.api.SchematicRegion;
 import com.github.lunatrius.schematica.client.world.RenderLayerRange;
+
+import org.junit.Test;
+
+import static org.junit.Assert.*;
 
 public class AreaBlockCounterTest {
     private static AreaBlockCounter.Reader<String> reader(Set<String> positions) {
@@ -64,7 +69,7 @@ public class AreaBlockCounterTest {
     }
 
     @Test public void scanSnapshotsRegionsAndAbsoluteRenderLayers() {
-        java.util.List<SchematicRegion> regions = new java.util.ArrayList<>();
+        List<SchematicRegion> regions = new ArrayList<>();
         regions.add(new SchematicRegion("box", -3, 60, 5, -1, 62, 6));
         RenderLayerRange range = new RenderLayerRange();
         range.setMode(RenderLayerRange.Mode.SINGLE_LAYER); range.setHere(61);

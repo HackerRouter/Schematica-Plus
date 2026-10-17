@@ -1,5 +1,8 @@
 package ganymedes01.etfuturum.blocks;
 
-public class BlockLantern extends net.minecraft.block.Block {
-    public BlockLantern() { super(net.minecraft.block.material.Material.rock); }
+import net.minecraft.block.Block;
+import net.minecraft.block.material.Material;
+
+public class BlockLantern extends Block {
+    public BlockLantern() { super(Material.rock); }
 }

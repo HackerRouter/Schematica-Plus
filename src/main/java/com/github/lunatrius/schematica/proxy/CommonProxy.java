@@ -2,7 +2,10 @@ package com.github.lunatrius.schematica.proxy;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
+import java.util.function.Consumer;
 
 import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
@@ -13,22 +16,36 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
+import net.minecraftforge.common.MinecraftForge;
 
-import com.github.lunatrius.schematica.internal.lunatriuscore.util.vector.Vector3i;
 import com.github.lunatrius.schematica.api.ISchematic;
+import com.github.lunatrius.schematica.api.SchematicOrigin;
+import com.github.lunatrius.schematica.api.SchematicRegion;
 import com.github.lunatrius.schematica.command.CommandSchematicaList;
 import com.github.lunatrius.schematica.command.CommandSchematicaRemove;
 import com.github.lunatrius.schematica.command.CommandSchematicaSave;
+import com.github.lunatrius.schematica.handler.AccuratePlacement;
 import com.github.lunatrius.schematica.handler.ConfigurationHandler;
 import com.github.lunatrius.schematica.handler.DownloadHandler;
+import com.github.lunatrius.schematica.handler.PlayerHandler;
+import com.github.lunatrius.schematica.handler.PrinterActions;
 import com.github.lunatrius.schematica.handler.QueueTickHandler;
+import com.github.lunatrius.schematica.handler.WorldEditQueue;
+import com.github.lunatrius.schematica.internal.lunatriuscore.util.vector.Vector3i;
 import com.github.lunatrius.schematica.nbt.ForgeMultipart;
 import com.github.lunatrius.schematica.nbt.NBTConversionException;
 import com.github.lunatrius.schematica.nbt.NBTHelper;
 import com.github.lunatrius.schematica.network.PacketHandler;
+import com.github.lunatrius.schematica.network.message.MessageEditStatus;
 import com.github.lunatrius.schematica.reference.Reference;
+import com.github.lunatrius.schematica.util.FileUtils;
+import com.github.lunatrius.schematica.util.SchematicLimits;
+import com.github.lunatrius.schematica.world.chunk.CaptureSource;
 import com.github.lunatrius.schematica.world.chunk.SchematicContainer;
+import com.github.lunatrius.schematica.world.chunk.WorldCaptureSource;
+import com.github.lunatrius.schematica.world.schematic.SchematicFileSnapshot;
 import com.github.lunatrius.schematica.world.schematic.SchematicUtil;
+import com.github.lunatrius.schematica.world.storage.RegionSelection;
 import com.github.lunatrius.schematica.world.storage.Schematic;
 
 import cpw.mods.fml.common.FMLCommonHandler;
@@ -51,7 +68,7 @@ public abstract class CommonProxy {
     public volatile double printerMaxRange;
     public void worldMoveFinished(long id, boolean success) {}
 
-    public void remoteEditStatus(com.github.lunatrius.schematica.network.message.MessageEditStatus status) {}
+    public void remoteEditStatus(MessageEditStatus status) {}
 
     public void runSaveCallback(Runnable callback) { callback.run(); }
 
@@ -63,9 +80,9 @@ public abstract class CommonProxy {
 
     public void init(FMLInitializationEvent event) {
         PacketHandler.init();
-        FMLCommonHandler.instance().bus().register(com.github.lunatrius.schematica.handler.PrinterActions.INSTANCE);
-        FMLCommonHandler.instance().bus().register(com.github.lunatrius.schematica.handler.WorldEditQueue.INSTANCE);
-        net.minecraftforge.common.MinecraftForge.EVENT_BUS.register(com.github.lunatrius.schematica.handler.AccuratePlacement.INSTANCE);
+        FMLCommonHandler.instance().bus().register(PrinterActions.INSTANCE);
+        FMLCommonHandler.instance().bus().register(WorldEditQueue.INSTANCE);
+        MinecraftForge.EVENT_BUS.register(AccuratePlacement.INSTANCE);
 
         FMLCommonHandler.instance()
             .bus()
@@ -74,7 +91,7 @@ public abstract class CommonProxy {
             .bus()
             .register(DownloadHandler.INSTANCE);
         // Also in single player, so the integrated server's printerEnabled and accurate placement reach the client
-        FMLCommonHandler.instance().bus().register(com.github.lunatrius.schematica.handler.PlayerHandler.INSTANCE);
+        FMLCommonHandler.instance().bus().register(PlayerHandler.INSTANCE);
     }
 
     public void postInit(FMLPostInitializationEvent event) {
@@ -158,8 +175,8 @@ public abstract class CommonProxy {
         final int minX = container.minX, maxX = container.maxX, minY = container.minY, maxY = container.maxY;
         final int minZ = container.minZ, maxZ = container.maxZ;
         // Block entities come from the server world when possible, since client-side ones often lack full NBT.
-        final com.github.lunatrius.schematica.world.chunk.CaptureSource source = container.source != null ? container.source
-            : new com.github.lunatrius.schematica.world.chunk.WorldCaptureSource(container.world, getServerWorld(container.world));
+        final CaptureSource source = container.source != null ? container.source
+            : new WorldCaptureSource(container.world, getServerWorld(container.world));
 
         final int localMinX = minX < (chunkX << 4) ? 0 : (minX & 15);
         final int localMaxX = maxX > ((chunkX << 4) + 15) ? 15 : (maxX & 15);
@@ -179,8 +196,8 @@ public abstract class CommonProxy {
                     if (!schematic.containsBlock(localX, localY, localZ)) continue;
 
                     try {
-                        if (container.visibleOnly && !com.github.lunatrius.schematica.world.chunk.CaptureSource.exposed(source, x, y, z)
-                            && !(container.supportBlocks && com.github.lunatrius.schematica.world.chunk.CaptureSource.support(source, x, y, z))) {
+                        if (container.visibleOnly && !CaptureSource.exposed(source, x, y, z)
+                            && !(container.supportBlocks && CaptureSource.support(source, x, y, z))) {
                             continue;
                         }
                         final Block block = source.block(x, y, z);
@@ -216,41 +233,41 @@ public abstract class CommonProxy {
 
     public boolean saveSchematic(EntityPlayer player, File directory, String filename, World world, Vector3i from,
         Vector3i to) {
-        return saveSchematic(player, directory, filename, world, from, to, java.util.Collections.emptyList(), com.github.lunatrius.schematica.api.SchematicOrigin.ZERO, null, null, null);
+        return saveSchematic(player, directory, filename, world, from, to, Collections.emptyList(), SchematicOrigin.ZERO, null, null, null);
     }
 
     public boolean saveSchematic(EntityPlayer player, File directory, String filename, World world,
-        com.github.lunatrius.schematica.world.storage.RegionSelection selection) {
+        RegionSelection selection) {
         return saveSchematic(player, directory, filename, world, selection, null);
     }
 
     /** Saves the selection; completed later receives the written file, or null when the save failed or was cancelled. */
     public boolean saveSchematic(EntityPlayer player, File directory, String filename, World world,
-        com.github.lunatrius.schematica.world.storage.RegionSelection selection, java.util.function.Consumer<File> completed) {
+        RegionSelection selection, Consumer<File> completed) {
         return saveSchematic(player, directory, filename, world, selection, completed, null);
     }
 
     /** As above, reading through the given options (block source, visible blocks only, support blocks) when not null. */
     public boolean saveSchematic(EntityPlayer player, File directory, String filename, World world,
-        com.github.lunatrius.schematica.world.storage.RegionSelection selection, java.util.function.Consumer<File> completed,
-        com.github.lunatrius.schematica.world.chunk.SchematicContainer.Options options) {
+        RegionSelection selection, Consumer<File> completed,
+        SchematicContainer.Options options) {
         return saveSchematic(player, directory, filename, world,
             new Vector3i(selection.minX, selection.minY, selection.minZ), new Vector3i(selection.maxX, selection.maxY, selection.maxZ), selection.localRegions, selection.localOrigin,
             null, completed, options);
     }
 
     /** Captures the selection like a save, but hands the encoded schematic to the client instead of writing a file. */
-    public boolean captureSchematic(EntityPlayer player, String name, World world, com.github.lunatrius.schematica.world.storage.RegionSelection selection,
-        java.util.function.Consumer<com.github.lunatrius.schematica.world.schematic.SchematicFileSnapshot> memory) {
+    public boolean captureSchematic(EntityPlayer player, String name, World world, RegionSelection selection,
+        Consumer<SchematicFileSnapshot> memory) {
         return saveSchematic(player, null, name, world,
             new Vector3i(selection.minX, selection.minY, selection.minZ), new Vector3i(selection.maxX, selection.maxY, selection.maxZ), selection.localRegions, selection.localOrigin,
-            java.util.Objects.requireNonNull(memory), null, null);
+            Objects.requireNonNull(memory), null, null);
     }
 
     private boolean saveSchematic(EntityPlayer player, File directory, String filename, World world, Vector3i from,
-        Vector3i to, java.util.List<com.github.lunatrius.schematica.api.SchematicRegion> regions, com.github.lunatrius.schematica.api.SchematicOrigin origin,
-        java.util.function.Consumer<com.github.lunatrius.schematica.world.schematic.SchematicFileSnapshot> memory,
-        java.util.function.Consumer<File> completed, com.github.lunatrius.schematica.world.chunk.SchematicContainer.Options options) {
+        Vector3i to, List<SchematicRegion> regions, SchematicOrigin origin,
+        Consumer<SchematicFileSnapshot> memory,
+        Consumer<File> completed, SchematicContainer.Options options) {
         synchronized (QueueTickHandler.INSTANCE) {
         try {
             if (!QueueTickHandler.INSTANCE.canQueue(player)) {
@@ -275,11 +292,11 @@ public abstract class CommonProxy {
             final int minZ = Math.min(from.z, to.z);
             final int maxZ = Math.max(from.z, to.z);
 
-            com.github.lunatrius.schematica.util.SchematicLimits.worldBounds(minX, minY, minZ, maxX, maxY, maxZ);
-            final int width = com.github.lunatrius.schematica.util.SchematicLimits.dimension(minX, maxX);
-            final int height = com.github.lunatrius.schematica.util.SchematicLimits.dimension(minY, maxY);
-            final int length = com.github.lunatrius.schematica.util.SchematicLimits.dimension(minZ, maxZ);
-            final File file = memory != null ? new File(filename) : com.github.lunatrius.schematica.util.FileUtils.resolveSchematicFile(directory, filename);
+            SchematicLimits.worldBounds(minX, minY, minZ, maxX, maxY, maxZ);
+            final int width = SchematicLimits.dimension(minX, maxX);
+            final int height = SchematicLimits.dimension(minY, maxY);
+            final int length = SchematicLimits.dimension(minZ, maxZ);
+            final File file = memory != null ? new File(filename) : FileUtils.resolveSchematicFile(directory, filename);
 
             final Schematic schematic = new Schematic(SchematicUtil.getIconFromName(iconName), width, height, length);
             schematic.setRegions(regions);

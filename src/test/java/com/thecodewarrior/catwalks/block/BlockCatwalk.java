@@ -1,5 +1,8 @@
 package com.thecodewarrior.catwalks.block;
 
-public class BlockCatwalk extends net.minecraft.block.Block {
-    public BlockCatwalk() { super(net.minecraft.block.material.Material.rock); }
+import net.minecraft.block.Block;
+import net.minecraft.block.material.Material;
+
+public class BlockCatwalk extends Block {
+    public BlockCatwalk() { super(Material.rock); }
 }

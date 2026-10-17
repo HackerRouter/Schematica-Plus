@@ -14,8 +14,7 @@ import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.inventory.Slot;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.MovingObjectPosition;
-
-import org.lwjgl.opengl.GL11;
+import net.minecraft.util.Vec3;
 
 import com.github.lunatrius.schematica.client.gui.framework.MinecraftUiDraw;
 import com.github.lunatrius.schematica.client.gui.framework.UiBounds;
@@ -34,6 +33,7 @@ import com.github.lunatrius.schematica.proxy.ClientProxy;
 import com.github.lunatrius.schematica.reference.Reference;
 
 import cpw.mods.fml.relauncher.ReflectionHelper;
+import org.lwjgl.opengl.GL11;
 
 /** The missing items of the last viewed material list, drawn below the info HUD text, and the inventory highlight. */
 public final class MaterialListHud {
@@ -155,7 +155,7 @@ public final class MaterialListHud {
         if (schematic == null || hit == null || hit.typeOfHit != MovingObjectPosition.MovingObjectType.BLOCK || mc.renderViewEntity == null) return null;
         MovingObjectPosition vanilla = mc.objectMouseOver;
         if (hit.hitVec != null && vanilla != null && vanilla.typeOfHit == MovingObjectPosition.MovingObjectType.BLOCK && vanilla.hitVec != null) {
-            net.minecraft.util.Vec3 eye = mc.renderViewEntity.getPosition(1.0f);
+            Vec3 eye = mc.renderViewEntity.getPosition(1.0f);
             double schematicDistance = eye.squareDistanceTo(hit.hitVec.addVector(schematic.position.x, schematic.position.y, schematic.position.z));
             if (eye.squareDistanceTo(vanilla.hitVec) < schematicDistance) return null;
         }

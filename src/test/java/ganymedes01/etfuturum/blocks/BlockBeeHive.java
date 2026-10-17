@@ -1,5 +1,8 @@
 package ganymedes01.etfuturum.blocks;
 
-public class BlockBeeHive extends net.minecraft.block.Block {
-    public BlockBeeHive() { super(net.minecraft.block.material.Material.rock); }
+import net.minecraft.block.Block;
+import net.minecraft.block.material.Material;
+
+public class BlockBeeHive extends Block {
+    public BlockBeeHive() { super(Material.rock); }
 }

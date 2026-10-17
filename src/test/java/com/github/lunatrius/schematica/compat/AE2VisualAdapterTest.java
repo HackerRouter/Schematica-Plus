@@ -1,11 +1,17 @@
 package com.github.lunatrius.schematica.compat;
 
-import appeng.parts.networking.PartCable;
-import appeng.parts.reporting.AbstractPartReporting;
+import java.util.EnumMap;
+import java.util.EnumSet;
+import java.util.Map;
+
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraftforge.common.util.ForgeDirection;
+
+import appeng.parts.networking.PartCable;
+import appeng.parts.reporting.AbstractPartReporting;
 import org.junit.Test;
+
 import static org.junit.Assert.*;
 
 public class AE2VisualAdapterTest {
@@ -20,7 +26,7 @@ public class AE2VisualAdapterTest {
         assertEquals(20, east.clientFlags);
         assertEquals(0.75f, east.opacity, 0);
         assertEquals(2, ((AbstractPartReporting) host.getPart(ForgeDirection.UP)).spin);
-        assertEquals(java.util.EnumSet.of(ForgeDirection.EAST, ForgeDirection.WEST), host.cable.connections);
+        assertEquals(EnumSet.of(ForgeDirection.EAST, ForgeDirection.WEST), host.cable.connections);
         assertArrayEquals(new int[] {0, 0, 0, 0, 8, 8}, host.cable.channelsOnSide);
         assertTrue(host.cable.powered);
         NBTTagCompound exported = new NBTTagCompound();
@@ -45,7 +51,7 @@ public class AE2VisualAdapterTest {
     }
 
     public static class CableHost extends TileEntity implements appeng.api.parts.IPartHost {
-        final java.util.Map<ForgeDirection, AbstractPartReporting> parts = new java.util.EnumMap<>(ForgeDirection.class);
+        final Map<ForgeDirection, AbstractPartReporting> parts = new EnumMap<>(ForgeDirection.class);
         final PartCable cable = new PartCable();
 
         AbstractPartReporting add(ForgeDirection side, int flags, int spin) {
@@ -64,7 +70,7 @@ public class AE2VisualAdapterTest {
         }
 
         @Override public void writeToNBT(NBTTagCompound tag) {
-            for (java.util.Map.Entry<ForgeDirection, AbstractPartReporting> entry : parts.entrySet()) {
+            for (Map.Entry<ForgeDirection, AbstractPartReporting> entry : parts.entrySet()) {
                 tag.setTag("def:" + entry.getKey().ordinal(), new NBTTagCompound());
                 NBTTagCompound extra = new NBTTagCompound();
                 extra.setByte("spin", entry.getValue().spin);
@@ -100,18 +106,18 @@ public class AE2VisualAdapterTest {
     }
 
     @Test public void devicesAndCableBusPartsTurnWithTheSchematic() {
-        net.minecraft.nbt.NBTTagCompound tag = new net.minecraft.nbt.NBTTagCompound();
+        NBTTagCompound tag = new NBTTagCompound();
         tag.setString("orientation_forward", "NORTH");
         tag.setString("orientation_up", "UP");
-        net.minecraft.nbt.NBTTagCompound north = new net.minecraft.nbt.NBTTagCompound();
+        NBTTagCompound north = new NBTTagCompound();
         north.setString("id", "north part");
         tag.setTag("def:2", north);
-        tag.setTag("extra:2", new net.minecraft.nbt.NBTTagCompound());
-        tag.setTag("def:6", new net.minecraft.nbt.NBTTagCompound());
-        net.minecraft.nbt.NBTTagCompound top = new net.minecraft.nbt.NBTTagCompound();
+        tag.setTag("extra:2", new NBTTagCompound());
+        tag.setTag("def:6", new NBTTagCompound());
+        NBTTagCompound top = new NBTTagCompound();
         top.setByte("spin", (byte) 0);
         tag.setTag("extra:1", top);
-        tag.setTag("facade:4", new net.minecraft.nbt.NBTTagCompound());
+        tag.setTag("facade:4", new NBTTagCompound());
         AE2VisualAdapter.transformTag(tag, 'Y');
         org.junit.Assert.assertEquals("EAST", tag.getString("orientation_forward"));
         org.junit.Assert.assertEquals("UP", tag.getString("orientation_up"));

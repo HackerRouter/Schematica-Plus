@@ -1,5 +1,8 @@
 package ganymedes01.etfuturum.blocks;
 
-public class BlockChain extends net.minecraft.block.Block {
-    public BlockChain() { super(net.minecraft.block.material.Material.rock); }
+import net.minecraft.block.Block;
+import net.minecraft.block.material.Material;
+
+public class BlockChain extends Block {
+    public BlockChain() { super(Material.rock); }
 }

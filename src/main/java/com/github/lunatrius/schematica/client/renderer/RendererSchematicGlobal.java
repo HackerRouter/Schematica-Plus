@@ -1,34 +1,43 @@
 package com.github.lunatrius.schematica.client.renderer;
 
+import java.nio.FloatBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.nio.FloatBuffer;
 import java.util.List;
 import java.util.Map;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityPlayerSP;
-import net.minecraft.client.renderer.RenderBlocks;
 import net.minecraft.client.renderer.OpenGlHelper;
+import net.minecraft.client.renderer.RenderBlocks;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.profiler.Profiler;
 import net.minecraft.util.AxisAlignedBB;
+import net.minecraft.util.MathHelper;
+import net.minecraft.world.World;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
 import net.minecraftforge.client.event.sound.PlaySoundEvent17;
 
-import org.lwjgl.BufferUtils;
-import org.lwjgl.opengl.GL11;
-
-import com.github.lunatrius.schematica.internal.lunatriuscore.util.vector.Vector3d;
+import com.github.lunatrius.schematica.client.container.ContainerLabels;
+import com.github.lunatrius.schematica.client.gui.framework.UiTranslations;
+import com.github.lunatrius.schematica.client.printer.NextBlockHint;
+import com.github.lunatrius.schematica.client.printer.PrinterHighlights;
+import com.github.lunatrius.schematica.client.projects.SchematicProject;
+import com.github.lunatrius.schematica.client.projects.SchematicProjects;
 import com.github.lunatrius.schematica.client.world.SchematicWorld;
+import com.github.lunatrius.schematica.handler.ConfigurationHandler;
 import com.github.lunatrius.schematica.handler.VisualSettings;
-import com.github.lunatrius.schematica.proxy.ClientProxy;
+import com.github.lunatrius.schematica.internal.lunatriuscore.util.vector.Vector3d;
 import com.github.lunatrius.schematica.nbt.TileEntitySnapshots;
+import com.github.lunatrius.schematica.proxy.ClientProxy;
 import com.github.lunatrius.schematica.reference.Constants;
 
+import cpw.mods.fml.common.eventhandler.EventPriority;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
+import org.lwjgl.BufferUtils;
+import org.lwjgl.opengl.GL11;
 
 public class RendererSchematicGlobal {
 
@@ -59,7 +68,7 @@ public class RendererSchematicGlobal {
         final List<RendererSchematicChunk> chunks = new ArrayList<>();
     }
 
-    @SubscribeEvent(priority = cpw.mods.fml.common.eventhandler.EventPriority.LOWEST)
+    @SubscribeEvent(priority = EventPriority.LOWEST)
     public void onPlaySound(PlaySoundEvent17 event) {
         if (TileEntitySnapshots.isRestoring()) event.result = null;
     }
@@ -81,7 +90,7 @@ public class RendererSchematicGlobal {
             }
 
             if (anyRendering && this.budget.frame(System.nanoTime()) && this.minecraft.ingameGUI != null) {
-                this.minecraft.ingameGUI.func_110326_a(com.github.lunatrius.schematica.client.gui.framework.UiTranslations.format(
+                this.minecraft.ingameGUI.func_110326_a(UiTranslations.format(
                     "schematica.message.render_distance_reduced", RenderBudget.minFps), false);
             }
             if (VisualSettings.rendering && (anyRendering || ClientProxy.isRenderingGuide)) {
@@ -149,9 +158,9 @@ public class RendererSchematicGlobal {
 
         this.profiler.endStartSection("boxes");
         new BoxRenderer(this.cameraPosition.x, this.cameraPosition.y, this.cameraPosition.z).render();
-        com.github.lunatrius.schematica.client.printer.PrinterHighlights.render(this.cameraPosition.x, this.cameraPosition.y, this.cameraPosition.z);
-        com.github.lunatrius.schematica.client.printer.NextBlockHint.render(this.cameraPosition.x, this.cameraPosition.y, this.cameraPosition.z);
-        com.github.lunatrius.schematica.client.container.ContainerLabels.render(this.cameraPosition.x, this.cameraPosition.y, this.cameraPosition.z);
+        PrinterHighlights.render(this.cameraPosition.x, this.cameraPosition.y, this.cameraPosition.z);
+        NextBlockHint.render(this.cameraPosition.x, this.cameraPosition.y, this.cameraPosition.z);
+        ContainerLabels.render(this.cameraPosition.x, this.cameraPosition.y, this.cameraPosition.z);
 
         this.profiler.endStartSection("projects");
         renderProjectOrigin();
@@ -166,7 +175,7 @@ public class RendererSchematicGlobal {
         // Render passes
         for (int pass = 0; sw.isRenderingEnabled() && pass < 3; pass++) {
             boolean reverse = pass == 1 || (pass == 0 &&
-                com.github.lunatrius.schematica.handler.ConfigurationHandler.enableAlpha);
+                ConfigurationHandler.enableAlpha);
             for (int i = 0; i < data.chunks.size(); i++) {
                 int index = reverse ? data.chunks.size() - 1 - i : i;
                 data.chunks.get(index).render(pass, partialTicks);
@@ -181,7 +190,7 @@ public class RendererSchematicGlobal {
 
     /** OverlayRenderer render_projects: the open project's origin, whether or not area boxes are shown. */
     private void renderProjectOrigin() {
-        com.github.lunatrius.schematica.client.projects.SchematicProject project = com.github.lunatrius.schematica.client.projects.SchematicProjects.current();
+        SchematicProject project = SchematicProjects.current();
         if (project == null) return;
         GL11.glEnable(GL11.GL_BLEND);
         GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
@@ -368,9 +377,9 @@ public class RendererSchematicGlobal {
         RenderManager.debugBoundingBox = hitboxes && VisualSettings.entityHitboxes;
         try {
         for (Entity entity : schematic.getEntities()) {
-            if (!schematic.isBlockRendered(net.minecraft.util.MathHelper.floor_double(entity.posX),
-                net.minecraft.util.MathHelper.floor_double(entity.posY), net.minecraft.util.MathHelper.floor_double(entity.posZ))) continue;
-            net.minecraft.world.World originalWorld = entity.worldObj;
+            if (!schematic.isBlockRendered(MathHelper.floor_double(entity.posX),
+                MathHelper.floor_double(entity.posY), MathHelper.floor_double(entity.posZ))) continue;
+            World originalWorld = entity.worldObj;
             GL11.glPushMatrix();
             GL11.glPushAttrib(GL11.GL_ALL_ATTRIB_BITS);
             try {

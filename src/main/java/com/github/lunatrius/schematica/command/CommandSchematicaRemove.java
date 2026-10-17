@@ -1,6 +1,7 @@
 package com.github.lunatrius.schematica.command;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Arrays;
 
 import net.minecraft.command.CommandException;
@@ -18,9 +19,9 @@ import com.github.lunatrius.schematica.SchematicaPlus;
 import com.github.lunatrius.schematica.reference.Names;
 import com.github.lunatrius.schematica.reference.Reference;
 import com.github.lunatrius.schematica.util.FileUtils;
+
 import com.google.common.base.Charsets;
 import com.google.common.hash.Hashing;
-
 import joptsimple.internal.Strings;
 
 public class CommandSchematicaRemove extends CommandSchematicaBase {
@@ -71,7 +72,7 @@ public class CommandSchematicaRemove extends CommandSchematicaBase {
         final File file;
         try {
             file = FileUtils.findSchematicFile(schematicDirectory, name, false);
-        } catch (java.io.IOException e) {
+        } catch (IOException e) {
             Reference.logger.warn("Rejected schematic removal filename", e);
             throw new CommandException(Names.Command.Remove.Message.SCHEMATIC_NOT_FOUND);
         }

@@ -1,11 +1,14 @@
 package com.github.lunatrius.schematica.client.printer;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Predicate;
 
 import net.minecraft.block.Block;
-import net.minecraft.block.BlockLiquid;
 import net.minecraft.block.BlockFalling;
+import net.minecraft.block.BlockLiquid;
 import net.minecraft.block.BlockPistonBase;
 import net.minecraft.block.BlockSlab;
 import net.minecraft.client.Minecraft;
@@ -26,17 +29,21 @@ import net.minecraftforge.event.entity.player.PlayerInteractEvent.Action;
 import net.minecraftforge.fluids.BlockFluidBase;
 import net.minecraftforge.fluids.IFluidBlock;
 
-import com.github.lunatrius.schematica.internal.lunatriuscore.util.vector.Vector3i;
+import com.github.lunatrius.schematica.client.gui.framework.UiTranslations;
 import com.github.lunatrius.schematica.client.printer.registry.PlacementData;
+import com.github.lunatrius.schematica.client.printer.registry.PlacementRegistry;
 import com.github.lunatrius.schematica.client.selection.AreaSelectionLibrary;
 import com.github.lunatrius.schematica.client.selection.AreaSelections;
-import com.github.lunatrius.schematica.client.printer.registry.PlacementRegistry;
 import com.github.lunatrius.schematica.client.util.BlockToItemStack;
 import com.github.lunatrius.schematica.client.world.SchematicWorld;
 import com.github.lunatrius.schematica.handler.ConfigurationHandler;
+import com.github.lunatrius.schematica.handler.VisualSettings;
+import com.github.lunatrius.schematica.internal.lunatriuscore.util.vector.Vector3i;
+import com.github.lunatrius.schematica.network.message.MessagePrinterAction;
 import com.github.lunatrius.schematica.proxy.ClientProxy;
 import com.github.lunatrius.schematica.reference.Constants;
 import com.github.lunatrius.schematica.reference.Reference;
+import com.github.lunatrius.schematica.util.BlockGroups;
 
 import cpw.mods.fml.common.registry.FMLControlledNamespacedRegistry;
 import cpw.mods.fml.common.registry.GameData;
@@ -53,7 +60,7 @@ public class SchematicPrinter {
     private volatile String pendingMessage;
 
     private SchematicWorld schematic = null;
-    private final java.util.Map<Long, Long> cooldowns = new java.util.HashMap<>();
+    private final Map<Long, Long> cooldowns = new HashMap<>();
     private long tick;
     private Pass pass;
     private final PrinterIteration.Cursor scan = new PrinterIteration.Cursor();
@@ -85,8 +92,8 @@ public class SchematicPrinter {
         }
         this.isPrinting = !this.isPrinting;
         if (this.isPrinting) refresh();
-        com.github.lunatrius.schematica.handler.VisualSettings.printToggle(
-            com.github.lunatrius.schematica.client.gui.framework.UiTranslations.format("schematica.printer.name"), this.isPrinting);
+        VisualSettings.printToggle(
+            UiTranslations.format("schematica.printer.name"), this.isPrinting);
     }
 
     /** Stops printing after death, like litematica-printer's auto disable. */
@@ -103,7 +110,7 @@ public class SchematicPrinter {
         String key = this.pendingMessage;
         if (key == null || this.minecraft.ingameGUI == null) return;
         this.pendingMessage = null;
-        this.minecraft.ingameGUI.func_110326_a(com.github.lunatrius.schematica.client.gui.framework.UiTranslations.format(key), false);
+        this.minecraft.ingameGUI.func_110326_a(UiTranslations.format(key), false);
     }
 
     public boolean isPrinting() {
@@ -184,7 +191,7 @@ public class SchematicPrinter {
         if (block.isAir(schematic, x, y, z)) {
             wanted = extra && !ConfigurationHandler.isExtraAirBlock(real);
         } else if (block != real) {
-            wanted = wrong && !com.github.lunatrius.schematica.util.BlockGroups.tolerated(block, meta, real, realMeta)
+            wanted = wrong && !BlockGroups.tolerated(block, meta, real, realMeta)
                 && !ToolUse.fixable(world, block, real, wx, wy, wz)
                 && !MaterialReplacements.built(schematic, BlockToItemStack.getItemStack(this.minecraft.thePlayer, block, schematic, x, y, z), real, realMeta)
                 && !real.isReplaceable(world, wx, wy, wz)
@@ -193,7 +200,7 @@ public class SchematicPrinter {
             MultiBlockPlacement.Kind kind = MultiBlockPlacement.kind(block);
             int mask = kind == null ? 0xF : MultiBlockPlacement.stateMask(kind, meta, AccuratePlacementClient.active(block));
             wanted = wrongState && (meta & mask) != (realMeta & mask) && !FluidPrinter.isFluid(block)
-                && !com.github.lunatrius.schematica.util.BlockGroups.tolerated(block, meta, real, realMeta);
+                && !BlockGroups.tolerated(block, meta, real, realMeta);
         }
         return wanted;
     }
@@ -310,7 +317,7 @@ public class SchematicPrinter {
             Block block = placement.getBlock(lx, ly, lz);
             Block real = world.getBlock(x, y, z);
             int meta = placement.getBlockMetadata(lx, ly, lz), realMeta = world.getBlockMetadata(x, y, z);
-            if (block == real && meta == realMeta || com.github.lunatrius.schematica.util.BlockGroups.tolerated(block, meta, real, realMeta)) continue;
+            if (block == real && meta == realMeta || BlockGroups.tolerated(block, meta, real, realMeta)) continue;
             candidates.add(new PrinterBuildOrder.Candidate(x, y, z, layers ? PrinterBuildOrder.tier(block) : 0, placement));
         }
         if (layers) candidates.sort(PrinterBuildOrder.order(eyeX, eyeY, eyeZ, feetY, ConfigurationHandler.printerYAxisReverse));
@@ -612,7 +619,7 @@ public class SchematicPrinter {
         int side = ForgeDirection.UP.ordinal();
         if (data != null && data.type == PlacementData.PlacementType.BLOCK && !data.mapping.isEmpty()) {
             side = -1;
-            for (java.util.Map.Entry<ForgeDirection, Integer> entry : data.mapping.entrySet()) {
+            for (Map.Entry<ForgeDirection, Integer> entry : data.mapping.entrySet()) {
                 if (entry.getValue() == (metadata & data.maskMeta)) { side = entry.getKey().getOpposite().ordinal(); break; }
             }
             if (side < 0) return null;
@@ -708,7 +715,7 @@ public class SchematicPrinter {
         boolean success = !ForgeEventFactory.onPlayerInteract(player, Action.RIGHT_CLICK_BLOCK, x, y, z, side, world)
             .isCanceled();
         if (success && PrinterReach.remote(x, y, z)) {
-            PrinterReach.send(com.github.lunatrius.schematica.network.message.MessagePrinterAction.PLACE, x, y, z, side, hitVec);
+            PrinterReach.send(MessagePrinterAction.PLACE, x, y, z, side, hitVec);
             player.swingItem();
             return true;
         }
@@ -765,7 +772,7 @@ public class SchematicPrinter {
     }
 
     /** Holds a stack the test accepts: from the hotbar, else moved there from the main inventory through the swap slots. */
-    boolean swapToMatching(InventoryPlayer inventory, java.util.function.Predicate<ItemStack> wanted) {
+    boolean swapToMatching(InventoryPlayer inventory, Predicate<ItemStack> wanted) {
         int hotbar = Constants.Inventory.InventoryOffset.HOTBAR, size = Constants.Inventory.Size.HOTBAR;
         for (int pass = 0; pass < 2; pass++) {
             for (int i = hotbar; i < hotbar + size; i++) {

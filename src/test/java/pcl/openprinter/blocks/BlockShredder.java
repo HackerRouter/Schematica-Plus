@@ -1,5 +1,8 @@
 package pcl.openprinter.blocks;
 
-public class BlockShredder extends net.minecraft.block.Block {
-    public BlockShredder() { super(net.minecraft.block.material.Material.rock); }
+import net.minecraft.block.Block;
+import net.minecraft.block.material.Material;
+
+public class BlockShredder extends Block {
+    public BlockShredder() { super(Material.rock); }
 }

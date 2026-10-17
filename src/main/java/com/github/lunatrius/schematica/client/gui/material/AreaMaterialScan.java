@@ -1,15 +1,20 @@
 package com.github.lunatrius.schematica.client.gui.material;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+
 import net.minecraft.block.Block;
 import net.minecraft.client.multiplayer.WorldClient;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
+
 import com.github.lunatrius.schematica.api.SchematicRegion;
 import com.github.lunatrius.schematica.client.selection.AreaBlockCounter;
+import com.github.lunatrius.schematica.client.world.RenderLayerSettings;
 import com.github.lunatrius.schematica.reference.Reference;
+
 import cpw.mods.fml.common.registry.GameData;
 
 public final class AreaMaterialScan implements MaterialScanner {
@@ -20,7 +25,7 @@ public final class AreaMaterialScan implements MaterialScanner {
 
     public AreaMaterialScan(List<SchematicRegion> regions, WorldClient world, EntityPlayer player, boolean renderLayers) {
         this.player = player;
-        counter = new AreaBlockCounter<>(regions, renderLayers ? com.github.lunatrius.schematica.client.world.RenderLayerSettings.RANGE : null);
+        counter = new AreaBlockCounter<>(regions, renderLayers ? RenderLayerSettings.RANGE : null);
         reader = new AreaBlockCounter.Reader<MaterialCache.BuildItems>() {
             @Override public boolean loaded(int x, int y, int z) {
                 return world.getChunkProvider().chunkExists(x >> 4, z >> 4)
@@ -49,7 +54,7 @@ public final class AreaMaterialScan implements MaterialScanner {
 
     @Override public List<MaterialListModel.Entry<MaterialItemKey>> result() {
         if (!done()) throw new IllegalStateException("Area analysis is incomplete");
-        Map<MaterialItemKey, Integer> totals = new java.util.LinkedHashMap<>();
+        Map<MaterialItemKey, Integer> totals = new LinkedHashMap<>();
         for (Map.Entry<MaterialCache.BuildItems, Integer> entry : counter.counts().entrySet()) {
             MaterialCache.BuildItems items = entry.getKey();
             for (int i = 0; i < items.size(); i++) totals.merge(items.key(i), items.count(i) * entry.getValue(), Integer::sum);

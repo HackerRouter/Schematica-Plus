@@ -3,34 +3,38 @@ package com.github.lunatrius.schematica.client.gui.config;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
+
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.StringTranslate;
 import net.minecraftforge.common.config.ConfigCategory;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.common.config.Property;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
-import static org.junit.Assert.*;
-
-import net.minecraft.entity.player.EntityPlayer;
 
 import com.github.lunatrius.schematica.SchematicaPlus;
 import com.github.lunatrius.schematica.handler.ConfigurationHandler;
 import com.github.lunatrius.schematica.proxy.CommonProxy;
 
+import cpw.mods.fml.relauncher.FMLInjectionData;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
+
+import static org.junit.Assert.*;
+
 public class ConfigTranslationsTest {
     @Rule public TemporaryFolder temporary = new TemporaryFolder();
-    private java.lang.reflect.Field minecraftHome;
+    private Field minecraftHome;
     private Object previousHome;
     private Configuration previous;
     private CommonProxy previousProxy;
 
     @Before public void initializeForgeDirectory() throws Exception {
-        minecraftHome = cpw.mods.fml.relauncher.FMLInjectionData.class.getDeclaredField("minecraftHome");
+        minecraftHome = FMLInjectionData.class.getDeclaredField("minecraftHome");
         minecraftHome.setAccessible(true);
         previousHome = minecraftHome.get(null);
         minecraftHome.set(null, temporary.getRoot());

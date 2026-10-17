@@ -9,9 +9,8 @@ import java.util.Map;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.ScaledResolution;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-
-import org.lwjgl.opengl.GL11;
 
 import com.github.lunatrius.schematica.client.gui.framework.MinecraftUiDraw;
 import com.github.lunatrius.schematica.client.gui.framework.UiBounds;
@@ -19,6 +18,8 @@ import com.github.lunatrius.schematica.client.gui.framework.UiTranslations;
 import com.github.lunatrius.schematica.handler.ConfigurationHandler;
 import com.github.lunatrius.schematica.handler.InfoHudSettings;
 import com.github.lunatrius.schematica.reference.Reference;
+
+import org.lwjgl.opengl.GL11;
 
 /**
  * The items the printer wanted to place but the player does not have, listed under the info HUD while printing; an
@@ -39,7 +40,7 @@ public final class PrinterMissingMaterials {
 
     public static synchronized void record(ItemStack stack) {
         if (stack == null || stack.getItem() == null) return;
-        String key = net.minecraft.item.Item.getIdFromItem(stack.getItem()) + ":" + stack.getItemDamage();
+        String key = Item.getIdFromItem(stack.getItem()) + ":" + stack.getItemDamage();
         Entry entry = ENTRIES.get(key);
         if (entry == null) {
             ItemStack copy = stack.copy();

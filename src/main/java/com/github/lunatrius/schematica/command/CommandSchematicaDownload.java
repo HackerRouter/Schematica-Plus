@@ -1,6 +1,7 @@
 package com.github.lunatrius.schematica.command;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -69,7 +70,7 @@ public class CommandSchematicaDownload extends CommandSchematicaBase {
         final File file;
         try {
             file = FileUtils.findSchematicFile(directory, String.join(" ", args), ConfigurationHandler.useSchematicplusFormat);
-        } catch (java.io.IOException e) {
+        } catch (IOException e) {
             Reference.logger.warn("Rejected schematic download filename", e);
             throw new CommandException(Names.Command.Download.Message.DOWNLOAD_FAILED);
         }

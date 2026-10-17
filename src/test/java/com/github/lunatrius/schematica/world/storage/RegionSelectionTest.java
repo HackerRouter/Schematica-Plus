@@ -1,11 +1,14 @@
 package com.github.lunatrius.schematica.world.storage;
 
-import com.github.lunatrius.schematica.api.SchematicRegion;
-
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Collections;
+
+import com.github.lunatrius.schematica.api.SchematicRegion;
+import com.github.lunatrius.schematica.util.SchematicTransform;
+
 import org.junit.Test;
+
 import static org.junit.Assert.*;
 
 public class RegionSelectionTest {
@@ -29,7 +32,7 @@ public class RegionSelectionTest {
             int w = 4, h = 3, l = 5;
             SchematicRegion transformed = region.transform(op, w, h, l);
             for (int x = 0; x < w; x++) for (int y = 0; y < h; y++) for (int z = 0; z < l; z++) {
-                double[] p = com.github.lunatrius.schematica.util.SchematicTransform.point(op, x, y, z, w - 1, h - 1, l - 1);
+                double[] p = SchematicTransform.point(op, x, y, z, w - 1, h - 1, l - 1);
                 assertEquals(region.contains(x, y, z), transformed.contains((int) p[0], (int) p[1], (int) p[2]));
             }
         }

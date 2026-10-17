@@ -10,6 +10,7 @@ import com.github.lunatrius.schematica.client.gui.framework.UiLabel;
 import com.github.lunatrius.schematica.client.gui.framework.UiScreen;
 import com.github.lunatrius.schematica.client.gui.framework.UiTextArea;
 import com.github.lunatrius.schematica.client.gui.framework.UiTranslations;
+import com.github.lunatrius.schematica.reference.Reference;
 import com.github.lunatrius.schematica.world.schematic.SchematicFiles;
 import com.github.lunatrius.schematica.world.schematic.SchematicMetadata;
 
@@ -33,11 +34,11 @@ public final class GuiSchematicDescription extends UiScreen {
         error = root.add(new UiLabel(() -> failure));
         ok = addButton("malilib.gui.button.ok", () -> {
             try {
-                com.github.lunatrius.schematica.client.gui.browser.SchematicFileEdits.edit(file, metadata -> metadata.setString("Description", text.text()));
+                SchematicFileEdits.edit(file, metadata -> metadata.setString("Description", text.text()));
                 closeScreen();
             } catch (IOException e) {
                 failure = UiTranslations.format("litematica.error.schematic_load.cant_read_file", file.getName());
-                com.github.lunatrius.schematica.reference.Reference.logger.warn("Could not edit schematic description", e);
+                Reference.logger.warn("Could not edit schematic description", e);
             }
         });
         reset = addButton("malilib.gui.button.reset", () -> text.setText(initial));

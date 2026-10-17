@@ -1,23 +1,28 @@
 package com.github.lunatrius.schematica.handler;
 
 import java.io.File;
+import java.lang.reflect.Field;
+
 import net.minecraftforge.common.config.Configuration;
+
+import com.github.lunatrius.schematica.client.gui.config.ConfigPropertyDraft;
+import com.github.lunatrius.schematica.util.HudAlignment;
+
+import cpw.mods.fml.relauncher.FMLInjectionData;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-import static org.junit.Assert.*;
 
-import com.github.lunatrius.schematica.client.gui.config.ConfigPropertyDraft;
-import com.github.lunatrius.schematica.util.HudAlignment;
+import static org.junit.Assert.*;
 
 public class InfoHudSettingsTest {
     @Rule public TemporaryFolder temporary = new TemporaryFolder();
-    private java.lang.reflect.Field minecraftHome;
+    private Field minecraftHome;
     private Object previousHome;
     @Before public void initializeForgeDirectory() throws Exception {
-        minecraftHome = cpw.mods.fml.relauncher.FMLInjectionData.class.getDeclaredField("minecraftHome");
+        minecraftHome = FMLInjectionData.class.getDeclaredField("minecraftHome");
         minecraftHome.setAccessible(true);
         previousHome = minecraftHome.get(null);
         minecraftHome.set(null, temporary.getRoot());

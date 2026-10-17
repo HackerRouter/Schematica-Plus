@@ -4,17 +4,21 @@ package com.github.lunatrius.schematica.client.gui.placement;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.lwjgl.input.Keyboard;
+
 import net.minecraft.client.gui.GuiScreen;
-import com.github.lunatrius.schematica.client.gui.framework.UiTranslations;
+
 import com.github.lunatrius.schematica.client.gui.framework.UiBounds;
 import com.github.lunatrius.schematica.client.gui.framework.UiButton;
 import com.github.lunatrius.schematica.client.gui.framework.UiDraw;
 import com.github.lunatrius.schematica.client.gui.framework.UiPanel;
 import com.github.lunatrius.schematica.client.gui.framework.UiSprite;
+import com.github.lunatrius.schematica.client.gui.framework.UiTranslations;
+import com.github.lunatrius.schematica.client.renderer.RendererSchematicGlobal;
 import com.github.lunatrius.schematica.client.world.SchematicWorld;
 import com.github.lunatrius.schematica.handler.client.WorldHandler;
 import com.github.lunatrius.schematica.proxy.ClientProxy;
+
+import org.lwjgl.input.Keyboard;
 
 public final class GuiSchematicPlacementsList extends GuiSchematicList<SchematicWorld> {
     public GuiSchematicPlacementsList(GuiScreen parent) {
@@ -37,7 +41,7 @@ public final class GuiSchematicPlacementsList extends GuiSchematicList<Schematic
             UiButton toggle = add(new UiButton(() -> UiTranslations.format("litematica.gui.button.schematic_placements.placement_enabled",
                 (world.isEnabled() ? "\u00a7a" : "\u00a7c") + UiTranslations.format(world.isEnabled() ? "options.on" : "options.off")),
                 mouse -> { if (mouse == 0 && ClientProxy.loadedSchematics.contains(world)) { world.setPlacementSettings(world.placementSettings().enabled(!world.isEnabled()));
-                    com.github.lunatrius.schematica.client.renderer.RendererSchematicGlobal.INSTANCE.refresh(world); WorldHandler.INSTANCE.saveSession(); } }));
+                    RendererSchematicGlobal.INSTANCE.refresh(world); WorldHandler.INSTANCE.saveSession(); } }));
             buttons.add(toggle);
             button("litematica.gui.button.schematic_placements.configure", () -> {
                 mc.displayGuiScreen(new GuiPlacementConfiguration(GuiSchematicPlacementsList.this, world));

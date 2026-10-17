@@ -8,11 +8,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.util.ChatComponentText;
 
-import com.github.lunatrius.schematica.client.gui.framework.UiTranslations;
 import com.github.lunatrius.schematica.client.gui.framework.UiButton;
+import com.github.lunatrius.schematica.client.gui.framework.UiTranslations;
 import com.github.lunatrius.schematica.reference.Reference;
 import com.github.lunatrius.schematica.world.schematic.SchematicFiles;
+
+import org.lwjgl.input.Keyboard;
 
 public final class GuiSchematicManager extends GuiSchematicBrowser {
 
@@ -80,7 +83,7 @@ public final class GuiSchematicManager extends GuiSchematicBrowser {
         }
         if (choices[0] == 4) {
             try {
-                com.github.lunatrius.schematica.client.gui.browser.SchematicFileEdits.edit(file, metadata -> metadata.removeTag("PreviewImageData"));
+                SchematicFileEdits.edit(file, metadata -> metadata.removeTag("PreviewImageData"));
                 refreshFiles();
                 setStatus(UiTranslations.format("schematica.ui.files.preview_removed"));
             } catch (IOException e) {
@@ -89,8 +92,8 @@ public final class GuiSchematicManager extends GuiSchematicBrowser {
             return;
         }
         if (choices[0] == 2) {
-            if (isShiftKeyDown() && isCtrlKeyDown() && org.lwjgl.input.Keyboard.isKeyDown(org.lwjgl.input.Keyboard.KEY_LMENU)
-                || isShiftKeyDown() && isCtrlKeyDown() && org.lwjgl.input.Keyboard.isKeyDown(org.lwjgl.input.Keyboard.KEY_RMENU)) {
+            if (isShiftKeyDown() && isCtrlKeyDown() && Keyboard.isKeyDown(Keyboard.KEY_LMENU)
+                || isShiftKeyDown() && isCtrlKeyDown() && Keyboard.isKeyDown(Keyboard.KEY_RMENU)) {
                 try {
                     SchematicPreview.fromThumbnail(file);
                     refreshFiles();
@@ -104,7 +107,7 @@ public final class GuiSchematicManager extends GuiSchematicBrowser {
             mc.displayGuiScreen(null);
             if (mc.thePlayer != null) {
                 for (String line : UiTranslations.format("litematica.info.schematic_manager.preview.set_preview_by_taking_a_screenshot").split("\n")) {
-                    mc.thePlayer.addChatMessage(new net.minecraft.util.ChatComponentText(line));
+                    mc.thePlayer.addChatMessage(new ChatComponentText(line));
                 }
             }
             return;
@@ -124,7 +127,7 @@ public final class GuiSchematicManager extends GuiSchematicBrowser {
         prompt(UiTranslations.format(author ? "litematica.gui.title.schematic_change_author" : "litematica.gui.title.rename_schematic"),
             info == null ? "" : author ? info.author : info.name, value -> {
                 try {
-                    com.github.lunatrius.schematica.client.gui.browser.SchematicFileEdits.edit(file, metadata -> metadata.setString(author ? "Author" : "Name", value));
+                    SchematicFileEdits.edit(file, metadata -> metadata.setString(author ? "Author" : "Name", value));
                     refreshFiles();
                     return null;
                 } catch (IOException e) {

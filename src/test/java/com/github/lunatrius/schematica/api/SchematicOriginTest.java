@@ -1,7 +1,10 @@
 package com.github.lunatrius.schematica.api;
 
 import com.github.lunatrius.schematica.client.gui.placement.PlacementTransform;
+import com.github.lunatrius.schematica.util.SchematicTransform;
+
 import org.junit.Test;
+
 import static org.junit.Assert.*;
 
 public class SchematicOriginTest {
@@ -14,7 +17,7 @@ public class SchematicOriginTest {
             assertArrayEquals(world.coordinates(), next.atMinimum(min.x, min.y, min.z).coordinates());
             SchematicOrigin block = PlacementTransform.transformOrigin(new SchematicOrigin(1, 2, 3), 3, 5, 7, steps);
             double[] vector = {1 - local.x, 2 - local.y, 3 - local.z};
-            for (char op : steps.toCharArray()) vector = com.github.lunatrius.schematica.util.SchematicTransform.point(op,
+            for (char op : steps.toCharArray()) vector = SchematicTransform.point(op,
                 vector[0], vector[1], vector[2], 0, 0, 0);
             assertArrayEquals(new int[] {world.x + (int) vector[0], world.y + (int) vector[1], world.z + (int) vector[2]},
                 block.atMinimum(min.x, min.y, min.z).coordinates());

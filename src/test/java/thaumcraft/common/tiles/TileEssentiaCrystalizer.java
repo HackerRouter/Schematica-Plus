@@ -1,6 +1,8 @@
 package thaumcraft.common.tiles;
 
-public class TileEssentiaCrystalizer extends net.minecraft.tileentity.TileEntity {
+import net.minecraft.tileentity.TileEntity;
+
+public class TileEssentiaCrystalizer extends TileEntity {
     public Color aspect;
     public float cr = 1.0F, cg = 1.0F, cb = 1.0F;
 

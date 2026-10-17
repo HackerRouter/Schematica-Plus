@@ -9,6 +9,7 @@ import java.util.Locale;
 
 import com.github.lunatrius.schematica.client.world.SchematicWorld;
 import com.github.lunatrius.schematica.handler.ConfigurationHandler;
+import com.github.lunatrius.schematica.handler.PrinterRange;
 
 /** The block offsets around the player that one printer pass visits, in the configured order. */
 public final class PrinterIteration {
@@ -128,7 +129,7 @@ public final class PrinterIteration {
         }
     }
 
-    private static int clampRadius(int radius) { return Math.max(0, Math.min((int) com.github.lunatrius.schematica.handler.PrinterRange.MAX, radius)); }
+    private static int clampRadius(int radius) { return Math.max(0, Math.min((int) PrinterRange.MAX, radius)); }
 
     private static int axis(char c) { return c == 'x' ? 0 : c == 'y' ? 1 : 2; }
 

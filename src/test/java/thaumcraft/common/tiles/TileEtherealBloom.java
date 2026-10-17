@@ -1,5 +1,7 @@
 package thaumcraft.common.tiles;
 
-public class TileEtherealBloom extends net.minecraft.tileentity.TileEntity {
+import net.minecraft.tileentity.TileEntity;
+
+public class TileEtherealBloom extends TileEntity {
     public int growthCounter;
 }

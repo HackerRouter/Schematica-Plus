@@ -11,9 +11,11 @@ import java.util.function.Supplier;
 
 import net.minecraft.client.gui.GuiScreen;
 
+import com.github.lunatrius.schematica.client.gui.VerifierBlockInfo.Visual;
 import com.github.lunatrius.schematica.client.gui.framework.UiBounds;
 import com.github.lunatrius.schematica.client.gui.framework.UiButton;
 import com.github.lunatrius.schematica.client.gui.framework.UiDraw;
+import com.github.lunatrius.schematica.client.gui.framework.UiInput;
 import com.github.lunatrius.schematica.client.gui.framework.UiLabel;
 import com.github.lunatrius.schematica.client.gui.framework.UiListModel;
 import com.github.lunatrius.schematica.client.gui.framework.UiPanel;
@@ -24,13 +26,14 @@ import com.github.lunatrius.schematica.client.gui.framework.UiTranslations;
 import com.github.lunatrius.schematica.client.input.Hotkeys;
 import com.github.lunatrius.schematica.client.verifier.VerificationManager;
 import com.github.lunatrius.schematica.client.verifier.VerificationScan;
-import com.github.lunatrius.schematica.handler.ConfigurationHandler;
 import com.github.lunatrius.schematica.client.verifier.VerificationScan.Group;
 import com.github.lunatrius.schematica.client.verifier.VerificationScan.State;
 import com.github.lunatrius.schematica.client.verifier.VerificationScan.Type;
 import com.github.lunatrius.schematica.client.world.SchematicWorld;
-import com.github.lunatrius.schematica.client.gui.VerifierBlockInfo.Visual;
+import com.github.lunatrius.schematica.handler.ConfigurationHandler;
+import com.github.lunatrius.schematica.handler.VerifierOverlaySettings;
 import com.github.lunatrius.schematica.handler.VisualSettings;
+import com.github.lunatrius.schematica.util.BlockGroups;
 import com.github.lunatrius.schematica.util.MessageException;
 
 public final class GuiSchematicVerifier extends UiScreen {
@@ -96,7 +99,7 @@ public final class GuiSchematicVerifier extends UiScreen {
                     draw.text(draw.trim("§l" + label(), Math.max(0, bounds().width - 18)), bounds().x, bounds().y + 7, 0xFFFFFFFF);
                     if (session.sortColumn == column) (session.reverse ? UiSprite.SORT_UP : UiSprite.SORT_DOWN)
                         .draw(draw, bounds().right() - 16, bounds().y + 3, true, false);
-                    if (isFocused() && com.github.lunatrius.schematica.client.gui.framework.UiInput.focusVisible()) draw.border(bounds(), 0xFFE0E0E0);
+                    if (isFocused() && UiInput.focusVisible()) draw.border(bounds(), 0xFFE0E0E0);
                 }
             });
         }
@@ -139,7 +142,7 @@ public final class GuiSchematicVerifier extends UiScreen {
         ignored.setEnabled(scan != null && !scan.ignored().isEmpty());
         columns[1].setEnabled(session.filter != Type.CORRECT);
         for (int i = 0; i < filters.size(); i++) filters.get(i).setEnabled(Type.values()[i] != session.filter);
-        filters.get(Type.DIFF_BLOCK.ordinal()).setVisible(com.github.lunatrius.schematica.util.BlockGroups.enabled);
+        filters.get(Type.DIFF_BLOCK.ordinal()).setVisible(BlockGroups.enabled);
         status.setTooltip(message.isEmpty() ? session.progressText() : message, UiTranslations.format("schematica.ui.verifier.comparison"));
         counts.setTooltip(session.countsText());
     }
@@ -202,7 +205,7 @@ public final class GuiSchematicVerifier extends UiScreen {
                 if (mouse == 0 && session.scan() == previous) {
                     if (row.group == null) session.markers.selection.toggle(row.type);
                     else session.markers.selection.toggle(row.group);
-                    message = com.github.lunatrius.schematica.handler.VerifierOverlaySettings.enabled ? ""
+                    message = VerifierOverlaySettings.enabled ? ""
                         : UiTranslations.format("litematica.message.warn.schematic_verifier.overlay_disabled",
                             VisualSettings.prettyName("info_overlays", "verifierOverlayEnabled"),
                             VisualSettings.prettyName("hotkeys", "toggleVerifierOverlayRendering"),
@@ -210,7 +213,7 @@ public final class GuiSchematicVerifier extends UiScreen {
                 }
             }) {
                 @Override public void draw(UiDraw draw, int mouseX, int mouseY) {
-                    if (isFocused() && com.github.lunatrius.schematica.client.gui.framework.UiInput.focusVisible()) draw.border(bounds(), 0xFFE0E0E0);
+                    if (isFocused() && UiInput.focusVisible()) draw.border(bounds(), 0xFFE0E0E0);
                 }
                 @Override public boolean drawTooltip(UiDraw draw, int mouseX, int mouseY, UiBounds screen) {
                     if (row.group == null) return false;

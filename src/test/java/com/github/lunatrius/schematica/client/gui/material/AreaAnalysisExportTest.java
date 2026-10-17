@@ -1,15 +1,19 @@
 package com.github.lunatrius.schematica.client.gui.material;
 
-import org.junit.Test;
-import static org.junit.Assert.*;
+import java.util.Collections;
+
+import com.github.lunatrius.schematica.client.gui.material.MaterialListExport.Format;
+
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.github.lunatrius.schematica.client.gui.material.MaterialListExport.Format;
+import org.junit.Test;
+
+import static org.junit.Assert.*;
 
 public class AreaAnalysisExportTest {
     @Test public void partialAnalysisIsIdentifiedInEveryExportFormat() {
         MaterialListModel<String> model = new MaterialListModel<>();
-        model.setEntries(java.util.Collections.singletonList(new MaterialListModel.Entry<>("stone", "Stone", "minecraft:stone", 12, 0, 0, 0)));
+        model.setEntries(Collections.singletonList(new MaterialListModel.Entry<>("stone", "Stone", "minecraft:stone", 12, 0, 0, 0)));
         for (Format format : Format.values()) {
             String original = MaterialListExport.format(model, "Selection", format, value -> "{}", MaterialListExportTest::label);
             String text = MaterialListExport.withAnalysisStatus(original, format, 300, 2, MaterialListExportTest::label);

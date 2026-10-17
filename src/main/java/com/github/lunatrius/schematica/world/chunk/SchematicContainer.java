@@ -1,6 +1,7 @@
 package com.github.lunatrius.schematica.world.chunk;
 
 import java.io.File;
+import java.util.function.Consumer;
 
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.world.World;
@@ -8,6 +9,8 @@ import net.minecraft.world.World;
 import com.github.lunatrius.schematica.SchematicaPlus;
 import com.github.lunatrius.schematica.api.ISchematic;
 import com.github.lunatrius.schematica.reference.Reference;
+import com.github.lunatrius.schematica.world.schematic.SchematicFileSnapshot;
+import com.github.lunatrius.schematica.world.schematic.SchematicFormat;
 
 public class SchematicContainer {
 
@@ -29,9 +32,9 @@ public class SchematicContainer {
     public final File file;
     public final boolean includeNBT, includeEntities;
     /** When set, the captured schematic is encoded and handed to this consumer instead of being written to {@link #file}. */
-    public java.util.function.Consumer<com.github.lunatrius.schematica.world.schematic.SchematicFileSnapshot> memory;
+    public Consumer<SchematicFileSnapshot> memory;
     /** Runs on the client thread with the written file, or null if the save failed or was cancelled. */
-    public java.util.function.Consumer<File> completed;
+    public Consumer<File> completed;
     /** Where blocks are read from; the world unless saving from the schematic placements. */
     public CaptureSource source;
     /** Upstream "Visible blocks only" (only blocks with an uncovered face) and "Include support blocks". */
@@ -61,8 +64,8 @@ public class SchematicContainer {
         this.player = player;
         this.world = world;
         this.file = file;
-        this.includeNBT = com.github.lunatrius.schematica.world.schematic.SchematicFormat.saveNBT;
-        this.includeEntities = com.github.lunatrius.schematica.world.schematic.SchematicFormat.saveEntities;
+        this.includeNBT = SchematicFormat.saveNBT;
+        this.includeEntities = SchematicFormat.saveEntities;
 
         this.minX = minX;
         this.maxX = maxX;

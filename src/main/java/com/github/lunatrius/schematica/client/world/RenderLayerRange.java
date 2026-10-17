@@ -2,6 +2,7 @@
 // MaLiLib LayerRange behavior, adapted for 1.7.10 by HackerRouter, 2026.
 package com.github.lunatrius.schematica.client.world;
 
+import java.math.BigDecimal;
 import java.util.Locale;
 
 import com.google.gson.JsonObject;
@@ -145,7 +146,7 @@ public final class RenderLayerRange {
     }
 
     private static int integer(JsonObject json, String key) {
-        return new java.math.BigDecimal(json.get(key).getAsString()).intValueExact();
+        return new BigDecimal(json.get(key).getAsString()).intValueExact();
     }
 
     private static int bounded(long value) { return (int) Math.max(Integer.MIN_VALUE, Math.min(Integer.MAX_VALUE, value)); }

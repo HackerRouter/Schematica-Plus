@@ -1,18 +1,24 @@
 package com.github.lunatrius.schematica.tool;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.BitSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
+
 import net.minecraft.block.Block;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.world.ChunkPosition;
 import net.minecraft.world.WorldServer;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.storage.ExtendedBlockStorage;
+
+import com.github.lunatrius.schematica.nbt.ForgeMultipart;
+
 import cpw.mods.fml.relauncher.ReflectionHelper;
 
 final class SilentBlockPlacement {
-    private static final java.lang.reflect.Method RELIGHT = ReflectionHelper.findMethod(Chunk.class, null,
+    private static final Method RELIGHT = ReflectionHelper.findMethod(Chunk.class, null,
         new String[] {"relightBlock", "func_76615_h"}, int.class, int.class, int.class);
     private final Map<Chunk, BitSet> changed = new LinkedHashMap<>();
 
@@ -56,7 +62,7 @@ final class SilentBlockPlacement {
 
     void setTile(WorldServer world, TileEntity tile) {
         world.getChunkFromChunkCoords(tile.xCoord >> 4, tile.zCoord >> 4).addTileEntity(tile);
-        com.github.lunatrius.schematica.nbt.ForgeMultipart.onPlaced(world, tile);
+        ForgeMultipart.onPlaced(world, tile);
     }
 
     interface FailureHandler { void failed(int x, int y, int z, Throwable error); }
@@ -78,7 +84,7 @@ final class SilentBlockPlacement {
                 if (tops[column] == 0) continue;
                 try { RELIGHT.invoke(chunk, column & 15, tops[column], column >> 4); }
                 catch (Exception | LinkageError error) {
-                    Throwable cause = error instanceof java.lang.reflect.InvocationTargetException && error.getCause() != null ? error.getCause() : error;
+                    Throwable cause = error instanceof InvocationTargetException && error.getCause() != null ? error.getCause() : error;
                     failures.failed((chunk.xPosition << 4) + (column & 15), tops[column] - 1,
                         (chunk.zPosition << 4) + (column >> 4), cause);
                 }

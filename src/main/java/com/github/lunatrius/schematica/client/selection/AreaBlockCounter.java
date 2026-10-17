@@ -4,7 +4,9 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+
 import com.github.lunatrius.schematica.api.SchematicRegion;
+import com.github.lunatrius.schematica.client.world.RenderLayerRange;
 import com.github.lunatrius.schematica.util.SchematicLimits;
 import com.github.lunatrius.schematica.world.storage.RegionSelection;
 
@@ -15,14 +17,14 @@ public final class AreaBlockCounter<T> {
     }
 
     private final RegionSelection selection;
-    private final com.github.lunatrius.schematica.client.world.RenderLayerRange layers = new com.github.lunatrius.schematica.client.world.RenderLayerRange();
+    private final RenderLayerRange layers = new RenderLayerRange();
     private final Map<T, Integer> counts = new LinkedHashMap<>();
     private final int width, length, volume;
     private int cursor, selected, unverified, skipped;
 
     public AreaBlockCounter(List<SchematicRegion> regions) { this(regions, null); }
 
-    public AreaBlockCounter(List<SchematicRegion> regions, com.github.lunatrius.schematica.client.world.RenderLayerRange range) {
+    public AreaBlockCounter(List<SchematicRegion> regions, RenderLayerRange range) {
         if (range != null) layers.load(range.toJson());
         selection = new RegionSelection(regions);
         width = selection.maxX - selection.minX + 1;

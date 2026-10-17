@@ -1,22 +1,25 @@
 package com.github.lunatrius.schematica.client.renderer.hud;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.ScaledResolution;
-import org.lwjgl.opengl.GL11;
 
+import com.github.lunatrius.schematica.client.gui.VerifierBlockInfo;
 import com.github.lunatrius.schematica.client.gui.framework.MinecraftUiDraw;
 import com.github.lunatrius.schematica.client.gui.framework.UiBounds;
 import com.github.lunatrius.schematica.client.gui.framework.UiTranslations;
-import com.github.lunatrius.schematica.client.verifier.VerificationManager;
-import com.github.lunatrius.schematica.handler.InfoHudSettings;
-import com.github.lunatrius.schematica.handler.VerifierOverlaySettings;
-import com.github.lunatrius.schematica.client.gui.VerifierBlockInfo;
+import com.github.lunatrius.schematica.client.input.Hotkeys;
 import com.github.lunatrius.schematica.client.renderer.VerifierOverlayRenderer;
+import com.github.lunatrius.schematica.client.verifier.VerificationManager;
 import com.github.lunatrius.schematica.client.verifier.VerificationScan;
 import com.github.lunatrius.schematica.client.verifier.VerificationScan.Marker;
 import com.github.lunatrius.schematica.client.verifier.VerificationScan.Pair;
-import java.util.ArrayList;
-import java.util.List;
+import com.github.lunatrius.schematica.handler.InfoHudSettings;
+import com.github.lunatrius.schematica.handler.VerifierOverlaySettings;
+
+import org.lwjgl.opengl.GL11;
 
 public final class VerifierHud {
     private static Pair pair;
@@ -91,7 +94,7 @@ public final class VerifierHud {
     }
 
     private static boolean overlay(Minecraft mc, VerificationManager.Session session, float partialTicks, ScaledResolution screen) {
-        boolean held = com.github.lunatrius.schematica.client.input.Hotkeys.held("renderInfoOverlay");
+        boolean held = Hotkeys.held("renderInfoOverlay");
         Marker marker = held && VerifierOverlaySettings.enabled ? VerifierOverlayRenderer.target(mc, session, partialTicks) : null;
         if (marker == null) { pair = null; info = null; return false; }
         if (!marker.group.pair.equals(pair)) { pair = marker.group.pair; info = new VerifierBlockInfo(pair); }

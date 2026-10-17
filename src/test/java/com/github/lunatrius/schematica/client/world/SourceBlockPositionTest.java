@@ -3,12 +3,16 @@ package com.github.lunatrius.schematica.client.world;
 import java.lang.reflect.Proxy;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import com.github.lunatrius.schematica.api.ISchematic;
 import com.github.lunatrius.schematica.api.SchematicOrigin;
 import com.github.lunatrius.schematica.api.SchematicRegion;
+
 import org.junit.Test;
+
 import static org.junit.Assert.*;
 
 public class SourceBlockPositionTest {
@@ -64,7 +68,7 @@ public class SourceBlockPositionTest {
             SchematicOrigin a = SubRegionPlacements.vector(new SchematicOrigin(bounds.minX, bounds.minY, bounds.minZ), global, false).atMinimum(origin.x, origin.y, origin.z);
             SchematicOrigin b = SubRegionPlacements.vector(new SchematicOrigin(bounds.maxX, bounds.maxY, bounds.maxZ), global, false).atMinimum(origin.x, origin.y, origin.z);
             SchematicRegion expected = new SchematicRegion("A", a.x, a.y, a.z, b.x, b.y, b.z);
-            java.util.Set<List<Integer>> seen = new java.util.HashSet<>();
+            Set<List<Integer>> seen = new HashSet<>();
             for (int x = 0; x <= 2; x++) for (int y = 0; y <= 3; y++) for (int z = 0; z <= 4; z++) {
                 SchematicOrigin world = SourceBlockPosition.world(region, new SchematicOrigin(x, y, z), origin, global);
                 assertTrue(expected.contains(world.x, world.y, world.z));

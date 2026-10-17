@@ -1,11 +1,15 @@
 package com.github.lunatrius.schematica.client.verifier;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
-import org.junit.Test;
-import static org.junit.Assert.*;
+
 import com.github.lunatrius.schematica.client.verifier.VerificationScan.State;
 import com.github.lunatrius.schematica.client.verifier.VerificationScan.Type;
+
+import org.junit.Test;
+
+import static org.junit.Assert.*;
 
 public class VerificationScanTest {
     private static final State STONE = new State("minecraft:stone", 0);
@@ -226,7 +230,7 @@ public class VerificationScanTest {
 
     @Test public void pendingChunksAreListedClosestFirst() {
         VerificationScan scan = new VerificationScan(0, 0, 0, 48, 1, 16, new int[] {0, 0, 0, 48, 1, 16});
-        java.util.List<int[]> chunks = scan.pendingChunks(40, 8);
+        List<int[]> chunks = scan.pendingChunks(40, 8);
         assertEquals(3, chunks.size());
         assertArrayEquals(new int[] {2, 0}, chunks.get(0));
         assertArrayEquals(new int[] {0, 0}, chunks.get(2));

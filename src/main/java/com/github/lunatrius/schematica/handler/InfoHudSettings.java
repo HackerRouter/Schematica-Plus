@@ -1,7 +1,10 @@
 package com.github.lunatrius.schematica.handler;
 
+import java.util.Arrays;
+
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.common.config.Property;
+
 import com.github.lunatrius.schematica.util.HudAlignment;
 
 public final class InfoHudSettings {
@@ -22,9 +25,9 @@ public final class InfoHudSettings {
         offsetX = offset(configuration, "infoHudOffsetX");
         offsetY = offset(configuration, "infoHudOffsetY");
         Property anchor = label(configuration.get(BlockInfoHudSettings.CATEGORY, "infoHudAlignment", "bottom_right"), "infoHudAlignment");
-        String[] values = java.util.Arrays.stream(HudAlignment.values()).map(HudAlignment::value).toArray(String[]::new);
+        String[] values = Arrays.stream(HudAlignment.values()).map(HudAlignment::value).toArray(String[]::new);
         anchor.setValidValues(values);
-        alignment = java.util.Arrays.asList(values).contains(anchor.getString()) ? HudAlignment.parse(anchor.getString()) : HudAlignment.BOTTOM_RIGHT;
+        alignment = Arrays.asList(values).contains(anchor.getString()) ? HudAlignment.parse(anchor.getString()) : HudAlignment.BOTTOM_RIGHT;
         anchor.set(alignment.value());
         Property tool = label(configuration.get(BlockInfoHudSettings.CATEGORY, "toolHudScale", 1.0), "toolHudScale");
         tool.setMinValue(0.1).setMaxValue(4.0);
@@ -34,7 +37,7 @@ public final class InfoHudSettings {
         toolOffsetY = offset(configuration, "toolHudOffsetY");
         Property toolAnchor = label(configuration.get(BlockInfoHudSettings.CATEGORY, "toolHudAlignment", "bottom_left"), "toolHudAlignment");
         toolAnchor.setValidValues(values);
-        toolAlignment = java.util.Arrays.asList(values).contains(toolAnchor.getString()) ? HudAlignment.parse(toolAnchor.getString()) : HudAlignment.BOTTOM_LEFT;
+        toolAlignment = Arrays.asList(values).contains(toolAnchor.getString()) ? HudAlignment.parse(toolAnchor.getString()) : HudAlignment.BOTTOM_LEFT;
         toolAnchor.set(toolAlignment.value());
     }
 

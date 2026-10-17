@@ -2,13 +2,20 @@ package com.github.lunatrius.schematica;
 
 import java.util.Map;
 
+import net.minecraft.server.MinecraftServer;
+
+import com.github.lunatrius.schematica.client.gui.SchematicaPlusConflictException;
+import com.github.lunatrius.schematica.handler.DownloadHandler;
+import com.github.lunatrius.schematica.handler.QueueTickHandler;
+import com.github.lunatrius.schematica.handler.RemoteEdits;
+import com.github.lunatrius.schematica.handler.WorldEditQueue;
 import com.github.lunatrius.schematica.proxy.CommonProxy;
 import com.github.lunatrius.schematica.reference.Reference;
 
-import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.Loader;
 import cpw.mods.fml.common.LoaderException;
+import cpw.mods.fml.common.Mod;
 import cpw.mods.fml.common.Mod.EventHandler;
 import cpw.mods.fml.common.Mod.Instance;
 import cpw.mods.fml.common.SidedProxy;
@@ -16,6 +23,8 @@ import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.event.FMLServerStartingEvent;
+import cpw.mods.fml.common.event.FMLServerStoppedEvent;
+import cpw.mods.fml.common.event.FMLServerStoppingEvent;
 import cpw.mods.fml.common.network.NetworkCheckHandler;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
@@ -48,7 +57,7 @@ public class SchematicaPlus {
 
     @SideOnly(Side.CLIENT)
     private static void showConflict(String message, String conflict) {
-        throw new com.github.lunatrius.schematica.client.gui.SchematicaPlusConflictException(message, conflict);
+        throw new SchematicaPlusConflictException(message, conflict);
     }
 
     static String findLegacyMod(Iterable<String> modIds) {
@@ -90,15 +99,15 @@ public class SchematicaPlus {
     }
 
     @EventHandler
-    public void serverStopping(cpw.mods.fml.common.event.FMLServerStoppingEvent event) {
-        com.github.lunatrius.schematica.handler.WorldEditQueue.INSTANCE.rollbackBeforeShutdown(net.minecraft.server.MinecraftServer.getServer());
+    public void serverStopping(FMLServerStoppingEvent event) {
+        WorldEditQueue.INSTANCE.rollbackBeforeShutdown(MinecraftServer.getServer());
     }
 
     @EventHandler
-    public void serverStopped(cpw.mods.fml.common.event.FMLServerStoppedEvent event) {
-        com.github.lunatrius.schematica.handler.RemoteEdits.INSTANCE.clear();
-        com.github.lunatrius.schematica.handler.WorldEditQueue.INSTANCE.clear();
-        com.github.lunatrius.schematica.handler.QueueTickHandler.INSTANCE.clear();
-        com.github.lunatrius.schematica.handler.DownloadHandler.INSTANCE.stopAll();
+    public void serverStopped(FMLServerStoppedEvent event) {
+        RemoteEdits.INSTANCE.clear();
+        WorldEditQueue.INSTANCE.clear();
+        QueueTickHandler.INSTANCE.clear();
+        DownloadHandler.INSTANCE.stopAll();
     }
 }

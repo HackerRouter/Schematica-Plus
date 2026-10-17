@@ -1,23 +1,29 @@
 package com.github.lunatrius.schematica.tool;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.BitSet;
+import java.util.List;
+
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.world.World;
-import net.minecraft.world.WorldServer;
 import net.minecraft.world.WorldProviderSurface;
+import net.minecraft.world.WorldServer;
 import net.minecraft.world.chunk.Chunk;
+
 import org.junit.Test;
+
 import static org.junit.Assert.*;
 
 public class SilentBlockPlacementTest {
     @Test public void flushFailureDoesNotDiscardOtherCellsOrRepeatTheBatch() throws Exception {
         Class<?> unsafeClass = Class.forName("sun.misc.Unsafe");
-        java.lang.reflect.Field unsafe = unsafeClass.getDeclaredField("theUnsafe");
+        Field unsafe = unsafeClass.getDeclaredField("theUnsafe");
         unsafe.setAccessible(true);
         FlushWorld world = (FlushWorld) unsafeClass.getMethod("allocateInstance", Class.class).invoke(unsafe.get(null), FlushWorld.class);
-        java.lang.reflect.Field provider = World.class.getDeclaredField("provider");
+        Field provider = World.class.getDeclaredField("provider");
         provider.setAccessible(true);
         provider.set(world, new WorldProviderSurface());
         world.chunk = new Chunk(world, 0, 0);
@@ -27,7 +33,7 @@ public class SilentBlockPlacementTest {
             placement.setBlock(world, x, 70, 5, block, 0);
             world.chunk.heightMap[(5 << 4) | x] = 71;
         }
-        java.util.List<Integer> failures = new java.util.ArrayList<>();
+        List<Integer> failures = new ArrayList<>();
         placement.flush(world, (x, y, z, error) -> failures.add(x));
         assertEquals(2, world.updates);
         assertTrue(failures.contains(3));

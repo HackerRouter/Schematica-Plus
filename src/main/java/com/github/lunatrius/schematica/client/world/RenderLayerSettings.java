@@ -6,13 +6,14 @@ import java.io.Reader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-
 import com.github.lunatrius.schematica.handler.ConfigurationHandler;
 import com.github.lunatrius.schematica.reference.Reference;
 import com.github.lunatrius.schematica.util.FileUtils;
+import com.github.lunatrius.schematica.util.PlusDataFiles;
+
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 
 public final class RenderLayerSettings {
     public static final RenderLayerRange RANGE = new RenderLayerRange();
@@ -39,7 +40,7 @@ public final class RenderLayerSettings {
         }
     }
 
-    private static File file() { return com.github.lunatrius.schematica.util.PlusDataFiles.file("RenderLayers.json"); }
+    private static File file() { return PlusDataFiles.file("RenderLayers.json"); }
 
     static void save(File file, String key, RenderLayerRange range) throws IOException {
         JsonObject sessions = read(file);

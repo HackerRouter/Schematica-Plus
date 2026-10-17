@@ -1,9 +1,12 @@
 package com.github.lunatrius.schematica.compat;
 
+import java.lang.reflect.Field;
 import java.util.Map;
 import java.util.WeakHashMap;
+
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
+
 import com.github.lunatrius.schematica.api.ISchematicVisualAdapter;
 
 final class ThaumicExplorationVisualAdapter implements ISchematicVisualAdapter {
@@ -41,7 +44,7 @@ final class ThaumicExplorationVisualAdapter implements ISchematicVisualAdapter {
         long now = tile.getWorldObj().getTotalWorldTime();
         Long previous = animationTicks.put(tile, now);
         if (previous == null || previous == now) return;
-        java.lang.reflect.Field access = Reflect.field(tile.getClass(), "accessTicks");
+        Field access = Reflect.field(tile.getClass(), "accessTicks");
         access.setInt(tile, Math.max(0, access.getInt(tile) - 1));
         if (Reflect.is(tile, CHEST)) {
             float angle = (Float) Reflect.get(tile, "lidAngle");

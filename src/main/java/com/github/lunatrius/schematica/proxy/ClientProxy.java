@@ -8,53 +8,97 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.function.Consumer;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.entity.EntityClientPlayerMP;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.util.ChatComponentText;
+import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.MathHelper;
 import net.minecraft.util.MovingObjectPosition;
+import net.minecraft.world.World;
+import net.minecraftforge.client.ClientCommandHandler;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.config.Property;
 import net.minecraftforge.common.util.ForgeDirection;
 
-import com.github.lunatrius.schematica.handler.client.WorldHandler;
-import com.github.lunatrius.schematica.client.selection.AreaSelections;
-import com.github.lunatrius.schematica.client.world.RenderLayerSettings;
-import com.github.lunatrius.schematica.internal.lunatriuscore.util.vector.Vector3d;
-import com.github.lunatrius.schematica.internal.lunatriuscore.util.vector.Vector3i;
 import com.github.lunatrius.schematica.api.ISchematic;
+import com.github.lunatrius.schematica.api.SchematicOrigin;
+import com.github.lunatrius.schematica.client.container.ContainerVerifier;
+import com.github.lunatrius.schematica.client.gui.browser.SchematicPreview;
+import com.github.lunatrius.schematica.client.gui.framework.UiTranslations;
+import com.github.lunatrius.schematica.client.gui.material.MaterialItemCache;
+import com.github.lunatrius.schematica.client.gui.material.MaterialItemKey;
+import com.github.lunatrius.schematica.client.gui.material.MaterialListModel;
+import com.github.lunatrius.schematica.client.gui.material.MaterialLists;
+import com.github.lunatrius.schematica.client.input.Hotkey;
+import com.github.lunatrius.schematica.client.input.Hotkeys;
+import com.github.lunatrius.schematica.client.printer.DestroyAssist;
 import com.github.lunatrius.schematica.client.printer.SchematicPrinter;
+import com.github.lunatrius.schematica.client.printer.SignTextPaste;
+import com.github.lunatrius.schematica.client.projects.SchematicProjects;
 import com.github.lunatrius.schematica.client.renderer.RendererSchematicGlobal;
-import com.github.lunatrius.schematica.client.world.SchematicWorld;
+import com.github.lunatrius.schematica.client.renderer.hud.BlockInfoHud;
+import com.github.lunatrius.schematica.client.renderer.hud.StatusInfoHud;
+import com.github.lunatrius.schematica.client.selection.AreaSelections;
+import com.github.lunatrius.schematica.client.verifier.VerificationManager;
+import com.github.lunatrius.schematica.client.world.GridPlacements;
+import com.github.lunatrius.schematica.client.world.PlacementSettings;
+import com.github.lunatrius.schematica.client.world.PlacementState;
+import com.github.lunatrius.schematica.client.world.RenderLayerRange;
+import com.github.lunatrius.schematica.client.world.RenderLayerSettings;
 import com.github.lunatrius.schematica.client.world.SchematicLibrary;
 import com.github.lunatrius.schematica.client.world.SchematicSourceData;
-import com.github.lunatrius.schematica.client.world.PlacementState;
+import com.github.lunatrius.schematica.client.world.SchematicWorld;
+import com.github.lunatrius.schematica.client.world.WorldFingerprint;
+import com.github.lunatrius.schematica.command.CommandSchematicaSetBlock;
 import com.github.lunatrius.schematica.compat.ILOTRPresent;
 import com.github.lunatrius.schematica.compat.NoLOTRProxy;
+import com.github.lunatrius.schematica.compat.nei.NeiBridge;
 import com.github.lunatrius.schematica.handler.ConfigurationHandler;
+import com.github.lunatrius.schematica.handler.VisualSettings;
 import com.github.lunatrius.schematica.handler.client.ChatEventHandler;
+import com.github.lunatrius.schematica.handler.client.CommandEditQueue;
+import com.github.lunatrius.schematica.handler.client.ModInfoHandler;
 import com.github.lunatrius.schematica.handler.client.OverlayHandler;
+import com.github.lunatrius.schematica.handler.client.RemoteEditClient;
 import com.github.lunatrius.schematica.handler.client.RenderTickHandler;
 import com.github.lunatrius.schematica.handler.client.TickHandler;
+import com.github.lunatrius.schematica.handler.client.WorldHandler;
+import com.github.lunatrius.schematica.internal.lunatriuscore.util.vector.Vector3d;
+import com.github.lunatrius.schematica.internal.lunatriuscore.util.vector.Vector3i;
+import com.github.lunatrius.schematica.network.message.MessageEditStatus;
 import com.github.lunatrius.schematica.reference.Constants;
 import com.github.lunatrius.schematica.reference.Reference;
+import com.github.lunatrius.schematica.tool.WorldMoveController;
 import com.github.lunatrius.schematica.util.Coordinates;
+import com.github.lunatrius.schematica.util.FileUtils;
+import com.github.lunatrius.schematica.util.PlusDataFiles;
+import com.github.lunatrius.schematica.world.schematic.ItemIdMaps;
+import com.github.lunatrius.schematica.world.schematic.SchematicFileSnapshot;
 import com.github.lunatrius.schematica.world.schematic.SchematicFormat;
-import com.github.lunatrius.schematica.command.CommandSchematicaSetBlock;
+
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
-
 import cpw.mods.fml.client.config.GuiConfigEntries;
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.Loader;
 import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
+import org.lwjgl.input.Keyboard;
 
 public class ClientProxy extends CommonProxy {
 
@@ -67,10 +111,10 @@ public class ClientProxy extends CommonProxy {
     public static boolean isRenderingGuide = false;
     public static boolean isPendingReset = false;
     @Override public void worldMoveFinished(long id, boolean success) {
-        com.github.lunatrius.schematica.tool.WorldMoveController.finished(id, success);
+        WorldMoveController.finished(id, success);
     }
-    @Override public void remoteEditStatus(com.github.lunatrius.schematica.network.message.MessageEditStatus status) {
-        MINECRAFT.func_152344_a(() -> com.github.lunatrius.schematica.handler.client.RemoteEditClient.INSTANCE.status(status));
+    @Override public void remoteEditStatus(MessageEditStatus status) {
+        MINECRAFT.func_152344_a(() -> RemoteEditClient.INSTANCE.status(status));
     }
     @Override public void runSaveCallback(Runnable callback) {
         MINECRAFT.func_152344_a(callback);
@@ -84,7 +128,7 @@ public class ClientProxy extends CommonProxy {
 
     /** The placements and their grid copies, for rendering and targeting (the visible placements upstream). */
     public static List<SchematicWorld> visiblePlacements() {
-        List<SchematicWorld> copies = com.github.lunatrius.schematica.client.world.GridPlacements.INSTANCE.copies();
+        List<SchematicWorld> copies = GridPlacements.INSTANCE.copies();
         boolean hidden = false;
         for (SchematicWorld world : loadedSchematics) hidden |= world.otherWorld;
         if (copies.isEmpty() && !hidden) return loadedSchematics;
@@ -170,7 +214,7 @@ public class ClientProxy extends CommonProxy {
     }
 
     public static void moveSchematicToPlayer(SchematicWorld schematic) {
-        net.minecraft.entity.player.EntityPlayer player = Minecraft.getMinecraft().thePlayer;
+        EntityPlayer player = Minecraft.getMinecraft().thePlayer;
         if (schematic != null && player != null) schematic.moveOriginTo((int) Math.floor(player.posX),
             (int) Math.floor(player.posY - player.yOffset), (int) Math.floor(player.posZ));
     }
@@ -210,12 +254,12 @@ public class ClientProxy extends CommonProxy {
         public Boolean visible, entities, blockNBT, sourceOnly, layerMode;
         public Integer layer;
         public int[] origin;
-        public com.google.gson.JsonObject subregions;
-        public com.google.gson.JsonObject placementSettings;
-        public com.google.gson.JsonObject grid;
-        public com.google.gson.JsonObject materialList;
+        public JsonObject subregions;
+        public JsonObject placementSettings;
+        public JsonObject grid;
+        public JsonObject materialList;
         public Integer bb_color;
-        public com.google.gson.JsonObject fingerprint;
+        public JsonObject fingerprint;
 
         LoadedSchematicEntry() {}
     }
@@ -289,25 +333,25 @@ public class ClientProxy extends CommonProxy {
             prop.setConfigEntryClass(GuiConfigEntries.NumberSliderEntry.class);
         }
 
-        com.github.lunatrius.schematica.client.input.Hotkeys.initialize(
+        Hotkeys.initialize(
             event.getModConfigurationDirectory().toPath(), Minecraft.getMinecraft().mcDataDir.toPath());
     }
 
     @Override
     public void init(FMLInitializationEvent event) {
-        com.github.lunatrius.schematica.client.gui.material.MaterialListModel.cachePriority = key -> key instanceof com.github.lunatrius.schematica.client.gui.material.MaterialItemKey
-            ? com.github.lunatrius.schematica.client.gui.material.MaterialItemCache.priority((com.github.lunatrius.schematica.client.gui.material.MaterialItemKey) key) : Integer.MAX_VALUE;
+        MaterialListModel.cachePriority = key -> key instanceof MaterialItemKey
+            ? MaterialItemCache.priority((MaterialItemKey) key) : Integer.MAX_VALUE;
         super.init(event);
         FMLCommonHandler.instance().bus().register(
-            com.github.lunatrius.schematica.handler.client.CommandEditQueue.INSTANCE);
-        MinecraftForge.EVENT_BUS.register(com.github.lunatrius.schematica.handler.client.CommandEditQueue.INSTANCE);
+            CommandEditQueue.INSTANCE);
+        MinecraftForge.EVENT_BUS.register(CommandEditQueue.INSTANCE);
         FMLCommonHandler.instance().bus().register(
-            com.github.lunatrius.schematica.handler.client.RemoteEditClient.INSTANCE);
+            RemoteEditClient.INSTANCE);
         FMLCommonHandler.instance().bus().register(
-            com.github.lunatrius.schematica.client.gui.browser.SchematicPreview.INSTANCE);
+            SchematicPreview.INSTANCE);
 
         // Register client-side commands
-        net.minecraftforge.client.ClientCommandHandler.instance.registerCommand(new CommandSchematicaSetBlock());
+        ClientCommandHandler.instance.registerCommand(new CommandSchematicaSetBlock());
 
         FMLCommonHandler.instance()
             .bus()
@@ -322,12 +366,12 @@ public class ClientProxy extends CommonProxy {
         MinecraftForge.EVENT_BUS.register(RendererSchematicGlobal.INSTANCE);
         MinecraftForge.EVENT_BUS.register(ChatEventHandler.INSTANCE);
         MinecraftForge.EVENT_BUS.register(new OverlayHandler());
-        MinecraftForge.EVENT_BUS.register(com.github.lunatrius.schematica.client.container.ContainerVerifier.INSTANCE);
-        com.github.lunatrius.schematica.compat.nei.NeiBridge.register();
-        MinecraftForge.EVENT_BUS.register(new com.github.lunatrius.schematica.handler.client.ModInfoHandler());
+        MinecraftForge.EVENT_BUS.register(ContainerVerifier.INSTANCE);
+        NeiBridge.register();
+        MinecraftForge.EVENT_BUS.register(new ModInfoHandler());
         MinecraftForge.EVENT_BUS.register(WorldHandler.INSTANCE);
-        MinecraftForge.EVENT_BUS.register(com.github.lunatrius.schematica.client.printer.SignTextPaste.INSTANCE);
-        MinecraftForge.EVENT_BUS.register(com.github.lunatrius.schematica.client.printer.DestroyAssist.INSTANCE);
+        MinecraftForge.EVENT_BUS.register(SignTextPaste.INSTANCE);
+        MinecraftForge.EVENT_BUS.register(DestroyAssist.INSTANCE);
     }
 
     @Override
@@ -379,12 +423,12 @@ public class ClientProxy extends CommonProxy {
     }
 
     public static void clearWorldState() {
-        com.github.lunatrius.schematica.compat.nei.NeiBridge.clear();
-        com.github.lunatrius.schematica.client.gui.material.MaterialLists.clear();
-        com.github.lunatrius.schematica.client.verifier.VerificationManager.INSTANCE.clear();
-        com.github.lunatrius.schematica.client.renderer.hud.BlockInfoHud.INSTANCE.clear();
+        NeiBridge.clear();
+        MaterialLists.clear();
+        VerificationManager.INSTANCE.clear();
+        BlockInfoHud.INSTANCE.clear();
         AreaSelections.clear();
-        com.github.lunatrius.schematica.client.projects.SchematicProjects.clear();
+        SchematicProjects.clear();
         RenderLayerSettings.RANGE.load(null);
         unloadAllSchematics();
         lastWorldServerName = null;
@@ -430,19 +474,19 @@ public class ClientProxy extends CommonProxy {
         return source;
     }
 
-    private static final java.util.concurrent.ExecutorService SOURCE_READER = java.util.concurrent.Executors.newSingleThreadExecutor(runnable -> {
+    private static final ExecutorService SOURCE_READER = Executors.newSingleThreadExecutor(runnable -> {
         Thread thread = new Thread(runnable, "Schematica Plus schematic reader");
         thread.setDaemon(true);
         return thread;
     });
-    private static final java.util.Set<File> READING = java.util.Collections.synchronizedSet(new java.util.HashSet<>());
+    private static final Set<File> READING = Collections.synchronizedSet(new HashSet<>());
 
     /**
      * Reads and parses a file on a worker thread so that the game keeps running, then decodes and adds it on the client
      * thread and passes it on; false when the file is already being read. A file loaded before is passed on right away.
      */
-    public static boolean loadSourceAsync(File file, java.util.function.Consumer<SchematicLibrary.Source<SchematicSourceData>> loaded,
-        java.util.function.Consumer<Exception> failed) throws IOException {
+    public static boolean loadSourceAsync(File file, Consumer<SchematicLibrary.Source<SchematicSourceData>> loaded,
+        Consumer<Exception> failed) throws IOException {
         File canonical = file.getCanonicalFile();
         SchematicLibrary.Source<SchematicSourceData> existing = SCHEMATICS.find(canonical);
         if (existing != null) {
@@ -451,7 +495,7 @@ public class ClientProxy extends CommonProxy {
         }
         if (!READING.add(canonical)) return false;
         Minecraft mc = Minecraft.getMinecraft();
-        net.minecraft.world.World world = mc.theWorld;
+        World world = mc.theWorld;
         SOURCE_READER.execute(() -> {
             SchematicSourceData.Prepared data = null;
             Exception error = null;
@@ -483,53 +527,53 @@ public class ClientProxy extends CommonProxy {
      * stored item stacks whose ids were translated or removed.
      */
     private static void reportUnknownBlocks(SchematicLibrary.Source<SchematicSourceData> source) {
-        net.minecraft.client.entity.EntityClientPlayerMP player = Minecraft.getMinecraft().thePlayer;
+        EntityClientPlayerMP player = Minecraft.getMinecraft().thePlayer;
         if (player == null) return;
         Map<String, String> unknown = source.data().takeUnknownBlocks();
-        com.github.lunatrius.schematica.world.schematic.ItemIdMaps.Result items = source.data().takeItemIds();
+        ItemIdMaps.Result items = source.data().takeItemIds();
         if (unknown.isEmpty() && (items == null || items.removed == 0 && items.translatedWith == null && items.omittedData.isEmpty())) return;
-        java.util.function.Consumer<String> chat = line -> player.addChatMessage(new net.minecraft.util.ChatComponentText(
-            net.minecraft.util.EnumChatFormatting.GOLD + line));
+        Consumer<String> chat = line -> player.addChatMessage(new ChatComponentText(
+            EnumChatFormatting.GOLD + line));
         if (items != null) reportItemIds(source.file().getName(), items, chat);
         if (unknown.isEmpty()) return;
         Reference.logger.warn("{}: unknown blocks replaced: {}", source.file().getName(), unknown);
-        chat.accept(com.github.lunatrius.schematica.client.gui.framework.UiTranslations.format("schematica.message.import.unknown_blocks",
+        chat.accept(UiTranslations.format("schematica.message.import.unknown_blocks",
             source.file().getName(), unknown.size()));
         int shown = 0;
         for (Map.Entry<String, String> entry : unknown.entrySet()) {
             if (shown++ == 8) {
-                chat.accept(com.github.lunatrius.schematica.client.gui.framework.UiTranslations.format("schematica.message.import.unknown_more", unknown.size() - 8));
+                chat.accept(UiTranslations.format("schematica.message.import.unknown_more", unknown.size() - 8));
                 break;
             }
-            chat.accept(com.github.lunatrius.schematica.client.gui.framework.UiTranslations.format("schematica.message.import.unknown_block", entry.getKey(), entry.getValue()));
+            chat.accept(UiTranslations.format("schematica.message.import.unknown_block", entry.getKey(), entry.getValue()));
         }
     }
 
-    private static void reportItemIds(String file, com.github.lunatrius.schematica.world.schematic.ItemIdMaps.Result items,
-        java.util.function.Consumer<String> chat) {
+    private static void reportItemIds(String file, ItemIdMaps.Result items,
+        Consumer<String> chat) {
         if (!items.omittedData.isEmpty()) {
             Reference.logger.warn("{}: unsupported imported data omitted: {}", file, items.omittedData);
-            chat.accept(com.github.lunatrius.schematica.client.gui.framework.UiTranslations.format("schematica.message.import.omitted_data", file,
-                String.join(", ", new java.util.ArrayList<>(items.omittedData).subList(0, Math.min(8, items.omittedData.size())))));
+            chat.accept(UiTranslations.format("schematica.message.import.omitted_data", file,
+                String.join(", ", new ArrayList<>(items.omittedData).subList(0, Math.min(8, items.omittedData.size())))));
         }
         if (items.translatedWith != null) {
             Reference.logger.info("{}: item ids translated with the id map {}", file, items.translatedWith);
-            chat.accept(com.github.lunatrius.schematica.client.gui.framework.UiTranslations.format("schematica.message.import.items_translated", file, items.translatedWith));
+            chat.accept(UiTranslations.format("schematica.message.import.items_translated", file, items.translatedWith));
         }
         if (items.removed == 0) return;
         Reference.logger.warn("{}: {} stored item stacks removed; unknown items: {}", file, items.removed, items.unknownItems);
         if (items.translatedWith == null && items.unknownItems.isEmpty()) {
-            chat.accept(com.github.lunatrius.schematica.client.gui.framework.UiTranslations.format("schematica.message.import.items_removed", file, items.removed,
-                com.github.lunatrius.schematica.world.schematic.ItemIdMaps.directory().getPath()));
+            chat.accept(UiTranslations.format("schematica.message.import.items_removed", file, items.removed,
+                ItemIdMaps.directory().getPath()));
         } else {
-            chat.accept(com.github.lunatrius.schematica.client.gui.framework.UiTranslations.format("schematica.message.import.unknown_items", file, items.removed,
-                String.join(", ", new java.util.ArrayList<>(items.unknownItems).subList(0, Math.min(8, items.unknownItems.size())))));
+            chat.accept(UiTranslations.format("schematica.message.import.unknown_items", file, items.removed,
+                String.join(", ", new ArrayList<>(items.unknownItems).subList(0, Math.min(8, items.unknownItems.size())))));
         }
     }
 
     /** Registers a captured schematic that has no file; it is not restored in later sessions. */
     public static SchematicLibrary.Source<SchematicSourceData> addMemorySource(String name,
-        com.github.lunatrius.schematica.world.schematic.SchematicFileSnapshot snapshot) throws IOException {
+        SchematicFileSnapshot snapshot) throws IOException {
         String safe = name.replaceAll("[\\\\/:*?\"<>|]", "_").trim();
         return SCHEMATICS.addMemory(new File("<memory>", (safe.isEmpty() ? "schematic" : safe) + ".schemplus"), SchematicSourceData.of(snapshot));
     }
@@ -547,38 +591,38 @@ public class ClientProxy extends CommonProxy {
         SchematicWorld world = SCHEMATICS.create(source, (data, previous) -> instantiate(source, data));
         String base = world.name;
         int suffix = 2;
-        java.util.Set<String> names = new java.util.HashSet<>();
+        Set<String> names = new HashSet<>();
         for (SchematicWorld other : loadedSchematics) if (other != world) names.add(other.name);
         while (names.contains(world.name)) world.name = base + " #" + suffix++;
-        com.github.lunatrius.schematica.client.renderer.hud.StatusInfoHud.startOverride();
+        StatusInfoHud.startOverride();
         warnDisabledRendering();
         return world;
     }
 
     /** warnDisabledRendering: the layer mode and disabled renderers are pointed out when a placement is created. */
     private static void warnDisabledRendering() {
-        net.minecraft.client.entity.EntityClientPlayerMP player = Minecraft.getMinecraft().thePlayer;
+        EntityClientPlayerMP player = Minecraft.getMinecraft().thePlayer;
         if (!ConfigurationHandler.warnDisabledRendering || player == null) return;
-        com.github.lunatrius.schematica.client.world.RenderLayerRange range = RenderLayerSettings.RANGE;
-        if (range.mode() != com.github.lunatrius.schematica.client.world.RenderLayerRange.Mode.ALL) {
-            player.addChatMessage(new net.minecraft.util.ChatComponentText(net.minecraft.util.EnumChatFormatting.GOLD + com.github.lunatrius.schematica.client.gui.framework.UiTranslations.format(
-                "litematica.message.warn.layer_mode_currently_at", com.github.lunatrius.schematica.client.gui.framework.UiTranslations.format(range.mode().translationKey()))));
+        RenderLayerRange range = RenderLayerSettings.RANGE;
+        if (range.mode() != RenderLayerRange.Mode.ALL) {
+            player.addChatMessage(new ChatComponentText(EnumChatFormatting.GOLD + UiTranslations.format(
+                "litematica.message.warn.layer_mode_currently_at", UiTranslations.format(range.mode().translationKey()))));
         }
-        warnDisabled(player, com.github.lunatrius.schematica.handler.VisualSettings.rendering, "litematica.message.warn.main_rendering_disabled", "enableRendering", "toggleAllRendering");
-        warnDisabled(player, com.github.lunatrius.schematica.handler.VisualSettings.schematic, "litematica.message.warn.schematic_rendering_disabled", "enableSchematicRendering", "toggleSchematicRendering");
-        warnDisabled(player, com.github.lunatrius.schematica.handler.VisualSettings.blocks, "litematica.message.warn.schematic_blocks_rendering_disabled", "enableSchematicBlocksRendering", "toggleSchematicBlockRendering");
+        warnDisabled(player, VisualSettings.rendering, "litematica.message.warn.main_rendering_disabled", "enableRendering", "toggleAllRendering");
+        warnDisabled(player, VisualSettings.schematic, "litematica.message.warn.schematic_rendering_disabled", "enableSchematicRendering", "toggleSchematicRendering");
+        warnDisabled(player, VisualSettings.blocks, "litematica.message.warn.schematic_blocks_rendering_disabled", "enableSchematicBlocksRendering", "toggleSchematicBlockRendering");
     }
 
-    private static void warnDisabled(net.minecraft.client.entity.EntityClientPlayerMP player, boolean enabled, String key, String config, String hotkey) {
+    private static void warnDisabled(EntityClientPlayerMP player, boolean enabled, String key, String config, String hotkey) {
         if (enabled) return;
-        com.github.lunatrius.schematica.client.input.Hotkey binding = com.github.lunatrius.schematica.client.input.Hotkeys.get(hotkey);
+        Hotkey binding = Hotkeys.get(hotkey);
         StringBuilder keys = new StringBuilder();
         if (binding != null) for (int code : binding.keys()) {
             if (keys.length() > 0) keys.append(" + ");
-            keys.append(org.lwjgl.input.Keyboard.getKeyName(code));
+            keys.append(Keyboard.getKeyName(code));
         }
-        for (String line : com.github.lunatrius.schematica.client.gui.framework.UiTranslations.format(key, config, hotkey, keys).split("\n")) {
-            player.addChatMessage(new net.minecraft.util.ChatComponentText(net.minecraft.util.EnumChatFormatting.GOLD + line));
+        for (String line : UiTranslations.format(key, config, hotkey, keys).split("\n")) {
+            player.addChatMessage(new ChatComponentText(EnumChatFormatting.GOLD + line));
         }
     }
 
@@ -642,7 +686,7 @@ public class ClientProxy extends CommonProxy {
     /** Selects a schematic as the active one for tools/printer/control. */
     public static void selectSchematic(SchematicWorld world) {
         // Forget the last viewed material list when changing the placement selection
-        if (world != schematic) com.github.lunatrius.schematica.client.gui.material.MaterialLists.clear();
+        if (world != schematic) MaterialLists.clear();
         select(world);
     }
 
@@ -672,7 +716,7 @@ public class ClientProxy extends CommonProxy {
     public static void saveLoadedSchematics(String worldServerName) {
         if (worldServerName == null || worldServerName.isEmpty()) return;
         try {
-            File file = com.github.lunatrius.schematica.util.PlusDataFiles.file("LoadedSchematics.json");
+            File file = PlusDataFiles.file("LoadedSchematics.json");
             Map<String, List<LoadedSchematicEntry>> allData;
             if (file.exists()) {
                 try (Reader reader = Files.newBufferedReader(file.toPath(), StandardCharsets.UTF_8)) {
@@ -729,7 +773,7 @@ public class ClientProxy extends CommonProxy {
             }
             allData.put(worldServerName, entries);
 
-            com.github.lunatrius.schematica.util.FileUtils.writeUtf8Atomically(file,
+            FileUtils.writeUtf8Atomically(file,
                 gson.toJson(allData, loadedSchematicsDataType));
             Reference.logger.info("Saved {} loaded schematics for '{}'", entries.size(), worldServerName);
         } catch (Exception e) {
@@ -741,7 +785,7 @@ public class ClientProxy extends CommonProxy {
     public static void restoreLoadedSchematics(String worldServerName) {
         if (worldServerName == null || worldServerName.isEmpty()) return;
         try {
-            File file = com.github.lunatrius.schematica.util.PlusDataFiles.file("LoadedSchematics.json");
+            File file = PlusDataFiles.file("LoadedSchematics.json");
             if (!file.exists()) return;
 
             Map<String, List<LoadedSchematicEntry>> allData;
@@ -774,7 +818,7 @@ public class ClientProxy extends CommonProxy {
                         }
                         PlacementState.applyTransforms(restored, operations);
                         restored.restoreSubregions(entry.subregions);
-                        com.github.lunatrius.schematica.api.SchematicOrigin minimum = restored.getSchematic().getOrigin()
+                        SchematicOrigin minimum = restored.getSchematic().getOrigin()
                             .restoredMinimum(entry.X, entry.Y, entry.Z, entry.origin);
                         restored.position.set(minimum.x, minimum.y, minimum.z);
                         if (entry.visible != null) restored.isRendering = entry.visible;
@@ -782,11 +826,11 @@ public class ClientProxy extends CommonProxy {
                         if (entry.blockNBT != null) restored.isPastingBlockNBT = entry.blockNBT;
                         restored.isRenderingLayer = Boolean.TRUE.equals(entry.layerMode);
                         if (entry.layer != null) restored.renderingLayer = Math.max(0, Math.min(entry.layer, restored.getHeight() - 1));
-                        restored.setPlacementSettings(com.github.lunatrius.schematica.client.world.PlacementSettings.fromJson(entry.placementSettings));
+                        restored.setPlacementSettings(PlacementSettings.fromJson(entry.placementSettings));
                         restored.grid.fromJson(entry.grid);
                         restored.materialListData = entry.materialList;
                         restored.boxColor = entry.bb_color;
-                        restored.fingerprint = com.github.lunatrius.schematica.client.world.WorldFingerprint.fromJson(entry.fingerprint);
+                        restored.fingerprint = WorldFingerprint.fromJson(entry.fingerprint);
                         return restored;
                     });
                     RendererSchematicGlobal.INSTANCE.createRendererSchematicChunks(world);

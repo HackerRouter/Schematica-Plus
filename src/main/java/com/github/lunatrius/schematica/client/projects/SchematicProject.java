@@ -11,16 +11,19 @@ import java.util.Collections;
 import java.util.List;
 
 import com.github.lunatrius.schematica.api.SchematicRegion;
+import com.github.lunatrius.schematica.client.gui.browser.SchematicBrowserModel;
 import com.github.lunatrius.schematica.client.selection.AreaSelectionLibrary;
 import com.github.lunatrius.schematica.client.selection.AreaSelectionLibrary.Area;
 import com.github.lunatrius.schematica.client.world.SchematicWorld;
 import com.github.lunatrius.schematica.internal.lunatriuscore.util.vector.Vector3i;
+import com.github.lunatrius.schematica.reference.Reference;
 import com.github.lunatrius.schematica.util.FileUtils;
+
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
 import com.google.gson.JsonNull;
+import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
 /** A versioned area: its own area selections, a project origin and saved schematic versions in one directory. */
@@ -151,7 +154,7 @@ public final class SchematicProject {
         if (version == null || currentVersionId == lastCheckedOutVersion) return;
         removeCurrentPlacement();
         String fileName = version.fileName;
-        if (!com.github.lunatrius.schematica.client.gui.browser.SchematicBrowserModel.supported(fileName)) fileName += FILE_EXTENSION;
+        if (!SchematicBrowserModel.supported(fileName)) fileName += FILE_EXTENSION;
         currentPlacement = SchematicProjects.place(new File(directory, fileName), version.name, placementOrigin(version));
         lastCheckedOutVersion = currentVersionId;
     }
@@ -219,7 +222,7 @@ public final class SchematicProject {
             dirty = false;
             return true;
         } catch (IOException | RuntimeException e) {
-            com.github.lunatrius.schematica.reference.Reference.logger.error("Could not save the schematic project {}", projectFile, e);
+            Reference.logger.error("Could not save the schematic project {}", projectFile, e);
             return false;
         }
     }

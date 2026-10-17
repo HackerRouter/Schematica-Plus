@@ -2,16 +2,20 @@ package com.github.lunatrius.schematica.client.input;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.AtomicMoveNotSupportedException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
+
+import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.google.gson.JsonPrimitive;
 
 public final class HotkeyStore {
     private final Path file;
@@ -36,7 +40,7 @@ public final class HotkeyStore {
                 if (values.has(binding.id)) {
                     JsonObject entry = values.getAsJsonObject(binding.id); chord.clear();
                     for (JsonElement key : entry.getAsJsonArray("keys")) chord.add(key.getAsInt());
-                    config = new com.google.gson.Gson().fromJson(entry.get("settings"), Hotkey.Settings.class);
+                    config = new Gson().fromJson(entry.get("settings"), Hotkey.Settings.class);
                     if (config == null || config.context == null || config.action == null) throw new IllegalArgumentException("Invalid settings");
                     new Hotkey(binding.id, config).setKeys(chord);
                 }
@@ -54,9 +58,9 @@ public final class HotkeyStore {
         for (Hotkey binding : bindings) {
             JsonObject entry = values.has(binding.id) ? values.getAsJsonObject(binding.id) : new JsonObject();
             JsonArray keys = new JsonArray();
-            for (int key : binding.keys()) keys.add(new com.google.gson.JsonPrimitive(key));
+            for (int key : binding.keys()) keys.add(new JsonPrimitive(key));
             entry.add("keys", keys);
-            entry.add("settings", new com.google.gson.Gson().toJsonTree(binding.settings));
+            entry.add("settings", new Gson().toJsonTree(binding.settings));
             values.add(binding.id, entry);
             if (binding.id.equals("printerWorkingSwitch")) values.remove("workingSwitch");
         }
@@ -66,7 +70,7 @@ public final class HotkeyStore {
         try {
             Files.write(temporary, new GsonBuilder().setPrettyPrinting().create().toJson(root).getBytes(StandardCharsets.UTF_8));
             try { Files.move(temporary, file, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE); }
-            catch (java.nio.file.AtomicMoveNotSupportedException error) { Files.move(temporary, file, StandardCopyOption.REPLACE_EXISTING); }
+            catch (AtomicMoveNotSupportedException error) { Files.move(temporary, file, StandardCopyOption.REPLACE_EXISTING); }
         } finally { Files.deleteIfExists(temporary); }
     }
 }

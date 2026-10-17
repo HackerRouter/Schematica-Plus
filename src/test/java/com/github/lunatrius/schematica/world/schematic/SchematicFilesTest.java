@@ -2,7 +2,9 @@ package com.github.lunatrius.schematica.world.schematic;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Collections;
 
@@ -11,20 +13,20 @@ import net.minecraft.block.material.Material;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 
+import com.github.lunatrius.schematica.api.ISchematic;
+
+import cpw.mods.fml.common.registry.GameData;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
-import com.github.lunatrius.schematica.api.ISchematic;
-
-import cpw.mods.fml.common.registry.GameData;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
 
 public class SchematicFilesTest {
     @Rule public TemporaryFolder temporary = new TemporaryFolder();
@@ -79,7 +81,7 @@ public class SchematicFilesTest {
         assertEquals(4790, before.dataVersion);
         assertEquals("26.1.2", DataVersions.name(before.dataVersion));
         int[] pixels = new int[4];
-        java.util.Arrays.fill(pixels, 0xFF102030);
+        Arrays.fill(pixels, 0xFF102030);
         SchematicFiles.editLitematicMetadata(file, metadata -> {
             metadata.setString("Name", "New");
             metadata.setIntArray("PreviewImageData", pixels);
@@ -98,7 +100,7 @@ public class SchematicFilesTest {
             LitematicaNBTReader.clearLongArrayStore();
         }
         assertNull(SchematicFiles.info(temporary.newFile("other.schem")));
-        assertThrows(java.io.IOException.class, () -> SchematicFiles.editLitematicMetadata(temporary.newFile("x.nbt"), metadata -> {}));
+        assertThrows(IOException.class, () -> SchematicFiles.editLitematicMetadata(temporary.newFile("x.nbt"), metadata -> {}));
     }
 
     @Test public void structuresUseThe112Layout() throws Exception {

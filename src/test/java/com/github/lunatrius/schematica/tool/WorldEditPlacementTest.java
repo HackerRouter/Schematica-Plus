@@ -22,20 +22,24 @@ import net.minecraft.nbt.NBTTagList;
 import net.minecraft.nbt.NBTTagString;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.tileentity.TileEntityChest;
+import net.minecraft.util.ChatComponentTranslation;
 import net.minecraft.world.ChunkPosition;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldProviderSurface;
 import net.minecraft.world.WorldServer;
 import net.minecraft.world.chunk.Chunk;
+import net.minecraft.world.chunk.EmptyChunk;
 
 import com.github.lunatrius.schematica.api.SchematicRegion;
+import com.github.lunatrius.schematica.nbt.ForgeMultipart;
 import com.github.lunatrius.schematica.task.TaskRegistry;
+import com.github.lunatrius.schematica.util.MessageException;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertSame;
@@ -125,7 +129,7 @@ public class WorldEditPlacementTest {
         world.replaceOnAdded = true;
         WorldEditJob job = paste(3);
         job.step(world);
-        assertTrue(job.failure() instanceof com.github.lunatrius.schematica.util.MessageException);
+        assertTrue(job.failure() instanceof MessageException);
         assertSame(WALL, world.cell(4).block);
         assertEquals(5, world.cell(4).metadata);
         assertEquals(0, world.restorations);
@@ -138,7 +142,7 @@ public class WorldEditPlacementTest {
         world.replaceOnRestore = true;
         WorldEditJob job = paste(3);
         job.step(world);
-        assertTrue(job.failure() instanceof com.github.lunatrius.schematica.util.MessageException);
+        assertTrue(job.failure() instanceof MessageException);
         assertEquals(1, world.restorations);
         assertSame(WALL, world.cell(4).block);
         assertEquals(0, world.tileWrites);
@@ -150,7 +154,7 @@ public class WorldEditPlacementTest {
         world.rejectRestore = true;
         WorldEditJob job = paste(3);
         job.step(world);
-        assertTrue(job.failure() instanceof com.github.lunatrius.schematica.util.MessageException);
+        assertTrue(job.failure() instanceof MessageException);
         assertEquals(1, world.restorations);
         assertEquals(5, world.cell(4).metadata);
         assertEquals(0, world.tileWrites);
@@ -162,8 +166,8 @@ public class WorldEditPlacementTest {
         world.rejectPlacement = true;
         WorldEditJob job = paste(3);
         finish(job, world);
-        com.github.lunatrius.schematica.util.MessageException error =
-            (com.github.lunatrius.schematica.util.MessageException) job.failure();
+        MessageException error =
+            (MessageException) job.failure();
         assertEquals("schematica.message.edit.block_failed", error.key());
         assertSame(AIR, world.cell(4).block);
         assertEquals(0, job.blockCount);
@@ -192,7 +196,7 @@ public class WorldEditPlacementTest {
         assertEquals(0, world.tileWrites);
         assertEquals(0, world.neighborUpdates);
         assertEquals("schematica.message.edit.no_changes",
-            ((net.minecraft.util.ChatComponentTranslation) job.finishedMessage(true)).getKey());
+            ((ChatComponentTranslation) job.finishedMessage(true)).getKey());
     }
 
     @Test public void rejectedWriteIntoAirIsNotMistakenForSelfRemoval() throws Exception {
@@ -200,8 +204,8 @@ public class WorldEditPlacementTest {
         world.rejectPlacement = true;
         WorldEditJob job = pasteBesideChest("test:placement_self_removing", 0);
         finish(job, world);
-        com.github.lunatrius.schematica.util.MessageException error =
-            (com.github.lunatrius.schematica.util.MessageException) job.failure();
+        MessageException error =
+            (MessageException) job.failure();
         assertEquals("schematica.message.edit.block_failed", error.key());
         assertArrayEquals(new Object[] {4, 70, 6, "test:placement_self_removing:0"}, error.arguments());
         assertEquals(0, job.blockCount);
@@ -215,8 +219,8 @@ public class WorldEditPlacementTest {
         tag.getTagList("tiles", 10).getCompoundTagAt(0).getCompoundTag("data").setString("id", "test:missing_tile");
         WorldEditJob job = WorldEditJob.read(tag, original.player, 0);
         finish(job, world);
-        com.github.lunatrius.schematica.util.MessageException error =
-            (com.github.lunatrius.schematica.util.MessageException) job.failure();
+        MessageException error =
+            (MessageException) job.failure();
         assertEquals("schematica.message.edit.tile_failed", error.key());
         assertArrayEquals(new Object[] {4, 70, 6, "test:placement_chest:3", "test:missing_tile"}, error.arguments());
         assertEquals(1, job.blockCount);
@@ -231,8 +235,8 @@ public class WorldEditPlacementTest {
         tag.removeTag("tiles");
         WorldEditJob job = WorldEditJob.read(tag, original.player, 0);
         finish(job, world);
-        com.github.lunatrius.schematica.util.MessageException error =
-            (com.github.lunatrius.schematica.util.MessageException) job.failure();
+        MessageException error =
+            (MessageException) job.failure();
         assertEquals("schematica.message.edit.tile_factory_failed", error.key());
         assertArrayEquals(new Object[] {4, 70, 6, "test:placement_missing_tile:0"}, error.arguments());
         assertEquals(1, job.blockCount);
@@ -250,7 +254,7 @@ public class WorldEditPlacementTest {
         assertEquals(0, job.blockCount);
         assertEquals(0, world.blockUpdates);
         assertEquals("schematica.message.edit.no_changes",
-            ((net.minecraft.util.ChatComponentTranslation) job.finishedMessage(true)).getKey());
+            ((ChatComponentTranslation) job.finishedMessage(true)).getKey());
     }
 
     @Test public void matchingChestStateStillRestoresSavedTileData() throws Exception {
@@ -278,7 +282,7 @@ public class WorldEditPlacementTest {
         assertSame(AIR, world.cell(5).block);
         assertSame(CHEST, world.cell(6).block);
         assertEquals("schematica.message.edit.paste_errors",
-            ((net.minecraft.util.ChatComponentTranslation) job.finishedMessage(false)).getKey());
+            ((ChatComponentTranslation) job.finishedMessage(false)).getKey());
     }
 
     @Test public void placementCallbackExceptionDoesNotPreventLaterBlocksOrLeakSnapshotFlag() throws Exception {
@@ -323,7 +327,7 @@ public class WorldEditPlacementTest {
         assertEquals(1, job.blockCount);
         assertTrue(job.completedTraversal);
         assertEquals("schematica.message.edit.paste_errors",
-            ((net.minecraft.util.ChatComponentTranslation) job.finishedMessage(false)).getKey());
+            ((ChatComponentTranslation) job.finishedMessage(false)).getKey());
     }
 
     @Test public void nonPasteEditsStillPropagateWriteFailures() throws Exception {
@@ -331,16 +335,16 @@ public class WorldEditPlacementTest {
         world.rejectPlacement = true;
         WorldEditJob job = new WorldEditJob(UUID.randomUUID(), 0, WorldEditJob.Kind.FILL,
             4, 70, 6, 1, 1, 1, WALL, 0, null, 0);
-        org.junit.Assert.assertThrows(com.github.lunatrius.schematica.util.MessageException.class, () -> finish(job, world));
+        org.junit.Assert.assertThrows(MessageException.class, () -> finish(job, world));
         assertEquals(0, job.blockCount);
     }
 
     @Test public void silentPasteIntoAnEmptyChunkCannotClaimAWrittenBlock() throws Exception {
         FakeWorld world = world(15);
-        world.chunk = new net.minecraft.world.chunk.EmptyChunk(world, 0, 0);
+        world.chunk = new EmptyChunk(world, 0, 0);
         WorldEditJob job = paste(3, 1, true);
         finish(job, world);
-        assertTrue(job.failure() instanceof com.github.lunatrius.schematica.util.MessageException);
+        assertTrue(job.failure() instanceof MessageException);
         assertEquals(0, job.blockCount);
         assertTrue(world.chunk.chunkTileEntityMap.isEmpty());
     }
@@ -538,7 +542,7 @@ public class WorldEditPlacementTest {
     }
 
     private static void assertDescriptionDelivery(boolean silent, boolean fail) throws Exception {
-        Class<?> bridge = com.github.lunatrius.schematica.nbt.ForgeMultipart.class;
+        Class<?> bridge = ForgeMultipart.class;
         Map<Field, Object> previous = new HashMap<>();
         try {
             Object[] values = {true, LifecycleChest.class.getMethod("onChunkLoad"),

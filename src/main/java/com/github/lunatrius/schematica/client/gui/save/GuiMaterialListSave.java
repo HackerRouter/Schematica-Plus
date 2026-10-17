@@ -8,6 +8,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
 import java.util.List;
+import java.util.Locale;
 
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.event.ClickEvent;
@@ -66,7 +67,7 @@ public final class GuiMaterialListSave extends GuiSchematicBrowser {
             setStatus(UiTranslations.format("litematica.message.error.material_list_save"));
             return;
         }
-        if (!fileName.toLowerCase(java.util.Locale.ROOT).endsWith(CustomMaterialListFile.JSON_EXTENSION)) fileName += CustomMaterialListFile.JSON_EXTENSION;
+        if (!fileName.toLowerCase(Locale.ROOT).endsWith(CustomMaterialListFile.JSON_EXTENSION)) fileName += CustomMaterialListFile.JSON_EXTENSION;
         try {
             SchematicBrowserModel.validateName(fileName);
             File directory = browser.directory();

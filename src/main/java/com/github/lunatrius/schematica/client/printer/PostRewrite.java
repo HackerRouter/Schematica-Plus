@@ -4,6 +4,7 @@ package com.github.lunatrius.schematica.client.printer;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockSlab;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.util.Vec3;
@@ -36,7 +37,7 @@ final class PostRewrite {
     /** A single slab of the same kind as the schematic slab (the variant, ignoring the half and single/double). */
     private static boolean sameSingleSlab(Block block, int meta, Block other, int otherMeta, ItemStack stack) {
         return other instanceof BlockSlab && !other.isOpaqueCube()
-            && net.minecraft.item.Item.getItemFromBlock(other) == stack.getItem() && (otherMeta & 7) == (meta & 7);
+            && Item.getItemFromBlock(other) == stack.getItem() && (otherMeta & 7) == (meta & 7);
     }
 
     /** getAdjacentClickPosition: the real block behind the target, else any solid neighbour. */

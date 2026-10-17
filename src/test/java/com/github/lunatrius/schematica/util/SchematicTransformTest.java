@@ -1,10 +1,14 @@
 package com.github.lunatrius.schematica.util;
 
-import org.junit.Test;
+import java.util.Arrays;
+
 import net.minecraftforge.common.util.ForgeDirection;
+
+import org.junit.Test;
+
 import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 
 public class SchematicTransformTest {
     @Test public void sideTransformsFollowNeighborCoordinatesAndRoundTrip() {
@@ -53,6 +57,6 @@ public class SchematicTransformTest {
         double[] xy = SchematicTransform.point('Y', x[0], x[1], x[2], 10, 10, 10);
         double[] y = SchematicTransform.point('Y', 1, 2, 3, 10, 10, 10);
         double[] yx = SchematicTransform.point('X', y[0], y[1], y[2], 10, 10, 10);
-        assertFalse(java.util.Arrays.equals(xy, yx));
+        assertFalse(Arrays.equals(xy, yx));
     }
 }

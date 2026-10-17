@@ -2,17 +2,18 @@ package com.github.lunatrius.schematica.client.verifier;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.BitSet;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
-import java.util.BitSet;
-import java.util.Comparator;
 import java.util.PriorityQueue;
+import java.util.Set;
 
+import com.github.lunatrius.schematica.util.BlockGroups;
 import com.github.lunatrius.schematica.util.SchematicLimits;
 
 public final class VerificationScan {
@@ -108,8 +109,8 @@ public final class VerificationScan {
         if (expected.equals(found)) return Type.CORRECT;
         if (expected.air()) return Type.EXTRA;
         if (found.air()) return Type.MISSING;
-        switch (com.github.lunatrius.schematica.util.BlockGroups.compare(expected.block, expected.metadata, found.block, found.metadata,
-            com.github.lunatrius.schematica.util.BlockGroups.enabled)) {
+        switch (BlockGroups.compare(expected.block, expected.metadata, found.block, found.metadata,
+            BlockGroups.enabled)) {
             case SAME: return Type.CORRECT;
             case DIFFERENT_BLOCK: return Type.DIFF_BLOCK;
             case WRONG_STATE: return Type.WRONG_STATE;

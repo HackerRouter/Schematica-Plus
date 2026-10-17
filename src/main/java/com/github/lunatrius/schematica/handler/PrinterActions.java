@@ -2,6 +2,7 @@
 package com.github.lunatrius.schematica.handler;
 
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Queue;
@@ -13,13 +14,13 @@ import net.minecraft.network.play.client.C08PacketPlayerBlockPlacement;
 import net.minecraft.network.play.server.S23PacketBlockChange;
 import net.minecraft.server.management.ItemInWorldManager;
 import net.minecraft.world.World;
+import net.minecraftforge.common.util.ForgeDirection;
 
 import com.github.lunatrius.schematica.network.message.MessagePrinterAction;
 import com.github.lunatrius.schematica.reference.Reference;
 
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.gameevent.TickEvent;
-import net.minecraftforge.common.util.ForgeDirection;
 
 /** Executes bounded printer requests on the server thread through the native interaction handlers. */
 public final class PrinterActions {
@@ -61,7 +62,7 @@ public final class PrinterActions {
 
     @SubscribeEvent public synchronized void tick(TickEvent.ServerTickEvent event) {
         if (event.phase == TickEvent.Phase.START) {
-            for (EntityPlayerMP player : new java.util.ArrayList<>(mining.keySet())) {
+            for (EntityPlayerMP player : new ArrayList<>(mining.keySet())) {
                 Request request = mining.get(player);
                 if (!allowed(player, request)) cancelMining(player);
                 else if (request.world.isAirBlock(request.message.x, request.message.y, request.message.z)) mining.remove(player);

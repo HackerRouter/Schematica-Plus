@@ -1,20 +1,22 @@
 package com.github.lunatrius.schematica.handler.client;
 
-import static com.github.lunatrius.schematica.client.util.WorldServerName.worldServerName;
-
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.IWorldAccess;
 import net.minecraft.world.World;
 import net.minecraftforge.event.world.WorldEvent;
 
 import com.github.lunatrius.schematica.client.projects.SchematicProjects;
+import com.github.lunatrius.schematica.client.util.WorldSession;
 import com.github.lunatrius.schematica.client.world.RenderLayerSettings;
 import com.github.lunatrius.schematica.client.world.SchematicUpdater;
-import com.github.lunatrius.schematica.client.util.WorldSession;
 import com.github.lunatrius.schematica.proxy.ClientProxy;
 import com.github.lunatrius.schematica.reference.Reference;
+import com.github.lunatrius.schematica.tool.ToolManager;
+import com.github.lunatrius.schematica.world.schematic.ItemIdMaps;
 
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
+
+import static com.github.lunatrius.schematica.client.util.WorldServerName.worldServerName;
 
 public class WorldHandler {
 
@@ -24,14 +26,14 @@ public class WorldHandler {
         ClientProxy.saveAreaSelection(key);
         SchematicProjects.saveSession(key);
         RenderLayerSettings.save(key);
-        com.github.lunatrius.schematica.tool.ToolManager.saveMode(key);
+        ToolManager.saveMode(key);
     }, ClientProxy::clearWorldState, key -> {
         ClientProxy.lastWorldServerName = key;
         ClientProxy.restoreLoadedSchematics(key);
         ClientProxy.restoreAreaSelection(key);
         SchematicProjects.restoreSession(key);
         RenderLayerSettings.restore(key);
-        com.github.lunatrius.schematica.tool.ToolManager.restoreMode(key);
+        ToolManager.restoreMode(key);
     });
 
     private WorldHandler() {}
@@ -57,7 +59,7 @@ public class WorldHandler {
     public void onLoad(final WorldEvent.Load event) {
         if (event.world.isRemote) {
             addWorldAccess(event.world, SchematicUpdater.INSTANCE);
-            com.github.lunatrius.schematica.world.schematic.ItemIdMaps.archiveCurrent();
+            ItemIdMaps.archiveCurrent();
         }
     }
 

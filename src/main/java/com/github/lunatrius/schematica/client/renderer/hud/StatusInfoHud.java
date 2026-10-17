@@ -10,6 +10,7 @@ import java.util.Locale;
 import net.minecraft.util.EnumChatFormatting;
 
 import com.github.lunatrius.schematica.client.gui.framework.UiTranslations;
+import com.github.lunatrius.schematica.client.projects.SchematicProjects;
 import com.github.lunatrius.schematica.client.world.RenderLayerRange;
 import com.github.lunatrius.schematica.client.world.RenderLayerSettings;
 import com.github.lunatrius.schematica.handler.ConfigurationHandler;
@@ -50,7 +51,7 @@ public final class StatusInfoHud {
         }
         lines.add(UiTranslations.format("litematica.hud.misc.renderer_status", state(VisualSettings.rendering), state(VisualSettings.schematic),
             state(VisualSettings.blocks), state(ConfigurationHandler.highlight), state(VisualSettings.areaBoxes)));
-        if (com.github.lunatrius.schematica.client.projects.SchematicProjects.hasProjectOpen()) lines.add(UiTranslations.format("litematica.hud.schematic_projects_mode"));
+        if (SchematicProjects.hasProjectOpen()) lines.add(UiTranslations.format("litematica.hud.schematic_projects_mode"));
         return lines;
     }
 

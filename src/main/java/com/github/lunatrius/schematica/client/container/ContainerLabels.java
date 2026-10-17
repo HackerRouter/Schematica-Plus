@@ -14,16 +14,18 @@ import net.minecraft.client.renderer.entity.RenderItem;
 import net.minecraft.client.renderer.entity.RenderManager;
 import net.minecraft.inventory.IInventory;
 import net.minecraft.item.ItemStack;
+import net.minecraft.tileentity.TileEntity;
+import net.minecraft.tileentity.TileEntityChest;
 import net.minecraft.world.World;
-
-import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GL12;
 
 import com.github.lunatrius.schematica.client.gui.framework.UiTranslations;
 import com.github.lunatrius.schematica.client.renderer.hud.InventoryPreview;
 import com.github.lunatrius.schematica.client.world.SchematicWorld;
 import com.github.lunatrius.schematica.handler.ConfigurationHandler;
 import com.github.lunatrius.schematica.proxy.ClientProxy;
+
+import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL12;
 
 /**
  * containerLabels: a built container whose schematic container holds items gets a "Wanted" label with a few of
@@ -74,7 +76,7 @@ public final class ContainerLabels {
         for (SchematicWorld placement : ClientProxy.visiblePlacements()) {
             if (!placement.isRenderingEnabled()) continue;
             for (Object object : placement.getSchematic().getTileEntities()) {
-                net.minecraft.tileentity.TileEntity tile = (net.minecraft.tileentity.TileEntity) object;
+                TileEntity tile = (TileEntity) object;
                 if (!(tile instanceof IInventory)) continue;
                 int lx = tile.xCoord, ly = tile.yCoord, lz = tile.zCoord;
                 int x = placement.position.x + lx, y = placement.position.y + ly, z = placement.position.z + lz;
@@ -99,12 +101,12 @@ public final class ContainerLabels {
         labels = found.size() > MAX_LABELS ? new ArrayList<>(found.subList(0, MAX_LABELS)) : found;
     }
 
-    private static int[] partner(SchematicWorld placement, net.minecraft.tileentity.TileEntity tile, Block block) {
-        if (!(tile instanceof net.minecraft.tileentity.TileEntityChest)) return null;
+    private static int[] partner(SchematicWorld placement, TileEntity tile, Block block) {
+        if (!(tile instanceof TileEntityChest)) return null;
         int[][] sides = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
         for (int[] side : sides) {
             int x = tile.xCoord + side[0], z = tile.zCoord + side[1];
-            if (placement.getBlock(x, tile.yCoord, z) == block && placement.getTileEntity(x, tile.yCoord, z) instanceof net.minecraft.tileentity.TileEntityChest) {
+            if (placement.getBlock(x, tile.yCoord, z) == block && placement.getTileEntity(x, tile.yCoord, z) instanceof TileEntityChest) {
                 return new int[] {x, tile.yCoord, z};
             }
         }

@@ -2,6 +2,7 @@
 package com.github.lunatrius.schematica.compat;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -9,6 +10,8 @@ import java.util.Map;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagByte;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagDouble;
+import net.minecraft.nbt.NBTTagFloat;
 import net.minecraft.nbt.NBTTagInt;
 import net.minecraft.nbt.NBTTagShort;
 import net.minecraft.tileentity.TileEntity;
@@ -302,7 +305,7 @@ final class TileFacingAdapter implements ISchematicVisualAdapter {
                     if (!(tag instanceof NBTBase.NBTPrimitive)) break;
                     int raw = ((NBTBase.NBTPrimitive) tag).func_150287_d();
                     ForgeDirection turned = SchematicTransform.direction(operation, rule.sides[raw & 3]);
-                    int index = java.util.Arrays.asList(rule.sides).indexOf(turned);
+                    int index = Arrays.asList(rule.sides).indexOf(turned);
                     if (index < 0) break;
                     index |= raw & ~3;
                     data.setTag(key, tag instanceof NBTTagByte ? new NBTTagByte((byte) index)
@@ -354,7 +357,7 @@ final class TileFacingAdapter implements ISchematicVisualAdapter {
                     if (!(tag instanceof NBTBase.NBTPrimitive)) break;
                     int value = ((NBTBase.NBTPrimitive) tag).func_150287_d();
                     if (value < 1 || value > 4) break;
-                    int index = java.util.Arrays.asList(rule.sides).indexOf(SchematicTransform.direction(operation, rule.sides[value - 1]));
+                    int index = Arrays.asList(rule.sides).indexOf(SchematicTransform.direction(operation, rule.sides[value - 1]));
                     if (index >= 0) data.setInteger(key, index + 1);
                     break;
                 }
@@ -405,8 +408,8 @@ final class TileFacingAdapter implements ISchematicVisualAdapter {
                     double yaw = ((NBTBase.NBTPrimitive) tag).func_150286_g();
                     double turned = operation == 'Y' ? yaw + 90 : operation == 'x' ? -yaw : operation == 'z' ? 180 - yaw : yaw;
                     turned = ((turned % 360) + 360) % 360;
-                    if (tag instanceof net.minecraft.nbt.NBTTagFloat) data.setFloat(key, (float) turned);
-                    else if (tag instanceof net.minecraft.nbt.NBTTagDouble) data.setDouble(key, turned);
+                    if (tag instanceof NBTTagFloat) data.setFloat(key, (float) turned);
+                    else if (tag instanceof NBTTagDouble) data.setDouble(key, turned);
                     else data.setInteger(key, (int) Math.round(turned));
                     break;
                 }

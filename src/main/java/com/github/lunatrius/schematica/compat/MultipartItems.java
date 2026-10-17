@@ -3,6 +3,7 @@ package com.github.lunatrius.schematica.compat;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
@@ -86,7 +87,7 @@ public final class MultipartItems {
     /** Connections and powered state are recomputed by the real world, not requested by placement. */
     static boolean sameOrientation(NBTTagCompound a, NBTTagCompound b) {
         for (String key : new String[] {"orient", "side", "shape"}) {
-            if (a.hasKey(key) != b.hasKey(key) || !java.util.Objects.equals(a.getTag(key), b.getTag(key))) return false;
+            if (a.hasKey(key) != b.hasKey(key) || !Objects.equals(a.getTag(key), b.getTag(key))) return false;
         }
         return true;
     }

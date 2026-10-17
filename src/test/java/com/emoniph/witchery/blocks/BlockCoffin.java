@@ -1,5 +1,8 @@
 package com.emoniph.witchery.blocks;
 
-public class BlockCoffin extends net.minecraft.block.Block {
-    public BlockCoffin() { super(net.minecraft.block.material.Material.rock); }
+import net.minecraft.block.Block;
+import net.minecraft.block.material.Material;
+
+public class BlockCoffin extends Block {
+    public BlockCoffin() { super(Material.rock); }
 }

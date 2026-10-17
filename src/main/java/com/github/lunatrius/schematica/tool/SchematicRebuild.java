@@ -21,6 +21,7 @@ import net.minecraftforge.common.util.ForgeDirection;
 import com.github.lunatrius.schematica.api.ISchematic;
 import com.github.lunatrius.schematica.api.SchematicOrigin;
 import com.github.lunatrius.schematica.client.input.Hotkeys;
+import com.github.lunatrius.schematica.client.printer.PlacementRestriction;
 import com.github.lunatrius.schematica.client.selection.AreaSelectionLibrary.Area;
 import com.github.lunatrius.schematica.client.selection.AreaSelections;
 import com.github.lunatrius.schematica.client.world.CellState;
@@ -33,6 +34,9 @@ import com.github.lunatrius.schematica.client.world.SourceBlockPosition;
 import com.github.lunatrius.schematica.client.world.SourceEditor;
 import com.github.lunatrius.schematica.client.world.SourceEditor.Cell;
 import com.github.lunatrius.schematica.client.world.SubRegionPlacements;
+import com.github.lunatrius.schematica.handler.ConfigurationHandler;
+import com.github.lunatrius.schematica.handler.client.InputHandler;
+import com.github.lunatrius.schematica.internal.lunatriuscore.util.vector.Vector3i;
 import com.github.lunatrius.schematica.proxy.ClientProxy;
 import com.github.lunatrius.schematica.reference.Reference;
 
@@ -63,10 +67,10 @@ public final class SchematicRebuild {
         if (ToolManager.getCurrentMode() != ToolMode.REBUILD) {
             if (attack) return false;
             if (Hotkeys.boundOnlyTo("pickBlockLast", mc().gameSettings.keyBindUseItem.getKeyCode())) {
-                com.github.lunatrius.schematica.handler.client.InputHandler.INSTANCE.pickBlock(false);
+                InputHandler.INSTANCE.pickBlock(false);
             }
-            return com.github.lunatrius.schematica.handler.ConfigurationHandler.placementRestriction
-                && com.github.lunatrius.schematica.client.printer.PlacementRestriction.handle(mc());
+            return ConfigurationHandler.placementRestriction
+                && PlacementRestriction.handle(mc());
         }
         if (ClientProxy.loadedSchematics.isEmpty()) return false;
         try {
@@ -152,7 +156,7 @@ public final class SchematicRebuild {
     public static boolean replaceSelection() {
         Area area = AreaSelections.library().selected();
         if (area == null || area.boxes().isEmpty() || mc().theWorld == null || ClientProxy.loadedSchematics.isEmpty()) return false;
-        com.github.lunatrius.schematica.internal.lunatriuscore.util.vector.Vector3i origin = area.origin();
+        Vector3i origin = area.origin();
         return RebuildJobs.start(new RebuildJobs.Selection(mc().theWorld, area.regions(), area.name(),
             String.format("x: %d, y: %d, z: %d", origin.x, origin.y, origin.z)));
     }

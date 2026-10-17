@@ -2,15 +2,24 @@ package com.github.lunatrius.schematica.handler.client;
 
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.util.MovingObjectPosition;
+import net.minecraftforge.client.event.GuiScreenEvent;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
 
-
+import com.github.lunatrius.schematica.client.gui.framework.UiTranslations;
+import com.github.lunatrius.schematica.client.gui.material.MaterialItemCache;
+import com.github.lunatrius.schematica.client.printer.PrinterMissingMaterials;
+import com.github.lunatrius.schematica.client.renderer.hud.BlockInfoHud;
+import com.github.lunatrius.schematica.client.renderer.hud.MaterialListHud;
+import com.github.lunatrius.schematica.client.renderer.hud.ToolHud;
+import com.github.lunatrius.schematica.client.renderer.hud.VerifierHud;
 import com.github.lunatrius.schematica.client.world.SchematicWorld;
 import com.github.lunatrius.schematica.handler.ConfigurationHandler;
+import com.github.lunatrius.schematica.handler.VisualSettings;
 import com.github.lunatrius.schematica.proxy.ClientProxy;
 import com.github.lunatrius.schematica.reference.Reference;
-import com.github.lunatrius.schematica.client.gui.framework.UiTranslations;
 import com.github.lunatrius.schematica.tool.ToolManager;
 
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
@@ -44,24 +53,24 @@ public class OverlayHandler {
     }
 
     /** The material list HUD inside GUIs (renderMaterialListInGuis) and the looked at block in inventories. */
-    private net.minecraft.client.gui.GuiScreen scannedContainer;
+    private GuiScreen scannedContainer;
 
     @SubscribeEvent
-    public void onDrawScreen(net.minecraftforge.client.event.GuiScreenEvent.DrawScreenEvent.Post event) {
+    public void onDrawScreen(GuiScreenEvent.DrawScreenEvent.Post event) {
         // materialListContainerScan: once per opened container screen, at its first frame
-        if (event.gui instanceof net.minecraft.client.gui.inventory.GuiContainer && event.gui != this.scannedContainer
-            && com.github.lunatrius.schematica.handler.ConfigurationHandler.materialListContainerScan) {
+        if (event.gui instanceof GuiContainer && event.gui != this.scannedContainer
+            && ConfigurationHandler.materialListContainerScan) {
             this.scannedContainer = event.gui;
-            com.github.lunatrius.schematica.client.gui.material.MaterialItemCache.scan(
-                ((net.minecraft.client.gui.inventory.GuiContainer) event.gui).inventorySlots.inventorySlots);
+            MaterialItemCache.scan(
+                ((GuiContainer) event.gui).inventorySlots.inventorySlots);
         }
-        if (this.minecraft.theWorld == null || !com.github.lunatrius.schematica.handler.VisualSettings.rendering) return;
-        if (event.gui instanceof net.minecraft.client.gui.inventory.GuiContainer) {
-            com.github.lunatrius.schematica.client.renderer.hud.MaterialListHud.highlightInventory(this.minecraft,
-                (net.minecraft.client.gui.inventory.GuiContainer) event.gui);
+        if (this.minecraft.theWorld == null || !VisualSettings.rendering) return;
+        if (event.gui instanceof GuiContainer) {
+            MaterialListHud.highlightInventory(this.minecraft,
+                (GuiContainer) event.gui);
         }
-        int height = com.github.lunatrius.schematica.client.renderer.hud.MaterialListHud.render(this.minecraft, 0, true);
-        com.github.lunatrius.schematica.client.printer.PrinterMissingMaterials.render(this.minecraft, height);
+        int height = MaterialListHud.render(this.minecraft, 0, true);
+        PrinterMissingMaterials.render(this.minecraft, height);
     }
 
     @SubscribeEvent
@@ -70,19 +79,19 @@ public class OverlayHandler {
             return;
         }
 
-        if (!com.github.lunatrius.schematica.handler.VisualSettings.rendering) {
-            com.github.lunatrius.schematica.client.renderer.hud.BlockInfoHud.INSTANCE.clear();
+        if (!VisualSettings.rendering) {
+            BlockInfoHud.INSTANCE.clear();
             return;
         }
-        boolean verifier = com.github.lunatrius.schematica.client.renderer.hud.VerifierHud.render(this.minecraft, event.partialTicks);
-        com.github.lunatrius.schematica.client.renderer.hud.BlockInfoHud.INSTANCE.render(this.minecraft, event.partialTicks, !verifier);
+        boolean verifier = VerifierHud.render(this.minecraft, event.partialTicks);
+        BlockInfoHud.INSTANCE.render(this.minecraft, event.partialTicks, !verifier);
         if (this.minecraft.currentScreen == null && !this.minecraft.gameSettings.hideGUI) {
-            int height = com.github.lunatrius.schematica.client.renderer.hud.VerifierHud.textHeight();
-            height += com.github.lunatrius.schematica.client.renderer.hud.MaterialListHud.render(this.minecraft, height, false);
-            com.github.lunatrius.schematica.client.printer.PrinterMissingMaterials.render(this.minecraft, height);
+            int height = VerifierHud.textHeight();
+            height += MaterialListHud.render(this.minecraft, height, false);
+            PrinterMissingMaterials.render(this.minecraft, height);
         }
 
         if (this.minecraft.currentScreen != null || this.minecraft.gameSettings.hideGUI) return;
-        com.github.lunatrius.schematica.client.renderer.hud.ToolHud.render(this.minecraft);
+        ToolHud.render(this.minecraft);
     }
 }

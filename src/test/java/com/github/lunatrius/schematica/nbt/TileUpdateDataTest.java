@@ -1,9 +1,14 @@
 package com.github.lunatrius.schematica.nbt;
 
+import java.io.IOException;
 import java.util.Random;
+
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.network.PacketBuffer;
 import net.minecraft.network.play.server.S35PacketUpdateTileEntity;
+
 import org.junit.Test;
+
 import static org.junit.Assert.*;
 
 public class TileUpdateDataTest {
@@ -62,8 +67,8 @@ public class TileUpdateDataTest {
         NBTTagCompound payload = new NBTTagCompound();
         payload.setByteArray("X", new byte[] { 4, 5 });
         S35PacketUpdateTileEntity patched = new S35PacketUpdateTileEntity(1, 2, 3, 64, payload) {
-            @Override public void writePacketData(net.minecraft.network.PacketBuffer data) throws java.io.IOException {
-                throw new java.io.IOException("serialized by another mod");
+            @Override public void writePacketData(PacketBuffer data) throws IOException {
+                throw new IOException("serialized by another mod");
             }
         };
         S35PacketUpdateTileEntity packet = TileUpdateData.packet(TileUpdateData.capture("test.Tile", patched), "test.Tile", 0, 0, 0);

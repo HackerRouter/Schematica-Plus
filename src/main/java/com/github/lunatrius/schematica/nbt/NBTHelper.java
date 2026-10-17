@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityHanging;
 import net.minecraft.entity.EntityList;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
@@ -12,6 +13,7 @@ import net.minecraft.world.World;
 import net.minecraftforge.common.util.Constants;
 
 import com.github.lunatrius.schematica.compat.CoordinateLinks;
+import com.github.lunatrius.schematica.compat.StorageDrawerNbt;
 import com.github.lunatrius.schematica.reference.Names;
 import com.github.lunatrius.schematica.world.WorldDummy;
 
@@ -147,8 +149,8 @@ public class NBTHelper {
                     entity.posX -= offsetX;
                     entity.posY -= offsetY;
                     entity.posZ -= offsetZ;
-                    if (entity instanceof net.minecraft.entity.EntityHanging) {
-                        net.minecraft.entity.EntityHanging hanging = (net.minecraft.entity.EntityHanging) entity;
+                    if (entity instanceof EntityHanging) {
+                        EntityHanging hanging = (EntityHanging) entity;
                         hanging.field_146063_b -= offsetX;
                         hanging.field_146064_c -= offsetY;
                         hanging.field_146062_d -= offsetZ;
@@ -170,7 +172,7 @@ public class NBTHelper {
     }
 
     public static TileEntity readTileEntityFromCompound(final NBTTagCompound tileEntityCompound) {
-        NBTTagCompound canonical = com.github.lunatrius.schematica.compat.StorageDrawerNbt.readable(tileEntityCompound);
+        NBTTagCompound canonical = StorageDrawerNbt.readable(tileEntityCompound);
         NBTTagCompound data = (NBTTagCompound) canonical.copy();
         data.removeTag(TileUpdateData.KEY);
         TileEntity tile = data.getString("id").equals("savedMultipart")

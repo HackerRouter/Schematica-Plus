@@ -2,6 +2,7 @@
 // Client side of the remote edit protocol, by HackerRouter, 2026.
 package com.github.lunatrius.schematica.handler.client;
 
+import java.io.IOException;
 import java.util.Arrays;
 
 import net.minecraft.client.Minecraft;
@@ -46,7 +47,7 @@ public final class RemoteEditClient {
         byte[] bytes;
         try {
             bytes = CompressedStreamTools.compress(job.write());
-        } catch (java.io.IOException e) {
+        } catch (IOException e) {
             throw new IllegalStateException("Could not encode the edit", e);
         }
         if (bytes.length > RemoteEdits.MAX_UPLOAD_BYTES) throw new MessageException("schematica.message.edit.remote_too_large");

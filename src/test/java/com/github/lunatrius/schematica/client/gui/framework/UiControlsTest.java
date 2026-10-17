@@ -5,6 +5,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import net.minecraft.item.ItemStack;
+
 import org.junit.Test;
 import org.lwjgl.input.Keyboard;
 
@@ -112,7 +114,7 @@ public class UiControlsTest {
         int clipDepth;
         final List<String> strings = new ArrayList<>();
 
-        @Override public void item(net.minecraft.item.ItemStack stack, int x, int y) {}
+        @Override public void item(ItemStack stack, int x, int y) {}
 
         @Override public void texture(String texture, UiBounds destination, int u, int v, int sw, int sh, int tw, int th) {}
         @Override public void fill(UiBounds bounds, int color) {}

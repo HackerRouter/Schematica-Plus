@@ -13,9 +13,11 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.world.chunk.Chunk;
 
 import com.github.lunatrius.schematica.client.world.SchematicWorld;
-import com.github.lunatrius.schematica.reference.Reference;
-import com.github.lunatrius.schematica.compat.MultipartItems;
 import com.github.lunatrius.schematica.compat.AE2Items;
+import com.github.lunatrius.schematica.compat.MultipartItems;
+import com.github.lunatrius.schematica.handler.ConfigurationHandler;
+import com.github.lunatrius.schematica.reference.Reference;
+import com.github.lunatrius.schematica.util.BlockGroups;
 
 import cpw.mods.fml.common.registry.GameData;
 
@@ -27,7 +29,7 @@ public final class MaterialScan implements MaterialScanner {
     private final int[] bounds;
     private final int width, length;
     private final long volume;
-    private final boolean ignoreState = com.github.lunatrius.schematica.handler.ConfigurationHandler.materialListIgnoreState;
+    private final boolean ignoreState = ConfigurationHandler.materialListIgnoreState;
     private long cursor;
     private int skipped;
 
@@ -77,7 +79,7 @@ public final class MaterialScan implements MaterialScanner {
             Block real = unknown ? null : world.getBlock(wx, wy, wz);
             int realMeta = unknown ? 0 : world.getBlockMetadata(wx, wy, wz);
             boolean missing = unknown || real != block || !ignoreState && realMeta != meta
-                && !com.github.lunatrius.schematica.util.BlockGroups.tolerated(block, meta, real, realMeta);
+                && !BlockGroups.tolerated(block, meta, real, realMeta);
             boolean mismatched = missing && !unknown && !world.isAirBlock(wx, wy, wz);
             List<ItemStack> missingParts = null;
             if (!unknown && MultipartItems.supports(schematic.getTileEntity(x, y, z))) {

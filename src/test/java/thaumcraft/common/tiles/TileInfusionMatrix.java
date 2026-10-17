@@ -1,6 +1,8 @@
 package thaumcraft.common.tiles;
 
-public class TileInfusionMatrix extends net.minecraft.tileentity.TileEntity {
+import net.minecraft.tileentity.TileEntity;
+
+public class TileInfusionMatrix extends TileEntity {
     public boolean active;
     public float startUp;
 }

@@ -7,6 +7,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.function.BiPredicate;
+import java.util.function.IntPredicate;
 
 import com.github.lunatrius.schematica.client.input.Hotkey.Action;
 import com.github.lunatrius.schematica.client.input.Hotkey.Context;
@@ -71,7 +72,7 @@ public final class HotkeyEngine {
         return cancel;
     }
 
-    public void reconcile(java.util.function.IntPredicate physicallyDown) {
+    public void reconcile(IntPredicate physicallyDown) {
         boolean missing = pressed.removeIf(code -> !physicallyDown.test(code));
         blocked.removeIf(code -> !physicallyDown.test(code));
         if (missing) {

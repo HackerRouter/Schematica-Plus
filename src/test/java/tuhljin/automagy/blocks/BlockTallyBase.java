@@ -1,5 +1,8 @@
 package tuhljin.automagy.blocks;
 
-public class BlockTallyBase extends net.minecraft.block.Block {
-    public BlockTallyBase() { super(net.minecraft.block.material.Material.rock); }
+import net.minecraft.block.Block;
+import net.minecraft.block.material.Material;
+
+public class BlockTallyBase extends Block {
+    public BlockTallyBase() { super(Material.rock); }
 }

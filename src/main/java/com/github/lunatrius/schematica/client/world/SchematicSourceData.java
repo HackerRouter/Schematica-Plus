@@ -2,14 +2,23 @@ package com.github.lunatrius.schematica.client.world;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.ref.SoftReference;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+
+import net.minecraft.nbt.NBTTagCompound;
 
 import com.github.lunatrius.schematica.api.ISchematic;
 import com.github.lunatrius.schematica.api.SchematicRegion;
 import com.github.lunatrius.schematica.util.MessageException;
 import com.github.lunatrius.schematica.util.SchematicLimits;
+import com.github.lunatrius.schematica.world.schematic.ImportReport;
+import com.github.lunatrius.schematica.world.schematic.ItemIdMaps;
+import com.github.lunatrius.schematica.world.schematic.LitematicaNBTReader;
 import com.github.lunatrius.schematica.world.schematic.SchematicFileSnapshot;
 import com.github.lunatrius.schematica.world.schematic.SchematicFormat;
+import com.github.lunatrius.schematica.world.schematic.SchematicMetadata;
 import com.github.lunatrius.schematica.world.storage.Schematic;
 import com.github.lunatrius.schematica.world.storage.SchematicCopies;
 
@@ -23,28 +32,28 @@ public final class SchematicSourceData {
     private int revision;
     private int savedRevision;
     private long modifiedTime;
-    private final java.util.Map<String, String> unknownBlocks;
+    private final Map<String, String> unknownBlocks;
     private boolean unknownBlocksReported;
-    private com.github.lunatrius.schematica.world.schematic.ItemIdMaps.Result itemIds;
+    private ItemIdMaps.Result itemIds;
     /** The schematic decoded while reading, handed to the first placement instead of decoding the file again. */
-    private java.lang.ref.SoftReference<ISchematic> decoded;
+    private SoftReference<ISchematic> decoded;
 
     private SchematicSourceData(SchematicFileSnapshot snapshot, ISchematic data) {
         this.snapshot = snapshot;
-        this.unknownBlocks = com.github.lunatrius.schematica.world.schematic.ImportReport.last();
-        this.itemIds = com.github.lunatrius.schematica.world.schematic.ImportReport.lastItems();
+        this.unknownBlocks = ImportReport.last();
+        this.itemIds = ImportReport.lastItems();
         width = data.getWidth();
         height = data.getHeight();
         length = data.getLength();
         SchematicLimits.volume(width, height, length);
-        decoded = new java.lang.ref.SoftReference<>(data);
+        decoded = new SoftReference<>(data);
     }
 
     public static final class Prepared {
         final SchematicFileSnapshot snapshot;
-        final com.github.lunatrius.schematica.world.schematic.LitematicaNBTReader.Parsed parsed;
+        final LitematicaNBTReader.Parsed parsed;
 
-        private Prepared(SchematicFileSnapshot snapshot, com.github.lunatrius.schematica.world.schematic.LitematicaNBTReader.Parsed parsed) {
+        private Prepared(SchematicFileSnapshot snapshot, LitematicaNBTReader.Parsed parsed) {
             this.snapshot = snapshot; this.parsed = parsed;
         }
     }
@@ -74,15 +83,15 @@ public final class SchematicSourceData {
     }
 
     /** Block names or states of the file this game does not have, to the block that replaced them; taken once. */
-    public java.util.Map<String, String> takeUnknownBlocks() {
-        if (unknownBlocksReported) return java.util.Collections.emptyMap();
+    public Map<String, String> takeUnknownBlocks() {
+        if (unknownBlocksReported) return Collections.emptyMap();
         unknownBlocksReported = true;
         return unknownBlocks;
     }
 
     /** What loading did with the item ids of the file; taken once, then null. */
-    public com.github.lunatrius.schematica.world.schematic.ItemIdMaps.Result takeItemIds() {
-        com.github.lunatrius.schematica.world.schematic.ItemIdMaps.Result result = itemIds;
+    public ItemIdMaps.Result takeItemIds() {
+        ItemIdMaps.Result result = itemIds;
         itemIds = null;
         return result;
     }
@@ -115,11 +124,11 @@ public final class SchematicSourceData {
     public void save(File file, boolean replace, String author) throws IOException {
         if (!modified()) { snapshot.write(file, replace); return; }
         SchematicFileSnapshot.capture(edited,
-            com.github.lunatrius.schematica.world.schematic.SchematicMetadata.stem(file.getName()), author).write(file, replace);
+            SchematicMetadata.stem(file.getName()), author).write(file, replace);
         savedRevision = revision;
     }
 
-    public synchronized void updateMetadata(net.minecraft.nbt.NBTTagCompound metadata) throws IOException {
+    public synchronized void updateMetadata(NBTTagCompound metadata) throws IOException {
         snapshot = snapshot.withMetadata(metadata);
         if (edited != null) edited.setSchematicMetadata(metadata);
         ISchematic first = decoded == null ? null : decoded.get();

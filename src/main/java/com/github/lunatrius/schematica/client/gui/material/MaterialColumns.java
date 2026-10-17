@@ -2,6 +2,9 @@
 // Litematica material column spacing, adapted for 1.7.10 by HackerRouter, 2026.
 package com.github.lunatrius.schematica.client.gui.material;
 
+import java.util.Locale;
+import java.util.function.BiFunction;
+
 public final class MaterialColumns {
     private MaterialColumns() {}
 
@@ -28,10 +31,10 @@ public final class MaterialColumns {
     }
 
     /** How many single (27 slots) and double (54 slots) chests a count fills. */
-    public static String storage(long count, int stackSize, java.util.function.BiFunction<String, Object[], String> format) {
+    public static String storage(long count, int stackSize, BiFunction<String, Object[], String> format) {
         long perChest = 27L * Math.max(1, stackSize);
         return format.apply("schematica.ui.material.storage.value", new Object[] {
-            String.format(java.util.Locale.ROOT, "%.2f", count / (double) perChest), String.format(java.util.Locale.ROOT, "%.2f", count / (2.0 * perChest))});
+            String.format(Locale.ROOT, "%.2f", count / (double) perChest), String.format(Locale.ROOT, "%.2f", count / (2.0 * perChest))});
     }
 
     public static String stackCount(long count, int stackSize) {

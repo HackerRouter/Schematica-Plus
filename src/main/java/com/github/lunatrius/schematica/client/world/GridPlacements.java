@@ -3,6 +3,7 @@
 package com.github.lunatrius.schematica.client.world;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -49,7 +50,7 @@ public final class GridPlacements {
         }
 
         boolean same(Signature other) {
-            return schematic == other.schematic && source == other.source && java.util.Arrays.equals(box, other.box)
+            return schematic == other.schematic && source == other.source && Arrays.equals(box, other.box)
                 && x == other.x && y == other.y && z == other.z && placementRevision == other.placementRevision
                 && contentRevision == other.contentRevision && enabled == other.enabled && rendering == other.rendering
                 && entities == other.entities && layerMode == other.layerMode && layer == other.layer && grid.equals(other.grid);

@@ -1,5 +1,7 @@
 package com.github.lunatrius.schematica.world.schematic;
 
+import java.util.Arrays;
+
 /**
  * Data container for TAG_Long_Array (type 12), which doesn't exist in MC 1.7.10.
  * Modern .litematic files use this tag type for the BlockStates data.
@@ -40,11 +42,11 @@ public class NBTTagLongArray {
         if (this == obj) return true;
         if (!(obj instanceof NBTTagLongArray)) return false;
         NBTTagLongArray other = (NBTTagLongArray) obj;
-        return java.util.Arrays.equals(data, other.data);
+        return Arrays.equals(data, other.data);
     }
 
     @Override
     public int hashCode() {
-        return java.util.Arrays.hashCode(data);
+        return Arrays.hashCode(data);
     }
 }

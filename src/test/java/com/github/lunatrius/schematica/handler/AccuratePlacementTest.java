@@ -1,12 +1,14 @@
 package com.github.lunatrius.schematica.handler;
 
 import net.minecraft.block.Block;
+import net.minecraft.block.BlockDoor;
 import net.minecraft.block.BlockLever;
 import net.minecraft.block.BlockPistonBase;
 import net.minecraft.block.BlockStairs;
 import net.minecraft.block.material.Material;
 
 import org.junit.Test;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
@@ -16,7 +18,7 @@ public class AccuratePlacementTest {
     private static final class Stairs extends BlockStairs { Stairs() { super(new Block(Material.wood) {}, 0); } }
     private static final class Lever extends BlockLever { Lever() { super(); } }
     private static final class Piston extends BlockPistonBase { Piston() { super(false); } }
-    private static final class Door extends net.minecraft.block.BlockDoor { Door() { super(Material.wood); } }
+    private static final class Door extends BlockDoor { Door() { super(Material.wood); } }
 
     @Test public void onlyWhitelistedOrientationBitsMayChange() {
         Block stairs = new Stairs();

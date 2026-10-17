@@ -1,5 +1,8 @@
 package ganymedes01.etfuturum.blocks;
 
-public class BlockPinkPetals extends net.minecraft.block.Block {
-    public BlockPinkPetals() { super(net.minecraft.block.material.Material.rock); }
+import net.minecraft.block.Block;
+import net.minecraft.block.material.Material;
+
+public class BlockPinkPetals extends Block {
+    public BlockPinkPetals() { super(Material.rock); }
 }

@@ -59,6 +59,8 @@ import net.minecraft.block.BlockWood;
 import net.minecraft.block.material.Material;
 import net.minecraft.init.Blocks;
 
+import com.github.lunatrius.schematica.handler.VisualSettings;
+
 import cpw.mods.fml.common.registry.GameData;
 
 /**
@@ -185,8 +187,8 @@ public final class BlockGroups {
 
     /** Whether the world block counts as the schematic block under ignoreCropAge and ignoreSurvivalStates. */
     public static boolean tolerated(Block expected, int expectedMeta, Block found, int foundMeta) {
-        return com.github.lunatrius.schematica.handler.VisualSettings.ignoreSurvivalStates && sameInSurvival(expected, expectedMeta, found, foundMeta)
-            || com.github.lunatrius.schematica.handler.VisualSettings.ignoreCropAge && sameIgnoringAge(expected, expectedMeta, found, foundMeta);
+        return VisualSettings.ignoreSurvivalStates && sameInSurvival(expected, expectedMeta, found, foundMeta)
+            || VisualSettings.ignoreCropAge && sameIgnoringAge(expected, expectedMeta, found, foundMeta);
     }
 
     /** ignoreCropAge (BlockUtils.areStatesEqualIgnoringAge): the same block, differing at most in its age. */
@@ -205,7 +207,7 @@ public final class BlockGroups {
         if (expected != found && !sameGroup) return Result.WRONG_BLOCK;
         if (!sameGroup) return Result.WRONG_STATE;
         int expectedVariant = variantBits(expected), foundVariant = variantBits(found);
-        if (com.github.lunatrius.schematica.handler.VisualSettings.ignoreSurvivalStates) {
+        if (VisualSettings.ignoreSurvivalStates) {
             expectedVariant |= survivalBits(expected);
             foundVariant |= survivalBits(found);
         }

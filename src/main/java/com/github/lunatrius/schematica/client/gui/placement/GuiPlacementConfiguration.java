@@ -2,6 +2,7 @@
 // Litematica placement configuration layout, adapted for 1.7.10 by HackerRouter, 2026.
 package com.github.lunatrius.schematica.client.gui.placement;
 
+import java.util.Objects;
 import java.util.function.BooleanSupplier;
 import java.util.function.IntConsumer;
 import java.util.function.Supplier;
@@ -12,9 +13,9 @@ import net.minecraft.util.MathHelper;
 import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
 
-import org.lwjgl.input.Keyboard;
-
-import com.github.lunatrius.schematica.client.gui.framework.UiTranslations;
+import com.github.lunatrius.schematica.api.SchematicOrigin;
+import com.github.lunatrius.schematica.client.align.AutoAlignJob;
+import com.github.lunatrius.schematica.client.gui.GuiSchematicVerifier;
 import com.github.lunatrius.schematica.client.gui.control.GuiSchematicMaterials;
 import com.github.lunatrius.schematica.client.gui.framework.UiBounds;
 import com.github.lunatrius.schematica.client.gui.framework.UiButton;
@@ -28,15 +29,20 @@ import com.github.lunatrius.schematica.client.gui.framework.UiRowList;
 import com.github.lunatrius.schematica.client.gui.framework.UiScreen;
 import com.github.lunatrius.schematica.client.gui.framework.UiSprite;
 import com.github.lunatrius.schematica.client.gui.framework.UiTextField;
+import com.github.lunatrius.schematica.client.gui.framework.UiTranslations;
+import com.github.lunatrius.schematica.client.gui.material.MaterialList;
+import com.github.lunatrius.schematica.client.gui.material.MaterialLists;
 import com.github.lunatrius.schematica.client.printer.SchematicPrinter;
 import com.github.lunatrius.schematica.client.renderer.RendererSchematicGlobal;
-import com.github.lunatrius.schematica.client.world.SchematicWorld;
 import com.github.lunatrius.schematica.client.world.PlacementSettings;
+import com.github.lunatrius.schematica.client.world.SchematicWorld;
 import com.github.lunatrius.schematica.client.world.SubRegionPlacements;
 import com.github.lunatrius.schematica.handler.client.WorldHandler;
 import com.github.lunatrius.schematica.proxy.ClientProxy;
 import com.github.lunatrius.schematica.reference.Constants;
 import com.github.lunatrius.schematica.reference.Reference;
+
+import org.lwjgl.input.Keyboard;
 
 public final class GuiPlacementConfiguration extends UiScreen {
     private final SchematicWorld placement;
@@ -61,7 +67,7 @@ public final class GuiPlacementConfiguration extends UiScreen {
 
     public GuiPlacementConfiguration(GuiScreen parent, SchematicWorld placement) {
         super(parent, UiTranslations.format("litematica.gui.title.configure_schematic_placement"));
-        this.placement = java.util.Objects.requireNonNull(placement);
+        this.placement = Objects.requireNonNull(placement);
         this.clientWorld = Minecraft.getMinecraft().theWorld;
         regions = new UiListModel<>(22, SubRegionPlacements.Region::name);
         regions.setEntries(placement.subregions().regions());
@@ -151,7 +157,7 @@ public final class GuiPlacementConfiguration extends UiScreen {
                 origin[1], PlacementTransform.mapAlignedStart(placement.position.z, placement.getLength()) + offset()[2]});
         });
         autoAlign = button(() -> "A", mouse -> {
-            if (mouse == 0 && available()) com.github.lunatrius.schematica.client.align.AutoAlignJob.start(placement);
+            if (mouse == 0 && available()) AutoAlignJob.start(placement);
         });
         autoAlign.setTooltip(UiTranslations.format("schematica.ui.placement.auto_align").split("\n"));
         rotation = button(() -> UiTranslations.format("litematica.gui.button.rotation_value", orientation == null ? UiTranslations.format("schematica.ui.placement.custom") : orientation.rotationName()),
@@ -168,14 +174,14 @@ public final class GuiPlacementConfiguration extends UiScreen {
         });
         grid.setTooltip(UiTranslations.format("schematica.ui.placement.grid_settings.hover"));
         materials = button("litematica.gui.button.material_list", () -> {
-            com.github.lunatrius.schematica.client.gui.material.MaterialList list = com.github.lunatrius.schematica.client.gui.material.MaterialList.placement(placement);
+            MaterialList list = MaterialList.placement(placement);
             list.refresh();
             // Remember the last opened material list for the hotkey to (re-) open it
-            com.github.lunatrius.schematica.client.gui.material.MaterialLists.setCurrent(list);
+            MaterialLists.setCurrent(list);
             mc.displayGuiScreen(new GuiSchematicMaterials(this, list));
         });
         verifier = button("litematica.gui.button.schematic_verifier", () -> mc.displayGuiScreen(
-            new com.github.lunatrius.schematica.client.gui.GuiSchematicVerifier(this, placement)));
+            new GuiSchematicVerifier(this, placement)));
         placements = addButton("litematica.gui.button.change_menu.show_schematic_placements", this::closeScreen);
         list = controls.add(new UiRowList<>(regions, (entry, index) -> new RegionRow(entry.name(), index), 11));
         search = controls.add(new UiTextField(fontRendererObj, 256, text -> { regions.setQuery(text); list.sync(); }));
@@ -243,8 +249,8 @@ public final class GuiPlacementConfiguration extends UiScreen {
     private void moveTo(int[] target) {
         if (!available()) return;
         try {
-            com.github.lunatrius.schematica.api.SchematicOrigin adjusted = placement.placementSettings().constrainOrigin(
-                placement.originPosition(), new com.github.lunatrius.schematica.api.SchematicOrigin(target[0], target[1], target[2]));
+            SchematicOrigin adjusted = placement.placementSettings().constrainOrigin(
+                placement.originPosition(), new SchematicOrigin(target[0], target[1], target[2]));
             minimum(adjusted.coordinates(), offset());
             placement.moveOriginTo(adjusted.x, adjusted.y, adjusted.z);
             RendererSchematicGlobal.INSTANCE.refresh(placement);

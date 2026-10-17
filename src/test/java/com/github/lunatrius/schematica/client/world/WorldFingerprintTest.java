@@ -3,6 +3,7 @@ package com.github.lunatrius.schematica.client.world;
 import java.util.Arrays;
 import java.util.Random;
 
+import com.google.gson.JsonObject;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -42,7 +43,7 @@ public class WorldFingerprintTest {
         assertEquals(2, copy.samples.size());
         assertEquals("fedcba9876543210", copy.samples.get(1).hash);
         assertEquals(-3, copy.z);
-        assertNull(WorldFingerprint.fromJson(new com.google.gson.JsonObject()));
+        assertNull(WorldFingerprint.fromJson(new JsonObject()));
         assertEquals(2, WorldFingerprint.chunks(new int[] {0, 0, 0, 20, 10, 5}).size());
         assertEquals(4, WorldFingerprint.chunks(new int[] {-1, 0, -1, 20, 10, 20}).size());
     }

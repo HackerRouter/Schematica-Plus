@@ -1,5 +1,8 @@
 package tconstruct.armor.blocks;
 
-public class DryingRack extends net.minecraft.block.Block {
-    public DryingRack() { super(net.minecraft.block.material.Material.rock); }
+import net.minecraft.block.Block;
+import net.minecraft.block.material.Material;
+
+public class DryingRack extends Block {
+    public DryingRack() { super(Material.rock); }
 }

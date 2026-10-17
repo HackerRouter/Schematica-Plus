@@ -1,5 +1,8 @@
 package gmail.Lance5057.blocks;
 
-public class CrestMount extends net.minecraft.block.Block {
-    public CrestMount() { super(net.minecraft.block.material.Material.rock); }
+import net.minecraft.block.Block;
+import net.minecraft.block.material.Material;
+
+public class CrestMount extends Block {
+    public CrestMount() { super(Material.rock); }
 }

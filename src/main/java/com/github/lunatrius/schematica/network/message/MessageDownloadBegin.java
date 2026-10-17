@@ -5,6 +5,7 @@ import net.minecraft.item.ItemStack;
 import com.github.lunatrius.schematica.api.ISchematic;
 import com.github.lunatrius.schematica.handler.DownloadHandler;
 import com.github.lunatrius.schematica.network.transfer.DownloadGeometry;
+import com.github.lunatrius.schematica.reference.Reference;
 import com.github.lunatrius.schematica.world.storage.Schematic;
 
 import cpw.mods.fml.common.network.ByteBufUtils;
@@ -67,7 +68,7 @@ public class MessageDownloadBegin implements IMessage, IMessageHandler<MessageDo
             schematic.setOrigin(message.geometry.origin);
             DownloadHandler.INSTANCE.beginDownload(schematic);
         } catch (IllegalArgumentException e) {
-            com.github.lunatrius.schematica.reference.Reference.logger.warn("Rejected download geometry", e);
+            Reference.logger.warn("Rejected download geometry", e);
             return null;
         }
 

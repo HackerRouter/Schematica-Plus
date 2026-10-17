@@ -1,25 +1,30 @@
 package com.github.lunatrius.schematica.world.schematic;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
+
 import com.github.lunatrius.schematica.api.ISchematic;
-import com.github.lunatrius.schematica.world.storage.RegionMask;
 import com.github.lunatrius.schematica.api.SchematicRegion;
+import com.github.lunatrius.schematica.world.storage.RegionMask;
 
 final class SchematicRegions {
     private static final String KEY = "SchematicaPlusRegions";
     private SchematicRegions() {}
 
     static List<SchematicRegion> read(NBTTagCompound tag, int width, int height, int length) {
-        if (!tag.hasKey(KEY)) return java.util.Collections.emptyList();
+        if (!tag.hasKey(KEY)) return Collections.emptyList();
         if (!tag.hasKey(KEY, 9) || !tag.hasKey("SchematicaPlusRegionsVersion", 3)
             || tag.getInteger("SchematicaPlusRegionsVersion") != 1) throw new IllegalArgumentException("Unsupported subregion data");
         NBTTagList entries = tag.getTagList(KEY, 10);
         if (entries.tagCount() == 0 || entries.tagCount() > 256) throw new IllegalArgumentException("Invalid subregion count");
         List<SchematicRegion> regions = new ArrayList<>();
-        java.util.Set<String> names = new java.util.HashSet<>();
+        Set<String> names = new HashSet<>();
         for (int i = 0; i < entries.tagCount(); i++) {
             NBTTagCompound entry = entries.getCompoundTagAt(i);
             if (!entry.hasKey("Name", 8) || !entry.hasKey("Bounds", 11)) throw new IllegalArgumentException("Invalid subregion");

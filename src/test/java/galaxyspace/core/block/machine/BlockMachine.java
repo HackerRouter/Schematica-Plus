@@ -1,5 +1,8 @@
 package galaxyspace.core.block.machine;
 
-public class BlockMachine extends net.minecraft.block.Block {
-    public BlockMachine() { super(net.minecraft.block.material.Material.rock); }
+import net.minecraft.block.Block;
+import net.minecraft.block.material.Material;
+
+public class BlockMachine extends Block {
+    public BlockMachine() { super(Material.rock); }
 }

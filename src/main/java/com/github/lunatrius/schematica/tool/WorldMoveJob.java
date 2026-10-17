@@ -7,6 +7,7 @@ import java.util.UUID;
 
 import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.EntityHanging;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
 import net.minecraft.nbt.NBTTagCompound;
@@ -15,6 +16,8 @@ import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.world.WorldServer;
 
 import com.github.lunatrius.schematica.api.SchematicRegion;
+import com.github.lunatrius.schematica.compat.CoordinateLinks;
+import com.github.lunatrius.schematica.nbt.ForgeMultipart;
 import com.github.lunatrius.schematica.nbt.NBTHelper;
 import com.github.lunatrius.schematica.task.TaskRegistry;
 import com.github.lunatrius.schematica.util.SchematicLimits;
@@ -56,10 +59,10 @@ public final class WorldMoveJob extends WorldEditTask {
                 if (cell.tag != null) {
                     NBTTagCompound tag = (NBTTagCompound) cell.tag.copy();
                     boolean restoring = transaction.phase() == BlockMoveTransaction.Phase.RESTORE_SOURCE || transaction.phase() == BlockMoveTransaction.Phase.RESTORE_TARGET;
-                    if (!restoring && cell.original != null) com.github.lunatrius.schematica.compat.CoordinateLinks.move(cell.original, tag, x, y, z);
+                    if (!restoring && cell.original != null) CoordinateLinks.move(cell.original, tag, x, y, z);
                     tag.setInteger("x", x); tag.setInteger("y", y); tag.setInteger("z", z);
                     TileEntity tile = restoring ? cell.original : "savedMultipart".equals(tag.getString("id"))
-                        ? com.github.lunatrius.schematica.nbt.ForgeMultipart.createFromNBT(tag, false) : TileEntity.createAndLoadEntity(tag);
+                        ? ForgeMultipart.createFromNBT(tag, false) : TileEntity.createAndLoadEntity(tag);
                     if (tile == null) throw new IllegalArgumentException("Unable to restore moved tile at " + x + ", " + y + ", " + z);
                     if (restoring) tile.readFromNBT(tag);
                     tile.xCoord = x; tile.yCoord = y; tile.zCoord = z; writer.setTile(world, tile);
@@ -78,8 +81,8 @@ public final class WorldMoveJob extends WorldEditTask {
         if (done && transaction.successful()) {
             blockCount = transaction.affected();
             for (Entity entity : entities) if (!entity.isDead && entity.worldObj == world && contains(entity)) {
-                if (entity instanceof net.minecraft.entity.EntityHanging) {
-                    net.minecraft.entity.EntityHanging hanging = (net.minecraft.entity.EntityHanging) entity;
+                if (entity instanceof EntityHanging) {
+                    EntityHanging hanging = (EntityHanging) entity;
                     hanging.field_146063_b += dx; hanging.field_146064_c += dy; hanging.field_146062_d += dz;
                     hanging.setDirection(hanging.hangingDirection);
                 } else entity.setPositionAndRotation(entity.posX + dx, entity.posY + dy, entity.posZ + dz, entity.rotationYaw, entity.rotationPitch);

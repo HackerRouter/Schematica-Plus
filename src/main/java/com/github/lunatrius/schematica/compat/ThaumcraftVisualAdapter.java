@@ -2,6 +2,7 @@
 package com.github.lunatrius.schematica.compat;
 
 import java.lang.reflect.Array;
+import java.lang.reflect.Field;
 
 import net.minecraft.inventory.IInventory;
 import net.minecraft.nbt.NBTTagCompound;
@@ -50,7 +51,7 @@ final class ThaumcraftVisualAdapter implements ISchematicVisualAdapter {
         } else if (Reflect.is(tile, CRYSTALLIZER)) {
             color(tile, Reflect.get(tile, "aspect"), 220.0F);
         } else if (Reflect.is(tile, BLOOM)) {
-            java.lang.reflect.Field growth = Reflect.field(tile.getClass(), "growthCounter");
+            Field growth = Reflect.field(tile.getClass(), "growthCounter");
             if (growth.getInt(tile) < 100) growth.setInt(tile, 100);
         }
     }

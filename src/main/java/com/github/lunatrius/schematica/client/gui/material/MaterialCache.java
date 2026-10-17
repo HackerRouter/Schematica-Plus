@@ -16,6 +16,7 @@ import net.minecraft.block.BlockDoublePlant;
 import net.minecraft.block.BlockFlowerPot;
 import net.minecraft.block.BlockLiquid;
 import net.minecraft.block.BlockSlab;
+import net.minecraft.block.material.Material;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
@@ -29,6 +30,9 @@ import net.minecraftforge.fluids.BlockFluidClassic;
 import net.minecraftforge.fluids.FluidContainerRegistry;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.IFluidBlock;
+
+import com.github.lunatrius.schematica.compat.AE2Items;
+import com.github.lunatrius.schematica.compat.MultipartItems;
 
 /**
  * The items needed to build a block. Results are cached per block and metadata, except for blocks with a tile entity,
@@ -102,12 +106,12 @@ public final class MaterialCache {
 
     private static BuildItems resolve(World world, int x, int y, int z, Block block, int meta, EntityPlayer player) {
         TileEntity tile = world == null ? null : world.getTileEntity(x, y, z);
-        if (com.github.lunatrius.schematica.compat.MultipartItems.supports(tile)
-            || com.github.lunatrius.schematica.compat.AE2Items.supports(tile)) {
+        if (MultipartItems.supports(tile)
+            || AE2Items.supports(tile)) {
             try {
-                ItemStack[] parts = com.github.lunatrius.schematica.compat.MultipartItems.supports(tile)
-                    ? com.github.lunatrius.schematica.compat.MultipartItems.items(tile)
-                    : com.github.lunatrius.schematica.compat.AE2Items.items(tile);
+                ItemStack[] parts = MultipartItems.supports(tile)
+                    ? MultipartItems.items(tile)
+                    : AE2Items.items(tile);
                 return parts == null ? null : BuildItems.of(parts);
             } catch (ReflectiveOperationException e) {
                 return null;
@@ -121,7 +125,7 @@ public final class MaterialCache {
         if (block == Blocks.farmland) return BuildItems.of(new ItemStack(Blocks.dirt));
         if (block instanceof BlockLiquid) {
             if (meta != 0) return BuildItems.NONE;
-            return BuildItems.of(new ItemStack(block.getMaterial() == net.minecraft.block.material.Material.lava ? Items.lava_bucket
+            return BuildItems.of(new ItemStack(block.getMaterial() == Material.lava ? Items.lava_bucket
                 : Items.water_bucket));
         }
         if (block instanceof IFluidBlock) return fluid((IFluidBlock) block, world, x, y, z, meta);

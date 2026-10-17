@@ -1,10 +1,12 @@
 // 3D schematic preview for the file browsers, after the idea of Tech Utils' renderPreview and QuickCraft's 3D preview, by HackerRouter, 2026.
 package com.github.lunatrius.schematica.client.gui.browser;
 
+import java.nio.IntBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
 import net.minecraft.block.Block;
+import net.minecraft.block.material.Material;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.renderer.RenderBlocks;
@@ -13,12 +15,13 @@ import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.init.Blocks;
 import net.minecraft.tileentity.TileEntity;
 
-import org.lwjgl.opengl.GL11;
-
 import com.github.lunatrius.schematica.api.ISchematic;
 import com.github.lunatrius.schematica.client.renderer.SchematicRenderPass;
 import com.github.lunatrius.schematica.client.world.SchematicWorld;
 import com.github.lunatrius.schematica.reference.Reference;
+
+import org.lwjgl.BufferUtils;
+import org.lwjgl.opengl.GL11;
 
 /**
  * A loaded schematic drawn into a square of a GUI: its blocks are compiled into display lists one 16^3 section at a
@@ -95,7 +98,7 @@ final class SchematicPreview3D {
 
     private boolean drawBlock(RenderBlocks renderer, int pass, int x, int y, int z) {
         Block block = world.getBlock(x, y, z);
-        if (block.getMaterial() == net.minecraft.block.material.Material.air || block.getRenderType() < 0) return false;
+        if (block.getMaterial() == Material.air || block.getRenderType() < 0) return false;
         if (!block.canRenderInPass(pass)) return false;
         renderer.clearOverrideBlockTexture();
         renderer.lockBlockBounds = false;
@@ -133,7 +136,7 @@ final class SchematicPreview3D {
         int left = x * factor, bottom = mc.displayHeight - (y + height) * factor;
         int right = left + width * factor, top = bottom + height * factor;
         if (GL11.glIsEnabled(GL11.GL_SCISSOR_TEST)) {
-            java.nio.IntBuffer clip = org.lwjgl.BufferUtils.createIntBuffer(16);
+            IntBuffer clip = BufferUtils.createIntBuffer(16);
             GL11.glGetInteger(GL11.GL_SCISSOR_BOX, clip);
             left = Math.max(left, clip.get(0)); bottom = Math.max(bottom, clip.get(1));
             right = Math.min(right, clip.get(0) + clip.get(2)); top = Math.min(top, clip.get(1) + clip.get(3));

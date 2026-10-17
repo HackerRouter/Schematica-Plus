@@ -2,8 +2,11 @@ package com.github.lunatrius.schematica.compat;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
+
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.world.World;
+
 import com.github.lunatrius.schematica.api.ISchematicVisualAdapter;
 
 final class GalacticraftVisualAdapter implements ISchematicVisualAdapter {
@@ -76,7 +79,7 @@ final class GalacticraftVisualAdapter implements ISchematicVisualAdapter {
         String type = null;
         for (String solar : SOLAR) if (Reflect.is(tile, solar)) type = solar;
         if (type == null) return;
-        net.minecraft.world.World world = ClientWorld.current();
+        World world = ClientWorld.current();
         if (world == null) return;
         boolean simple = type == SOLAR[0] && ((Number) Reflect.get(tile, "tierGC")).intValue() == 1;
         Reflect.field(tile.getClass(), "currentAngle").setFloat(tile, solarAngle(world.getCelestialAngle(1.0F),

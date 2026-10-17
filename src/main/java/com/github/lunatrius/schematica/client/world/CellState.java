@@ -6,6 +6,7 @@ import java.util.Map;
 import net.minecraft.block.Block;
 import net.minecraft.init.Blocks;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.world.World;
 
 import com.github.lunatrius.schematica.api.ISchematic;
 import com.github.lunatrius.schematica.reference.Reference;
@@ -80,7 +81,7 @@ public final class CellState {
 
     /** A detached one-block world in which placement code can run without touching a real world. */
     public static final class Scratch extends SchematicWorld {
-        private net.minecraft.world.World real;
+        private World real;
         private int ox, oy, oz;
 
         private Scratch(Schematic schematic) { super(schematic); }
@@ -88,7 +89,7 @@ public final class CellState {
         public static Scratch create() { return new Scratch(new Schematic(DEFAULT_ICON, 1, 1, 1)); }
 
         /** A scratch cell at a world position whose neighbors read the blocks of that world (without tile entities). */
-        public static Scratch around(net.minecraft.world.World real, int x, int y, int z) {
+        public static Scratch around(World real, int x, int y, int z) {
             Scratch scratch = create();
             scratch.real = real;
             scratch.ox = x; scratch.oy = y; scratch.oz = z;

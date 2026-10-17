@@ -1,5 +1,6 @@
 package com.github.lunatrius.schematica.client.gui.material;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -9,11 +10,12 @@ import java.util.Map;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import org.junit.Test;
+
 import static org.junit.Assert.*;
 
 public class RawMaterialExportTest {
     private static List<List<String>> slots(String... items) {
-        List<List<String>> slots = new java.util.ArrayList<>();
+        List<List<String>> slots = new ArrayList<>();
         for (String item : items) slots.add(Arrays.asList(item.split("\\|")));
         return slots;
     }

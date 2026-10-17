@@ -1,7 +1,9 @@
 package com.github.lunatrius.schematica.world.schematic;
 
+import java.io.DataOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.file.Files;
 
 import net.minecraft.nbt.CompressedStreamTools;
@@ -25,7 +27,7 @@ public class SchematicFileSnapshotTest {
         tile.setString("unknownModState", "preserve me");
         root.setTag("tile", tile);
         root.setByteArray("Blocks", new byte[] {1, 2, 3});
-        try (java.io.OutputStream out = Files.newOutputStream(file.toPath())) { CompressedStreamTools.writeCompressed(root, out); }
+        try (OutputStream out = Files.newOutputStream(file.toPath())) { CompressedStreamTools.writeCompressed(root, out); }
         byte[] original = Files.readAllBytes(file.toPath());
         SchematicFileSnapshot snapshot = SchematicFileSnapshot.read(file);
         Files.delete(file.toPath());
@@ -55,7 +57,7 @@ public class SchematicFileSnapshotTest {
 
     @Test public void modernLongArraysAreRecreatedForEachInstance() throws IOException {
         File file = temporary.newFile("source.litematic");
-        try (java.io.DataOutputStream out = new java.io.DataOutputStream(Files.newOutputStream(file.toPath()))) {
+        try (DataOutputStream out = new DataOutputStream(Files.newOutputStream(file.toPath()))) {
             out.writeByte(10); out.writeUTF("");
             out.writeByte(12); out.writeUTF("BlockStates"); out.writeInt(2);
             out.writeLong(123456789L); out.writeLong(-1L);

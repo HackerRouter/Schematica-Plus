@@ -1,12 +1,20 @@
 package com.github.lunatrius.schematica.compat;
 
+import java.lang.reflect.Array;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.util.EnumSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Set;
+
+import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraftforge.common.util.ForgeDirection;
+
 import com.github.lunatrius.schematica.api.ISchematicVisualAdapter;
+import com.github.lunatrius.schematica.util.SchematicTransform;
 
 final class AE2VisualAdapter implements ISchematicVisualAdapter {
     private static final Map<String, String[]> FIELDS = new LinkedHashMap<>();
@@ -74,7 +82,7 @@ final class AE2VisualAdapter implements ISchematicVisualAdapter {
         restoreObject(tile, tag);
         Class<?> cableBus = Reflect.type(tile.getClass(), "appeng.tile.networking.TileCableBus");
         if (cableBus != null) {
-            java.lang.reflect.Method update = cableBus.getDeclaredMethod("updateTileSetting");
+            Method update = cableBus.getDeclaredMethod("updateTileSetting");
             update.setAccessible(true);
             update.invoke(tile);
         }
@@ -112,22 +120,22 @@ final class AE2VisualAdapter implements ISchematicVisualAdapter {
             if (!data.hasKey(key, 8)) continue;
             try {
                 ForgeDirection side = ForgeDirection.valueOf(data.getString(key));
-                data.setString(key, com.github.lunatrius.schematica.util.SchematicTransform.direction(operation, side).name());
+                data.setString(key, SchematicTransform.direction(operation, side).name());
             } catch (IllegalArgumentException ignored) {}
         }
-        Map<String, net.minecraft.nbt.NBTBase> moved = new LinkedHashMap<>();
+        Map<String, NBTBase> moved = new LinkedHashMap<>();
         for (ForgeDirection side : ForgeDirection.VALID_DIRECTIONS) {
-            ForgeDirection turned = com.github.lunatrius.schematica.util.SchematicTransform.direction(operation, side);
+            ForgeDirection turned = SchematicTransform.direction(operation, side);
             for (String prefix : new String[] {"def:", "extra:", "facade:"}) {
                 String key = prefix + side.ordinal();
                 if (!data.hasKey(key)) continue;
-                net.minecraft.nbt.NBTBase value = data.getTag(key);
+                NBTBase value = data.getTag(key);
                 data.removeTag(key);
                 if (prefix.equals("extra:") && value instanceof NBTTagCompound) spin((NBTTagCompound) value, side, turned, operation);
                 moved.put(prefix + turned.ordinal(), value);
             }
         }
-        for (Map.Entry<String, net.minecraft.nbt.NBTBase> entry : moved.entrySet()) data.setTag(entry.getKey(), entry.getValue());
+        for (Map.Entry<String, NBTBase> entry : moved.entrySet()) data.setTag(entry.getKey(), entry.getValue());
     }
 
     /** AbstractPartReporting.spin on a floor or ceiling is a horizontal direction in the yaw encoding (0 S, 1 W, 2 N, 3 E). */
@@ -135,7 +143,7 @@ final class AE2VisualAdapter implements ISchematicVisualAdapter {
         if (!extra.hasKey("spin", 1) || side.offsetY == 0) return;
         int spin = extra.getByte("spin") & 3;
         if (turned.offsetY == 0) { extra.setByte("spin", (byte) 0); return; }
-        ForgeDirection direction = com.github.lunatrius.schematica.util.SchematicTransform.direction(operation, SPIN[spin]);
+        ForgeDirection direction = SchematicTransform.direction(operation, SPIN[spin]);
         for (int i = 0; i < 4; i++) if (SPIN[i] == direction) extra.setByte("spin", (byte) i);
     }
 
@@ -153,7 +161,7 @@ final class AE2VisualAdapter implements ISchematicVisualAdapter {
                     // The transformed persistent NBT owns spin; the other fields retain the captured client state.
                     part.removeTag("appeng.parts.reporting.AbstractPartReporting#spin");
                     part.removeTag("com.glodblock.github.common.parts.base.FCPart#spin");
-                    moved.put(com.github.lunatrius.schematica.util.SchematicTransform.direction(operation, side).name(), part);
+                    moved.put(SchematicTransform.direction(operation, side).name(), part);
                     visual.removeTag(side.name());
                 }
                 // AE2's NBT reader leaves an existing part in place when the new side has no definition.
@@ -167,14 +175,14 @@ final class AE2VisualAdapter implements ISchematicVisualAdapter {
             Object cable = Reflect.call(tile, "getPart", new Class<?>[] {ForgeDirection.class}, ForgeDirection.UNKNOWN);
             if (Reflect.is(cable, "appeng.parts.networking.PartCable")) {
                 Field connections = Reflect.field(cable.getClass(), "connections");
-                @SuppressWarnings("unchecked") java.util.Set<ForgeDirection> sides = (java.util.Set<ForgeDirection>) connections.get(cable);
-                java.util.EnumSet<ForgeDirection> turned = java.util.EnumSet.noneOf(ForgeDirection.class);
-                for (ForgeDirection side : sides) turned.add(com.github.lunatrius.schematica.util.SchematicTransform.direction(operation, side));
+                @SuppressWarnings("unchecked") Set<ForgeDirection> sides = (Set<ForgeDirection>) connections.get(cable);
+                EnumSet<ForgeDirection> turned = EnumSet.noneOf(ForgeDirection.class);
+                for (ForgeDirection side : sides) turned.add(SchematicTransform.direction(operation, side));
                 sides.clear();
                 sides.addAll(turned);
                 Object channels = Reflect.get(cable, "channelsOnSide");
-                if (channels != null && channels.getClass().isArray() && java.lang.reflect.Array.getLength(channels) == 6) {
-                    com.github.lunatrius.schematica.util.SchematicTransform.sides(operation, channels);
+                if (channels != null && channels.getClass().isArray() && Array.getLength(channels) == 6) {
+                    SchematicTransform.sides(operation, channels);
                 }
             }
             return;
@@ -183,7 +191,7 @@ final class AE2VisualAdapter implements ISchematicVisualAdapter {
         Field forward = Reflect.field(tile.getClass(), "forward"), up = Reflect.field(tile.getClass(), "up");
         for (Field field : new Field[] {forward, up}) {
             ForgeDirection side = (ForgeDirection) field.get(tile);
-            if (side != null && side != ForgeDirection.UNKNOWN) field.set(tile, com.github.lunatrius.schematica.util.SchematicTransform.direction(operation, side));
+            if (side != null && side != ForgeDirection.UNKNOWN) field.set(tile, SchematicTransform.direction(operation, side));
         }
     }
 

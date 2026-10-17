@@ -6,11 +6,13 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.function.Function;
 
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 
 public final class MaterialListExport {
     public enum Format { TXT, CSV, JSON }
@@ -81,7 +83,7 @@ public final class MaterialListExport {
 
     public static String withAnalysisStatus(String text, Format format, int unverified, int skipped, Function<String, String> translate) {
         if (format == Format.JSON) {
-            JsonObject data = new com.google.gson.JsonParser().parse(text).getAsJsonObject();
+            JsonObject data = new JsonParser().parse(text).getAsJsonObject();
             data.addProperty("source", "area_analysis");
             data.addProperty("unverified_positions", unverified);
             data.addProperty("skipped_positions", skipped);
@@ -103,7 +105,7 @@ public final class MaterialListExport {
 
     public static Path write(Path directory, Format format, String content) throws IOException {
         Files.createDirectories(directory);
-        Path output = Files.createTempFile(directory, "schematica_plus-materials-", "." + format.name().toLowerCase(java.util.Locale.ROOT));
+        Path output = Files.createTempFile(directory, "schematica_plus-materials-", "." + format.name().toLowerCase(Locale.ROOT));
         try {
             Files.write(output, content.getBytes(StandardCharsets.UTF_8));
             return output;

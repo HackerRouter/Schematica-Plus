@@ -1,42 +1,56 @@
 package com.github.lunatrius.schematica.tool;
 
+import java.lang.reflect.Field;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagList;
+
+import com.github.lunatrius.schematica.api.SchematicRegion;
+import com.github.lunatrius.schematica.task.TaskRegistry;
+import com.github.lunatrius.schematica.util.MessageException;
+import com.github.lunatrius.schematica.world.storage.Schematic;
+
 import org.junit.Test;
+
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
 public class WorldEditJobTest {
     @Test public void taskProgressTracksEachPassAndCancelledJobsFinishTheUpdatePass() {
-        com.github.lunatrius.schematica.task.TaskRegistry registry = new com.github.lunatrius.schematica.task.TaskRegistry();
+        TaskRegistry registry = new TaskRegistry();
         WorldEditJob job = job(WorldEditJob.Kind.FILL, false, false);
-        com.github.lunatrius.schematica.task.TaskRegistry.Task task = registry.start(job.player, job.dimension, job.taskKind(),
-            com.github.lunatrius.schematica.task.TaskRegistry.Backend.SERVER, "");
+        TaskRegistry.Task task = registry.start(job.player, job.dimension, job.taskKind(),
+            TaskRegistry.Backend.SERVER, "");
         job.publishProgress(task);
-        assertEquals(com.github.lunatrius.schematica.task.TaskRegistry.Stage.STRUCTURE, task.progress().stage);
+        assertEquals(TaskRegistry.Stage.STRUCTURE, task.progress().stage);
         assertFalse(job.step(null));
         job.publishProgress(task);
         assertEquals(1, task.progress().completed);
         assertEquals(1, task.progress().total);
         assertFalse(job.step(null));
         job.publishProgress(task);
-        assertEquals(com.github.lunatrius.schematica.task.TaskRegistry.Stage.DECORATIONS, task.progress().stage);
+        assertEquals(TaskRegistry.Stage.DECORATIONS, task.progress().stage);
         job.cancelled = true;
         assertFalse(job.step(null));
         job.publishProgress(task);
-        assertEquals(com.github.lunatrius.schematica.task.TaskRegistry.Stage.UPDATES, task.progress().stage);
+        assertEquals(TaskRegistry.Stage.UPDATES, task.progress().stage);
         assertFalse(job.step(null));
         assertTrue(job.step(null));
         job.publishProgress(task);
-        assertEquals(com.github.lunatrius.schematica.task.TaskRegistry.Stage.ENTITIES, task.progress().stage);
+        assertEquals(TaskRegistry.Stage.ENTITIES, task.progress().stage);
         task.finish();
     }
 
     @Test public void editsSkipUnselectedGapsBeforeReadingOrWritingTheWorld() {
         for (WorldEditJob.Kind kind : WorldEditJob.Kind.values()) {
             WorldEditJob job = new WorldEditJob(UUID.randomUUID(), 0, kind, 0, 64, 0, 3, 1, 1, null, 0, null, 0);
-            job.setRegions(java.util.Collections.singletonList(new com.github.lunatrius.schematica.api.SchematicRegion("Box", 1, 0, 0, 1, 0, 0)));
+            job.setRegions(Collections.singletonList(new SchematicRegion("Box", 1, 0, 0, 1, 0, 0)));
             org.junit.Assert.assertNull(job.command(0, null));
             org.junit.Assert.assertNull(job.command(2, null));
             assertFalse(job.step(null));
@@ -54,7 +68,7 @@ public class WorldEditJobTest {
     }
 
     @Test public void renderedLayersOnlyPastesTheLayerPartOfEachRegion() {
-        com.github.lunatrius.schematica.world.storage.Schematic schematic = new com.github.lunatrius.schematica.world.storage.Schematic(null, 3, 3, 1);
+        Schematic schematic = new Schematic(null, 3, 3, 1);
         WorldEditJob job = new WorldEditJob(UUID.randomUUID(), 0, WorldEditJob.Kind.PASTE, 0, 64, 0, 3, 3, 1, null, 0, null, 0);
         job.capture(schematic, false, false, new int[] {0, 1, 0, 3, 2, 1}, false);
         org.junit.Assert.assertNull(job.command(0, null));
@@ -62,7 +76,7 @@ public class WorldEditJobTest {
         WorldEditJob outside = new WorldEditJob(UUID.randomUUID(), 0, WorldEditJob.Kind.PASTE, 0, 64, 0, 3, 3, 1, null, 0, null, 0);
         IllegalArgumentException error = assertThrows(IllegalArgumentException.class,
             () -> outside.capture(schematic, false, false, new int[] {0, 3, 0, 3, 3, 1}, false));
-        assertEquals("schematica.message.paste.outside_layers", ((com.github.lunatrius.schematica.util.MessageException) error).key());
+        assertEquals("schematica.message.paste.outside_layers", ((MessageException) error).key());
     }
 
     @Test public void airOnlyCommandsRequireTheServerToRecheckTheTarget() {
@@ -86,22 +100,22 @@ public class WorldEditJobTest {
         WorldEditJob job = job(WorldEditJob.Kind.PASTE, true, false);
         IllegalArgumentException error = assertThrows(IllegalArgumentException.class, job::validateCommandFallback);
         assertEquals("schematica.message.edit.updates_require_singleplayer",
-            ((com.github.lunatrius.schematica.util.MessageException) error).key());
+            ((MessageException) error).key());
     }
 
     @Test public void blocksOnlyPreflightKeepsNbtUntilExplicitlyAccepted() throws Exception {
         WorldEditJob job = nbtJob(false, true, true);
-        net.minecraft.nbt.NBTTagCompound complete = job.write();
+        NBTTagCompound complete = job.write();
         assertTrue(job.hasCommandNbt());
-        assertThrows(com.github.lunatrius.schematica.util.MessageException.class, job::validateCommandFallback);
+        assertThrows(MessageException.class, job::validateCommandFallback);
         job.validateCommandFallback(true);
         assertEquals(complete, job.write());
         job.dropCommandNbt();
         assertFalse(job.hasCommandNbt());
         job.validateCommandFallback();
-        net.minecraft.nbt.NBTTagCompound expected = (net.minecraft.nbt.NBTTagCompound) complete.copy();
-        expected.setTag("tiles", new net.minecraft.nbt.NBTTagList());
-        expected.setTag("entities", new net.minecraft.nbt.NBTTagList());
+        NBTTagCompound expected = (NBTTagCompound) complete.copy();
+        expected.setTag("tiles", new NBTTagList());
+        expected.setTag("entities", new NBTTagList());
         assertEquals(expected, job.write());
         assertEquals(1, complete.getTagList("tiles", 10).tagCount());
         assertEquals(1, complete.getTagList("entities", 10).tagCount());
@@ -111,7 +125,7 @@ public class WorldEditJobTest {
         WorldEditJob job = nbtJob(false, true, true);
         job.dropTiles();
         assertTrue(job.hasCommandNbt());
-        assertThrows(com.github.lunatrius.schematica.util.MessageException.class, job::validateCommandFallback);
+        assertThrows(MessageException.class, job::validateCommandFallback);
         job.dropCommandNbt();
         job.validateCommandFallback();
         assertFalse(job.hasCommandNbt());
@@ -129,9 +143,9 @@ public class WorldEditJobTest {
 
     @Test public void blocksOnlyChoiceCannotBypassUnsupportedUpdateSuppression() throws Exception {
         WorldEditJob job = nbtJob(true, true, true);
-        net.minecraft.nbt.NBTTagCompound before = job.write();
-        com.github.lunatrius.schematica.util.MessageException error = assertThrows(
-            com.github.lunatrius.schematica.util.MessageException.class, () -> job.validateCommandFallback(true));
+        NBTTagCompound before = job.write();
+        MessageException error = assertThrows(
+            MessageException.class, () -> job.validateCommandFallback(true));
         assertEquals("schematica.message.edit.updates_require_singleplayer", error.key());
         assertEquals(before, job.write());
     }
@@ -139,19 +153,19 @@ public class WorldEditJobTest {
     @SuppressWarnings("unchecked")
     private static WorldEditJob nbtJob(boolean silent, boolean tiles, boolean entities) throws Exception {
         WorldEditJob job = job(WorldEditJob.Kind.PASTE, silent, false);
-        job.capture(new com.github.lunatrius.schematica.world.storage.Schematic(null, 1, 1, 1), false, false);
-        net.minecraft.nbt.NBTTagCompound data = new net.minecraft.nbt.NBTTagCompound();
+        job.capture(new Schematic(null, 1, 1, 1), false, false);
+        NBTTagCompound data = new NBTTagCompound();
         data.setString("id", "SavedData");
         data.setString("CustomName", "Preserved until accepted");
         if (tiles) {
-            java.lang.reflect.Field field = WorldEditJob.class.getDeclaredField("tiles");
+            Field field = WorldEditJob.class.getDeclaredField("tiles");
             field.setAccessible(true);
-            ((java.util.Map<Integer, net.minecraft.nbt.NBTTagCompound>) field.get(job)).put(0, data);
+            ((Map<Integer, NBTTagCompound>) field.get(job)).put(0, data);
         }
         if (entities) {
-            java.lang.reflect.Field field = WorldEditJob.class.getDeclaredField("entities");
+            Field field = WorldEditJob.class.getDeclaredField("entities");
             field.setAccessible(true);
-            ((java.util.List<net.minecraft.nbt.NBTTagCompound>) field.get(job)).add((net.minecraft.nbt.NBTTagCompound) data.copy());
+            ((List<NBTTagCompound>) field.get(job)).add((NBTTagCompound) data.copy());
         }
         return job;
     }

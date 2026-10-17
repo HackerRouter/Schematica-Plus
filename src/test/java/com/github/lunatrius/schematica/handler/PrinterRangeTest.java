@@ -1,5 +1,10 @@
 package com.github.lunatrius.schematica.handler;
 
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
+import net.minecraft.network.play.client.C07PacketPlayerDigging;
+import net.minecraft.network.play.client.C08PacketPlayerBlockPlacement;
+
 import com.github.lunatrius.schematica.network.message.MessagePrinterAction;
 
 import io.netty.buffer.ByteBuf;
@@ -13,15 +18,15 @@ public class PrinterRangeTest {
         MessagePrinterAction m = new MessagePrinterAction();
         m.action = 2; m.x = 32; m.y = 127; m.z = -80; m.side = 5;
         m.hitX = .25f; m.hitY = 1; m.hitZ = .75f;
-        net.minecraft.network.play.client.C08PacketPlayerBlockPlacement place = PrinterActions.placement(m, null);
+        C08PacketPlayerBlockPlacement place = PrinterActions.placement(m, null);
         assertEquals(32, place.func_149576_c()); assertEquals(127, place.func_149571_d());
         assertEquals(-80, place.func_149570_e()); assertEquals(5, place.func_149568_f());
         assertEquals(.25f, place.func_149573_h(), 0); assertEquals(1, place.func_149569_i(), 0);
         assertEquals(.75f, place.func_149575_j(), 0); assertNull(place.func_149574_g());
-        net.minecraft.network.play.client.C07PacketPlayerDigging dig = PrinterActions.digging(m);
+        C07PacketPlayerDigging dig = PrinterActions.digging(m);
         assertEquals(2, dig.func_149506_g()); assertEquals(32, dig.func_149505_c());
         assertEquals(127, dig.func_149503_d()); assertEquals(-80, dig.func_149502_e()); assertEquals(5, dig.func_149501_f());
-        net.minecraft.item.ItemStack held = new net.minecraft.item.ItemStack(new net.minecraft.item.Item(), 4, 0);
+        ItemStack held = new ItemStack(new Item(), 4, 0);
         place = PrinterActions.placement(m, held);
         held.stackSize--;
         assertEquals(4, place.func_149574_g().stackSize);

@@ -1,7 +1,9 @@
 package com.github.lunatrius.schematica.world.schematic;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -18,16 +20,16 @@ import net.minecraft.world.World;
 import net.minecraftforge.common.util.Constants;
 
 import com.github.lunatrius.schematica.api.ISchematic;
+import com.github.lunatrius.schematica.api.SchematicOrigin;
+import com.github.lunatrius.schematica.api.SchematicRegion;
 import com.github.lunatrius.schematica.compat.BlockMapping;
 import com.github.lunatrius.schematica.compat.BlockStateTranslator;
 import com.github.lunatrius.schematica.compat.EntityTranslator;
 import com.github.lunatrius.schematica.compat.TileEntityTranslator;
 import com.github.lunatrius.schematica.reference.Reference;
 import com.github.lunatrius.schematica.world.WorldDummy;
-import com.github.lunatrius.schematica.world.storage.Schematic;
-import com.github.lunatrius.schematica.api.SchematicRegion;
-import com.github.lunatrius.schematica.api.SchematicOrigin;
 import com.github.lunatrius.schematica.world.storage.MultiRegionSchematic;
+import com.github.lunatrius.schematica.world.storage.Schematic;
 
 import cpw.mods.fml.common.registry.GameData;
 
@@ -149,7 +151,7 @@ public class SchematicLitematica extends SchematicFormat {
         }
 
         TileEntityTranslator teTranslator = TileEntityTranslator.instance();
-        java.util.Set<Long> existingTEPositions = new java.util.HashSet<>();
+        Set<Long> existingTEPositions = new HashSet<>();
         {
             NBTTagList tileEntitiesList = rd.tileEntities();
             int teLoaded = 0;
@@ -307,7 +309,7 @@ public class SchematicLitematica extends SchematicFormat {
         if (keys.isEmpty()) return "";
 
         List<String> sortedKeys = new ArrayList<>(keys);
-        java.util.Collections.sort(sortedKeys);
+        Collections.sort(sortedKeys);
 
         StringBuilder sb = new StringBuilder();
         for (String key : sortedKeys) {

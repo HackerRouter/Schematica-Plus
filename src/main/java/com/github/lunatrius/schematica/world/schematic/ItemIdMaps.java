@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.function.IntUnaryOperator;
+import java.util.function.Supplier;
 
 import net.minecraft.block.Block;
 import net.minecraft.item.Item;
@@ -145,7 +146,7 @@ public final class ItemIdMaps {
         remap(root, CURRENT, ItemIdMaps::archives, result);
     }
 
-    static void remap(NBTTagCompound root, Ids current, java.util.function.Supplier<List<Archive>> archives, Result result) {
+    static void remap(NBTTagCompound root, Ids current, Supplier<List<Archive>> archives, Result result) {
         IntUnaryOperator translation = translation(root, current, archives, result);
         if (translation == null) return;
         visitRoot(root, id -> {
@@ -156,7 +157,7 @@ public final class ItemIdMaps {
         writeMapping(root, current);
     }
 
-    private static IntUnaryOperator translation(NBTTagCompound root, Ids current, java.util.function.Supplier<List<Archive>> archives, Result result) {
+    private static IntUnaryOperator translation(NBTTagCompound root, Ids current, Supplier<List<Archive>> archives, Result result) {
         if (root.hasKey(ITEM_MAPPING, NBT.TAG_COMPOUND)) {
             NBTTagCompound mapping = root.getCompoundTag(ITEM_MAPPING);
             Map<Integer, String> names = new HashMap<>();

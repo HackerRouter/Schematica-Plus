@@ -1,10 +1,12 @@
 package com.github.lunatrius.schematica.client.world;
 
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import org.junit.Test;
+
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -57,7 +59,7 @@ public class GridPlacementsTest {
         assertTrue(all.contains("2,0,2"));
         assertFalse(all.contains("3,0,0"));
         Set<String> near = keys(GridPlacements.points(base, grid(10, 1, 2), new int[] {-5, 0, -5, 5, 255, 5}));
-        assertEquals(new HashSet<>(java.util.Arrays.asList("-1,0,-1", "-1,0,0", "0,0,-1")), near);
+        assertEquals(new HashSet<>(Arrays.asList("-1,0,-1", "-1,0,0", "0,0,-1")), near);
         assertTrue(GridPlacements.points(base, new GridSettings(), new int[] {-1000, 0, -1000, 1000, 255, 1000}).isEmpty());
     }
 }

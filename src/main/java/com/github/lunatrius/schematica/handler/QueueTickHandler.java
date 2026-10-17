@@ -1,7 +1,9 @@
 package com.github.lunatrius.schematica.handler;
 
+import java.io.File;
 import java.util.ArrayDeque;
 import java.util.Queue;
+import java.util.function.Consumer;
 
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
@@ -9,13 +11,16 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ChatComponentTranslation;
 import net.minecraft.world.World;
+import net.minecraftforge.common.DimensionManager;
 
 import com.github.lunatrius.schematica.SchematicaPlus;
 import com.github.lunatrius.schematica.reference.Names;
 import com.github.lunatrius.schematica.reference.Reference;
 import com.github.lunatrius.schematica.task.TaskRegistry;
 import com.github.lunatrius.schematica.world.chunk.SchematicContainer;
+import com.github.lunatrius.schematica.world.schematic.SchematicFileSnapshot;
 import com.github.lunatrius.schematica.world.schematic.SchematicFormat;
+import com.github.lunatrius.schematica.world.schematic.SchematicMetadata;
 
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.gameevent.TickEvent;
@@ -61,7 +66,7 @@ public class QueueTickHandler {
                 ? clientPlayer : null;
         }
         MinecraftServer server = MinecraftServer.getServer();
-        if (server == null || net.minecraftforge.common.DimensionManager.getWorld(save.task.dimension) != world) return null;
+        if (server == null || DimensionManager.getWorld(save.task.dimension) != world) return null;
         for (EntityPlayerMP player : server.getConfigurationManager().playerEntityList) {
             if (save.task.owner.equals(player.getUniqueID()) && player.worldObj == world) return player;
         }
@@ -79,7 +84,7 @@ public class QueueTickHandler {
         SchematicContainer container = save.container;
         EntityPlayer player = null;
         boolean pending = false;
-        java.io.File written = null;
+        File written = null;
         try {
             player = owner(save, clientWorld, clientPlayer);
             if (player == null || save.task.progress().cancelling) return;
@@ -98,14 +103,14 @@ public class QueueTickHandler {
                 if (!entity.hasWorldObj()) entity.setWorldObj(container.world);
             }
             if (container.memory != null) {
-                com.github.lunatrius.schematica.world.schematic.SchematicFileSnapshot snapshot =
-                    com.github.lunatrius.schematica.world.schematic.SchematicFileSnapshot.capture(container.schematic,
-                        com.github.lunatrius.schematica.world.schematic.SchematicMetadata.stem(container.file.getName()), player.getCommandSenderName());
-                java.util.function.Consumer<com.github.lunatrius.schematica.world.schematic.SchematicFileSnapshot> memory = container.memory;
+                SchematicFileSnapshot snapshot =
+                    SchematicFileSnapshot.capture(container.schematic,
+                        SchematicMetadata.stem(container.file.getName()), player.getCommandSenderName());
+                Consumer<SchematicFileSnapshot> memory = container.memory;
                 SchematicaPlus.proxy.runSaveCallback(() -> memory.accept(snapshot));
                 return;
             }
-            java.io.File saved = SchematicFormat.saveToFile(container.file, container.schematic, container.world,
+            File saved = SchematicFormat.saveToFile(container.file, container.schematic, container.world,
                 container.includeNBT, container.includeEntities, player.getCommandSenderName());
             written = saved;
             boolean renamed = saved != null && !saved.getName().equals(container.file.getName());
@@ -127,8 +132,8 @@ public class QueueTickHandler {
             else {
                 save.task.finish();
                 if (container.completed != null) {
-                    java.util.function.Consumer<java.io.File> completed = container.completed;
-                    java.io.File result = written;
+                    Consumer<File> completed = container.completed;
+                    File result = written;
                     SchematicaPlus.proxy.runSaveCallback(() -> completed.accept(result));
                 }
             }

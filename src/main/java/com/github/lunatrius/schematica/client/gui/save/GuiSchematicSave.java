@@ -4,30 +4,35 @@ package com.github.lunatrius.schematica.client.gui.save;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Locale;
 
-import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.world.World;
 
-import com.github.lunatrius.schematica.client.gui.framework.UiTranslations;
 import com.github.lunatrius.schematica.SchematicaPlus;
-import com.github.lunatrius.schematica.client.selection.AreaSelectionLibrary;
-import com.github.lunatrius.schematica.client.selection.AreaSelectionLibrary.Area;
-import com.github.lunatrius.schematica.client.selection.AreaSelections;
 import com.github.lunatrius.schematica.client.gui.browser.GuiSchematicBrowser;
 import com.github.lunatrius.schematica.client.gui.browser.SchematicBrowserModel;
-import com.github.lunatrius.schematica.client.gui.framework.UiCheckBox;
 import com.github.lunatrius.schematica.client.gui.framework.UiButton;
+import com.github.lunatrius.schematica.client.gui.framework.UiCheckBox;
 import com.github.lunatrius.schematica.client.gui.framework.UiScreen;
 import com.github.lunatrius.schematica.client.gui.framework.UiTextField;
 import com.github.lunatrius.schematica.client.gui.framework.UiToggleButton;
+import com.github.lunatrius.schematica.client.gui.framework.UiTranslations;
+import com.github.lunatrius.schematica.client.selection.AreaSelectionLibrary;
+import com.github.lunatrius.schematica.client.selection.AreaSelectionLibrary.Area;
+import com.github.lunatrius.schematica.client.selection.AreaSelections;
+import com.github.lunatrius.schematica.client.world.PlacementCaptureSource;
 import com.github.lunatrius.schematica.handler.ConfigurationHandler;
 import com.github.lunatrius.schematica.handler.QueueTickHandler;
 import com.github.lunatrius.schematica.handler.client.WorldHandler;
 import com.github.lunatrius.schematica.proxy.ClientProxy;
 import com.github.lunatrius.schematica.reference.Reference;
-import com.github.lunatrius.schematica.world.storage.RegionSelection;
+import com.github.lunatrius.schematica.world.chunk.SchematicContainer;
 import com.github.lunatrius.schematica.world.schematic.SchematicFormat;
+import com.github.lunatrius.schematica.world.storage.RegionSelection;
 
 public final class GuiSchematicSave extends GuiSchematicBrowser {
 
@@ -62,7 +67,7 @@ public final class GuiSchematicSave extends GuiSchematicBrowser {
 
     /** FileNameUtils.generateSimpleSafeFileName (generateLowercaseNames): lowercase with underscores. */
     static String simpleName(String name) {
-        return name.toLowerCase(java.util.Locale.ROOT).replaceAll("\\s+", "_").replaceAll("[^a-z0-9_.-]", "");
+        return name.toLowerCase(Locale.ROOT).replaceAll("\\s+", "_").replaceAll("[^a-z0-9_.-]", "");
     }
 
     @Override
@@ -162,8 +167,8 @@ public final class GuiSchematicSave extends GuiSchematicBrowser {
             setStatus(UiTranslations.format("schematica.ui.save.disabled"));
             return;
         }
-        com.github.lunatrius.schematica.world.chunk.SchematicContainer.Options capture = new com.github.lunatrius.schematica.world.chunk.SchematicContainer.Options(
-            captureFlags[1] ? new com.github.lunatrius.schematica.client.world.PlacementCaptureSource(ClientProxy.loadedSchematics) : null,
+        SchematicContainer.Options capture = new SchematicContainer.Options(
+            captureFlags[1] ? new PlacementCaptureSource(ClientProxy.loadedSchematics) : null,
             captureFlags[2], captureFlags[3]);
         if (SchematicaPlus.proxy.saveSchematic(mc.thePlayer, file.getParentFile(), file.getName(), world, selection, null, capture)) {
             WorldHandler.INSTANCE.saveSession();
@@ -194,7 +199,7 @@ public final class GuiSchematicSave extends GuiSchematicBrowser {
         @Override
         protected void createWidgets() {
             formatButton = root.add(new UiButton(() -> format, button -> {
-                java.util.List<String> formats = java.util.Arrays.asList(SchematicSaveTarget.FORMATS);
+                List<String> formats = Arrays.asList(SchematicSaveTarget.FORMATS);
                 format = formats.get(Math.floorMod(formats.indexOf(format) + (button == 0 ? 1 : -1), formats.size()));
             }));
             formatButton.setTooltip(UiTranslations.format("schematica.ui.save.format_hint"));

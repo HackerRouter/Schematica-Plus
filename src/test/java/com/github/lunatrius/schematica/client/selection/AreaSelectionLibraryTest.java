@@ -1,25 +1,32 @@
 package com.github.lunatrius.schematica.client.selection;
 
+import java.util.Arrays;
+import java.util.List;
+
+import com.github.lunatrius.schematica.api.SchematicRegion;
 import com.github.lunatrius.schematica.client.selection.AreaSelectionLibrary.Area;
 import com.github.lunatrius.schematica.internal.lunatriuscore.util.vector.Vector3i;
+
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import org.junit.Test;
+
 import static org.junit.Assert.*;
 
 public class AreaSelectionLibraryTest {
     @Test public void placementImportIsAtomicAndKeepsEveryTransformedBox() {
         AreaSelectionLibrary library = AreaSelectionLibrary.fromJson(null);
         Area original = library.selected();
-        java.util.List<com.github.lunatrius.schematica.api.SchematicRegion> regions = java.util.Arrays.asList(
-            new com.github.lunatrius.schematica.api.SchematicRegion("Machines", -5, 60, 2, -3, 62, 4),
-            new com.github.lunatrius.schematica.api.SchematicRegion("Pipes", 6, 64, 2, 10, 64, 2));
+        List<SchematicRegion> regions = Arrays.asList(
+            new SchematicRegion("Machines", -5, 60, 2, -3, 62, 4),
+            new SchematicRegion("Pipes", 6, 64, 2, 10, 64, 2));
         Area imported = library.createFromRegions("Import", regions);
         assertEquals(2, imported.boxes().size());
         assertEquals(new Vector3i(-5, 60, 2), imported.first());
         assertEquals("Pipes", imported.boxes().get(1).name());
         assertSame(original, library.selected());
-        assertThrows(IllegalArgumentException.class, () -> library.createFromRegions("Invalid", java.util.Arrays.asList(regions.get(0),
-            new com.github.lunatrius.schematica.api.SchematicRegion("Bad", 0, 256, 0, 0, 257, 0))));
+        assertThrows(IllegalArgumentException.class, () -> library.createFromRegions("Invalid", Arrays.asList(regions.get(0),
+            new SchematicRegion("Bad", 0, 256, 0, 0, 257, 0))));
         assertEquals(2, library.areas().size());
         assertSame(original, library.selected());
         library.select(imported);
@@ -51,7 +58,7 @@ public class AreaSelectionLibraryTest {
     }
 
     @Test public void migratesVersionTwoAndPreservesUnknownSubregionFields() {
-        JsonObject legacy = new com.google.gson.JsonParser().parse("{\"version\":2,\"selected\":\"00000000-0000-0000-0000-000000000001\",\"selections\":[{\"id\":\"00000000-0000-0000-0000-000000000001\",\"name\":\"Factory\",\"boxName\":\"Machines\",\"ax\":1,\"ay\":64,\"az\":-3,\"bx\":4,\"by\":70,\"bz\":-9,\"renderingGuide\":true,\"future\":42}]}").getAsJsonObject();
+        JsonObject legacy = new JsonParser().parse("{\"version\":2,\"selected\":\"00000000-0000-0000-0000-000000000001\",\"selections\":[{\"id\":\"00000000-0000-0000-0000-000000000001\",\"name\":\"Factory\",\"boxName\":\"Machines\",\"ax\":1,\"ay\":64,\"az\":-3,\"bx\":4,\"by\":70,\"bz\":-9,\"renderingGuide\":true,\"future\":42}]}").getAsJsonObject();
         AreaSelectionLibrary library = AreaSelectionLibrary.fromJson(legacy);
         assertEquals("Machines", library.selected().selectedBox().name());
         assertEquals(new Vector3i(4, 70, -9), library.selected().second());

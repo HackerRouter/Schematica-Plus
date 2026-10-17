@@ -1,6 +1,9 @@
 package com.github.lunatrius.schematica.client.util;
 
+import java.util.Locale;
+
 import net.minecraft.client.Minecraft;
+import net.minecraft.world.World;
 
 import cpw.mods.fml.common.FMLCommonHandler;
 
@@ -16,7 +19,7 @@ public class WorldServerName {
         return worldServerName(mc, mc.theWorld);
     }
 
-    public static String worldServerName(Minecraft mc, net.minecraft.world.World world) {
+    public static String worldServerName(Minecraft mc, World world) {
         String WorldOrServerName;
         if (mc.isSingleplayer()) {
             WorldOrServerName = FMLCommonHandler.instance()
@@ -26,7 +29,7 @@ public class WorldServerName {
         } else {
             // Gets the server data, only works if you're playing on a server. if you're using direct connect the name
             // will be "Minecraft Server". Crashes if singleplayer
-            WorldOrServerName = "server:" + mc.func_147104_D().serverIP.toLowerCase(java.util.Locale.ROOT);
+            WorldOrServerName = "server:" + mc.func_147104_D().serverIP.toLowerCase(Locale.ROOT);
         }
         return WorldOrServerName + "|dimension:" + (world == null ? 0 : world.provider.dimensionId);
     }

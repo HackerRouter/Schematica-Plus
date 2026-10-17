@@ -10,12 +10,13 @@ import java.util.Map;
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagDouble;
+import net.minecraft.nbt.NBTTagList;
 import net.minecraft.nbt.NBTTagShort;
 import net.minecraft.tileentity.TileEntity;
 
-import cpw.mods.fml.relauncher.ReflectionHelper;
-
 import com.github.lunatrius.schematica.util.SchematicTransform;
+
+import cpw.mods.fml.relauncher.ReflectionHelper;
 
 /**
  * Links to other blocks (bound relays and flowers, multiblock masters, quarry areas) are world positions in a tile's
@@ -308,7 +309,7 @@ public final class CoordinateLinks {
             holder = root.getCompoundTag(path.substring(0, split));
             path = path.substring(split + 1);
         }
-        net.minecraft.nbt.NBTTagList list = holder.getTagList(path, 10);
+        NBTTagList list = holder.getTagList(path, 10);
         for (int i = 0; i < list.tagCount(); i++) {
             NBTTagCompound entry = list.getCompoundTagAt(i);
             if (spec.y != null) {

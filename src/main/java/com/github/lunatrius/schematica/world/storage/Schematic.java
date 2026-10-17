@@ -1,18 +1,23 @@
 package com.github.lunatrius.schematica.world.storage;
 
-import com.github.lunatrius.schematica.api.SchematicRegion;
-
 import java.util.ArrayList;
+import java.util.BitSet;
+import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 
 import com.github.lunatrius.schematica.api.ISchematic;
+import com.github.lunatrius.schematica.api.SchematicOrigin;
+import com.github.lunatrius.schematica.api.SchematicRegion;
+import com.github.lunatrius.schematica.util.SchematicLimits;
 
 import cpw.mods.fml.common.registry.FMLControlledNamespacedRegistry;
 import cpw.mods.fml.common.registry.GameData;
@@ -23,14 +28,14 @@ public class Schematic implements ISchematic {
     private static final FMLControlledNamespacedRegistry<Block> BLOCK_REGISTRY = GameData.getBlockRegistry();
 
     private ItemStack icon;
-    private net.minecraft.nbt.NBTTagCompound schematicMetadata = new net.minecraft.nbt.NBTTagCompound();
+    private NBTTagCompound schematicMetadata = new NBTTagCompound();
 
-    @Override public net.minecraft.nbt.NBTTagCompound getSchematicMetadata() {
-        return (net.minecraft.nbt.NBTTagCompound) schematicMetadata.copy();
+    @Override public NBTTagCompound getSchematicMetadata() {
+        return (NBTTagCompound) schematicMetadata.copy();
     }
 
-    @Override public void setSchematicMetadata(net.minecraft.nbt.NBTTagCompound metadata) {
-        schematicMetadata = (net.minecraft.nbt.NBTTagCompound) metadata.copy();
+    @Override public void setSchematicMetadata(NBTTagCompound metadata) {
+        schematicMetadata = (NBTTagCompound) metadata.copy();
     }
     private final short[][][] blocks;
     /** 16 bits, for EndlessIDs extended metadata. */
@@ -40,26 +45,26 @@ public class Schematic implements ISchematic {
     private final int width;
     private final int height;
     private final int length;
-    private List<SchematicRegion> regions = java.util.Collections.emptyList();
-    private java.util.BitSet mask;
-    private com.github.lunatrius.schematica.api.SchematicOrigin origin = com.github.lunatrius.schematica.api.SchematicOrigin.ZERO;
+    private List<SchematicRegion> regions = Collections.emptyList();
+    private BitSet mask;
+    private SchematicOrigin origin = SchematicOrigin.ZERO;
 
-    @Override public com.github.lunatrius.schematica.api.SchematicOrigin getOrigin() { return origin; }
-    public void setOrigin(com.github.lunatrius.schematica.api.SchematicOrigin origin) { this.origin = java.util.Objects.requireNonNull(origin); }
+    @Override public SchematicOrigin getOrigin() { return origin; }
+    public void setOrigin(SchematicOrigin origin) { this.origin = Objects.requireNonNull(origin); }
 
     @Override public List<SchematicRegion> getRegions() { return regions; }
 
     public void setRegions(List<SchematicRegion> regions) {
-        java.util.BitSet checked = regions.isEmpty() ? null : RegionMask.create(regions, width, height, length);
-        this.regions = java.util.Collections.unmodifiableList(new ArrayList<>(regions));
+        BitSet checked = regions.isEmpty() ? null : RegionMask.create(regions, width, height, length);
+        this.regions = Collections.unmodifiableList(new ArrayList<>(regions));
         this.mask = checked;
         tileEntities.removeIf(tile -> !containsBlock(tile.xCoord, tile.yCoord, tile.zCoord));
         entities.removeIf(entity -> !containsBlock((int) Math.floor(entity.posX), (int) Math.floor(entity.posY), (int) Math.floor(entity.posZ)));
     }
 
     public void setEmpty() {
-        regions = java.util.Collections.emptyList();
-        mask = new java.util.BitSet();
+        regions = Collections.emptyList();
+        mask = new BitSet();
         tileEntities.clear();
         entities.clear();
     }
@@ -70,7 +75,7 @@ public class Schematic implements ISchematic {
     }
 
     public Schematic(final ItemStack icon, final int width, final int height, final int length) {
-        com.github.lunatrius.schematica.util.SchematicLimits.volume(width, height, length);
+        SchematicLimits.volume(width, height, length);
         this.icon = icon;
         this.blocks = new short[width][height][length];
         this.metadata = new short[width][height][length];

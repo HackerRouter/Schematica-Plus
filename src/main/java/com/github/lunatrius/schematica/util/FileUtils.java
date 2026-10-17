@@ -2,6 +2,12 @@ package com.github.lunatrius.schematica.util;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.AtomicMoveNotSupportedException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
+import java.util.Locale;
 
 import com.github.lunatrius.schematica.reference.Reference;
 
@@ -12,30 +18,30 @@ public class FileUtils {
         for (String name : new String[] {"Schematica.cfg", "schematica.cfg"}) {
             File legacy = new File(configFile.getAbsoluteFile().getParentFile(), name);
             if (legacy.isFile()) {
-                java.nio.file.Files.copy(legacy.toPath(), configFile.toPath());
+                Files.copy(legacy.toPath(), configFile.toPath());
                 return;
             }
         }
     }
 
     public static void writeUtf8Atomically(File file, String text) throws IOException {
-        java.nio.file.Path target = file.toPath().toAbsolutePath();
-        java.nio.file.Path temporary = java.nio.file.Files.createTempFile(target.getParent(), ".schematica-", ".tmp");
+        Path target = file.toPath().toAbsolutePath();
+        Path temporary = Files.createTempFile(target.getParent(), ".schematica-", ".tmp");
         try {
-            java.nio.file.Files.write(temporary, text.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+            Files.write(temporary, text.getBytes(StandardCharsets.UTF_8));
             try {
-                java.nio.file.Files.move(temporary, target, java.nio.file.StandardCopyOption.ATOMIC_MOVE,
-                    java.nio.file.StandardCopyOption.REPLACE_EXISTING);
-            } catch (java.nio.file.AtomicMoveNotSupportedException e) {
-                java.nio.file.Files.move(temporary, target, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+                Files.move(temporary, target, StandardCopyOption.ATOMIC_MOVE,
+                    StandardCopyOption.REPLACE_EXISTING);
+            } catch (AtomicMoveNotSupportedException e) {
+                Files.move(temporary, target, StandardCopyOption.REPLACE_EXISTING);
             }
         } finally {
-            java.nio.file.Files.deleteIfExists(temporary);
+            Files.deleteIfExists(temporary);
         }
     }
 
     public static boolean isReservedName(String name) {
-        return name.split("\\.", 2)[0].toUpperCase(java.util.Locale.ROOT).matches("CON|PRN|AUX|NUL|COM[1-9¹²³]|LPT[1-9¹²³]");
+        return name.split("\\.", 2)[0].toUpperCase(Locale.ROOT).matches("CON|PRN|AUX|NUL|COM[1-9¹²³]|LPT[1-9¹²³]");
     }
 
     public static File resolveSchematicFile(File directory, String filename) throws IOException {
@@ -44,7 +50,7 @@ public class FileUtils {
             || filename.indexOf(':') >= 0 || filename.indexOf('\0') >= 0 || isReservedName(filename)) {
             throw new IOException("Invalid schematic filename");
         }
-        String lowerName = filename.toLowerCase(java.util.Locale.ROOT);
+        String lowerName = filename.toLowerCase(Locale.ROOT);
         if (!lowerName.endsWith(".schematic") && !lowerName.endsWith(".schemplus") && !lowerName.endsWith(".litematic")
             && !lowerName.endsWith(".nbt")) {
             throw new IOException("Unsupported schematic output extension");
@@ -58,7 +64,7 @@ public class FileUtils {
 
     public static File findSchematicFile(File directory, String name, boolean preferExtended) throws IOException {
         if (name == null) throw new IOException("Invalid schematic filename");
-        String lower = name.toLowerCase(java.util.Locale.ROOT);
+        String lower = name.toLowerCase(Locale.ROOT);
         if (lower.endsWith(".schematic") || lower.endsWith(".schemplus") || lower.endsWith(".litematic") || lower.endsWith(".nbt")) {
             return resolveSchematicFile(directory, name);
         }

@@ -12,11 +12,12 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.lwjgl.input.Keyboard;
-
 import com.github.lunatrius.schematica.handler.client.InputHandler;
 import com.github.lunatrius.schematica.reference.Reference;
+import com.github.lunatrius.schematica.tool.SchematicRebuild;
 import com.github.lunatrius.schematica.tool.ToolManager;
+
+import org.lwjgl.input.Keyboard;
 
 public final class Hotkeys {
     private static final Map<String, Hotkey> BY_ID = new LinkedHashMap<>();
@@ -114,7 +115,7 @@ public final class Hotkeys {
             if (!store.load(ALL)) { migrate(gameDirectory.resolve("options.txt")); store.save(ALL); }
         } catch (IOException error) { Reference.logger.error("Could not load hotkeys; keeping the original configuration file", error); }
         HotkeyHooks.initialize(ALL, InputHandler.INSTANCE::onHotkey, ToolManager::scroll);
-        HotkeyHooks.click(com.github.lunatrius.schematica.tool.SchematicRebuild::click);
+        HotkeyHooks.click(SchematicRebuild::click);
     }
     public static void save() {
         if (store == null) return;

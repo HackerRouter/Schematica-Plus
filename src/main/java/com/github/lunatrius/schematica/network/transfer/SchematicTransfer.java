@@ -2,6 +2,7 @@ package com.github.lunatrius.schematica.network.transfer;
 
 import com.github.lunatrius.schematica.api.ISchematic;
 import com.github.lunatrius.schematica.reference.Constants;
+import com.github.lunatrius.schematica.world.storage.SchematicCopies;
 
 public class SchematicTransfer {
 
@@ -65,7 +66,7 @@ public class SchematicTransfer {
     /** Older Plus clients cannot restore independent (overlapping) regions; they get the update message. */
     public boolean acceptRegionSupport(boolean supported) {
         regionSupport = supported;
-        if (!supported && com.github.lunatrius.schematica.world.storage.SchematicCopies.independent(this.schematic)) this.cancelled = true;
+        if (!supported && SchematicCopies.independent(this.schematic)) this.cancelled = true;
         return !this.cancelled;
     }
 

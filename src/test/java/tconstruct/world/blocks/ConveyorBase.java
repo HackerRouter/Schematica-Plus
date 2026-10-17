@@ -1,5 +1,8 @@
 package tconstruct.world.blocks;
 
-public class ConveyorBase extends net.minecraft.block.Block {
-    public ConveyorBase() { super(net.minecraft.block.material.Material.rock); }
+import net.minecraft.block.Block;
+import net.minecraft.block.material.Material;
+
+public class ConveyorBase extends Block {
+    public ConveyorBase() { super(Material.rock); }
 }

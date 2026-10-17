@@ -1,17 +1,22 @@
 package com.github.lunatrius.schematica.compat;
 
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
-import cpw.mods.fml.common.Loader;
-import cpw.mods.fml.common.ModContainer;
+import java.util.function.Supplier;
+
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
+
 import com.github.lunatrius.schematica.api.ISchematicVisualAdapter;
 import com.github.lunatrius.schematica.reference.Reference;
+
+import cpw.mods.fml.common.Loader;
+import cpw.mods.fml.common.ModContainer;
 
 public final class VisualAdapters {
     private static final List<ISchematicVisualAdapter> ADAPTERS = new CopyOnWriteArrayList<>();
@@ -65,7 +70,7 @@ public final class VisualAdapters {
             StringBuilder result = new StringBuilder();
             for (byte value : digest) result.append(String.format("%02x", value & 255));
             return environmentProtocol = result.toString();
-        } catch (java.security.NoSuchAlgorithmException e) { throw new IllegalStateException(e); }
+        } catch (NoSuchAlgorithmException e) { throw new IllegalStateException(e); }
     }
 
     public static String packetProtocol(TileEntity tile) {
@@ -156,7 +161,7 @@ public final class VisualAdapters {
         return false;
     }
 
-    public static NBTTagCompound transformNBT(TileEntity tile, java.util.function.Supplier<NBTTagCompound> source, char operation) {
+    public static NBTTagCompound transformNBT(TileEntity tile, Supplier<NBTTagCompound> source, char operation) {
         NBTTagCompound data = null;
         for (ISchematicVisualAdapter adapter : ADAPTERS) {
             if (!adapter.supports(tile) || !adapter.transformsNBT(tile)) continue;

@@ -3,14 +3,18 @@
 package com.github.lunatrius.schematica.client.gui.save;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.world.World;
-import org.lwjgl.input.Keyboard;
+
 import com.github.lunatrius.schematica.SchematicaPlus;
 import com.github.lunatrius.schematica.client.gui.GuiSchematicMainMenu;
+import com.github.lunatrius.schematica.client.gui.control.GuiSchematicMaterials;
 import com.github.lunatrius.schematica.client.gui.framework.UiBounds;
 import com.github.lunatrius.schematica.client.gui.framework.UiButton;
 import com.github.lunatrius.schematica.client.gui.framework.UiCheckBox;
@@ -24,12 +28,17 @@ import com.github.lunatrius.schematica.client.gui.framework.UiScreen;
 import com.github.lunatrius.schematica.client.gui.framework.UiSprite;
 import com.github.lunatrius.schematica.client.gui.framework.UiTextField;
 import com.github.lunatrius.schematica.client.gui.framework.UiTranslations;
+import com.github.lunatrius.schematica.client.gui.material.MaterialList;
+import com.github.lunatrius.schematica.client.gui.material.MaterialLists;
+import com.github.lunatrius.schematica.client.gui.projects.GuiVersionPrompt;
+import com.github.lunatrius.schematica.client.projects.SchematicProjects;
 import com.github.lunatrius.schematica.client.selection.AreaSelectionLibrary;
 import com.github.lunatrius.schematica.client.selection.AreaSelectionLibrary.Area;
 import com.github.lunatrius.schematica.client.selection.AreaSelectionLibrary.Box;
-import com.github.lunatrius.schematica.client.projects.SchematicProjects;
 import com.github.lunatrius.schematica.client.selection.AreaSelections;
 import com.github.lunatrius.schematica.internal.lunatriuscore.util.vector.Vector3i;
+
+import org.lwjgl.input.Keyboard;
 
 public final class GuiAreaSelectionEditor extends UiScreen {
     private final AreaSelectionLibrary library = AreaSelections.library();
@@ -106,7 +115,7 @@ public final class GuiAreaSelectionEditor extends UiScreen {
             button -> { if (button == 0) change(() -> library.setOrigin(area, manualOrigin() ? null : simple ? area.origin() : GuiAreaSelectionManager.playerPoint())); }));
         save = SchematicProjects.hasProjectOpen()
             ? action("litematica.gui.button.save_new_schematic_version", () -> {
-                if (SchematicProjects.current() != null) mc.displayGuiScreen(new com.github.lunatrius.schematica.client.gui.projects.GuiVersionPrompt(this, SchematicProjects.current()));
+                if (SchematicProjects.current() != null) mc.displayGuiScreen(new GuiVersionPrompt(this, SchematicProjects.current()));
             })
             : action("litematica.gui.button.area_editor.create_schematic", () -> mc.displayGuiScreen(new GuiSchematicSave(this, area.name())));
         count = root.add(new UiLabel(() -> UiTranslations.format("litematica.gui.label.area_editor.sub_regions", area == null ? 0 : area.boxes().size())));
@@ -121,9 +130,9 @@ public final class GuiAreaSelectionEditor extends UiScreen {
         }
         analyze = action("litematica.gui.button.area_editor.analyze_area", () -> {
             AreaSelections.capture();
-            com.github.lunatrius.schematica.client.gui.material.MaterialList list = com.github.lunatrius.schematica.client.gui.material.MaterialList.area(area);
-            com.github.lunatrius.schematica.client.gui.material.MaterialLists.setCurrent(list);
-            mc.displayGuiScreen(new com.github.lunatrius.schematica.client.gui.control.GuiSchematicMaterials(this, list));
+            MaterialList list = MaterialList.area(area);
+            MaterialLists.setCurrent(list);
+            mc.displayGuiScreen(new GuiSchematicMaterials(this, list));
         });
         main = addButton("litematica.gui.button.change_menu.to_main_menu", () -> mc.displayGuiScreen(new GuiSchematicMainMenu(this)));
         status = root.add(new UiLabel(this::statusText, 0xFFFFA0A0));
@@ -206,7 +215,7 @@ public final class GuiAreaSelectionEditor extends UiScreen {
         });
     }
 
-    private void refresh() { model.setEntries(area == null ? java.util.Collections.emptyList() : area.boxes()); list.sync(); }
+    private void refresh() { model.setEntries(area == null ? Collections.emptyList() : area.boxes()); list.sync(); }
     @Override protected void opened() {
         if (available()) AreaSelections.capture();
         name.setText(area == null ? "" : area.name());
@@ -339,7 +348,7 @@ public final class GuiAreaSelectionEditor extends UiScreen {
         }
         @Override public List<String> tooltip(int x, int y) {
             Vector3i a = box.first(), b = box.second();
-            return java.util.Arrays.asList(UiTranslations.format("litematica.gui.label.area_editor.pos1") + ": " + a.x + ", " + a.y + ", " + a.z,
+            return Arrays.asList(UiTranslations.format("litematica.gui.label.area_editor.pos1") + ": " + a.x + ", " + a.y + ", " + a.z,
                 UiTranslations.format("litematica.gui.label.area_editor.pos2") + ": " + b.x + ", " + b.y + ", " + b.z,
                 UiTranslations.format("litematica.gui.label.area_editor.dimensions") + ": " + (Math.abs(a.x - b.x) + 1) + " x "
                     + (Math.abs(a.y - b.y) + 1) + " x " + (Math.abs(a.z - b.z) + 1));

@@ -1,6 +1,7 @@
 package com.github.lunatrius.schematica.handler;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -11,7 +12,9 @@ import net.minecraft.nbt.CompressedStreamTools;
 import net.minecraft.nbt.NBTTagCompound;
 
 import com.github.lunatrius.schematica.network.message.MessageEditUpload;
+
 import org.junit.Test;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -26,7 +29,7 @@ public class RemoteEditsTest {
     }
 
     @Test public void uploadsMustBeCompressed() throws Exception {
-        assertThrows(java.io.IOException.class, () -> RemoteEdits.read(new byte[] {1, 2, 3, 4}));
+        assertThrows(IOException.class, () -> RemoteEdits.read(new byte[] {1, 2, 3, 4}));
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
         try (GZIPOutputStream gzip = new GZIPOutputStream(bytes)) { gzip.write(new byte[] {99}); }
         assertThrows(Exception.class, () -> RemoteEdits.read(bytes.toByteArray()));

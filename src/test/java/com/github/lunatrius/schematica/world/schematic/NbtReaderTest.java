@@ -4,9 +4,15 @@ import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import org.junit.Test;
+import java.io.OutputStream;
+import java.util.zip.GZIPOutputStream;
+
+import net.minecraft.nbt.NBTTagCompound;
+
 import org.junit.Rule;
+import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
 
@@ -16,14 +22,14 @@ public class NbtReaderTest {
     @Test public void readsCompressedModernAndUncompressedLegacyNbt() throws IOException {
         for (boolean compressed : new boolean[] {false, true}) {
             File file = temporary.newFile();
-            try (java.io.OutputStream raw = new FileOutputStream(file);
-                 DataOutputStream out = new DataOutputStream(compressed ? new java.util.zip.GZIPOutputStream(raw) : raw)) {
+            try (OutputStream raw = new FileOutputStream(file);
+                 DataOutputStream out = new DataOutputStream(compressed ? new GZIPOutputStream(raw) : raw)) {
                 out.writeByte(10); out.writeUTF("");
                 out.writeByte(8); out.writeUTF("Name"); out.writeUTF("建筑");
                 out.writeByte(12); out.writeUTF("BlockStates"); out.writeInt(1); out.writeLong(123);
                 out.writeByte(0);
             }
-            net.minecraft.nbt.NBTTagCompound tag = LitematicaNBTReader.readFromFile(file);
+            NBTTagCompound tag = LitematicaNBTReader.readFromFile(file);
             assertEquals("建筑", tag.getString("Name"));
             assertEquals(123, LitematicaNBTReader.getLongArray(tag, "BlockStates")[0]);
             LitematicaNBTReader.clearLongArrayStore();

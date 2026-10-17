@@ -8,13 +8,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.nio.IntBuffer;
-
 import javax.imageio.ImageIO;
-
-import org.lwjgl.BufferUtils;
-import org.lwjgl.input.Keyboard;
-import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GL12;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.OpenGlHelper;
@@ -25,9 +19,14 @@ import net.minecraft.util.EnumChatFormatting;
 
 import com.github.lunatrius.schematica.reference.Reference;
 import com.github.lunatrius.schematica.world.schematic.SchematicFiles;
+import com.github.lunatrius.schematica.world.schematic.SchematicMetadata;
 
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.gameevent.TickEvent;
+import org.lwjgl.BufferUtils;
+import org.lwjgl.input.Keyboard;
+import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL12;
 
 /** Sets a schematic preview from the next screenshot key press, or from a thumb.png beside the file. */
 public final class SchematicPreview {
@@ -64,8 +63,8 @@ public final class SchematicPreview {
     }
 
     public static void store(File file, int[] pixels) throws IOException {
-        if (!com.github.lunatrius.schematica.world.schematic.SchematicMetadata.validPreview(pixels)) throw new IOException("Invalid preview dimensions");
-        com.github.lunatrius.schematica.client.gui.browser.SchematicFileEdits.edit(file, metadata -> metadata.setIntArray("PreviewImageData", pixels));
+        if (!SchematicMetadata.validPreview(pixels)) throw new IOException("Invalid preview dimensions");
+        SchematicFileEdits.edit(file, metadata -> metadata.setIntArray("PreviewImageData", pixels));
     }
 
     /** Ctrl + Alt + Shift on the button: thumb.png from the schematic's directory. */

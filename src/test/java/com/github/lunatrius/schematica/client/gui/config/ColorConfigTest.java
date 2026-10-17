@@ -1,14 +1,19 @@
 package com.github.lunatrius.schematica.client.gui.config;
 
 import java.io.File;
+import java.lang.reflect.Field;
+
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.common.config.Property;
+
+import com.github.lunatrius.schematica.handler.RenderColors;
+
+import cpw.mods.fml.relauncher.FMLInjectionData;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-import static org.junit.Assert.*;
 
-import com.github.lunatrius.schematica.handler.RenderColors;
+import static org.junit.Assert.*;
 
 public class ColorConfigTest {
     @Rule public TemporaryFolder temporary = new TemporaryFolder();
@@ -32,7 +37,7 @@ public class ColorConfigTest {
     }
 
     @Test public void colorsSurviveForgePersistenceAndBrokenValuesKeepRuntimeDefaults() throws Exception {
-        java.lang.reflect.Field minecraftHomeField = cpw.mods.fml.relauncher.FMLInjectionData.class.getDeclaredField("minecraftHome");
+        Field minecraftHomeField = FMLInjectionData.class.getDeclaredField("minecraftHome");
         minecraftHomeField.setAccessible(true);
         Object previousHome = minecraftHomeField.get(null);
         minecraftHomeField.set(null, temporary.getRoot());

@@ -6,25 +6,33 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 import net.minecraft.client.gui.GuiScreen;
 
-import com.github.lunatrius.schematica.client.gui.framework.UiTranslations;
 import com.github.lunatrius.schematica.SchematicaPlus;
-import com.github.lunatrius.schematica.client.gui.browser.GuiSchematicBrowser;
-import com.github.lunatrius.schematica.client.gui.browser.SchematicBrowserModel;
-import com.github.lunatrius.schematica.client.gui.placement.GuiSchematicLoadedList;
-import com.github.lunatrius.schematica.client.gui.framework.UiCheckBox;
-import com.github.lunatrius.schematica.client.gui.framework.UiSprite;
-import com.github.lunatrius.schematica.client.gui.framework.UiButton;
 import com.github.lunatrius.schematica.api.ISchematic;
 import com.github.lunatrius.schematica.api.SchematicRegion;
 import com.github.lunatrius.schematica.client.gui.GuiStringListSelection;
+import com.github.lunatrius.schematica.client.gui.browser.GuiSchematicBrowser;
+import com.github.lunatrius.schematica.client.gui.browser.SchematicBrowserModel;
+import com.github.lunatrius.schematica.client.gui.browser.SchematicFileEdits;
 import com.github.lunatrius.schematica.client.gui.control.GuiSchematicMaterials;
+import com.github.lunatrius.schematica.client.gui.framework.UiButton;
+import com.github.lunatrius.schematica.client.gui.framework.UiCheckBox;
+import com.github.lunatrius.schematica.client.gui.framework.UiDraw;
+import com.github.lunatrius.schematica.client.gui.framework.UiSprite;
+import com.github.lunatrius.schematica.client.gui.framework.UiTranslations;
 import com.github.lunatrius.schematica.client.gui.material.CustomMaterialListFile;
+import com.github.lunatrius.schematica.client.gui.material.MaterialList;
+import com.github.lunatrius.schematica.client.gui.material.MaterialLists;
+import com.github.lunatrius.schematica.client.gui.placement.GuiSchematicLoadedList;
+import com.github.lunatrius.schematica.client.util.UiState;
 import com.github.lunatrius.schematica.client.world.SchematicWorld;
+import com.github.lunatrius.schematica.handler.ConfigurationHandler;
 import com.github.lunatrius.schematica.reference.Reference;
 import com.github.lunatrius.schematica.world.schematic.SchematicFiles;
 import com.github.lunatrius.schematica.world.schematic.SchematicFormat;
@@ -36,13 +44,13 @@ public final class GuiSchematicLoad extends GuiSchematicBrowser {
     private UiButton materialList;
     private UiButton renameSchematic;
     private UiCheckBox createPlacement;
-    private boolean placeOnLoad = Boolean.parseBoolean(com.github.lunatrius.schematica.client.util.UiState.get("create_placement_on_load", "true"));
+    private boolean placeOnLoad = Boolean.parseBoolean(UiState.get("create_placement_on_load", "true"));
 
     public GuiSchematicLoad(GuiScreen parent) {
         super(parent, UiTranslations.format("litematica.gui.title.load_schematic"), false);
     }
 
-    private final java.util.Map<File, Object[]> customLists = new java.util.HashMap<>();
+    private final Map<File, Object[]> customLists = new HashMap<>();
 
     /** WidgetSchematicBrowser: custom material lists (.json, .txt) are listed next to the schematics. */
     @Override
@@ -50,7 +58,7 @@ public final class GuiSchematicLoad extends GuiSchematicBrowser {
 
     @Override
     protected SchematicBrowserModel createModel() throws IOException {
-        return new SchematicBrowserModel(com.github.lunatrius.schematica.handler.ConfigurationHandler.schematicDirectory,
+        return new SchematicBrowserModel(ConfigurationHandler.schematicDirectory,
             name -> SchematicBrowserModel.supported(name) || CustomMaterialListFile.isListFile(name));
     }
 
@@ -72,7 +80,7 @@ public final class GuiSchematicLoad extends GuiSchematicBrowser {
 
     /** The material list info panel of WidgetSchematicBrowser for custom list files. */
     @Override
-    protected void drawInfo(com.github.lunatrius.schematica.client.gui.framework.UiDraw draw, int x, int y, int width, SchematicBrowserModel.Entry entry) {
+    protected void drawInfo(UiDraw draw, int x, int y, int width, SchematicBrowserModel.Entry entry) {
         CustomMaterialListFile list = listFile(entry) ? customList(entry.file) : null;
         if (list == null) {
             super.drawInfo(draw, x, y, width, entry);
@@ -102,7 +110,7 @@ public final class GuiSchematicLoad extends GuiSchematicBrowser {
         createPlacement = root.add(new UiCheckBox(() -> UiTranslations.format("litematica.gui.label.schematic_load.checkbox.create_placement"),
             () -> placeOnLoad, value -> {
                 placeOnLoad = value;
-                com.github.lunatrius.schematica.client.util.UiState.set("create_placement_on_load", Boolean.toString(value));
+                UiState.set("create_placement_on_load", Boolean.toString(value));
             }));
         createPlacement.setTooltip(UiTranslations.format("litematica.gui.label.schematic_load.hoverinfo.create_placement").split("\n"));
     }
@@ -129,7 +137,7 @@ public final class GuiSchematicLoad extends GuiSchematicBrowser {
             boolean[] finished = {false};
             boolean started = SchematicGuiLoader.loadAsync(mc, file, placeOnLoad, source -> {
                 finished[0] = true;
-                com.github.lunatrius.schematica.client.util.UiState.addRecent(file);
+                UiState.addRecent(file);
                 setStatus(UiTranslations.format("litematica.message.schematic_read_from_file_success", file.getName()));
                 tickScreen();
             }, error -> {
@@ -168,9 +176,9 @@ public final class GuiSchematicLoad extends GuiSchematicBrowser {
                 setStatus(UiTranslations.format("litematica.message.error.material_list.custom_load_failed", file.getName()));
                 return;
             }
-            com.github.lunatrius.schematica.client.gui.material.MaterialList list =
-                com.github.lunatrius.schematica.client.gui.material.MaterialList.custom(custom.name, file, custom.items);
-            com.github.lunatrius.schematica.client.gui.material.MaterialLists.setCurrent(list);
+            MaterialList list =
+                MaterialList.custom(custom.name, file, custom.items);
+            MaterialLists.setCurrent(list);
             setStatus(UiTranslations.format("litematica.info.material_list.custom_loaded", file.getName()));
             mc.displayGuiScreen(new GuiSchematicMaterials(this, list));
             return;
@@ -199,9 +207,9 @@ public final class GuiSchematicLoad extends GuiSchematicBrowser {
     }
 
     private void openMaterials(SchematicWorld world, String name, List<SchematicRegion> regions) {
-        com.github.lunatrius.schematica.client.gui.material.MaterialList list = com.github.lunatrius.schematica.client.gui.material.MaterialList.schematic(world, name, regions);
+        MaterialList list = MaterialList.schematic(world, name, regions);
         // Remember the last opened material list for the hotkey to (re-) open it
-        com.github.lunatrius.schematica.client.gui.material.MaterialLists.setCurrent(list);
+        MaterialLists.setCurrent(list);
         mc.displayGuiScreen(new GuiSchematicMaterials(this, list));
     }
 
@@ -221,7 +229,7 @@ public final class GuiSchematicLoad extends GuiSchematicBrowser {
         }
         prompt(UiTranslations.format("litematica.gui.title.rename_schematic"), info == null ? "" : info.name, value -> {
             try {
-                com.github.lunatrius.schematica.client.gui.browser.SchematicFileEdits.edit(file, metadata -> metadata.setString("Name", value));
+                SchematicFileEdits.edit(file, metadata -> metadata.setString("Name", value));
                 refreshFiles();
                 return null;
             } catch (IOException e) {

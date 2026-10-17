@@ -4,9 +4,11 @@ package com.github.lunatrius.schematica.client.printer;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.audio.PositionedSoundRecord;
 import net.minecraft.client.entity.EntityClientPlayerMP;
 import net.minecraft.network.play.client.C07PacketPlayerDigging;
 import net.minecraft.network.play.client.C09PacketHeldItemChange;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.World;
 
 /**
@@ -68,8 +70,8 @@ public final class BlockMiner {
         syncSlot(player);
         progress += block.getPlayerRelativeBlockHardness(player, world, x, y, z);
         if (ticks++ % 4 == 0) {
-            mc.getSoundHandler().playSound(new net.minecraft.client.audio.PositionedSoundRecord(
-                new net.minecraft.util.ResourceLocation(block.stepSound.getStepResourcePath()), (block.stepSound.getVolume() + 1.0F) / 8.0F,
+            mc.getSoundHandler().playSound(new PositionedSoundRecord(
+                new ResourceLocation(block.stepSound.getStepResourcePath()), (block.stepSound.getVolume() + 1.0F) / 8.0F,
                 block.stepSound.getPitch() * 0.5F, x + 0.5F, y + 0.5F, z + 0.5F));
         }
         player.swingItem();

@@ -1,5 +1,8 @@
 package com.thecodewarrior.catwalks.block;
 
-public class BlockSupportColumn extends net.minecraft.block.Block {
-    public BlockSupportColumn() { super(net.minecraft.block.material.Material.rock); }
+import net.minecraft.block.Block;
+import net.minecraft.block.material.Material;
+
+public class BlockSupportColumn extends Block {
+    public BlockSupportColumn() { super(Material.rock); }
 }

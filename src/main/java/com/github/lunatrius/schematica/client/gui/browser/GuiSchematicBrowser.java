@@ -6,31 +6,38 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.FileAlreadyExistsException;
 import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
-
-import org.lwjgl.input.Keyboard;
+import java.util.Objects;
 
 import net.minecraft.client.gui.GuiScreen;
 
-import com.github.lunatrius.schematica.client.gui.framework.UiTranslations;
-import com.github.lunatrius.schematica.client.gui.framework.UiButton;
 import com.github.lunatrius.schematica.client.gui.framework.UiBounds;
+import com.github.lunatrius.schematica.client.gui.framework.UiButton;
 import com.github.lunatrius.schematica.client.gui.framework.UiDraw;
-import com.github.lunatrius.schematica.client.gui.framework.UiSprite;
-import com.github.lunatrius.schematica.client.gui.framework.UiWidget;
 import com.github.lunatrius.schematica.client.gui.framework.UiLabel;
 import com.github.lunatrius.schematica.client.gui.framework.UiList;
 import com.github.lunatrius.schematica.client.gui.framework.UiListModel;
-import com.github.lunatrius.schematica.client.gui.framework.UiScreen;
-import com.github.lunatrius.schematica.client.gui.framework.UiTextField;
 import com.github.lunatrius.schematica.client.gui.framework.UiPanel;
+import com.github.lunatrius.schematica.client.gui.framework.UiScreen;
+import com.github.lunatrius.schematica.client.gui.framework.UiSprite;
+import com.github.lunatrius.schematica.client.gui.framework.UiTextField;
+import com.github.lunatrius.schematica.client.gui.framework.UiTextWrap;
+import com.github.lunatrius.schematica.client.gui.framework.UiTranslations;
+import com.github.lunatrius.schematica.client.gui.framework.UiWidget;
+import com.github.lunatrius.schematica.client.util.FolderOpener;
+import com.github.lunatrius.schematica.client.util.UiState;
 import com.github.lunatrius.schematica.handler.ConfigurationHandler;
+import com.github.lunatrius.schematica.proxy.ClientProxy;
 import com.github.lunatrius.schematica.reference.Reference;
 import com.github.lunatrius.schematica.util.FileUtils;
-import com.github.lunatrius.schematica.proxy.ClientProxy;
+import com.github.lunatrius.schematica.world.schematic.DataVersions;
+import com.github.lunatrius.schematica.world.schematic.SchematicFiles;
+
+import org.lwjgl.input.Keyboard;
 
 public abstract class GuiSchematicBrowser extends UiScreen {
 
@@ -58,7 +65,7 @@ public abstract class GuiSchematicBrowser extends UiScreen {
     private SchematicBrowserModel.Entry lastSelection;
     private final SchematicInfoCache infoCache = new SchematicInfoCache();
     private int infoScroll, infoMaxScroll, infoContentBottom;
-    private static final java.text.SimpleDateFormat DATE_FORMAT = new java.text.SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
     protected GuiSchematicBrowser(GuiScreen parent, String title, boolean directoriesOnly) {
         super(parent, title);
@@ -85,23 +92,23 @@ public abstract class GuiSchematicBrowser extends UiScreen {
         recent.setTooltip(UiTranslations.format("schematica.ui.browser.recent.hover").split("\n"));
         star = root.add(new UiButton(() -> {
             SchematicBrowserModel.Entry entry = selection();
-            return entry != null && com.github.lunatrius.schematica.client.util.UiState.favorite(entry.file) ? "\u00a7e\u2605" : "\u00a78\u2605";
+            return entry != null && UiState.favorite(entry.file) ? "\u00a7e\u2605" : "\u00a78\u2605";
         }, mouse -> {
             SchematicBrowserModel.Entry entry = selection();
             if (mouse != 0 || entry == null || entry.directory) return;
-            com.github.lunatrius.schematica.client.util.UiState.toggleFavorite(entry.file);
+            UiState.toggleFavorite(entry.file);
             if (browser.listing()) refreshFiles();
         }).setBackground(false));
         star.setTooltip(UiTranslations.format("schematica.ui.browser.star.hover"));
         home = root.add(new UiButton(() -> "", mouse -> {
             if (browser == null) return;
             if (mouse == 0) navigate(browser.root());
-            else if (mouse == 1) com.github.lunatrius.schematica.client.util.FolderOpener.open(browser.root());
+            else if (mouse == 1) FolderOpener.open(browser.root());
         }).setSprite(UiSprite.ROOT).setBackground(false));
         home.setTooltip(UiTranslations.format("malilib.gui.button.hover.directory_widget.root"));
         createDirectory = icon(UiSprite.CREATE_DIRECTORY, "malilib.gui.button.hover.directory_widget.create_directory", this::createDirectory);
         openFolder = icon(UiSprite.DIRECTORY, "malilib.gui.button.hover.directory_widget.open_directory",
-            () -> { if (browser != null) com.github.lunatrius.schematica.client.util.FolderOpener.open(browser.directory()); });
+            () -> { if (browser != null) FolderOpener.open(browser.directory()); });
         search = root.add(new UiTextField(fontRendererObj, 256, files::setQuery));
         searchButton = icon(UiSprite.SEARCH, null, () -> {
             searching = !searching;
@@ -112,7 +119,7 @@ public abstract class GuiSchematicBrowser extends UiScreen {
         list = root.add(new UiList<>(files, "", this::activate));
         list.setFileStyle(entry -> entry.directory ? UiSprite.DIRECTORY
             : UiSprite.schematicFile(entry.name()),
-            entry -> entry.directory ? entry.name() : (collections() && com.github.lunatrius.schematica.client.util.UiState.favorite(entry.file)
+            entry -> entry.directory ? entry.name() : (collections() && UiState.favorite(entry.file)
                 ? "\u00a7e\u2605\u00a7r " : "") + entry.name().substring(0, entry.name().lastIndexOf('.')));
         info = root.add(new UiPanel() {
             @Override public void draw(UiDraw draw, int mouseX, int mouseY) {
@@ -150,7 +157,7 @@ public abstract class GuiSchematicBrowser extends UiScreen {
     /** Draws the info panel for the selected entry: descriptive metadata and preview for writable schematic formats. */
     protected void drawInfo(UiDraw draw, int x, int y, int width, SchematicBrowserModel.Entry entry) {
         if (entry == null || entry.directory) return;
-        com.github.lunatrius.schematica.world.schematic.SchematicFiles.Info meta = infoCache.get(entry.file);
+        SchematicFiles.Info meta = infoCache.get(entry.file);
         if (meta == null) {
             draw.text(UiTranslations.format("litematica.gui.label.schematic_info.name"), x, y, 0xC0C0C0C0);
             draw.text(draw.trim(entry.name(), width - 10), x + 4, y + 12, 0xFFFFFFFF);
@@ -186,13 +193,13 @@ public abstract class GuiSchematicBrowser extends UiScreen {
         draw.text(meta.litematic ? UiTranslations.format("litematica.gui.label.schematic_info.version", meta.version)
             : "nbt".equals(meta.format) ? UiTranslations.format("litematica.gui.label.schematic_info.vanilla_version")
             : "." + meta.format, x, y += 12, text);
-        String schema = meta.dataVersion < 0 ? null : com.github.lunatrius.schematica.world.schematic.DataVersions.name(meta.dataVersion);
+        String schema = meta.dataVersion < 0 ? null : DataVersions.name(meta.dataVersion);
         if (schema != null) {
             draw.text(draw.trim(UiTranslations.format("litematica.gui.label.schematic_info.schema", schema, meta.dataVersion), limit), x, y += 12, text);
         }
         if (!meta.description.isEmpty()) {
             draw.text(UiTranslations.format("litematica.gui.label.schematic_info.description"), x, y += 12, text);
-            java.util.List<String> lines = com.github.lunatrius.schematica.client.gui.framework.UiTextWrap.wrap(
+            List<String> lines = UiTextWrap.wrap(
                 meta.description.substring(0, Math.min(meta.description.length(), 8192)), limit, fontRendererObj::getStringWidth);
             for (int i = 0; i < Math.min(3, lines.size()); i++) {
                 String line = lines.get(i);
@@ -246,7 +253,7 @@ public abstract class GuiSchematicBrowser extends UiScreen {
             return;
         }
         List<File> listed = new ArrayList<>();
-        for (String value : com.github.lunatrius.schematica.client.util.UiState.paths(key)) listed.add(new File(value));
+        for (String value : UiState.paths(key)) listed.add(new File(value));
         listName = name;
         browser.list(listed);
         search.setText("");
@@ -401,7 +408,7 @@ public abstract class GuiSchematicBrowser extends UiScreen {
         if (browser == null) return;
         try {
             browser.navigate(directory);
-            com.github.lunatrius.schematica.client.util.UiState.setLastDirectory(getClass().getSimpleName(), browser.directory());
+            UiState.setLastDirectory(getClass().getSimpleName(), browser.directory());
             search.setText("");
             files.setOffset(0);
             updateFiles();
@@ -414,7 +421,7 @@ public abstract class GuiSchematicBrowser extends UiScreen {
 
     /** Litematica's last_directories: each browser reopens where it was left, if that is still inside its root. */
     private void restoreDirectory() {
-        String last = com.github.lunatrius.schematica.client.util.UiState.lastDirectory(getClass().getSimpleName());
+        String last = UiState.lastDirectory(getClass().getSimpleName());
         if (last == null) return;
         try {
             File directory = new File(last).getCanonicalFile();
@@ -484,7 +491,7 @@ public abstract class GuiSchematicBrowser extends UiScreen {
         else if (previewPane.content() == null || !previewPane.content().file.equals(current.file)) {
             previewPane.setContent(new SchematicPreviewPane.Content(current, infoCache));
         }
-        if (!java.util.Objects.equals(current, lastSelection)) {
+        if (!Objects.equals(current, lastSelection)) {
             lastSelection = current;
             infoScroll = 0;
             selectionChanged(current);

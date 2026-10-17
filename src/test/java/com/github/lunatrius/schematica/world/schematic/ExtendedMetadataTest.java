@@ -7,15 +7,16 @@ import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.nbt.NBTTagCompound;
 
-import org.junit.BeforeClass;
-import org.junit.Test;
-
 import com.github.lunatrius.schematica.api.ISchematic;
+import com.github.lunatrius.schematica.network.message.MessageDownloadChunk;
 import com.github.lunatrius.schematica.world.storage.Schematic;
 
 import cpw.mods.fml.common.registry.GameData;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
+import org.junit.BeforeClass;
+import org.junit.Test;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertSame;
@@ -67,19 +68,19 @@ public class ExtendedMetadataTest {
     @Test public void downloadedChunksCarryTheHighByteAndStillReadOldPayloads() {
         Schematic schematic = new Schematic(null, 16, 16, 16);
         schematic.setBlock(1, 2, 3, frame, 316);
-        com.github.lunatrius.schematica.network.message.MessageDownloadChunk message =
-            new com.github.lunatrius.schematica.network.message.MessageDownloadChunk(schematic, 0, 0, 0);
+        MessageDownloadChunk message =
+            new MessageDownloadChunk(schematic, 0, 0, 0);
         ByteBuf buffer = Unpooled.buffer();
         message.toBytes(buffer);
-        com.github.lunatrius.schematica.network.message.MessageDownloadChunk read =
-            new com.github.lunatrius.schematica.network.message.MessageDownloadChunk();
+        MessageDownloadChunk read =
+            new MessageDownloadChunk();
         read.fromBytes(buffer.copy());
         assertEquals(316, read.metadata[1][2][3] & 0xffff);
 
         // an older sender writes no trailer: the low byte is all there is
         ByteBuf old = buffer.copy(0, buffer.writerIndex() - 1 - 4096);
-        com.github.lunatrius.schematica.network.message.MessageDownloadChunk legacy =
-            new com.github.lunatrius.schematica.network.message.MessageDownloadChunk();
+        MessageDownloadChunk legacy =
+            new MessageDownloadChunk();
         legacy.fromBytes(old);
         assertEquals(60, legacy.metadata[1][2][3] & 0xffff);
     }

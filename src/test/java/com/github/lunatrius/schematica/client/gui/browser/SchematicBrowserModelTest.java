@@ -3,14 +3,15 @@ package com.github.lunatrius.schematica.client.gui.browser;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import com.github.lunatrius.schematica.client.gui.framework.UiListModel;
 
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-
-import com.github.lunatrius.schematica.client.gui.framework.UiListModel;
 
 import static org.junit.Assert.*;
 
@@ -27,7 +28,7 @@ public class SchematicBrowserModelTest {
         SchematicBrowserModel browser = new SchematicBrowserModel(root);
         browser.refresh();
         List<String> names = browser.entries().stream().map(SchematicBrowserModel.Entry::name).collect(Collectors.toList());
-        assertEquals(java.util.Arrays.asList("z-folder", "a.schematic", "b.SCHEMPLUS", "世界.litematic"), names);
+        assertEquals(Arrays.asList("z-folder", "a.schematic", "b.SCHEMPLUS", "世界.litematic"), names);
         assertTrue(browser.entries().get(0).directory);
         assertEquals(new File(root, "a.schematic"), browser.readableFile(browser.entries().get(1)));
         assertFalse(browser.canGoUp());
@@ -122,10 +123,10 @@ public class SchematicBrowserModelTest {
         Files.write(b.toPath(), new byte[] {1});
         SchematicBrowserModel browser = new SchematicBrowserModel(root);
         browser.refresh();
-        browser.list(java.util.Arrays.asList(b, new File(root, "missing.schematic"), outside, a, new File(root, "x.json")));
+        browser.list(Arrays.asList(b, new File(root, "missing.schematic"), outside, a, new File(root, "x.json")));
         assertTrue(browser.listing());
         List<String> names = browser.entries().stream().map(SchematicBrowserModel.Entry::name).collect(Collectors.toList());
-        assertEquals(java.util.Arrays.asList("b.litematic", "a.schematic"), names);
+        assertEquals(Arrays.asList("b.litematic", "a.schematic"), names);
         assertEquals(a.getCanonicalFile(), browser.readableFile(browser.entries().get(1)).getCanonicalFile());
         assertTrue(browser.canGoUp());
         browser.refresh();

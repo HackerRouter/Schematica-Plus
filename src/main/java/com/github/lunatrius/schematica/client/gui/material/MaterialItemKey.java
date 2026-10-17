@@ -4,7 +4,13 @@ import java.util.Objects;
 
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.JsonToNBT;
+import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
+
+import com.github.lunatrius.schematica.compat.AE2Items;
+
+import cpw.mods.fml.common.registry.GameData;
 
 public final class MaterialItemKey {
     private final Item item;
@@ -15,7 +21,7 @@ public final class MaterialItemKey {
     public MaterialItemKey(ItemStack stack) {
         item = Objects.requireNonNull(stack.getItem());
         damage = stack.getItemDamage();
-        tag = com.github.lunatrius.schematica.compat.AE2Items.materialTag(stack);
+        tag = AE2Items.materialTag(stack);
         hash = Objects.hash(item, damage, tag);
     }
 
@@ -27,7 +33,7 @@ public final class MaterialItemKey {
 
     /** "modid:name@damage", with "#" and the NBT when there is one; null for unregistered items. */
     public String encode() {
-        Object name = cpw.mods.fml.common.registry.GameData.getItemRegistry().getNameForObject(item);
+        Object name = GameData.getItemRegistry().getNameForObject(item);
         if (name == null) return null;
         return name + "@" + damage + (tag == null ? "" : "#" + tag);
     }
@@ -37,11 +43,11 @@ public final class MaterialItemKey {
         try {
             int hash = value.indexOf('#'), at = value.lastIndexOf('@', hash < 0 ? value.length() : hash);
             if (at < 0) return null;
-            Object item = cpw.mods.fml.common.registry.GameData.getItemRegistry().getObject(value.substring(0, at));
+            Object item = GameData.getItemRegistry().getObject(value.substring(0, at));
             if (!(item instanceof Item)) return null;
             ItemStack stack = new ItemStack((Item) item, 1, Integer.parseInt(value.substring(at + 1, hash < 0 ? value.length() : hash)));
             if (hash >= 0) {
-                net.minecraft.nbt.NBTBase tag = net.minecraft.nbt.JsonToNBT.func_150315_a(value.substring(hash + 1));
+                NBTBase tag = JsonToNBT.func_150315_a(value.substring(hash + 1));
                 if (tag instanceof NBTTagCompound) stack.setTagCompound((NBTTagCompound) tag);
             }
             return new MaterialItemKey(stack);

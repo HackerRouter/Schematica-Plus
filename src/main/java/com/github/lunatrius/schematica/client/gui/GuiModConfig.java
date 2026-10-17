@@ -3,6 +3,8 @@
 package com.github.lunatrius.schematica.client.gui;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.EnumMap;
 import java.util.List;
@@ -10,29 +12,20 @@ import java.util.Map;
 
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.settings.GameSettings;
-import com.github.lunatrius.schematica.client.input.Hotkey;
-import com.github.lunatrius.schematica.handler.VisualSettings;
-import com.github.lunatrius.schematica.client.input.Hotkeys;
-import com.github.lunatrius.schematica.client.input.HotkeyHooks;
-import com.github.lunatrius.schematica.client.gui.config.HotkeySettingsPanel;
 import net.minecraftforge.common.config.ConfigCategory;
 import net.minecraftforge.common.config.Property;
 
-import org.lwjgl.input.Keyboard;
-
-import com.github.lunatrius.schematica.client.gui.framework.UiTranslations;
-import com.github.lunatrius.schematica.client.gui.config.ConfigPropertyDraft;
 import com.github.lunatrius.schematica.client.gui.config.ColorPickerPanel;
-import com.github.lunatrius.schematica.handler.RenderColors;
-import com.github.lunatrius.schematica.util.ColorValue;
-import com.github.lunatrius.schematica.client.gui.config.RenderLayerPanel;
-import com.github.lunatrius.schematica.client.world.RenderLayerSettings;
-import com.github.lunatrius.schematica.handler.client.WorldHandler;
+import com.github.lunatrius.schematica.client.gui.config.ConfigPropertyDraft;
 import com.github.lunatrius.schematica.client.gui.config.ConfigStringListPanel;
+import com.github.lunatrius.schematica.client.gui.config.ConfigTranslations;
+import com.github.lunatrius.schematica.client.gui.config.HotkeySettingsPanel;
+import com.github.lunatrius.schematica.client.gui.config.RenderLayerPanel;
 import com.github.lunatrius.schematica.client.gui.config.UiConfigSlider;
 import com.github.lunatrius.schematica.client.gui.framework.UiBounds;
 import com.github.lunatrius.schematica.client.gui.framework.UiButton;
 import com.github.lunatrius.schematica.client.gui.framework.UiDraw;
+import com.github.lunatrius.schematica.client.gui.framework.UiInput;
 import com.github.lunatrius.schematica.client.gui.framework.UiLabel;
 import com.github.lunatrius.schematica.client.gui.framework.UiListModel;
 import com.github.lunatrius.schematica.client.gui.framework.UiPanel;
@@ -40,18 +33,30 @@ import com.github.lunatrius.schematica.client.gui.framework.UiRowList;
 import com.github.lunatrius.schematica.client.gui.framework.UiScreen;
 import com.github.lunatrius.schematica.client.gui.framework.UiSprite;
 import com.github.lunatrius.schematica.client.gui.framework.UiTextField;
+import com.github.lunatrius.schematica.client.gui.framework.UiTranslations;
 import com.github.lunatrius.schematica.client.gui.framework.UiWidget;
+import com.github.lunatrius.schematica.client.input.Hotkey;
+import com.github.lunatrius.schematica.client.input.HotkeyHooks;
+import com.github.lunatrius.schematica.client.input.Hotkeys;
 import com.github.lunatrius.schematica.client.renderer.RendererSchematicGlobal;
-import com.github.lunatrius.schematica.handler.ConfigurationHandler;
+import com.github.lunatrius.schematica.client.util.UiState;
+import com.github.lunatrius.schematica.client.world.RenderLayerSettings;
 import com.github.lunatrius.schematica.handler.BlockInfoHudSettings;
-import com.github.lunatrius.schematica.util.HudAlignment;
+import com.github.lunatrius.schematica.handler.ConfigurationHandler;
+import com.github.lunatrius.schematica.handler.RenderColors;
+import com.github.lunatrius.schematica.handler.VisualSettings;
+import com.github.lunatrius.schematica.handler.client.WorldHandler;
 import com.github.lunatrius.schematica.reference.Names;
-import com.github.lunatrius.schematica.client.gui.config.ConfigTranslations;
 import com.github.lunatrius.schematica.reference.Reference;
+import com.github.lunatrius.schematica.util.ColorValue;
+import com.github.lunatrius.schematica.util.HudAlignment;
 
 import cpw.mods.fml.client.event.ConfigChangedEvent;
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.eventhandler.Event;
+import org.lwjgl.input.Keyboard;
+import org.lwjgl.input.Mouse;
+import org.lwjgl.opengl.Display;
 
 public class GuiModConfig extends UiScreen implements HotkeyHooks.Capture {
     private enum Tab {
@@ -74,7 +79,7 @@ public class GuiModConfig extends UiScreen implements HotkeyHooks.Capture {
     private final List<Entry> entries = new ArrayList<>();
 
     private static Tab savedTab() {
-        try { return Tab.valueOf(com.github.lunatrius.schematica.client.util.UiState.get("config_gui_tab", Tab.GENERIC.name())); }
+        try { return Tab.valueOf(UiState.get("config_gui_tab", Tab.GENERIC.name())); }
         catch (IllegalArgumentException e) { return Tab.GENERIC; }
     }
     private final Map<Tab, UiButton> tabs = new EnumMap<>(Tab.class);
@@ -135,7 +140,7 @@ public class GuiModConfig extends UiScreen implements HotkeyHooks.Capture {
         input.focus(null);
         tab = selected;
         lastTab = selected;
-        com.github.lunatrius.schematica.client.util.UiState.set("config_gui_tab", selected.name());
+        UiState.set("config_gui_tab", selected.name());
         capturingButton = null;
         keyFilter = 0;
         searchOpen = false;
@@ -199,7 +204,7 @@ public class GuiModConfig extends UiScreen implements HotkeyHooks.Capture {
 
     @Override
     protected void tickScreen() {
-        if (capturingButton != null && (input.focused() != capturingButton || !org.lwjgl.opengl.Display.isActive())) capturingButton = null;
+        if (capturingButton != null && (input.focused() != capturingButton || !Display.isActive())) capturingButton = null;
     }
 
     @Override
@@ -237,14 +242,14 @@ public class GuiModConfig extends UiScreen implements HotkeyHooks.Capture {
     @Override public boolean captureHotkey(int code, boolean down) {
         if (!down) return true;
         if (code < 0) {
-            int x = org.lwjgl.input.Mouse.getEventX() * width / mc.displayWidth;
-            int y = height - org.lwjgl.input.Mouse.getEventY() * height / mc.displayHeight - 1;
+            int x = Mouse.getEventX() * width / mc.displayWidth;
+            int y = height - Mouse.getEventY() * height / mc.displayHeight - 1;
             if (!capturingButton.bounds().contains(x, y)) { endCapture(); return false; }
         }
         if (code == Keyboard.KEY_ESCAPE) {
             if (captureFirst) {
                 if (capturingKey == null) keyFilter = 0;
-                else { capturingKey.setKeys(java.util.Collections.emptyList()); keysChanged = true; }
+                else { capturingKey.setKeys(Collections.emptyList()); keysChanged = true; }
             }
             endCapture(); return true;
         }
@@ -422,7 +427,7 @@ public class GuiModConfig extends UiScreen implements HotkeyHooks.Capture {
                 String[] values = entry.draft.property.getValidValues();
                 editor = add(new UiButton(() -> UiTranslations.format(ConfigTranslations.optionKey(entry.draft.property.getName(), entry.draft.text())),
                     button -> {
-                        int current = java.util.Arrays.asList(values).indexOf(entry.draft.text());
+                        int current = Arrays.asList(values).indexOf(entry.draft.text());
                         entry.draft.setText(values[Math.floorMod(current + (button == 1 ? -1 : 1), values.length)]);
                     }));
             } else if (entry.draft.property.getType() == Property.Type.BOOLEAN) {
@@ -450,7 +455,7 @@ public class GuiModConfig extends UiScreen implements HotkeyHooks.Capture {
                             draw.fill(bounds(), isEnabled() ? 0xFFFFFFFF : 0xFF808080);
                             draw.fill(bounds().inset(1), 0xFF000000);
                             draw.fill(bounds().inset(2), entry.previewColor() | 0xFF000000);
-                            if (isFocused() && com.github.lunatrius.schematica.client.gui.framework.UiInput.focusVisible()) draw.border(bounds(), 0xFFFFFF00);
+                            if (isFocused() && UiInput.focusVisible()) draw.border(bounds(), 0xFFFFFF00);
                         }
                     });
                     swatch.setEnabled(entry.available());

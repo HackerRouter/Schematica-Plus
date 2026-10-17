@@ -1,14 +1,22 @@
 package com.github.lunatrius.schematica.client.gui.material;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.function.Function;
 
+import net.minecraft.util.StringTranslate;
+
+import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+
 import static org.junit.Assert.*;
 
 public class MaterialListExportTest {
@@ -18,24 +26,24 @@ public class MaterialListExportTest {
 
     static String label(String language, String key) {
         String domain = key.startsWith("schematica.") ? "schematica" : "schematica_plus_litematica";
-        try (java.io.InputStream stream = MaterialListExportTest.class.getResourceAsStream("/assets/" + domain + "/lang/" + language + ".lang")) {
-            String value = net.minecraft.util.StringTranslate.parseLangFile(stream).get(key);
+        try (InputStream stream = MaterialListExportTest.class.getResourceAsStream("/assets/" + domain + "/lang/" + language + ".lang")) {
+            String value = StringTranslate.parseLangFile(stream).get(key);
             assertNotNull(key, value);
             return value;
-        } catch (java.io.IOException e) { throw new AssertionError(e); }
+        } catch (IOException e) { throw new AssertionError(e); }
     }
 
     @Rule public TemporaryFolder temporary = new TemporaryFolder();
 
     @Test public void localizesHumanReadableExportsAndKeepsJsonFieldsStable() {
         MaterialListModel<String> model = new MaterialListModel<>();
-        model.setEntries(java.util.Collections.singletonList(new MaterialListModel.Entry<>("stone", "石头", "minecraft:stone", 12, 0, 0, 0)));
-        java.util.function.Function<String, String> chinese = key -> label("zh_CN", key);
+        model.setEntries(Collections.singletonList(new MaterialListModel.Entry<>("stone", "石头", "minecraft:stone", 12, 0, 0, 0)));
+        Function<String, String> chinese = key -> label("zh_CN", key);
         for (MaterialListExport.Format format : MaterialListExport.Format.values()) {
             String text = MaterialListExport.format(model, "测试", format, value -> "{}", chinese);
             text = MaterialListExport.withAnalysisStatus(text, format, 2, 1, chinese);
             if (format == MaterialListExport.Format.JSON) {
-                com.google.gson.JsonObject json = new JsonParser().parse(text).getAsJsonObject();
+                JsonObject json = new JsonParser().parse(text).getAsJsonObject();
                 assertEquals(2, json.get("unverified_positions").getAsInt());
                 assertEquals("minecraft:stone", json.getAsJsonArray("items").get(0).getAsJsonObject().get("item").getAsString());
             } else {

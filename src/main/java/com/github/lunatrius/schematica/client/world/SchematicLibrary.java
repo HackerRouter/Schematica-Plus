@@ -2,6 +2,7 @@ package com.github.lunatrius.schematica.client.world;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.FileAlreadyExistsException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.IdentityHashMap;
@@ -129,7 +130,7 @@ public final class SchematicLibrary<D, P> {
         File canonical = next.getCanonicalFile();
         for (Source<D> source : sources) {
             if (!source.memory && source.file.equals(canonical) && !source.file.equals(previous)) {
-                throw new java.nio.file.FileAlreadyExistsException("A source is already loaded under this name: " + canonical);
+                throw new FileAlreadyExistsException("A source is already loaded under this name: " + canonical);
             }
         }
     }

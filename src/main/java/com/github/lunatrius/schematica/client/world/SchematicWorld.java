@@ -1,19 +1,28 @@
 package com.github.lunatrius.schematica.client.world;
 
 import java.io.File;
-import java.util.List;
+import java.io.IOException;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.BitSet;
+import java.util.List;
+import java.util.Objects;
 
 import net.minecraft.block.Block;
+import net.minecraft.block.BlockRailBase;
+import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityHanging;
-import net.minecraft.util.Direction;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemStack;
 import net.minecraft.profiler.Profiler;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.tileentity.TileEntityChest;
 import net.minecraft.tileentity.TileEntitySkull;
+import net.minecraft.util.ChatComponentTranslation;
+import net.minecraft.util.Direction;
+import net.minecraft.util.MovingObjectPosition;
+import net.minecraft.util.Vec3;
 import net.minecraft.world.EnumSkyBlock;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldSettings;
@@ -22,17 +31,26 @@ import net.minecraft.world.biome.BiomeGenBase;
 import net.minecraft.world.chunk.IChunkProvider;
 import net.minecraftforge.common.util.ForgeDirection;
 
+import com.github.lunatrius.schematica.api.ISchematic;
+import com.github.lunatrius.schematica.api.SchematicOrigin;
+import com.github.lunatrius.schematica.api.SchematicRegion;
+import com.github.lunatrius.schematica.client.gui.material.MaterialList;
+import com.github.lunatrius.schematica.client.gui.placement.PlacementTransform;
+import com.github.lunatrius.schematica.compat.VisualAdapters;
+import com.github.lunatrius.schematica.handler.ConfigurationHandler;
+import com.github.lunatrius.schematica.handler.VisualSettings;
 import com.github.lunatrius.schematica.internal.lunatriuscore.util.vector.Vector3f;
 import com.github.lunatrius.schematica.internal.lunatriuscore.util.vector.Vector3i;
-import com.github.lunatrius.schematica.api.ISchematic;
-import com.github.lunatrius.schematica.handler.ConfigurationHandler;
 import com.github.lunatrius.schematica.nbt.TileEntitySnapshots;
 import com.github.lunatrius.schematica.reference.Reference;
 import com.github.lunatrius.schematica.util.SchematicTransform;
 import com.github.lunatrius.schematica.world.chunk.ChunkProviderSchematic;
+import com.github.lunatrius.schematica.world.schematic.BlockMetaTransform;
 import com.github.lunatrius.schematica.world.storage.SaveHandlerSchematic;
 import com.github.lunatrius.schematica.world.storage.Schematic;
+import com.github.lunatrius.schematica.world.storage.SchematicCopies;
 
+import com.google.gson.JsonObject;
 import cpw.mods.fml.relauncher.Side;
 import cpw.mods.fml.relauncher.SideOnly;
 
@@ -52,14 +70,14 @@ public class SchematicWorld extends World {
     public final List<String> transformOperations = new ArrayList<>();
     private SchematicSourceData placementSource;
     private SubRegionPlacements subregions;
-    private java.util.BitSet visibleRegionBlocks;
+    private BitSet visibleRegionBlocks;
     private int placementRevision;
     private int contentRevision;
     private PlacementSettings placementSettings = PlacementSettings.DEFAULT;
 
     public PlacementSettings placementSettings() { return placementSettings; }
     public void setPlacementSettings(PlacementSettings settings) {
-        placementSettings = java.util.Objects.requireNonNull(settings);
+        placementSettings = Objects.requireNonNull(settings);
         placementRevision++;
     }
     public boolean isEnabled() { return placementSettings.enabled; }
@@ -78,7 +96,7 @@ public class SchematicWorld extends World {
         if (!schematic.containsBlock(x, y, z)) return;
         Block previous = schematic.getBlock(x, y, z);
         setBlock(x, y, z, state.block, state.meta, 0);
-        if (state.tile != null) setTileEntity(x, y, z, com.github.lunatrius.schematica.world.storage.SchematicCopies.tile(state.tile, -x, -y, -z));
+        if (state.tile != null) setTileEntity(x, y, z, SchematicCopies.tile(state.tile, -x, -y, -z));
         else if (previous != state.block || state.isAir()) removeTileEntity(x, y, z);
         contentRevision++;
     }
@@ -91,17 +109,17 @@ public class SchematicWorld extends World {
         placementRevision++;
     }
 
-    public com.github.lunatrius.schematica.api.SchematicOrigin subregionPosition(String name) {
-        com.github.lunatrius.schematica.api.SchematicOrigin relative = SubRegionPlacements.vector(subregions.get(name).position, transformOperations, false);
-        com.github.lunatrius.schematica.api.SchematicOrigin origin = originPosition();
+    public SchematicOrigin subregionPosition(String name) {
+        SchematicOrigin relative = SubRegionPlacements.vector(subregions.get(name).position, transformOperations, false);
+        SchematicOrigin origin = originPosition();
         return relative.atMinimum(origin.x, origin.y, origin.z);
     }
 
     /** AreaSelection.fromPlacement: the world boxes of the enabled sub-regions, or the whole placement. */
-    public java.util.List<com.github.lunatrius.schematica.api.SchematicRegion> enabledRegionBounds() {
-        java.util.List<com.github.lunatrius.schematica.api.SchematicRegion> boxes = new java.util.ArrayList<>();
+    public List<SchematicRegion> enabledRegionBounds() {
+        List<SchematicRegion> boxes = new ArrayList<>();
         if (subregions == null) {
-            boxes.add(new com.github.lunatrius.schematica.api.SchematicRegion(name, position.x, position.y, position.z,
+            boxes.add(new SchematicRegion(name, position.x, position.y, position.z,
                 position.x + getWidth() - 1, position.y + getHeight() - 1, position.z + getLength() - 1));
         } else {
             for (SubRegionPlacements.Region region : subregions.regions()) if (region.enabled) boxes.add(subregionBounds(region.name()));
@@ -109,24 +127,24 @@ public class SchematicWorld extends World {
         return boxes;
     }
 
-    public com.github.lunatrius.schematica.api.SchematicRegion subregionBounds(String name) {
-        com.github.lunatrius.schematica.api.SchematicRegion box = subregions.get(name).bounds();
-        com.github.lunatrius.schematica.api.SchematicOrigin origin = originPosition();
-        com.github.lunatrius.schematica.api.SchematicOrigin a = SubRegionPlacements.vector(
-            new com.github.lunatrius.schematica.api.SchematicOrigin(box.minX, box.minY, box.minZ), transformOperations, false).atMinimum(origin.x, origin.y, origin.z);
-        com.github.lunatrius.schematica.api.SchematicOrigin b = SubRegionPlacements.vector(
-            new com.github.lunatrius.schematica.api.SchematicOrigin(box.maxX, box.maxY, box.maxZ), transformOperations, false).atMinimum(origin.x, origin.y, origin.z);
-        return new com.github.lunatrius.schematica.api.SchematicRegion(name, a.x, a.y, a.z, b.x, b.y, b.z);
+    public SchematicRegion subregionBounds(String name) {
+        SchematicRegion box = subregions.get(name).bounds();
+        SchematicOrigin origin = originPosition();
+        SchematicOrigin a = SubRegionPlacements.vector(
+            new SchematicOrigin(box.minX, box.minY, box.minZ), transformOperations, false).atMinimum(origin.x, origin.y, origin.z);
+        SchematicOrigin b = SubRegionPlacements.vector(
+            new SchematicOrigin(box.maxX, box.maxY, box.maxZ), transformOperations, false).atMinimum(origin.x, origin.y, origin.z);
+        return new SchematicRegion(name, a.x, a.y, a.z, b.x, b.y, b.z);
     }
 
     /** A sub-region's two corners in world coordinates: its own origin corner first, like Litematica's box pos1/pos2. */
     public int[] subregionCorners(String name) {
-        com.github.lunatrius.schematica.api.SchematicRegion box = subregions.get(name).bounds();
-        com.github.lunatrius.schematica.api.SchematicOrigin origin = originPosition();
-        com.github.lunatrius.schematica.api.SchematicOrigin a = SubRegionPlacements.vector(
-            new com.github.lunatrius.schematica.api.SchematicOrigin(box.minX, box.minY, box.minZ), transformOperations, false).atMinimum(origin.x, origin.y, origin.z);
-        com.github.lunatrius.schematica.api.SchematicOrigin b = SubRegionPlacements.vector(
-            new com.github.lunatrius.schematica.api.SchematicOrigin(box.maxX, box.maxY, box.maxZ), transformOperations, false).atMinimum(origin.x, origin.y, origin.z);
+        SchematicRegion box = subregions.get(name).bounds();
+        SchematicOrigin origin = originPosition();
+        SchematicOrigin a = SubRegionPlacements.vector(
+            new SchematicOrigin(box.minX, box.minY, box.minZ), transformOperations, false).atMinimum(origin.x, origin.y, origin.z);
+        SchematicOrigin b = SubRegionPlacements.vector(
+            new SchematicOrigin(box.maxX, box.maxY, box.maxZ), transformOperations, false).atMinimum(origin.x, origin.y, origin.z);
         return new int[] {a.x, a.y, a.z, b.x, b.y, b.z};
     }
 
@@ -134,9 +152,9 @@ public class SchematicWorld extends World {
     public Integer boxColor;
 
     public void moveSubregionTo(String name, int x, int y, int z) {
-        com.github.lunatrius.schematica.api.SchematicOrigin origin = originPosition();
-        com.github.lunatrius.schematica.api.SchematicOrigin relative = SubRegionPlacements.vector(
-            new com.github.lunatrius.schematica.api.SchematicOrigin(Math.subtractExact(x, origin.x), Math.subtractExact(y, origin.y), Math.subtractExact(z, origin.z)),
+        SchematicOrigin origin = originPosition();
+        SchematicOrigin relative = SubRegionPlacements.vector(
+            new SchematicOrigin(Math.subtractExact(x, origin.x), Math.subtractExact(y, origin.y), Math.subtractExact(z, origin.z)),
             transformOperations, true);
         changeSubregions(subregions.replace(subregions.get(name).position(relative)));
     }
@@ -151,7 +169,7 @@ public class SchematicWorld extends World {
         changeSubregions(name == null ? subregions.reset() : subregions.replace(subregions.get(name).reset()));
     }
 
-    public void restoreSubregions(com.google.gson.JsonObject saved) {
+    public void restoreSubregions(JsonObject saved) {
         if (saved == null) return;
         SubRegionPlacements next = subregions.restore(saved);
         if (!subregions.modified() && !next.modified()) {
@@ -161,19 +179,19 @@ public class SchematicWorld extends World {
     }
 
     private void rebuildRegions(SubRegionPlacements next, List<String> operations) {
-        com.github.lunatrius.schematica.api.SchematicOrigin origin = originPosition();
+        SchematicOrigin origin = originPosition();
         SubRegionPlacements.Layout layout = next.layout();
-        com.github.lunatrius.schematica.api.SchematicOrigin offset = com.github.lunatrius.schematica.client.gui.placement.PlacementTransform.transformOrigin(
-            new com.github.lunatrius.schematica.api.SchematicOrigin(-layout.minimum.x, -layout.minimum.y, -layout.minimum.z),
+        SchematicOrigin offset = PlacementTransform.transformOrigin(
+            new SchematicOrigin(-layout.minimum.x, -layout.minimum.y, -layout.minimum.z),
             layout.width, layout.height, layout.length, String.join("", operations));
-        com.github.lunatrius.schematica.api.SchematicOrigin minimum = offset.minimumAt(origin);
-        int[] size = com.github.lunatrius.schematica.client.gui.placement.PlacementTransform.transformedSize(layout.width, layout.height, layout.length, String.join("", operations));
+        SchematicOrigin minimum = offset.minimumAt(origin);
+        int[] size = PlacementTransform.transformedSize(layout.width, layout.height, layout.length, String.join("", operations));
         for (int i = 0; i < 3; i++) if (minimum.coordinates()[i] < -30000000 || (long) minimum.coordinates()[i] + size[i] > 30000000) {
             throw new IllegalArgumentException("Subregion placement outside coordinate limits");
         }
         RegionComposer composed;
         try { composed = RegionComposer.build(placementSource.instantiate(), next, operations); }
-        catch (java.io.IOException e) { throw new IllegalArgumentException("Unable to restore schematic source", e); }
+        catch (IOException e) { throw new IllegalArgumentException("Unable to restore schematic source", e); }
         this.schematic = composed.world.getSchematic();
         this.visibleRegionBlocks = composed.visible;
         this.subregions = next;
@@ -191,18 +209,18 @@ public class SchematicWorld extends World {
 
     public ISchematic getSchematic() { return this.schematic; }
 
-    public com.github.lunatrius.schematica.api.SchematicOrigin originPosition() {
+    public SchematicOrigin originPosition() {
         return schematic.getOrigin().atMinimum(position.x, position.y, position.z);
     }
 
     public void moveOriginTo(int x, int y, int z) {
-        com.github.lunatrius.schematica.api.SchematicOrigin minimum = schematic.getOrigin().minimumAt(
-            placementSettings.constrainOrigin(originPosition(), new com.github.lunatrius.schematica.api.SchematicOrigin(x, y, z)));
+        SchematicOrigin minimum = schematic.getOrigin().minimumAt(
+            placementSettings.constrainOrigin(originPosition(), new SchematicOrigin(x, y, z)));
         position.set(minimum.x, minimum.y, minimum.z);
     }
 
     public void moveMinimumTo(int x, int y, int z) {
-        com.github.lunatrius.schematica.api.SchematicOrigin origin = schematic.getOrigin().atMinimum(x, y, z);
+        SchematicOrigin origin = schematic.getOrigin().atMinimum(x, y, z);
         moveOriginTo(origin.x, origin.y, origin.z);
     }
 
@@ -213,8 +231,8 @@ public class SchematicWorld extends World {
     /** Grid/repeat settings of a normal placement (GridSettings of the 1.12.2 Litematica). */
     public final GridSettings grid = new GridSettings();
     /** The placement's material list and its saved settings (SchematicPlacement material_list). */
-    public com.github.lunatrius.schematica.client.gui.material.MaterialList materialList;
-    public com.google.gson.JsonObject materialListData;
+    public MaterialList materialList;
+    public JsonObject materialListData;
     /** For a repeated grid copy, its base placement; null for normal placements. */
     public final SchematicWorld gridBase;
 
@@ -244,7 +262,7 @@ public class SchematicWorld extends World {
     /** The world box around the enabled sub-regions (or the whole placement): {minX, minY, minZ, maxX, maxY, maxZ}. */
     public int[] enclosingBox() {
         int[] box = {Integer.MAX_VALUE, Integer.MAX_VALUE, Integer.MAX_VALUE, Integer.MIN_VALUE, Integer.MIN_VALUE, Integer.MIN_VALUE};
-        for (com.github.lunatrius.schematica.api.SchematicRegion region : enabledRegionBounds()) {
+        for (SchematicRegion region : enabledRegionBounds()) {
             box[0] = Math.min(box[0], region.minX); box[1] = Math.min(box[1], region.minY); box[2] = Math.min(box[2], region.minZ);
             box[3] = Math.max(box[3], region.maxX); box[4] = Math.max(box[4], region.maxY); box[5] = Math.max(box[5], region.maxZ);
         }
@@ -321,11 +339,11 @@ public class SchematicWorld extends World {
             getWidth(), getHeight(), getLength(), isRenderingLayer, renderingLayer);
     }
 
-    public net.minecraft.util.MovingObjectPosition rayTraceRendered(net.minecraft.util.Vec3 start, net.minecraft.util.Vec3 end) {
+    public MovingObjectPosition rayTraceRendered(Vec3 start, Vec3 end) {
         return rayTraceRendered(start, end, false);
     }
 
-    public net.minecraft.util.MovingObjectPosition rayTraceRendered(net.minecraft.util.Vec3 start, net.minecraft.util.Vec3 end, boolean fluids) {
+    public MovingObjectPosition rayTraceRendered(Vec3 start, Vec3 end, boolean fluids) {
         if (!isRenderingEnabled()) return null;
         boolean previous = tracingRenderedBlocks;
         tracingRenderedBlocks = true;
@@ -376,18 +394,18 @@ public class SchematicWorld extends World {
     @Override
     public int getSkyBlockTypeBrightness(EnumSkyBlock skyBlock, int x, int y, int z) {
         // enableSchematicFakeLighting / renderFakeLightingLevel; otherwise the light of the real world at the block
-        if (com.github.lunatrius.schematica.handler.VisualSettings.fakeLighting) return com.github.lunatrius.schematica.handler.VisualSettings.fakeLightLevel;
-        World real = net.minecraft.client.Minecraft.getMinecraft().theWorld;
+        if (VisualSettings.fakeLighting) return VisualSettings.fakeLightLevel;
+        World real = Minecraft.getMinecraft().theWorld;
         return real == null ? 15 : real.getSkyBlockTypeBrightness(skyBlock, x + position.x, y + position.y, z + position.z);
     }
 
     @Override
     public float getLightBrightness(int x, int y, int z) {
-        if (com.github.lunatrius.schematica.handler.VisualSettings.fakeLighting) {
-            int level = com.github.lunatrius.schematica.handler.VisualSettings.fakeLightLevel;
+        if (VisualSettings.fakeLighting) {
+            int level = VisualSettings.fakeLightLevel;
             return level >= 15 || provider == null ? 1.0f : provider.lightBrightnessTable[level];
         }
-        World real = net.minecraft.client.Minecraft.getMinecraft().theWorld;
+        World real = Minecraft.getMinecraft().theWorld;
         return real == null ? 1.0f : real.getLightBrightness(x + position.x, y + position.y, z + position.z);
     }
 
@@ -557,31 +575,31 @@ public class SchematicWorld extends World {
                     Direction.offsetZ[facing], 0, 0, 0);
                 if (normal[1] != 0) {
                     // 1.7.10 has no floor/ceiling direction for paintings and item frames.
-                    net.minecraft.client.Minecraft mc = net.minecraft.client.Minecraft.getMinecraft();
+                    Minecraft mc = Minecraft.getMinecraft();
                     if (mc != null && mc.thePlayer != null) mc.thePlayer.addChatMessage(
-                        new net.minecraft.util.ChatComponentTranslation("schematica.message.transform.hanging_entities"));
+                        new ChatComponentTranslation("schematica.message.transform.hanging_entities"));
                     return;
                 }
             }
         }
-        java.util.List<com.github.lunatrius.schematica.api.SchematicRegion> regions = this.schematic.getRegions();
+        List<SchematicRegion> regions = this.schematic.getRegions();
         int w = getWidth(), h = getHeight(), l = getLength();
-        com.github.lunatrius.schematica.api.SchematicOrigin transformedOrigin = schematic.getOrigin().transform(operation, w, h, l);
-        com.github.lunatrius.schematica.api.SchematicOrigin minimum = transformedOrigin.minimumAt(originPosition());
+        SchematicOrigin transformedOrigin = schematic.getOrigin().transform(operation, w, h, l);
+        SchematicOrigin minimum = transformedOrigin.minimumAt(originPosition());
         boolean layerMode = this.isRenderingLayer;
         this.isRenderingLayer = false;
         try {
             if (mirror) flipContents(direction);
             else rotateContents(direction);
-            java.util.List<com.github.lunatrius.schematica.api.SchematicRegion> transformed = new ArrayList<>();
-            for (com.github.lunatrius.schematica.api.SchematicRegion region : regions) transformed.add(region.transform(operation, w, h, l));
+            List<SchematicRegion> transformed = new ArrayList<>();
+            for (SchematicRegion region : regions) transformed.add(region.transform(operation, w, h, l));
             ((Schematic) this.schematic).setRegions(transformed);
             ((Schematic) this.schematic).setOrigin(transformedOrigin);
             position.set(minimum.x, minimum.y, minimum.z);
             for (TileEntity tileEntity : this.schematic.getTileEntities()) {
                 if (tileEntity instanceof TileEntitySkull && (tileEntity.blockMetadata & 7) == 1) {
                     TileEntitySkull skull = (TileEntitySkull) tileEntity;
-                    skull.func_145903_a(com.github.lunatrius.schematica.world.schematic.BlockMetaTransform.rotation16(skull.func_145906_b(), operation));
+                    skull.func_145903_a(BlockMetaTransform.rotation16(skull.func_145906_b(), operation));
                 }
                 TileEntitySnapshots.transformPreview(tileEntity, operation, w, h, l);
             }
@@ -634,10 +652,10 @@ public class SchematicWorld extends World {
         Block block = getBlock(x, y, z);
         int metadata = getBlockMetadata(x, y, z);
         // Rails that cannot curve keep a power bit: vanilla powered and detector rails, and Railcraft tracks by their tile
-        if (block instanceof net.minecraft.block.BlockRailBase) {
+        if (block instanceof BlockRailBase) {
             try {
-                return com.github.lunatrius.schematica.world.schematic.BlockMetaTransform.rail(metadata, operation,
-                    !((net.minecraft.block.BlockRailBase) block).isFlexibleRail(this, x, y, z));
+                return BlockMetaTransform.rail(metadata, operation,
+                    !((BlockRailBase) block).isFlexibleRail(this, x, y, z));
             } catch (RuntimeException e) {
                 Reference.logger.debug("Could not check rail {}", block, e);
             }
@@ -645,15 +663,15 @@ public class SchematicWorld extends World {
         if (block.getClass().getName().equals("ganymedes01.etfuturum.blocks.BlockBanner")) {
             TileEntity banner = getTileEntity(x, y, z);
             try {
-                java.lang.reflect.Field standing = banner == null ? null : banner.getClass().getField("isStanding");
-                if (standing != null) return com.github.lunatrius.schematica.world.schematic.BlockMetaTransform.banner(metadata, operation, standing.getBoolean(banner));
+                Field standing = banner == null ? null : banner.getClass().getField("isStanding");
+                if (standing != null) return BlockMetaTransform.banner(metadata, operation, standing.getBoolean(banner));
             } catch (ReflectiveOperationException e) {
                 Reference.logger.debug("Could not check banner {}", block, e);
             }
         }
-        int result = com.github.lunatrius.schematica.world.schematic.BlockMetaTransform.transform(block, metadata, operation);
+        int result = BlockMetaTransform.transform(block, metadata, operation);
         if (result >= 0) return result;
-        if (Character.isLowerCase(operation) || com.github.lunatrius.schematica.compat.VisualAdapters.transformsTile(getTileEntity(x, y, z))) return metadata;
+        if (Character.isLowerCase(operation) || VisualAdapters.transformsTile(getTileEntity(x, y, z))) return metadata;
         try {
             block.rotateBlock(this, x, y, z, operation == 'X' ? ForgeDirection.EAST : operation == 'Y' ? ForgeDirection.UP : ForgeDirection.SOUTH);
         } catch (Exception e) {
@@ -675,7 +693,7 @@ public class SchematicWorld extends World {
                 for (int y = 0; y < height; y++) {
                     for (int z = 0; z < length; z++) {
                         for (int x = 0; x < width; x++) {
-                            final Block block = com.github.lunatrius.schematica.world.schematic.BlockMetaTransform.block(getBlock(width - 1 - x, y, z), 'x');
+                            final Block block = BlockMetaTransform.block(getBlock(width - 1 - x, y, z), 'x');
                             final int metadata = transformedMetadata('x', width - 1 - x, y, z);
                             schematicFlipped.setBlock(x, y, z, block, metadata);
                         }
@@ -697,7 +715,7 @@ public class SchematicWorld extends World {
                 for (int y = 0; y < height; y++) {
                     for (int z = 0; z < length; z++) {
                         for (int x = 0; x < width; x++) {
-                            final Block block = com.github.lunatrius.schematica.world.schematic.BlockMetaTransform.block(getBlock(x, y, length - 1 - z), 'z');
+                            final Block block = BlockMetaTransform.block(getBlock(x, y, length - 1 - z), 'z');
                             final int metadata = transformedMetadata('z', x, y, length - 1 - z);
                             schematicFlipped.setBlock(x, y, z, block, metadata);
                         }
@@ -720,7 +738,7 @@ public class SchematicWorld extends World {
                 for (int y = 0; y < height; y++) {
                     for (int z = 0; z < length; z++) {
                         for (int x = 0; x < width; x++) {
-                            final Block block = com.github.lunatrius.schematica.world.schematic.BlockMetaTransform.block(getBlock(x, height - 1 - y, z), 'y');
+                            final Block block = BlockMetaTransform.block(getBlock(x, height - 1 - y, z), 'y');
                             final int metadata = transformedMetadata('y', x, height - 1 - y, z);
                             schematicFlipped.setBlock(x, y, z, block, metadata);
                         }
@@ -760,7 +778,7 @@ public class SchematicWorld extends World {
                 for (int y = 0; y < height; y++) {
                     for (int z = 0; z < length; z++) {
                         for (int x = 0; x < width; x++) {
-                            final Block block = com.github.lunatrius.schematica.world.schematic.BlockMetaTransform.block(getBlock(x, height - 1 - y, z), 'X');
+                            final Block block = BlockMetaTransform.block(getBlock(x, height - 1 - y, z), 'X');
                             final int metadata = transformedMetadata('X', x, height - 1 - y, z);
                             schematicRotated.setBlock(x, z, y, block, metadata);
                         }
@@ -792,7 +810,7 @@ public class SchematicWorld extends World {
                     for (int z = 0; z < length; z++) {
                         for (int x = 0; x < width; x++) {
 
-                            final Block block = com.github.lunatrius.schematica.world.schematic.BlockMetaTransform.block(getBlock(x, y, length - 1 - z), 'Y');
+                            final Block block = BlockMetaTransform.block(getBlock(x, y, length - 1 - z), 'Y');
                             final int metadata = transformedMetadata('Y', x, y, length - 1 - z);
                             schematicRotated.setBlock(z, y, x, block, metadata);
                         }
@@ -825,7 +843,7 @@ public class SchematicWorld extends World {
                 for (int y = 0; y < height; y++) {
                     for (int z = 0; z < length; z++) {
                         for (int x = 0; x < width; x++) {
-                            final Block block = com.github.lunatrius.schematica.world.schematic.BlockMetaTransform.block(getBlock(width - 1 - x, y, z), 'Z');
+                            final Block block = BlockMetaTransform.block(getBlock(width - 1 - x, y, z), 'Z');
                             final int metadata = transformedMetadata('Z', width - 1 - x, y, z);
                             schematicRotated.setBlock(y, x, z, block, metadata);
                         }

@@ -1,6 +1,10 @@
 // gcewing's side + turn orientations (ArchitectureCraft shapes), turned with the schematic, by HackerRouter, 2026.
 package com.github.lunatrius.schematica.compat;
 
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+
 import com.github.lunatrius.schematica.util.SchematicTransform;
 
 /**
@@ -19,7 +23,7 @@ final class SideTurn {
     }
 
     /** Shape id -> {mirrored shape id, local turn applied after the mirror}. */
-    private static final java.util.Map<Integer, Object[]> MIRRORS = new java.util.HashMap<>();
+    private static final Map<Integer, Object[]> MIRRORS = new HashMap<>();
 
     static {
         // corners: a quarter turn about local y; Ionic and Corinthian capitals a half turn; plain balustrades about z
@@ -60,7 +64,7 @@ final class SideTurn {
         int[][] m = MATRICES[side][turn];
         int[] y = turn(column(m, 1), operation), z = turn(column(m, 2), operation);
         for (int s = 0; s < 6; s++) for (int t = 0; t < 4; t++) {
-            if (java.util.Arrays.equals(column(MATRICES[s][t], 1), y) && java.util.Arrays.equals(column(MATRICES[s][t], 2), z)) return new int[] {s, t};
+            if (Arrays.equals(column(MATRICES[s][t], 1), y) && Arrays.equals(column(MATRICES[s][t], 2), z)) return new int[] {s, t};
         }
         return null;
     }
@@ -73,7 +77,7 @@ final class SideTurn {
         if (mirror == null) return new int[] {turned[0], turned[1], shape};
         int[][] m = mul(MATRICES[turned[0]][turned[1]], (int[][]) mirror[1]);
         for (int s = 0; s < 6; s++) for (int t = 0; t < 4; t++) {
-            if (java.util.Arrays.deepEquals(MATRICES[s][t], m)) return new int[] {s, t, (Integer) mirror[0]};
+            if (Arrays.deepEquals(MATRICES[s][t], m)) return new int[] {s, t, (Integer) mirror[0]};
         }
         return new int[] {turned[0], turned[1], shape};
     }

@@ -12,6 +12,7 @@ import net.minecraftforge.common.util.ForgeDirection;
 
 import com.github.lunatrius.schematica.client.world.RenderLayerSettings;
 import com.github.lunatrius.schematica.client.world.SchematicWorld;
+import com.github.lunatrius.schematica.handler.ConfigurationHandler;
 import com.github.lunatrius.schematica.handler.VisualSettings;
 import com.github.lunatrius.schematica.proxy.ClientProxy;
 import com.github.lunatrius.schematica.util.VoxelRayTrace;
@@ -147,7 +148,7 @@ public final class SchematicTargets {
 
     /** Litematica's WorldUtils.getValidBlockRange: reach + 1 unless easyPlaceVanillaReach is set. */
     public static double validBlockRange() {
-        return Minecraft.getMinecraft().playerController.getBlockReachDistance() + (com.github.lunatrius.schematica.handler.ConfigurationHandler.easyPlaceVanillaReach ? 0 : 1);
+        return Minecraft.getMinecraft().playerController.getBlockReachDistance() + (ConfigurationHandler.easyPlaceVanillaReach ? 0 : 1);
     }
 
     public static ForgeDirection facing() {

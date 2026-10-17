@@ -1,14 +1,16 @@
 package com.github.lunatrius.schematica.client.gui.placement;
 
+import java.util.Arrays;
 import java.util.List;
 
+import com.github.lunatrius.schematica.api.SchematicOrigin;
 import com.github.lunatrius.schematica.util.SchematicTransform;
 
 public final class PlacementTransform {
     private PlacementTransform() {}
 
-    public static com.github.lunatrius.schematica.api.SchematicOrigin transformOrigin(
-        com.github.lunatrius.schematica.api.SchematicOrigin origin, int width, int height, int length, String operations) {
+    public static SchematicOrigin transformOrigin(
+        SchematicOrigin origin, int width, int height, int length, String operations) {
         int[] size = {width, height, length};
         for (int i = 0; i < operations.length(); i++) {
             char op = operation(operations.substring(i, i + 1));
@@ -92,7 +94,7 @@ public final class PlacementTransform {
                     x = SchematicTransform.point('Y', x[0], x[1], x[2], 0, 0, 0);
                     z = SchematicTransform.point('Y', z[0], z[1], z[2], 0, 0, 0);
                 }
-                if (java.util.Arrays.equals(x, basis[0]) && java.util.Arrays.equals(z, basis[2])) {
+                if (Arrays.equals(x, basis[0]) && Arrays.equals(z, basis[2])) {
                     return new Orientation(rotation, mirror);
                 }
             }

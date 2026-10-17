@@ -1,5 +1,6 @@
 package com.github.lunatrius.schematica.world.schematic;
 
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -31,7 +32,7 @@ public class PortableSchematicDataTest {
         try { PortableSchematicData.reportMissingFluids(root, name -> false); }
         finally { ImportReport.end(); }
         assertEquals(before, root);
-        assertEquals(java.util.Collections.singleton("unavailable fluid: missing.oil"), ImportReport.lastItems().omittedData);
+        assertEquals(Collections.singleton("unavailable fluid: missing.oil"), ImportReport.lastItems().omittedData);
     }
 
     @Test public void availableFluidKeepsAmountAndCustomTags() {

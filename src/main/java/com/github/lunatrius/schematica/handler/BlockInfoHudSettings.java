@@ -1,5 +1,7 @@
 package com.github.lunatrius.schematica.handler;
 
+import java.util.Arrays;
+
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.common.config.Property;
 
@@ -25,7 +27,7 @@ public final class BlockInfoHudSettings {
         offsetX = offset(configuration, "blockInfoLinesOffsetX");
         offsetY = offset(configuration, "blockInfoLinesOffsetY");
         Property anchor = label(configuration.get(CATEGORY, "blockInfoLinesAlignment", "top_right"), "blockInfoLinesAlignment");
-        anchor.setValidValues(java.util.Arrays.stream(HudAlignment.values()).map(HudAlignment::value).toArray(String[]::new));
+        anchor.setValidValues(Arrays.stream(HudAlignment.values()).map(HudAlignment::value).toArray(String[]::new));
         alignment = HudAlignment.parse(anchor.getString());
         anchor.set(alignment.value());
     }

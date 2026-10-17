@@ -13,6 +13,7 @@ import net.minecraft.world.World;
 import net.minecraftforge.common.util.ForgeDirection;
 
 import com.github.lunatrius.schematica.nbt.NBTHelper;
+import com.github.lunatrius.schematica.reference.Reference;
 
 /** The world being saved; block entities come from the server world when there is one (full inventories). */
 public final class WorldCaptureSource implements CaptureSource {
@@ -42,7 +43,7 @@ public final class WorldCaptureSource implements CaptureSource {
                 Entity copy = NBTHelper.reloadEntity((Entity) entity, offsetX, offsetY, offsetZ);
                 if (copy != null) copies.add(copy);
             } catch (Exception e) {
-                com.github.lunatrius.schematica.reference.Reference.logger.error("Error while trying to save entity '{}'!", entity, e);
+                Reference.logger.error("Error while trying to save entity '{}'!", entity, e);
             }
         }
         return copies;

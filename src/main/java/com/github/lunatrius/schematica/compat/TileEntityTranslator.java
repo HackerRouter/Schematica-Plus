@@ -1,9 +1,11 @@
 
 package com.github.lunatrius.schematica.compat;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
@@ -11,6 +13,9 @@ import net.minecraft.nbt.NBTTagList;
 import net.minecraftforge.common.util.Constants;
 
 import com.github.lunatrius.schematica.reference.Reference;
+import com.github.lunatrius.schematica.world.schematic.ImportReport;
+import com.github.lunatrius.schematica.world.schematic.LegacyBlockStates;
+import com.github.lunatrius.schematica.world.schematic.ModernItemNbt;
 
 /**
  * Translates modern (1.13+) TileEntity/BlockEntity NBT data to 1.7.10 format.
@@ -90,9 +95,9 @@ public final class TileEntityTranslator {
 
         teTag.setString("id", legacyId);
         ModernText.name(teTag, dataVersion);
-        com.github.lunatrius.schematica.world.schematic.ModernItemNbt.list(teTag, "Items", dataVersion);
+        ModernItemNbt.list(teTag, "Items", dataVersion);
         for (String key : new String[] {"RecordItem", "Book"}) {
-            if (teTag.hasKey(key, Constants.NBT.TAG_COMPOUND)) com.github.lunatrius.schematica.world.schematic.ModernItemNbt.convert(teTag.getCompoundTag(key), dataVersion);
+            if (teTag.hasKey(key, Constants.NBT.TAG_COMPOUND)) ModernItemNbt.convert(teTag.getCompoundTag(key), dataVersion);
         }
         convertNBTData(modernId, teTag, blockStateString, dataVersion);
         return true;
@@ -530,12 +535,12 @@ public final class TileEntityTranslator {
         NBTTagCompound tile = new NBTTagCompound();
         if (name.equals("minecraft:note_block")) {
             tile.setString("id", "Music");
-            NBTTagCompound props = com.github.lunatrius.schematica.world.schematic.LegacyBlockStates.tag(state).getCompoundTag("Properties");
+            NBTTagCompound props = LegacyBlockStates.tag(state).getCompoundTag("Properties");
             try { tile.setByte("note", (byte) Math.max(0, Math.min(24, Integer.parseInt(props.getString("note"))))); }
             catch (NumberFormatException ignored) { tile.setByte("note", (byte) 0); }
             String instrument = props.getString("instrument");
-            if (!instrument.isEmpty() && !java.util.Arrays.asList("harp", "basedrum", "snare", "hat", "bass").contains(instrument)) {
-                com.github.lunatrius.schematica.world.schematic.ImportReport.omittedData("note block instrument: " + instrument);
+            if (!instrument.isEmpty() && !Arrays.asList("harp", "basedrum", "snare", "hat", "bass").contains(instrument)) {
+                ImportReport.omittedData("note block instrument: " + instrument);
             }
         } else if (name.startsWith("minecraft:") && (name.endsWith("_skull") || name.endsWith("_head"))) {
             tile.setString("id", "Skull");
@@ -627,7 +632,7 @@ public final class TileEntityTranslator {
     }
 
     private void convertItem(NBTTagCompound itemTag) {
-        com.github.lunatrius.schematica.world.schematic.ModernItemNbt.convert(itemTag, 0);
+        ModernItemNbt.convert(itemTag, 0);
     }
 
     // ==================== Helpers ====================
@@ -636,7 +641,7 @@ public final class TileEntityTranslator {
         if (ints.length != 4) return "";
         long msb = ((long) ints[0] << 32) | (ints[1] & 0xFFFFFFFFL);
         long lsb = ((long) ints[2] << 32) | (ints[3] & 0xFFFFFFFFL);
-        return new java.util.UUID(msb, lsb).toString();
+        return new UUID(msb, lsb).toString();
     }
 
     private int getEffectId(String modernEffect) {

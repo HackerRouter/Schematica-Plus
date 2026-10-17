@@ -1,5 +1,8 @@
 package makeo.gadomancy.common.blocks;
 
-public class BlockArcaneDropper extends net.minecraft.block.Block {
-    public BlockArcaneDropper() { super(net.minecraft.block.material.Material.rock); }
+import net.minecraft.block.Block;
+import net.minecraft.block.material.Material;
+
+public class BlockArcaneDropper extends Block {
+    public BlockArcaneDropper() { super(Material.rock); }
 }

@@ -3,19 +3,22 @@ package com.github.lunatrius.schematica.compat;
 import java.io.File;
 import java.io.FileReader;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.concurrent.ConcurrentHashMap;
 
 import net.minecraft.block.Block;
 import net.minecraft.init.Blocks;
 
 import com.github.lunatrius.schematica.reference.Reference;
+import com.github.lunatrius.schematica.world.schematic.ImportReport;
+
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-
 import cpw.mods.fml.common.registry.FMLControlledNamespacedRegistry;
 import cpw.mods.fml.common.registry.GameData;
 
@@ -36,7 +39,7 @@ public final class BlockStateTranslator {
     private static final FMLControlledNamespacedRegistry<Block> BLOCK_REGISTRY = GameData.getBlockRegistry();
 
     private final Map<String, BlockMapping> jsonOverrides = new HashMap<String, BlockMapping>();
-    private final Map<String, BlockMapping> cache = new java.util.concurrent.ConcurrentHashMap<String, BlockMapping>();
+    private final Map<String, BlockMapping> cache = new ConcurrentHashMap<String, BlockMapping>();
 
     /** Properties that don't exist in 1.7.10 and should be stripped before lookup */
     private static final Set<String> IGNORED_PROPERTIES = new HashSet<String>(Arrays.asList(
@@ -100,7 +103,7 @@ public final class BlockStateTranslator {
         // Note: "open" is NOT in IGNORED_PROPERTIES, so it's already kept
     }
 
-    private final Set<String> unresolved = java.util.Collections.newSetFromMap(new java.util.concurrent.ConcurrentHashMap<String, Boolean>());
+    private final Set<String> unresolved = Collections.newSetFromMap(new ConcurrentHashMap<String, Boolean>());
     private Block fallbackBlock = Blocks.stone;
     private int fallbackMeta = 0;
 
@@ -800,7 +803,7 @@ public final class BlockStateTranslator {
     }
 
     private static void reportUnresolved(String state, BlockMapping mapping) {
-        com.github.lunatrius.schematica.world.schematic.ImportReport.unknownBlock(state,
+        ImportReport.unknownBlock(state,
             Block.blockRegistry.getNameForObject(mapping.block) + (mapping.metadata != 0 ? ":" + mapping.metadata : ""));
     }
 

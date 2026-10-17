@@ -1,5 +1,8 @@
 package tuhljin.automagy.blocks;
 
-public class BlockHourglass extends net.minecraft.block.Block {
-    public BlockHourglass() { super(net.minecraft.block.material.Material.rock); }
+import net.minecraft.block.Block;
+import net.minecraft.block.material.Material;
+
+public class BlockHourglass extends Block {
+    public BlockHourglass() { super(Material.rock); }
 }

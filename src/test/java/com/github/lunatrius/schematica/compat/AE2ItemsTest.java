@@ -1,15 +1,19 @@
 // AE2 material counting regressions, by HackerRouter, 2026.
 package com.github.lunatrius.schematica.compat;
 
+import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.Map;
+
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraftforge.common.util.ForgeDirection;
+
 import appeng.api.parts.PartItemStack;
 import org.junit.Test;
+
 import static org.junit.Assert.*;
 
 public class AE2ItemsTest {
@@ -64,7 +68,7 @@ public class AE2ItemsTest {
         ItemStack[] items = AE2Items.items(host);
         assertEquals(4, items.length);
         for (ItemStack stack : items) assertEquals(1, stack.stackSize);
-        ItemStack copiedFacade = java.util.Arrays.stream(items).filter(s -> s.getItemDamage() == 10).findFirst().get();
+        ItemStack copiedFacade = Arrays.stream(items).filter(s -> s.getItemDamage() == 10).findFirst().get();
         assertEquals("stone", copiedFacade.getTagCompound().getString("material"));
         copiedFacade.getTagCompound().setString("material", "glass");
         assertEquals("stone", facade.stack.getTagCompound().getString("material"));

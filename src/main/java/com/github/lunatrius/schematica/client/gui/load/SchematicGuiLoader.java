@@ -1,11 +1,11 @@
 package com.github.lunatrius.schematica.client.gui.load;
 
-import static com.github.lunatrius.schematica.client.util.WorldServerName.worldServerName;
-
 import java.io.File;
 import java.io.IOException;
+import java.util.function.Consumer;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.util.Vec3;
@@ -13,12 +13,14 @@ import net.minecraftforge.common.util.ForgeDirection;
 
 import com.github.lunatrius.schematica.SchematicaPlus;
 import com.github.lunatrius.schematica.client.printer.SchematicPrinter;
-import com.github.lunatrius.schematica.client.world.SchematicWorld;
 import com.github.lunatrius.schematica.client.world.SchematicLibrary;
 import com.github.lunatrius.schematica.client.world.SchematicSourceData;
+import com.github.lunatrius.schematica.client.world.SchematicWorld;
 import com.github.lunatrius.schematica.handler.client.WorldHandler;
 import com.github.lunatrius.schematica.proxy.ClientProxy;
 import com.github.lunatrius.schematica.util.Coordinates;
+
+import static com.github.lunatrius.schematica.client.util.WorldServerName.worldServerName;
 
 public final class SchematicGuiLoader {
 
@@ -36,7 +38,7 @@ public final class SchematicGuiLoader {
 
     /** load() with the file read on a worker thread; done or failed runs on the client thread afterwards. */
     public static boolean loadAsync(Minecraft minecraft, File file, boolean createPlacement,
-        java.util.function.Consumer<SchematicLibrary.Source<SchematicSourceData>> done, java.util.function.Consumer<Exception> failed) throws IOException {
+        Consumer<SchematicLibrary.Source<SchematicSourceData>> done, Consumer<Exception> failed) throws IOException {
         if (minecraft.theWorld == null || minecraft.thePlayer == null || !SchematicaPlus.proxy.isLoadEnabled) {
             throw new IOException("Schematic loading is unavailable in this world");
         }
@@ -76,7 +78,7 @@ public final class SchematicGuiLoader {
                 }
                 ClientProxy.moveSchematic(schematic, coord.posX, coord.posY, coord.posZ);
             }
-            if (net.minecraft.client.gui.GuiScreen.isShiftKeyDown()) schematic.setPlacementSettings(schematic.placementSettings().enabled(false));
+            if (GuiScreen.isShiftKeyDown()) schematic.setPlacementSettings(schematic.placementSettings().enabled(false));
             ClientProxy.selectSchematic(schematic);
             SchematicPrinter.INSTANCE.refresh();
             WorldHandler.INSTANCE.saveSession();

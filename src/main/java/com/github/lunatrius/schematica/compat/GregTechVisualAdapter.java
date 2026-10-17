@@ -1,9 +1,13 @@
 package com.github.lunatrius.schematica.compat;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraftforge.common.util.ForgeDirection;
+
 import com.github.lunatrius.schematica.api.ISchematicVisualAdapter;
 import com.github.lunatrius.schematica.util.SchematicTransform;
 
@@ -127,16 +131,16 @@ final class GregTechVisualAdapter implements ISchematicVisualAdapter {
 
     static void transformMachine(Object tile, char operation) throws Exception {
         Object meta = Reflect.call(tile, "getMetaTileEntity");
-        java.lang.reflect.Field facing = Reflect.field(tile.getClass(), "mFacing"), old = Reflect.field(tile.getClass(), "oldFacing");
+        Field facing = Reflect.field(tile.getClass(), "mFacing"), old = Reflect.field(tile.getClass(), "oldFacing");
         ForgeDirection front = (ForgeDirection) facing.get(tile);
         int[] extended = null;
         if (Reflect.is(meta, MULTIBLOCK)) {
-            java.lang.reflect.Field field = Reflect.field(meta.getClass(), "mExtendedFacing");
+            Field field = Reflect.field(meta.getClass(), "mExtendedFacing");
             int[] current = StructureLibFacing.triple(field.get(meta));
             extended = StructureLibFacing.transform(front, current[1], current[2], operation, false, true);
             if (extended != null) field.set(meta, StructureLibFacing.of(extended));
         } else if (Reflect.is(meta, MAINTENANCE)) {
-            java.lang.reflect.Field field = Reflect.field(meta.getClass(), "rotation");
+            Field field = Reflect.field(meta.getClass(), "rotation");
             Object rotation = field.get(meta);
             extended = StructureLibFacing.transform(front, (Integer) rotation.getClass().getMethod("getIndex").invoke(rotation), 0, operation, false, false);
             if (extended != null) field.set(meta, rotation.getClass().getMethod("byIndex", int.class).invoke(null, extended[1]));
@@ -147,13 +151,13 @@ final class GregTechVisualAdapter implements ISchematicVisualAdapter {
             old.set(tile, turned);
         }
         if (Reflect.is(meta, BASIC_MACHINE)) {
-            java.lang.reflect.Field main = Reflect.field(meta.getClass(), "mMainFacing");
+            Field main = Reflect.field(meta.getClass(), "mMainFacing");
             ForgeDirection side = (ForgeDirection) main.get(meta);
             if (side != ForgeDirection.UNKNOWN) main.set(meta, SchematicTransform.direction(operation, side));
         }
         if (Reflect.is(meta, DISTRIBUTOR)) {
             SchematicTransform.sides(operation, Reflect.get(meta, "itemsPerSide"));
-            java.lang.reflect.Field current = Reflect.field(meta.getClass(), "currentSide");
+            Field current = Reflect.field(meta.getClass(), "currentSide");
             current.set(meta, SchematicTransform.direction(operation, (ForgeDirection) current.get(meta)));
         }
         transformCoverable(tile, operation);
@@ -166,7 +170,7 @@ final class GregTechVisualAdapter implements ISchematicVisualAdapter {
         Object[] covers = (Object[]) Reflect.get(tile, "covers");
         Object[] rotatedCovers = covers.clone();
         Class<?> coverable = Reflect.type(tile.getClass(), "gregtech.api.metatileentity.CoverableTileEntity");
-        java.lang.reflect.Method write = coverable.getDeclaredMethod("writeCoverNBT", NBTTagCompound.class, boolean.class);
+        Method write = coverable.getDeclaredMethod("writeCoverNBT", NBTTagCompound.class, boolean.class);
         write.setAccessible(true);
         NBTTagCompound coverTag = new NBTTagCompound();
         write.invoke(tile, coverTag, false);
@@ -190,7 +194,7 @@ final class GregTechVisualAdapter implements ISchematicVisualAdapter {
                 mask(meta, "mDisableInput", operation);
                 mask(meta, "mLastReceivedFrom", operation);
             } else if (Reflect.is(meta, "gregtech.api.metatileentity.implementations.MTEItemPipe")) {
-                java.lang.reflect.Field field = Reflect.field(meta.getClass(), "mLastReceivedFrom");
+                Field field = Reflect.field(meta.getClass(), "mLastReceivedFrom");
                 field.set(meta, SchematicTransform.direction(operation, (ForgeDirection) field.get(meta)));
             }
         }
@@ -207,7 +211,7 @@ final class GregTechVisualAdapter implements ISchematicVisualAdapter {
     }
 
     private static void mask(Object target, String name, char operation) throws ReflectiveOperationException {
-        java.lang.reflect.Field field = Reflect.field(target.getClass(), name);
+        Field field = Reflect.field(target.getClass(), name);
         field.setByte(target, (byte) SchematicTransform.sideMask(operation, field.getByte(target)));
     }
 

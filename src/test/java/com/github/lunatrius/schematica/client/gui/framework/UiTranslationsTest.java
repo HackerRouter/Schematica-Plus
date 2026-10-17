@@ -2,15 +2,25 @@ package com.github.lunatrius.schematica.client.gui.framework;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import net.minecraft.client.resources.IResource;
 import net.minecraft.client.resources.IResourceManager;
+import net.minecraft.client.resources.Locale;
 import net.minecraft.client.resources.data.IMetadataSection;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.StringTranslate;
@@ -44,12 +54,12 @@ public class UiTranslationsTest {
     }
 
     private Set<String> referencedKeys() throws IOException {
-        Set<String> keys = new java.util.TreeSet<>();
-        java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("\"((?:schematica|Schematica|litematica|malilib)\\.[^\"\\s]+)\"");
-        try (java.util.stream.Stream<java.nio.file.Path> paths = java.nio.file.Files.walk(java.nio.file.Paths.get("src/main/java"))) {
-            for (java.nio.file.Path path : paths.filter(p -> p.toString().endsWith(".java")).collect(Collectors.toList())) {
-                String source = new String(java.nio.file.Files.readAllBytes(path), java.nio.charset.StandardCharsets.UTF_8);
-                java.util.regex.Matcher matcher = pattern.matcher(source);
+        Set<String> keys = new TreeSet<>();
+        Pattern pattern = Pattern.compile("\"((?:schematica|Schematica|litematica|malilib)\\.[^\"\\s]+)\"");
+        try (Stream<Path> paths = Files.walk(Paths.get("src/main/java"))) {
+            for (Path path : paths.filter(p -> p.toString().endsWith(".java")).collect(Collectors.toList())) {
+                String source = new String(Files.readAllBytes(path), StandardCharsets.UTF_8);
+                Matcher matcher = pattern.matcher(source);
                 while (matcher.find()) keys.add(matcher.group(1));
             }
         }
@@ -70,13 +80,13 @@ public class UiTranslationsTest {
     @Test public void activeTemplatesFormatAcrossAllBundledLanguages() throws IOException {
         Map<String, String> english = catalog("en_US");
         Set<String> keys = referencedKeys();
-        java.util.regex.Pattern argument = java.util.regex.Pattern.compile("%(?:(\\d+)\\$)?s");
+        Pattern argument = Pattern.compile("%(?:(\\d+)\\$)?s");
         for (String language : LANGUAGES) {
-            Map<String, String> values = new java.util.HashMap<>(english);
+            Map<String, String> values = new HashMap<>(english);
             values.putAll(catalog(language));
             for (String key : keys) {
                 if (!english.containsKey(key)) continue;
-                java.util.regex.Matcher matcher = argument.matcher(english.get(key));
+                Matcher matcher = argument.matcher(english.get(key));
                 int count = 0, sequential = 0;
                 while (matcher.find()) count = Math.max(count, matcher.group(1) == null ? ++sequential : Integer.parseInt(matcher.group(1)));
                 Object[] arguments = new Object[count];
@@ -88,7 +98,7 @@ public class UiTranslationsTest {
     }
 
     @Test public void nativeLanguageLoaderUsesSelectedLocaleAndEnglishFallback() {
-        net.minecraft.client.resources.Locale locale = new net.minecraft.client.resources.Locale();
+        Locale locale = new Locale();
         IResourceManager resources = new IResourceManager() {
             @Override public Set<String> getResourceDomains() { return Collections.singleton(DOMAIN); }
             @Override public IResource getResource(ResourceLocation location) throws IOException {

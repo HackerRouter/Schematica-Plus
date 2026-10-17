@@ -1,5 +1,7 @@
 package com.github.lunatrius.schematica.asm;
 
+import java.util.Arrays;
+
 import org.junit.Test;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
@@ -26,7 +28,7 @@ public class InputTransformerTest {
         assertSame(input, transformer.transform("mod/OtherScreen", "mod.OtherScreen", input));
         for (String name : new String[] {"net.minecraft.client.Minecraft", "net.minecraft.client.gui.GuiScreen"}) {
             byte[] output = transformer.transform("obfuscated", name, input);
-            assertFalse(java.util.Arrays.equals(input, output));
+            assertFalse(Arrays.equals(input, output));
             assertSame(output, transformer.transform("obfuscated", name, output));
             ClassNode result = new ClassNode(); new ClassReader(output).accept(result, 0);
             MethodNode poll = result.methods.get(0);

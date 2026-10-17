@@ -2,6 +2,7 @@
 // Litematica subregion configuration layout, adapted for 1.7.10 by HackerRouter, 2026.
 package com.github.lunatrius.schematica.client.gui.placement;
 
+import java.util.Arrays;
 import java.util.function.IntConsumer;
 import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
@@ -10,10 +11,8 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.util.MathHelper;
 import net.minecraft.world.World;
-import org.lwjgl.input.Keyboard;
 
 import com.github.lunatrius.schematica.api.SchematicOrigin;
-import com.github.lunatrius.schematica.client.world.PlacementSettings;
 import com.github.lunatrius.schematica.client.gui.framework.UiButton;
 import com.github.lunatrius.schematica.client.gui.framework.UiCheckBox;
 import com.github.lunatrius.schematica.client.gui.framework.UiIntegerField;
@@ -24,11 +23,14 @@ import com.github.lunatrius.schematica.client.gui.framework.UiSprite;
 import com.github.lunatrius.schematica.client.gui.framework.UiTranslations;
 import com.github.lunatrius.schematica.client.printer.SchematicPrinter;
 import com.github.lunatrius.schematica.client.renderer.RendererSchematicGlobal;
+import com.github.lunatrius.schematica.client.world.PlacementSettings;
 import com.github.lunatrius.schematica.client.world.SchematicWorld;
 import com.github.lunatrius.schematica.client.world.SubRegionPlacements.Region;
 import com.github.lunatrius.schematica.handler.client.WorldHandler;
 import com.github.lunatrius.schematica.proxy.ClientProxy;
 import com.github.lunatrius.schematica.reference.Reference;
+
+import org.lwjgl.input.Keyboard;
 
 public final class GuiSubRegionConfiguration extends UiScreen {
     private final SchematicWorld placement;
@@ -158,7 +160,7 @@ public final class GuiSubRegionConfiguration extends UiScreen {
         controls.setEnabled(available());
         if (!available()) status = UiTranslations.format("schematica.ui.placement.unloaded");
         else rendering.setTooltip(GuiPlacementConfiguration.renderingHover(region().rendering));
-        if (available() && (revision != placement.placementRevision() || !java.util.Arrays.equals(lastPosition.coordinates(), placement.subregionPosition(regionName).coordinates()))) sync();
+        if (available() && (revision != placement.placementRevision() || !Arrays.equals(lastPosition.coordinates(), placement.subregionPosition(regionName).coordinates()))) sync();
         feedback.setVisible(!status.isEmpty());
     }
 

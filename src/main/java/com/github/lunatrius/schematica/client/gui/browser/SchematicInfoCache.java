@@ -5,6 +5,7 @@ package com.github.lunatrius.schematica.client.gui.browser;
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -64,7 +65,7 @@ final class SchematicInfoCache {
             } catch (Exception e) {
                 Reference.logger.debug("Could not read {} for the preview", file, e);
             }
-            model = java.util.concurrent.CompletableFuture.completedFuture(null);
+            model = CompletableFuture.completedFuture(null);
         }
         return preview3D;
     }

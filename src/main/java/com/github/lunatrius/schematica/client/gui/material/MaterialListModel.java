@@ -10,13 +10,14 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.ToIntFunction;
 
 public final class MaterialListModel<T> {
     /** CACHE_ORDER: the items of the containers opened last first (materialListContainerScan), then by name. */
     public enum Sort { NAME, TOTAL, MISSING, AVAILABLE, CACHE_ORDER }
 
     /** The CACHE_ORDER priority of a key, lower first. */
-    public static java.util.function.ToIntFunction<Object> cachePriority = key -> Integer.MAX_VALUE;
+    public static ToIntFunction<Object> cachePriority = key -> Integer.MAX_VALUE;
 
     public static final class Entry<T> {
         public final T key;

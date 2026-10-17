@@ -2,6 +2,8 @@
 // Litematica/MaLiLib icons, adapted for 1.7.10 by HackerRouter, 2026.
 package com.github.lunatrius.schematica.client.gui.framework;
 
+import java.util.Locale;
+
 public enum UiSprite {
     PLUS_MINUS(0, 128, 16, 16, true),
     ENCLOSING_BOX_ENABLED(0, 144, 16, 16, true),
@@ -74,7 +76,7 @@ public enum UiSprite {
 
     public static UiSprite schematicFile(String name) {
         if (name == null) return MEMORY;
-        String filename = name.toLowerCase(java.util.Locale.ROOT);
+        String filename = name.toLowerCase(Locale.ROOT);
         if (filename.endsWith(".litematic")) return FILE;
         if (filename.endsWith(".schemplus")) return SCHEMPLUS;
         if (filename.endsWith(".json")) return JSON;

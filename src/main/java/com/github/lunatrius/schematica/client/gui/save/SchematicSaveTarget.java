@@ -2,6 +2,7 @@ package com.github.lunatrius.schematica.client.gui.save;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Locale;
 
 import com.github.lunatrius.schematica.util.FileUtils;
@@ -18,7 +19,7 @@ public final class SchematicSaveTarget {
 
     /** The file name for a save in one of FORMATS; a typed schematic extension is replaced. */
     public static String filename(String input, String extension) {
-        if (!java.util.Arrays.asList(FORMATS).contains(extension)) throw new IllegalArgumentException("Invalid schematic format");
+        if (!Arrays.asList(FORMATS).contains(extension)) throw new IllegalArgumentException("Invalid schematic format");
         String name = input.trim();
         String lower = name.toLowerCase(Locale.ROOT);
         for (String format : FORMATS) {
@@ -35,7 +36,7 @@ public final class SchematicSaveTarget {
                 throw new IllegalArgumentException("Invalid schematic filename");
             }
         }
-        if (com.github.lunatrius.schematica.util.FileUtils.isReservedName(name)) {
+        if (FileUtils.isReservedName(name)) {
             throw new IllegalArgumentException("Reserved schematic filename");
         }
         return name + extension;

@@ -3,6 +3,7 @@ package com.github.lunatrius.schematica.handler;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Queue;
 import java.util.UUID;
@@ -15,6 +16,7 @@ import java.util.concurrent.TimeUnit;
 
 import com.github.lunatrius.schematica.task.TaskRegistry;
 import com.github.lunatrius.schematica.tool.WorldEditJob;
+
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -62,7 +64,7 @@ public class RemoteEditOperationsTest {
         RemoteEditOperations.Operation<Object> second = upload(2, nextJob);
         assertFalse(operations.finish(first));
         drain();
-        assertEquals(java.util.Collections.singletonList(nextJob), submitted);
+        assertEquals(Collections.singletonList(nextJob), submitted);
         assertTrue(operations.active(second));
         operations.cancel(owner, 1);
         assertTrue(cancelled.isEmpty());
@@ -120,7 +122,7 @@ public class RemoteEditOperationsTest {
         Object nextJob = new Object();
         upload(2, nextJob);
         drain();
-        assertEquals(java.util.Collections.singletonList(nextJob), submitted);
+        assertEquals(Collections.singletonList(nextJob), submitted);
     }
 
     @Test public void serverClearInvalidatesDecodingAndQueuedWork() {
@@ -142,7 +144,7 @@ public class RemoteEditOperationsTest {
         drain();
         operations.cancel(owner, 1);
         operations.cancel(owner, 1);
-        assertEquals(java.util.Collections.singletonList(job), cancelled);
+        assertEquals(Collections.singletonList(job), cancelled);
         assertNotNull(operations.begin(owner, 2));
     }
 
@@ -192,7 +194,7 @@ public class RemoteEditOperationsTest {
             releaseSubmit.countDown();
             assertEquals(RemoteEditOperations.Start.STARTED, start.get(3, TimeUnit.SECONDS));
             cancel.get(3, TimeUnit.SECONDS);
-            assertEquals(java.util.Collections.singletonList(job), cancelled);
+            assertEquals(Collections.singletonList(job), cancelled);
             assertFalse(operations.active(operation));
         } finally { releaseSubmit.countDown(); threads.shutdownNow(); }
     }

@@ -2,10 +2,12 @@
 // MaLiLib HUD alignment, adapted for 1.7.10 by HackerRouter, 2026.
 package com.github.lunatrius.schematica.util;
 
+import java.util.Locale;
+
 public enum HudAlignment {
     TOP_LEFT, TOP_RIGHT, BOTTOM_LEFT, BOTTOM_RIGHT, CENTER;
 
-    public String value() { return name().toLowerCase(java.util.Locale.ROOT); }
+    public String value() { return name().toLowerCase(Locale.ROOT); }
     public String translationKey() { return "malilib.label.alignment." + value(); }
 
     public static HudAlignment parse(String value) {

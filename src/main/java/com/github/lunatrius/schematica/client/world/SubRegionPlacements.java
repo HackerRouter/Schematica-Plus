@@ -10,9 +10,11 @@ import com.github.lunatrius.schematica.api.ISchematic;
 import com.github.lunatrius.schematica.api.SchematicOrigin;
 import com.github.lunatrius.schematica.api.SchematicRegion;
 import com.github.lunatrius.schematica.util.SchematicLimits;
+
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
 
 public final class SubRegionPlacements {
     private final List<Region> regions;
@@ -102,7 +104,7 @@ public final class SubRegionPlacements {
             JsonObject entry = new JsonObject();
             entry.addProperty("name", region.name());
             JsonArray position = new JsonArray();
-            for (int coordinate : region.position.coordinates()) position.add(new com.google.gson.JsonPrimitive(coordinate));
+            for (int coordinate : region.position.coordinates()) position.add(new JsonPrimitive(coordinate));
             entry.add("position", position);
             entry.addProperty("rotation", region.rotation);
             entry.addProperty("mirror", region.mirror);

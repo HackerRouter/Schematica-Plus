@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.Locale;
 
 import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.util.EnumChatFormatting;
 
 import com.github.lunatrius.schematica.client.gui.browser.GuiSchematicBrowser;
 import com.github.lunatrius.schematica.client.gui.browser.SchematicBrowserModel;
@@ -97,7 +98,7 @@ public final class GuiSchematicProjectsBrowser extends GuiSchematicBrowser {
             SchematicProject project = SchematicProjects.current();
             if (project == null) return;
             mc.displayGuiScreen(new GuiSchematicProjectManager(this, project));
-            SchematicProjects.message(net.minecraft.util.EnumChatFormatting.GREEN, "litematica.message.schematic_projects.project_loaded", project.name());
+            SchematicProjects.message(EnumChatFormatting.GREEN, "litematica.message.schematic_projects.project_loaded", project.name());
         } else {
             setStatus(UiTranslations.format("litematica.error.schematic_projects.failed_to_load_project"));
         }

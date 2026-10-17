@@ -1,7 +1,8 @@
 package com.github.lunatrius.schematica.compat;
 
-import org.junit.Test;
+import net.minecraft.tileentity.TileEntityChest;
 
+import org.junit.Test;
 import thaumcraft.common.tiles.TileEssentiaCrystalizer;
 import thaumcraft.common.tiles.TileEtherealBloom;
 import thaumcraft.common.tiles.TileInfusionMatrix;
@@ -38,6 +39,6 @@ public class ThaumcraftVisualAdapterTest {
         TileEtherealBloom bloom = new TileEtherealBloom();
         adapter.beforeRender(bloom, 0);
         assertEquals(100, bloom.growthCounter);
-        assertFalse(adapter.supports(new net.minecraft.tileentity.TileEntityChest()));
+        assertFalse(adapter.supports(new TileEntityChest()));
     }
 }

@@ -1,9 +1,11 @@
 package com.github.lunatrius.schematica.compat;
 
-import org.junit.Test;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraftforge.common.util.ForgeDirection;
+
+import org.junit.Test;
+
 import static org.junit.Assert.*;
 
 public class GregTechVisualAdapterTest {
@@ -75,7 +77,7 @@ public class GregTechVisualAdapterTest {
     }
 
     @Test public void machinesTurnFrontOutputSidesAndCovers() throws Exception {
-        net.minecraft.nbt.NBTTagCompound tag = new net.minecraft.nbt.NBTTagCompound();
+        NBTTagCompound tag = new NBTTagCompound();
         tag.setShort("mFacing", (short) 2);
         tag.setInteger("mMainFacing", 4);
         tag.setByte("mStrongRedstone", (byte) (1 << 2));

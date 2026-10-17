@@ -1,10 +1,13 @@
 package com.github.lunatrius.schematica.compat;
 
+import java.util.List;
+
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagList;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraftforge.common.util.Constants;
 
 import org.junit.Test;
-
 import vazkii.botania.common.block.tile.TileLightRelay;
 
 import static org.junit.Assert.*;
@@ -34,7 +37,7 @@ public class CoordinateLinksTest {
     }
 
     @Test public void foreignUnboundAndUnmarkedMirrorLinksAreNotRebound() {
-        java.util.List<CoordinateLinks.Spec> rules = CoordinateLinks.rulesFor("thaumcraft.common.tiles.TileMirror");
+        List<CoordinateLinks.Spec> rules = CoordinateLinks.rulesFor("thaumcraft.common.tiles.TileMirror");
         NBTTagCompound foreign = mirror(-1);
         CoordinateLinks.paste(rules, foreign, 102, 71, 203, -1);
         assertEquals(5, foreign.getInteger("linkX"));
@@ -61,13 +64,13 @@ public class CoordinateLinksTest {
     @Test public void pastedRailcraftPairingsAndNestedTrackCacheUseTheirOriginalDimension() {
         NBTTagCompound tag = new NBTTagCompound(), block = new NBTTagCompound();
         tag.setInteger(CoordinateLinks.MARKER, 0);
-        net.minecraft.nbt.NBTTagList pairings = new net.minecraft.nbt.NBTTagList();
+        NBTTagList pairings = new NBTTagList();
         NBTTagCompound local = new NBTTagCompound(), foreign = new NBTTagCompound();
         local.setIntArray("coords", new int[]{0, 3, 2, 5});
         foreign.setIntArray("coords", new int[]{-1, 110, 64, 200});
         pairings.appendTag(local); pairings.appendTag(foreign);
         block.setTag("pairings", pairings);
-        net.minecraft.nbt.NBTTagList cache = new net.minecraft.nbt.NBTTagList();
+        NBTTagList cache = new NBTTagList();
         NBTTagCompound entry = new NBTTagCompound(), key = new NBTTagCompound();
         key.setInteger("dim", 0); key.setInteger("x", 3); key.setInteger("y", 2); key.setInteger("z", 5);
         entry.setTag("key", key); entry.setTag("value", key.copy());
@@ -169,13 +172,13 @@ public class CoordinateLinksTest {
         assertEquals(4, quarry.getCompoundTag("box").getInteger("xMin"));
         assertEquals(7, quarry.getCompoundTag("box").getInteger("xMax"));
         assertEquals(6.0, quarry.getDouble("headPosX"), 0);
-        assertEquals(net.minecraftforge.common.util.Constants.NBT.TAG_DOUBLE, quarry.getTag("headPosX").getId());
+        assertEquals(Constants.NBT.TAG_DOUBLE, quarry.getTag("headPosX").getId());
 
         NBTTagCompound mobilizer = new NBTTagCompound();
         mobilizer.setInteger(CoordinateLinks.MARKER, 0);
         mobilizer.setInteger("FirstRelayX", 1);
         mobilizer.setInteger("FirstRelayZ", 2);
-        java.util.List<CoordinateLinks.Spec> specs = CoordinateLinks.rulesFor("thaumic.tinkerer.common.block.tile.TileEntityMobilizer");
+        List<CoordinateLinks.Spec> specs = CoordinateLinks.rulesFor("thaumic.tinkerer.common.block.tile.TileEntityMobilizer");
         CoordinateLinks.transform(specs, mobilizer, 'X', 4, 4, 4);
         assertEquals(2, mobilizer.getInteger("FirstRelayZ"));
         CoordinateLinks.transform(specs, mobilizer, 'Y', 4, 4, 4);
@@ -190,7 +193,7 @@ public class CoordinateLinksTest {
         mirror.setInteger("linkY", 5);
         mirror.setInteger("linkZ", 5);
         mirror.setInteger("linkDim", -1);
-        java.util.List<CoordinateLinks.Spec> specs = CoordinateLinks.rulesFor("thaumcraft.common.tiles.TileMirror");
+        List<CoordinateLinks.Spec> specs = CoordinateLinks.rulesFor("thaumcraft.common.tiles.TileMirror");
         CoordinateLinks.shift(specs, mirror, 10, 10, 10);
         assertEquals(5, mirror.getInteger("linkX"));
         mirror.setInteger("linkDim", 0);
@@ -201,7 +204,7 @@ public class CoordinateLinksTest {
     @Test public void positionListsAndGalacticraftMultiblockParts() {
         NBTTagCompound inventarium = new NBTTagCompound();
         inventarium.setInteger(CoordinateLinks.MARKER, 0);
-        net.minecraft.nbt.NBTTagList nodes = new net.minecraft.nbt.NBTTagList();
+        NBTTagList nodes = new NBTTagList();
         NBTTagCompound node = new NBTTagCompound();
         node.setIntArray("pos", new int[] {110, 64, 205});
         nodes.appendTag(node);
@@ -224,7 +227,7 @@ public class CoordinateLinksTest {
         lure.setInteger(CoordinateLinks.MARKER, 0);
         lure.setInteger("yTop", 70);
         lure.setInteger("yBottom", 64);
-        java.util.List<CoordinateLinks.Spec> specs = CoordinateLinks.rulesFor("tuhljin.automagy.tiles.TileEntityMobLure");
+        List<CoordinateLinks.Spec> specs = CoordinateLinks.rulesFor("tuhljin.automagy.tiles.TileEntityMobLure");
         CoordinateLinks.shift(specs, lure, 5, -60, 5);
         assertEquals(10, lure.getInteger("yTop"));
         CoordinateLinks.transform(specs, lure, 'X', 3, 12, 3);
@@ -246,7 +249,7 @@ public class CoordinateLinksTest {
         screen.setInteger("minX", 100); screen.setInteger("minY", 64); screen.setInteger("minZ", 200);
         screen.setInteger("maxX", 102); screen.setInteger("maxY", 64); screen.setInteger("maxZ", 200);
         panel.setTag("screenData", screen);
-        java.util.List<CoordinateLinks.Spec> specs = CoordinateLinks.rulesFor("shedar.mods.ic2.nuclearcontrol.tileentities.TileEntityInfoPanel");
+        List<CoordinateLinks.Spec> specs = CoordinateLinks.rulesFor("shedar.mods.ic2.nuclearcontrol.tileentities.TileEntityInfoPanel");
         CoordinateLinks.shift(specs, panel, -100, -64, -200);
         CoordinateLinks.transform(specs, panel, 'Y', 3, 1, 3);
         NBTTagCompound turned = panel.getCompoundTag("screenData");
@@ -255,7 +258,7 @@ public class CoordinateLinksTest {
 
         NBTTagCompound lamp = new NBTTagCompound();
         lamp.setInteger(CoordinateLinks.MARKER, 0);
-        net.minecraft.nbt.NBTTagList air = new net.minecraft.nbt.NBTTagList();
+        NBTTagList air = new NBTTagList();
         NBTTagCompound block = new NBTTagCompound();
         block.setInteger("x", 105); block.setInteger("y", 70); block.setInteger("z", 210);
         air.appendTag(block);
@@ -268,7 +271,7 @@ public class CoordinateLinksTest {
     @Test public void sensorCardTargetsInPanels() {
         NBTTagCompound panel = new NBTTagCompound();
         panel.setInteger(CoordinateLinks.MARKER, 0);
-        net.minecraft.nbt.NBTTagList items = new net.minecraft.nbt.NBTTagList();
+        NBTTagList items = new NBTTagList();
         NBTTagCompound card = new NBTTagCompound(), tag = new NBTTagCompound();
         tag.setInteger("x", 101); tag.setInteger("y", 65); tag.setInteger("z", 202);
         card.setTag("tag", tag);
@@ -277,7 +280,7 @@ public class CoordinateLinksTest {
         items.appendTag(card);
         items.appendTag(upgrade);
         panel.setTag("Items", items);
-        java.util.List<CoordinateLinks.Spec> specs = CoordinateLinks.rulesFor("shedar.mods.ic2.nuclearcontrol.tileentities.TileEntityInfoPanel");
+        List<CoordinateLinks.Spec> specs = CoordinateLinks.rulesFor("shedar.mods.ic2.nuclearcontrol.tileentities.TileEntityInfoPanel");
         CoordinateLinks.shift(specs, panel, -100, -64, -200);
         CoordinateLinks.transform(specs, panel, 'Y', 3, 2, 3);
         NBTTagCompound moved = panel.getTagList("Items", 10).getCompoundTagAt(0).getCompoundTag("tag");
@@ -289,14 +292,14 @@ public class CoordinateLinksTest {
         NBTTagCompound signal = new NBTTagCompound();
         signal.setInteger(CoordinateLinks.MARKER, 0);
         NBTTagCompound block = new NBTTagCompound();
-        net.minecraft.nbt.NBTTagList pairings = new net.minecraft.nbt.NBTTagList();
+        NBTTagList pairings = new NBTTagList();
         NBTTagCompound pair = new NBTTagCompound(), other = new NBTTagCompound();
         pair.setIntArray("coords", new int[] {0, 110, 64, 200});
         other.setIntArray("coords", new int[] {-1, 110, 64, 200});
         pairings.appendTag(pair);
         pairings.appendTag(other);
         block.setTag("pairings", pairings);
-        net.minecraft.nbt.NBTTagList cache = new net.minecraft.nbt.NBTTagList();
+        NBTTagList cache = new NBTTagList();
         NBTTagCompound entry = new NBTTagCompound(), key = new NBTTagCompound();
         key.setInteger("dim", 0); key.setInteger("x", 105); key.setInteger("y", 63); key.setInteger("z", 201);
         entry.setTag("key", key);
@@ -305,7 +308,7 @@ public class CoordinateLinksTest {
         block.setTag("trackCache", cache);
         signal.setTag("SignalBlock", block);
         CoordinateLinks.shift(CoordinateLinks.rulesFor("mods.railcraft.common.blocks.signals.TileSignalBase"), signal, -100, -60, -200);
-        net.minecraft.nbt.NBTTagList moved = signal.getCompoundTag("SignalBlock").getTagList("pairings", 10);
+        NBTTagList moved = signal.getCompoundTag("SignalBlock").getTagList("pairings", 10);
         assertArrayEquals(new int[] {0, 10, 4, 0}, moved.getCompoundTagAt(0).getIntArray("coords"));
         assertArrayEquals(new int[] {-1, 110, 64, 200}, moved.getCompoundTagAt(1).getIntArray("coords"));
         NBTTagCompound cached = signal.getCompoundTag("SignalBlock").getTagList("trackCache", 10).getCompoundTagAt(0);
@@ -318,7 +321,7 @@ public class CoordinateLinksTest {
         smeltery.setInteger(CoordinateLinks.MARKER, 0);
         smeltery.setIntArray("MinPos", new int[] {101, 61, 201});
         smeltery.setIntArray("MaxPos", new int[] {103, 62, 202});
-        java.util.List<CoordinateLinks.Spec> specs = CoordinateLinks.rulesFor("tconstruct.smeltery.logic.SmelteryLogic");
+        List<CoordinateLinks.Spec> specs = CoordinateLinks.rulesFor("tconstruct.smeltery.logic.SmelteryLogic");
         CoordinateLinks.shift(specs, smeltery, -100, -60, -200);
         assertArrayEquals(new int[] {1, 1, 1}, smeltery.getIntArray("MinPos"));
         CoordinateLinks.transform(specs, smeltery, 'Y', 5, 3, 4);

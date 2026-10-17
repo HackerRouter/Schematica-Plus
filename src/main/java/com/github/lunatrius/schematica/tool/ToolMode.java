@@ -6,6 +6,7 @@ import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 
 import com.github.lunatrius.schematica.client.gui.framework.UiTranslations;
+import com.github.lunatrius.schematica.client.projects.SchematicProjects;
 
 import cpw.mods.fml.common.registry.GameData;
 
@@ -56,7 +57,7 @@ public enum ToolMode {
     }
 
     public boolean getUsesAreaSelection() {
-        return !getUsesSchematic() || com.github.lunatrius.schematica.client.projects.SchematicProjects.hasProjectOpen();
+        return !getUsesSchematic() || SchematicProjects.hasProjectOpen();
     }
 
     public boolean getUsesBlockPrimary() {

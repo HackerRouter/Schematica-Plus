@@ -1,6 +1,15 @@
 package com.github.lunatrius.schematica.client.printer;
 
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+
+import net.minecraftforge.common.util.ForgeDirection;
 
 import com.github.lunatrius.schematica.SchematicaPlus;
 import com.github.lunatrius.schematica.client.world.SchematicWorld;
@@ -8,7 +17,7 @@ import com.github.lunatrius.schematica.handler.ConfigurationHandler;
 import com.github.lunatrius.schematica.proxy.CommonProxy;
 import com.github.lunatrius.schematica.proxy.ServerProxy;
 import com.github.lunatrius.schematica.world.storage.Schematic;
-import net.minecraftforge.common.util.ForgeDirection;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -24,7 +33,7 @@ public class PrinterIterationTest {
     @Before public void proxy() {
         previousProxy = SchematicaPlus.proxy;
         if (SchematicaPlus.proxy == null) SchematicaPlus.proxy = new ServerProxy() {
-            @Override public java.io.File getDataDirectory() { return temporary.getRoot(); }
+            @Override public File getDataDirectory() { return temporary.getRoot(); }
         };
     }
 
@@ -55,7 +64,7 @@ public class PrinterIterationTest {
     @Test public void clippedShapesPreserveAllAxisOrdersAndReversals() {
         for (String shape : PrinterIteration.SHAPES) for (String order : PrinterIteration.ORDERS) for (int mask = 0; mask < 8; mask++) {
             boolean x = (mask & 1) != 0, y = (mask & 2) != 0, z = (mask & 4) != 0;
-            List<int[]> expected = new java.util.ArrayList<>();
+            List<int[]> expected = new ArrayList<>();
             for (int[] o : PrinterIteration.build(3, "cube", order, x, y, z)) {
                 if (o[0] < -2 || o[0] > 1 || o[1] < 0 || o[1] > 2 || o[2] < -1) continue;
                 if (shape.equals("sphere") && o[0] * o[0] + o[1] * o[1] + o[2] * o[2] > 9) continue;
@@ -78,12 +87,12 @@ public class PrinterIterationTest {
         String old = ConfigurationHandler.printerIteratorShape;
         try {
             ConfigurationHandler.printerIteratorShape = "cube";
-            List<int[]> offsets = PrinterIteration.offsets(java.util.Arrays.asList(near, far), 0, 255, 0, 128);
+            List<int[]> offsets = PrinterIteration.offsets(Arrays.asList(near, far), 0, 255, 0, 128);
             assertEquals(2, offsets.size());
-            java.util.Set<Integer> xs = new java.util.HashSet<>();
+            Set<Integer> xs = new HashSet<>();
             for (int[] o : offsets) { xs.add(o[0]); assertEquals(0, o[1]); assertEquals(0, o[2]); }
-            assertEquals(new java.util.HashSet<>(java.util.Arrays.asList(127, 128)), xs);
-            assertTrue(PrinterIteration.offsets(java.util.Collections.singletonList(far), 0, 255, 0, 128).isEmpty());
+            assertEquals(new HashSet<>(Arrays.asList(127, 128)), xs);
+            assertTrue(PrinterIteration.offsets(Collections.singletonList(far), 0, 255, 0, 128).isEmpty());
         } finally { ConfigurationHandler.printerIteratorShape = old; }
     }
 
@@ -113,7 +122,7 @@ public class PrinterIterationTest {
     @Test public void interruptedScansEventuallyVisitTheWholeRange() {
         PrinterIteration.Cursor cursor = new PrinterIteration.Cursor();
         List<int[]> offsets = PrinterIteration.build(32, "cube", "xzy", false, false, false);
-        java.util.Set<Integer> visited = new java.util.HashSet<>();
+        Set<Integer> visited = new HashSet<>();
         for (int pass = 0; pass < 300; pass++) {
             for (int i = 0; i < 1000; i++) visited.add(cursor.next(offsets.size()));
         }
@@ -132,7 +141,7 @@ public class PrinterIterationTest {
     @Test public void lookCandidatesCoverEveryOrientationStartingWithTheCurrentYaw() {
         PrinterLook[] looks = PrinterLook.candidates(181);
         assertEquals(180f, looks[0].yaw, 0);
-        java.util.Set<ForgeDirection> directions = java.util.EnumSet.noneOf(ForgeDirection.class);
+        Set<ForgeDirection> directions = EnumSet.noneOf(ForgeDirection.class);
         for (PrinterLook look : looks) directions.add(PrinterLook.orientation(look.yaw, look.pitch));
         assertEquals(6, directions.size());
         assertEquals(ForgeDirection.SOUTH, PrinterLook.orientation(0, 0));

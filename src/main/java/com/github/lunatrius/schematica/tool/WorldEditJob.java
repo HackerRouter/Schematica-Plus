@@ -1,30 +1,46 @@
 package com.github.lunatrius.schematica.tool;
 
-import com.github.lunatrius.schematica.util.MessageException;
-
 import java.util.ArrayList;
 import java.util.BitSet;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockChest;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityList;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
+import net.minecraft.inventory.IInventory;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagDouble;
 import net.minecraft.nbt.NBTTagList;
+import net.minecraft.nbt.NBTTagString;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.AxisAlignedBB;
+import net.minecraft.util.ChatComponentText;
+import net.minecraft.util.ChatComponentTranslation;
+import net.minecraft.util.IChatComponent;
+import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 
 import com.github.lunatrius.schematica.api.ISchematic;
+import com.github.lunatrius.schematica.api.SchematicRegion;
+import com.github.lunatrius.schematica.compat.CoordinateLinks;
 import com.github.lunatrius.schematica.nbt.ForgeMultipart;
 import com.github.lunatrius.schematica.nbt.NBTHelper;
-import com.github.lunatrius.schematica.util.SchematicLimits;
+import com.github.lunatrius.schematica.nbt.TileEntitySnapshots;
+import com.github.lunatrius.schematica.reference.Reference;
 import com.github.lunatrius.schematica.task.TaskRegistry;
+import com.github.lunatrius.schematica.util.MessageException;
+import com.github.lunatrius.schematica.util.SchematicLimits;
+import com.github.lunatrius.schematica.world.storage.RegionMask;
+
 import cpw.mods.fml.common.registry.GameData;
 
 /** A snapshot of an edit. Only the server tick queue advances its mutable cursor. */
@@ -36,7 +52,7 @@ public final class WorldEditJob extends WorldEditTask {
     public final ReplaceBehavior replace;
     /** For DELETE_PLACEMENT: which non-air world blocks inside the placement are removed. */
     public PlacementDeletionMode deletion = PlacementDeletionMode.ENTIRE_VOLUME;
-    private List<com.github.lunatrius.schematica.api.SchematicRegion> entityRemoval = new ArrayList<>();
+    private List<SchematicRegion> entityRemoval = new ArrayList<>();
     private boolean entitiesRemoved;
     private final Block replacement, target;
     private final int replacementMeta, targetMeta;
@@ -87,15 +103,15 @@ public final class WorldEditJob extends WorldEditTask {
      * ignoreInventories: containers are pasted empty (pasteIgnoreInventories).
      */
     public void capture(ISchematic source, boolean blockNBT, boolean includeEntities, int[] bounds, boolean ignoreInventories) {
-        java.util.List<com.github.lunatrius.schematica.api.SchematicRegion> regions = source.getRegions();
+        List<SchematicRegion> regions = source.getRegions();
         if (bounds != null) {
-            if (regions.isEmpty()) regions = java.util.Collections.singletonList(new com.github.lunatrius.schematica.api.SchematicRegion(
+            if (regions.isEmpty()) regions = Collections.singletonList(new SchematicRegion(
                 "all", 0, 0, 0, width - 1, height - 1, length - 1));
-            java.util.List<com.github.lunatrius.schematica.api.SchematicRegion> clipped = new java.util.ArrayList<>();
-            for (com.github.lunatrius.schematica.api.SchematicRegion region : regions) {
+            List<SchematicRegion> clipped = new ArrayList<>();
+            for (SchematicRegion region : regions) {
                 int ax = Math.max(region.minX, bounds[0]), ay = Math.max(region.minY, bounds[1]), az = Math.max(region.minZ, bounds[2]);
                 int bx = Math.min(region.maxX, bounds[3] - 1), by = Math.min(region.maxY, bounds[4] - 1), bz = Math.min(region.maxZ, bounds[5] - 1);
-                if (ax <= bx && ay <= by && az <= bz) clipped.add(new com.github.lunatrius.schematica.api.SchematicRegion(region.name, ax, ay, az, bx, by, bz));
+                if (ax <= bx && ay <= by && az <= bz) clipped.add(new SchematicRegion(region.name, ax, ay, az, bx, by, bz));
             }
             if (clipped.isEmpty()) throw new MessageException("schematica.message.paste.outside_layers");
             regions = clipped;
@@ -115,8 +131,8 @@ public final class WorldEditJob extends WorldEditTask {
                     || tile.zCoord < 0 || tile.zCoord >= length) continue;
                 if (bounds != null && !inside(bounds, tile.xCoord, tile.yCoord, tile.zCoord)) continue;
                 NBTTagCompound tag = NBTHelper.writeTileEntityToCompound(tile);
-                if (ignoreInventories && tile instanceof net.minecraft.inventory.IInventory) tag = emptied(tile, tag);
-                com.github.lunatrius.schematica.nbt.TileEntitySnapshots.removeVisualData(tag);
+                if (ignoreInventories && tile instanceof IInventory) tag = emptied(tile, tag);
+                TileEntitySnapshots.removeVisualData(tag);
                 tiles.put(tile.xCoord + width * (tile.zCoord + length * tile.yCoord), tag);
             }
         }
@@ -137,14 +153,14 @@ public final class WorldEditJob extends WorldEditTask {
     private static NBTTagCompound emptied(TileEntity tile, NBTTagCompound tag) {
         try {
             TileEntity copy = NBTHelper.readTileEntityFromCompound((NBTTagCompound) tag.copy());
-            if (copy instanceof net.minecraft.inventory.IInventory) {
-                net.minecraft.inventory.IInventory inventory = (net.minecraft.inventory.IInventory) copy;
+            if (copy instanceof IInventory) {
+                IInventory inventory = (IInventory) copy;
                 for (int i = 0; i < inventory.getSizeInventory(); i++) inventory.setInventorySlotContents(i, null);
                 NBTTagCompound cleared = NBTHelper.writeTileEntityToCompound(copy);
                 if (cleared != null) return cleared;
             }
         } catch (RuntimeException error) {
-            com.github.lunatrius.schematica.reference.Reference.logger.debug("Could not empty a pasted container", error);
+            Reference.logger.debug("Could not empty a pasted container", error);
         }
         tag.removeTag("Items");
         return tag;
@@ -169,7 +185,7 @@ public final class WorldEditJob extends WorldEditTask {
         if (!blocksOnly && hasCommandNbt()) {
             throw new MessageException("schematica.message.edit.nbt_requires_singleplayer");
         }
-        java.util.Set<Block> checked = new java.util.HashSet<>();
+        Set<Block> checked = new HashSet<>();
         if (kind == Kind.DELETE_PLACEMENT) checked.add(replacement);
         for (int i = 0; i < (kind == Kind.PASTE ? volume : 1); i++) {
             Block block = kind == Kind.PASTE ? GameData.getBlockRegistry().getObjectById(blocks[i] & 0xffff) : replacement;
@@ -182,7 +198,7 @@ public final class WorldEditJob extends WorldEditTask {
         }
     }
 
-    public String command(int index, net.minecraft.world.World world) {
+    public String command(int index, World world) {
         if (selected != null && !selected.get(index)) return null;
         int wx = x + index % width, wz = z + index / width % length, wy = y + index / width / length;
         if (kind == Kind.REPLACE && (world.getBlock(wx, wy, wz) != target
@@ -224,7 +240,7 @@ public final class WorldEditJob extends WorldEditTask {
                 cells[i * 2 + 1] = (byte) (int) index;
             }
             NBTTagList names = new NBTTagList();
-            for (String entry : palette) names.appendTag(new net.minecraft.nbt.NBTTagString(entry));
+            for (String entry : palette) names.appendTag(new NBTTagString(entry));
             tag.setTag("palette", names);
             tag.setByteArray("cells", cells);
             byte[] low = new byte[volume], high = new byte[volume];
@@ -249,7 +265,7 @@ public final class WorldEditJob extends WorldEditTask {
         for (NBTTagCompound entity : entities) entityList.appendTag(entity);
         tag.setTag("entities", entityList);
         NBTTagList removal = new NBTTagList();
-        for (com.github.lunatrius.schematica.api.SchematicRegion box : entityRemoval) {
+        for (SchematicRegion box : entityRemoval) {
             NBTTagCompound entry = new NBTTagCompound();
             entry.setIntArray("box", new int[] {box.minX, box.minY, box.minZ, box.maxX, box.maxY, box.maxZ});
             removal.appendTag(entry);
@@ -325,13 +341,13 @@ public final class WorldEditJob extends WorldEditTask {
             if (box.length != 6 || box[0] < job.x || box[1] < job.y || box[2] < job.z
                 || box[3] >= job.x + job.width || box[4] >= job.y + job.height || box[5] >= job.z + job.length
                 || box[0] > box[3] || box[1] > box[4] || box[2] > box[5]) throw new IllegalArgumentException("Invalid entity box");
-            job.entityRemoval.add(new com.github.lunatrius.schematica.api.SchematicRegion(Integer.toString(i), box[0], box[1], box[2], box[3], box[4], box[5]));
+            job.entityRemoval.add(new SchematicRegion(Integer.toString(i), box[0], box[1], box[2], box[3], box[4], box[5]));
         }
         return job;
     }
 
     /** TaskDeleteBlocksByPlacement: only non-air world blocks the deletion mode selects. */
-    private boolean deletes(int index, net.minecraft.world.World world, int wx, int wy, int wz) {
+    private boolean deletes(int index, World world, int wx, int wy, int wz) {
         Block existing = world.getBlock(wx, wy, wz);
         if (existing.isAir(world, wx, wy, wz)) return false;
         Block schematic = GameData.getBlockRegistry().getObjectById(blocks[index] & 0xffff);
@@ -340,17 +356,17 @@ public final class WorldEditJob extends WorldEditTask {
     }
 
     /** TaskFillArea.directRemoveEntities: non-player entities inside these world boxes are removed before deleting. */
-    public void removeEntitiesIn(List<com.github.lunatrius.schematica.api.SchematicRegion> boxes) { entityRemoval = new ArrayList<>(boxes); }
+    public void removeEntitiesIn(List<SchematicRegion> boxes) { entityRemoval = new ArrayList<>(boxes); }
 
     public boolean removesEntities() { return !entityRemoval.isEmpty(); }
 
     private void removeEntities(WorldServer world) {
-        for (com.github.lunatrius.schematica.api.SchematicRegion box : entityRemoval) {
-            net.minecraft.util.AxisAlignedBB bounds = net.minecraft.util.AxisAlignedBB.getBoundingBox(box.minX, box.minY, box.minZ,
+        for (SchematicRegion box : entityRemoval) {
+            AxisAlignedBB bounds = AxisAlignedBB.getBoundingBox(box.minX, box.minY, box.minZ,
                 box.maxX + 1, box.maxY + 1, box.maxZ + 1);
             for (Object found : world.getEntitiesWithinAABBExcludingEntity(null, bounds)) {
                 Entity entity = (Entity) found;
-                if (!(entity instanceof net.minecraft.entity.player.EntityPlayer) && !entity.isDead) {
+                if (!(entity instanceof EntityPlayer) && !entity.isDead) {
                     entity.setDead();
                     entityCount++;
                 }
@@ -381,8 +397,8 @@ public final class WorldEditJob extends WorldEditTask {
         return "/" + setblockCommand + " " + x + " " + y + " " + z + " " + block + " " + metadata + (replace == ReplaceBehavior.NONE ? " keep" : " replace");
     }
 
-    public void setRegions(List<com.github.lunatrius.schematica.api.SchematicRegion> regions) {
-        selected = regions.isEmpty() ? null : com.github.lunatrius.schematica.world.storage.RegionMask.create(regions, width, height, length);
+    public void setRegions(List<SchematicRegion> regions) {
+        selected = regions.isEmpty() ? null : RegionMask.create(regions, width, height, length);
     }
 
     public void flushBlockChanges(WorldServer world) {
@@ -417,19 +433,19 @@ public final class WorldEditJob extends WorldEditTask {
     }
 
     @Override
-    public net.minecraft.util.IChatComponent finishedMessage(boolean success) {
+    public IChatComponent finishedMessage(boolean success) {
         if (kind == Kind.PASTE && firstFailure != null) {
-            net.minecraft.util.IChatComponent detail = firstFailure instanceof MessageException
-                ? new net.minecraft.util.ChatComponentTranslation(((MessageException) firstFailure).key(), ((MessageException) firstFailure).arguments())
-                : new net.minecraft.util.ChatComponentText(firstFailure.getClass().getSimpleName());
-            return new net.minecraft.util.ChatComponentTranslation("schematica.message.edit.paste_errors",
+            IChatComponent detail = firstFailure instanceof MessageException
+                ? new ChatComponentTranslation(((MessageException) firstFailure).key(), ((MessageException) firstFailure).arguments())
+                : new ChatComponentText(firstFailure.getClass().getSimpleName());
+            return new ChatComponentTranslation("schematica.message.edit.paste_errors",
                 blockCount, entityCount, failedBlockCount(), failedEntities, detail);
         }
         if (success && blockCount == 0 && entityCount == 0) {
-            return new net.minecraft.util.ChatComponentTranslation("schematica.message.edit.no_changes");
+            return new ChatComponentTranslation("schematica.message.edit.no_changes");
         }
         if (kind != Kind.DELETE_PLACEMENT) return super.finishedMessage(success);
-        return new net.minecraft.util.ChatComponentText(success ? String.format("Deleted %d blocks", blockCount) : "Deletion task failed");
+        return new ChatComponentText(success ? String.format("Deleted %d blocks", blockCount) : "Deletion task failed");
     }
 
     public TaskRegistry.Kind taskKind() {
@@ -542,7 +558,7 @@ public final class WorldEditJob extends WorldEditTask {
                 NBTTagCompound tag = tiles.get(index);
                 TileEntity tile;
                 if (tag != null) {
-                    tag = com.github.lunatrius.schematica.compat.CoordinateLinks.paste((NBTTagCompound) tag.copy(), wx, wy, wz, world.provider.dimensionId);
+                    tag = CoordinateLinks.paste((NBTTagCompound) tag.copy(), wx, wy, wz, world.provider.dimensionId);
                     tag.setInteger("x", wx); tag.setInteger("y", wy); tag.setInteger("z", wz);
                     tile = "savedMultipart".equals(tag.getString("id"))
                         ? ForgeMultipart.createFromNBT(tag, false) : TileEntity.createAndLoadEntity(tag);

@@ -1,5 +1,8 @@
 package com.emoniph.witchery.blocks;
 
-public class BlockKettle extends net.minecraft.block.Block {
-    public BlockKettle() { super(net.minecraft.block.material.Material.rock); }
+import net.minecraft.block.Block;
+import net.minecraft.block.material.Material;
+
+public class BlockKettle extends Block {
+    public BlockKettle() { super(Material.rock); }
 }

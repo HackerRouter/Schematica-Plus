@@ -5,12 +5,14 @@ package com.github.lunatrius.schematica.client.gui.framework;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
-
-import com.github.lunatrius.schematica.client.util.IssueReport;
+import java.util.function.Function;
 
 import net.minecraft.client.audio.PositionedSoundRecord;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.util.ResourceLocation;
+
+import com.github.lunatrius.schematica.client.gui.GuiSchematicMainMenu;
+import com.github.lunatrius.schematica.client.util.IssueReport;
 
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
@@ -195,13 +197,13 @@ public abstract class UiScreen extends GuiScreen {
     protected final void mainMenu() {
         GuiScreen screen = parent;
         while (screen instanceof UiScreen) {
-            if (screen instanceof com.github.lunatrius.schematica.client.gui.GuiSchematicMainMenu) {
+            if (screen instanceof GuiSchematicMainMenu) {
                 mc.displayGuiScreen(screen);
                 return;
             }
             screen = ((UiScreen) screen).parent;
         }
-        mc.displayGuiScreen(new com.github.lunatrius.schematica.client.gui.GuiSchematicMainMenu(null));
+        mc.displayGuiScreen(new GuiSchematicMainMenu(null));
     }
 
     protected final UiButton unavailable(UiButton button) {
@@ -250,7 +252,7 @@ public abstract class UiScreen extends GuiScreen {
         });
     }
 
-    protected final void prompt(String title, String initial, java.util.function.Function<String, String> apply) {
+    protected final void prompt(String title, String initial, Function<String, String> apply) {
         UiPanel panel = new TextInputPanel(fontRendererObj, input, title, initial, apply);
         panel.layout(root.bounds());
         input.pushModal(panel);

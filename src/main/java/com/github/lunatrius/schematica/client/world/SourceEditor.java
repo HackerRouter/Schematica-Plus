@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import com.github.lunatrius.schematica.api.ISchematic;
 import com.github.lunatrius.schematica.api.SchematicOrigin;
@@ -28,10 +29,10 @@ public final class SourceEditor {
         @Override public boolean equals(Object other) {
             if (!(other instanceof Cell)) return false;
             Cell cell = (Cell) other;
-            return x == cell.x && y == cell.y && z == cell.z && java.util.Objects.equals(region, cell.region);
+            return x == cell.x && y == cell.y && z == cell.z && Objects.equals(region, cell.region);
         }
 
-        @Override public int hashCode() { return java.util.Objects.hash(region, x, y, z); }
+        @Override public int hashCode() { return Objects.hash(region, x, y, z); }
     }
 
     /** The source cell shown at a resolved placement position. */

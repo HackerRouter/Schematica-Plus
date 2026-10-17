@@ -1,9 +1,13 @@
 package com.github.lunatrius.schematica.compat;
 
+import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.List;
+
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 import net.minecraft.tileentity.TileEntity;
+
 import com.github.lunatrius.schematica.api.ISchematicVisualAdapter;
 import com.github.lunatrius.schematica.reference.Reference;
 
@@ -64,7 +68,7 @@ final class MultipartVisualAdapter implements ISchematicVisualAdapter {
 
     /** Each part saves, turns and loads itself; the tile then re-adds them so its slot map follows the new shapes. */
     @Override public void transformPreview(TileEntity tile, char operation) throws Exception {
-        java.util.List<?> parts = new java.util.ArrayList<>((java.util.List<?>) Reflect.call(tile, "jPartList"));
+        List<?> parts = new ArrayList<>((List<?>) Reflect.call(tile, "jPartList"));
         for (Object part : parts) {
             NBTTagCompound tag = new NBTTagCompound();
             part.getClass().getMethod("save", NBTTagCompound.class).invoke(part, tag);
@@ -72,10 +76,10 @@ final class MultipartVisualAdapter implements ISchematicVisualAdapter {
             part.getClass().getMethod("load", NBTTagCompound.class).invoke(part, tag);
         }
         Object conversions = Class.forName("scala.collection.JavaConversions$").getField("MODULE$").get(null);
-        Object buffer = conversions.getClass().getMethod("asScalaBuffer", java.util.List.class).invoke(conversions, parts);
-        java.lang.reflect.Method load = null;
+        Object buffer = conversions.getClass().getMethod("asScalaBuffer", List.class).invoke(conversions, parts);
+        Method load = null;
         for (Class<?> type = tile.getClass(); type != null && load == null; type = type.getSuperclass()) {
-            for (java.lang.reflect.Method method : type.getDeclaredMethods()) {
+            for (Method method : type.getDeclaredMethods()) {
                 if (method.getName().equals("loadParts") && method.getParameterTypes().length == 1) { load = method; break; }
             }
         }

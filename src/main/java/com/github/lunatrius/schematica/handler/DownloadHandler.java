@@ -1,14 +1,19 @@
 package com.github.lunatrius.schematica.handler;
 
 import java.io.File;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.BitSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.function.Consumer;
 
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.util.ChatComponentTranslation;
 
 import com.github.lunatrius.schematica.api.ISchematic;
 import com.github.lunatrius.schematica.network.PacketHandler;
@@ -19,20 +24,23 @@ import com.github.lunatrius.schematica.network.message.MessageDownloadRegions;
 import com.github.lunatrius.schematica.network.transfer.SchematicTransfer;
 import com.github.lunatrius.schematica.network.transfer.SliceAssembler;
 import com.github.lunatrius.schematica.reference.Constants;
+import com.github.lunatrius.schematica.reference.Names;
 import com.github.lunatrius.schematica.reference.Reference;
 import com.github.lunatrius.schematica.world.schematic.LitematicaNBTReader;
+import com.github.lunatrius.schematica.world.schematic.SchematicAlpha;
 import com.github.lunatrius.schematica.world.schematic.SchematicFileSnapshot;
 import com.github.lunatrius.schematica.world.schematic.SchematicFormat;
 
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.gameevent.TickEvent;
+import cpw.mods.fml.common.network.simpleimpl.IMessage;
 
 public class DownloadHandler {
 
     public static final DownloadHandler INSTANCE = new DownloadHandler();
 
     public ISchematic schematic = null;
-    private final java.util.BitSet receivedChunks = new java.util.BitSet();
+    private final BitSet receivedChunks = new BitSet();
     private static final int MAX_REGION_BYTES = 32 * 1024 * 1024;
     private SliceAssembler regions;
     private boolean regionFailed;
@@ -52,11 +60,11 @@ public class DownloadHandler {
     }
 
     /** Client, at the end: the downloaded schematic, with independent regions when they were sent; null when incomplete. */
-    public synchronized ISchematic completedSchematic() throws java.io.IOException {
+    public synchronized ISchematic completedSchematic() throws IOException {
         if (!isDownloadComplete() || regionFailed) return null;
         if (regions == null) return schematic;
         if (!regions.complete()) return null;
-        return com.github.lunatrius.schematica.world.schematic.SchematicAlpha.withRegionPayload(schematic, regions.join());
+        return SchematicAlpha.withRegionPayload(schematic, regions.join());
     }
 
     public boolean validChunk(int x, int y, int z) {
@@ -95,7 +103,7 @@ public class DownloadHandler {
         final SchematicFileSnapshot snapshot;
         final LitematicaNBTReader.Parsed parsed;
 
-        Loaded(SchematicFileSnapshot snapshot) throws java.io.IOException {
+        Loaded(SchematicFileSnapshot snapshot) throws IOException {
             this.snapshot = snapshot; this.parsed = snapshot.parse();
         }
     }
@@ -138,8 +146,8 @@ public class DownloadHandler {
                 Reference.logger.warn("Could not read the download {}", read.name, e);
             }
             if (schematic != null) transferMap.put(entry.getKey(), new SchematicTransfer(schematic, read.name));
-            else entry.getKey().addChatMessage(new net.minecraft.util.ChatComponentTranslation(
-                com.github.lunatrius.schematica.reference.Names.Command.Download.Message.DOWNLOAD_FAILED, read.name));
+            else entry.getKey().addChatMessage(new ChatComponentTranslation(
+                Names.Command.Download.Message.DOWNLOAD_FAILED, read.name));
         }
     }
 
@@ -208,11 +216,11 @@ public class DownloadHandler {
                 if (sendEnd(transfer, message -> PacketHandler.INSTANCE.sendTo(message, player))) {
                     this.transferMap.put(player, transfer);
                 }
-            } catch (java.io.IOException | RuntimeException e) {
+            } catch (IOException | RuntimeException e) {
                 transfer.cancelled = true;
                 Reference.logger.warn("Could not complete the download of {}", transfer.name, e);
-                player.addChatMessage(new net.minecraft.util.ChatComponentTranslation(
-                    com.github.lunatrius.schematica.reference.Names.Command.Download.Message.DOWNLOAD_FAILED, transfer.name));
+                player.addChatMessage(new ChatComponentTranslation(
+                    Names.Command.Download.Message.DOWNLOAD_FAILED, transfer.name));
             }
             return;
         }
@@ -241,25 +249,25 @@ public class DownloadHandler {
 
     /** Sends up to eight slices of the independent region payload; returns whether slices remain to be sent. */
     private static boolean sendRegions(SchematicTransfer transfer,
-        java.util.function.Consumer<cpw.mods.fml.common.network.simpleimpl.IMessage> sender) throws java.io.IOException {
+        Consumer<IMessage> sender) throws IOException {
         if (!transfer.regionSupport) return false;
         if (transfer.regionPayload == null) {
-            transfer.regionPayload = com.github.lunatrius.schematica.world.schematic.SchematicAlpha.regionPayload(transfer.schematic);
+            transfer.regionPayload = SchematicAlpha.regionPayload(transfer.schematic);
         }
         byte[] payload = transfer.regionPayload;
         if (payload == null) return false;
-        int size = com.github.lunatrius.schematica.network.message.MessageDownloadRegions.CHUNK_SIZE;
+        int size = MessageDownloadRegions.CHUNK_SIZE;
         int count = (payload.length + size - 1) / size;
         for (int i = 0; i < 8 && transfer.regionSent < count; i++, transfer.regionSent++) {
             int from = transfer.regionSent * size;
-            sender.accept(new com.github.lunatrius.schematica.network.message.MessageDownloadRegions(transfer.regionSent, count,
-                java.util.Arrays.copyOfRange(payload, from, Math.min(payload.length, from + size))));
+            sender.accept(new MessageDownloadRegions(transfer.regionSent, count,
+                Arrays.copyOfRange(payload, from, Math.min(payload.length, from + size))));
         }
         return transfer.regionSent < count;
     }
 
     static boolean sendEnd(SchematicTransfer transfer,
-        java.util.function.Consumer<cpw.mods.fml.common.network.simpleimpl.IMessage> sender) throws java.io.IOException {
+        Consumer<IMessage> sender) throws IOException {
         if (sendRegions(transfer, sender)) return true;
         sender.accept(new MessageDownloadEnd(transfer.name));
         transfer.setState(SchematicTransfer.State.END);

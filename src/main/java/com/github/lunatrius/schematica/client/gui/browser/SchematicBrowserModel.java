@@ -3,10 +3,11 @@ package com.github.lunatrius.schematica.client.gui.browser;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.DirectoryStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.LinkOption;
 import java.nio.file.FileAlreadyExistsException;
+import java.nio.file.Files;
+import java.nio.file.LinkOption;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileTime;
 import java.util.ArrayList;
@@ -15,11 +16,14 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
+import java.util.function.Predicate;
+
+import com.github.lunatrius.schematica.util.FileUtils;
 
 public final class SchematicBrowserModel {
 
     private final Path root;
-    private final java.util.function.Predicate<String> filter;
+    private final Predicate<String> filter;
     private Path directory;
     private List<Entry> entries = Collections.emptyList();
     /** The files listed instead of the directory (favorites, recent), or null. */
@@ -30,7 +34,7 @@ public final class SchematicBrowserModel {
     }
 
     /** A browser listing directories and the files whose names the filter accepts. */
-    public SchematicBrowserModel(File root, java.util.function.Predicate<String> filter) throws IOException {
+    public SchematicBrowserModel(File root, Predicate<String> filter) throws IOException {
         this.filter = filter;
         this.root = root.getCanonicalFile().toPath();
         this.directory = this.root;
@@ -152,7 +156,7 @@ public final class SchematicBrowserModel {
         requireAbsent(target);
         Path temporary = Files.createTempFile(source.getParent(), ".schematica-copy-", ".tmp");
         try {
-            Files.copy(source, temporary, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+            Files.copy(source, temporary, StandardCopyOption.REPLACE_EXISTING);
             currentFile(entry);
             Files.move(temporary, target);
             return target.toFile();
@@ -195,7 +199,7 @@ public final class SchematicBrowserModel {
             char c = name.charAt(i);
             if (c < 32 || "<>:\"/\\|?*".indexOf(c) >= 0) throw FileOperationException.name(name);
         }
-        if (com.github.lunatrius.schematica.util.FileUtils.isReservedName(name)) throw FileOperationException.name(name);
+        if (FileUtils.isReservedName(name)) throw FileOperationException.name(name);
     }
 
     public static final class FileOperationException extends IOException {

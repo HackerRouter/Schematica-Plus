@@ -1,7 +1,10 @@
 package openmods.block;
 
-public class OpenBlock extends net.minecraft.block.Block {
-    public OpenBlock() { super(net.minecraft.block.material.Material.rock); }
+import net.minecraft.block.Block;
+import net.minecraft.block.material.Material;
+
+public class OpenBlock extends Block {
+    public OpenBlock() { super(Material.rock); }
 
     public BlockRotationMode getRotationMode() { return BlockRotationMode.FOUR_DIRECTIONS; }
 }

@@ -1,15 +1,21 @@
 package com.github.lunatrius.schematica.handler;
 
 import java.util.UUID;
+import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.atomic.AtomicReference;
+
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ChatComponentTranslation;
-import com.github.lunatrius.schematica.util.MessageException;
+import net.minecraft.util.IChatComponent;
 import net.minecraft.world.WorldServer;
+
+import com.github.lunatrius.schematica.compat.MachineUpdateLock;
 import com.github.lunatrius.schematica.reference.Reference;
-import com.github.lunatrius.schematica.tool.WorldEditTask;
 import com.github.lunatrius.schematica.task.TaskRegistry;
+import com.github.lunatrius.schematica.tool.WorldEditTask;
+import com.github.lunatrius.schematica.util.MessageException;
+
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.gameevent.TickEvent;
 
@@ -17,7 +23,7 @@ import cpw.mods.fml.common.gameevent.TickEvent;
 public final class WorldEditQueue {
     public static final WorldEditQueue INSTANCE = new WorldEditQueue();
     private final AtomicReference<Edit> pending = new AtomicReference<>();
-    private final java.util.concurrent.ArrayBlockingQueue<Runnable> requests = new java.util.concurrent.ArrayBlockingQueue<>(16);
+    private final ArrayBlockingQueue<Runnable> requests = new ArrayBlockingQueue<>(16);
 
     public boolean enqueue(Runnable request) { return requests.offer(request); }
 
@@ -73,7 +79,7 @@ public final class WorldEditQueue {
     }
 
     public void rollbackBeforeShutdown(MinecraftServer server) {
-        com.github.lunatrius.schematica.compat.MachineUpdateLock.run(() -> rollback(server));
+        MachineUpdateLock.run(() -> rollback(server));
     }
 
     private void rollback(MinecraftServer server) {
@@ -89,7 +95,7 @@ public final class WorldEditQueue {
     public void onTick(TickEvent.ServerTickEvent event) {
         if (event.phase != TickEvent.Phase.END) return;
         if (requests.isEmpty() && pending.get() == null) return;
-        com.github.lunatrius.schematica.compat.MachineUpdateLock.run(this::processTick);
+        MachineUpdateLock.run(this::processTick);
     }
 
     private void processTick() {
@@ -127,13 +133,13 @@ public final class WorldEditQueue {
             if (done) {
                 WorldEditTask.Outcome outcome = job.outcome();
                 if (job.failure() != null) Reference.logger.error("World edit finished with errors", job.failure());
-                net.minecraft.util.IChatComponent message = job.finishedMessage(outcome == WorldEditTask.Outcome.FINISHED);
+                IChatComponent message = job.finishedMessage(outcome == WorldEditTask.Outcome.FINISHED);
                 if (player != null && message != null) player.addChatMessage(message);
                 finish(edit, outcome);
             }
         } catch (Exception e) {
             Reference.logger.error("World edit stopped after partial completion", e);
-            net.minecraft.util.IChatComponent message = job.finishedMessage(false);
+            IChatComponent message = job.finishedMessage(false);
             if (player != null && message != null) player.addChatMessage(message);
             if (player != null && e instanceof MessageException) {
                 player.addChatMessage(new ChatComponentTranslation(((MessageException) e).key(), ((MessageException) e).arguments()));

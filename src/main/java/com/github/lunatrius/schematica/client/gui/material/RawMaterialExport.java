@@ -19,6 +19,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
 
 /**
  * The Raw Materials export: every material is taken apart through its first crafting recipe, or its first smelting
@@ -225,7 +226,7 @@ public final class RawMaterialExport {
         JsonArray ingredients = new JsonArray();
         for (List<String> slot : node.recipe.ingredients) {
             JsonArray alternatives = new JsonArray();
-            for (String alternative : slot) alternatives.add(new com.google.gson.JsonPrimitive(alternative));
+            for (String alternative : slot) alternatives.add(new JsonPrimitive(alternative));
             ingredients.add(alternatives);
         }
         recipe.add("Ingredients", ingredients);

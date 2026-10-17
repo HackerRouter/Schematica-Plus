@@ -13,6 +13,7 @@ import net.minecraft.nbt.NBTTagList;
 import net.minecraftforge.common.util.Constants.NBT;
 
 import com.github.lunatrius.schematica.api.ISchematic;
+import com.github.lunatrius.schematica.util.SchematicLimits;
 
 /** Schematic file metadata for the browsers, in-place metadata edits and format conversions. */
 public final class SchematicFiles {
@@ -48,7 +49,7 @@ public final class SchematicFiles {
         if (!"Alpha".equals(root.getString("Materials"))) return false;
         int width = root.getShort("Width"), height = root.getShort("Height"), length = root.getShort("Length");
         long volume = (long) width * height * length;
-        return width > 0 && height > 0 && length > 0 && volume <= com.github.lunatrius.schematica.util.SchematicLimits.MAX_BLOCKS
+        return width > 0 && height > 0 && length > 0 && volume <= SchematicLimits.MAX_BLOCKS
             && root.getByteArray("Blocks").length == volume && root.getByteArray("Data").length == volume;
     }
 

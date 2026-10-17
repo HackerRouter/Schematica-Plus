@@ -2,9 +2,12 @@ package com.github.lunatrius.schematica.util;
 
 import java.io.File;
 import java.io.IOException;
-import org.junit.Test;
+import java.nio.file.Files;
+
 import org.junit.Rule;
+import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
 
@@ -35,22 +38,22 @@ public class SchematicSafetyTest {
     @Test public void findsEitherFormatAndHonorsExplicitDownloadNames() throws IOException {
         File directory = temporary.newFolder();
         File extended = new File(directory, "建筑.schemplus");
-        java.nio.file.Files.createFile(extended.toPath());
+        Files.createFile(extended.toPath());
         assertEquals(extended.getCanonicalFile(), FileUtils.findSchematicFile(directory, "建筑", false));
         File standard = new File(directory, "建筑.schematic");
-        java.nio.file.Files.createFile(standard.toPath());
+        Files.createFile(standard.toPath());
         assertEquals(standard.getCanonicalFile(), FileUtils.findSchematicFile(directory, "建筑", false));
         assertEquals(extended.getCanonicalFile(), FileUtils.findSchematicFile(directory, "建筑", true));
         assertEquals(extended.getCanonicalFile(), FileUtils.findSchematicFile(directory, "建筑.schemplus", false));
         assertEquals(standard.getCanonicalFile(), FileUtils.findSchematicFile(directory, "建筑.schematic", true));
         for (String extension : new String[] {".litematic", ".nbt"}) {
             File file = new File(directory, "建筑" + extension);
-            java.nio.file.Files.createFile(file.toPath());
+            Files.createFile(file.toPath());
             assertEquals(file.getCanonicalFile(), FileUtils.findSchematicFile(directory, file.getName(), false));
             assertEquals(file.getCanonicalFile(), FileUtils.findSchematicFile(directory, file.getName(), true));
         }
         File onlyStandard = new File(directory, "other.schematic");
-        java.nio.file.Files.createFile(onlyStandard.toPath());
+        Files.createFile(onlyStandard.toPath());
         assertEquals(onlyStandard.getCanonicalFile(), FileUtils.findSchematicFile(directory, "other", true));
     }
 

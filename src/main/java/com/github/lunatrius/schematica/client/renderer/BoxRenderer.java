@@ -7,8 +7,7 @@ import java.util.Set;
 
 import net.minecraft.client.renderer.Tessellator;
 
-import org.lwjgl.opengl.GL11;
-
+import com.github.lunatrius.schematica.api.SchematicOrigin;
 import com.github.lunatrius.schematica.client.projects.SchematicProjects;
 import com.github.lunatrius.schematica.client.selection.AreaSelectionLibrary;
 import com.github.lunatrius.schematica.client.selection.AreaSelections;
@@ -18,6 +17,8 @@ import com.github.lunatrius.schematica.handler.RenderColors;
 import com.github.lunatrius.schematica.handler.VisualSettings;
 import com.github.lunatrius.schematica.internal.lunatriuscore.util.vector.Vector3i;
 import com.github.lunatrius.schematica.proxy.ClientProxy;
+
+import org.lwjgl.opengl.GL11;
 
 /** Area selection and placement boxes in Litematica's colors and line widths, depth tested like MaLiLib's LEQUAL pipelines. */
 final class BoxRenderer {
@@ -106,7 +107,7 @@ final class BoxRenderer {
                 null, VisualSettings.placementBoxSides ? alpha(boxColor, sideAlpha) : null, expand, 1f, 1f);
         }
         float[] originColor = current && origin ? SELECTED_CORNER : color;
-        com.github.lunatrius.schematica.api.SchematicOrigin o = placement.originPosition();
+        SchematicOrigin o = placement.originPosition();
         blockOutline(new Vector3i(o.x, o.y, o.z), expand, blockBox, originColor);
         if (VisualSettings.enclosingBox && placement.placementSettings().enclosingBox && placement.hasEnabledRegions()) {
             Vector3i min = new Vector3i(placement.position.x, placement.position.y, placement.position.z);

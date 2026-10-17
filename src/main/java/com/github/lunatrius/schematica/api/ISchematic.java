@@ -1,24 +1,26 @@
 package com.github.lunatrius.schematica.api;
 
+import java.util.Collections;
 import java.util.List;
 
 import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 
 public interface ISchematic {
 
-    default net.minecraft.nbt.NBTTagCompound getSchematicMetadata() { return new net.minecraft.nbt.NBTTagCompound(); }
+    default NBTTagCompound getSchematicMetadata() { return new NBTTagCompound(); }
 
-    default void setSchematicMetadata(net.minecraft.nbt.NBTTagCompound metadata) {}
+    default void setSchematicMetadata(NBTTagCompound metadata) {}
 
     default SchematicOrigin getOrigin() { return SchematicOrigin.ZERO; }
 
     default ISchematic getRegionSchematic(String name) { return null; }
 
     default List<SchematicRegion> getRegions() {
-        return java.util.Collections.emptyList();
+        return Collections.emptyList();
     }
 
     default boolean containsBlock(int x, int y, int z) {

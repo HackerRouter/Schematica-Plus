@@ -1,8 +1,13 @@
 package com.github.lunatrius.schematica.client.gui.material;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.function.ToIntFunction;
 
 import org.junit.Test;
+
 import static org.junit.Assert.*;
 
 public class MaterialListModelTest {
@@ -67,7 +72,7 @@ public class MaterialListModelTest {
     }
 
     @Test public void cacheOrderPutsRecentlySeenItemsFirst() {
-        java.util.function.ToIntFunction<Object> previous = MaterialListModel.cachePriority;
+        ToIntFunction<Object> previous = MaterialListModel.cachePriority;
         try {
             MaterialListModel.cachePriority = key -> "Gamma".equals(key) ? 0 : "Beta".equals(key) ? 1 : Integer.MAX_VALUE;
             MaterialListModel<String> model = new MaterialListModel<>();
@@ -80,8 +85,8 @@ public class MaterialListModelTest {
         }
     }
 
-    private static java.util.List<String> keys(MaterialListModel<String> model) {
-        java.util.List<String> keys = new java.util.ArrayList<>();
+    private static List<String> keys(MaterialListModel<String> model) {
+        List<String> keys = new ArrayList<>();
         for (MaterialListModel.Entry<String> entry : model.visible()) keys.add(entry.key);
         return keys;
     }
@@ -94,14 +99,14 @@ public class MaterialListModelTest {
 
     @Test public void replacementsMergeRowsChainAndUndo() {
         MaterialListModel<String> model = new MaterialListModel<>();
-        model.setEntries(java.util.Arrays.asList(entry("oak", 10, 4, 1), entry("birch", 5, 5, 0), entry("planks", 3, 0, 7)));
+        model.setEntries(Arrays.asList(entry("oak", 10, 4, 1), entry("birch", 5, 5, 0), entry("planks", 3, 0, 7)));
         model.replace("oak", new MaterialListModel.Replacement<>("planks", "Planks", "mod:planks"));
         assertEquals(2, model.entries().size());
         MaterialListModel.Entry<String> planks = find(model, "planks");
         assertEquals(13, planks.total);
         assertEquals(4, planks.missing);
         assertEquals(7, planks.available);
-        assertEquals(java.util.Collections.singletonList("oak"), model.replacedNames("planks"));
+        assertEquals(Collections.singletonList("oak"), model.replacedNames("planks"));
         // birch -> oak resolves to planks; planks -> wood moves oak and birch along
         model.replace("birch", new MaterialListModel.Replacement<>("oak", "Oak", "mod:oak"));
         assertEquals(18, find(model, "planks").total);
@@ -115,7 +120,7 @@ public class MaterialListModelTest {
 
     @Test public void starredEntriesComeFirst() {
         MaterialListModel<String> model = new MaterialListModel<>();
-        model.setEntries(java.util.Arrays.asList(entry("a", 100, 0, 0), entry("b", 1, 0, 0)));
+        model.setEntries(Arrays.asList(entry("a", 100, 0, 0), entry("b", 1, 0, 0)));
         model.setSort(MaterialListModel.Sort.TOTAL, true);
         assertEquals("a", model.visible().get(0).key);
         model.toggleStar("b");

@@ -1,5 +1,8 @@
 package twilightforest.block;
 
-public class BlockTFNagastoneEtched extends net.minecraft.block.Block {
-    public BlockTFNagastoneEtched() { super(net.minecraft.block.material.Material.rock); }
+import net.minecraft.block.Block;
+import net.minecraft.block.material.Material;
+
+public class BlockTFNagastoneEtched extends Block {
+    public BlockTFNagastoneEtched() { super(Material.rock); }
 }

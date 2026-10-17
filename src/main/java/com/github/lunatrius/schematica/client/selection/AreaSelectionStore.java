@@ -6,10 +6,12 @@ import java.io.Reader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -17,6 +19,7 @@ import java.util.Set;
 import com.github.lunatrius.schematica.client.selection.AreaSelectionLibrary.Area;
 import com.github.lunatrius.schematica.reference.Reference;
 import com.github.lunatrius.schematica.util.FileUtils;
+
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -70,7 +73,7 @@ public final class AreaSelectionStore {
     private void load(File folder, String relative, int depth, Map<String, Area> byPath) {
         File[] entries = folder.listFiles();
         if (entries == null || depth > MAX_DEPTH) return;
-        java.util.Arrays.sort(entries);
+        Arrays.sort(entries);
         for (File entry : entries) {
             String name = entry.getName();
             String path = relative.isEmpty() ? name : relative + "/" + name;
@@ -82,7 +85,7 @@ public final class AreaSelectionStore {
                     continue;
                 }
                 load(entry, path, depth + 1, byPath);
-            } else if (name.toLowerCase(java.util.Locale.ROOT).endsWith(".json") && entry.length() <= 4L * 1024 * 1024) {
+            } else if (name.toLowerCase(Locale.ROOT).endsWith(".json") && entry.length() <= 4L * 1024 * 1024) {
                 try (Reader reader = Files.newBufferedReader(entry.toPath(), StandardCharsets.UTF_8)) {
                     JsonObject json = new JsonParser().parse(reader).getAsJsonObject();
                     Area area = library.addFromFile(json, relative, name.substring(0, name.length() - 5));
@@ -111,8 +114,8 @@ public final class AreaSelectionStore {
             String prefix = area.folder().isEmpty() ? "" : area.folder() + "/";
             String target = prefix + base + ".json";
             if (current != null && current.equalsIgnoreCase(target)) target = current;
-            for (int i = 1; used.contains(target.toLowerCase(java.util.Locale.ROOT)); i++) target = prefix + base + " " + i + ".json";
-            used.add(target.toLowerCase(java.util.Locale.ROOT));
+            for (int i = 1; used.contains(target.toLowerCase(Locale.ROOT)); i++) target = prefix + base + " " + i + ".json";
+            used.add(target.toLowerCase(Locale.ROOT));
             targets.put(area, target);
         }
         return targets;

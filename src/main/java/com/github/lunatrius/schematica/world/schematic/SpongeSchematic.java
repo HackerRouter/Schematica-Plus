@@ -1,6 +1,7 @@
 // Sponge schematic (.schem) versions 1-3 after the Sponge schematic specification, for 1.7.10 by HackerRouter, 2026.
 package com.github.lunatrius.schematica.world.schematic;
 
+import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemStack;
@@ -139,7 +140,7 @@ public final class SpongeSchematic extends SchematicFormat {
 
     /** The modern state string of the block, which some block entity translations need (skulls, signs). */
     private static String stateAt(Schematic schematic, String[] states, int[] pos) {
-        net.minecraft.block.Block block = schematic.getBlock(pos[0], pos[1], pos[2]);
+        Block block = schematic.getBlock(pos[0], pos[1], pos[2]);
         int meta = schematic.getBlockMetadata(pos[0], pos[1], pos[2]);
         BlockStateTranslator translator = BlockStateTranslator.instance();
         for (String state : states) {

@@ -1,20 +1,23 @@
 package com.github.lunatrius.schematica.client.projects;
 
 import java.io.File;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
-import static org.junit.Assert.*;
 
 import com.github.lunatrius.schematica.api.SchematicRegion;
 import com.github.lunatrius.schematica.client.selection.AreaSelectionLibrary;
 import com.github.lunatrius.schematica.internal.lunatriuscore.util.vector.Vector3i;
 import com.github.lunatrius.schematica.tool.PlacementDeletionMode;
-import com.google.gson.JsonObject;
+
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
+
+import static org.junit.Assert.*;
 
 public class SchematicProjectTest {
     @Rule public TemporaryFolder temporary = new TemporaryFolder();
@@ -98,7 +101,7 @@ public class SchematicProjectTest {
         project.pasted();
         assertTrue(project.saveToFile());
         JsonObject data = new JsonParser().parse(new String(Files.readAllBytes(project.projectFile().toPath()),
-            java.nio.charset.StandardCharsets.UTF_8)).getAsJsonObject();
+            StandardCharsets.UTF_8)).getAsJsonObject();
         JsonObject area = data.getAsJsonObject("selections").getAsJsonArray("selections").get(0).getAsJsonObject();
         assertTrue(area.has("origin"));
         assertTrue(area.get("origin").isJsonNull());
@@ -152,7 +155,7 @@ public class SchematicProjectTest {
     @Test public void lastSeenAreaSurvivesSaving() {
         SchematicProject project = project();
         JsonObject data = project.toJson();
-        com.google.gson.JsonArray seen = new com.google.gson.JsonArray();
+        JsonArray seen = new JsonArray();
         JsonObject box = new JsonObject();
         box.addProperty("name", "main");
         box.add("min", SchematicProject.pointJson(new Vector3i(0, 1, 2)));

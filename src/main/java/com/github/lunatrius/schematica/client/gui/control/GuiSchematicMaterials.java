@@ -13,9 +13,6 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ChatComponentText;
 
-import org.lwjgl.input.Keyboard;
-
-import com.github.lunatrius.schematica.client.gui.framework.UiTranslations;
 import com.github.lunatrius.schematica.SchematicaPlus;
 import com.github.lunatrius.schematica.client.gui.framework.UiBounds;
 import com.github.lunatrius.schematica.client.gui.framework.UiButton;
@@ -28,20 +25,28 @@ import com.github.lunatrius.schematica.client.gui.framework.UiRowList;
 import com.github.lunatrius.schematica.client.gui.framework.UiScreen;
 import com.github.lunatrius.schematica.client.gui.framework.UiSprite;
 import com.github.lunatrius.schematica.client.gui.framework.UiTextField;
+import com.github.lunatrius.schematica.client.gui.framework.UiTranslations;
 import com.github.lunatrius.schematica.client.gui.framework.UiWidget;
 import com.github.lunatrius.schematica.client.gui.material.MaterialCache;
 import com.github.lunatrius.schematica.client.gui.material.MaterialColumns;
-import com.github.lunatrius.schematica.client.gui.material.MaterialList;
-import com.github.lunatrius.schematica.client.gui.material.MaterialLists;
-import com.github.lunatrius.schematica.client.gui.material.RawMaterialExport;
-import com.github.lunatrius.schematica.client.gui.material.RecipeIndex;
 import com.github.lunatrius.schematica.client.gui.material.MaterialItemKey;
+import com.github.lunatrius.schematica.client.gui.material.MaterialList;
 import com.github.lunatrius.schematica.client.gui.material.MaterialListExport;
 import com.github.lunatrius.schematica.client.gui.material.MaterialListModel;
 import com.github.lunatrius.schematica.client.gui.material.MaterialListModel.Entry;
+import com.github.lunatrius.schematica.client.gui.material.MaterialLists;
+import com.github.lunatrius.schematica.client.gui.material.MaterialScan;
+import com.github.lunatrius.schematica.client.gui.material.RawMaterialExport;
+import com.github.lunatrius.schematica.client.gui.material.RecipeIndex;
+import com.github.lunatrius.schematica.client.gui.save.GuiMaterialListSave;
+import com.github.lunatrius.schematica.compat.nei.NeiBridge;
 import com.github.lunatrius.schematica.handler.ConfigurationHandler;
 import com.github.lunatrius.schematica.handler.client.WorldHandler;
+import com.github.lunatrius.schematica.proxy.ClientProxy;
 import com.github.lunatrius.schematica.reference.Reference;
+
+import cpw.mods.fml.common.registry.GameData;
+import org.lwjgl.input.Keyboard;
 
 public class GuiSchematicMaterials extends UiScreen {
     private static final String PREFIX = "litematica.gui.button.material_list.";
@@ -105,7 +110,7 @@ public class GuiSchematicMaterials extends UiScreen {
             if (button == 0) mc.displayGuiScreen(new GuiSchematicMaterials(this, MaterialList.combined()));
         }));
         all.setTooltip(UiTranslations.format("schematica.ui.material.all_placements.hover").split("\\n"));
-        all.setVisible(list.kind == MaterialList.Kind.PLACEMENT && com.github.lunatrius.schematica.proxy.ClientProxy.loadedSchematics.size() > 1);
+        all.setVisible(list.kind == MaterialList.Kind.PLACEMENT && ClientProxy.loadedSchematics.size() > 1);
         primary.addAll(Arrays.asList(refresh, scope, hide, hud, all));
         UiButton clearIgnored = action("clear_ignored", () -> { materials.clearIgnored(); saveSettings(); refreshRows(); });
         UiButton cache = action("clear_cache", () -> {
@@ -118,11 +123,11 @@ public class GuiSchematicMaterials extends UiScreen {
         raw = action("write_to_json", this::exportRaw);
         raw.setTooltip(UiTranslations.format("litematica.gui.button.hover.material_list.json_hold_shift_for_missing_only").split("\\n"));
         UiButton custom = action("export", () -> {
-            if (exportable()) mc.displayGuiScreen(new com.github.lunatrius.schematica.client.gui.save.GuiMaterialListSave(this, list.name(), list.customItems()));
+            if (exportable()) mc.displayGuiScreen(new GuiMaterialListSave(this, list.name(), list.customItems()));
         });
         custom.setTooltip(UiTranslations.format("litematica.gui.button.hover.material_list.export_custom_json").split("\\n"));
         secondary.addAll(Arrays.asList(clearIgnored, cache, export, raw, custom));
-        if (com.github.lunatrius.schematica.compat.nei.NeiBridge.available()) {
+        if (NeiBridge.available()) {
             UiButton nei = addButton("schematica.nei.send", this::sendToNei);
             nei.setTooltip(UiTranslations.format("schematica.nei.send.hover").split("\\n"));
             secondary.add(nei);
@@ -215,9 +220,9 @@ public class GuiSchematicMaterials extends UiScreen {
             ItemStack copy = held.copy();
             copy.stackSize = 1;
             materials.replace(entry.key, new MaterialListModel.Replacement<>(new MaterialItemKey(copy), copy.getDisplayName(),
-                String.valueOf(cpw.mods.fml.common.registry.GameData.getItemRegistry().getNameForObject(copy.getItem()))));
+                String.valueOf(GameData.getItemRegistry().getNameForObject(copy.getItem()))));
         }
-        com.github.lunatrius.schematica.client.gui.material.MaterialScan.updateAvailable(materials.entries(), mc.thePlayer);
+        MaterialScan.updateAvailable(materials.entries(), mc.thePlayer);
         saveSettings();
         refreshRows();
     }
@@ -239,7 +244,7 @@ public class GuiSchematicMaterials extends UiScreen {
             stack.stackSize = (int) count;
             stacks.add(stack);
         }
-        int sent = com.github.lunatrius.schematica.compat.nei.NeiBridge.sendGroup(list.sourceName(), stacks);
+        int sent = NeiBridge.sendGroup(list.sourceName(), stacks);
         showNotice(UiTranslations.format(sent == -2 ? "schematica.nei.loading"
             : sent < 0 ? "schematica.nei.send_failed" : "schematica.nei.sent", Math.max(0, sent)));
     }

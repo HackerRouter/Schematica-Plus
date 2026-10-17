@@ -1,5 +1,8 @@
 package thaumcraft.common.blocks;
 
-public class BlockMirror extends net.minecraft.block.Block {
-    public BlockMirror() { super(net.minecraft.block.material.Material.rock); }
+import net.minecraft.block.Block;
+import net.minecraft.block.material.Material;
+
+public class BlockMirror extends Block {
+    public BlockMirror() { super(Material.rock); }
 }
