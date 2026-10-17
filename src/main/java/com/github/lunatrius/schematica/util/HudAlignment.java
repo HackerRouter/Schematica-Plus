@@ -10,6 +10,13 @@ public enum HudAlignment {
     public String value() { return name().toLowerCase(Locale.ROOT); }
     public String translationKey() { return "malilib.label.alignment." + value(); }
 
+    public static String[] names() {
+        HudAlignment[] values = values();
+        String[] names = new String[values.length];
+        for (int i = 0; i < values.length; i++) names[i] = values[i].value();
+        return names;
+    }
+
     public static HudAlignment parse(String value) {
         for (HudAlignment alignment : values()) if (alignment.value().equalsIgnoreCase(value)) return alignment;
         return TOP_RIGHT;

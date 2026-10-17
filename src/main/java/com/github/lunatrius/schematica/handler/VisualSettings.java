@@ -82,65 +82,43 @@ public final class VisualSettings {
     private VisualSettings() {}
 
     public static void load(Configuration config) {
-        rendering = flag(config, Names.Config.Category.RENDER, "enableRendering", true, "visuals");
-        schematic = flag(config, Names.Config.Category.RENDER, "enableSchematicRendering", true, "visuals");
-        blocks = flag(config, Names.Config.Category.RENDER, "enableSchematicBlocksRendering", true, "visuals");
-        areaBoxes = flag(config, Names.Config.Category.RENDER, "enableAreaSelectionBoxesRendering", true, "visuals");
-        placementBoxes = flag(config, Names.Config.Category.RENDER, "enablePlacementBoxesRendering", true, "visuals");
-        overlayThrough = flag(config, Names.Config.Category.RENDER, "schematicOverlayRenderThroughBlocks", false, "visuals");
-        blockInfoOverlay = flag(config, BlockInfoHudSettings.CATEGORY, "blockInfoOverlayEnabled", true, "info_overlays");
-        overlayMissing = flag(config, Names.Config.Category.RENDER, "schematicOverlayTypeMissing", true, "visuals");
-        overlayWrongBlock = flag(config, Names.Config.Category.RENDER, "schematicOverlayTypeWrongBlock", true, "visuals");
-        overlayWrongState = flag(config, Names.Config.Category.RENDER, "schematicOverlayTypeWrongState", true, "visuals");
-        overlayDiffBlock = flag(config, Names.Config.Category.RENDER, "schematicOverlayTypeDiffBlock", true, "visuals");
-        String r = Names.Config.Category.RENDER;
-        renderEntities = flag(config, r, "renderSchematicEntities", true, "visuals");
-        renderTileEntities = flag(config, r, "renderSchematicTileEntities", true, "visuals");
-        fluids = flag(config, r, "enableSchematicFluidRendering", true, "visuals");
-        fakeLighting = flag(config, r, "enableSchematicFakeLighting", true, "visuals");
-        aoModern = flag(config, r, "renderAOModernEnable", false, "visuals");
-        renderColliding = flag(config, r, "renderCollidingSchematicBlocks", false, "visuals");
-        ignoreExistingFluids = flag(config, r, "ignoreExistingFluids", false, "visuals");
-        ignoreCropAge = flag(config, r, "ignoreCropAge", false, "visuals");
-        Property survival = config.get(r, "ignoreSurvivalStates", false);
-        survival.setLanguageKey(Names.Config.LANG_PREFIX + ".ignoreSurvivalStates");
-        ignoreSurvivalStates = survival.getBoolean(false);
-        modelOutline = flag(config, r, "schematicOverlayModelOutline", true, "visuals");
-        modelSides = flag(config, r, "schematicOverlayModelSides", true, "visuals");
-        reducedInnerSides = flag(config, r, "overlayReducedInnerSides", false, "visuals");
-        overlayCulling = flag(config, r, "enableSchematicOverlayCulling", true, "visuals");
-        entityHitboxes = flag(config, r, "enableSchematicEntityHitboxes", true, "visuals");
-        areaBoxSides = flag(config, r, "renderAreaSelectionBoxSides", true, "visuals");
-        placementBoxSides = flag(config, r, "renderPlacementBoxSides", false, "visuals");
-        enclosingBox = flag(config, r, "renderPlacementEnclosingBox", true, "visuals");
-        enclosingBoxSides = flag(config, r, "renderPlacementEnclosingBoxSides", false, "visuals");
-        Property light = config.get(r, "renderFakeLightingLevel", 15);
-        light.setLanguageKey("litematica.config.visuals.name.renderFakeLightingLevel");
-        light.setMinValue(0).setMaxValue(15);
-        fakeLightLevel = Math.max(0, Math.min(15, light.getInt(15)));
-        Property distance = config.get(r, "schematicRenderDistance", 0);
-        distance.setLanguageKey(Names.Config.LANG_PREFIX + ".schematicRenderDistance");
-        distance.setMinValue(0).setMaxValue(1024);
-        RenderBudget.configuredDistance = Math.max(0, Math.min(1024, distance.getInt(0)));
-        Property minFps = config.get(r, "adaptiveRenderingMinFps", 30);
-        minFps.setLanguageKey(Names.Config.LANG_PREFIX + ".adaptiveRenderingMinFps");
-        minFps.setMinValue(0).setMaxValue(240);
-        RenderBudget.minFps = Math.max(0, Math.min(240, minFps.getInt(30)));
-        Property sideAlpha = config.get(r, "placementBoxSideAlpha", 0.2);
-        sideAlpha.setLanguageKey("litematica.config.visuals.name.placementBoxSideAlpha");
-        sideAlpha.setMinValue(0.0).setMaxValue(1.0);
-        placementBoxSideAlpha = sideAlpha.getDouble(0.2);
-        if (!Double.isFinite(placementBoxSideAlpha) || placementBoxSideAlpha < 0 || placementBoxSideAlpha > 1) placementBoxSideAlpha = 0.2;
-        outlineWidth = width(config, "schematicOverlayOutlineWidth", 1.0);
-        outlineWidthThrough = width(config, "schematicOverlayOutlineWidthThrough", 3.0);
-    }
-
-    private static double width(Configuration config, String key, double fallback) {
-        Property property = config.get(Names.Config.Category.RENDER, key, fallback);
-        property.setLanguageKey("litematica.config.visuals.name." + key);
-        property.setMinValue(0.0).setMaxValue(64.0);
-        double value = property.getDouble(fallback);
-        return Double.isFinite(value) && value >= 0 && value <= 64 ? value : fallback;
+        ConfigReader visuals = new ConfigReader(config, Names.Config.Category.RENDER, ConfigReader.VISUALS);
+        rendering = visuals.flag("enableRendering", true);
+        schematic = visuals.flag("enableSchematicRendering", true);
+        blocks = visuals.flag("enableSchematicBlocksRendering", true);
+        areaBoxes = visuals.flag("enableAreaSelectionBoxesRendering", true);
+        placementBoxes = visuals.flag("enablePlacementBoxesRendering", true);
+        overlayThrough = visuals.flag("schematicOverlayRenderThroughBlocks", false);
+        blockInfoOverlay = visuals.in(BlockInfoHudSettings.CATEGORY, ConfigReader.INFO_OVERLAYS).flag("blockInfoOverlayEnabled", true);
+        overlayMissing = visuals.flag("schematicOverlayTypeMissing", true);
+        overlayWrongBlock = visuals.flag("schematicOverlayTypeWrongBlock", true);
+        overlayWrongState = visuals.flag("schematicOverlayTypeWrongState", true);
+        overlayDiffBlock = visuals.flag("schematicOverlayTypeDiffBlock", true);
+        renderEntities = visuals.flag("renderSchematicEntities", true);
+        renderTileEntities = visuals.flag("renderSchematicTileEntities", true);
+        fluids = visuals.flag("enableSchematicFluidRendering", true);
+        fakeLighting = visuals.flag("enableSchematicFakeLighting", true);
+        aoModern = visuals.flag("renderAOModernEnable", false);
+        renderColliding = visuals.flag("renderCollidingSchematicBlocks", false);
+        ignoreExistingFluids = visuals.flag("ignoreExistingFluids", false);
+        ignoreCropAge = visuals.flag("ignoreCropAge", false);
+        ConfigReader legacy = visuals.in(Names.Config.Category.RENDER, ConfigReader.LEGACY);
+        ignoreSurvivalStates = legacy.flag("ignoreSurvivalStates", false);
+        modelOutline = visuals.flag("schematicOverlayModelOutline", true);
+        modelSides = visuals.flag("schematicOverlayModelSides", true);
+        reducedInnerSides = visuals.flag("overlayReducedInnerSides", false);
+        overlayCulling = visuals.flag("enableSchematicOverlayCulling", true);
+        entityHitboxes = visuals.flag("enableSchematicEntityHitboxes", true);
+        areaBoxSides = visuals.flag("renderAreaSelectionBoxSides", true);
+        placementBoxSides = visuals.flag("renderPlacementBoxSides", false);
+        enclosingBox = visuals.flag("renderPlacementEnclosingBox", true);
+        enclosingBoxSides = visuals.flag("renderPlacementEnclosingBoxSides", false);
+        fakeLightLevel = visuals.integer("renderFakeLightingLevel", 15, 0, 15);
+        RenderBudget.configuredDistance = legacy.integer("schematicRenderDistance", 0, 0, 1024);
+        RenderBudget.minFps = legacy.integer("adaptiveRenderingMinFps", 30, 0, 240);
+        placementBoxSideAlpha = visuals.decimal("placementBoxSideAlpha", 0.2, 0.0, 1.0);
+        outlineWidth = visuals.decimal("schematicOverlayOutlineWidth", 1.0, 0.0, 64.0);
+        outlineWidthThrough = visuals.decimal("schematicOverlayOutlineWidthThrough", 3.0, 0.0, 64.0);
     }
 
     /** The overlay outline width: wider when the overlay is drawn through blocks. */
@@ -148,11 +126,6 @@ public final class VisualSettings {
         return (float) Math.max(0.1, frameThrough ? outlineWidthThrough : outlineWidth);
     }
 
-    private static boolean flag(Configuration config, String category, String key, boolean fallback, String group) {
-        Property property = config.get(category, key, fallback);
-        property.setLanguageKey("litematica.config." + group + ".name." + key);
-        return property.getBoolean(fallback);
-    }
 
     /** Schematic blocks, tile entities and entities are drawn, and schematic blocks can be targeted. */
     public static boolean schematicVisible() {

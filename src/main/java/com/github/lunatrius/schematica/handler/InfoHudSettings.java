@@ -1,9 +1,6 @@
 package com.github.lunatrius.schematica.handler;
 
-import java.util.Arrays;
-
 import net.minecraftforge.common.config.Configuration;
-import net.minecraftforge.common.config.Property;
 
 import com.github.lunatrius.schematica.util.HudAlignment;
 
@@ -18,38 +15,14 @@ public final class InfoHudSettings {
     private InfoHudSettings() {}
 
     public static void load(Configuration configuration) {
-        Property font = label(configuration.get(BlockInfoHudSettings.CATEGORY, "infoHudScale", 1.0), "infoHudScale");
-        font.setMinValue(0.1).setMaxValue(4.0);
-        scale = font.getDouble(1.0);
-        if (!Double.isFinite(scale) || scale < 0.1 || scale > 4) { scale = 1; font.set(scale); }
-        offsetX = offset(configuration, "infoHudOffsetX");
-        offsetY = offset(configuration, "infoHudOffsetY");
-        Property anchor = label(configuration.get(BlockInfoHudSettings.CATEGORY, "infoHudAlignment", "bottom_right"), "infoHudAlignment");
-        String[] values = Arrays.stream(HudAlignment.values()).map(HudAlignment::value).toArray(String[]::new);
-        anchor.setValidValues(values);
-        alignment = Arrays.asList(values).contains(anchor.getString()) ? HudAlignment.parse(anchor.getString()) : HudAlignment.BOTTOM_RIGHT;
-        anchor.set(alignment.value());
-        Property tool = label(configuration.get(BlockInfoHudSettings.CATEGORY, "toolHudScale", 1.0), "toolHudScale");
-        tool.setMinValue(0.1).setMaxValue(4.0);
-        toolScale = tool.getDouble(1.0);
-        if (!Double.isFinite(toolScale) || toolScale < 0.1 || toolScale > 4) { toolScale = 1; tool.set(toolScale); }
-        toolOffsetX = offset(configuration, "toolHudOffsetX");
-        toolOffsetY = offset(configuration, "toolHudOffsetY");
-        Property toolAnchor = label(configuration.get(BlockInfoHudSettings.CATEGORY, "toolHudAlignment", "bottom_left"), "toolHudAlignment");
-        toolAnchor.setValidValues(values);
-        toolAlignment = Arrays.asList(values).contains(toolAnchor.getString()) ? HudAlignment.parse(toolAnchor.getString()) : HudAlignment.BOTTOM_LEFT;
-        toolAnchor.set(toolAlignment.value());
-    }
-
-    private static int offset(Configuration configuration, String key) {
-        Property property = label(configuration.get(BlockInfoHudSettings.CATEGORY, key, 1), key);
-        property.setMinValue(0).setMaxValue(32000);
-        int value = Math.max(0, Math.min(32000, property.getInt(1)));
-        property.set(value);
-        return value;
-    }
-
-    private static Property label(Property property, String key) {
-        return property.setLanguageKey("litematica.config.info_overlays.name." + key);
+        ConfigReader overlays = new ConfigReader(configuration, BlockInfoHudSettings.CATEGORY, ConfigReader.INFO_OVERLAYS);
+        scale = overlays.decimal("infoHudScale", 1.0, 0.1, 4.0);
+        offsetX = overlays.integer("infoHudOffsetX", 1, 0, 32000);
+        offsetY = overlays.integer("infoHudOffsetY", 1, 0, 32000);
+        alignment = HudAlignment.parse(overlays.choice("infoHudAlignment", "bottom_right", HudAlignment.names()));
+        toolScale = overlays.decimal("toolHudScale", 1.0, 0.1, 4.0);
+        toolOffsetX = overlays.integer("toolHudOffsetX", 1, 0, 32000);
+        toolOffsetY = overlays.integer("toolHudOffsetY", 1, 0, 32000);
+        toolAlignment = HudAlignment.parse(overlays.choice("toolHudAlignment", "bottom_left", HudAlignment.names()));
     }
 }

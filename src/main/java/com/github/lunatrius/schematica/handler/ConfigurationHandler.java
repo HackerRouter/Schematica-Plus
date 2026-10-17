@@ -38,44 +38,28 @@ public class ConfigurationHandler {
 
     public static Configuration configuration;
 
-    public static final boolean SHOW_DEBUG_INFO_DEFAULT = true;
-    public static final boolean EXTENDED_ID_FORMAT_DEFAULT = false;
-    public static final boolean ENABLE_ALPHA_DEFAULT = false;
     public static final double ALPHA_DEFAULT = 0.5;
-    public static final boolean HIGHLIGHT_DEFAULT = true;
-    public static final boolean HIGHLIGHT_AIR_DEFAULT = true;
     public static final double BLOCK_DELTA_DEFAULT = 0.005;
-    public static final boolean DRAW_QUADS_DEFAULT = true;
-    public static final boolean DRAW_LINES_DEFAULT = true;
     public static final int PLACE_DELAY_DEFAULT = 1;
     public static final int TIMEOUT_DEFAULT = 10;
-    public static final boolean DESTROY_BLOCKS_DEFAULT = false;
-    public static final boolean DESTROY_INSTANTLY_DEFAULT = false;
     public static final boolean[] SWAP_SLOTS_DEFAULT = new boolean[] { false, false, false, false, false, true, true,
         true, true };
     public static final String SCHEMATIC_DIRECTORY_STR = "schematics";
     public static final File SCHEMATIC_DIRECTORY_DEFAULT = new File(
         SchematicaPlus.proxy.getDataDirectory(),
         SCHEMATIC_DIRECTORY_STR);
-    public static final String[] EXTRA_AIR_BLOCKS_DEFAULT = {};
-    public static final String SORT_TYPE_DEFAULT = "";
     public static final String TOOL_ITEM_DEFAULT = "minecraft:stick";
-    public static final boolean PASTE_WITHOUT_UPDATES_DEFAULT = false;
-    public static final boolean PRINTER_ENABLED_DEFAULT = true;
-    public static final boolean SAVE_ENABLED_DEFAULT = true;
-    public static final boolean LOAD_ENABLED_DEFAULT = true;
     public static final int PLAYER_QUOTA_KILOBYTES_DEFAULT = 8192;
-    public static final boolean SERVERSIDE_SCHEMATICS_ENABLED_DEFAULT = true;
 
-    public static boolean showDebugInfo = SHOW_DEBUG_INFO_DEFAULT;
-    public static boolean useSchematicplusFormat = EXTENDED_ID_FORMAT_DEFAULT;
-    public static boolean enableAlpha = ENABLE_ALPHA_DEFAULT;
+    public static boolean showDebugInfo = true;
+    public static boolean useSchematicplusFormat = false;
+    public static boolean enableAlpha = false;
     public static float alpha = (float) ALPHA_DEFAULT;
-    public static boolean highlight = HIGHLIGHT_DEFAULT;
-    public static boolean highlightAir = HIGHLIGHT_AIR_DEFAULT;
+    public static boolean highlight = true;
+    public static boolean highlightAir = true;
     public static float blockDelta = (float) BLOCK_DELTA_DEFAULT;
-    public static boolean drawQuads = DRAW_QUADS_DEFAULT;
-    public static boolean drawLines = DRAW_LINES_DEFAULT;
+    public static boolean drawQuads = true;
+    public static boolean drawLines = true;
     public static int placeDelay = PLACE_DELAY_DEFAULT;
     public static int timeout = TIMEOUT_DEFAULT;
     // Printer pass, after the behavior of litematica-printer and the Entropy5 Schematica fork
@@ -93,13 +77,13 @@ public class ConfigurationHandler {
     public static boolean schematicPreview3D = true, schematicPreview3DReplacesImage;
     public static boolean printBreakWrongBlock, printBreakExtraBlock, printBreakWrongStateBlock, printHighlight, printHighlightThroughWalls;
     public static int printHighlightFade = 5;
-    public static boolean destroyBlocks = DESTROY_BLOCKS_DEFAULT;
-    public static boolean destroyInstantly = DESTROY_INSTANTLY_DEFAULT;
+    public static boolean destroyBlocks = false;
+    public static boolean destroyInstantly = false;
     public static boolean[] swapSlots = SWAP_SLOTS_DEFAULT.clone();
     public static final Queue<Integer> swapSlotsQueue = new ArrayDeque<>();
     public static File schematicDirectory = SCHEMATIC_DIRECTORY_DEFAULT;
-    public static String[] extraAirBlocks = EXTRA_AIR_BLOCKS_DEFAULT;
-    public static String sortType = SORT_TYPE_DEFAULT;
+    public static String[] extraAirBlocks = {};
+    public static String sortType = "";
     public static String toolItem = TOOL_ITEM_DEFAULT;
     public static boolean toolItemEnabled = true, executeRequireTool = true, pickBlockEnabled = true, cloneAtOriginalPosition, reverseOperationModeDirection;
     public static boolean easyPlaceMode, easyPlaceHoldEnabled = true, easyPlaceFirst = true, easyPlaceSwingHand = true, easyPlaceVanillaReach;
@@ -107,7 +91,7 @@ public class ConfigurationHandler {
     public static int easyPlaceSwapInterval;
     /** MaLiLib MessageOutputType for Easy Place and Placement Restriction warnings: none, message or actionbar. */
     public static String placementRestrictionWarn = "actionbar";
-    public static boolean pasteWithoutUpdates = PASTE_WITHOUT_UPDATES_DEFAULT;
+    public static boolean pasteWithoutUpdates = false;
     public static ReplaceBehavior pasteReplaceBehavior = ReplaceBehavior.NONE;
     /** Area selection files per world (area_selections_per_world/<world>/area_selections) or shared. */
     public static boolean areaSelectionsPerWorld = true;
@@ -122,39 +106,20 @@ public class ConfigurationHandler {
     public static int materialListHudMaxLines = 10;
     public static double materialListHudScale = 1;
     public static PlacementDeletionMode schematicVcsDeleteMode = PlacementDeletionMode.MATCHING_BLOCK;
-    public static boolean printerEnabled = PRINTER_ENABLED_DEFAULT;
+    public static boolean printerEnabled = true;
     public static boolean remoteEditsEnabled = true;
     public static boolean accuratePlacementEnabled = true;
     public static String easyPlaceProtocolVersion = "auto";
-    public static boolean saveEnabled = SAVE_ENABLED_DEFAULT;
-    public static boolean loadEnabled = LOAD_ENABLED_DEFAULT;
+    public static boolean saveEnabled = true;
+    public static boolean loadEnabled = true;
     public static int playerQuotaKilobytes = PLAYER_QUOTA_KILOBYTES_DEFAULT;
-    public static boolean serversideSchematicsEnabled = SERVERSIDE_SCHEMATICS_ENABLED_DEFAULT;
+    public static boolean serversideSchematicsEnabled = true;
 
-    public static Property propShowDebugInfo = null;
-    public static Property propUseSchematicplusFormat = null;
-    public static Property propEnableAlpha = null;
     public static Property propAlpha = null;
-    public static Property propHighlight = null;
-    public static Property propHighlightAir = null;
     public static Property propBlockDelta = null;
-    public static Property propDrawQuads = null;
-    public static Property propDrawLines = null;
     public static Property propPlaceDelay = null;
     public static Property propTimeout = null;
-    public static Property propDestroyBlocks = null;
-    public static Property propDestroyInstantly = null;
-    public static Property[] propSwapSlots = new Property[SWAP_SLOTS_DEFAULT.length];
-    public static Property propSchematicDirectory = null;
-    public static Property propExtraAirBlocks = null;
     public static Property propSortType = null;
-    public static Property propToolItem = null;
-    public static Property propPasteWithoutUpdates = null;
-    public static Property propPrinterEnabled = null;
-    public static Property propSaveEnabled = null;
-    public static Property propLoadEnabled = null;
-    public static Property propPlayerQuotaKilobytes = null;
-    public static Property propServersideSchematicsEnabled = null;
 
     private static final Set<Block> extraAirBlockList = new HashSet<>();
 
@@ -181,337 +146,86 @@ public class ConfigurationHandler {
         InfoHudSettings.load(configuration);
         VerifierOverlaySettings.load(configuration);
         VisualSettings.load(configuration);
-        propShowDebugInfo = configuration.get(
-            Names.Config.Category.DEBUG,
-            Names.Config.SHOW_DEBUG_INFO,
-            SHOW_DEBUG_INFO_DEFAULT,
-            Names.Config.SHOW_DEBUG_INFO_DESC);
-        propShowDebugInfo.setLanguageKey(Names.Config.LANG_PREFIX + "." + Names.Config.SHOW_DEBUG_INFO);
-        showDebugInfo = propShowDebugInfo.getBoolean(SHOW_DEBUG_INFO_DEFAULT);
+        ConfigReader debug = new ConfigReader(configuration, Names.Config.Category.DEBUG, ConfigReader.LEGACY);
+        ConfigReader render = debug.in(Names.Config.Category.RENDER, ConfigReader.LEGACY);
+        ConfigReader printer = debug.in(Names.Config.Category.PRINTER, ConfigReader.LEGACY);
+        ConfigReader general = debug.in(Names.Config.Category.GENERAL, ConfigReader.LEGACY);
+        ConfigReader server = debug.in(Names.Config.Category.SERVER, ConfigReader.LEGACY);
+        ConfigReader tool = debug.in(Names.Config.Category.TOOL, ConfigReader.GENERIC);
+        ConfigReader legacyTool = debug.in(Names.Config.Category.TOOL, ConfigReader.LEGACY);
+        ConfigReader overlays = debug.in(BlockInfoHudSettings.CATEGORY, ConfigReader.INFO_OVERLAYS);
 
-        propEnableAlpha = configuration.get(
-            Names.Config.Category.RENDER,
-            Names.Config.ALPHA_ENABLED,
-            ENABLE_ALPHA_DEFAULT,
-            Names.Config.ALPHA_ENABLED_DESC);
-        propEnableAlpha.setLanguageKey(Names.Config.LANG_PREFIX + "." + Names.Config.ALPHA_ENABLED);
-        enableAlpha = propEnableAlpha.getBoolean(ENABLE_ALPHA_DEFAULT);
-
-        propAlpha = configuration
-            .get(Names.Config.Category.RENDER, Names.Config.ALPHA, ALPHA_DEFAULT, Names.Config.ALPHA_DESC, 0.0, 1.0);
-        propAlpha.setLanguageKey(Names.Config.LANG_PREFIX + "." + Names.Config.ALPHA);
+        showDebugInfo = debug.flag(Names.Config.SHOW_DEBUG_INFO, true, Names.Config.SHOW_DEBUG_INFO_DESC);
+        enableAlpha = render.flag(Names.Config.ALPHA_ENABLED, false, Names.Config.ALPHA_ENABLED_DESC);
+        propAlpha = render.label(Names.Config.ALPHA,
+            configuration.get(Names.Config.Category.RENDER, Names.Config.ALPHA, ALPHA_DEFAULT, Names.Config.ALPHA_DESC, 0.0, 1.0));
         alpha = (float) propAlpha.getDouble(ALPHA_DEFAULT);
-
-        propHighlight = configuration
-            .get(Names.Config.Category.RENDER, Names.Config.HIGHLIGHT, HIGHLIGHT_DEFAULT, Names.Config.HIGHLIGHT_DESC);
-        propHighlight.setLanguageKey(Names.Config.LANG_PREFIX + "." + Names.Config.HIGHLIGHT);
-        highlight = propHighlight.getBoolean(HIGHLIGHT_DEFAULT);
-
-        propHighlightAir = configuration.get(
-            Names.Config.Category.RENDER,
-            Names.Config.HIGHLIGHT_AIR,
-            HIGHLIGHT_AIR_DEFAULT,
-            Names.Config.HIGHLIGHT_AIR_DESC);
-        propHighlightAir.setLanguageKey(Names.Config.LANG_PREFIX + "." + Names.Config.HIGHLIGHT_AIR);
-        highlightAir = propHighlightAir.getBoolean(HIGHLIGHT_AIR_DEFAULT);
-
-        propBlockDelta = configuration.get(
-            Names.Config.Category.RENDER,
-            Names.Config.BLOCK_DELTA,
-            BLOCK_DELTA_DEFAULT,
-            Names.Config.BLOCK_DELTA_DESC,
-            0.0,
-            0.2);
-        propBlockDelta.setLanguageKey(Names.Config.LANG_PREFIX + "." + Names.Config.BLOCK_DELTA);
+        highlight = render.flag(Names.Config.HIGHLIGHT, true, Names.Config.HIGHLIGHT_DESC);
+        highlightAir = render.flag(Names.Config.HIGHLIGHT_AIR, true, Names.Config.HIGHLIGHT_AIR_DESC);
+        propBlockDelta = render.label(Names.Config.BLOCK_DELTA, configuration.get(Names.Config.Category.RENDER,
+            Names.Config.BLOCK_DELTA, BLOCK_DELTA_DEFAULT, Names.Config.BLOCK_DELTA_DESC, 0.0, 0.2));
         blockDelta = (float) propBlockDelta.getDouble(BLOCK_DELTA_DEFAULT);
-
-        propDrawQuads = configuration.get(
-            Names.Config.Category.RENDER,
-            Names.Config.DRAW_QUADS,
-            DRAW_QUADS_DEFAULT,
-            Names.Config.DRAW_QUADS_DESC);
-        propDrawQuads.setLanguageKey(Names.Config.LANG_PREFIX + "." + Names.Config.DRAW_QUADS);
-        drawQuads = propDrawQuads.getBoolean(DRAW_QUADS_DEFAULT);
-
-        propDrawLines = configuration.get(
-            Names.Config.Category.RENDER,
-            Names.Config.DRAW_LINES,
-            DRAW_LINES_DEFAULT,
-            Names.Config.DRAW_LINES_DESC);
-        propDrawLines.setLanguageKey(Names.Config.LANG_PREFIX + "." + Names.Config.DRAW_LINES);
-        drawLines = propDrawLines.getBoolean(DRAW_LINES_DEFAULT);
-
-        propPlaceDelay = configuration.get(
-            Names.Config.Category.PRINTER,
-            Names.Config.PLACE_DELAY,
-            PLACE_DELAY_DEFAULT,
-            Names.Config.PLACE_DELAY_DESC,
-            0,
-            20);
-        propPlaceDelay.setLanguageKey(Names.Config.LANG_PREFIX + "." + Names.Config.PLACE_DELAY);
+        drawQuads = render.flag(Names.Config.DRAW_QUADS, true, Names.Config.DRAW_QUADS_DESC);
+        drawLines = render.flag(Names.Config.DRAW_LINES, true, Names.Config.DRAW_LINES_DESC);
+        propPlaceDelay = printer.label(Names.Config.PLACE_DELAY, configuration.get(Names.Config.Category.PRINTER,
+            Names.Config.PLACE_DELAY, PLACE_DELAY_DEFAULT, Names.Config.PLACE_DELAY_DESC, 0, 20));
         placeDelay = propPlaceDelay.getInt(PLACE_DELAY_DEFAULT);
-
-        propTimeout = configuration.get(
-            Names.Config.Category.PRINTER,
-            Names.Config.TIMEOUT,
-            TIMEOUT_DEFAULT,
-            Names.Config.TIMEOUT_DESC,
-            0,
-            100);
-        propTimeout.setLanguageKey(Names.Config.LANG_PREFIX + "." + Names.Config.TIMEOUT);
+        propTimeout = printer.label(Names.Config.TIMEOUT, configuration.get(Names.Config.Category.PRINTER,
+            Names.Config.TIMEOUT, TIMEOUT_DEFAULT, Names.Config.TIMEOUT_DESC, 0, 100));
         timeout = propTimeout.getInt(TIMEOUT_DEFAULT);
+        destroyBlocks = printer.flag(Names.Config.DESTROY_BLOCKS, false, Names.Config.DESTROY_BLOCKS_DESC);
+        destroyInstantly = printer.flag(Names.Config.DESTROY_INSTANTLY, false, Names.Config.DESTROY_INSTANTLY_DESC);
 
-        propDestroyBlocks = configuration.get(
-            Names.Config.Category.PRINTER,
-            Names.Config.DESTROY_BLOCKS,
-            DESTROY_BLOCKS_DEFAULT,
-            Names.Config.DESTROY_BLOCKS_DESC);
-        propDestroyBlocks.setLanguageKey(Names.Config.LANG_PREFIX + "." + Names.Config.DESTROY_BLOCKS);
-        destroyBlocks = propDestroyBlocks.getBoolean(DESTROY_BLOCKS_DEFAULT);
+        loadPrinter(printer);
+        containerVerifier = legacyTool.flag("containerVerifier", true);
+        containerAutofill = legacyTool.flag("containerAutofill", true);
+        containerLabels = legacyTool.flag("containerLabels", true);
+        worldFingerprinting = legacyTool.flag("worldFingerprinting", true);
+        schematicPreview3D = legacyTool.flag("schematicPreview3D", true);
+        schematicPreview3DReplacesImage = legacyTool.flag("schematicPreview3DReplacesImage", false);
 
-        propDestroyInstantly = configuration.get(
-            Names.Config.Category.PRINTER,
-            Names.Config.DESTROY_INSTANTLY,
-            DESTROY_INSTANTLY_DEFAULT,
-            Names.Config.DESTROY_INSTANTLY_DESC);
-        propDestroyInstantly.setLanguageKey(Names.Config.LANG_PREFIX + "." + Names.Config.DESTROY_INSTANTLY);
-        destroyInstantly = propDestroyInstantly.getBoolean(DESTROY_INSTANTLY_DEFAULT);
-
-        loadPrinter();
-        containerVerifier = printerProperty(configuration.get(Names.Config.Category.TOOL, "containerVerifier", true), "containerVerifier").getBoolean(true);
-        containerAutofill = printerProperty(configuration.get(Names.Config.Category.TOOL, "containerAutofill", true), "containerAutofill").getBoolean(true);
-        containerLabels = printerProperty(configuration.get(Names.Config.Category.TOOL, "containerLabels", true), "containerLabels").getBoolean(true);
-        worldFingerprinting = printerProperty(configuration.get(Names.Config.Category.TOOL, "worldFingerprinting", true), "worldFingerprinting").getBoolean(true);
-        schematicPreview3D = printerProperty(configuration.get(Names.Config.Category.TOOL, "schematicPreview3D", true), "schematicPreview3D").getBoolean(true);
-        schematicPreview3DReplacesImage = printerProperty(configuration.get(Names.Config.Category.TOOL, "schematicPreview3DReplacesImage", false), "schematicPreview3DReplacesImage").getBoolean(false);
-
+        ConfigReader swap = debug.in(Names.Config.Category.PRINTER_SWAPSLOTS, ConfigReader.LEGACY);
         swapSlotsQueue.clear();
         for (int i = 0; i < SWAP_SLOTS_DEFAULT.length; i++) {
-            propSwapSlots[i] = configuration.get(
-                Names.Config.Category.PRINTER_SWAPSLOTS,
-                Names.Config.SWAP_SLOT + i,
-                SWAP_SLOTS_DEFAULT[i],
-                Names.Config.SWAP_SLOT_DESC);
-            propSwapSlots[i].setLanguageKey(Names.Config.LANG_PREFIX + "." + Names.Config.SWAP_SLOT + i);
-            swapSlots[i] = propSwapSlots[i].getBoolean(SWAP_SLOTS_DEFAULT[i]);
-
-            if (swapSlots[i]) {
-                swapSlotsQueue.offer(i);
-            }
+            swapSlots[i] = swap.flag(Names.Config.SWAP_SLOT + i, SWAP_SLOTS_DEFAULT[i], Names.Config.SWAP_SLOT_DESC);
+            if (swapSlots[i]) swapSlotsQueue.offer(i);
         }
 
-        propSchematicDirectory = configuration.get(
-            Names.Config.Category.GENERAL,
-            Names.Config.SCHEMATIC_DIRECTORY,
-            SCHEMATIC_DIRECTORY_STR,
-            Names.Config.SCHEMATIC_DIRECTORY_DESC);
-        propSchematicDirectory.setLanguageKey(Names.Config.LANG_PREFIX + "." + Names.Config.SCHEMATIC_DIRECTORY);
-        schematicDirectory = new File(propSchematicDirectory.getString());
+        loadSchematicDirectory(general);
 
-        try {
-            schematicDirectory = schematicDirectory.getCanonicalFile();
-            final String schematicPath = schematicDirectory.getAbsolutePath();
-            final String dataPath = SchematicaPlus.proxy.getDataDirectory()
-                .getAbsolutePath();
-            if (schematicPath.contains(dataPath)) {
-                propSchematicDirectory.set(
-                    schematicPath.substring(dataPath.length())
-                        .replace("\\", "/")
-                        .replaceAll("^/+", ""));
-            } else {
-                propSchematicDirectory.set(schematicPath.replace("\\", "/"));
-            }
-        } catch (IOException e) {
-            Reference.logger.warn("Could not canonize path!", e);
-        }
-
-        propExtraAirBlocks = configuration.get(
-            Names.Config.Category.GENERAL,
-            Names.Config.EXTRA_AIR_BLOCKS,
-            EXTRA_AIR_BLOCKS_DEFAULT,
-            Names.Config.EXTRA_AIR_BLOCKS_DESC);
-        propExtraAirBlocks.setLanguageKey(Names.Config.LANG_PREFIX + "." + Names.Config.EXTRA_AIR_BLOCKS);
-        extraAirBlocks = propExtraAirBlocks.getStringList();
-
+        extraAirBlocks = general.label(Names.Config.EXTRA_AIR_BLOCKS, configuration.get(Names.Config.Category.GENERAL,
+            Names.Config.EXTRA_AIR_BLOCKS, new String[0], Names.Config.EXTRA_AIR_BLOCKS_DESC)).getStringList();
         extraAirBlockList.clear();
         for (String name : extraAirBlocks) {
-            final Block block = GameData.getBlockRegistry()
-                .getObject(name);
-            if (block != Blocks.air) {
-                extraAirBlockList.add(block);
-            }
+            final Block block = GameData.getBlockRegistry().getObject(name);
+            if (block != Blocks.air) extraAirBlockList.add(block);
         }
-
-        propUseSchematicplusFormat = configuration.get(
-            Names.Config.Category.GENERAL,
-            Names.Config.EXTENDED_ID_FORMAT,
-            EXTENDED_ID_FORMAT_DEFAULT,
-            Names.Config.EXTENDED_ID_FORMAT_DESC);
-        propUseSchematicplusFormat.setLanguageKey(Names.Config.LANG_PREFIX + "." + Names.Config.EXTENDED_ID_FORMAT);
-        useSchematicplusFormat = propUseSchematicplusFormat.getBoolean(EXTENDED_ID_FORMAT_DEFAULT);
-
-        propSortType = configuration
-            .get(Names.Config.Category.GENERAL, Names.Config.SORT_TYPE, SORT_TYPE_DEFAULT, Names.Config.SORT_TYPE_DESC);
+        useSchematicplusFormat = general.flag(Names.Config.EXTENDED_ID_FORMAT, false, Names.Config.EXTENDED_ID_FORMAT_DESC);
+        propSortType = configuration.get(Names.Config.Category.GENERAL, Names.Config.SORT_TYPE, "", Names.Config.SORT_TYPE_DESC);
         propSortType.setShowInGui(false);
         sortType = propSortType.getString();
 
-        propToolItem = configuration.get(
-            Names.Config.Category.TOOL,
-            Names.Config.TOOL_ITEM,
-            TOOL_ITEM_DEFAULT,
-            Names.Config.TOOL_ITEM_DESC);
-        propToolItem.setLanguageKey(Names.Config.LANG_PREFIX + "." + Names.Config.TOOL_ITEM);
-        toolItem = propToolItem.getString();
+        toolItem = legacyTool.label(Names.Config.TOOL_ITEM, configuration.get(Names.Config.Category.TOOL, Names.Config.TOOL_ITEM,
+            TOOL_ITEM_DEFAULT, Names.Config.TOOL_ITEM_DESC)).getString();
         parseToolItem(toolItem);
-        toolItemEnabled = toolBoolean("toolItemEnabled");
-        executeRequireTool = toolBoolean("executeRequireHoldingTool");
-        pickBlockEnabled = toolBoolean("pickBlockEnabled");
-        Property cloneAtOrigin = configuration.get(Names.Config.Category.TOOL, "cloneAtOriginalPosition", false);
-        cloneAtOrigin.setLanguageKey("litematica.config.generic.name.cloneAtOriginalPosition");
-        cloneAtOriginalPosition = cloneAtOrigin.getBoolean(false);
-        easyPlaceMode = toolFlag("easyPlaceMode", false);
-        easyPlaceHoldEnabled = toolFlag("easyPlaceHoldEnabled", true);
-        easyPlaceFirst = toolFlag("easyPlaceFirst", true);
-        easyPlaceSwingHand = toolFlag("easyPlaceSwingHand", true);
-        easyPlaceVanillaReach = toolFlag("easyPlaceVanillaReach", false);
-        placementRestriction = toolFlag("placementRestriction", false);
-        signTextPaste = toolFlag("signTextPaste", true);
-        unhideSchematicVCS = toolFlag("unhideSchematicVCS", false);
-        areaSelectionsPerWorld = toolFlag("areaSelectionsPerWorld", true);
-        materialListIgnoreState = toolFlag("materialListIgnoreState", false);
-        materialListContainerScan = toolFlag("materialListContainerScan", false);
-        easyPlacePostRewrite = toolFlag("easyPlacePostRewrite", false);
-        pasteIgnoreInventories = toolFlag("pasteIgnoreInventories", false);
-        pasteIgnoreEntities = toolFlag("pasteIgnoreEntities", false);
-        pasteIgnoreBlockEntitiesEntirely = toolFlag("pasteIgnoreBlockEntitiesEntirely", false);
-        pasteUsingCommandsInSp = toolFlag("pasteUsingCommandsInSp", false);
-        layerModeFollowsPlayer = toolFlag("layerModeFollowsPlayer", false);
-        generateLowercaseNames = toolFlag("generateLowercaseNames", false);
-        AreaSelectionLibrary.changeSelectedCornerOnMove = toolFlag("changeSelectedCornerOnMove", true);
-        commandLimitPerTick = toolInt("commandLimitPerTick", 8, 1, 256);
-        commandTaskInterval = toolInt("commandTaskInterval", 1, 1, 1000);
-        Property setblock = configuration.get(Names.Config.Category.TOOL, "commandNameSetblock", "setblock");
-        setblock.setLanguageKey("litematica.config.generic.name.commandNameSetblock");
-        String setblockName = setblock.getString().trim().replaceFirst("^/+", "");
-        WorldEditJob.setblockCommand = setblockName.matches("[A-Za-z0-9_:.-]{1,64}") ? setblockName : "setblock";
-        Property selectionMode = configuration.get(BlockInfoHudSettings.CATEGORY, "defaultSelectionMode", "simple");
-        selectionMode.setLanguageKey("litematica.config.info_overlays.name.defaultSelectionMode");
-        selectionMode.setValidValues(new String[] {"normal", "simple"});
-        boolean normal = "normal".equals(selectionMode.getString());
-        selectionMode.set(normal ? "normal" : "simple");
-        AreaSelectionLibrary.defaultMode = normal
-            ? AreaSelectionLibrary.Mode.NORMAL
-            : AreaSelectionLibrary.Mode.SIMPLE;
-        Property warnRendering = configuration.get(BlockInfoHudSettings.CATEGORY, "warnDisabledRendering", true);
-        warnRendering.setLanguageKey("litematica.config.info_overlays.name.warnDisabledRendering");
-        warnDisabledRendering = warnRendering.getBoolean(true);
-        Property layers = configuration.get(Names.Config.Category.TOOL, "pasteLayerBehavior", "all");
-        layers.setLanguageKey("litematica.config.generic.name.pasteLayerBehavior");
-        layers.setValidValues(new String[] {"all", "rendered_only"});
-        pasteRenderLayersOnly = "rendered_only".equals(layers.getString());
-        layers.set(pasteRenderLayersOnly ? "rendered_only" : "all");
-        easyPlaceClickAdjacent = toolFlag("easyPlaceClickAdjacent", false);
-        pickBlockAvoidDamageable = toolFlag("pickBlockAvoidDamageable", true);
-        pickBlockAvoidTools = toolFlag("pickBlockAvoidTools", false);
-        Property pickSlots = configuration.get(Names.Config.Category.TOOL, "pickBlockableSlots", "1,2,3,4,5");
-        pickSlots.setLanguageKey("litematica.config.generic.name.pickBlockableSlots");
-        pickBlockableSlots = pickSlots.getString();
-        BlockGroups.enabled = toolFlag("enableDifferentBlocks", false);
-        materialListRecipeDetails = toolFlag("materialListRecipeDetails", true);
-        renderMaterialListInGuis = toolFlag("renderMaterialListInGuis", true);
-        highlightBlockInInventory = toolFlag("highlightBlockInInventory", false);
-        Property hudLines = configuration.get(BlockInfoHudSettings.CATEGORY, "materialListHudMaxLines", 10);
-        hudLines.setLanguageKey("litematica.config.info_overlays.name.materialListHudMaxLines");
-        hudLines.setMinValue(1).setMaxValue(128);
-        materialListHudMaxLines = Math.max(1, Math.min(128, hudLines.getInt(10)));
-        Property hudScale = configuration.get(BlockInfoHudSettings.CATEGORY, "materialListHudScale", 1.0);
-        hudScale.setLanguageKey("litematica.config.info_overlays.name.materialListHudScale");
-        hudScale.setMinValue(0.1).setMaxValue(4.0);
-        materialListHudScale = hudScale.getDouble(1.0);
-        if (!Double.isFinite(materialListHudScale) || materialListHudScale < 0.1 || materialListHudScale > 4) materialListHudScale = 1;
-        Property protocol = configuration.get(Names.Config.Category.TOOL, "easyPlaceProtocolVersion", "auto");
-        protocol.setLanguageKey("litematica.config.generic.name.easyPlaceProtocolVersion");
-        protocol.setValidValues(new String[] {"auto", "v3", "v2", "slabs_only", "none"});
-        easyPlaceProtocolVersion = Arrays.asList(protocol.getValidValues()).contains(protocol.getString()) ? protocol.getString() : "auto";
-        protocol.set(easyPlaceProtocolVersion);
-        Property vcsDelete = configuration.get(Names.Config.Category.TOOL, "schematicVcsDeleteMode", "matching_block");
-        vcsDelete.setLanguageKey("litematica.config.generic.name.schematicVcsDeleteMode");
-        vcsDelete.setValidValues(PlacementDeletionMode.names());
-        schematicVcsDeleteMode = PlacementDeletionMode.parse(vcsDelete.getString());
-        vcsDelete.set(schematicVcsDeleteMode.value);
-        Property swapInterval = configuration.get(Names.Config.Category.TOOL, "easyPlaceSwapInterval", 0);
-        swapInterval.setLanguageKey("litematica.config.generic.name.easyPlaceSwapInterval");
-        swapInterval.setMinValue(0).setMaxValue(10000);
-        easyPlaceSwapInterval = Math.max(0, Math.min(10000, swapInterval.getInt(0)));
-        Property warn = configuration.get(Names.Config.Category.TOOL, "placementRestrictionWarn", "actionbar");
-        warn.setLanguageKey("litematica.config.generic.name.placementRestrictionWarn");
-        warn.setValidValues(new String[] {"none", "message", "actionbar"});
-        placementRestrictionWarn = Arrays.asList("none", "message", "actionbar").contains(warn.getString()) ? warn.getString() : "actionbar";
-        warn.set(placementRestrictionWarn);
-        Property status = configuration.get(BlockInfoHudSettings.CATEGORY, "statusInfoHud", false);
-        status.setLanguageKey("litematica.config.info_overlays.name.statusInfoHud");
-        statusInfoHud = status.getBoolean(false);
-        Property statusAuto = configuration.get(BlockInfoHudSettings.CATEGORY, "statusInfoHudAuto", true);
-        statusAuto.setLanguageKey("litematica.config.info_overlays.name.statusInfoHudAuto");
-        statusInfoHudAuto = statusAuto.getBoolean(true);
-        Property reverseModes = configuration.get(Names.Config.Category.TOOL, "reverseOperationModeDirection", false);
-        reverseModes.setLanguageKey("litematica.config.generic.name.reverseOperationModeDirection");
-        reverseOperationModeDirection = reverseModes.getBoolean(false);
-
-        propPasteWithoutUpdates = configuration.get(Names.Config.Category.TOOL, Names.Config.PASTE_WITHOUT_UPDATES,
-            PASTE_WITHOUT_UPDATES_DEFAULT, Names.Config.PASTE_WITHOUT_UPDATES_DESC);
-        propPasteWithoutUpdates.setLanguageKey(Names.Config.LANG_PREFIX + "." + Names.Config.PASTE_WITHOUT_UPDATES);
-        pasteWithoutUpdates = propPasteWithoutUpdates.getBoolean(PASTE_WITHOUT_UPDATES_DEFAULT);
-
+        loadTool(tool);
+        loadOverlays(overlays);
+        pasteWithoutUpdates = legacyTool.flag(Names.Config.PASTE_WITHOUT_UPDATES, false, Names.Config.PASTE_WITHOUT_UPDATES_DESC);
         pasteReplaceBehavior = loadPasteReplaceBehavior(configuration);
 
-        propPrinterEnabled = configuration.get(
-            Names.Config.Category.SERVER,
-            Names.Config.PRINTER_ENABLED,
-            PRINTER_ENABLED_DEFAULT,
-            Names.Config.PRINTER_ENABLED_DESC);
-        propPrinterEnabled.setLanguageKey(Names.Config.LANG_PREFIX + "." + Names.Config.PRINTER_ENABLED);
-        printerEnabled = propPrinterEnabled.getBoolean(PRINTER_ENABLED_DEFAULT);
-        Property maxRange = configuration.get(Names.Config.Category.SERVER, "printerMaxRange", PrinterRange.MAX,
-            "Maximum printer distance in blocks. 0 keeps normal reach; extended reach requires Plus on both sides.");
-        maxRange.setLanguageKey(Names.Config.LANG_PREFIX + ".printerMaxRange");
+        printerEnabled = server.flag(Names.Config.PRINTER_ENABLED, true, Names.Config.PRINTER_ENABLED_DESC);
+        Property maxRange = server.label("printerMaxRange", configuration.get(Names.Config.Category.SERVER, "printerMaxRange", PrinterRange.MAX,
+            "Maximum printer distance in blocks. 0 keeps normal reach; extended reach requires Plus on both sides."));
         maxRange.setMinValue(0.0).setMaxValue(PrinterRange.MAX);
         printerMaxRange = PrinterRange.clamp(maxRange.getDouble(PrinterRange.MAX));
-        remoteEditsEnabled = serverFlag(Names.Config.REMOTE_EDITS_ENABLED, Names.Config.REMOTE_EDITS_ENABLED_DESC);
-        accuratePlacementEnabled = serverFlag(Names.Config.ACCURATE_PLACEMENT_ENABLED, Names.Config.ACCURATE_PLACEMENT_ENABLED_DESC);
-
-        propSaveEnabled = configuration.get(
-            Names.Config.Category.SERVER,
-            Names.Config.SAVE_ENABLED,
-            SAVE_ENABLED_DEFAULT,
-            Names.Config.SAVE_ENABLED_DESC);
-        propSaveEnabled.setLanguageKey(Names.Config.LANG_PREFIX + "." + Names.Config.SAVE_ENABLED);
-        saveEnabled = propSaveEnabled.getBoolean(SAVE_ENABLED_DEFAULT);
-
-        propLoadEnabled = configuration.get(
-            Names.Config.Category.SERVER,
-            Names.Config.LOAD_ENABLED,
-            LOAD_ENABLED_DEFAULT,
-            Names.Config.LOAD_ENABLED_DESC);
-        propLoadEnabled.setLanguageKey(Names.Config.LANG_PREFIX + "." + Names.Config.LOAD_ENABLED);
-        loadEnabled = propLoadEnabled.getBoolean(LOAD_ENABLED_DEFAULT);
-
-        propPlayerQuotaKilobytes = configuration.get(
-            Names.Config.Category.SERVER,
-            Names.Config.PLAYER_QUOTA_KILOBYTES,
-            PLAYER_QUOTA_KILOBYTES_DEFAULT,
-            Names.Config.PLAYER_QUOTA_KILOBYTES_DESC);
-        propPlayerQuotaKilobytes.setLanguageKey(Names.Config.LANG_PREFIX + "." + Names.Config.PLAYER_QUOTA_KILOBYTES);
-        playerQuotaKilobytes = propPlayerQuotaKilobytes.getInt(PLAYER_QUOTA_KILOBYTES_DEFAULT);
-
-        propServersideSchematicsEnabled = configuration.get(
-            Names.Config.Category.SERVER,
-            Names.Config.SERVERSIDE_SCHEMATICS_ENABLED,
-            SERVERSIDE_SCHEMATICS_ENABLED_DEFAULT,
-            Names.Config.SERVERSIDE_SCHEMATICS_ENABLED_DESC);
-        propServersideSchematicsEnabled
-            .setLanguageKey(Names.Config.LANG_PREFIX + "." + Names.Config.SERVERSIDE_SCHEMATICS_ENABLED);
-        serversideSchematicsEnabled = propServersideSchematicsEnabled.getBoolean(SERVERSIDE_SCHEMATICS_ENABLED_DEFAULT);
+        remoteEditsEnabled = server.flag(Names.Config.REMOTE_EDITS_ENABLED, true, Names.Config.REMOTE_EDITS_ENABLED_DESC);
+        accuratePlacementEnabled = server.flag(Names.Config.ACCURATE_PLACEMENT_ENABLED, true, Names.Config.ACCURATE_PLACEMENT_ENABLED_DESC);
+        saveEnabled = server.flag(Names.Config.SAVE_ENABLED, true, Names.Config.SAVE_ENABLED_DESC);
+        loadEnabled = server.flag(Names.Config.LOAD_ENABLED, true, Names.Config.LOAD_ENABLED_DESC);
+        playerQuotaKilobytes = server.label(Names.Config.PLAYER_QUOTA_KILOBYTES, configuration.get(Names.Config.Category.SERVER,
+            Names.Config.PLAYER_QUOTA_KILOBYTES, PLAYER_QUOTA_KILOBYTES_DEFAULT, Names.Config.PLAYER_QUOTA_KILOBYTES_DESC))
+            .getInt(PLAYER_QUOTA_KILOBYTES_DEFAULT);
+        serversideSchematicsEnabled = server.flag(Names.Config.SERVERSIDE_SCHEMATICS_ENABLED, true, Names.Config.SERVERSIDE_SCHEMATICS_ENABLED_DESC);
 
         SchematicaPlus.proxy.createFolders();
 
@@ -520,94 +234,122 @@ public class ConfigurationHandler {
         }
     }
 
-    private static void loadPrinter() {
-        ConfigCategory printer = configuration.getCategory(Names.Config.Category.PRINTER);
+    private static void loadSchematicDirectory(ConfigReader general) {
+        Property property = general.label(Names.Config.SCHEMATIC_DIRECTORY, configuration.get(Names.Config.Category.GENERAL,
+            Names.Config.SCHEMATIC_DIRECTORY, SCHEMATIC_DIRECTORY_STR, Names.Config.SCHEMATIC_DIRECTORY_DESC));
+        schematicDirectory = new File(property.getString());
+        try {
+            schematicDirectory = schematicDirectory.getCanonicalFile();
+            final String schematicPath = schematicDirectory.getAbsolutePath();
+            final String dataPath = SchematicaPlus.proxy.getDataDirectory().getAbsolutePath();
+            if (schematicPath.contains(dataPath)) {
+                property.set(schematicPath.substring(dataPath.length()).replace("\\", "/").replaceAll("^/+", ""));
+            } else {
+                property.set(schematicPath.replace("\\", "/"));
+            }
+        } catch (IOException e) {
+            Reference.logger.warn("Could not canonize path!", e);
+        }
+    }
+
+    private static void loadPrinter(ConfigReader printer) {
+        ConfigCategory category = configuration.getCategory(Names.Config.Category.PRINTER);
         // Replaced by placeBlocksPerTick and placeInAir
-        printer.remove("placeInstantly");
-        printer.remove("placeAdjacent");
-        Property range = printerProperty(configuration.get(Names.Config.Category.PRINTER, "printerWorkRange", 0.0), "printerWorkRange");
+        category.remove("placeInstantly");
+        category.remove("placeAdjacent");
+        Property range = printer.label("printerWorkRange", configuration.get(Names.Config.Category.PRINTER, "printerWorkRange", 0.0));
         range.setMinValue(0.0).setMaxValue(PrinterRange.MAX);
         printerWorkRange = PrinterRange.clamp(range.getDouble(0));
-        printerIterationTimeLimit = printerInt("printerIterationTimeLimit", 8, 0, 32);
-        placeBlocksPerTick = printerInt("placeBlocksPerTick", 1, 1, 64);
-        printerBuildOrder = printerChoice("printerBuildOrder", "layers", "layers", "iterator");
-        printerIteratorShape = printerChoice("printerIteratorShape", "sphere", "sphere", "octahedron", "cube");
-        printerIteratorMode = printerChoice("printerIteratorMode", "xzy", "xzy", "xyz", "yxz", "yzx", "zxy", "zyx");
-        printerXAxisReverse = printerFlag("printerXAxisReverse", false);
-        printerYAxisReverse = printerFlag("printerYAxisReverse", false);
-        printerZAxisReverse = printerFlag("printerZAxisReverse", false);
-        printSelectionType = printerChoice("printSelectionType", "render_layers", "render_layers", "selection", "below_player", "above_player");
-        printerLagCheck = printerFlag("printerLagCheck", true);
-        printerLagCheckMax = printerInt("printerLagCheckMax", 20, 20, 1200);
-        placeInAir = printerFlag("placeInAir", true);
-        printForcedSneak = printerFlag("printForcedSneak", false);
-        printFallingBlockCheck = printerFlag("printFallingBlockCheck", true);
-        printerPlacementSolver = printerFlag("printerPlacementSolver", true);
-        destroyAssist = printerFlag("destroyAssist", false);
-        printUseTools = printerFlag("printUseTools", true);
-        easyPlacePrerequisites = printerFlag("easyPlacePrerequisites", true);
-        highlightNextBlock = printerFlag("highlightNextBlock", false);
-        printerAutoDisable = printerFlag("printerAutoDisable", true);
-        printerPauseWhileMoving = printerFlag("printerPauseWhileMoving", false);
-        printBreakWrongBlock = printerFlag("printBreakWrongBlock", false);
-        printBreakExtraBlock = printerFlag("printBreakExtraBlock", false);
-        printBreakWrongStateBlock = printerFlag("printBreakWrongStateBlock", false);
-        printHighlight = printerFlag("printHighlight", false);
-        printHighlightFade = printerInt("printHighlightFade", 5, 1, 100);
-        printHighlightThroughWalls = printerFlag("printHighlightThroughWalls", false);
-        printMissingMaterialHud = printerFlag("printMissingMaterialHud", true);
-        printAutoTool = printerFlag("printAutoTool", true);
-        printAutoToolDurability = printerInt("printAutoToolDurability", 10, 0, 1000);
-        printSkipList = printerProperty(configuration.get(Names.Config.Category.PRINTER, "printSkipList", new String[0]), "printSkipList").getStringList();
+        printerIterationTimeLimit = printer.integer("printerIterationTimeLimit", 8, 0, 32);
+        placeBlocksPerTick = printer.integer("placeBlocksPerTick", 1, 1, 64);
+        printerBuildOrder = printer.choice("printerBuildOrder", "layers", "layers", "iterator");
+        printerIteratorShape = printer.choice("printerIteratorShape", "sphere", "sphere", "octahedron", "cube");
+        printerIteratorMode = printer.choice("printerIteratorMode", "xzy", "xzy", "xyz", "yxz", "yzx", "zxy", "zyx");
+        printerXAxisReverse = printer.flag("printerXAxisReverse", false);
+        printerYAxisReverse = printer.flag("printerYAxisReverse", false);
+        printerZAxisReverse = printer.flag("printerZAxisReverse", false);
+        printSelectionType = printer.choice("printSelectionType", "render_layers", "render_layers", "selection", "below_player", "above_player");
+        printerLagCheck = printer.flag("printerLagCheck", true);
+        printerLagCheckMax = printer.integer("printerLagCheckMax", 20, 20, 1200);
+        placeInAir = printer.flag("placeInAir", true);
+        printForcedSneak = printer.flag("printForcedSneak", false);
+        printFallingBlockCheck = printer.flag("printFallingBlockCheck", true);
+        printerPlacementSolver = printer.flag("printerPlacementSolver", true);
+        destroyAssist = printer.flag("destroyAssist", false);
+        printUseTools = printer.flag("printUseTools", true);
+        easyPlacePrerequisites = printer.flag("easyPlacePrerequisites", true);
+        highlightNextBlock = printer.flag("highlightNextBlock", false);
+        printerAutoDisable = printer.flag("printerAutoDisable", true);
+        printerPauseWhileMoving = printer.flag("printerPauseWhileMoving", false);
+        printBreakWrongBlock = printer.flag("printBreakWrongBlock", false);
+        printBreakExtraBlock = printer.flag("printBreakExtraBlock", false);
+        printBreakWrongStateBlock = printer.flag("printBreakWrongStateBlock", false);
+        printHighlight = printer.flag("printHighlight", false);
+        printHighlightFade = printer.integer("printHighlightFade", 5, 1, 100);
+        printHighlightThroughWalls = printer.flag("printHighlightThroughWalls", false);
+        printMissingMaterialHud = printer.flag("printMissingMaterialHud", true);
+        printAutoTool = printer.flag("printAutoTool", true);
+        printAutoToolDurability = printer.integer("printAutoToolDurability", 10, 0, 1000);
+        printSkipList = printer.list("printSkipList", new String[0]);
     }
 
-    private static Property printerProperty(Property property, String name) {
-        property.setLanguageKey(Names.Config.LANG_PREFIX + "." + name);
-        return property;
+    private static void loadTool(ConfigReader tool) {
+        toolItemEnabled = tool.flag("toolItemEnabled", true);
+        executeRequireTool = tool.flag("executeRequireHoldingTool", true);
+        pickBlockEnabled = tool.flag("pickBlockEnabled", true);
+        cloneAtOriginalPosition = tool.flag("cloneAtOriginalPosition", false);
+        easyPlaceMode = tool.flag("easyPlaceMode", false);
+        easyPlaceHoldEnabled = tool.flag("easyPlaceHoldEnabled", true);
+        easyPlaceFirst = tool.flag("easyPlaceFirst", true);
+        easyPlaceSwingHand = tool.flag("easyPlaceSwingHand", true);
+        easyPlaceVanillaReach = tool.flag("easyPlaceVanillaReach", false);
+        placementRestriction = tool.flag("placementRestriction", false);
+        signTextPaste = tool.flag("signTextPaste", true);
+        unhideSchematicVCS = tool.flag("unhideSchematicVCS", false);
+        areaSelectionsPerWorld = tool.flag("areaSelectionsPerWorld", true);
+        materialListIgnoreState = tool.flag("materialListIgnoreState", false);
+        materialListContainerScan = tool.flag("materialListContainerScan", false);
+        easyPlacePostRewrite = tool.flag("easyPlacePostRewrite", false);
+        pasteIgnoreInventories = tool.flag("pasteIgnoreInventories", false);
+        pasteIgnoreEntities = tool.flag("pasteIgnoreEntities", false);
+        pasteIgnoreBlockEntitiesEntirely = tool.flag("pasteIgnoreBlockEntitiesEntirely", false);
+        pasteUsingCommandsInSp = tool.flag("pasteUsingCommandsInSp", false);
+        layerModeFollowsPlayer = tool.flag("layerModeFollowsPlayer", false);
+        generateLowercaseNames = tool.flag("generateLowercaseNames", false);
+        AreaSelectionLibrary.changeSelectedCornerOnMove = tool.flag("changeSelectedCornerOnMove", true);
+        commandLimitPerTick = tool.integer("commandLimitPerTick", 8, 1, 256);
+        commandTaskInterval = tool.integer("commandTaskInterval", 1, 1, 1000);
+        String setblockName = tool.text("commandNameSetblock", "setblock").trim().replaceFirst("^/+", "");
+        WorldEditJob.setblockCommand = setblockName.matches("[A-Za-z0-9_:.-]{1,64}") ? setblockName : "setblock";
+        pasteRenderLayersOnly = "rendered_only".equals(tool.choice("pasteLayerBehavior", "all", "all", "rendered_only"));
+        easyPlaceClickAdjacent = tool.flag("easyPlaceClickAdjacent", false);
+        pickBlockAvoidDamageable = tool.flag("pickBlockAvoidDamageable", true);
+        pickBlockAvoidTools = tool.flag("pickBlockAvoidTools", false);
+        pickBlockableSlots = tool.text("pickBlockableSlots", "1,2,3,4,5");
+        BlockGroups.enabled = tool.flag("enableDifferentBlocks", false);
+        materialListRecipeDetails = tool.flag("materialListRecipeDetails", true);
+        renderMaterialListInGuis = tool.flag("renderMaterialListInGuis", true);
+        highlightBlockInInventory = tool.flag("highlightBlockInInventory", false);
+        easyPlaceProtocolVersion = tool.choice("easyPlaceProtocolVersion", "auto", "auto", "v3", "v2", "slabs_only", "none");
+        Property vcsDelete = tool.label("schematicVcsDeleteMode",
+            configuration.get(Names.Config.Category.TOOL, "schematicVcsDeleteMode", "matching_block"));
+        vcsDelete.setValidValues(PlacementDeletionMode.names());
+        schematicVcsDeleteMode = PlacementDeletionMode.parse(vcsDelete.getString());
+        vcsDelete.set(schematicVcsDeleteMode.value);
+        easyPlaceSwapInterval = tool.integer("easyPlaceSwapInterval", 0, 0, 10000);
+        placementRestrictionWarn = tool.choice("placementRestrictionWarn", "actionbar", "none", "message", "actionbar");
+        reverseOperationModeDirection = tool.flag("reverseOperationModeDirection", false);
     }
 
-    private static int printerInt(String name, int fallback, int min, int max) {
-        Property property = printerProperty(configuration.get(Names.Config.Category.PRINTER, name, fallback), name);
-        property.setMinValue(min).setMaxValue(max);
-        return Math.max(min, Math.min(max, property.getInt(fallback)));
-    }
-
-    private static boolean printerFlag(String name, boolean fallback) {
-        return printerProperty(configuration.get(Names.Config.Category.PRINTER, name, fallback), name).getBoolean(fallback);
-    }
-
-    private static String printerChoice(String name, String fallback, String... values) {
-        Property property = printerProperty(configuration.get(Names.Config.Category.PRINTER, name, fallback), name);
-        property.setValidValues(values);
-        String value = property.getString();
-        for (String candidate : values) if (candidate.equals(value)) return value;
-        property.set(fallback);
-        return fallback;
-    }
-
-    private static boolean serverFlag(String name, String comment) {
-        Property property = configuration.get(Names.Config.Category.SERVER, name, true, comment);
-        property.setLanguageKey(Names.Config.LANG_PREFIX + "." + name);
-        return property.getBoolean(true);
-    }
-
-    private static int toolInt(String name, int fallback, int min, int max) {
-        Property property = configuration.get(Names.Config.Category.TOOL, name, fallback);
-        property.setLanguageKey("litematica.config.generic.name." + name);
-        property.setMinValue(min).setMaxValue(max);
-        return Math.max(min, Math.min(max, property.getInt(fallback)));
-    }
-
-    private static boolean toolFlag(String name, boolean fallback) {
-        Property property = configuration.get(Names.Config.Category.TOOL, name, fallback);
-        property.setLanguageKey("litematica.config.generic.name." + name);
-        return property.getBoolean(fallback);
-    }
-
-    private static boolean toolBoolean(String name) {
-        Property property = configuration.get(Names.Config.Category.TOOL, name, true);
-        property.setLanguageKey("litematica.config.generic.name." + name);
-        return property.getBoolean(true);
+    private static void loadOverlays(ConfigReader overlays) {
+        AreaSelectionLibrary.defaultMode = "normal".equals(overlays.choice("defaultSelectionMode", "simple", "normal", "simple"))
+            ? AreaSelectionLibrary.Mode.NORMAL
+            : AreaSelectionLibrary.Mode.SIMPLE;
+        warnDisabledRendering = overlays.flag("warnDisabledRendering", true);
+        materialListHudMaxLines = overlays.integer("materialListHudMaxLines", 10, 1, 128);
+        materialListHudScale = overlays.decimal("materialListHudScale", 1.0, 0.1, 4.0);
+        statusInfoHud = overlays.flag("statusInfoHud", false);
+        statusInfoHudAuto = overlays.flag("statusInfoHudAuto", true);
     }
 
     /**
