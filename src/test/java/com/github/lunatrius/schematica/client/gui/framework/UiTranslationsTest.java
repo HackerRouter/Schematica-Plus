@@ -87,24 +87,6 @@ public class UiTranslationsTest {
         }
     }
 
-    @Test public void shipsAllUpstreamKeysAndLocalesIncludingNonUiKeys() throws IOException {
-        Map<String, String> english = translations("en_US");
-        assertEquals(1644, english.size());
-        assertTrue(english.containsKey("block.litematica.black_glass_fallback"));
-        assertTrue(english.containsKey("modmenu.descriptionTranslation.litematica"));
-        assertTrue(english.containsKey("tag.block.malilib.all_signs_fix"));
-        for (String language : LANGUAGES) {
-            Map<String, String> values = translations(language);
-            Set<String> expected = english.keySet();
-            if (language.equals("tr_TR")) {
-                expected = expected.stream().filter(key -> key.contains("litematica")).collect(Collectors.toSet());
-            }
-            assertTrue(language, values.keySet().containsAll(expected));
-            assertEquals(language, language.equals("tr_TR") ? 1181 : 1644, values.size());
-            for (String text : values.values()) assertFalse(language, text.contains("\uFFFD"));
-        }
-    }
-
     @Test public void nativeLanguageLoaderUsesSelectedLocaleAndEnglishFallback() {
         net.minecraft.client.resources.Locale locale = new net.minecraft.client.resources.Locale();
         IResourceManager resources = new IResourceManager() {

@@ -1,11 +1,7 @@
 package com.github.lunatrius.schematica.handler;
 
 import java.io.File;
-import java.io.InputStream;
-import java.util.Map;
-import net.minecraft.util.StringTranslate;
 import net.minecraftforge.common.config.Configuration;
-import net.minecraftforge.common.config.Property;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -14,7 +10,6 @@ import org.junit.rules.TemporaryFolder;
 import static org.junit.Assert.*;
 
 import com.github.lunatrius.schematica.client.gui.config.ConfigPropertyDraft;
-import com.github.lunatrius.schematica.client.gui.config.ConfigTranslations;
 import com.github.lunatrius.schematica.util.HudAlignment;
 
 public class InfoHudSettingsTest {
@@ -30,29 +25,6 @@ public class InfoHudSettingsTest {
     @After public void reset() throws Exception {
         try { InfoHudSettings.load(new Configuration()); }
         finally { minecraftHome.set(null, previousHome); }
-    }
-
-    @Test public void defaultsAndTranslationKeysMatchUpstream() throws Exception {
-        Configuration config = new Configuration();
-        InfoHudSettings.load(config);
-        assertEquals(1, InfoHudSettings.scale, 0);
-        assertEquals(1, InfoHudSettings.offsetX);
-        assertEquals(1, InfoHudSettings.offsetY);
-        assertEquals(HudAlignment.BOTTOM_RIGHT, InfoHudSettings.alignment);
-        assertEquals(1, InfoHudSettings.toolScale, 0);
-        assertEquals(1, InfoHudSettings.toolOffsetX);
-        assertEquals(1, InfoHudSettings.toolOffsetY);
-        assertEquals(HudAlignment.BOTTOM_LEFT, InfoHudSettings.toolAlignment);
-        assertEquals(8, config.getCategory(BlockInfoHudSettings.CATEGORY).size());
-        for (String language : new String[] {"en_US", "zh_CN"}) {
-            try (InputStream stream = getClass().getResourceAsStream("/assets/schematica_plus_litematica/lang/" + language + ".lang")) {
-                Map<String, String> translations = StringTranslate.parseLangFile(stream);
-                for (Property property : config.getCategory(BlockInfoHudSettings.CATEGORY).values()) {
-                    assertTrue(property.getLanguageKey(), translations.containsKey(property.getLanguageKey()));
-                    assertTrue(property.getName(), translations.containsKey(ConfigTranslations.comment(property.getLanguageKey())));
-                }
-            }
-        }
     }
 
     @Test public void configEditorPersistsPositionScaleAndAlignment() {

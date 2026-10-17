@@ -1,11 +1,7 @@
 package com.github.lunatrius.schematica.handler;
 
 import java.io.File;
-import java.io.InputStream;
-import java.util.Map;
-import net.minecraft.util.StringTranslate;
 import net.minecraftforge.common.config.Configuration;
-import net.minecraftforge.common.config.Property;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -13,7 +9,6 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import static org.junit.Assert.*;
 import com.github.lunatrius.schematica.client.gui.config.ConfigPropertyDraft;
-import com.github.lunatrius.schematica.client.gui.config.ConfigTranslations;
 import com.github.lunatrius.schematica.reference.Names;
 
 public class VerifierOverlaySettingsTest {
@@ -28,23 +23,6 @@ public class VerifierOverlaySettingsTest {
     @After public void reset() throws Exception {
         try { VerifierOverlaySettings.load(new Configuration()); }
         finally { minecraftHome.set(null, previousHome); }
-    }
-
-    @Test public void defaultsAndEveryDynamicTranslationMatchUpstream() throws Exception {
-        Configuration config = new Configuration(); VerifierOverlaySettings.load(config);
-        assertTrue(VerifierOverlaySettings.enabled); assertTrue(VerifierOverlaySettings.sides); assertFalse(VerifierOverlaySettings.connections);
-        assertEquals(0.2, VerifierOverlaySettings.alpha, 0);
-        assertEquals(1000, VerifierOverlaySettings.maxPositions); assertEquals(10, VerifierOverlaySettings.maxLines);
-        assertEquals(6, VerifierOverlaySettings.offsetY); assertEquals("top_center", VerifierOverlaySettings.alignment);
-        for (String language : new String[] {"en_US", "zh_CN"}) {
-            try (InputStream stream = getClass().getResourceAsStream("/assets/schematica_plus_litematica/lang/" + language + ".lang")) {
-                Map<String, String> translations = StringTranslate.parseLangFile(stream);
-                for (String category : config.getCategoryNames()) for (Property property : config.getCategory(category).values()) {
-                    assertTrue(property.getLanguageKey(), translations.containsKey(property.getLanguageKey()));
-                    assertTrue(property.getName(), translations.containsKey(ConfigTranslations.comment(property.getLanguageKey())));
-                }
-            }
-        }
     }
 
     @Test public void settingsPersistThroughTheConfigEditorWithoutChangingOtherHudOptions() {

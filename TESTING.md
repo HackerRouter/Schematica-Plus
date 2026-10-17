@@ -1,7 +1,7 @@
 # Verification
 
 Current scenario guide, reviewed 2026-10-15. Run `./gradlew build` and
-`LC_ALL=C.UTF-8 ./gradlew test`; the current suite contains **694 tests**.
+`LC_ALL=C.UTF-8 ./gradlew test`; the current suite contains **709 tests**.
 Steps below are regression scenarios, not claims that every combination passed.
 Only dated observation paragraphs record actual game checks; their test counts and
 artifact hashes describe that historical build. Use disposable copies and the

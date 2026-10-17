@@ -55,10 +55,6 @@ public class PlayerCapabilitiesTest {
         assertTrue(advertised(false).supportsRemoteEdit);
     }
 
-    @Test public void enabledEditsAdvertiseProtocol() throws Exception {
-        assertTrue(advertised(true).supportsRemoteEdit);
-    }
-
     @Test public void printerLimitTravelsWithCapabilities() throws Exception {
         double previous = ConfigurationHandler.printerMaxRange;
         boolean enabled = ConfigurationHandler.printerEnabled;

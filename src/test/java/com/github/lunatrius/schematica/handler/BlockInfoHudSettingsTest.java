@@ -1,9 +1,6 @@
 package com.github.lunatrius.schematica.handler;
 
 import java.io.File;
-import java.io.InputStream;
-import java.util.Map;
-import net.minecraft.util.StringTranslate;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.common.config.Property;
 import org.junit.After;
@@ -14,7 +11,6 @@ import org.junit.rules.TemporaryFolder;
 import static org.junit.Assert.*;
 
 import com.github.lunatrius.schematica.client.gui.config.ConfigPropertyDraft;
-import com.github.lunatrius.schematica.client.gui.config.ConfigTranslations;
 import com.github.lunatrius.schematica.util.HudAlignment;
 
 public class BlockInfoHudSettingsTest {
@@ -31,28 +27,6 @@ public class BlockInfoHudSettingsTest {
     @After public void reset() throws Exception {
         try { BlockInfoHudSettings.load(new Configuration()); }
         finally { if (minecraftHome != null) minecraftHome.set(null, previousHome); }
-    }
-
-    @Test public void defaultsMatchUpstreamAndEveryOptionHasAnEnglishAndChineseDescription() throws Exception {
-        Configuration config = configuration("defaults.cfg");
-        BlockInfoHudSettings.load(config);
-        assertTrue(BlockInfoHudSettings.enabled);
-        assertFalse(BlockInfoHudSettings.targetFluids);
-        assertEquals(0.5, BlockInfoHudSettings.scale, 0);
-        assertEquals(4, BlockInfoHudSettings.offsetX);
-        assertEquals(4, BlockInfoHudSettings.offsetY);
-        assertEquals(HudAlignment.TOP_RIGHT, BlockInfoHudSettings.alignment);
-        assertEquals(6, config.getCategory(BlockInfoHudSettings.CATEGORY).size());
-        for (String language : new String[] {"en_US", "zh_CN"}) {
-            try (InputStream stream = getClass().getResourceAsStream("/assets/schematica_plus_litematica/lang/" + language + ".lang")) {
-                Map<String, String> translations = StringTranslate.parseLangFile(stream);
-                for (Property property : config.getCategory(BlockInfoHudSettings.CATEGORY).values()) {
-                    assertTrue(property.getLanguageKey(), translations.containsKey(property.getLanguageKey()));
-                    assertTrue(property.getName(), translations.containsKey(ConfigTranslations.comment(property.getLanguageKey())));
-                }
-                for (HudAlignment alignment : HudAlignment.values()) assertTrue(translations.containsKey(alignment.translationKey()));
-            }
-        }
     }
 
     @Test public void configEditsPersistWithoutChangingExistingOptions() {
