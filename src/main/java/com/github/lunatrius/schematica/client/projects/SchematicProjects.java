@@ -26,12 +26,12 @@ import com.github.lunatrius.schematica.client.printer.SchematicPrinter;
 import com.github.lunatrius.schematica.client.renderer.RendererSchematicGlobal;
 import com.github.lunatrius.schematica.client.selection.AreaSelectionLibrary.Area;
 import com.github.lunatrius.schematica.client.selection.AreaSelections;
+import com.github.lunatrius.schematica.client.world.Placements;
 import com.github.lunatrius.schematica.client.world.SchematicLibrary;
 import com.github.lunatrius.schematica.client.world.SchematicSourceData;
 import com.github.lunatrius.schematica.client.world.SchematicWorld;
 import com.github.lunatrius.schematica.handler.ConfigurationHandler;
 import com.github.lunatrius.schematica.internal.lunatriuscore.util.vector.Vector3i;
-import com.github.lunatrius.schematica.proxy.ClientProxy;
 import com.github.lunatrius.schematica.reference.Reference;
 import com.github.lunatrius.schematica.tool.PlacementDeletionMode;
 import com.github.lunatrius.schematica.tool.ToolHandler;
@@ -267,12 +267,12 @@ public final class SchematicProjects {
     static SchematicWorld place(File file, String name, Vector3i origin) {
         try {
             boolean loaded = false;
-            for (SchematicLibrary.Source<SchematicSourceData> source : ClientProxy.SCHEMATICS.sources()) {
+            for (SchematicLibrary.Source<SchematicSourceData> source : Placements.LIBRARY.sources()) {
                 if (source.file().getCanonicalFile().equals(file.getCanonicalFile())) loaded = true;
             }
-            SchematicLibrary.Source<SchematicSourceData> source = ClientProxy.loadSource(file);
+            SchematicLibrary.Source<SchematicSourceData> source = Placements.loadSource(file);
             ownedSource = loaded ? null : source;
-            SchematicWorld world = ClientProxy.createPlacement(source);
+            SchematicWorld world = Placements.create(source);
             world.name = name;
             world.projectVersion = true;
             world.moveOriginTo(origin.x, origin.y, origin.z);
@@ -287,12 +287,12 @@ public final class SchematicProjects {
     }
 
     static void remove(SchematicWorld world) {
-        if (!ClientProxy.loadedSchematics.contains(world)) return;
-        SchematicLibrary.Source<SchematicSourceData> source = ClientProxy.SCHEMATICS.sourceOf(world);
-        ClientProxy.removePlacement(world);
+        if (!Placements.loaded.contains(world)) return;
+        SchematicLibrary.Source<SchematicSourceData> source = Placements.LIBRARY.sourceOf(world);
+        Placements.remove(world);
         boolean used = false;
-        for (SchematicWorld other : ClientProxy.loadedSchematics) if (ClientProxy.SCHEMATICS.sourceOf(other) == source) used = true;
-        if (source != null && source == ownedSource && !used) ClientProxy.unloadSource(source);
+        for (SchematicWorld other : Placements.loaded) if (Placements.LIBRARY.sourceOf(other) == source) used = true;
+        if (source != null && source == ownedSource && !used) Placements.unloadSource(source);
         if (source == ownedSource) ownedSource = null;
     }
 

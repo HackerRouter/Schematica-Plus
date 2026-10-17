@@ -13,9 +13,9 @@ import net.minecraft.world.World;
 
 import org.lwjgl.opengl.GL11;
 
+import com.github.lunatrius.schematica.client.world.Placements;
 import com.github.lunatrius.schematica.client.world.SchematicWorld;
 import com.github.lunatrius.schematica.handler.ConfigurationHandler;
-import com.github.lunatrius.schematica.proxy.ClientProxy;
 import com.github.lunatrius.schematica.util.BlockGroups;
 
 /**
@@ -40,7 +40,7 @@ public final class NextBlockHint {
 
     static int[] find(EntityClientPlayerMP player, World world, double range) {
         List<SchematicWorld> placements = new ArrayList<>();
-        for (SchematicWorld placement : ClientProxy.visiblePlacements()) if (placement.isRenderingEnabled()) placements.add(placement);
+        for (SchematicWorld placement : Placements.visible()) if (placement.isRenderingEnabled()) placements.add(placement);
         if (placements.isEmpty()) return null;
         double eyeX = player.posX, eyeY = player.posY + player.getEyeHeight() - player.getDefaultEyeHeight(), eyeZ = player.posZ;
         int r = (int) Math.ceil(range), bx = MathHelper.floor_double(eyeX), by = MathHelper.floor_double(eyeY), bz = MathHelper.floor_double(eyeZ);

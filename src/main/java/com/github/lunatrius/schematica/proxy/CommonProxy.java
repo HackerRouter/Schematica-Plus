@@ -10,7 +10,6 @@ import java.util.function.Consumer;
 import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.init.Blocks;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.AxisAlignedBB;
@@ -33,8 +32,6 @@ import com.github.lunatrius.schematica.handler.QueueTickHandler;
 import com.github.lunatrius.schematica.handler.WorldEditQueue;
 import com.github.lunatrius.schematica.internal.lunatriuscore.util.vector.Vector3i;
 import com.github.lunatrius.schematica.nbt.ForgeMultipart;
-import com.github.lunatrius.schematica.nbt.NBTConversionException;
-import com.github.lunatrius.schematica.nbt.NBTHelper;
 import com.github.lunatrius.schematica.network.PacketHandler;
 import com.github.lunatrius.schematica.network.message.MessageEditStatus;
 import com.github.lunatrius.schematica.reference.Reference;
@@ -145,8 +142,6 @@ public abstract class CommonProxy {
         this.isSaveEnabled = true;
         this.isLoadEnabled = true;
     }
-
-    public void unloadSchematic() {}
 
     /**
      * Attempts to resolve the server-side world corresponding to the given (possibly client-side) world.
@@ -328,8 +323,6 @@ public abstract class CommonProxy {
         return false;
         }
     }
-
-    public abstract boolean loadSchematic(EntityPlayer player, File directory, String filename);
 
     public abstract boolean isPlayerQuotaExceeded(EntityPlayer player);
 

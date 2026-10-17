@@ -2,46 +2,19 @@ package com.github.lunatrius.schematica.proxy;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.Reader;
-import java.lang.reflect.Type;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.function.Consumer;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.entity.EntityClientPlayerMP;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.util.ChatComponentText;
-import net.minecraft.util.EnumChatFormatting;
-import net.minecraft.util.MathHelper;
-import net.minecraft.util.MovingObjectPosition;
-import net.minecraft.world.World;
 import net.minecraftforge.client.ClientCommandHandler;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.config.Property;
-import net.minecraftforge.common.util.ForgeDirection;
 
-import com.github.lunatrius.schematica.api.ISchematic;
-import com.github.lunatrius.schematica.api.SchematicOrigin;
 import com.github.lunatrius.schematica.client.container.ContainerVerifier;
 import com.github.lunatrius.schematica.client.gui.browser.SchematicPreview;
-import com.github.lunatrius.schematica.client.gui.framework.UiTranslations;
 import com.github.lunatrius.schematica.client.gui.material.MaterialItemCache;
 import com.github.lunatrius.schematica.client.gui.material.MaterialItemKey;
 import com.github.lunatrius.schematica.client.gui.material.MaterialListModel;
 import com.github.lunatrius.schematica.client.gui.material.MaterialLists;
-import com.github.lunatrius.schematica.client.input.Hotkey;
 import com.github.lunatrius.schematica.client.input.Hotkeys;
 import com.github.lunatrius.schematica.client.printer.DestroyAssist;
 import com.github.lunatrius.schematica.client.printer.SchematicPrinter;
@@ -49,24 +22,15 @@ import com.github.lunatrius.schematica.client.printer.SignTextPaste;
 import com.github.lunatrius.schematica.client.projects.SchematicProjects;
 import com.github.lunatrius.schematica.client.renderer.RendererSchematicGlobal;
 import com.github.lunatrius.schematica.client.renderer.hud.BlockInfoHud;
-import com.github.lunatrius.schematica.client.renderer.hud.StatusInfoHud;
 import com.github.lunatrius.schematica.client.selection.AreaSelections;
 import com.github.lunatrius.schematica.client.verifier.VerificationManager;
-import com.github.lunatrius.schematica.client.world.GridPlacements;
-import com.github.lunatrius.schematica.client.world.PlacementSettings;
-import com.github.lunatrius.schematica.client.world.PlacementState;
-import com.github.lunatrius.schematica.client.world.RenderLayerRange;
+import com.github.lunatrius.schematica.client.world.Placements;
 import com.github.lunatrius.schematica.client.world.RenderLayerSettings;
-import com.github.lunatrius.schematica.client.world.SchematicLibrary;
-import com.github.lunatrius.schematica.client.world.SchematicSourceData;
-import com.github.lunatrius.schematica.client.world.SchematicWorld;
-import com.github.lunatrius.schematica.client.world.WorldFingerprint;
 import com.github.lunatrius.schematica.command.CommandSchematicaSetBlock;
 import com.github.lunatrius.schematica.compat.ILOTRPresent;
 import com.github.lunatrius.schematica.compat.NoLOTRProxy;
 import com.github.lunatrius.schematica.compat.nei.NeiBridge;
 import com.github.lunatrius.schematica.handler.ConfigurationHandler;
-import com.github.lunatrius.schematica.handler.VisualSettings;
 import com.github.lunatrius.schematica.handler.client.ChatEventHandler;
 import com.github.lunatrius.schematica.handler.client.CommandEditQueue;
 import com.github.lunatrius.schematica.handler.client.ModInfoHandler;
@@ -75,41 +39,22 @@ import com.github.lunatrius.schematica.handler.client.RemoteEditClient;
 import com.github.lunatrius.schematica.handler.client.RenderTickHandler;
 import com.github.lunatrius.schematica.handler.client.TickHandler;
 import com.github.lunatrius.schematica.handler.client.WorldHandler;
-import com.github.lunatrius.schematica.internal.lunatriuscore.util.vector.Vector3d;
-import com.github.lunatrius.schematica.internal.lunatriuscore.util.vector.Vector3i;
 import com.github.lunatrius.schematica.network.message.MessageEditStatus;
-import com.github.lunatrius.schematica.reference.Constants;
 import com.github.lunatrius.schematica.reference.Reference;
 import com.github.lunatrius.schematica.tool.WorldMoveController;
-import com.github.lunatrius.schematica.util.Coordinates;
-import com.github.lunatrius.schematica.util.FileUtils;
-import com.github.lunatrius.schematica.util.PlusDataFiles;
-import com.github.lunatrius.schematica.world.schematic.ItemIdMaps;
-import com.github.lunatrius.schematica.world.schematic.SchematicFileSnapshot;
-import com.github.lunatrius.schematica.world.schematic.SchematicFormat;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonObject;
-import com.google.gson.reflect.TypeToken;
 import cpw.mods.fml.client.config.GuiConfigEntries;
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.Loader;
 import cpw.mods.fml.common.event.FMLInitializationEvent;
 import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
-import org.lwjgl.input.Keyboard;
 
 public class ClientProxy extends CommonProxy {
 
-    public static final Vector3d playerPosition = new Vector3d();
-    public static final Vector3i pointA = new Vector3i();
-    public static final Vector3i pointB = new Vector3i();
-    public static final Vector3i pointMin = new Vector3i();
-    public static final Vector3i pointMax = new Vector3i();
     private static final Minecraft MINECRAFT = Minecraft.getMinecraft();
-    public static boolean isRenderingGuide = false;
-    public static boolean isPendingReset = false;
+    public static ILOTRPresent lotrProxy = null;
+
     @Override public void worldMoveFinished(long id, boolean success) {
         WorldMoveController.finished(id, success);
     }
@@ -118,209 +63,6 @@ public class ClientProxy extends CommonProxy {
     }
     @Override public void runSaveCallback(Runnable callback) {
         MINECRAFT.func_152344_a(callback);
-    }
-    public static ForgeDirection orientation = ForgeDirection.UNKNOWN;
-    public static int rotationRender = 0;
-    /** The currently active/selected schematic (for tools, printer, control GUI). */
-    public static SchematicWorld schematic = null;
-    public static final SchematicLibrary<SchematicSourceData, SchematicWorld> SCHEMATICS = new SchematicLibrary<>(SchematicSourceData::read);
-    public static final List<SchematicWorld> loadedSchematics = SCHEMATICS.placements();
-
-    /** The placements and their grid copies, for rendering and targeting (the visible placements upstream). */
-    public static List<SchematicWorld> visiblePlacements() {
-        List<SchematicWorld> copies = GridPlacements.INSTANCE.copies();
-        boolean hidden = false;
-        for (SchematicWorld world : loadedSchematics) hidden |= world.otherWorld;
-        if (copies.isEmpty() && !hidden) return loadedSchematics;
-        List<SchematicWorld> all = new ArrayList<>(loadedSchematics.size() + copies.size());
-        // worldFingerprinting: placements put in another world of the same server are left out
-        for (SchematicWorld world : loadedSchematics) if (!world.otherWorld) all.add(world);
-        for (SchematicWorld copy : copies) if (copy.gridBase == null || !copy.gridBase.otherWorld) all.add(copy);
-        return all;
-    }
-    public static MovingObjectPosition movingObjectPosition = null;
-    public static ILOTRPresent lotrProxy = null;
-    /** Tracks the last known world/server name for reliable save on disconnect. */
-    public static String lastWorldServerName = null;
-    private static final Gson gson = new GsonBuilder().setPrettyPrinting()
-        .create();
-    private static final Type schematicDataType = new TypeToken<Map<String, Map<String, SchematicData>>>() {}.getType();
-    private static final Type loadedSchematicsDataType = new TypeToken<Map<String, List<LoadedSchematicEntry>>>() {}.getType();
-
-    public static void setPlayerData(EntityPlayer player, float partialTicks) {
-        playerPosition.x = player.lastTickPosX + (player.posX - player.lastTickPosX) * partialTicks;
-        playerPosition.y = player.lastTickPosY + (player.posY - player.lastTickPosY) * partialTicks;
-        playerPosition.z = player.lastTickPosZ + (player.posZ - player.lastTickPosZ) * partialTicks;
-
-        orientation = getOrientation(player);
-
-        rotationRender = MathHelper.floor_double(player.rotationYaw / 90) & 3;
-    }
-
-    private static ForgeDirection getOrientation(EntityPlayer player) {
-        if (player.rotationPitch > 45) {
-            return ForgeDirection.DOWN;
-        } else if (player.rotationPitch < -45) {
-            return ForgeDirection.UP;
-        } else {
-            switch (MathHelper.floor_double(player.rotationYaw / 90.0 + 0.5) & 3) {
-                case 0:
-                    return ForgeDirection.SOUTH;
-                case 1:
-                    return ForgeDirection.WEST;
-                case 2:
-                    return ForgeDirection.NORTH;
-                case 3:
-                    return ForgeDirection.EAST;
-            }
-        }
-
-        return ForgeDirection.UNKNOWN;
-    }
-
-    public static void updatePoints() {
-        pointMin.x = Math.min(pointA.x, pointB.x);
-        pointMin.y = Math.min(pointA.y, pointB.y);
-        pointMin.z = Math.min(pointA.z, pointB.z);
-
-        pointMax.x = Math.max(pointA.x, pointB.x);
-        pointMax.y = Math.max(pointA.y, pointB.y);
-        pointMax.z = Math.max(pointA.z, pointB.z);
-    }
-
-    public static void movePointToPlayer(Vector3i point) {
-        point.x = (int) Math.floor(playerPosition.x);
-        point.y = (int) Math.floor(playerPosition.y - 1);
-        point.z = (int) Math.floor(playerPosition.z);
-
-        switch (rotationRender) {
-            case 0:
-                point.x -= 1;
-                point.z += 1;
-                break;
-            case 1:
-                point.x -= 1;
-                point.z -= 1;
-                break;
-            case 2:
-                point.x += 1;
-                point.z -= 1;
-                break;
-            case 3:
-                point.x += 1;
-                point.z += 1;
-                break;
-        }
-    }
-
-    public static void moveSchematicToPlayer(SchematicWorld schematic) {
-        EntityPlayer player = Minecraft.getMinecraft().thePlayer;
-        if (schematic != null && player != null) schematic.moveOriginTo((int) Math.floor(player.posX),
-            (int) Math.floor(player.posY - player.yOffset), (int) Math.floor(player.posZ));
-    }
-
-    public static void moveSchematic(SchematicWorld schematic, Integer x, Integer y, Integer z) {
-        if (schematic != null) {
-            schematic.moveMinimumTo(x, y, z);
-        }
-    }
-
-    private static class SchematicData {
-
-        public int X;
-        public int Y;
-        public int Z;
-        // default value is zero, ensuring backwards compatibility for updates that don't store the rotation
-        public int RotationX;
-        public int Rotation;
-        public int RotationZ;
-        public int FlipX;
-        public int FlipY;
-        public int FlipZ;
-
-        SchematicData() {}
-    }
-
-    /** Persistence entry for saving/restoring loaded schematics across sessions. */
-    private static class LoadedSchematicEntry {
-        public String displayName;
-        public String filename;
-        public String directory;
-        public int X, Y, Z;
-        public int RotationX, RotationY, RotationZ;
-        public int FlipX, FlipY, FlipZ;
-        public boolean isActive;
-        public List<String> transforms;
-        public Boolean visible, entities, blockNBT, sourceOnly, layerMode;
-        public Integer layer;
-        public int[] origin;
-        public JsonObject subregions;
-        public JsonObject placementSettings;
-        public JsonObject grid;
-        public JsonObject materialList;
-        public Integer bb_color;
-        public JsonObject fingerprint;
-
-        LoadedSchematicEntry() {}
-    }
-
-    private static Map<String, Map<String, SchematicData>> openCoordinatesFile()
-        throws ClassCastException, IOException {
-        File coordinatesFile = new File(ConfigurationHandler.schematicDirectory, Constants.Files.Coordinates + ".json");
-        Map<String, Map<String, SchematicData>> coordinates = new HashMap<>();
-        if (coordinatesFile.exists() && coordinatesFile.canRead() && coordinatesFile.canWrite()) {
-            try (Reader reader = Files.newBufferedReader(
-                new File(ConfigurationHandler.schematicDirectory, Constants.Files.Coordinates + ".json").toPath(),
-                StandardCharsets.UTF_8)) {
-                coordinates = gson.fromJson(reader, schematicDataType);
-            } catch (Exception e1) {
-                // as I forgot to specify utf-8 before older Coordinates.json files will be in the default charset
-                try (Reader reader = Files.newBufferedReader(
-                    new File(ConfigurationHandler.schematicDirectory, Constants.Files.Coordinates + ".json").toPath(),
-                    Charset.defaultCharset())) {
-                    coordinates = gson.fromJson(reader, schematicDataType);
-                } catch (Exception e2) {
-                    // failed to read file in utf-8, trying with default charset
-                    throw new ClassCastException("Failed to convert json file to Map<String,SchematicData>");
-                }
-            }
-
-        } else if (!coordinatesFile.exists()) {
-            // Only read: placements are remembered in config/schematica_plus, an empty file is not created
-            return coordinates;
-        } else {
-            throw new IOException("No read/write permission for coordinates file");
-        }
-        return coordinates;
-    }
-
-    /**
-     * gets the coordinates if present
-     *
-     * @return {@link Coordinates} containing rotation, flip and position information, or null if not found.
-     */
-    public static Coordinates getCoordinates(String worldServerName, String schematicName) {
-        try {
-            Map<String, Map<String, SchematicData>> coordinates = openCoordinatesFile();
-            if (coordinates.containsKey(worldServerName)) {
-                Map<String, SchematicData> schematicMap = coordinates.get(worldServerName);
-                if (schematicMap.containsKey(schematicName)) {
-                    SchematicData schematicData = schematicMap.get(schematicName);
-                    return new Coordinates(
-                        schematicData.RotationX,
-                        schematicData.Rotation,
-                        schematicData.RotationZ,
-                        schematicData.FlipX,
-                        schematicData.FlipY,
-                        schematicData.FlipZ,
-                        schematicData.X,
-                        schematicData.Y,
-                        schematicData.Z);
-                }
-            }
-        } catch (Exception ignored) {}
-
-        return null;
     }
 
     @Override
@@ -416,10 +158,6 @@ public class ClientProxy extends CommonProxy {
 
         WorldHandler.INSTANCE.closeSession();
         clearWorldState();
-
-        playerPosition.set(0, 0, 0);
-        orientation = ForgeDirection.UNKNOWN;
-        rotationRender = 0;
     }
 
     public static void clearWorldState() {
@@ -430,429 +168,7 @@ public class ClientProxy extends CommonProxy {
         AreaSelections.clear();
         SchematicProjects.clear();
         RenderLayerSettings.RANGE.load(null);
-        unloadAllSchematics();
-        lastWorldServerName = null;
-        pointA.set(0, 0, 0);
-        pointB.set(0, 0, 0);
-        pointMin.set(0, 0, 0);
-        pointMax.set(0, 0, 0);
-        isRenderingGuide = false;
-    }
-
-    @Override
-    public void unloadSchematic() {
-        if (schematic != null) removePlacement(schematic);
-    }
-
-    public static void removePlacement(SchematicWorld world) {
-        if (!SCHEMATICS.remove(world)) return;
-        RendererSchematicGlobal.INSTANCE.removeRendererSchematicChunks(world);
-        if (schematic == world) selectSchematic(loadedSchematics.isEmpty() ? null : loadedSchematics.get(0));
-        WorldHandler.INSTANCE.saveSession();
-    }
-
-    public static void unloadSource(SchematicLibrary.Source<SchematicSourceData> source) {
-        for (SchematicWorld world : SCHEMATICS.unload(source)) {
-            RendererSchematicGlobal.INSTANCE.removeRendererSchematicChunks(world);
-        }
-        if (schematic != null && !loadedSchematics.contains(schematic)) {
-            selectSchematic(loadedSchematics.isEmpty() ? null : loadedSchematics.get(0));
-        }
-        WorldHandler.INSTANCE.saveSession();
-    }
-
-    public static void unloadAllSchematics() {
-        schematic = null;
-        SCHEMATICS.clear();
-        RendererSchematicGlobal.INSTANCE.destroyRendererSchematicChunks();
-        SchematicPrinter.INSTANCE.setSchematic(null);
-    }
-
-    public static SchematicLibrary.Source<SchematicSourceData> loadSource(File file) throws IOException {
-        SchematicLibrary.Source<SchematicSourceData> source = SCHEMATICS.load(file);
-        reportUnknownBlocks(source);
-        return source;
-    }
-
-    private static final ExecutorService SOURCE_READER = Executors.newSingleThreadExecutor(runnable -> {
-        Thread thread = new Thread(runnable, "Schematica Plus schematic reader");
-        thread.setDaemon(true);
-        return thread;
-    });
-    private static final Set<File> READING = Collections.synchronizedSet(new HashSet<>());
-
-    /**
-     * Reads and parses a file on a worker thread so that the game keeps running, then decodes and adds it on the client
-     * thread and passes it on; false when the file is already being read. A file loaded before is passed on right away.
-     */
-    public static boolean loadSourceAsync(File file, Consumer<SchematicLibrary.Source<SchematicSourceData>> loaded,
-        Consumer<Exception> failed) throws IOException {
-        File canonical = file.getCanonicalFile();
-        SchematicLibrary.Source<SchematicSourceData> existing = SCHEMATICS.find(canonical);
-        if (existing != null) {
-            loaded.accept(existing);
-            return true;
-        }
-        if (!READING.add(canonical)) return false;
-        Minecraft mc = Minecraft.getMinecraft();
-        World world = mc.theWorld;
-        SOURCE_READER.execute(() -> {
-            SchematicSourceData.Prepared data = null;
-            Exception error = null;
-            try {
-                data = SchematicSourceData.prepare(canonical);
-            } catch (IOException | RuntimeException e) {
-                error = e;
-            }
-            SchematicSourceData.Prepared prepared = data;
-            Exception problem = error;
-            mc.func_152344_a(() -> {
-                READING.remove(canonical);
-                if (problem != null) { failed.accept(problem); return; }
-                if (mc.theWorld != world) return;
-                try {
-                    SchematicLibrary.Source<SchematicSourceData> source = SCHEMATICS.add(canonical, SchematicSourceData.of(prepared));
-                    reportUnknownBlocks(source);
-                    loaded.accept(source);
-                } catch (IOException | RuntimeException e) {
-                    failed.accept(e);
-                }
-            });
-        });
-        return true;
-    }
-
-    /**
-     * Lists in chat the blocks of a newly read file that this game does not have and what replaced them, and the
-     * stored item stacks whose ids were translated or removed.
-     */
-    private static void reportUnknownBlocks(SchematicLibrary.Source<SchematicSourceData> source) {
-        EntityClientPlayerMP player = Minecraft.getMinecraft().thePlayer;
-        if (player == null) return;
-        Map<String, String> unknown = source.data().takeUnknownBlocks();
-        ItemIdMaps.Result items = source.data().takeItemIds();
-        if (unknown.isEmpty() && (items == null || items.removed == 0 && items.translatedWith == null && items.omittedData.isEmpty())) return;
-        Consumer<String> chat = line -> player.addChatMessage(new ChatComponentText(
-            EnumChatFormatting.GOLD + line));
-        if (items != null) reportItemIds(source.file().getName(), items, chat);
-        if (unknown.isEmpty()) return;
-        Reference.logger.warn("{}: unknown blocks replaced: {}", source.file().getName(), unknown);
-        chat.accept(UiTranslations.format("schematica.message.import.unknown_blocks",
-            source.file().getName(), unknown.size()));
-        int shown = 0;
-        for (Map.Entry<String, String> entry : unknown.entrySet()) {
-            if (shown++ == 8) {
-                chat.accept(UiTranslations.format("schematica.message.import.unknown_more", unknown.size() - 8));
-                break;
-            }
-            chat.accept(UiTranslations.format("schematica.message.import.unknown_block", entry.getKey(), entry.getValue()));
-        }
-    }
-
-    private static void reportItemIds(String file, ItemIdMaps.Result items,
-        Consumer<String> chat) {
-        if (!items.omittedData.isEmpty()) {
-            Reference.logger.warn("{}: unsupported imported data omitted: {}", file, items.omittedData);
-            chat.accept(UiTranslations.format("schematica.message.import.omitted_data", file,
-                String.join(", ", new ArrayList<>(items.omittedData).subList(0, Math.min(8, items.omittedData.size())))));
-        }
-        if (items.translatedWith != null) {
-            Reference.logger.info("{}: item ids translated with the id map {}", file, items.translatedWith);
-            chat.accept(UiTranslations.format("schematica.message.import.items_translated", file, items.translatedWith));
-        }
-        if (items.removed == 0) return;
-        Reference.logger.warn("{}: {} stored item stacks removed; unknown items: {}", file, items.removed, items.unknownItems);
-        if (items.translatedWith == null && items.unknownItems.isEmpty()) {
-            chat.accept(UiTranslations.format("schematica.message.import.items_removed", file, items.removed,
-                ItemIdMaps.directory().getPath()));
-        } else {
-            chat.accept(UiTranslations.format("schematica.message.import.unknown_items", file, items.removed,
-                String.join(", ", new ArrayList<>(items.unknownItems).subList(0, Math.min(8, items.unknownItems.size())))));
-        }
-    }
-
-    /** Registers a captured schematic that has no file; it is not restored in later sessions. */
-    public static SchematicLibrary.Source<SchematicSourceData> addMemorySource(String name,
-        SchematicFileSnapshot snapshot) throws IOException {
-        String safe = name.replaceAll("[\\\\/:*?\"<>|]", "_").trim();
-        return SCHEMATICS.addMemory(new File("<memory>", (safe.isEmpty() ? "schematic" : safe) + ".schemplus"), SchematicSourceData.of(snapshot));
-    }
-
-    private static SchematicWorld instantiate(SchematicLibrary.Source<SchematicSourceData> source, SchematicSourceData data) throws IOException {
-        SchematicWorld world = new SchematicWorld(data.instantiate(), source.file().getName());
-        world.setPlacementSource(data);
-        world.sourceDirectory = source.file().getParentFile();
-        world.sourceFilename = source.file().getName();
-        world.isRendering = true;
-        return world;
-    }
-
-    public static SchematicWorld createPlacement(SchematicLibrary.Source<SchematicSourceData> source) throws IOException {
-        SchematicWorld world = SCHEMATICS.create(source, (data, previous) -> instantiate(source, data));
-        String base = world.name;
-        int suffix = 2;
-        Set<String> names = new HashSet<>();
-        for (SchematicWorld other : loadedSchematics) if (other != world) names.add(other.name);
-        while (names.contains(world.name)) world.name = base + " #" + suffix++;
-        StatusInfoHud.startOverride();
-        warnDisabledRendering();
-        return world;
-    }
-
-    /** warnDisabledRendering: the layer mode and disabled renderers are pointed out when a placement is created. */
-    private static void warnDisabledRendering() {
-        EntityClientPlayerMP player = Minecraft.getMinecraft().thePlayer;
-        if (!ConfigurationHandler.warnDisabledRendering || player == null) return;
-        RenderLayerRange range = RenderLayerSettings.RANGE;
-        if (range.mode() != RenderLayerRange.Mode.ALL) {
-            player.addChatMessage(new ChatComponentText(EnumChatFormatting.GOLD + UiTranslations.format(
-                "litematica.message.warn.layer_mode_currently_at", UiTranslations.format(range.mode().translationKey()))));
-        }
-        warnDisabled(player, VisualSettings.rendering, "litematica.message.warn.main_rendering_disabled", "enableRendering", "toggleAllRendering");
-        warnDisabled(player, VisualSettings.schematic, "litematica.message.warn.schematic_rendering_disabled", "enableSchematicRendering", "toggleSchematicRendering");
-        warnDisabled(player, VisualSettings.blocks, "litematica.message.warn.schematic_blocks_rendering_disabled", "enableSchematicBlocksRendering", "toggleSchematicBlockRendering");
-    }
-
-    private static void warnDisabled(EntityClientPlayerMP player, boolean enabled, String key, String config, String hotkey) {
-        if (enabled) return;
-        Hotkey binding = Hotkeys.get(hotkey);
-        StringBuilder keys = new StringBuilder();
-        if (binding != null) for (int code : binding.keys()) {
-            if (keys.length() > 0) keys.append(" + ");
-            keys.append(Keyboard.getKeyName(code));
-        }
-        for (String line : UiTranslations.format(key, config, hotkey, keys).split("\n")) {
-            player.addChatMessage(new ChatComponentText(EnumChatFormatting.GOLD + line));
-        }
-    }
-
-    public static void reloadSource(SchematicLibrary.Source<SchematicSourceData> source) throws IOException {
-        replaceSource(source, false);
-    }
-
-    /** Recomposes all placements of a source from its edited in-memory data. */
-    public static void refreshSource(SchematicLibrary.Source<SchematicSourceData> source) throws IOException {
-        replaceSource(source, true);
-    }
-
-    private static void replaceSource(SchematicLibrary.Source<SchematicSourceData> source, boolean memory) throws IOException {
-        List<SchematicWorld> prepared = new ArrayList<>();
-        Map<SchematicWorld, SchematicWorld> changes;
-        try {
-            SchematicLibrary.Factory<SchematicSourceData, SchematicWorld> factory = (data, previous) -> {
-                SchematicWorld next = instantiate(source, data);
-                PlacementState.copy(previous, next);
-                prepared.add(next);
-                RendererSchematicGlobal.INSTANCE.createRendererSchematicChunks(next);
-                return next;
-            };
-            changes = memory ? SCHEMATICS.refresh(source, factory) : SCHEMATICS.reload(source, factory);
-        } catch (IOException | RuntimeException e) {
-            for (SchematicWorld world : prepared) RendererSchematicGlobal.INSTANCE.removeRendererSchematicChunks(world);
-            throw e;
-        }
-        SchematicWorld selected = changes.containsKey(schematic) ? changes.get(schematic) : schematic;
-        for (Map.Entry<SchematicWorld, SchematicWorld> entry : changes.entrySet()) {
-            RendererSchematicGlobal.INSTANCE.removeRendererSchematicChunks(entry.getKey());
-        }
-        if (selected != schematic) select(selected);
-        if (!memory) reportUnknownBlocks(source);
-        WorldHandler.INSTANCE.saveSession();
-    }
-
-    public static void sourceRenamed(File previous, File next) throws IOException {
-        SCHEMATICS.renamed(previous, next);
-        for (SchematicWorld world : loadedSchematics) {
-            File file = SCHEMATICS.sourceOf(world).file();
-            world.sourceDirectory = file.getParentFile();
-            world.sourceFilename = file.getName();
-        }
-    }
-
-    @Override
-    public boolean loadSchematic(EntityPlayer player, File directory, String filename) {
-        SchematicWorld world = null;
-        try {
-            world = createPlacement(loadSource(new File(directory, filename)));
-            selectSchematic(world);
-            return true;
-        } catch (IOException | RuntimeException e) {
-            if (world != null) removePlacement(world);
-            Reference.logger.error("Failed to load schematic", e);
-            return false;
-        }
-    }
-
-    /** Selects a schematic as the active one for tools/printer/control. */
-    public static void selectSchematic(SchematicWorld world) {
-        // Forget the last viewed material list when changing the placement selection
-        if (world != schematic) MaterialLists.clear();
-        select(world);
-    }
-
-    private static void select(SchematicWorld world) {
-        ClientProxy.schematic = world;
-        RendererSchematicGlobal.INSTANCE.selectSchematic(world);
-        SchematicPrinter.INSTANCE.setSchematic(world);
-    }
-
-    /** Cycles to the next loaded schematic. */
-    public static void cycleSchematic() {
-        if (loadedSchematics.isEmpty()) {
-            return;
-        }
-        if (schematic == null) {
-            selectSchematic(loadedSchematics.get(0));
-            return;
-        }
-        int idx = loadedSchematics.indexOf(schematic);
-        int next = (idx + 1) % loadedSchematics.size();
-        selectSchematic(loadedSchematics.get(next));
-    }
-
-    // --- Persistence: save/restore loaded schematics across sessions ---
-
-    /** Saves the list of currently loaded schematics for the given world/server. */
-    public static void saveLoadedSchematics(String worldServerName) {
-        if (worldServerName == null || worldServerName.isEmpty()) return;
-        try {
-            File file = PlusDataFiles.file("LoadedSchematics.json");
-            Map<String, List<LoadedSchematicEntry>> allData;
-            if (file.exists()) {
-                try (Reader reader = Files.newBufferedReader(file.toPath(), StandardCharsets.UTF_8)) {
-                    allData = gson.fromJson(reader, loadedSchematicsDataType);
-                } catch (Exception e) {
-                    throw new IOException("Existing schematic settings are unreadable; preserving the file", e);
-                }
-            } else {
-                allData = new HashMap<>();
-            }
-            if (allData == null) allData = new HashMap<>();
-
-            List<LoadedSchematicEntry> entries = new ArrayList<>();
-            for (SchematicWorld sw : loadedSchematics) {
-                if (SCHEMATICS.sourceOf(sw).memory() || sw.projectVersion) continue;
-                LoadedSchematicEntry entry = new LoadedSchematicEntry();
-                entry.displayName = sw.name;
-                entry.filename = sw.sourceFilename;
-                entry.directory = sw.sourceDirectory != null ? sw.sourceDirectory.getAbsolutePath() : "";
-                entry.X = sw.position.x;
-                entry.Y = sw.position.y;
-                entry.Z = sw.position.z;
-                entry.origin = sw.originPosition().coordinates();
-                entry.subregions = sw.subregions() == null ? null : sw.subregions().toJson();
-                entry.placementSettings = sw.placementSettings().toJson();
-                entry.grid = sw.grid.isEnabled() || !sw.grid.isAtDefaultValues() ? sw.grid.toJson() : null;
-                entry.materialList = sw.materialList != null ? sw.materialList.toJson() : sw.materialListData;
-                entry.bb_color = sw.boxColor;
-                entry.fingerprint = sw.fingerprint == null ? null : sw.fingerprint.toJson();
-                entry.RotationX = sw.rotationStateX;
-                entry.RotationY = sw.rotationStateY;
-                entry.RotationZ = sw.rotationStateZ;
-                entry.FlipX = sw.flipStateX;
-                entry.FlipY = sw.flipStateY;
-                entry.FlipZ = sw.flipStateZ;
-                entry.isActive = (sw == schematic);
-                entry.transforms = new ArrayList<>(sw.transformOperations);
-                entry.visible = sw.isRendering;
-                entry.entities = sw.isRenderingEntities;
-                entry.blockNBT = sw.isPastingBlockNBT;
-                entry.layerMode = sw.isRenderingLayer;
-                entry.layer = sw.renderingLayer;
-                entries.add(entry);
-            }
-            for (SchematicLibrary.Source<SchematicSourceData> source : SCHEMATICS.sources()) {
-                boolean placed = false;
-                for (SchematicWorld world : loadedSchematics) if (SCHEMATICS.sourceOf(world) == source) placed = true;
-                if (placed || source.memory()) continue;
-                LoadedSchematicEntry entry = new LoadedSchematicEntry();
-                entry.filename = source.file().getName();
-                entry.directory = source.file().getParentFile().getAbsolutePath();
-                entry.sourceOnly = true;
-                entries.add(entry);
-            }
-            allData.put(worldServerName, entries);
-
-            FileUtils.writeUtf8Atomically(file,
-                gson.toJson(allData, loadedSchematicsDataType));
-            Reference.logger.info("Saved {} loaded schematics for '{}'", entries.size(), worldServerName);
-        } catch (Exception e) {
-            Reference.logger.error("Failed to save loaded schematics", e);
-        }
-    }
-
-    /** Restores previously loaded schematics for the given world/server. */
-    public static void restoreLoadedSchematics(String worldServerName) {
-        if (worldServerName == null || worldServerName.isEmpty()) return;
-        try {
-            File file = PlusDataFiles.file("LoadedSchematics.json");
-            if (!file.exists()) return;
-
-            Map<String, List<LoadedSchematicEntry>> allData;
-            try (Reader reader = Files.newBufferedReader(file.toPath(), StandardCharsets.UTF_8)) {
-                allData = gson.fromJson(reader, loadedSchematicsDataType);
-            }
-            if (allData == null || !allData.containsKey(worldServerName)) return;
-
-            List<LoadedSchematicEntry> entries = allData.get(worldServerName);
-            if (entries == null || entries.isEmpty()) return;
-
-            SchematicWorld activeWorld = null;
-            for (LoadedSchematicEntry entry : entries) {
-                try {
-                    if (entry == null || entry.filename == null || entry.filename.isEmpty()) continue;
-                    File dir = entry.directory != null && !entry.directory.isEmpty() ? new File(entry.directory) : ConfigurationHandler.schematicDirectory;
-                    SchematicLibrary.Source<SchematicSourceData> source = loadSource(new File(dir, entry.filename));
-                    if (Boolean.TRUE.equals(entry.sourceOnly)) continue;
-                    SchematicWorld world = SCHEMATICS.create(source, (data, previous) -> {
-                        SchematicWorld restored = instantiate(source, data);
-                        if (entry.displayName != null && !entry.displayName.trim().isEmpty()) restored.name = entry.displayName;
-                        List<String> operations = entry.transforms;
-                        if (operations == null) {
-                            operations = new ArrayList<>();
-                            int[] values = {entry.RotationX, entry.RotationY, entry.RotationZ, entry.FlipX, entry.FlipY, entry.FlipZ};
-                            String[] axes = {"X", "Y", "Z", "x", "y", "z"};
-                            for (int i = 0; i < values.length; i++) {
-                                for (int j = 0; j < Math.floorMod(values[i], i < 3 ? 4 : 2); j++) operations.add(axes[i]);
-                            }
-                        }
-                        PlacementState.applyTransforms(restored, operations);
-                        restored.restoreSubregions(entry.subregions);
-                        SchematicOrigin minimum = restored.getSchematic().getOrigin()
-                            .restoredMinimum(entry.X, entry.Y, entry.Z, entry.origin);
-                        restored.position.set(minimum.x, minimum.y, minimum.z);
-                        if (entry.visible != null) restored.isRendering = entry.visible;
-                        if (entry.entities != null) restored.isRenderingEntities = entry.entities;
-                        if (entry.blockNBT != null) restored.isPastingBlockNBT = entry.blockNBT;
-                        restored.isRenderingLayer = Boolean.TRUE.equals(entry.layerMode);
-                        if (entry.layer != null) restored.renderingLayer = Math.max(0, Math.min(entry.layer, restored.getHeight() - 1));
-                        restored.setPlacementSettings(PlacementSettings.fromJson(entry.placementSettings));
-                        restored.grid.fromJson(entry.grid);
-                        restored.materialListData = entry.materialList;
-                        restored.boxColor = entry.bb_color;
-                        restored.fingerprint = WorldFingerprint.fromJson(entry.fingerprint);
-                        return restored;
-                    });
-                    RendererSchematicGlobal.INSTANCE.createRendererSchematicChunks(world);
-                    if (entry.isActive) activeWorld = world;
-                } catch (Exception e) {
-                    Reference.logger.warn("Could not restore schematic session entry", e);
-                }
-            }
-            selectSchematic(activeWorld);
-
-            Reference.logger.info("Restored {} schematics for '{}'", loadedSchematics.size(), worldServerName);
-        } catch (Exception e) {
-            Reference.logger.error("Failed to restore loaded schematics", e);
-        }
-    }
-
-    public static void saveAreaSelection(String worldServerName) {
-        AreaSelections.save(worldServerName);
-    }
-
-    public static void restoreAreaSelection(String worldServerName) {
-        AreaSelections.restore(worldServerName);
+        Placements.clear();
     }
 
     @Override

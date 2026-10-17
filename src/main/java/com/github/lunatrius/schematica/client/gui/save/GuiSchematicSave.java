@@ -25,10 +25,10 @@ import com.github.lunatrius.schematica.client.selection.AreaSelectionLibrary;
 import com.github.lunatrius.schematica.client.selection.AreaSelectionLibrary.Area;
 import com.github.lunatrius.schematica.client.selection.AreaSelections;
 import com.github.lunatrius.schematica.client.world.PlacementCaptureSource;
+import com.github.lunatrius.schematica.client.world.Placements;
 import com.github.lunatrius.schematica.handler.ConfigurationHandler;
 import com.github.lunatrius.schematica.handler.QueueTickHandler;
 import com.github.lunatrius.schematica.handler.client.WorldHandler;
-import com.github.lunatrius.schematica.proxy.ClientProxy;
 import com.github.lunatrius.schematica.reference.Reference;
 import com.github.lunatrius.schematica.world.chunk.SchematicContainer;
 import com.github.lunatrius.schematica.world.schematic.SchematicFormat;
@@ -108,7 +108,7 @@ public final class GuiSchematicSave extends GuiSchematicBrowser {
         if (mc.theWorld == null || mc.thePlayer == null || !SchematicaPlus.proxy.isSaveEnabled) {
             return UiTranslations.format("schematica.ui.save.disabled");
         }
-        if (!ClientProxy.isRenderingGuide) return UiTranslations.format("schematica.ui.save.enable_guide");
+        if (!AreaSelections.isRenderingGuide) return UiTranslations.format("schematica.ui.save.enable_guide");
         try {
             area.snapshot();
         } catch (IllegalArgumentException e) {
@@ -122,12 +122,6 @@ public final class GuiSchematicSave extends GuiSchematicBrowser {
         }
         if (!directory().isDirectory()) return UiTranslations.format("schematica.ui.save.invalid_directory");
         return "";
-    }
-
-    @Override
-    protected void opened() {
-        ClientProxy.updatePoints();
-        super.opened();
     }
 
     @Override
@@ -168,7 +162,7 @@ public final class GuiSchematicSave extends GuiSchematicBrowser {
             return;
         }
         SchematicContainer.Options capture = new SchematicContainer.Options(
-            captureFlags[1] ? new PlacementCaptureSource(ClientProxy.loadedSchematics) : null,
+            captureFlags[1] ? new PlacementCaptureSource(Placements.loaded) : null,
             captureFlags[2], captureFlags[3]);
         if (SchematicaPlus.proxy.saveSchematic(mc.thePlayer, file.getParentFile(), file.getName(), world, selection, null, capture)) {
             WorldHandler.INSTANCE.saveSession();
@@ -205,8 +199,8 @@ public final class GuiSchematicSave extends GuiSchematicBrowser {
             formatButton.setTooltip(UiTranslations.format("schematica.ui.save.format_hint"));
             nbt = root.add(new UiToggleButton(() -> UiTranslations.format("schematica.gui.savenbt"), () -> SchematicFormat.saveNBT,
                 value -> SchematicFormat.saveNBT = value));
-            guide = root.add(new UiToggleButton(() -> UiTranslations.format("schematica.ui.save.guide"), () -> ClientProxy.isRenderingGuide,
-                value -> { if (selectionContext()) { ClientProxy.isRenderingGuide = value; AreaSelections.saveCurrent(); } }));
+            guide = root.add(new UiToggleButton(() -> UiTranslations.format("schematica.ui.save.guide"), () -> AreaSelections.isRenderingGuide,
+                value -> { if (selectionContext()) { AreaSelections.isRenderingGuide = value; AreaSelections.saveCurrent(); } }));
             back = addButton("gui.back", this::closeScreen);
         }
 

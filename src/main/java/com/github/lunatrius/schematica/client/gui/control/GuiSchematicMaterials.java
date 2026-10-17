@@ -39,10 +39,10 @@ import com.github.lunatrius.schematica.client.gui.material.MaterialScan;
 import com.github.lunatrius.schematica.client.gui.material.RawMaterialExport;
 import com.github.lunatrius.schematica.client.gui.material.RecipeIndex;
 import com.github.lunatrius.schematica.client.gui.save.GuiMaterialListSave;
+import com.github.lunatrius.schematica.client.world.Placements;
 import com.github.lunatrius.schematica.compat.nei.NeiBridge;
 import com.github.lunatrius.schematica.handler.ConfigurationHandler;
 import com.github.lunatrius.schematica.handler.client.WorldHandler;
-import com.github.lunatrius.schematica.proxy.ClientProxy;
 import com.github.lunatrius.schematica.reference.Reference;
 
 import cpw.mods.fml.common.registry.GameData;
@@ -110,7 +110,7 @@ public class GuiSchematicMaterials extends UiScreen {
             if (button == 0) mc.displayGuiScreen(new GuiSchematicMaterials(this, MaterialList.combined()));
         }));
         all.setTooltip(UiTranslations.format("schematica.ui.material.all_placements.hover").split("\\n"));
-        all.setVisible(list.kind == MaterialList.Kind.PLACEMENT && ClientProxy.loadedSchematics.size() > 1);
+        all.setVisible(list.kind == MaterialList.Kind.PLACEMENT && Placements.loaded.size() > 1);
         primary.addAll(Arrays.asList(refresh, scope, hide, hud, all));
         UiButton clearIgnored = action("clear_ignored", () -> { materials.clearIgnored(); saveSettings(); refreshRows(); });
         UiButton cache = action("clear_cache", () -> {

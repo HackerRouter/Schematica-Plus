@@ -26,13 +26,13 @@ import com.github.lunatrius.schematica.client.projects.SchematicVersion;
 import com.github.lunatrius.schematica.client.selection.AreaSelectionLibrary;
 import com.github.lunatrius.schematica.client.selection.AreaSelectionLibrary.Area;
 import com.github.lunatrius.schematica.client.selection.AreaSelections;
+import com.github.lunatrius.schematica.client.world.Placements;
 import com.github.lunatrius.schematica.client.world.SchematicWorld;
 import com.github.lunatrius.schematica.client.world.SubRegionPlacements;
 import com.github.lunatrius.schematica.handler.ConfigurationHandler;
 import com.github.lunatrius.schematica.handler.InfoHudSettings;
 import com.github.lunatrius.schematica.handler.VerifierOverlaySettings;
 import com.github.lunatrius.schematica.internal.lunatriuscore.util.vector.Vector3i;
-import com.github.lunatrius.schematica.proxy.ClientProxy;
 import com.github.lunatrius.schematica.tool.ReplaceBehavior;
 import com.github.lunatrius.schematica.tool.ToolManager;
 import com.github.lunatrius.schematica.tool.ToolMode;
@@ -128,7 +128,7 @@ public final class ToolHud {
     }
 
     private static void placementLines(List<String> lines, ToolMode mode, String yes, String no) {
-        SchematicWorld placement = ClientProxy.schematic;
+        SchematicWorld placement = Placements.selected;
         String label = format("litematica.hud.schematic_placement.selected_placement");
         if (placement == null) {
             lines.add(String.format("%s: %s%s%s", label, WHITE, "<" + format("litematica.label.none_lower") + ">", RST));

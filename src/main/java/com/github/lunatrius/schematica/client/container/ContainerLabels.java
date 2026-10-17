@@ -20,9 +20,9 @@ import net.minecraft.world.World;
 
 import com.github.lunatrius.schematica.client.gui.framework.UiTranslations;
 import com.github.lunatrius.schematica.client.renderer.hud.InventoryPreview;
+import com.github.lunatrius.schematica.client.world.Placements;
 import com.github.lunatrius.schematica.client.world.SchematicWorld;
 import com.github.lunatrius.schematica.handler.ConfigurationHandler;
-import com.github.lunatrius.schematica.proxy.ClientProxy;
 
 import org.lwjgl.opengl.GL11;
 import org.lwjgl.opengl.GL12;
@@ -73,7 +73,7 @@ public final class ContainerLabels {
         if (ticks++ % INTERVAL != 0) return;
         List<Label> found = new ArrayList<>();
         double px = mc.thePlayer.posX, py = mc.thePlayer.posY, pz = mc.thePlayer.posZ;
-        for (SchematicWorld placement : ClientProxy.visiblePlacements()) {
+        for (SchematicWorld placement : Placements.visible()) {
             if (!placement.isRenderingEnabled()) continue;
             for (Object object : placement.getSchematic().getTileEntities()) {
                 TileEntity tile = (TileEntity) object;

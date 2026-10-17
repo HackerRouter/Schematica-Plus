@@ -23,11 +23,11 @@ import com.github.lunatrius.schematica.api.ISchematic;
 import com.github.lunatrius.schematica.api.SchematicRegion;
 import com.github.lunatrius.schematica.client.gui.framework.UiTranslations;
 import com.github.lunatrius.schematica.client.renderer.RendererSchematicChunk;
+import com.github.lunatrius.schematica.client.world.Placements;
 import com.github.lunatrius.schematica.client.world.SchematicWorld;
 import com.github.lunatrius.schematica.handler.ConfigurationHandler;
 import com.github.lunatrius.schematica.handler.VerifierOverlaySettings;
 import com.github.lunatrius.schematica.handler.VisualSettings;
-import com.github.lunatrius.schematica.proxy.ClientProxy;
 import com.github.lunatrius.schematica.reference.Reference;
 import com.github.lunatrius.schematica.task.TaskRegistry;
 import com.github.lunatrius.schematica.util.BlockGroups;
@@ -50,7 +50,7 @@ public final class VerificationManager {
     public Session focused() { return focused; }
     public Collection<Session> sessions() { return Collections.unmodifiableCollection(sessions.values()); }
     public Session overlay(Minecraft mc) {
-        Session selected = sessions.get(ClientProxy.schematic);
+        Session selected = sessions.get(Placements.selected);
         return selected != null && selected.scan != null && selected.valid(mc) ? selected : null;
     }
 
@@ -76,7 +76,7 @@ public final class VerificationManager {
         Iterator<Session> iterator = sessions.values().iterator();
         while (iterator.hasNext()) {
             Session session = iterator.next();
-            if (mc.theWorld == null || mc.thePlayer == null || !ClientProxy.loadedSchematics.contains(session.placement)) {
+            if (mc.theWorld == null || mc.thePlayer == null || !Placements.loaded.contains(session.placement)) {
                 session.reset();
                 if (focused == session) focused = null;
                 iterator.remove();
@@ -130,7 +130,7 @@ public final class VerificationManager {
         public boolean showsHud(Minecraft mc) { return hud && scan != null && valid(mc); }
         public String notice() { return notice; }
         public boolean available(Minecraft mc) {
-            return mc.theWorld != null && mc.thePlayer != null && placement.isEnabled() && ClientProxy.loadedSchematics.contains(placement);
+            return mc.theWorld != null && mc.thePlayer != null && placement.isEnabled() && Placements.loaded.contains(placement);
         }
 
         /** The render layer range is taken when the verification starts; later layer changes keep the results, as upstream. */

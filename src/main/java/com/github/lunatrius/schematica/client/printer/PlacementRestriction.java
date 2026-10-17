@@ -15,10 +15,10 @@ import com.github.lunatrius.schematica.client.printer.registry.PlacementData;
 import com.github.lunatrius.schematica.client.printer.registry.PlacementRegistry;
 import com.github.lunatrius.schematica.client.util.BlockToItemStack;
 import com.github.lunatrius.schematica.client.world.CellState;
+import com.github.lunatrius.schematica.client.world.Placements;
 import com.github.lunatrius.schematica.client.world.RenderLayerSettings;
 import com.github.lunatrius.schematica.client.world.SchematicWorld;
 import com.github.lunatrius.schematica.client.world.SubRegionPlacements;
-import com.github.lunatrius.schematica.proxy.ClientProxy;
 import com.github.lunatrius.schematica.tool.SchematicRebuild;
 
 public final class PlacementRestriction {
@@ -67,7 +67,7 @@ public final class PlacementRestriction {
 
     /** The enabled placement whose schematic has a non-air block at the world position, ignoring the layer range. */
     private static SchematicWorld schematicAt(int x, int y, int z) {
-        for (SchematicWorld world : ClientProxy.visiblePlacements()) {
+        for (SchematicWorld world : Placements.visible()) {
             if (!world.isEnabled()) continue;
             int lx = x - world.position.x, ly = y - world.position.y, lz = z - world.position.z;
             if (!world.getSchematic().containsBlock(lx, ly, lz)) continue;
@@ -79,7 +79,7 @@ public final class PlacementRestriction {
 
     /** WorldUtils.isPositionWithinRangeOfSchematicRegions. */
     static boolean nearRegions(int x, int y, int z, int range) {
-        for (SchematicWorld world : ClientProxy.visiblePlacements()) {
+        for (SchematicWorld world : Placements.visible()) {
             if (!world.isEnabled() || world.subregions() == null) continue;
             for (SubRegionPlacements.Region region : world.subregions().regions()) {
                 if (!region.enabled) continue;

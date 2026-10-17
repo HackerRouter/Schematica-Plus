@@ -27,13 +27,13 @@ import com.github.lunatrius.schematica.client.selection.AreaSelectionLibrary.Are
 import com.github.lunatrius.schematica.client.selection.AreaSelections;
 import com.github.lunatrius.schematica.client.selection.SelectionRayTrace;
 import com.github.lunatrius.schematica.client.util.UiState;
+import com.github.lunatrius.schematica.client.world.Placements;
 import com.github.lunatrius.schematica.client.world.SchematicWorld;
 import com.github.lunatrius.schematica.client.world.SubRegionPlacements;
 import com.github.lunatrius.schematica.handler.ConfigurationHandler;
 import com.github.lunatrius.schematica.handler.VisualSettings;
 import com.github.lunatrius.schematica.handler.client.WorldHandler;
 import com.github.lunatrius.schematica.internal.lunatriuscore.util.vector.Vector3i;
-import com.github.lunatrius.schematica.proxy.ClientProxy;
 
 import org.lwjgl.opengl.Display;
 
@@ -151,7 +151,7 @@ public final class ToolManager {
             if (area == null || !SchematicaPlus.proxy.isSaveEnabled || !area.originSelected() && area.selectedBox() == null) return false;
             AreaSelections.capture(); AreaSelections.library().moveSelected(area, delta.x, delta.y, delta.z); saveArea();
         } else {
-            SchematicWorld world = ClientProxy.schematic;
+            SchematicWorld world = Placements.selected;
             if (world == null) return true;
             String region = world.subregions() == null ? null : world.subregions().selected;
             SchematicOrigin origin = region == null ? world.originPosition() : world.subregionPosition(region);
@@ -203,7 +203,7 @@ public final class ToolManager {
         } else movePlacement(point);
     }
     private static void movePlacement(Vector3i point) {
-        SchematicWorld world = ClientProxy.schematic;
+        SchematicWorld world = Placements.selected;
         if (world == null || world.placementSettings().locked) return;
         String region = world.subregions() == null ? null : world.subregions().selected;
         if (region == null) world.moveOriginTo(point.x, point.y, point.z);
@@ -231,11 +231,11 @@ public final class ToolManager {
         saveArea();
     }
     private static void selectPlacement() {
-        SchematicWorld previous = ClientProxy.schematic, best = null; String regionName = null;
+        SchematicWorld previous = Placements.selected, best = null; String regionName = null;
         Vec3 eye = camera().getPosition(1), look = camera().getLook(1);
         MovingObjectPosition block = trace(200);
         double distance = block == null ? 200 : eye.distanceTo(block.hitVec) + 0.001;
-        for (SchematicWorld world : ClientProxy.loadedSchematics) {
+        for (SchematicWorld world : Placements.loaded) {
             if (!world.isRenderingEnabled()) continue;
             if (world.subregions() != null) for (SubRegionPlacements.Region region : world.subregions().regions()) {
                 if (!region.enabled) continue;
@@ -250,7 +250,7 @@ public final class ToolManager {
         }
         if (previous != null && previous.subregions() != null) previous.selectSubregion(null);
         if (best != null || block == null) {
-            ClientProxy.selectSchematic(best);
+            Placements.select(best);
             if (best != null && best.subregions() != null) best.selectSubregion(Hotkeys.held("selectionGrabModifier") ? regionName : null);
             WorldHandler.INSTANCE.saveSession();
         }
@@ -260,7 +260,7 @@ public final class ToolManager {
         Vec3 eye = camera().getPosition(1), look = camera().getLook(1);
         double distance = hit == null ? 200 : eye.distanceTo(hit.hitVec);
         if (hit != null) { block = mc().theWorld.getBlock(hit.blockX, hit.blockY, hit.blockZ); meta = mc().theWorld.getBlockMetadata(hit.blockX, hit.blockY, hit.blockZ); }
-        if (VisualSettings.schematicVisible()) for (SchematicWorld world : ClientProxy.visiblePlacements()) {
+        if (VisualSettings.schematicVisible()) for (SchematicWorld world : Placements.visible()) {
             if (!world.isRenderingEnabled()) continue;
             Vec3 start = eye.addVector(-world.position.x, -world.position.y, -world.position.z);
             MovingObjectPosition candidate = world.rayTraceRendered(start, start.addVector(look.xCoord * distance, look.yCoord * distance, look.zCoord * distance));

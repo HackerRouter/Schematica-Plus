@@ -16,7 +16,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
 
 import com.github.lunatrius.schematica.client.renderer.RendererSchematicGlobal;
-import com.github.lunatrius.schematica.proxy.ClientProxy;
 import com.github.lunatrius.schematica.reference.Reference;
 
 /**
@@ -126,7 +125,7 @@ public final class GridPlacements {
             return;
         }
         Set<SchematicWorld> bases = new HashSet<>();
-        for (SchematicWorld placement : ClientProxy.loadedSchematics) {
+        for (SchematicWorld placement : Placements.loaded) {
             if (placement.isRepeatedPlacement()) continue;
             placement.grid.setDefaultSize(size(placement.enclosingBox()));
             if (placement.grid.isEnabled() || copies.containsKey(placement)) bases.add(placement);

@@ -23,7 +23,6 @@ public class PasteReplaceBehaviorConfigTest {
         File data = temporary.getRoot();
         if (SchematicaPlus.proxy == null) SchematicaPlus.proxy = new CommonProxy() {
             @Override public File getDataDirectory() { return data; }
-            @Override public boolean loadSchematic(EntityPlayer player, File directory, String filename) { return false; }
             @Override public boolean isPlayerQuotaExceeded(EntityPlayer player) { return false; }
             @Override public File getPlayerSchematicDirectory(EntityPlayer player, boolean privateDirectory) { return data; }
         };

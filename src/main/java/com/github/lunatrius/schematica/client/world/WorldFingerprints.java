@@ -7,7 +7,6 @@ import net.minecraft.util.EnumChatFormatting;
 
 import com.github.lunatrius.schematica.handler.ConfigurationHandler;
 import com.github.lunatrius.schematica.handler.client.WorldHandler;
-import com.github.lunatrius.schematica.proxy.ClientProxy;
 
 /**
  * Every two seconds: a placement without a fingerprint (or moved since it was taken, while shown) gets the bedrock
@@ -22,7 +21,7 @@ public final class WorldFingerprints {
     public static void tick(Minecraft mc) {
         if (mc.theWorld == null || ticks++ % 40 != 0) return;
         boolean changed = false;
-        for (SchematicWorld placement : ClientProxy.loadedSchematics) {
+        for (SchematicWorld placement : Placements.loaded) {
             if (!ConfigurationHandler.worldFingerprinting) {
                 placement.otherWorld = false;
                 continue;

@@ -13,7 +13,6 @@ import net.minecraft.util.MathHelper;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.util.Vec3;
 
-import com.github.lunatrius.schematica.SchematicaPlus;
 import com.github.lunatrius.schematica.client.gui.GuiModConfig;
 import com.github.lunatrius.schematica.client.gui.GuiSchematicMainMenu;
 import com.github.lunatrius.schematica.client.gui.GuiSchematicVerifier;
@@ -38,12 +37,12 @@ import com.github.lunatrius.schematica.client.projects.SchematicProject;
 import com.github.lunatrius.schematica.client.projects.SchematicProjects;
 import com.github.lunatrius.schematica.client.renderer.RendererSchematicGlobal;
 import com.github.lunatrius.schematica.client.selection.AreaSelections;
+import com.github.lunatrius.schematica.client.world.Placements;
 import com.github.lunatrius.schematica.client.world.RenderLayerRange;
 import com.github.lunatrius.schematica.client.world.RenderLayerSettings;
 import com.github.lunatrius.schematica.client.world.SchematicWorld;
 import com.github.lunatrius.schematica.handler.ConfigurationHandler;
 import com.github.lunatrius.schematica.handler.VisualSettings;
-import com.github.lunatrius.schematica.proxy.ClientProxy;
 import com.github.lunatrius.schematica.reference.Reference;
 import com.github.lunatrius.schematica.tool.PlacementActions;
 import com.github.lunatrius.schematica.tool.SchematicRebuild;
@@ -62,7 +61,7 @@ public class InputHandler {
     public boolean onHotkey(Hotkey key,
                             Hotkey.Action action) {
         GuiScreen parent = minecraft.currentScreen;
-        SchematicWorld placement = ClientProxy.schematic;
+        SchematicWorld placement = Placements.selected;
         switch (key.id) {
             case "openGuiMainMenu": minecraft.displayGuiScreen(new GuiSchematicMainMenu(parent)); return true;
             case "openGuiSettings": minecraft.displayGuiScreen(new GuiModConfig(parent)); return true;
@@ -108,7 +107,7 @@ public class InputHandler {
             case "layerModePrevious": cycleLayer(-1); break;
             case "layerSetHere": RenderLayerSettings.RANGE.setValue(false, MathHelper.floor_double(layerCoordinate())); break;
             case "rerenderSchematic": RendererSchematicGlobal.INSTANCE.refresh(); break;
-            case "unloadCurrentSchematic": SchematicaPlus.proxy.unloadSchematic(); break;
+            case "unloadCurrentSchematic": if (Placements.selected != null) Placements.remove(Placements.selected); break;
             case "pickBlockFirst": return pickBlock(true);
             case "pickBlockLast":
                 if (!Hotkeys.boundOnlyTo("pickBlockLast", minecraft.gameSettings.keyBindUseItem.getKeyCode())) pickBlock(false);
@@ -203,7 +202,7 @@ public class InputHandler {
                 range.move(amount, coordinate);
             }
         } else {
-            SchematicWorld schematic = ClientProxy.schematic;
+            SchematicWorld schematic = Placements.selected;
             if (schematic != null && schematic.isRenderingLayer) {
                 schematic.renderingLayer = MathHelper.clamp_int(schematic.renderingLayer + amount, 0, schematic.getHeight() - 1);
             }

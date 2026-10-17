@@ -20,10 +20,10 @@ import com.github.lunatrius.schematica.client.gui.framework.UiTranslations;
 import com.github.lunatrius.schematica.client.selection.AreaSelectionLibrary;
 import com.github.lunatrius.schematica.client.selection.AreaSelectionLibrary.Area;
 import com.github.lunatrius.schematica.client.selection.AreaSelections;
+import com.github.lunatrius.schematica.client.world.Placements;
 import com.github.lunatrius.schematica.client.world.RenderLayerSettings;
 import com.github.lunatrius.schematica.client.world.SchematicWorld;
 import com.github.lunatrius.schematica.handler.ConfigurationHandler;
-import com.github.lunatrius.schematica.proxy.ClientProxy;
 import com.github.lunatrius.schematica.reference.Reference;
 
 import com.google.gson.JsonArray;
@@ -120,7 +120,7 @@ public final class MaterialList {
 
     private List<SchematicWorld> combinedPlacements() {
         List<SchematicWorld> placements = new ArrayList<>();
-        for (SchematicWorld placement : ClientProxy.loadedSchematics) if (placement.isEnabled()) placements.add(placement);
+        for (SchematicWorld placement : Placements.loaded) if (placement.isEnabled()) placements.add(placement);
         return placements;
     }
 
@@ -183,8 +183,8 @@ public final class MaterialList {
         switch (kind) {
             case SCHEMATIC: case CUSTOM: return true;
             case AREA: return AreaSelections.available(library) && library.contains(area) && SchematicaPlus.proxy.isSaveEnabled;
-            case COMBINED: return !ClientProxy.loadedSchematics.isEmpty();
-            default: return schematic != null && ClientProxy.loadedSchematics.contains(schematic);
+            case COMBINED: return !Placements.loaded.isEmpty();
+            default: return schematic != null && Placements.loaded.contains(schematic);
         }
     }
 

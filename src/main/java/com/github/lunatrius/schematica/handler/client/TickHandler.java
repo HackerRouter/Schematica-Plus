@@ -24,7 +24,6 @@ import com.github.lunatrius.schematica.handler.ConfigurationHandler;
 import com.github.lunatrius.schematica.handler.DownloadHandler;
 import com.github.lunatrius.schematica.handler.QueueTickHandler;
 import com.github.lunatrius.schematica.network.message.MessageCapabilities;
-import com.github.lunatrius.schematica.proxy.ClientProxy;
 import com.github.lunatrius.schematica.reference.Reference;
 import com.github.lunatrius.schematica.tool.RebuildJobs;
 import com.github.lunatrius.schematica.tool.ToolManager;
@@ -40,13 +39,14 @@ public class TickHandler {
     private final Minecraft minecraft = Minecraft.getMinecraft();
 
     private int ticks;
+    private boolean isPendingReset;
 
     private TickHandler() {}
 
     @SubscribeEvent
     public void onClientConnect(FMLNetworkEvent.ClientConnectedToServerEvent event) {
         Reference.logger.info("Scheduling client settings reset.");
-        ClientProxy.isPendingReset = true;
+        this.isPendingReset = true;
         LagMonitor.install(event.manager);
     }
 
@@ -56,7 +56,7 @@ public class TickHandler {
         this.minecraft.func_152344_a(CommandEditQueue.INSTANCE::cancel);
         MessageCapabilities.clearPending();
         Reference.logger.info("Scheduling client settings reset.");
-        ClientProxy.isPendingReset = true;
+        this.isPendingReset = true;
     }
 
     @SubscribeEvent
@@ -66,9 +66,9 @@ public class TickHandler {
             HotkeyHooks.tick();
             ToolManager.tick();
             this.minecraft.mcProfiler.startSection("schematica");
-            if (ClientProxy.isPendingReset) {
+            if (this.isPendingReset) {
                 SchematicaPlus.proxy.resetSettings();
-                ClientProxy.isPendingReset = false;
+                this.isPendingReset = false;
             }
             MessageCapabilities.applyPending();
             WorldHandler.INSTANCE.updateWorld(this.minecraft);

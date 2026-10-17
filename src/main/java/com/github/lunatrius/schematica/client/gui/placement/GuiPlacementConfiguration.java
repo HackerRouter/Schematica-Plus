@@ -35,10 +35,10 @@ import com.github.lunatrius.schematica.client.gui.material.MaterialLists;
 import com.github.lunatrius.schematica.client.printer.SchematicPrinter;
 import com.github.lunatrius.schematica.client.renderer.RendererSchematicGlobal;
 import com.github.lunatrius.schematica.client.world.PlacementSettings;
+import com.github.lunatrius.schematica.client.world.Placements;
 import com.github.lunatrius.schematica.client.world.SchematicWorld;
 import com.github.lunatrius.schematica.client.world.SubRegionPlacements;
 import com.github.lunatrius.schematica.handler.client.WorldHandler;
-import com.github.lunatrius.schematica.proxy.ClientProxy;
 import com.github.lunatrius.schematica.reference.Constants;
 import com.github.lunatrius.schematica.reference.Reference;
 
@@ -75,7 +75,7 @@ public final class GuiPlacementConfiguration extends UiScreen {
 
     private boolean available() {
         return mc.thePlayer != null && mc.theWorld != null && mc.theWorld == clientWorld
-            && ClientProxy.loadedSchematics.contains(placement);
+            && Placements.loaded.contains(placement);
     }
 
     private UiButton button(Supplier<String> label, IntConsumer action) {
@@ -211,7 +211,7 @@ public final class GuiPlacementConfiguration extends UiScreen {
         try {
             action.run();
             RendererSchematicGlobal.INSTANCE.createRendererSchematicChunks(placement);
-            if (ClientProxy.schematic == placement) SchematicPrinter.INSTANCE.refresh();
+            if (Placements.selected == placement) SchematicPrinter.INSTANCE.refresh();
             WorldHandler.INSTANCE.saveSession();
             status = "";
         } catch (RuntimeException e) {
@@ -285,7 +285,7 @@ public final class GuiPlacementConfiguration extends UiScreen {
             message("schematica.ui.placement.transform_failed");
         } finally {
             RendererSchematicGlobal.INSTANCE.createRendererSchematicChunks(placement);
-            if (ClientProxy.schematic == placement) SchematicPrinter.INSTANCE.refresh();
+            if (Placements.selected == placement) SchematicPrinter.INSTANCE.refresh();
             WorldHandler.INSTANCE.saveSession();
             syncGeometry();
         }

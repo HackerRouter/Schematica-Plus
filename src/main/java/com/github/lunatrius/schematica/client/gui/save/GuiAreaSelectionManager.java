@@ -29,9 +29,9 @@ import com.github.lunatrius.schematica.client.gui.framework.UiTranslations;
 import com.github.lunatrius.schematica.client.selection.AreaSelectionLibrary;
 import com.github.lunatrius.schematica.client.selection.AreaSelectionLibrary.Area;
 import com.github.lunatrius.schematica.client.selection.AreaSelections;
+import com.github.lunatrius.schematica.client.world.Placements;
 import com.github.lunatrius.schematica.client.world.SchematicWorld;
 import com.github.lunatrius.schematica.internal.lunatriuscore.util.vector.Vector3i;
-import com.github.lunatrius.schematica.proxy.ClientProxy;
 
 import org.lwjgl.input.Keyboard;
 
@@ -174,10 +174,10 @@ public final class GuiAreaSelectionManager extends UiScreen {
     }
 
     private void fromPlacement() {
-        SchematicWorld placement = ClientProxy.schematic;
-        if (!available() || placement == null || !ClientProxy.loadedSchematics.contains(placement)) return;
+        SchematicWorld placement = Placements.selected;
+        if (!available() || placement == null || !Placements.loaded.contains(placement)) return;
         promptName("litematica.gui.title.create_area_selection_from_placement", placement.name, name -> {
-            if (!ClientProxy.loadedSchematics.contains(placement)) throw new IllegalArgumentException("Placement is no longer loaded");
+            if (!Placements.loaded.contains(placement)) throw new IllegalArgumentException("Placement is no longer loaded");
             Vector3i first = placement.position.clone();
             Vector3i second = new Vector3i(Math.addExact(first.x, placement.getWidth() - 1),
                 Math.addExact(first.y, placement.getHeight() - 1), Math.addExact(first.z, placement.getLength() - 1));
@@ -220,7 +220,7 @@ public final class GuiAreaSelectionManager extends UiScreen {
         boolean available = available();
         editor.setEnabled(available && library.normalSelection() != null);
         unselect.setEnabled(available && library.normalSelection() != null);
-        fromPlacement.setEnabled(available && ClientProxy.schematic != null);
+        fromPlacement.setEnabled(available && Placements.selected != null);
         create.setEnabled(available);
         list.setEnabled(available);
         home.setEnabled(available && !library.targetFolder().isEmpty());

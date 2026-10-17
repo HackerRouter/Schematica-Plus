@@ -26,11 +26,11 @@ import com.github.lunatrius.schematica.client.input.Hotkeys;
 import com.github.lunatrius.schematica.client.printer.registry.PlacementData;
 import com.github.lunatrius.schematica.client.printer.registry.PlacementRegistry;
 import com.github.lunatrius.schematica.client.util.BlockToItemStack;
+import com.github.lunatrius.schematica.client.world.Placements;
 import com.github.lunatrius.schematica.client.world.SchematicWorld;
 import com.github.lunatrius.schematica.compat.MultipartItems;
 import com.github.lunatrius.schematica.handler.BlockInfoHudSettings;
 import com.github.lunatrius.schematica.handler.ConfigurationHandler;
-import com.github.lunatrius.schematica.proxy.ClientProxy;
 import com.github.lunatrius.schematica.tool.SchematicTargets;
 import com.github.lunatrius.schematica.tool.ToolManager;
 import com.github.lunatrius.schematica.tool.ToolMode;
@@ -81,7 +81,7 @@ public final class EasyPlace {
         Minecraft mc = mc();
         EntityClientPlayerMP player = mc.thePlayer;
         World world = mc.theWorld;
-        if (player == null || world == null || ClientProxy.visiblePlacements().isEmpty()) return Result.PASS;
+        if (player == null || world == null || Placements.visible().isEmpty()) return Result.PASS;
         double range = SchematicTargets.validBlockRange();
         SchematicTargets.Hit hit = ConfigurationHandler.easyPlaceFirst ? SchematicTargets.closest(range, BlockInfoHudSettings.targetFluids)
             : SchematicTargets.furthestBeforeVanilla(range);

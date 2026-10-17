@@ -17,13 +17,13 @@ import com.github.lunatrius.schematica.client.printer.SchematicPrinter;
 import com.github.lunatrius.schematica.client.renderer.RendererSchematicGlobal;
 import com.github.lunatrius.schematica.client.selection.AreaSelectionLibrary.Area;
 import com.github.lunatrius.schematica.client.selection.AreaSelections;
+import com.github.lunatrius.schematica.client.world.Placements;
 import com.github.lunatrius.schematica.client.world.SchematicLibrary;
 import com.github.lunatrius.schematica.client.world.SchematicSourceData;
 import com.github.lunatrius.schematica.client.world.SchematicWorld;
 import com.github.lunatrius.schematica.handler.ConfigurationHandler;
 import com.github.lunatrius.schematica.handler.client.WorldHandler;
 import com.github.lunatrius.schematica.internal.lunatriuscore.util.vector.Vector3i;
-import com.github.lunatrius.schematica.proxy.ClientProxy;
 import com.github.lunatrius.schematica.reference.Reference;
 import com.github.lunatrius.schematica.world.schematic.SchematicFileSnapshot;
 import com.github.lunatrius.schematica.world.storage.RegionSelection;
@@ -51,7 +51,7 @@ public final class PlacementActions {
     public static boolean mirror() { return transform(false); }
 
     private static boolean transform(boolean rotation) {
-        SchematicWorld placement = ClientProxy.schematic;
+        SchematicWorld placement = Placements.selected;
         if (placement == null) return false;
         if (placement.placementSettings().locked) {
             actionBar(UiTranslations.format("litematica.message.placement.cant_modify_is_locked"));
@@ -94,9 +94,9 @@ public final class PlacementActions {
         Vector3i origin = ConfigurationHandler.cloneAtOriginalPosition ? area.origin() : targetedPosition();
         String name = area.name();
         capture(area, name, source -> {
-            SchematicWorld placement = ClientProxy.createPlacement(source);
+            SchematicWorld placement = Placements.create(source);
             placement.moveOriginTo(origin.x, origin.y, origin.z);
-            ClientProxy.selectSchematic(placement);
+            Placements.select(placement);
             if (mc().thePlayer != null && mc().thePlayer.capabilities.isCreativeMode) ToolManager.setCurrentMode(ToolMode.PASTE_SCHEMATIC);
             WorldHandler.INSTANCE.saveSession();
         });
@@ -131,7 +131,7 @@ public final class PlacementActions {
         Object world = mc().theWorld;
         boolean queued = SchematicaPlus.proxy.captureSchematic(mc().thePlayer, name, mc().theWorld, selection, (SchematicFileSnapshot snapshot) -> {
             if (mc().theWorld != world) return;
-            try { created.accept(ClientProxy.addMemorySource(name, snapshot)); }
+            try { created.accept(Placements.addMemorySource(name, snapshot)); }
             catch (Exception error) {
                 Reference.logger.error("Could not create the in-memory schematic", error);
                 chat(EnumChatFormatting.RED, "schematica.ui.save.failed");

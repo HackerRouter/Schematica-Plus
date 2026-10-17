@@ -26,12 +26,13 @@ import com.github.lunatrius.schematica.client.printer.NextBlockHint;
 import com.github.lunatrius.schematica.client.printer.PrinterHighlights;
 import com.github.lunatrius.schematica.client.projects.SchematicProject;
 import com.github.lunatrius.schematica.client.projects.SchematicProjects;
+import com.github.lunatrius.schematica.client.selection.AreaSelections;
+import com.github.lunatrius.schematica.client.world.Placements;
 import com.github.lunatrius.schematica.client.world.SchematicWorld;
 import com.github.lunatrius.schematica.handler.ConfigurationHandler;
 import com.github.lunatrius.schematica.handler.VisualSettings;
 import com.github.lunatrius.schematica.internal.lunatriuscore.util.vector.Vector3d;
 import com.github.lunatrius.schematica.nbt.TileEntitySnapshots;
-import com.github.lunatrius.schematica.proxy.ClientProxy;
 import com.github.lunatrius.schematica.reference.Constants;
 
 import cpw.mods.fml.common.eventhandler.EventPriority;
@@ -77,12 +78,10 @@ public class RendererSchematicGlobal {
     public void onRender(RenderWorldLastEvent event) {
         EntityPlayerSP player = this.minecraft.thePlayer;
         if (player != null) {
-            ClientProxy.setPlayerData(player, event.partialTicks);
-
             this.profiler.startSection("schematica");
 
             boolean anyRendering = false;
-            for (SchematicWorld sw : ClientProxy.visiblePlacements()) {
+            for (SchematicWorld sw : Placements.visible()) {
                 if (sw.isEnabled()) {
                     anyRendering = true;
                     break;
@@ -93,7 +92,7 @@ public class RendererSchematicGlobal {
                 this.minecraft.ingameGUI.func_110326_a(UiTranslations.format(
                     "schematica.message.render_distance_reduced", RenderBudget.minFps), false);
             }
-            if (VisualSettings.rendering && (anyRendering || ClientProxy.isRenderingGuide)) {
+            if (VisualSettings.rendering && (anyRendering || AreaSelections.isRenderingGuide)) {
                 VisualSettings.beginFrame();
                 EntityLivingBase camera = this.minecraft.renderViewEntity;
                 if (camera == null) camera = player;
@@ -135,14 +134,14 @@ public class RendererSchematicGlobal {
 
         this.profiler.startSection("schematic");
 
-        for (SchematicWorld sw : ClientProxy.visiblePlacements()) {
+        for (SchematicWorld sw : Placements.visible()) {
             sw.setWorldTime(this.minecraft.theWorld.getWorldTime());
             sw.func_82738_a(this.minecraft.theWorld.getTotalWorldTime());
         }
         updateRenderers();
 
         // Render each loaded schematic
-        for (SchematicWorld sw : ClientProxy.visiblePlacements()) {
+        for (SchematicWorld sw : Placements.visible()) {
             if (!sw.isEnabled()) continue;
 
             SchematicRenderData data = renderDataMap.get(sw);
@@ -220,7 +219,7 @@ public class RendererSchematicGlobal {
 
     private void updateRenderers() {
         List<List<RendererSchematicChunk>> groups = new ArrayList<>();
-        for (SchematicWorld schematic : ClientProxy.visiblePlacements()) {
+        for (SchematicWorld schematic : Placements.visible()) {
             if (!schematic.isRenderingEnabled()) continue;
             SchematicRenderData data = renderDataMap.get(schematic);
             if (data == null) continue;
@@ -278,7 +277,7 @@ public class RendererSchematicGlobal {
         renderDataMap.put(schematic, data);
 
         // Also update the legacy fields for the active schematic
-        if (schematic == ClientProxy.schematic) {
+        if (schematic == Placements.selected) {
             rebuildLegacyChunkList();
         }
     }
@@ -316,7 +315,7 @@ public class RendererSchematicGlobal {
     private void rebuildLegacyChunkList() {
         this.sortedRendererSchematicChunk.clear();
         this.renderBlocks = null;
-        SchematicWorld active = ClientProxy.schematic;
+        SchematicWorld active = Placements.selected;
         if (active != null) {
             SchematicRenderData data = renderDataMap.get(active);
             if (data != null) {

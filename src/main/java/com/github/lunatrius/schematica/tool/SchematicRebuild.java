@@ -25,6 +25,7 @@ import com.github.lunatrius.schematica.client.printer.PlacementRestriction;
 import com.github.lunatrius.schematica.client.selection.AreaSelectionLibrary.Area;
 import com.github.lunatrius.schematica.client.selection.AreaSelections;
 import com.github.lunatrius.schematica.client.world.CellState;
+import com.github.lunatrius.schematica.client.world.Placements;
 import com.github.lunatrius.schematica.client.world.RenderLayerRange;
 import com.github.lunatrius.schematica.client.world.RenderLayerSettings;
 import com.github.lunatrius.schematica.client.world.SchematicLibrary;
@@ -37,7 +38,6 @@ import com.github.lunatrius.schematica.client.world.SubRegionPlacements;
 import com.github.lunatrius.schematica.handler.ConfigurationHandler;
 import com.github.lunatrius.schematica.handler.client.InputHandler;
 import com.github.lunatrius.schematica.internal.lunatriuscore.util.vector.Vector3i;
-import com.github.lunatrius.schematica.proxy.ClientProxy;
 import com.github.lunatrius.schematica.reference.Reference;
 
 /** Edits loaded schematic sources in memory; the real world is never changed. */
@@ -72,7 +72,7 @@ public final class SchematicRebuild {
             return ConfigurationHandler.placementRestriction
                 && PlacementRestriction.handle(mc());
         }
-        if (ClientProxy.loadedSchematics.isEmpty()) return false;
+        if (Placements.loaded.isEmpty()) return false;
         try {
             return attack ? attack() : use();
         } catch (IOException error) {
@@ -155,7 +155,7 @@ public final class SchematicRebuild {
     /** Copies differing real-world blocks inside the current area selection into the schematic(s) shown there. */
     public static boolean replaceSelection() {
         Area area = AreaSelections.library().selected();
-        if (area == null || area.boxes().isEmpty() || mc().theWorld == null || ClientProxy.loadedSchematics.isEmpty()) return false;
+        if (area == null || area.boxes().isEmpty() || mc().theWorld == null || Placements.loaded.isEmpty()) return false;
         Vector3i origin = area.origin();
         return RebuildJobs.start(new RebuildJobs.Selection(mc().theWorld, area.regions(), area.name(),
             String.format("x: %d, y: %d, z: %d", origin.x, origin.y, origin.z)));
@@ -164,11 +164,11 @@ public final class SchematicRebuild {
     /** The placement and source cell shown at a world position, preferring the given placement. */
     static Owner owner(SchematicWorld preferred, int x, int y, int z) {
         List<SchematicWorld> order = new ArrayList<>();
-        if (preferred != null && ClientProxy.loadedSchematics.contains(preferred)) order.add(preferred);
-        for (SchematicWorld world : ClientProxy.loadedSchematics) if (world != preferred) order.add(world);
+        if (preferred != null && Placements.loaded.contains(preferred)) order.add(preferred);
+        for (SchematicWorld world : Placements.loaded) if (world != preferred) order.add(world);
         SchematicOrigin point = new SchematicOrigin(x, y, z);
         for (SchematicWorld world : order) {
-            SchematicLibrary.Source<SchematicSourceData> source = ClientProxy.SCHEMATICS.sourceOf(world);
+            SchematicLibrary.Source<SchematicSourceData> source = Placements.LIBRARY.sourceOf(world);
             if (source == null || !world.isEnabled() || world.subregions() == null
                 || !world.getSchematic().containsBlock(x - world.position.x, y - world.position.y, z - world.position.z)) continue;
             SourceBlockPosition position = SourceBlockPosition.resolve(point, world.originPosition(), world.transformOperations, world.subregions());
@@ -232,7 +232,7 @@ public final class SchematicRebuild {
         SubRegionPlacements regions = owner.world.subregions();
         List<SubRegionPlacements.Region> scope = new ArrayList<>();
         if (regions.selected != null) scope.add(regions.get(regions.selected));
-        else if (ClientProxy.schematic == owner.world) scope.addAll(regions.regions());
+        else if (Placements.selected == owner.world) scope.addAll(regions.regions());
         else {
             message(EnumChatFormatting.GOLD, "litematica.message.warn.schematic_rebuild_placement_not_selected");
             return false;

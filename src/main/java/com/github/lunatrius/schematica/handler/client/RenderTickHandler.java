@@ -5,8 +5,8 @@ import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.util.Vec3;
 
+import com.github.lunatrius.schematica.client.world.Placements;
 import com.github.lunatrius.schematica.client.world.SchematicWorld;
-import com.github.lunatrius.schematica.proxy.ClientProxy;
 
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.gameevent.TickEvent;
@@ -16,14 +16,15 @@ public class RenderTickHandler {
     public static final RenderTickHandler INSTANCE = new RenderTickHandler();
 
     private final Minecraft minecraft = Minecraft.getMinecraft();
+    public MovingObjectPosition schematicHit;
 
     private RenderTickHandler() {}
 
     @SubscribeEvent
     public void onRenderTick(TickEvent.RenderTickEvent event) {
-        final SchematicWorld schematic = ClientProxy.schematic;
+        final SchematicWorld schematic = Placements.selected;
 
-        ClientProxy.movingObjectPosition = schematic != null ? rayTrace(schematic, 1.0f) : null;
+        this.schematicHit = schematic != null ? rayTrace(schematic, 1.0f) : null;
     }
 
     MovingObjectPosition rayTrace(final SchematicWorld schematic, final float partialTicks) {

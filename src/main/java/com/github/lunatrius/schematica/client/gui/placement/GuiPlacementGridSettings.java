@@ -12,9 +12,9 @@ import com.github.lunatrius.schematica.client.gui.framework.UiLabel;
 import com.github.lunatrius.schematica.client.gui.framework.UiScreen;
 import com.github.lunatrius.schematica.client.gui.framework.UiTranslations;
 import com.github.lunatrius.schematica.client.world.GridSettings;
+import com.github.lunatrius.schematica.client.world.Placements;
 import com.github.lunatrius.schematica.client.world.SchematicWorld;
 import com.github.lunatrius.schematica.handler.client.WorldHandler;
-import com.github.lunatrius.schematica.proxy.ClientProxy;
 
 /** Grid size and repeat counts of a placement; the copies follow on the next client tick. */
 public final class GuiPlacementGridSettings extends UiScreen {
@@ -40,7 +40,7 @@ public final class GuiPlacementGridSettings extends UiScreen {
     }
 
     private boolean available() {
-        return mc.theWorld != null && ClientProxy.loadedSchematics.contains(placement);
+        return mc.theWorld != null && Placements.loaded.contains(placement);
     }
 
     private UiIntegerField field(int value, int minimum, int maximum, IntConsumer changed) {

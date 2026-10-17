@@ -14,9 +14,9 @@ import com.github.lunatrius.schematica.client.gui.framework.UiPanel;
 import com.github.lunatrius.schematica.client.gui.framework.UiSprite;
 import com.github.lunatrius.schematica.client.gui.framework.UiTranslations;
 import com.github.lunatrius.schematica.client.renderer.RendererSchematicGlobal;
+import com.github.lunatrius.schematica.client.world.Placements;
 import com.github.lunatrius.schematica.client.world.SchematicWorld;
 import com.github.lunatrius.schematica.handler.client.WorldHandler;
-import com.github.lunatrius.schematica.proxy.ClientProxy;
 
 import org.lwjgl.input.Keyboard;
 
@@ -25,7 +25,7 @@ public final class GuiSchematicPlacementsList extends GuiSchematicList<Schematic
         super(parent, true, world -> world.name + " " + world.sourceFilename);
     }
 
-    @Override protected List<SchematicWorld> entries() { return ClientProxy.loadedSchematics; }
+    @Override protected List<SchematicWorld> entries() { return Placements.loaded; }
     @Override protected UiPanel row(SchematicWorld world, int index) { return new Entry(world, index); }
 
     private final class Entry extends UiPanel {
@@ -37,10 +37,10 @@ public final class GuiSchematicPlacementsList extends GuiSchematicList<Schematic
         Entry(SchematicWorld world, int index) {
             this.world = world;
             this.index = index;
-            button("litematica.gui.button.schematic_placements.remove", () -> ClientProxy.removePlacement(world));
+            button("litematica.gui.button.schematic_placements.remove", () -> Placements.remove(world));
             UiButton toggle = add(new UiButton(() -> UiTranslations.format("litematica.gui.button.schematic_placements.placement_enabled",
                 (world.isEnabled() ? "\u00a7a" : "\u00a7c") + UiTranslations.format(world.isEnabled() ? "options.on" : "options.off")),
-                mouse -> { if (mouse == 0 && ClientProxy.loadedSchematics.contains(world)) { world.setPlacementSettings(world.placementSettings().enabled(!world.isEnabled()));
+                mouse -> { if (mouse == 0 && Placements.loaded.contains(world)) { world.setPlacementSettings(world.placementSettings().enabled(!world.isEnabled()));
                     RendererSchematicGlobal.INSTANCE.refresh(world); WorldHandler.INSTANCE.saveSession(); } }));
             buttons.add(toggle);
             button("litematica.gui.button.schematic_placements.configure", () -> {
@@ -50,7 +50,7 @@ public final class GuiSchematicPlacementsList extends GuiSchematicList<Schematic
         }
 
         private UiButton button(String key, Runnable action) {
-            UiButton button = add(new UiButton(() -> UiTranslations.format(key), mouse -> { if (mouse == 0 && ClientProxy.loadedSchematics.contains(world)) action.run(); }));
+            UiButton button = add(new UiButton(() -> UiTranslations.format(key), mouse -> { if (mouse == 0 && Placements.loaded.contains(world)) action.run(); }));
             buttons.add(button);
             return button;
         }
@@ -69,7 +69,7 @@ public final class GuiSchematicPlacementsList extends GuiSchematicList<Schematic
 
         @Override
         public void draw(UiDraw draw, int mouseX, int mouseY) {
-            boolean selected = ClientProxy.schematic == world;
+            boolean selected = Placements.selected == world;
             boolean hover = containsVisible(mouseX, mouseY);
             int color = selected || hover ? 0xA0707070 : index % 2 == 1 ? 0xA0101010 : 0xA0303030;
             draw.fill(bounds(), color);
@@ -92,8 +92,8 @@ public final class GuiSchematicPlacementsList extends GuiSchematicList<Schematic
 
         private void select() {
             model.select(index);
-            if (ClientProxy.loadedSchematics.contains(world)) {
-                ClientProxy.selectSchematic(ClientProxy.schematic == world ? null : world);
+            if (Placements.loaded.contains(world)) {
+                Placements.select(Placements.selected == world ? null : world);
                 WorldHandler.INSTANCE.saveSession();
             }
         }

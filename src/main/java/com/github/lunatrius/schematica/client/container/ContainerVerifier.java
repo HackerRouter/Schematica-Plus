@@ -24,10 +24,10 @@ import com.github.lunatrius.schematica.client.gui.framework.MinecraftUiDraw;
 import com.github.lunatrius.schematica.client.gui.framework.UiBounds;
 import com.github.lunatrius.schematica.client.gui.framework.UiTranslations;
 import com.github.lunatrius.schematica.client.renderer.hud.InventoryPreview;
+import com.github.lunatrius.schematica.client.world.Placements;
 import com.github.lunatrius.schematica.client.world.SchematicWorld;
 import com.github.lunatrius.schematica.handler.ConfigurationHandler;
 import com.github.lunatrius.schematica.handler.RenderColors;
-import com.github.lunatrius.schematica.proxy.ClientProxy;
 import com.github.lunatrius.schematica.reference.Reference;
 
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
@@ -65,7 +65,7 @@ public final class ContainerVerifier {
         if (clicked == null || System.currentTimeMillis() - clickedAt > 3000) return;
         int x = clicked[0], y = clicked[1], z = clicked[2];
         clicked = null;
-        for (SchematicWorld world : ClientProxy.visiblePlacements()) {
+        for (SchematicWorld world : Placements.visible()) {
             int lx = x - world.position.x, ly = y - world.position.y, lz = z - world.position.z;
             if (!world.isRenderingEnabled() || !world.isBlockRendered(lx, ly, lz)) continue;
             if (InventoryPreview.inventory(world, lx, ly, lz) == null) continue;
@@ -76,7 +76,7 @@ public final class ContainerVerifier {
     }
 
     private IInventory expected() {
-        if (placement == null || !ClientProxy.visiblePlacements().contains(placement)) return null;
+        if (placement == null || !Placements.visible().contains(placement)) return null;
         try {
             return InventoryPreview.inventory(placement, localX, localY, localZ);
         } catch (RuntimeException error) {

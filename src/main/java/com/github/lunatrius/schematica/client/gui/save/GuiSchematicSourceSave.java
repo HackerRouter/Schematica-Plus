@@ -13,9 +13,9 @@ import com.github.lunatrius.schematica.client.gui.framework.UiButton;
 import com.github.lunatrius.schematica.client.gui.framework.UiLabel;
 import com.github.lunatrius.schematica.client.gui.framework.UiTextField;
 import com.github.lunatrius.schematica.client.gui.framework.UiTranslations;
+import com.github.lunatrius.schematica.client.world.Placements;
 import com.github.lunatrius.schematica.client.world.SchematicLibrary.Source;
 import com.github.lunatrius.schematica.client.world.SchematicSourceData;
-import com.github.lunatrius.schematica.proxy.ClientProxy;
 import com.github.lunatrius.schematica.util.MessageException;
 
 public final class GuiSchematicSourceSave extends GuiSchematicBrowser {
@@ -45,7 +45,7 @@ public final class GuiSchematicSourceSave extends GuiSchematicBrowser {
 
     @Override protected void tickScreen() {
         super.tickScreen();
-        save.setEnabled(browser != null && ClientProxy.SCHEMATICS.sources().contains(source));
+        save.setEnabled(browser != null && Placements.LIBRARY.sources().contains(source));
     }
 
     @Override protected void selectionChanged(SchematicBrowserModel.Entry entry) {
@@ -53,7 +53,7 @@ public final class GuiSchematicSourceSave extends GuiSchematicBrowser {
     }
 
     private void save() {
-        if (browser == null || !ClientProxy.SCHEMATICS.sources().contains(source)) return;
+        if (browser == null || !Placements.LIBRARY.sources().contains(source)) return;
         try {
             File file = SchematicSaveTarget.sourceCopy(browser.root(), browser.directory(), name.text(), source.data().saveExtension());
             if (file.exists() && !isShiftKeyDown()) {
@@ -65,7 +65,7 @@ public final class GuiSchematicSourceSave extends GuiSchematicBrowser {
     }
 
     private void write(File file, boolean replace) {
-        if (!ClientProxy.SCHEMATICS.sources().contains(source)) {
+        if (!Placements.LIBRARY.sources().contains(source)) {
             setStatus(UiTranslations.format("schematica.ui.source.unloaded"));
             return;
         }

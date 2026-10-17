@@ -29,9 +29,9 @@ import com.github.lunatrius.schematica.api.ISchematic;
 import com.github.lunatrius.schematica.client.printer.SchematicPrinter;
 import com.github.lunatrius.schematica.client.renderer.RendererSchematicGlobal;
 import com.github.lunatrius.schematica.client.world.PlacementSettings;
+import com.github.lunatrius.schematica.client.world.Placements;
 import com.github.lunatrius.schematica.client.world.SchematicWorld;
 import com.github.lunatrius.schematica.handler.client.WorldHandler;
-import com.github.lunatrius.schematica.proxy.ClientProxy;
 import com.github.lunatrius.schematica.reference.Reference;
 
 /** One auto align search at a time: planning and voting on a worker thread, world reads on the client thread. */
@@ -114,7 +114,7 @@ public final class AutoAlignJob {
     public static void tick(Minecraft mc) {
         AutoAlignJob job = current;
         if (job == null) return;
-        if (mc.theWorld != job.world || !ClientProxy.loadedSchematics.contains(job.placement) || job.placement.placementRevision() != job.revision) {
+        if (mc.theWorld != job.world || !Placements.loaded.contains(job.placement) || job.placement.placementRevision() != job.revision) {
             current = null;
             return;
         }
@@ -199,7 +199,7 @@ public final class AutoAlignJob {
             placement.moveMinimumTo(found.x, found.y, found.z);
         } finally {
             RendererSchematicGlobal.INSTANCE.createRendererSchematicChunks(placement);
-            if (ClientProxy.schematic == placement) SchematicPrinter.INSTANCE.refresh();
+            if (Placements.selected == placement) SchematicPrinter.INSTANCE.refresh();
             WorldHandler.INSTANCE.saveSession();
         }
         boolean moved = placement.position.x == found.x && placement.position.y == found.y && placement.position.z == found.z;

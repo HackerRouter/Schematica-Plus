@@ -20,11 +20,11 @@ import com.github.lunatrius.schematica.client.gui.framework.UiTranslations;
 import com.github.lunatrius.schematica.client.input.Hotkeys;
 import com.github.lunatrius.schematica.client.verifier.VerificationScan;
 import com.github.lunatrius.schematica.client.verifier.VerificationScan.Pair;
+import com.github.lunatrius.schematica.client.world.Placements;
 import com.github.lunatrius.schematica.client.world.SchematicWorld;
 import com.github.lunatrius.schematica.handler.BlockInfoHudSettings;
 import com.github.lunatrius.schematica.handler.VerifierOverlaySettings;
 import com.github.lunatrius.schematica.handler.VisualSettings;
-import com.github.lunatrius.schematica.proxy.ClientProxy;
 import com.github.lunatrius.schematica.reference.Reference;
 import com.github.lunatrius.schematica.util.VoxelRayTrace;
 
@@ -106,9 +106,9 @@ public final class BlockInfoHud {
         target = null;
         List<WorldLayer> placements = new ArrayList<>();
         if (VisualSettings.schematicVisible()) {
-            if (ClientProxy.schematic != null && ClientProxy.schematic.isRenderingEnabled()) placements.add(new WorldLayer(ClientProxy.schematic));
-            for (SchematicWorld placement : ClientProxy.visiblePlacements()) {
-                if (placement != ClientProxy.schematic && placement.isRenderingEnabled()) placements.add(new WorldLayer(placement));
+            if (Placements.selected != null && Placements.selected.isRenderingEnabled()) placements.add(new WorldLayer(Placements.selected));
+            for (SchematicWorld placement : Placements.visible()) {
+                if (placement != Placements.selected && placement.isRenderingEnabled()) placements.add(new WorldLayer(placement));
             }
         }
         if (placements.isEmpty() && !(VisualSettings.blockInfoOverlay && Hotkeys.held("renderInfoOverlay"))) return;

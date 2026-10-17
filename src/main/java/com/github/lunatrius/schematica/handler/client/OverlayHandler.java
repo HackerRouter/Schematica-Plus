@@ -15,10 +15,10 @@ import com.github.lunatrius.schematica.client.renderer.hud.BlockInfoHud;
 import com.github.lunatrius.schematica.client.renderer.hud.MaterialListHud;
 import com.github.lunatrius.schematica.client.renderer.hud.ToolHud;
 import com.github.lunatrius.schematica.client.renderer.hud.VerifierHud;
+import com.github.lunatrius.schematica.client.world.Placements;
 import com.github.lunatrius.schematica.client.world.SchematicWorld;
 import com.github.lunatrius.schematica.handler.ConfigurationHandler;
 import com.github.lunatrius.schematica.handler.VisualSettings;
-import com.github.lunatrius.schematica.proxy.ClientProxy;
 import com.github.lunatrius.schematica.reference.Reference;
 import com.github.lunatrius.schematica.tool.ToolManager;
 
@@ -34,13 +34,13 @@ public class OverlayHandler {
     @SubscribeEvent
     public void onText(RenderGameOverlayEvent.Text event) {
         if (this.minecraft.gameSettings.showDebugInfo && ConfigurationHandler.showDebugInfo) {
-            final SchematicWorld schematic = ClientProxy.schematic;
+            final SchematicWorld schematic = Placements.selected;
             if (schematic != null && schematic.isRenderingEnabled()) {
                 event.left.add("");
                 event.left.add("[§6" + Reference.NAME + "§r] " + schematic.getDebugDimensions());
                 event.left.add("[§6" + UiTranslations.format("litematica.hud.selected_mode") + "§r] " + ToolManager.getCurrentMode().getDisplayName());
 
-                final MovingObjectPosition mop = ClientProxy.movingObjectPosition;
+                final MovingObjectPosition mop = RenderTickHandler.INSTANCE.schematicHit;
                 if (mop != null && mop.typeOfHit == MovingObjectPosition.MovingObjectType.BLOCK) {
                     final Block block = schematic.getBlock(mop.blockX, mop.blockY, mop.blockZ);
                     final int metadata = schematic.getBlockMetadata(mop.blockX, mop.blockY, mop.blockZ);

@@ -35,6 +35,7 @@ import com.github.lunatrius.schematica.client.printer.registry.PlacementRegistry
 import com.github.lunatrius.schematica.client.selection.AreaSelectionLibrary;
 import com.github.lunatrius.schematica.client.selection.AreaSelections;
 import com.github.lunatrius.schematica.client.util.BlockToItemStack;
+import com.github.lunatrius.schematica.client.world.Placements;
 import com.github.lunatrius.schematica.client.world.SchematicWorld;
 import com.github.lunatrius.schematica.handler.ConfigurationHandler;
 import com.github.lunatrius.schematica.handler.VisualSettings;
@@ -285,7 +286,7 @@ public class SchematicPrinter {
         if (ConfigurationHandler.printerPauseWhileMoving && moving) return 0;
         if (ConfigurationHandler.printerLagCheck && LagMonitor.ticksSincePacket() > ConfigurationHandler.printerLagCheckMax) return 0;
         List<SchematicWorld> placements = new ArrayList<>();
-        for (SchematicWorld placement : ClientProxy.visiblePlacements()) if (placement.isRenderingEnabled()) placements.add(placement);
+        for (SchematicWorld placement : Placements.visible()) if (placement.isRenderingEnabled()) placements.add(placement);
         if (placements.isEmpty()) return 0;
 
         double eyeX = player.posX, eyeY = player.posY + player.getEyeHeight() - player.getDefaultEyeHeight(), eyeZ = player.posZ;

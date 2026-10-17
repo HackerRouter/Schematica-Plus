@@ -36,11 +36,6 @@ public class ServerProxy extends CommonProxy {
     }
 
     @Override
-    public boolean loadSchematic(EntityPlayer player, File directory, String filename) {
-        return false;
-    }
-
-    @Override
     public boolean isPlayerQuotaExceeded(EntityPlayer player) {
         long spaceUsed = 0;
 

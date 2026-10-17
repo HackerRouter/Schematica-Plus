@@ -13,9 +13,9 @@ import net.minecraftforge.client.event.MouseEvent;
 
 import org.lwjgl.input.Mouse;
 
+import com.github.lunatrius.schematica.client.world.Placements;
 import com.github.lunatrius.schematica.client.world.SchematicWorld;
 import com.github.lunatrius.schematica.handler.ConfigurationHandler;
-import com.github.lunatrius.schematica.proxy.ClientProxy;
 
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 
@@ -48,7 +48,7 @@ public final class DestroyAssist {
 
     private static boolean wanted(World world, int x, int y, int z) {
         List<SchematicWorld> placements = new ArrayList<>();
-        for (SchematicWorld placement : ClientProxy.visiblePlacements()) if (placement.isRenderingEnabled()) placements.add(placement);
+        for (SchematicWorld placement : Placements.visible()) if (placement.isRenderingEnabled()) placements.add(placement);
         SchematicWorld placement = SchematicPrinter.placementAt(placements, x, y, z);
         return placement != null && SchematicPrinter.INSTANCE.breakWanted(world, placement, x, y, z, true, true, true);
     }

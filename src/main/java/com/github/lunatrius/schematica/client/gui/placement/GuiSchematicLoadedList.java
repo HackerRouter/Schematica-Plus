@@ -20,10 +20,10 @@ import com.github.lunatrius.schematica.client.gui.framework.UiPanel;
 import com.github.lunatrius.schematica.client.gui.framework.UiSprite;
 import com.github.lunatrius.schematica.client.gui.load.SchematicGuiLoader;
 import com.github.lunatrius.schematica.client.gui.save.GuiSchematicSourceSave;
+import com.github.lunatrius.schematica.client.world.Placements;
 import com.github.lunatrius.schematica.client.world.SchematicLibrary.Source;
 import com.github.lunatrius.schematica.client.world.SchematicSourceData;
 import com.github.lunatrius.schematica.client.world.SchematicWorld;
-import com.github.lunatrius.schematica.proxy.ClientProxy;
 import com.github.lunatrius.schematica.reference.Reference;
 
 public final class GuiSchematicLoadedList extends GuiSchematicList<Source<SchematicSourceData>> {
@@ -31,7 +31,7 @@ public final class GuiSchematicLoadedList extends GuiSchematicList<Source<Schema
         super(parent, false, source -> source.name() + " " + source.file().getName());
     }
 
-    @Override protected List<Source<SchematicSourceData>> entries() { return ClientProxy.SCHEMATICS.sources(); }
+    @Override protected List<Source<SchematicSourceData>> entries() { return Placements.LIBRARY.sources(); }
     @Override protected UiPanel row(Source<SchematicSourceData> source, int index) { return new Entry(source, index); }
 
     private final class Entry extends UiPanel {
@@ -45,10 +45,10 @@ public final class GuiSchematicLoadedList extends GuiSchematicList<Source<Schema
         Entry(Source<SchematicSourceData> source, int index) {
             this.source = source;
             this.index = index;
-            button("unload", () -> discarding(() -> { ClientProxy.unloadSource(source); refresh(); }));
+            button("unload", () -> discarding(() -> { Placements.unloadSource(source); refresh(); }));
             reload = button("reload", () -> discarding(() -> {
                 try {
-                    ClientProxy.reloadSource(source);
+                    Placements.reloadSource(source);
                     message(UiTranslations.format("litematica.message.schematic_read_from_file_success", source.name()));
                 } catch (IOException | RuntimeException e) {
                     Reference.logger.warn("Schematic source reload failed", e);
@@ -92,7 +92,7 @@ public final class GuiSchematicLoadedList extends GuiSchematicList<Source<Schema
             create.setEnabled(canPlace);
             reload.setEnabled(canPlace && source.file().isFile());
             int count = 0;
-            for (SchematicWorld world : ClientProxy.loadedSchematics) if (ClientProxy.SCHEMATICS.sourceOf(world) == source) count++;
+            for (SchematicWorld world : Placements.loaded) if (Placements.LIBRARY.sourceOf(world) == source) count++;
             String details = UiTranslations.format("schematica.ui.source.details", source.data().width, source.data().height, source.data().length, count);
             String location = source.memory() ? UiTranslations.format("litematica.gui.label.schematic_placement.in_memory") : source.file().getAbsolutePath();
             if (source.data().unsaved()) setTooltip(location, details, UiTranslations.format("litematica.gui.label.loaded_schematic.modified_on",

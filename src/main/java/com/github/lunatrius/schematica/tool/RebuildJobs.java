@@ -22,6 +22,7 @@ import com.github.lunatrius.schematica.api.SchematicRegion;
 import com.github.lunatrius.schematica.client.renderer.RendererSchematicGlobal;
 import com.github.lunatrius.schematica.client.renderer.hud.InventoryPreview;
 import com.github.lunatrius.schematica.client.world.CellState;
+import com.github.lunatrius.schematica.client.world.Placements;
 import com.github.lunatrius.schematica.client.world.SchematicLibrary;
 import com.github.lunatrius.schematica.client.world.SchematicSourceData;
 import com.github.lunatrius.schematica.client.world.SchematicWorld;
@@ -29,7 +30,6 @@ import com.github.lunatrius.schematica.client.world.SourceBlockPosition;
 import com.github.lunatrius.schematica.client.world.SourceEditor;
 import com.github.lunatrius.schematica.client.world.SourceEditor.Cell;
 import com.github.lunatrius.schematica.client.world.SubRegionPlacements;
-import com.github.lunatrius.schematica.proxy.ClientProxy;
 import com.github.lunatrius.schematica.reference.Reference;
 import com.github.lunatrius.schematica.task.TaskRegistry;
 import com.github.lunatrius.schematica.world.storage.SchematicCopies;
@@ -137,10 +137,10 @@ public final class RebuildJobs {
                 SchematicLibrary.Source<SchematicSourceData> source = entry.getKey();
                 Pending pending = entry.getValue();
                 if (!current(source, pending) || !pending.recompose && pending.applied.isEmpty()) continue;
-                if (pending.recompose) { ClientProxy.refreshSource(source); continue; }
+                if (pending.recompose) { Placements.refreshSource(source); continue; }
                 Map<String, CellState> cache = new HashMap<>();
-                for (SchematicWorld world : new ArrayList<>(ClientProxy.loadedSchematics)) {
-                    if (ClientProxy.SCHEMATICS.sourceOf(world) != source) continue;
+                for (SchematicWorld world : new ArrayList<>(Placements.loaded)) {
+                    if (Placements.LIBRARY.sourceOf(world) != source) continue;
                     int[] bounds = SourceEditor.patch(world, pending.data.editable(), pending.applied, cache);
                     if (bounds != null) RendererSchematicGlobal.INSTANCE.markDirtyAllSchematics(bounds[0] - 1, bounds[1] - 1, bounds[2] - 1,
                         bounds[3] + 1, bounds[4] + 1, bounds[5] + 1);
@@ -150,7 +150,7 @@ public final class RebuildJobs {
         }
 
         private static boolean current(SchematicLibrary.Source<SchematicSourceData> source, Pending pending) {
-            return ClientProxy.SCHEMATICS.sources().contains(source) && source.data() == pending.data;
+            return Placements.LIBRARY.sources().contains(source) && source.data() == pending.data;
         }
     }
 
@@ -211,7 +211,7 @@ public final class RebuildJobs {
             }
         }
 
-        @Override boolean valid() { return ClientProxy.SCHEMATICS.sources().contains(source) && source.data() == data; }
+        @Override boolean valid() { return Placements.LIBRARY.sources().contains(source) && source.data() == data; }
 
         @Override boolean step(long deadline) throws IOException {
             while (part < parts.size()) {
@@ -255,7 +255,7 @@ public final class RebuildJobs {
             for (SchematicRegion region : boxes) total += (long) (region.maxX - region.minX + 1) * (region.maxY - region.minY + 1) * (region.maxZ - region.minZ + 1);
         }
 
-        @Override boolean valid() { return Minecraft.getMinecraft().theWorld == world && !ClientProxy.loadedSchematics.isEmpty(); }
+        @Override boolean valid() { return Minecraft.getMinecraft().theWorld == world && !Placements.loaded.isEmpty(); }
 
         @Override boolean step(long deadline) throws IOException {
             while (box < boxes.size()) {
@@ -274,7 +274,7 @@ public final class RebuildJobs {
 
         private void visit(int px, int py, int pz) throws IOException {
             if (!world.blockExists(px, py, pz)) return;
-            SchematicRebuild.Owner owner = SchematicRebuild.owner(ClientProxy.schematic, px, py, pz);
+            SchematicRebuild.Owner owner = SchematicRebuild.owner(Placements.selected, px, py, pz);
             if (owner == null) return;
             Block block = world.getBlock(px, py, pz);
             int meta = world.getBlockMetadata(px, py, pz);

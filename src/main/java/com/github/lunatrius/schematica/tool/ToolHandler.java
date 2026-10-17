@@ -21,6 +21,7 @@ import com.github.lunatrius.schematica.client.projects.SchematicProjects;
 import com.github.lunatrius.schematica.client.selection.AreaSelectionLibrary;
 import com.github.lunatrius.schematica.client.selection.AreaSelections;
 import com.github.lunatrius.schematica.client.world.GridPlacements;
+import com.github.lunatrius.schematica.client.world.Placements;
 import com.github.lunatrius.schematica.client.world.RenderLayerRange;
 import com.github.lunatrius.schematica.client.world.RenderLayerSettings;
 import com.github.lunatrius.schematica.client.world.SchematicWorld;
@@ -29,8 +30,6 @@ import com.github.lunatrius.schematica.handler.ConfigurationHandler;
 import com.github.lunatrius.schematica.handler.WorldEditQueue;
 import com.github.lunatrius.schematica.handler.client.CommandEditQueue;
 import com.github.lunatrius.schematica.handler.client.RemoteEditClient;
-import com.github.lunatrius.schematica.internal.lunatriuscore.util.vector.Vector3i;
-import com.github.lunatrius.schematica.proxy.ClientProxy;
 import com.github.lunatrius.schematica.reference.Reference;
 import com.github.lunatrius.schematica.task.TaskRegistry;
 import com.github.lunatrius.schematica.util.MessageException;
@@ -61,7 +60,7 @@ public class ToolHandler {
     private static List<SchematicRegion> targetBoxes(ToolMode mode) {
         List<SchematicRegion> boxes = new ArrayList<>();
         if (mode == ToolMode.DELETE && ToolMode.deleteUsesPlacement) {
-            SchematicWorld placement = ClientProxy.schematic;
+            SchematicWorld placement = Placements.selected;
             if (placement == null) throw new MessageException("litematica.message.error.no_area_selected");
             if (placement.subregions() != null) for (SubRegionPlacements.Region region : placement.subregions().regions()) {
                 if (region.enabled) boxes.add(placement.subregionBounds(region.name()));
@@ -81,7 +80,7 @@ public class ToolHandler {
 
     private static void queueEdit(EntityPlayer player, ToolMode mode) {
         if (mode == ToolMode.PASTE_SCHEMATIC) {
-            submit(player, pasteJob(player, ClientProxy.schematic), null);
+            submit(player, pasteJob(player, Placements.selected), null);
             return;
         }
         if (mode == ToolMode.GRID_PASTE) {
@@ -101,7 +100,7 @@ public class ToolHandler {
      * loaded area, one after another; without an enabled grid only the placement is pasted, with a note.
      */
     private static void gridPaste(EntityPlayer player) {
-        SchematicWorld base = ClientProxy.schematic;
+        SchematicWorld base = Placements.selected;
         if (base == null) throw new MessageException("litematica.message.error.no_placement_selected");
         List<SchematicWorld> placements = new ArrayList<>();
         placements.add(base);

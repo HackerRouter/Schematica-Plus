@@ -7,7 +7,6 @@ import java.util.function.BooleanSupplier;
 import com.github.lunatrius.schematica.client.selection.AreaSelectionLibrary.Area;
 import com.github.lunatrius.schematica.handler.ConfigurationHandler;
 import com.github.lunatrius.schematica.internal.lunatriuscore.util.vector.Vector3i;
-import com.github.lunatrius.schematica.proxy.ClientProxy;
 import com.github.lunatrius.schematica.reference.Reference;
 import com.github.lunatrius.schematica.util.PlusDataFiles;
 
@@ -17,6 +16,9 @@ public final class AreaSelections {
     private static boolean saveFailed;
     private static AreaSelectionLibrary override;
     private static BooleanSupplier overrideSave;
+    private static final Vector3i pointA = new Vector3i();
+    private static final Vector3i pointB = new Vector3i();
+    public static boolean isRenderingGuide = false;
 
     private AreaSelections() {}
 
@@ -50,17 +52,16 @@ public final class AreaSelections {
         AreaSelectionLibrary library = library();
         Area area = library.selected();
         if (area != null) {
-            if (area.selectedBox() != null) library.setPoints(area, ClientProxy.pointA, ClientProxy.pointB);
-            library.setGuide(area, ClientProxy.isRenderingGuide);
+            if (area.selectedBox() != null) library.setPoints(area, pointA, pointB);
+            library.setGuide(area, isRenderingGuide);
         }
     }
 
     public static void apply() {
         Area area = library().selected();
-        ClientProxy.pointA.set(area == null ? new Vector3i() : area.first());
-        ClientProxy.pointB.set(area == null ? new Vector3i() : area.second());
-        ClientProxy.isRenderingGuide = area != null && area.guide();
-        ClientProxy.updatePoints();
+        pointA.set(area == null ? new Vector3i() : area.first());
+        pointB.set(area == null ? new Vector3i() : area.second());
+        isRenderingGuide = area != null && area.guide();
     }
 
     public static void select(Area area) {
@@ -83,6 +84,9 @@ public final class AreaSelections {
         overrideSave = null;
         store = null;
         saveFailed = false;
+        pointA.set(0, 0, 0);
+        pointB.set(0, 0, 0);
+        isRenderingGuide = false;
     }
 
     public static void restore(String key) {

@@ -24,10 +24,10 @@ import com.github.lunatrius.schematica.client.gui.framework.UiTranslations;
 import com.github.lunatrius.schematica.client.printer.SchematicPrinter;
 import com.github.lunatrius.schematica.client.renderer.RendererSchematicGlobal;
 import com.github.lunatrius.schematica.client.world.PlacementSettings;
+import com.github.lunatrius.schematica.client.world.Placements;
 import com.github.lunatrius.schematica.client.world.SchematicWorld;
 import com.github.lunatrius.schematica.client.world.SubRegionPlacements.Region;
 import com.github.lunatrius.schematica.handler.client.WorldHandler;
-import com.github.lunatrius.schematica.proxy.ClientProxy;
 import com.github.lunatrius.schematica.reference.Reference;
 
 import org.lwjgl.input.Keyboard;
@@ -56,7 +56,7 @@ public final class GuiSubRegionConfiguration extends UiScreen {
     }
 
     private Region region() { return placement.subregions().get(regionName); }
-    private boolean available() { return mc.thePlayer != null && mc.theWorld == clientWorld && ClientProxy.loadedSchematics.contains(placement); }
+    private boolean available() { return mc.thePlayer != null && mc.theWorld == clientWorld && Placements.loaded.contains(placement); }
     private String value(boolean value) { return (value ? "\u00a7a" : "\u00a7c") + UiTranslations.format(value ? "options.on" : "options.off") + "\u00a7r"; }
     private UiButton button(Supplier<String> label, IntConsumer action) {
         return controls.add(new UiButton(label, mouse -> { if (available()) action.accept(mouse); }));
@@ -120,7 +120,7 @@ public final class GuiSubRegionConfiguration extends UiScreen {
         try {
             action.run();
             RendererSchematicGlobal.INSTANCE.createRendererSchematicChunks(placement);
-            if (ClientProxy.schematic == placement) SchematicPrinter.INSTANCE.refresh();
+            if (Placements.selected == placement) SchematicPrinter.INSTANCE.refresh();
             WorldHandler.INSTANCE.saveSession();
             status = "";
         } catch (RuntimeException e) {

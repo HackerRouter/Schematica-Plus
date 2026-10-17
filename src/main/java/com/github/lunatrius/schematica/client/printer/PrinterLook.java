@@ -18,7 +18,7 @@ public final class PrinterLook {
             new PrinterLook(snapped + 270, 0), new PrinterLook(snapped, 90), new PrinterLook(snapped, -90)};
     }
 
-    /** The direction the placement registry's PLAYER mappings use (ClientProxy.getOrientation). */
+    /** The direction the placement registry's PLAYER mappings use. */
     public static ForgeDirection orientation(float yaw, float pitch) {
         if (pitch > 45) return ForgeDirection.DOWN;
         if (pitch < -45) return ForgeDirection.UP;

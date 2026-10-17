@@ -7,9 +7,9 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.tileentity.TileEntitySign;
 import net.minecraftforge.client.event.GuiOpenEvent;
 
+import com.github.lunatrius.schematica.client.world.Placements;
 import com.github.lunatrius.schematica.client.world.SchematicWorld;
 import com.github.lunatrius.schematica.handler.ConfigurationHandler;
-import com.github.lunatrius.schematica.proxy.ClientProxy;
 import com.github.lunatrius.schematica.reference.Reference;
 
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
@@ -39,7 +39,7 @@ public final class SignTextPaste {
     }
 
     private static String[] schematicText(int x, int y, int z) {
-        for (SchematicWorld world : ClientProxy.visiblePlacements()) {
+        for (SchematicWorld world : Placements.visible()) {
             if (!world.isEnabled()) continue;
             int lx = x - world.position.x, ly = y - world.position.y, lz = z - world.position.z;
             if (!world.getSchematic().containsBlock(lx, ly, lz)) continue;

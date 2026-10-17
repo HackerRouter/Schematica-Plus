@@ -11,12 +11,12 @@ import com.github.lunatrius.schematica.api.SchematicOrigin;
 import com.github.lunatrius.schematica.client.projects.SchematicProjects;
 import com.github.lunatrius.schematica.client.selection.AreaSelectionLibrary;
 import com.github.lunatrius.schematica.client.selection.AreaSelections;
+import com.github.lunatrius.schematica.client.world.Placements;
 import com.github.lunatrius.schematica.client.world.SchematicWorld;
 import com.github.lunatrius.schematica.client.world.SubRegionPlacements;
 import com.github.lunatrius.schematica.handler.RenderColors;
 import com.github.lunatrius.schematica.handler.VisualSettings;
 import com.github.lunatrius.schematica.internal.lunatriuscore.util.vector.Vector3i;
-import com.github.lunatrius.schematica.proxy.ClientProxy;
 
 import org.lwjgl.opengl.GL11;
 
@@ -38,7 +38,7 @@ final class BoxRenderer {
     static int boxColor(SchematicWorld placement) {
         if (placement.boxColor != null) return placement.boxColor;
         Set<Integer> used = new HashSet<>();
-        for (SchematicWorld other : ClientProxy.loadedSchematics) if (other.boxColor != null) used.add(other.boxColor);
+        for (SchematicWorld other : Placements.loaded) if (other.boxColor != null) used.add(other.boxColor);
         int color = KELLY_COLORS[nextColorIndex];
         for (int i = 0; i < KELLY_COLORS.length; i++) {
             color = KELLY_COLORS[nextColorIndex];
@@ -62,7 +62,7 @@ final class BoxRenderer {
         try {
             float expand = 0.001f, blockBox = 2f, areaWidth = SchematicProjects.hasProjectOpen() ? 3f : 1.5f;
             AreaSelectionLibrary.Area area = AreaSelections.library().selected();
-            if (ClientProxy.isRenderingGuide && VisualSettings.areaBoxes && area != null) {
+            if (AreaSelections.isRenderingGuide && VisualSettings.areaBoxes && area != null) {
                 for (AreaSelectionLibrary.Box box : area.boxes()) {
                     boolean selected = box == area.selectedBox();
                     AreaSelectionLibrary.Corner corner = selected && !area.originSelected() ? area.selectedCorner() : null;
@@ -77,7 +77,7 @@ final class BoxRenderer {
                 }
             }
             if (VisualSettings.placementBoxes) {
-                for (SchematicWorld placement : ClientProxy.loadedSchematics) placementBoxes(placement, expand, blockBox);
+                for (SchematicWorld placement : Placements.loaded) placementBoxes(placement, expand, blockBox);
             }
         } finally {
             GL11.glPopAttrib();
@@ -87,7 +87,7 @@ final class BoxRenderer {
 
     private void placementBoxes(SchematicWorld placement, float expand, float blockBox) {
         if (!placement.isEnabled()) return;
-        boolean current = placement == ClientProxy.schematic;
+        boolean current = placement == Placements.selected;
         float[] color = rgb(boxColor(placement));
         SubRegionPlacements regions = placement.subregions();
         boolean origin = regions == null || regions.selected == null;

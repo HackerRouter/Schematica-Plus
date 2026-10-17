@@ -10,7 +10,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Locale;
 import java.util.Objects;
 
 import net.minecraft.client.gui.GuiScreen;
@@ -30,8 +29,8 @@ import com.github.lunatrius.schematica.client.gui.framework.UiTranslations;
 import com.github.lunatrius.schematica.client.gui.framework.UiWidget;
 import com.github.lunatrius.schematica.client.util.FolderOpener;
 import com.github.lunatrius.schematica.client.util.UiState;
+import com.github.lunatrius.schematica.client.world.Placements;
 import com.github.lunatrius.schematica.handler.ConfigurationHandler;
-import com.github.lunatrius.schematica.proxy.ClientProxy;
 import com.github.lunatrius.schematica.reference.Reference;
 import com.github.lunatrius.schematica.util.FileUtils;
 import com.github.lunatrius.schematica.world.schematic.DataVersions;
@@ -327,9 +326,9 @@ public abstract class GuiSchematicBrowser extends UiScreen {
         prompt(UiTranslations.format("litematica.gui.title.rename_file"), entry.name(), name -> {
             try {
                 File source = entry.file.getCanonicalFile();
-                ClientProxy.SCHEMATICS.checkRename(source, new File(entry.file.getParentFile(), name));
+                Placements.LIBRARY.checkRename(source, new File(entry.file.getParentFile(), name));
                 File target = browser.rename(entry, name);
-                ClientProxy.sourceRenamed(source, target);
+                Placements.sourceRenamed(source, target);
                 selectResult(target);
                 return null;
             } catch (IOException e) {

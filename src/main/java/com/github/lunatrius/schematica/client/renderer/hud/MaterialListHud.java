@@ -25,11 +25,12 @@ import com.github.lunatrius.schematica.client.gui.material.MaterialList;
 import com.github.lunatrius.schematica.client.gui.material.MaterialListModel;
 import com.github.lunatrius.schematica.client.gui.material.MaterialListModel.Entry;
 import com.github.lunatrius.schematica.client.gui.material.MaterialLists;
+import com.github.lunatrius.schematica.client.world.Placements;
 import com.github.lunatrius.schematica.client.world.SchematicWorld;
 import com.github.lunatrius.schematica.handler.ConfigurationHandler;
 import com.github.lunatrius.schematica.handler.InfoHudSettings;
 import com.github.lunatrius.schematica.handler.RenderColors;
-import com.github.lunatrius.schematica.proxy.ClientProxy;
+import com.github.lunatrius.schematica.handler.client.RenderTickHandler;
 import com.github.lunatrius.schematica.reference.Reference;
 
 import cpw.mods.fml.relauncher.ReflectionHelper;
@@ -150,8 +151,8 @@ public final class MaterialListHud {
     }
 
     private static MaterialCache.BuildItems lookedAtItems(Minecraft mc) {
-        SchematicWorld schematic = ClientProxy.schematic;
-        MovingObjectPosition hit = ClientProxy.movingObjectPosition;
+        SchematicWorld schematic = Placements.selected;
+        MovingObjectPosition hit = RenderTickHandler.INSTANCE.schematicHit;
         if (schematic == null || hit == null || hit.typeOfHit != MovingObjectPosition.MovingObjectType.BLOCK || mc.renderViewEntity == null) return null;
         MovingObjectPosition vanilla = mc.objectMouseOver;
         if (hit.hitVec != null && vanilla != null && vanilla.typeOfHit == MovingObjectPosition.MovingObjectType.BLOCK && vanilla.hitVec != null) {

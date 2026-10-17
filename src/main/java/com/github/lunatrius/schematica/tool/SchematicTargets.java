@@ -10,11 +10,11 @@ import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.util.Vec3;
 import net.minecraftforge.common.util.ForgeDirection;
 
+import com.github.lunatrius.schematica.client.world.Placements;
 import com.github.lunatrius.schematica.client.world.RenderLayerSettings;
 import com.github.lunatrius.schematica.client.world.SchematicWorld;
 import com.github.lunatrius.schematica.handler.ConfigurationHandler;
 import com.github.lunatrius.schematica.handler.VisualSettings;
-import com.github.lunatrius.schematica.proxy.ClientProxy;
 import com.github.lunatrius.schematica.util.VoxelRayTrace;
 
 /** Traces against the rendered blocks of every enabled placement, the counterpart of Litematica's schematic world. */
@@ -81,7 +81,7 @@ public final class SchematicTargets {
         double entity = targetedEntityDistance(eye);
         if (entity >= 0) limit = Math.min(limit, entity);
         Hit best = null;
-        for (SchematicWorld world : ClientProxy.visiblePlacements()) {
+        for (SchematicWorld world : Placements.visible()) {
             if (!world.isRenderingEnabled()) continue;
             Vec3 start = copy(eye, -world.position.x, -world.position.y, -world.position.z);
             MovingObjectPosition hit = world.rayTraceRendered(copy(start, 0, 0, 0),
@@ -108,7 +108,7 @@ public final class SchematicTargets {
         double entity = targetedEntityDistance(eye);
         if (entity >= 0 && entity < vanilla) return null;
         Hit[] best = {null};
-        for (SchematicWorld world : ClientProxy.visiblePlacements()) {
+        for (SchematicWorld world : Placements.visible()) {
             if (!world.isRenderingEnabled()) continue;
             Vec3 start = copy(eye, -world.position.x, -world.position.y, -world.position.z);
             Vec3 end = start.addVector(look.xCoord * range, look.yCoord * range, look.zCoord * range);
@@ -129,7 +129,7 @@ public final class SchematicTargets {
         ForgeDirection side = ForgeDirection.getOrientation(real.sideHit);
         int x = real.blockX + side.offsetX, y = real.blockY + side.offsetY, z = real.blockZ + side.offsetZ;
         if (!RenderLayerSettings.RANGE.contains(x, y, z) || !mc.theWorld.isAirBlock(x, y, z)) return null;
-        for (SchematicWorld world : ClientProxy.visiblePlacements()) {
+        for (SchematicWorld world : Placements.visible()) {
             int lx = x - world.position.x, ly = y - world.position.y, lz = z - world.position.z;
             if (world.isRenderingEnabled() && world.isBlockRendered(lx, ly, lz) && !world.getBlock(lx, ly, lz).isAir(world, lx, ly, lz)) {
                 return new Hit(world, x, y, z, real.sideHit);

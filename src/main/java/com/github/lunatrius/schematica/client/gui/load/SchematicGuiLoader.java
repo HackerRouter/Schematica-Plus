@@ -13,11 +13,12 @@ import net.minecraftforge.common.util.ForgeDirection;
 
 import com.github.lunatrius.schematica.SchematicaPlus;
 import com.github.lunatrius.schematica.client.printer.SchematicPrinter;
+import com.github.lunatrius.schematica.client.world.LegacyCoordinates;
+import com.github.lunatrius.schematica.client.world.Placements;
 import com.github.lunatrius.schematica.client.world.SchematicLibrary;
 import com.github.lunatrius.schematica.client.world.SchematicSourceData;
 import com.github.lunatrius.schematica.client.world.SchematicWorld;
 import com.github.lunatrius.schematica.handler.client.WorldHandler;
-import com.github.lunatrius.schematica.proxy.ClientProxy;
 import com.github.lunatrius.schematica.util.Coordinates;
 
 import static com.github.lunatrius.schematica.client.util.WorldServerName.worldServerName;
@@ -30,7 +31,7 @@ public final class SchematicGuiLoader {
         if (minecraft.theWorld == null || minecraft.thePlayer == null || !SchematicaPlus.proxy.isLoadEnabled) {
             throw new IOException("Schematic loading is unavailable in this world");
         }
-        SchematicLibrary.Source<SchematicSourceData> source = ClientProxy.loadSource(file);
+        SchematicLibrary.Source<SchematicSourceData> source = Placements.loadSource(file);
         if (createPlacement) createPlacement(minecraft, source, true);
         WorldHandler.INSTANCE.saveSession();
         return source;
@@ -42,7 +43,7 @@ public final class SchematicGuiLoader {
         if (minecraft.theWorld == null || minecraft.thePlayer == null || !SchematicaPlus.proxy.isLoadEnabled) {
             throw new IOException("Schematic loading is unavailable in this world");
         }
-        return ClientProxy.loadSourceAsync(file, source -> {
+        return Placements.loadSourceAsync(file, source -> {
             try {
                 if (createPlacement) createPlacement(minecraft, source, true);
                 WorldHandler.INSTANCE.saveSession();
@@ -58,12 +59,12 @@ public final class SchematicGuiLoader {
         if (minecraft.theWorld == null || minecraft.thePlayer == null || !SchematicaPlus.proxy.isLoadEnabled) {
             throw new IOException("Schematic loading is unavailable in this world");
         }
-        SchematicWorld previous = ClientProxy.schematic;
-        SchematicWorld schematic = ClientProxy.createPlacement(source);
+        SchematicWorld previous = Placements.selected;
+        SchematicWorld schematic = Placements.create(source);
         try {
-            Coordinates coord = restoreCoordinates ? ClientProxy.getCoordinates(worldServerName(minecraft), schematic.name) : null;
+            Coordinates coord = restoreCoordinates ? LegacyCoordinates.get(worldServerName(minecraft), schematic.name) : null;
             if (!restoreCoordinates) {
-                ClientProxy.moveSchematicToPlayer(schematic);
+                Placements.moveToPlayer(schematic);
             } else if (coord == null) {
                 moveToLookTarget(minecraft, schematic);
             } else {
@@ -76,16 +77,16 @@ public final class SchematicGuiLoader {
                 for (int axis = 0; axis < axes.length; axis++) {
                     if (Math.floorMod(flips[axis], 2) != 0) schematic.flip(axes[axis]);
                 }
-                ClientProxy.moveSchematic(schematic, coord.posX, coord.posY, coord.posZ);
+                Placements.moveMinimumTo(schematic, coord.posX, coord.posY, coord.posZ);
             }
             if (GuiScreen.isShiftKeyDown()) schematic.setPlacementSettings(schematic.placementSettings().enabled(false));
-            ClientProxy.selectSchematic(schematic);
+            Placements.select(schematic);
             SchematicPrinter.INSTANCE.refresh();
             WorldHandler.INSTANCE.saveSession();
             return schematic;
         } catch (RuntimeException e) {
-            ClientProxy.removePlacement(schematic);
-            if (previous != null && ClientProxy.loadedSchematics.contains(previous)) ClientProxy.selectSchematic(previous);
+            Placements.remove(schematic);
+            if (previous != null && Placements.loaded.contains(previous)) Placements.select(previous);
             WorldHandler.INSTANCE.saveSession();
             throw e;
         }
@@ -100,7 +101,7 @@ public final class SchematicGuiLoader {
         if (target != null && target.typeOfHit == MovingObjectPosition.MovingObjectType.BLOCK) {
             schematic.moveOriginTo(target.blockX, target.blockY + 1, target.blockZ);
         } else {
-            ClientProxy.moveSchematicToPlayer(schematic);
+            Placements.moveToPlayer(schematic);
         }
     }
 }
