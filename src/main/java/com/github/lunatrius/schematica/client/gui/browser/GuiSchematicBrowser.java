@@ -150,8 +150,8 @@ public abstract class GuiSchematicBrowser extends UiScreen {
         previewPane = info.add(new SchematicPreviewPane(input, false, this::expandPreview));
         message = root.add(new UiLabel(() -> status));
         createActions();
-        back = addButton(directoriesOnly ? "gui.back" : "litematica.gui.button.change_menu.to_main_menu",
-            directoriesOnly ? this::closeScreen : this::mainMenu);
+        back = addButton(returnsToParent() ? "gui.back" : "litematica.gui.button.change_menu.to_main_menu",
+            returnsToParent() ? this::closeScreen : this::mainMenu);
     }
 
     /** Draws the info panel for the selected entry: descriptive metadata and preview for writable schematic formats. */
@@ -272,6 +272,8 @@ public abstract class GuiSchematicBrowser extends UiScreen {
         if (key != null) button.setTooltip(UiTranslations.format(key));
         return button;
     }
+
+    protected boolean returnsToParent() { return directoriesOnly; }
 
     protected int browserX() { return 12; }
     protected int browserY() { return 24; }

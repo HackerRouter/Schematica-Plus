@@ -65,9 +65,12 @@ domain under CC0 1.0 Universal.
   `tools/translations/schematic_synchronizer_zh_cn.json` adds a Simplified Chinese
   translation of the Schematic Synchronizer keys.
 - `assets/schematica_plus/textures/gui/sync_server_icon.png`,
-  `sync_server_icon_highlight.png`, `sync_download_icon.png` and `sync_upload.png` are
-  the unmodified Schematic Synchronizer `server_icon`, `server_icon_highlight`,
-  `download_icon` and `upload` textures.
+  `sync_server_icon_highlight.png` and `sync_download_icon.png` are the unmodified
+  Schematic Synchronizer `server_icon`, `server_icon_highlight` and `download_icon`
+  textures.
+- `assets/schematica_plus/textures/gui/shared_placements.png` is the schematic
+  placements icon of the Litematica `gui_widgets.png` atlas with its hue changed to
+  cyan; it keeps the LGPL-3.0 license of that atlas.
 
 ## Minecraft report icon
 

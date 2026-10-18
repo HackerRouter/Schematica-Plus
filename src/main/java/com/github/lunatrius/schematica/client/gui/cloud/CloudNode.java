@@ -12,7 +12,7 @@ import com.github.lunatrius.schematica.cloud.CloudFile;
 import com.github.lunatrius.schematica.cloud.CloudPath;
 
 final class CloudNode {
-    enum Type { UP, DIRECTORY, SCHEMATIC }
+    enum Type { DIRECTORY, SCHEMATIC }
 
     final Type type;
     final CloudPath path;
@@ -24,7 +24,6 @@ final class CloudNode {
     }
 
     String name() {
-        if (type == Type.UP) return "..";
         return file != null ? file.path.name() : path.name();
     }
 
@@ -49,7 +48,6 @@ final class CloudNode {
             }
             return nodes;
         }
-        nodes.add(new CloudNode(Type.UP, directory.isRoot() ? null : directory.parent(), null, 0));
         TreeMap<String, CloudNode> directories = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
         for (CloudPath path : catalog.directories) {
             if (path.isRoot() || !Objects.equals(path.parent(), directory)) continue;
@@ -72,9 +70,8 @@ final class CloudNode {
     }
 
     @Override public boolean equals(Object other) {
-        return other instanceof CloudNode && type == ((CloudNode) other).type && Objects.equals(path, ((CloudNode) other).path)
-            && count == ((CloudNode) other).count && file == ((CloudNode) other).file;
+        return other instanceof CloudNode && type == ((CloudNode) other).type && Objects.equals(path, ((CloudNode) other).path);
     }
 
-    @Override public int hashCode() { return Objects.hash(type, path, count); }
+    @Override public int hashCode() { return Objects.hash(type, path); }
 }

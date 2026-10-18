@@ -1,4 +1,3 @@
-// Schematic Synchronizer server schematics screen, adapted for 1.7.10 by HackerRouter, 2026.
 package com.github.lunatrius.schematica.client.gui.cloud;
 
 import java.io.File;
@@ -20,9 +19,9 @@ import com.github.lunatrius.schematica.client.gui.framework.UiBounds;
 import com.github.lunatrius.schematica.client.gui.framework.UiButton;
 import com.github.lunatrius.schematica.client.gui.framework.UiCheckBox;
 import com.github.lunatrius.schematica.client.gui.framework.UiDraw;
+import com.github.lunatrius.schematica.client.gui.framework.UiLabel;
+import com.github.lunatrius.schematica.client.gui.framework.UiList;
 import com.github.lunatrius.schematica.client.gui.framework.UiListModel;
-import com.github.lunatrius.schematica.client.gui.framework.UiPanel;
-import com.github.lunatrius.schematica.client.gui.framework.UiRowList;
 import com.github.lunatrius.schematica.client.gui.framework.UiScreen;
 import com.github.lunatrius.schematica.client.gui.framework.UiSprite;
 import com.github.lunatrius.schematica.client.gui.framework.UiTextField;
@@ -47,22 +46,20 @@ import org.lwjgl.input.Keyboard;
 
 public final class GuiServerSchematics extends UiScreen {
     private static final String PREFIX = "schematic_synchronizer.gui.";
-    private final UiListModel<CloudNode> model = new UiListModel<>(22, CloudNode::name);
+    private final UiListModel<CloudNode> model = new UiListModel<>(14, CloudNode::name);
+    private final List<UiButton> actions = new ArrayList<>();
     private CloudPath directory;
-    private CloudNode selected;
-    private CloudPath selectedPath;
-    private boolean publishShown;
     private int revision = -1;
-    private long lastClick;
-    private CloudNode lastClicked;
+    private boolean searching;
     private boolean placeOnLoad = Boolean.parseBoolean(UiState.get("create_placement_on_load", "true"));
 
-    private UiRowList<CloudNode> list;
-    private UiWidget pathBar, info, empty;
-    private UiButton home, up, createDirectory, openFolder, upload;
+    private UiWidget frame, info;
+    private UiLabel path, status;
+    private UiList<CloudNode> list;
     private UiTextField search;
+    private UiButton home, up, createDirectory, openFolder, searchButton, back;
+    private UiButton load, materials, upload, download, publish, delete;
     private UiCheckBox createPlacement;
-    private UiButton load, materials, download, delete, publish, menu;
 
     public GuiServerSchematics(GuiScreen parent) {
         super(parent, UiTranslations.format(PREFIX + "title.server_schematics"));
@@ -79,58 +76,72 @@ public final class GuiServerSchematics extends UiScreen {
 
     @Override
     protected void createWidgets() {
+        frame = root.add(new UiWidget() {
+            @Override public void draw(UiDraw draw, int mouseX, int mouseY) {
+                draw.fill(bounds(), 0xB0000000);
+                draw.border(bounds(), 0xFF999999);
+            }
+        });
+        path = root.add(new UiLabel(() -> display(directory)));
         home = icon(UiSprite.ROOT, "malilib.gui.button.hover.directory_widget.root", () -> navigate(null));
         up = icon(UiSprite.UP, "malilib.gui.button.hover.directory_widget.up", this::goUp);
         createDirectory = icon(UiSprite.CREATE_DIRECTORY, "malilib.gui.button.hover.directory_widget.create_directory", this::createDirectory);
         openFolder = icon(UiSprite.DIRECTORY, "malilib.gui.button.hover.directory_widget.open_directory", this::openFolder);
-        upload = icon(UiSprite.UPLOAD, PREFIX + "button.hover.upload_to_server",
-            () -> mc.displayGuiScreen(new GuiUploadSchematics(this, directory)));
-        pathBar = root.add(new UiWidget() {
-            @Override public void draw(UiDraw draw, int mouseX, int mouseY) {
-                draw.fill(bounds(), 0x20FFFFFF);
-                draw.border(bounds(), 0x40FFFFFF);
-                String text = display(directory);
-                int room = bounds().width - 8;
-                if (draw.textWidth(text) > room) {
-                    while (text.length() > 1 && draw.textWidth("..." + text) > room) text = text.substring(1);
-                    text = "..." + text;
-                }
-                draw.flatText(text, bounds().x + 4, bounds().y + 3, 0xFFDDDDDD);
-            }
-        });
         search = root.add(new UiTextField(fontRendererObj, 256, text -> rebuild()));
-        empty = root.add(new UiWidget() {
-            @Override public void draw(UiDraw draw, int mouseX, int mouseY) { drawEmpty(draw); }
+        searchButton = icon(UiSprite.SEARCH, null, () -> {
+            searching = !searching;
+            layoutWidgets();
+            if (searching) input.focus(search);
+            else search.setText("");
         });
-        list = root.add(new UiRowList<>(model, Row::new));
+        list = root.add(new UiList<>(model, "", this::activate));
+        list.setFileStyle(node -> node.type == CloudNode.Type.DIRECTORY ? UiSprite.DIRECTORY : UiSprite.schematicFile(node.name()),
+            node -> node.type == CloudNode.Type.DIRECTORY ? (node.path.isRoot() ? scopeName(node.path.scope) : node.name())
+                : node.name().substring(0, node.name().lastIndexOf('.')));
+        list.setBadges(node -> node.file != null && CloudCache.cached(node.file) ? UiSprite.DOWNLOADED : null);
+        list.setEntryTooltip(node -> node.file != null && CloudCache.cached(node.file)
+            ? Collections.singletonList(UiTranslations.format(PREFIX + "hover.saved_path", relative(CloudCache.file(node.file.path))))
+            : Collections.singletonList(node.name()));
         info = root.add(new UiWidget() {
             @Override public void draw(UiDraw draw, int mouseX, int mouseY) {
-                CloudInfo.box(draw, bounds());
-                try (UiDraw.Clip ignored = draw.clip(new UiBounds(bounds().x + 1, bounds().y + 1, bounds().width - 2, bounds().height - 2))) {
-                    drawInfo(draw, bounds().x + 6, bounds().y + 6, bounds().width - 12);
+                draw.fill(bounds(), 0xA0000000);
+                draw.border(bounds(), 0xFF999999);
+                try (UiDraw.Clip ignored = draw.clip(new UiBounds(bounds().x + 1, bounds().y + 1, bounds().width - 2, bounds().height - 30))) {
+                    drawInfo(draw, bounds().x + 3, bounds().y + 3, bounds().width - 4);
                 }
             }
         });
+        status = root.add(new UiLabel(this::storage));
+        load = action("litematica.gui.button.load_schematic_to_memory", this::loadSelected);
+        materials = action("litematica.gui.button.material_list", this::materialList);
+        upload = action(PREFIX + "button.upload_to_server", () -> mc.displayGuiScreen(new GuiUploadSchematics(this, directory)));
+        upload.setTooltip(UiTranslations.format(PREFIX + "button.hover.upload_to_server"));
+        download = action("schematica.ui.cloud.download", this::downloadSelected);
+        publish = action("schematica.ui.cloud.publish", this::publishSelected);
+        delete = action("schematica.ui.cloud.delete", this::deleteSelected);
         createPlacement = root.add(new UiCheckBox(() -> UiTranslations.format("litematica.gui.label.schematic_load.checkbox.create_placement"),
             () -> placeOnLoad, value -> {
                 placeOnLoad = value;
                 UiState.set("create_placement_on_load", Boolean.toString(value));
-                layoutWidgets();
             }));
         createPlacement.setTooltip(UiTranslations.format("litematica.gui.label.schematic_load.hoverinfo.create_placement").split("\n"));
-        load = root.add(new UiButton(() -> UiTranslations.format(placeOnLoad ? "litematica.gui.button.create_placement"
-            : "litematica.gui.button.load_schematic_to_memory"), mouse -> { if (mouse == 0) loadSelected(); }));
-        materials = addButton("litematica.gui.button.material_list", this::materialList);
-        download = addButton("schematica.ui.cloud.download", this::downloadSelected);
-        publish = addButton("schematica.ui.cloud.publish", this::publishSelected);
-        delete = addButton("schematica.ui.cloud.delete", this::deleteSelected);
-        menu = addButton("litematica.gui.button.change_menu.to_main_menu", this::mainMenu);
+        back = addButton("litematica.gui.button.change_menu.to_main_menu", this::mainMenu);
     }
 
     private UiButton icon(UiSprite sprite, String tooltip, Runnable action) {
         UiButton button = root.add(new UiButton(() -> "", mouse -> { if (mouse == 0) action.run(); }).setSprite(sprite).setBackground(false));
-        button.setTooltip(UiTranslations.format(tooltip));
+        if (tooltip != null) button.setTooltip(UiTranslations.format(tooltip));
         return button;
+    }
+
+    private UiButton action(String key, Runnable action) {
+        UiButton button = addButton(key, action);
+        actions.add(button);
+        return button;
+    }
+
+    private String relative(File file) {
+        return mc.mcDataDir.toPath().toAbsolutePath().relativize(file.toPath().toAbsolutePath()).toString().replace('\\', '/');
     }
 
     @Override
@@ -138,24 +149,25 @@ public final class GuiServerSchematics extends UiScreen {
         CloudClient.INSTANCE.refresh();
     }
 
-    private void rebuild() {
-        List<CloudNode> nodes = CloudNode.list(CloudClient.INSTANCE.catalog(), directory, search.text());
-        model.setEntries(nodes);
-        if (selected != null && !nodes.contains(selected)) {
-            selected = null;
-            for (CloudNode node : nodes) if (node.type != CloudNode.Type.UP && node.path.equals(selectedPath)) selected = node;
-        }
-        list.sync();
+    private CloudCatalog catalog() { return CloudClient.INSTANCE.catalog(); }
+
+    private CloudNode selection() { return model.selectedIndex() < 0 ? null : model.selected(); }
+
+    private CloudFile selectedFile() {
+        CloudNode node = selection();
+        return node != null && node.type == CloudNode.Type.SCHEMATIC ? node.file : null;
     }
 
-    private void select(CloudNode node) {
-        selected = node;
-        selectedPath = node == null ? null : node.path;
+    private void rebuild() {
+        model.setEntries(CloudNode.list(catalog(), directory, search.text()));
+        list.setEmptyText(!CloudClient.INSTANCE.available() ? UiTranslations.format("schematica.ui.cloud.unavailable")
+            : catalog() == null ? UiTranslations.format("schematica.ui.cloud.loading")
+            : catalog().files.isEmpty() && catalog().directories.isEmpty() ? UiTranslations.format(PREFIX + "browser.empty_server")
+            : UiTranslations.format(PREFIX + "browser.empty_folder"));
     }
 
     private void navigate(CloudPath target) {
         directory = target;
-        select(null);
         model.setOffset(0);
         search.setText("");
         rebuild();
@@ -165,7 +177,10 @@ public final class GuiServerSchematics extends UiScreen {
         if (directory != null) navigate(directory.isRoot() ? null : directory.parent());
     }
 
-    private CloudCatalog catalog() { return CloudClient.INSTANCE.catalog(); }
+    private void activate(CloudNode node) {
+        if (node.type == CloudNode.Type.DIRECTORY) navigate(node.path);
+        else loadSelected();
+    }
 
     private boolean mayWrite(CloudPath path) {
         CloudCatalog catalog = catalog();
@@ -185,10 +200,6 @@ public final class GuiServerSchematics extends UiScreen {
         File folder = directory == null ? CloudCache.root() : CloudCache.file(directory);
         if (!folder.isDirectory() && !folder.mkdirs()) return;
         FolderOpener.open(folder);
-    }
-
-    private CloudFile selectedFile() {
-        return selected != null && selected.type == CloudNode.Type.SCHEMATIC ? selected.file : null;
     }
 
     private void fetch(CloudFile file, Consumer<File> done) {
@@ -260,22 +271,25 @@ public final class GuiServerSchematics extends UiScreen {
     }
 
     private void deleteSelected() {
-        if (selected == null || selected.type == CloudNode.Type.UP || selected.path.isRoot()) return;
-        CloudPath path = selected.path;
-        confirm(UiTranslations.format("schematica.ui.cloud.delete"), UiTranslations.format("schematica.ui.cloud.delete_confirm", path.name()),
-            () -> CloudClient.INSTANCE.delete(path));
+        CloudNode node = selection();
+        if (node == null || node.path.isRoot()) return;
+        CloudPath target = node.path;
+        confirm(UiTranslations.format("litematica.gui.title.confirm_file_deletion"), UiTranslations.format("schematica.ui.cloud.delete_confirm", target.name()),
+            () -> CloudClient.INSTANCE.delete(target));
     }
 
-    private void activate(CloudNode node) {
-        if (node.type == CloudNode.Type.UP) navigate(node.path);
-        else if (node.type == CloudNode.Type.DIRECTORY) navigate(node.path);
-        else loadSelected();
+    private boolean owned(CloudNode node) {
+        return node.file == null || mc.thePlayer != null && node.file.owner.equals(mc.thePlayer.getCommandSenderName());
     }
 
     @Override
     protected boolean handleKey(char character, int keyCode) {
-        if ((keyCode == Keyboard.KEY_RETURN || keyCode == Keyboard.KEY_NUMPADENTER) && selected != null && !search.isFocused()) {
-            activate(selected);
+        if (!(input.focused() instanceof UiTextField) && keyCode == Keyboard.KEY_BACK && directory != null) {
+            goUp();
+            return true;
+        }
+        if (keyCode == Keyboard.KEY_F5) {
+            CloudClient.INSTANCE.refresh();
             return true;
         }
         return false;
@@ -287,191 +301,89 @@ public final class GuiServerSchematics extends UiScreen {
             revision = CloudClient.INSTANCE.revision();
             rebuild();
         }
-        boolean file = selectedFile() != null;
-        boolean entry = selected != null && selected.type != CloudNode.Type.UP && !selected.path.isRoot();
         CloudCatalog catalog = catalog();
+        CloudNode node = selection();
+        boolean file = selectedFile() != null;
+        boolean entry = node != null && !node.path.isRoot();
         up.setEnabled(directory != null);
         createDirectory.setEnabled(mayWrite(directory));
+        boolean changed = load.isVisible() != file || delete.isVisible() != entry
+            || publish.isVisible() != (file && CloudPath.PRIVATE.equals(node.path.scope));
+        load.setVisible(file);
+        materials.setVisible(file);
+        download.setVisible(file);
+        publish.setVisible(file && CloudPath.PRIVATE.equals(node.path.scope));
+        delete.setVisible(entry);
+        load.setEnabled(SchematicaPlus.proxy.isLoadEnabled);
         upload.setEnabled(catalog != null && catalog.upload && mayWrite(directory));
-        load.setEnabled(file && SchematicaPlus.proxy.isLoadEnabled);
-        materials.setEnabled(file);
-        download.setEnabled(file);
-        publish.setVisible(file && CloudPath.PRIVATE.equals(selected.path.scope));
         publish.setEnabled(catalog != null && catalog.publish);
-        delete.setEnabled(entry && catalog != null && (CloudPath.PRIVATE.equals(selected.path.scope) || catalog.manage || owned(selected)));
-        if (publishShown != publish.isVisible()) {
-            publishShown = publish.isVisible();
-            layoutWidgets();
-        }
+        delete.setEnabled(entry && catalog != null && (CloudPath.PRIVATE.equals(node.path.scope) || catalog.manage || owned(node)));
+        if (changed && back != null) layoutActions();
     }
 
-    private boolean owned(CloudNode node) {
-        return node.file == null || mc.thePlayer != null && node.file.owner.equals(mc.thePlayer.getCommandSenderName());
+    private String storage() {
+        CloudCatalog catalog = catalog();
+        if (catalog == null) return "";
+        return UiTranslations.format("schematica.ui.cloud.storage", catalog.quota < 0 ? FileUtils.humanReadableByteCount(catalog.used)
+            : FileUtils.humanReadableByteCount(catalog.used) + " / " + FileUtils.humanReadableByteCount(catalog.quota));
     }
 
     @Override
     protected void layoutWidgets() {
-        int infoWidth = CloudInfo.infoWidth(width), browserWidth = CloudInfo.browserWidth(width);
-        int checkboxWidth = Math.min(width - 20, fontRendererObj.getStringWidth(createPlacement.label()) + 20);
-        int actionsWidth = 0;
-        for (UiButton button : new UiButton[] {delete, publish, download}) if (button.isVisible()) actionsWidth += buttonWidth(button, 16) + 4;
-        boolean raised = width - 10 - actionsWidth < 10 + checkboxWidth + 4;
-        int browserHeight = height - 74 - (raised ? 22 : 0);
-        int iconY = 29;
-        home.setBounds(12, iconY - 1, 16, 16);
-        up.setBounds(28, iconY - 1, 16, 16);
-        createDirectory.setBounds(44, iconY - 1, 16, 16);
-        openFolder.setBounds(60, iconY - 1, 16, 16);
-        upload.setBounds(76, iconY - 1, 16, 16);
-        int searchWidth = Math.min(130, Math.max(70, browserWidth / 4));
-        search.setBounds(10 + browserWidth - searchWidth - 4, 29, searchWidth, 15);
-        pathBar.setBounds(95, iconY, Math.max(0, search.bounds().x - 4 - 95), 14);
-        list.setBounds(10, 48, browserWidth, Math.max(0, browserHeight - 22));
-        empty.setBounds(10, 48, browserWidth, Math.max(0, browserHeight - 22));
-        info.setBounds(10 + browserWidth + 4, 26, infoWidth, browserHeight);
-        createPlacement.setBounds(10, height - 44, checkboxWidth, 11);
-        load.setBounds(10, height - 24, buttonWidth(load, 18), 20);
-        materials.setBounds(14 + load.bounds().width, height - 24, buttonWidth(materials, 16), 20);
-        int right = width - 10;
-        for (UiButton button : new UiButton[] {delete, publish, download}) {
+        int x = 12, y = 24, browserWidth = Math.max(24, width - 196), browserHeight = Math.max(0, height - 70);
+        frame.setBounds(x, y, browserWidth, browserHeight);
+        home.setBounds(x + 2, y + 5, 12, 12);
+        up.setBounds(x + 16, y + 5, 12, 12);
+        createDirectory.setBounds(x + 30, y + 5, 12, 12);
+        openFolder.setBounds(x + 44, y + 5, 12, 12);
+        searchButton.setBounds(x + browserWidth - 24, y + 5, 12, 12);
+        path.setBounds(x + 62, y + 4, browserWidth - 28 - 62, 14);
+        search.setBounds(x + 2, y + 4, browserWidth - 28, 14);
+        search.setVisible(searching);
+        for (UiWidget widget : new UiWidget[] {path, home, up, createDirectory, openFolder}) widget.setVisible(!searching);
+        list.setBounds(x + 2, y + 21, browserWidth - 4, Math.max(0, browserHeight - 25));
+        info.setBounds(x + width - 190, y, 170, Math.min(310, browserHeight + 10));
+        status.setBounds(info.bounds().x + 3, info.bounds().bottom() - 25, 164, 22);
+        createPlacement.setBounds(12, height - 40, Math.min(width - 24, fontRendererObj.getStringWidth(createPlacement.label()) + 20), 11);
+        int menuWidth = fontRendererObj.getStringWidth(back.label()) + 20;
+        back.setBounds(width - menuWidth - 10, height - 26, menuWidth, 20);
+        layoutActions();
+    }
+
+    private void layoutActions() {
+        int total = 0, count = 0;
+        for (UiButton button : actions) {
             if (!button.isVisible()) continue;
-            int buttonWidth = buttonWidth(button, 16);
-            right -= buttonWidth;
-            button.setBounds(right, height - (raised ? 68 : 46), buttonWidth, 20);
-            right -= 4;
+            total += button.preferredWidth(fontRendererObj.getStringWidth(button.label())) + 4;
+            count++;
         }
-        int menuWidth = fontRendererObj.getStringWidth(menu.label()) + 20;
-        menu.setBounds(width - menuWidth - 10, height - 24, menuWidth, 20);
-    }
-
-    private int buttonWidth(UiButton button, int padding) {
-        return fontRendererObj.getStringWidth(button.label()) + padding;
-    }
-
-    private void drawEmpty(UiDraw draw) {
-        boolean onlyUp = model.entries().size() == 1 && model.entries().get(0).type == CloudNode.Type.UP;
-        if (!model.entries().isEmpty() && !onlyUp && catalog() != null) return;
-        List<String[]> lines = new ArrayList<>();
-        if (!CloudClient.INSTANCE.available()) {
-            lines.add(new String[] {UiTranslations.format("schematica.ui.cloud.unavailable"), "FFDDDDDD"});
-        } else if (catalog() == null) {
-            lines.add(new String[] {UiTranslations.format("schematica.ui.cloud.loading"), "FFDDDDDD"});
-        } else if (catalog().files.isEmpty() && catalog().directories.isEmpty()) {
-            lines.add(new String[] {UiTranslations.format(PREFIX + "browser.empty_server"), "FFDDDDDD"});
-            lines.add(new String[] {UiTranslations.format(PREFIX + "browser.empty_server_upload"), "FFAAAAAA"});
-        } else {
-            lines.add(new String[] {UiTranslations.format(PREFIX + "browser.empty_folder"), "FFDDDDDD"});
-        }
-        int y = empty.bounds().y + empty.bounds().height / 2 - lines.size() * 7;
-        for (String[] line : lines) {
-            draw.text(line[0], empty.bounds().x + (empty.bounds().width - draw.textWidth(line[0])) / 2, y, (int) Long.parseLong(line[1], 16));
-            y += 14;
+        int available = back.bounds().x - 4 - 12;
+        double scale = total > available && total > 0 ? Math.max(0, available - 4.0 * count) / (total - 4.0 * count) : 1;
+        int x = 12;
+        for (UiButton button : actions) {
+            if (!button.isVisible()) continue;
+            int w = Math.max(20, (int) (button.preferredWidth(fontRendererObj.getStringWidth(button.label())) * scale));
+            button.setBounds(x, height - 26, w, 20);
+            x += w + 4;
         }
     }
 
     private void drawInfo(UiDraw draw, int x, int y, int width) {
-        CloudCatalog catalog = catalog();
-        if (selected == null) {
-            draw.text("\u00a76\u00a7l" + UiTranslations.format(PREFIX + "info.title"), x, y, 0xFFFFFFFF);
-            draw.text("\u00a77" + UiTranslations.format(PREFIX + "info.select_schematic_line1"), x, y += 14, 0xFFFFFFFF);
-            draw.text("\u00a77" + UiTranslations.format(PREFIX + "info.select_schematic_line2"), x, y += CloudInfo.LINE, 0xFFFFFFFF);
-            y = CloudInfo.divider(draw, x, y + CloudInfo.LINE, width);
-            draw.text("\u00a77" + UiTranslations.format(PREFIX + "info.server_folder"), x, y, 0xFFFFFFFF);
-            draw.text(draw.trim("\u00a7e" + display(directory), width), x, y += CloudInfo.LINE, 0xFFFFFFFF);
-            if (catalog == null) return;
-            draw.text(UiTranslations.format(PREFIX + "info.total_schematics", catalog.files.size()), x, y += 14, 0xFFFFFFFF);
-            String quota = catalog.quota < 0 ? FileUtils.humanReadableByteCount(catalog.used)
-                : FileUtils.humanReadableByteCount(catalog.used) + " / " + FileUtils.humanReadableByteCount(catalog.quota);
-            draw.text(draw.trim(UiTranslations.format("schematica.ui.cloud.storage", quota), width), x, y + CloudInfo.LINE, 0xFFFFFFFF);
+        CloudNode node = selection();
+        if (node == null) return;
+        if (node.type == CloudNode.Type.DIRECTORY) {
+            draw.text(UiTranslations.format("litematica.gui.label.schematic_info.name"), x, y, CloudInfo.LABEL);
+            draw.text(draw.trim(node.path.isRoot() ? scopeName(node.path.scope) : node.name(), width - 12), x + 4, y += CloudInfo.LINE, CloudInfo.VALUE);
+            draw.text(UiTranslations.format(PREFIX + "info.dir_schematics", node.count), x, y + CloudInfo.LINE, CloudInfo.LABEL);
             return;
         }
-        if (selected.type == CloudNode.Type.UP) {
-            draw.text("\u00a77\u00a7l" + UiTranslations.format(PREFIX + "info.up_title"), x, y, 0xFFFFFFFF);
-            draw.text("\u00a7a" + UiTranslations.format(PREFIX + "info.up_hint1"), x, y += 14, 0xFFFFFFFF);
-            draw.text("\u00a7a" + UiTranslations.format(PREFIX + "info.up_hint2"), x, y + CloudInfo.LINE, 0xFFFFFFFF);
-            return;
-        }
-        if (selected.type == CloudNode.Type.DIRECTORY) {
-            draw.text(draw.trim("\u00a7e\u00a7l" + (selected.path.isRoot() ? scopeName(selected.path.scope) : selected.path.name()) + "/", width), x, y, 0xFFFFFFFF);
-            draw.text(draw.trim("\u00a77" + UiTranslations.format(PREFIX + "info.dir_path", display(selected.path).substring(1)), width), x, y += 14, 0xFFFFFFFF);
-            draw.text(UiTranslations.format(PREFIX + "info.dir_schematics", selected.count), x, y += CloudInfo.LINE, 0xFFFFFFFF);
-            y = CloudInfo.divider(draw, x, y + CloudInfo.LINE, width);
-            draw.text("\u00a7a" + UiTranslations.format(PREFIX + "info.dir_hint1"), x, y, 0xFFFFFFFF);
-            draw.text("\u00a7a" + UiTranslations.format(PREFIX + "info.dir_hint2"), x, y + CloudInfo.LINE, 0xFFFFFFFF);
-            return;
-        }
-        CloudFile file = selected.file;
+        CloudFile file = node.file;
         y = CloudInfo.schematic(draw, x, y, width, file);
         if (!file.owner.isEmpty()) {
-            draw.text(draw.trim(UiTranslations.format(PREFIX + "info.owner") + ": \u00a7f" + file.owner, width), x, y, CloudInfo.LABEL);
+            draw.text(draw.trim(UiTranslations.format(PREFIX + "info.owner") + ": " + file.owner, width - 8), x, y, CloudInfo.LABEL);
             y += CloudInfo.LINE;
         }
-        String status = CloudCache.cached(file) ? "\u00a7a\u2714 " + UiTranslations.format(PREFIX + "info.status_cached")
-            : "\u00a7e\u2601 " + UiTranslations.format(PREFIX + "info.status_server");
-        draw.text(draw.trim(UiTranslations.format(PREFIX + "info.file_label", "\u00a7f" + FileUtils.humanReadableByteCount(file.size) + "\u00a7r", status), width), x, y, CloudInfo.LABEL);
-    }
-
-    private final class Row extends UiPanel {
-        private final CloudNode node;
-        private final int index;
-
-        Row(CloudNode node, int index) {
-            this.node = node;
-            this.index = index;
-            if (node.file != null && CloudCache.cached(node.file)) {
-                setTooltip(UiTranslations.format(PREFIX + "hover.saved_path", mc.mcDataDir.toPath().toAbsolutePath()
-                    .relativize(CloudCache.file(node.file.path).toPath().toAbsolutePath()).toString().replace('\\', '/')));
-            }
-        }
-
-        @Override
-        public void draw(UiDraw draw, int mouseX, int mouseY) {
-            UiBounds box = bounds();
-            boolean hovered = containsVisible(mouseX, mouseY);
-            if (node.equals(selected)) {
-                draw.fill(box, 0x70FFFFFF);
-                draw.border(box, 0xEEEEEEEE);
-            } else if (hovered) {
-                draw.border(box, 0xEEEEEEEE);
-                draw.fill(box, 0x38FFFFFF);
-            } else draw.fill(box, index % 2 == 1 ? 0x20FFFFFF : 0x38FFFFFF);
-            UiSprite icon = node.type == CloudNode.Type.UP ? UiSprite.UP : node.type == CloudNode.Type.DIRECTORY ? UiSprite.DIRECTORY
-                : UiSprite.schematicFile(node.name());
-            icon.draw(draw, box.x + 3, box.y + (box.height - icon.height) / 2, true, false);
-            int textY = box.y + (box.height - 8) / 2 + 1, right = box.right() - 6;
-            if (node.type == CloudNode.Type.UP) {
-                draw.text("..", box.x + 22, textY, 0xFFAAAAAA);
-            } else if (node.type == CloudNode.Type.DIRECTORY) {
-                String count = "(" + node.count + ")";
-                draw.text(count, right - draw.textWidth(count), textY, 0xFFAAAAAA);
-                String name = node.path.isRoot() ? scopeName(node.path.scope) : node.name();
-                draw.text(draw.trim(name + "/", right - draw.textWidth(count) - box.x - 30), box.x + 22, textY, 0xFFFFFF55);
-            } else {
-                if (CloudCache.cached(node.file)) {
-                    UiSprite.DOWNLOADED.draw(draw, right - 11, box.y + (box.height - 11) / 2, true, false);
-                    right -= 16;
-                }
-                draw.text(draw.trim(node.name(), right - box.x - 24), box.x + 22, textY, 0xFFFFFFFF);
-            }
-        }
-
-        @Override
-        public boolean isFocusable() { return true; }
-
-        @Override
-        public boolean mouseDown(int x, int y, int button) {
-            if (button != 0) return false;
-            long now = System.currentTimeMillis();
-            boolean twice = node.equals(lastClicked) && now - lastClick < 500;
-            lastClick = now;
-            lastClicked = node;
-            if (node.type == CloudNode.Type.UP) {
-                navigate(node.path);
-                return true;
-            }
-            select(node);
-            if (twice && node.type == CloudNode.Type.DIRECTORY) navigate(node.path);
-            return true;
-        }
+        String state = UiTranslations.format(PREFIX + (CloudCache.cached(file) ? "info.status_cached" : "info.status_server"));
+        draw.text(draw.trim(UiTranslations.format(PREFIX + "info.file_label", FileUtils.humanReadableByteCount(file.size), state), width - 8), x, y, CloudInfo.LABEL);
     }
 }

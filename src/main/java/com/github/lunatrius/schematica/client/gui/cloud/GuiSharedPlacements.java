@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
+import java.util.function.Supplier;
 
 import net.minecraft.client.gui.GuiScreen;
 
@@ -16,27 +17,31 @@ import com.github.lunatrius.schematica.client.gui.framework.UiListModel;
 import com.github.lunatrius.schematica.client.gui.framework.UiPanel;
 import com.github.lunatrius.schematica.client.gui.framework.UiRowList;
 import com.github.lunatrius.schematica.client.gui.framework.UiScreen;
+import com.github.lunatrius.schematica.client.gui.framework.UiSprite;
 import com.github.lunatrius.schematica.client.gui.framework.UiTextField;
 import com.github.lunatrius.schematica.client.gui.framework.UiTranslations;
 import com.github.lunatrius.schematica.client.gui.framework.UiWidget;
 import com.github.lunatrius.schematica.client.gui.material.MaterialList;
 import com.github.lunatrius.schematica.client.gui.material.MaterialLists;
+import com.github.lunatrius.schematica.client.gui.placement.GuiSchematicPlacementsList;
 import com.github.lunatrius.schematica.client.world.SchematicWorld;
 import com.github.lunatrius.schematica.cloud.SharedPlacement;
 import com.github.lunatrius.schematica.handler.client.SharedPlacementsClient;
 import com.github.lunatrius.schematica.reference.Reference;
 
+import org.lwjgl.input.Keyboard;
+
 public final class GuiSharedPlacements extends UiScreen {
     private static final String PREFIX = "syncmatica.gui.";
     private static final int INFO_WIDTH = 170;
-    private final UiListModel<SharedPlacement> model = new UiListModel<>(22, placement -> placement.name);
-    private SharedPlacement selected;
+    private final UiListModel<SharedPlacement> model = new UiListModel<>(22, placement -> placement.name + " " + placement.fileName);
     private int revision = -1;
+    private boolean searching;
 
-    private UiWidget frame, info;
-    private UiTextField search;
     private UiRowList<SharedPlacement> list;
-    private UiButton menu;
+    private UiTextField search;
+    private UiButton searchButton, placements, menu;
+    private UiWidget info;
 
     public GuiSharedPlacements(GuiScreen parent) {
         super(parent, UiTranslations.format(PREFIX + "title.manage_server_placements", "v" + Reference.VERSION));
@@ -44,23 +49,30 @@ public final class GuiSharedPlacements extends UiScreen {
 
     @Override
     protected void createWidgets() {
-        frame = root.add(new UiWidget() {
-            @Override public void draw(UiDraw draw, int mouseX, int mouseY) {
-                draw.fill(bounds(), 0xB0000000);
-                draw.border(bounds(), 0xFF999999);
-            }
-        });
-        search = root.add(new UiTextField(fontRendererObj, 256, text -> model.setQuery(text)));
         list = root.add(new UiRowList<>(model, Row::new));
+        search = root.add(new UiTextField(fontRendererObj, 256, text -> { model.setQuery(text); list.sync(); }));
+        search.setVisible(false);
+        searchButton = root.add(new UiButton(() -> "", button -> {
+            searching = !searching;
+            search.setVisible(searching);
+            if (searching) input.focus(search);
+            else search.setText("");
+        }).setSprite(UiSprite.SEARCH).setBackground(false));
         info = root.add(new UiWidget() {
             @Override public void draw(UiDraw draw, int mouseX, int mouseY) {
-                if (selected == null) return;
                 draw.fill(bounds(), 0xA0000000);
                 draw.border(bounds(), 0xFF999999);
-                drawInfo(draw, bounds().x + 3, bounds().y + 3, bounds().width - 6);
+                SharedPlacement selected = selected();
+                if (selected != null) drawInfo(draw, selected, bounds().x + 3, bounds().y + 3, bounds().width - 4);
             }
         });
+        placements = addButton("litematica.gui.button.change_menu.show_schematic_placements",
+            () -> mc.displayGuiScreen(new GuiSchematicPlacementsList(this))).setSprite(UiSprite.SCHEMATIC_PLACEMENTS);
         menu = addButton("litematica.gui.button.change_menu.to_main_menu", this::mainMenu);
+    }
+
+    private SharedPlacement selected() {
+        return model.selectedIndex() < 0 ? null : model.selected();
     }
 
     private static double distance(SharedPlacement placement, int dimension, double x, double y, double z) {
@@ -70,16 +82,15 @@ public final class GuiSharedPlacements extends UiScreen {
     }
 
     private void rebuild() {
-        List<SharedPlacement> placements = new ArrayList<>(SharedPlacementsClient.INSTANCE.placements());
+        List<SharedPlacement> entries = new ArrayList<>(SharedPlacementsClient.INSTANCE.placements());
         if (mc.thePlayer != null) {
             int dimension = mc.thePlayer.dimension;
             double x = mc.thePlayer.posX, y = mc.thePlayer.posY, z = mc.thePlayer.posZ;
-            placements.sort(Comparator.comparingInt((SharedPlacement placement) -> placement.dimension == dimension ? 0
+            entries.sort(Comparator.comparingInt((SharedPlacement placement) -> placement.dimension == dimension ? 0
                 : placement.dimension == -1 && dimension == 0 || placement.dimension == 0 && dimension == -1 ? 1 : 2)
                 .thenComparingDouble(placement -> distance(placement, dimension, x, y, z)));
         }
-        model.setEntries(placements);
-        if (selected != null) selected = SharedPlacementsClient.INSTANCE.get(selected.id);
+        model.setEntries(entries);
         list.sync();
     }
 
@@ -93,18 +104,18 @@ public final class GuiSharedPlacements extends UiScreen {
 
     @Override
     protected void layoutWidgets() {
-        int x = 12, y = 30, totalWidth = width - 20, height = this.height - 68;
-        int browserWidth = totalWidth - 6 - INFO_WIDTH;
-        frame.setBounds(x, y, browserWidth, height);
-        search.setBounds(x + 2, y + 4, browserWidth - 14, 14);
-        list.setBounds(x + 2, y + 21, browserWidth - 4, Math.max(0, height - 23));
-        info.setBounds(x + totalWidth - INFO_WIDTH, y, INFO_WIDTH, Math.min(290, height));
+        int listWidth = Math.max(24, width - 24 - INFO_WIDTH - 6);
+        searchButton.setBounds(14, 35, 12, 12);
+        search.setBounds(30, 34, Math.max(0, listWidth - 16), 14);
+        list.setBounds(14, 51, listWidth, Math.max(0, height - 89));
+        info.setBounds(width - 10 - INFO_WIDTH, 51, INFO_WIDTH, Math.min(310, Math.max(0, height - 89)));
+        int w = fontRendererObj.getStringWidth(placements.label()) + 30;
+        placements.setBounds(12, height - 26, w, 20);
         int menuWidth = fontRendererObj.getStringWidth(menu.label()) + 20;
-        menu.setBounds(width - menuWidth - 10, this.height - 26, menuWidth, 20);
+        menu.setBounds(width - menuWidth - 10, height - 26, menuWidth, 20);
     }
 
-    private void drawInfo(UiDraw draw, int x, int y, int width) {
-        SharedPlacement placement = selected;
+    private void drawInfo(UiDraw draw, SharedPlacement placement, int x, int y, int width) {
         String[][] rows = {
             {"display_name", placement.name},
             {"file_name", placement.fileName},
@@ -114,7 +125,7 @@ public final class GuiSharedPlacements extends UiScreen {
             {"last_modified", placement.modifierName}};
         for (String[] row : rows) {
             draw.text(UiTranslations.format(PREFIX + "label.placement_info." + row[0]), x, y, 0xC0C0C0C0);
-            draw.text(draw.trim(row[1], width - 4), x + 4, y += 12, 0xFFFFFFFF);
+            draw.text(draw.trim(row[1], width - 8), x + 4, y += 12, 0xFFFFFFFF);
             y += 12;
         }
     }
@@ -122,29 +133,31 @@ public final class GuiSharedPlacements extends UiScreen {
     private final class Row extends UiPanel {
         private final SharedPlacement placement;
         private final int index;
-        private final UiButton remove, materials, action;
+        private final List<UiButton> buttons = new ArrayList<>();
         private int buttonsStart;
 
         Row(SharedPlacement placement, int index) {
             this.placement = placement;
             this.index = index;
-            remove = add(new UiButton(() -> UiTranslations.format(PREFIX + "button.remove"), mouse -> {
-                if (mouse == 0) SharedPlacementsClient.INSTANCE.remove(placement.id);
-            }));
-            materials = add(new UiButton(() -> UiTranslations.format(PREFIX + "button.material_gathering_placement"), mouse -> {
+            button(() -> UiTranslations.format(PREFIX + "button.remove"), () -> SharedPlacementsClient.INSTANCE.remove(placement.id));
+            button(() -> UiTranslations.format(PREFIX + "button.material_gathering_placement"), () -> {
                 SchematicWorld world = SharedPlacementsClient.INSTANCE.loaded(placement.id);
-                if (mouse != 0 || world == null) return;
-                MaterialList list = MaterialList.placement(world);
-                MaterialLists.setCurrent(list);
-                mc.displayGuiScreen(new GuiSchematicMaterials(GuiSharedPlacements.this, list));
-            }));
-            action = add(new UiButton(this::state, mouse -> {
-                if (mouse != 0) return;
+                if (world == null) return;
+                MaterialList materials = MaterialList.placement(world);
+                MaterialLists.setCurrent(materials);
+                mc.displayGuiScreen(new GuiSchematicMaterials(GuiSharedPlacements.this, materials));
+            });
+            button(this::state, () -> {
                 SharedPlacementsClient client = SharedPlacementsClient.INSTANCE;
                 if (client.downloading(placement.id)) return;
                 if (client.loaded(placement.id) != null) client.unload(placement.id, true);
                 else client.load(placement);
-            }));
+            });
+            setTooltip(placement.name, placement.fileName);
+        }
+
+        private void button(Supplier<String> label, Runnable action) {
+            buttons.add(add(new UiButton(label, mouse -> { if (mouse == 0) action.run(); })));
         }
 
         private String state() {
@@ -154,37 +167,31 @@ public final class GuiSharedPlacements extends UiScreen {
             return UiTranslations.format(PREFIX + "button." + key);
         }
 
-        private int actionWidth() {
-            int widest = 0;
-            for (String key : new String[] {"downloading", "download", "load", "unload"}) {
-                widest = Math.max(widest, fontRendererObj.getStringWidth(UiTranslations.format(PREFIX + "button." + key)) + 10);
-            }
-            return widest;
-        }
-
         @Override
         public void layout(UiBounds screen) {
-            int right = bounds().right();
-            int removeWidth = fontRendererObj.getStringWidth(remove.label()) + 10;
-            remove.setBounds(right - removeWidth, bounds().y + 1, removeWidth, 20);
-            right -= removeWidth + 2;
-            int materialsWidth = fontRendererObj.getStringWidth(materials.label()) + 10;
-            materials.setBounds(right - materialsWidth, bounds().y + 1, materialsWidth, 20);
-            right -= materialsWidth;
-            int width = actionWidth();
-            action.setBounds(right - width, bounds().y + 1, width, 20);
-            buttonsStart = right - width;
+            int right = bounds().right() - 2;
+            for (int i = 0; i < buttons.size(); i++) {
+                UiButton button = buttons.get(i);
+                int width = fontRendererObj.getStringWidth(button.label()) + 10;
+                button.setBounds(right - width, bounds().y + 1, width, 20);
+                right -= width + 1;
+            }
+            buttonsStart = right;
         }
 
         @Override
         public void draw(UiDraw draw, int mouseX, int mouseY) {
             SharedPlacementsClient client = SharedPlacementsClient.INSTANCE;
-            materials.setEnabled(client.loaded(placement.id) != null);
-            action.setEnabled(!client.downloading(placement.id));
-            boolean chosen = selected != null && selected.id.equals(placement.id);
-            int color = chosen || containsVisible(mouseX, mouseY) ? 0x70FFFFFF : index % 2 == 1 ? 0x20FFFFFF : 0x50FFFFFF;
-            draw.fill(bounds(), color);
-            draw.text(draw.trim(placement.name, buttonsStart - bounds().x - 24), bounds().x + 20, bounds().y + 7, 0xFFFFFFFF);
+            boolean loaded = client.loaded(placement.id) != null;
+            buttons.get(1).setEnabled(loaded);
+            buttons.get(2).setEnabled(!client.downloading(placement.id));
+            layout(bounds());
+            boolean chosen = model.selectedIndex() == index;
+            draw.fill(bounds(), chosen || containsVisible(mouseX, mouseY) ? 0xA0707070 : index % 2 == 1 ? 0xA0101010 : 0xA0303030);
+            if (chosen) draw.border(bounds(), 0xFFE0E0E0);
+            UiSprite.schematicFile(placement.fileName).draw(draw, bounds().x + 2, bounds().y + 5, false, false);
+            String name = (loaded ? "\u00a7a" : "") + placement.name;
+            draw.text(draw.trim(name, buttonsStart - bounds().x - 24), bounds().x + 20, bounds().y + 7, 0xFFFFFFFF);
             super.draw(draw, mouseX, mouseY);
         }
 
@@ -194,9 +201,17 @@ public final class GuiSharedPlacements extends UiScreen {
         @Override
         public boolean mouseDown(int x, int y, int button) {
             if (button != 0 || x >= buttonsStart) return false;
-            selected = placement;
             model.select(index);
             return true;
+        }
+
+        @Override
+        public boolean keyTyped(char character, int keyCode) {
+            if (keyCode == Keyboard.KEY_RETURN || keyCode == Keyboard.KEY_SPACE) {
+                model.select(index);
+                return true;
+            }
+            return false;
         }
     }
 }

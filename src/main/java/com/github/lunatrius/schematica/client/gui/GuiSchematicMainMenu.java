@@ -68,7 +68,8 @@ public final class GuiSchematicMainMenu extends UiScreen {
         tasks = menu("task_manager", UiSprite.TASK_MANAGER, () -> mc.displayGuiScreen(new GuiTaskManager(this)));
         cloud = addButton("schematic_synchronizer.gui.button.server_schematics", () -> mc.displayGuiScreen(new GuiServerSchematics(this)))
             .setSprite(UiSprite.SERVER);
-        shared = addButton("syncmatica.gui.button.view_syncmatics", () -> mc.displayGuiScreen(new GuiSharedPlacements(this)));
+        shared = addButton("syncmatica.gui.button.view_syncmatics", () -> mc.displayGuiScreen(new GuiSharedPlacements(this)))
+            .setSprite(UiSprite.SHARED_PLACEMENTS);
         projects = menu("schematic_projects_manager", UiSprite.SCHEMATIC_PROJECTS, () -> SchematicProjects.openGui(this));
         projects.setTooltip(UiTranslations.format("litematica.gui.button.hover.schematic_projects.menu_warning").split("\n"));
         mode = root.add(new UiButton(() -> UiTranslations.format("litematica.gui.button.tool_mode", ToolManager.getCurrentMode().getDisplayName()),
@@ -98,7 +99,7 @@ public final class GuiSchematicMainMenu extends UiScreen {
     protected void layoutWidgets() {
         report.setBounds(width - 32, 10, 20, 20);
         int column = 0;
-        UiButton[] buttons = {placements, loaded, load, area, selections, config, manager, tasks, cloud};
+        UiButton[] buttons = {placements, loaded, load, area, selections, config, manager, tasks, cloud, shared};
         for (UiButton button : buttons) column = Math.max(column, fontRendererObj.getStringWidth(button.label()) + 30);
         column = Math.max(column, fontRendererObj.getStringWidth(selectionMode.label()) + 10);
         column = Math.max(column, fontRendererObj.getStringWidth(UiTranslations.format("litematica.gui.button.change_menu.schematic_projects_manager")) + 30);

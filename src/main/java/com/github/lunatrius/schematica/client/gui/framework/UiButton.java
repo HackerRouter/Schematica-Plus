@@ -50,7 +50,11 @@ public class UiButton extends UiWidget {
     }
 
     public int preferredWidth(int textWidth) {
-        return textWidth + (sprite == null ? 10 : sprite.width + 16);
+        return textWidth + (sprite == null ? 10 : slot() + 16);
+    }
+
+    private int slot() {
+        return background ? Math.max(14, sprite.width) : sprite.width;
     }
 
     @Override
@@ -69,11 +73,11 @@ public class UiButton extends UiWidget {
         }
         int color = !isEnabled() ? 0xFFA0A0A0 : hovered ? 0xFFFFFFFF : 0xFFE0E0E0;
         if (sprite != null) {
-            sprite.draw(draw, box.x + (background ? 4 : 0), box.y + (box.height - sprite.height) / 2,
+            sprite.draw(draw, box.x + (background ? 4 : 0) + (slot() - sprite.width) / 2, box.y + (box.height - sprite.height) / 2,
                 isEnabled(), hovered);
-            String shown = draw.trim(label.get(), box.width - sprite.width - 12);
+            String shown = draw.trim(label.get(), box.width - slot() - 12);
             cut = !shown.equals(label.get());
-            draw.text(shown, box.x + sprite.width + 8, box.y + (box.height - 8) / 2, color);
+            draw.text(shown, box.x + slot() + 8, box.y + (box.height - 8) / 2, color);
             drawIconHighlight(draw, hovered);
             return;
         }

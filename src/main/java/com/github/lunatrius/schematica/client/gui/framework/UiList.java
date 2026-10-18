@@ -13,13 +13,14 @@ public final class UiList<T> extends UiWidget {
 
     private final UiListModel<T> model;
     private final Consumer<T> activated;
-    private final String emptyText;
+    private String emptyText;
     private boolean dragging;
     private int dragOffset;
     private int lastClickIndex = -1;
     private long lastClickTime;
     private Function<T, UiSprite> icons;
     private Function<T, String> displayName;
+    private Function<T, UiSprite> badges;
 
     private Function<T, List<String>> entryTooltip;
 
@@ -30,6 +31,10 @@ public final class UiList<T> extends UiWidget {
         this.icons = icons;
         this.displayName = displayName;
     }
+
+    public void setBadges(Function<T, UiSprite> badges) { this.badges = badges; }
+
+    public void setEmptyText(String text) { this.emptyText = text; }
 
     public UiList(UiListModel<T> model, String emptyText, Consumer<T> activated) {
         this.model = model;
@@ -84,7 +89,13 @@ public final class UiList<T> extends UiWidget {
                     draw.fill(row, index == selected || index == hovered ? 0x70FFFFFF : index % 2 == 1 ? 0x20FFFFFF : 0x38FFFFFF);
                     if (index == selected) draw.border(row, 0xEEEEEEEE);
                     icons.apply(entry).draw(draw, content.x, y + 1, false, false);
-                    draw.text(draw.trim(displayName.apply(entry), rowWidth - 18), content.x + 16, y + 3, 0xFFFFFFFF);
+                    UiSprite badge = badges == null ? null : badges.apply(entry);
+                    int nameWidth = rowWidth - 18;
+                    if (badge != null) {
+                        badge.draw(draw, content.x + rowWidth - badge.width - 2, y + (model.rowHeight() - badge.height) / 2, true, false);
+                        nameWidth -= badge.width + 4;
+                    }
+                    draw.text(draw.trim(displayName.apply(entry), nameWidth), content.x + 16, y + 3, 0xFFFFFFFF);
                     continue;
                 }
                 draw.fill(row, background);

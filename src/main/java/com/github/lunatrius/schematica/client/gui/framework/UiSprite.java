@@ -25,7 +25,7 @@ public enum UiSprite {
     REPORT_ISSUE("bug", 13, 13),
     SERVER("sync_server_icon", 11, 11),
     DOWNLOADED("sync_download_icon", 11, 11),
-    UPLOAD("sync_upload", 9, 9),
+    SHARED_PLACEMENTS("shared_placements", 14, 14, true),
     MEMORY(186, 0, 12, 12, false),
     JSON(144, 48, 12, 12, false),
     DIRECTORY(156, 0, 12, 12, false),
@@ -69,11 +69,15 @@ public enum UiSprite {
     }
 
     UiSprite(String file, int width, int height) {
+        this(file, width, height, false);
+    }
+
+    UiSprite(String file, int width, int height, boolean states) {
         this.u = 0;
         this.v = 0;
         this.width = width;
         this.height = height;
-        this.states = false;
+        this.states = states;
         this.texture = "schematica_plus:textures/gui/" + file + ".png";
     }
 
@@ -82,7 +86,7 @@ public enum UiSprite {
         boolean whole = !texture.equals(TEXTURE) && !texture.endsWith("malilib_widgets.png");
         String file = this == SERVER && hovered ? "schematica_plus:textures/gui/sync_server_icon_highlight.png" : texture;
         draw.texture(file, new UiBounds(x, y, width, height), u + state * width, v, width, height,
-            whole ? width : 256, whole ? height : 256);
+            whole ? width * (states ? 3 : 1) : 256, whole ? height : 256);
     }
 
     public static UiSprite schematicFile(String name) {
