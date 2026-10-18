@@ -213,10 +213,12 @@ pastes non-air schematic blocks. Fresh configurations default to None.
 block/neighbor update hooks, but does not freeze normal ticks or arbitrary mod logic.
 
 On other servers, the rate-limited command fallback cannot transfer general NBT,
-suppress updates or provide MOVE. It waits for native server command replies and stops on errors or unconfirmed
+suppress updates or provide MOVE. It places blocks with `/setblock` and summons
+entities with `/summon` (position, facing and hanging anchor only; both command
+names are configurable). It waits for native server command replies and stops on errors or unconfirmed
 results; failed/no-op placement must not report success. Servers that suppress
 those replies may stop the queue. Unsupported options are rejected before sending
-an edit. Schematics with NBT require explicit consent to paste blocks only.
+an edit. Schematics with NBT require explicit consent before the command paste.
 
 MOVE snapshots both areas and attempts restoration on cancellation or write failure,
 including overlapping selections. Other cancelled edits retain their completed

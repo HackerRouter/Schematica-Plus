@@ -315,6 +315,8 @@ public class ConfigurationHandler {
         commandTaskInterval = tool.integer("commandTaskInterval", 1, 1, 1000);
         String setblockName = tool.text("commandNameSetblock", "setblock").trim().replaceFirst("^/+", "");
         WorldEditJob.setblockCommand = setblockName.matches("[A-Za-z0-9_:.-]{1,64}") ? setblockName : "setblock";
+        String summonName = tool.text("commandNameSummon", "summon").trim().replaceFirst("^/+", "");
+        WorldEditJob.summonCommand = summonName.matches("[A-Za-z0-9_:.-]{1,64}") ? summonName : "summon";
         pasteRenderLayersOnly = "rendered_only".equals(tool.choice("pasteLayerBehavior", "all", "all", "rendered_only"));
         easyPlaceClickAdjacent = tool.flag("easyPlaceClickAdjacent", false);
         pickBlockAvoidDamageable = tool.flag("pickBlockAvoidDamageable", true);

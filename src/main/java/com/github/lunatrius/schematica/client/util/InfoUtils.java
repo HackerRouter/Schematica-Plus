@@ -123,6 +123,8 @@ public final class InfoUtils {
             if (arguments[i] instanceof PlayerMessage) {
                 PlayerMessage nested = (PlayerMessage) arguments[i];
                 arguments[i] = UiTranslations.format(nested.key, arguments(nested));
+            } else if (arguments[i] instanceof IChatComponent) {
+                arguments[i] = ((IChatComponent) arguments[i]).getFormattedText();
             }
         }
         return arguments;

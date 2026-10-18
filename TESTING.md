@@ -3027,7 +3027,10 @@ coverage; section 6 of HANDOUT.md records the exact completed scenarios.
 - Execute Paste. Require the blocks-only explanation before any command or task
   starts. Cancel and repeat using Escape: save the server world and require an
   unchanged destination. Confirm on the next attempt; require the block layout
-  and supported metadata, an empty chest, blank sign and no copied entity.
+  and supported metadata, an empty chest, blank sign and the entity summoned at
+  its position and facing. Item frames and paintings must keep their anchor and
+  direction and stay attached for five seconds. Rename `commandNameSummon` and
+  require the paste to use the new command name.
   The source file hash and loaded schematic's complete NBT must remain unchanged.
 - Paste a block-only file: no omission dialog is needed. Explicitly ignoring
   block entities must not silently drop entities that are still included. With

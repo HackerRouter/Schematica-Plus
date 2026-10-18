@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -60,6 +61,7 @@ public final class WorldEditJob extends WorldEditTask {
     private short[] metadata;
     /** commandNameSetblock */
     public static volatile String setblockCommand = "setblock";
+    public static volatile String summonCommand = "summon";
     private final Map<Integer, NBTTagCompound> tiles = new HashMap<>();
     private final List<NBTTagCompound> entities = new ArrayList<>();
     private final BitSet placed = new BitSet();
@@ -171,7 +173,9 @@ public final class WorldEditJob extends WorldEditTask {
     public boolean hasCommandNbt() { return !tiles.isEmpty() || !entities.isEmpty(); }
 
     /** Only the queued snapshot is changed; the loaded schematic keeps its complete data. */
-    public void dropCommandNbt() { tiles.clear(); entities.clear(); }
+    public void dropCommandNbt() { tiles.clear(); }
+
+    public int commandCount() { return kind == Kind.PASTE ? volume + entities.size() : volume; }
 
     public void validateCommandFallback() {
         validateCommandFallback(false);
@@ -181,7 +185,7 @@ public final class WorldEditJob extends WorldEditTask {
         if (pasteWithoutUpdates) {
             throw new MessageException("schematica.message.edit.updates_require_singleplayer");
         }
-        if (!blocksOnly && hasCommandNbt()) {
+        if (!blocksOnly && !tiles.isEmpty()) {
             throw new MessageException("schematica.message.edit.nbt_requires_singleplayer");
         }
         Set<Block> checked = new HashSet<>();
@@ -198,6 +202,7 @@ public final class WorldEditJob extends WorldEditTask {
     }
 
     public String command(int index, World world) {
+        if (index >= volume) return entityCommand(index - volume);
         if (selected != null && !selected.get(index)) return null;
         int wx = x + index % width, wz = z + index / width % length, wy = y + index / width / length;
         if (kind == Kind.REPLACE && (world.getBlock(wx, wy, wz) != target
@@ -412,6 +417,64 @@ public final class WorldEditJob extends WorldEditTask {
     @Override public Outcome outcome() {
         if (cancelled || !completedTraversal) return Outcome.FAILED;
         return firstFailure == null ? Outcome.FINISHED : Outcome.PARTIAL;
+    }
+
+    public void recordEntityFailure(Throwable error) {
+        failedEntities++;
+        rememberFailure(error);
+    }
+
+    public String entityId(int index) { return entities.get(index).getString("id"); }
+
+    String entityCommand(int index) {
+        NBTTagCompound tag = entities.get(index);
+        String id = tag.getString("id");
+        if (id.isEmpty() || !id.matches("[A-Za-z0-9_.:-]+")) throw new MessageException("schematica.message.edit.entity_failed", id);
+        NBTTagList pos = tag.getTagList("Pos", 6);
+        String command = "/" + summonCommand + " " + id + " " + coordinate(pos.func_150309_d(0) + x) + " "
+            + coordinate(pos.func_150309_d(1) + y) + " " + coordinate(pos.func_150309_d(2) + z);
+        List<String> data = new ArrayList<>();
+        if (tag.hasKey("TileX")) {
+            data.add("TileX:" + (tag.getInteger("TileX") + x));
+            data.add("TileY:" + (tag.getInteger("TileY") + y));
+            data.add("TileZ:" + (tag.getInteger("TileZ") + z));
+            data.add("Direction:" + tag.getByte("Direction") + "b");
+        }
+        if (tag.hasKey("Motive", 8) && plain(tag.getString("Motive"))) data.add("Motive:\"" + tag.getString("Motive") + "\"");
+        String result = withData(command, data);
+        if (result.length() > 100) throw new MessageException("schematica.message.edit.command_too_long");
+        List<String> optional = new ArrayList<>();
+        NBTTagList rotation = tag.getTagList("Rotation", 5);
+        if (rotation.tagCount() == 2) {
+            optional.add("Rotation:[" + coordinate(rotation.func_150308_e(0)) + "f," + coordinate(rotation.func_150308_e(1)) + "f]");
+        }
+        if (tag.hasKey("ItemRotation")) optional.add("ItemRotation:" + tag.getByte("ItemRotation") + "b");
+        if (tag.hasKey("Item", 10)) {
+            NBTTagCompound item = tag.getCompoundTag("Item");
+            optional.add("Item:{id:" + item.getShort("id") + "s,Count:" + item.getByte("Count") + "b,Damage:" + item.getShort("Damage") + "s}");
+        }
+        if (tag.hasKey("CustomName", 8) && plain(tag.getString("CustomName"))) optional.add("CustomName:\"" + tag.getString("CustomName") + "\"");
+        for (String entry : optional) {
+            data.add(entry);
+            String candidate = withData(command, data);
+            if (candidate.length() <= 100) result = candidate;
+            else data.remove(data.size() - 1);
+        }
+        return result;
+    }
+
+    private static String withData(String command, List<String> data) {
+        return data.isEmpty() ? command : command + " {" + String.join(",", data) + "}";
+    }
+
+    private static boolean plain(String text) {
+        return !text.isEmpty() && text.indexOf('"') < 0 && text.indexOf('\\') < 0;
+    }
+
+    private static String coordinate(double value) {
+        String text = String.format(Locale.ROOT, "%.3f", value);
+        text = text.replaceAll("0+$", "");
+        return text.endsWith(".") ? text.substring(0, text.length() - 1) : text;
     }
 
     public void recordBlockFailure(int index, Throwable error) {

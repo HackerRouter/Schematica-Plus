@@ -1,11 +1,13 @@
 package com.github.lunatrius.schematica.handler.client;
 
 import java.io.File;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.ChatComponentTranslation;
 import net.minecraft.util.IChatComponent;
@@ -175,6 +177,31 @@ public class CommandEditQueueTest {
         job.completion = outcome -> client.completed.add(outcome == WorldEditTask.Outcome.FINISHED);
         queue.submit(job, null);
         return client;
+    }
+
+    @Test public void summonRepliesCountEntitiesAfterTheBlocks() throws Exception {
+        queue.cancel();
+        FakeClient client = new FakeClient();
+        queue = new CommandEditQueue(client);
+        WorldEditJob job = new WorldEditJob(owner, 0, WorldEditJob.Kind.PASTE, 0, 64, 0, 1, 1, 1, null, 0, null, 0);
+        job.capture(new Schematic(null, 1, 1, 1), false, false);
+        NBTTagCompound pig = new NBTTagCompound();
+        pig.setString("id", "Pig");
+        Field field = WorldEditJob.class.getDeclaredField("entities");
+        field.setAccessible(true);
+        ((List<NBTTagCompound>) field.get(job)).add(pig);
+        client.job = job;
+        job.completion = outcome -> client.completed.add(outcome == WorldEditTask.Outcome.FINISHED);
+        queue.submit(job, null);
+        tick();
+        chat(new ChatComponentTranslation("commands.setblock.success"));
+        tick();
+        chat(new ChatComponentTranslation("commands.summon.success"));
+        tick();
+        assertEquals(2, client.commands.size());
+        assertEquals(1, job.blockCount);
+        assertEquals(1, job.entityCount);
+        assertEquals(Collections.singletonList(true), client.completed);
     }
 
     @Test public void skippedCommandsReportNoChangesButAllowTheNextProjectStep() {

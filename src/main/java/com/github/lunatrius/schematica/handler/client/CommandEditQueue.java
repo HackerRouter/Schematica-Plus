@@ -92,16 +92,20 @@ public final class CommandEditQueue {
     public synchronized void onChat(ClientChatReceivedEvent event) {
         if (job == null || pending == 0) return;
         String key = reply(event.message);
-        if ("commands.setblock.success".equals(key)) {
+        if ("commands.setblock.success".equals(key) || "commands.summon.success".equals(key)) {
             pending--;
-            pendingCells.removeFirst();
-            job.blockCount++;
+            if (pendingCells.removeFirst() < job.volume) job.blockCount++;
+            else job.entityCount++;
             waiting = 0;
         } else if (key != null && job.kind == WorldEditJob.Kind.PASTE && !JOB_ERRORS.contains(key)) {
             pending--;
             int index = pendingCells.removeFirst();
-            job.recordBlockFailure(index, new MessageException("schematica.message.edit.command_failed",
-                job.x + index % job.width, job.y + index / job.width / job.length, job.z + index / job.width % job.length, event.message));
+            if (index >= job.volume) {
+                job.recordEntityFailure(new MessageException("schematica.message.edit.entity_failed", job.entityId(index - job.volume)));
+            } else {
+                job.recordBlockFailure(index, new MessageException("schematica.message.edit.command_failed",
+                    job.x + index % job.width, job.y + index / job.width / job.length, job.z + index / job.width % job.length, event.message));
+            }
             waiting = 0;
         } else if (key != null) {
             client.message(job.finishedMessage(false));
@@ -113,7 +117,7 @@ public final class CommandEditQueue {
         if (message == null) return null;
         if (message instanceof ChatComponentTranslation) {
             String key = ((ChatComponentTranslation) message).getKey();
-            if (key.startsWith("commands.setblock.") || key.startsWith("commands.generic.")
+            if (key.startsWith("commands.setblock.") || key.startsWith("commands.summon.") || key.startsWith("commands.generic.")
                 || key.startsWith("commands.block.") || "commands.give.notFound".equals(key)) return key;
             // Admin broadcasts contain another player's command result, not this queue's reply.
             return null;
@@ -141,7 +145,7 @@ public final class CommandEditQueue {
         try {
             // commandLimitPerTick commands every commandTaskInterval ticks
             int limit = sent == 0 ? 1 : ConfigurationHandler.commandLimitPerTick, issued = 0;
-            for (int scanned = 0; scanned < 65536 && cursor < job.volume && issued < limit; scanned++) {
+            for (int scanned = 0; scanned < 65536 && cursor < job.commandCount() && issued < limit; scanned++) {
                 int index = cursor++;
                 boolean queued = false;
                 try {
@@ -156,12 +160,13 @@ public final class CommandEditQueue {
                     if (job.kind != WorldEditJob.Kind.PASTE) throw error;
                     if (queued) { pending--; pendingCells.removeLast(); }
                     else issued++;
-                    job.recordBlockFailure(index, error);
+                    if (index >= job.volume) job.recordEntityFailure(error);
+                    else job.recordBlockFailure(index, error);
                 }
             }
             delay = ConfigurationHandler.commandTaskInterval - 1;
-            task.update(TaskRegistry.Stage.COMMANDS, cursor, job.volume, job.blockCount, 0);
-            if (cursor == job.volume && pending == 0) {
+            task.update(TaskRegistry.Stage.COMMANDS, cursor, job.commandCount(), job.blockCount, job.entityCount);
+            if (cursor == job.commandCount() && pending == 0) {
                 job.completedTraversal = true;
                 WorldEditTask.Outcome outcome = job.outcome();
                 boolean success = outcome == WorldEditTask.Outcome.FINISHED;

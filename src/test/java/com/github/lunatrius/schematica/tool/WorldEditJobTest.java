@@ -7,6 +7,8 @@ import java.util.Map;
 import java.util.UUID;
 
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagDouble;
+import net.minecraft.nbt.NBTTagFloat;
 import net.minecraft.nbt.NBTTagList;
 
 import com.github.lunatrius.schematica.api.SchematicRegion;
@@ -111,24 +113,51 @@ public class WorldEditJobTest {
         job.validateCommandFallback(true);
         assertEquals(complete, job.write());
         job.dropCommandNbt();
-        assertFalse(job.hasCommandNbt());
         job.validateCommandFallback();
         NBTTagCompound expected = (NBTTagCompound) complete.copy();
         expected.setTag("tiles", new NBTTagList());
-        expected.setTag("entities", new NBTTagList());
         assertEquals(expected, job.write());
         assertEquals(1, complete.getTagList("tiles", 10).tagCount());
         assertEquals(1, complete.getTagList("entities", 10).tagCount());
     }
 
-    @Test public void ignoringTilesDoesNotSilentlyDiscardEntities() throws Exception {
+    @Test public void ignoringTilesStillAsksBeforeSummoningEntities() throws Exception {
         WorldEditJob job = nbtJob(false, true, true);
         job.dropTiles();
         assertTrue(job.hasCommandNbt());
-        assertThrows(MessageException.class, job::validateCommandFallback);
-        job.dropCommandNbt();
         job.validateCommandFallback();
-        assertFalse(job.hasCommandNbt());
+        assertEquals(2, job.commandCount());
+    }
+
+    @Test public void entitiesBecomeSummonCommandsWithinTheChatLimit() throws Exception {
+        WorldEditJob job = new WorldEditJob(UUID.randomUUID(), 0, WorldEditJob.Kind.PASTE, 10, 64, -5, 1, 1, 1, null, 0, null, 0);
+        job.capture(new Schematic(null, 1, 1, 1), false, false);
+        NBTTagCompound painting = new NBTTagCompound();
+        painting.setString("id", "Painting");
+        NBTTagList pos = new NBTTagList();
+        for (double value : new double[] {0.5, 1, 0.03125}) pos.appendTag(new NBTTagDouble(value));
+        painting.setTag("Pos", pos);
+        NBTTagList rotation = new NBTTagList();
+        for (float value : new float[] {180, 0}) rotation.appendTag(new NBTTagFloat(value));
+        painting.setTag("Rotation", rotation);
+        painting.setInteger("TileX", 0);
+        painting.setInteger("TileY", 1);
+        painting.setInteger("TileZ", 0);
+        painting.setByte("Direction", (byte) 2);
+        painting.setString("Motive", "Kebab");
+        Field field = WorldEditJob.class.getDeclaredField("entities");
+        field.setAccessible(true);
+        ((List<NBTTagCompound>) field.get(job)).add(painting);
+        NBTTagCompound pig = new NBTTagCompound();
+        pig.setString("id", "Pig");
+        pig.setTag("Pos", pos.copy());
+        pig.setTag("Rotation", rotation.copy());
+        ((List<NBTTagCompound>) field.get(job)).add(pig);
+        assertEquals(3, job.commandCount());
+        assertEquals("/summon Painting 10.5 65 -4.969 {TileX:10,TileY:65,TileZ:-5,Direction:2b,Motive:\"Kebab\"}", job.command(1, null));
+        assertEquals("/summon Pig 10.5 65 -4.969 {Rotation:[180f,0f]}", job.command(2, null));
+        pig.setString("id", "Pig\"");
+        assertThrows(MessageException.class, () -> job.command(2, null));
     }
 
     @Test public void ordinaryBlocksAndExplicitlyIgnoredTilesNeedNoOmission() throws Exception {
