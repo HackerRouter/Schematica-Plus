@@ -21,6 +21,7 @@ import com.github.lunatrius.schematica.api.ISchematic;
 import com.github.lunatrius.schematica.api.SchematicOrigin;
 import com.github.lunatrius.schematica.api.SchematicRegion;
 import com.github.lunatrius.schematica.command.CommandSchematicaList;
+import com.github.lunatrius.schematica.command.CommandSchematicaPlus;
 import com.github.lunatrius.schematica.command.CommandSchematicaRemove;
 import com.github.lunatrius.schematica.command.CommandSchematicaSave;
 import com.github.lunatrius.schematica.handler.AccuratePlacement;
@@ -101,6 +102,7 @@ public abstract class CommonProxy {
     }
 
     public void serverStarting(FMLServerStartingEvent event) {
+        event.registerServerCommand(new CommandSchematicaPlus());
         if (ConfigurationHandler.serversideSchematicsEnabled) {
             event.registerServerCommand(new CommandSchematicaSave());
             event.registerServerCommand(new CommandSchematicaList());
