@@ -26,9 +26,11 @@ import net.minecraft.util.MathHelper;
 import com.github.lunatrius.schematica.FileFilterSchematic;
 import com.github.lunatrius.schematica.SchematicaPlus;
 import com.github.lunatrius.schematica.api.SchematicRegion;
+import com.github.lunatrius.schematica.cloud.SharedPlacement;
 import com.github.lunatrius.schematica.handler.ConfigurationHandler;
 import com.github.lunatrius.schematica.handler.DownloadHandler;
 import com.github.lunatrius.schematica.handler.SelectionSaves;
+import com.github.lunatrius.schematica.handler.SharedPlacements;
 import com.github.lunatrius.schematica.reference.Names;
 import com.github.lunatrius.schematica.reference.Reference;
 import com.github.lunatrius.schematica.util.FileUtils;
@@ -66,8 +68,13 @@ public class CommandSchematic extends CommandBase {
     @Override
     public void processCommand(ICommandSender sender, String[] args) {
         if (args.length == 0) throw new WrongUsageException(getCommandUsage(sender));
-        if (!(sender instanceof EntityPlayerMP player)) throw new CommandException(Names.Command.Save.Message.PLAYERS_ONLY);
         String[] rest = Arrays.copyOfRange(args, 1, args.length);
+        if (Names.Command.Shared.NAME.equalsIgnoreCase(args[0]) && ConfigurationHandler.sharedPlacementsEnabled) {
+            shared(sender, rest);
+            return;
+        }
+        if (!(sender instanceof EntityPlayerMP player)) throw new CommandException(Names.Command.Save.Message.PLAYERS_ONLY);
+        if (!ConfigurationHandler.serversideSchematicsEnabled) throw new WrongUsageException(getCommandUsage(sender));
         switch (args[0].toLowerCase(Locale.ROOT)) {
             case Names.Command.Save.NAME:
                 save(player, rest);
@@ -245,15 +252,61 @@ public class CommandSchematic extends CommandBase {
     }
 
     private static List<String> subcommands() {
-        List<String> names = new ArrayList<>(Arrays.asList(Names.Command.Save.NAME, Names.Command.List.NAME, Names.Command.Remove.NAME));
-        if (SchematicaPlus.proxy.dedicatedServer()) names.add(Names.Command.Download.NAME);
+        List<String> names = new ArrayList<>();
+        if (ConfigurationHandler.serversideSchematicsEnabled) {
+            names.addAll(Arrays.asList(Names.Command.Save.NAME, Names.Command.List.NAME, Names.Command.Remove.NAME));
+            if (SchematicaPlus.proxy.dedicatedServer()) names.add(Names.Command.Download.NAME);
+        }
+        if (ConfigurationHandler.sharedPlacementsEnabled) names.add(Names.Command.Shared.NAME);
         return names;
+    }
+
+    private static void shared(ICommandSender sender, String[] args) {
+        if (args.length == 0 || args.length == 1 && Names.Command.List.NAME.equalsIgnoreCase(args[0])) {
+            List<SharedPlacement> placements = SharedPlacements.INSTANCE.placements();
+            if (placements.isEmpty()) {
+                sender.addChatMessage(new ChatComponentTranslation(Names.Command.Shared.Message.NONE));
+                return;
+            }
+            sender.addChatMessage(new ChatComponentTranslation(Names.Command.Shared.Message.HEADER, placements.size())
+                .setChatStyle(new ChatStyle().setColor(EnumChatFormatting.DARK_GREEN)));
+            for (SharedPlacement placement : placements) {
+                IChatComponent line = new ChatComponentTranslation(Names.Command.Shared.Message.ENTRY, placement.name, placement.ownerName,
+                    placement.dimension, placement.origin[0], placement.origin[1], placement.origin[2]);
+                line.appendText(" [");
+                line.appendSibling(link(Names.Command.List.Message.REMOVE, Names.Command.Shared.NAME + " " + Names.Command.Remove.NAME,
+                    placement.id.toString(), EnumChatFormatting.RED));
+                line.appendText("]");
+                sender.addChatMessage(line);
+            }
+            return;
+        }
+        if (args.length != 2 || !Names.Command.Remove.NAME.equalsIgnoreCase(args[0])) throw new WrongUsageException(Names.Command.Shared.Message.USAGE);
+        SharedPlacement found = null;
+        for (SharedPlacement placement : SharedPlacements.INSTANCE.placements()) {
+            if (placement.id.toString().equalsIgnoreCase(args[1]) || placement.name.equalsIgnoreCase(args[1])) found = placement;
+        }
+        if (found == null) throw new CommandException(Names.Command.Shared.Message.NOT_FOUND, args[1]);
+        boolean owner = sender instanceof EntityPlayerMP && found.ownerId.equals(((EntityPlayerMP) sender).getUniqueID().toString());
+        if (!owner && !sender.canCommandSenderUseCommand(ConfigurationHandler.sharedPlacementManagePermissionLevel, Names.Command.NAME)) {
+            throw new CommandException("commands.generic.permission");
+        }
+        SharedPlacements.INSTANCE.remove(found.id);
+        sender.addChatMessage(new ChatComponentTranslation(Names.Command.Shared.Message.REMOVED, found.name));
     }
 
     @Override
     @SuppressWarnings("rawtypes")
     public List addTabCompletionOptions(ICommandSender sender, String[] args) {
         if (args.length == 1) return getListOfStringsFromIterableMatchingLastWord(args, subcommands());
+        if (args.length == 2 && Names.Command.Shared.NAME.equalsIgnoreCase(args[0])) {
+            return getListOfStringsMatchingLastWord(args, Names.Command.List.NAME, Names.Command.Remove.NAME);
+        }
+        if (args.length == 3 && Names.Command.Shared.NAME.equalsIgnoreCase(args[0]) && Names.Command.Remove.NAME.equalsIgnoreCase(args[1])) {
+            List<String> ids = new ArrayList<>();
+            for (SharedPlacement placement : SharedPlacements.INSTANCE.placements()) ids.add(placement.id.toString());
+            return getListOfStringsFromIterableMatchingLastWord(args, ids);
+        }
         if (args.length != 2 || !(sender instanceof EntityPlayer player)) return null;
         String subcommand = args[0].toLowerCase(Locale.ROOT);
         if (!subcommand.equals(Names.Command.Remove.NAME)

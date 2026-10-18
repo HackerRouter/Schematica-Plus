@@ -108,7 +108,8 @@ the placement list to share one. Shared placements load automatically in their
 dimension (`sharedPlacementsAutoLoad`) and stay locked; unlocking one in its
 configuration asks the server for exclusive editing, and locking it again publishes
 the change (`sharedPlacementsEnabled`, `sharedPlacementPermissionLevel`,
-`sharedPlacementManagePermissionLevel`, `sharedPlacementsPerPlayer`).
+`sharedPlacementManagePermissionLevel`, `sharedPlacementsPerPlayer`); operators list and
+remove them with `/schematic shared list|remove`.
 
 Hotkeys are stored separately in `config/schematica_plus_hotkeys.json`.
 

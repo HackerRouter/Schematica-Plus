@@ -101,6 +101,15 @@ public final class SharedPlacements {
         }
     }
 
+    public synchronized boolean remove(UUID id) {
+        load();
+        if (placements.remove(id) == null) return false;
+        modifiers.remove(id);
+        save();
+        broadcast(new MessageSharedUpdate(MessageSharedUpdate.Operation.REMOVE, id, null));
+        return true;
+    }
+
     public synchronized List<SharedPlacement> placements() {
         load();
         return new ArrayList<>(placements.values());
@@ -174,10 +183,7 @@ public final class SharedPlacements {
                     message(player, MessageType.ERROR, "schematica.message.cloud.no_permission");
                     return;
                 }
-                placements.remove(current.id);
-                modifiers.remove(current.id);
-                save();
-                broadcast(new MessageSharedUpdate(MessageSharedUpdate.Operation.REMOVE, current.id, null));
+                remove(current.id);
                 return;
             case MODIFY:
                 UUID modifier = modifiers.get(message.id);

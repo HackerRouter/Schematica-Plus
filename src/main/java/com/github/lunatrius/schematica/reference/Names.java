@@ -167,6 +167,21 @@ public final class Names {
 
             public static final String NAME = "download";
         }
+
+        public static final class Shared {
+
+            public static final class Message {
+
+                public static final String USAGE = "schematica.command.shared.usage";
+                public static final String HEADER = "schematica.command.shared.header";
+                public static final String NONE = "schematica.command.shared.none";
+                public static final String ENTRY = "schematica.command.shared.entry";
+                public static final String REMOVED = "schematica.command.shared.removed";
+                public static final String NOT_FOUND = "schematica.command.shared.notFound";
+            }
+
+            public static final String NAME = "shared";
+        }
     }
 
     public static final class ModId {

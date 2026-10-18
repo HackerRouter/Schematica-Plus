@@ -112,7 +112,7 @@ public abstract class CommonProxy {
 
     public void serverStarting(FMLServerStartingEvent event) {
         event.registerServerCommand(new CommandSchematicaPlus());
-        if (ConfigurationHandler.serversideSchematicsEnabled) event.registerServerCommand(new CommandSchematic());
+        if (ConfigurationHandler.serversideSchematicsEnabled || ConfigurationHandler.sharedPlacementsEnabled) event.registerServerCommand(new CommandSchematic());
     }
 
     public boolean dedicatedServer() {

@@ -3539,3 +3539,28 @@ crashes and are excluded from acceptance. The corrected cases used fresh generat
 world copies and were saved and closed normally. No corresponding product-code
 change was needed. Standalone server-without-Plus acceptance was not repeated in
 this round; the forced-command tests exercised the same client fallback queue.
+
+## Server schematics and shared placements
+
+Development client, integrated server, superflat creative world, GUI scale 3:
+
+- `/schematic save tower <x1 y1 z1 x2 y2 z2>` wrote `tower.schematic`.
+- Server Schematics opened from the main menu with My Schematics and Public at the
+  top level. Double-clicking a folder entered it; the upload screen listed
+  `tower.schematic` with its metadata and the target folder. Upload stored the file
+  under the save's `schematica_plus/cloud/<uuid>/private`, refreshed the list, marked
+  the row as downloaded and showed the success message. Make Public copied it to
+  `public` with an owner entry; storage counted both copies. Create placement loaded
+  the cached copy.
+- In Schematic Placements, Share without Shift showed `Press shift to share`; with
+  Shift the file was uploaded under its SHA-256 name in `cloud/shared`, the placement
+  was registered in `schematica_plus/shared_placements.json`, the Share button was
+  disabled and the server badge appeared.
+- View Syncmatics listed the placement with its details; Unload and Load switched the
+  button label and placement. In the placement configuration, unlocking showed the
+  modification-accepted message and locking again published version 1.
+
+Not yet tested: dedicated server with two clients (live updates, automatic loading
+on join and dimension change, concurrent modification denial), uploads near the
+size and quota limits, `/schematic shared list|remove`, and the narrow-screen
+fallback of the View Syncmatics button.

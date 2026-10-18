@@ -179,7 +179,7 @@ schematica.config.pasteWithoutUpdates=pasteWithoutUpdates
 schematica.config.pasteWithoutUpdates.tooltip=Skip placement/removal block callbacks and neighbor notifications when pasting. Singleplayer only. Lighting, display synchronization and normal game ticks remain active.
 
 # commands - schematic
-schematica.command.schematic.usage=/schematic <save|list|remove|download>
+schematica.command.schematic.usage=/schematic <save|list|remove|download|shared>
 
 # commands - save
 schematica.command.save.usage=/schematic save <name> [<x1> <y1> <z1> <x2> <y2> <z2>]
@@ -207,6 +207,14 @@ schematica.command.download.usage=/schematic download <name>
 schematica.command.download.started=Started downloading %s...
 schematica.command.download.downloadSucceeded=Successfully downloaded %s.
 schematica.command.download.downloadFail=Could not download %s.
+
+# commands - shared
+schematica.command.shared.usage=/schematic shared [list|remove <id>]
+schematica.command.shared.header=--- Shared placements: %d ---
+schematica.command.shared.none=No placements are shared.
+schematica.command.shared.entry=%s by %s in dimension %s at %s %s %s
+schematica.command.shared.removed=Removed the shared placement %s.
+schematica.command.shared.notFound=No shared placement %s.
 schematica.command.config.usage=/schematicaplus [list|info|set|search|reload|save]
 schematica.command.config.about=§dSchematica Plus: %s§r
 schematica.command.config.reloaded=Reloaded config!
