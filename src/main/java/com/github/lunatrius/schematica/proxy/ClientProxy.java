@@ -5,7 +5,6 @@ import java.io.IOException;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraftforge.client.ClientCommandHandler;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.config.Property;
 
@@ -26,7 +25,6 @@ import com.github.lunatrius.schematica.client.selection.AreaSelections;
 import com.github.lunatrius.schematica.client.verifier.VerificationManager;
 import com.github.lunatrius.schematica.client.world.Placements;
 import com.github.lunatrius.schematica.client.world.RenderLayerSettings;
-import com.github.lunatrius.schematica.command.CommandSchematicaSetBlock;
 import com.github.lunatrius.schematica.compat.ILOTRPresent;
 import com.github.lunatrius.schematica.compat.NoLOTRProxy;
 import com.github.lunatrius.schematica.compat.nei.NeiBridge;
@@ -90,9 +88,6 @@ public class ClientProxy extends CommonProxy {
             RemoteEditClient.INSTANCE);
         FMLCommonHandler.instance().bus().register(
             SchematicPreview.INSTANCE);
-
-        // Register client-side commands
-        ClientCommandHandler.instance.registerCommand(new CommandSchematicaSetBlock());
 
         FMLCommonHandler.instance()
             .bus()
