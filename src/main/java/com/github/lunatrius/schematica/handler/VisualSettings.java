@@ -2,8 +2,6 @@
 // Litematica visuals switches and render toggles, adapted for 1.7.10 by HackerRouter, 2026.
 package com.github.lunatrius.schematica.handler;
 
-import net.minecraft.client.Minecraft;
-import net.minecraft.util.EnumChatFormatting;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.common.config.Property;
 
@@ -11,6 +9,7 @@ import com.github.lunatrius.schematica.client.gui.framework.UiTranslations;
 import com.github.lunatrius.schematica.client.input.Hotkeys;
 import com.github.lunatrius.schematica.client.renderer.RenderBudget;
 import com.github.lunatrius.schematica.client.renderer.hud.StatusInfoHud;
+import com.github.lunatrius.schematica.client.util.InfoUtils;
 import com.github.lunatrius.schematica.reference.Names;
 
 /** Upstream Configs.Visuals master switches that Plus honors, plus the hold-to-invert hotkeys. */
@@ -160,7 +159,7 @@ public final class VisualSettings {
         property.set(value);
         ConfigurationHandler.loadConfiguration();
         config.save();
-        printToggle(toggle.prettyName(), value);
+        InfoUtils.printBooleanConfigToggleMessage(toggle.prettyName(), value);
         StatusInfoHud.startOverride();
         return value;
     }
@@ -169,14 +168,5 @@ public final class VisualSettings {
         String key = "litematica.config." + group + ".prettyName." + name;
         String text = UiTranslations.format(key);
         return text.equals(key) ? name : text;
-    }
-
-    /** MaLiLib's printBooleanConfigToggleMessage on the action bar. */
-    public static void printToggle(String prettyName, boolean value) {
-        Minecraft mc = Minecraft.getMinecraft();
-        if (mc.ingameGUI == null) return;
-        String state = (value ? EnumChatFormatting.GREEN : EnumChatFormatting.RED) + UiTranslations.format("malilib.message.value." + (value ? "on" : "off"))
-            + EnumChatFormatting.RESET;
-        mc.ingameGUI.func_110326_a(UiTranslations.format("malilib.message.toggled", prettyName, state), false);
     }
 }

@@ -18,8 +18,10 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemSword;
 import net.minecraft.item.ItemTool;
 
-import com.github.lunatrius.schematica.handler.ConfigurationHandler;
+import com.github.lunatrius.schematica.client.util.InfoUtils;
 import com.github.lunatrius.schematica.compat.InventoryClickCompat;
+import com.github.lunatrius.schematica.handler.ConfigurationHandler;
+import com.github.lunatrius.schematica.util.MessageType;
 
 /** Moves a picked item into the hand: its hotbar slot, else one of the pick-blockable hotbar slots. */
 public final class PickBlockSlots {
@@ -127,13 +129,13 @@ public final class PickBlockSlots {
         }
         if (source < 0 && !creative) return false;
         if (slots().isEmpty()) {
-            EasyPlace.warn("litematica.message.warn.pickblock.no_valid_slots_configured");
+            InfoUtils.showGuiOrInGameMessage(MessageType.WARNING, "litematica.message.warn.pickblock.no_valid_slots_configured");
             return false;
         }
         int hotbar = emptySlot(inventory);
         if (hotbar == -1) hotbar = targetSlot(inventory);
         if (hotbar == -1) {
-            EasyPlace.warn("litematica.message.warn.pickblock.no_suitable_slot_found");
+            InfoUtils.showGuiOrInGameMessage(MessageType.WARNING, "litematica.message.warn.pickblock.no_suitable_slot_found");
             return false;
         }
         if (!creative && !swapToHotbar(mc, player, source, hotbar)) return false;

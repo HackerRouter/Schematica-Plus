@@ -12,6 +12,7 @@ import com.github.lunatrius.schematica.client.gui.framework.UiCheckBox;
 import com.github.lunatrius.schematica.client.gui.framework.UiTextField;
 import com.github.lunatrius.schematica.client.gui.framework.UiTranslations;
 import com.github.lunatrius.schematica.client.gui.save.SchematicSaveTarget;
+import com.github.lunatrius.schematica.util.MessageType;
 import com.github.lunatrius.schematica.world.schematic.SchematicFiles;
 
 /** Saves a converted copy of a schematic file: imports as .litematic, exports as .schematic, .litematic or .nbt. */
@@ -54,33 +55,33 @@ public final class GuiSchematicConvert extends GuiSchematicBrowser {
     private void save() {
         if (browser == null) return;
         if (!browser.directory().isDirectory()) {
-            setStatus(UiTranslations.format("litematica.error.schematic_save.invalid_directory", browser.directory().getAbsolutePath()));
+            addMessage(MessageType.ERROR, "litematica.error.schematic_save.invalid_directory", browser.directory().getAbsolutePath());
             return;
         }
         if (name.text().trim().isEmpty()) {
-            setStatus(UiTranslations.format("litematica.error.schematic_save.invalid_schematic_name", name.text()));
+            addMessage(MessageType.ERROR, "litematica.error.schematic_save.invalid_schematic_name", name.text());
             return;
         }
         if (!source.isFile() || !source.canRead()) {
-            setStatus(UiTranslations.format("litematica.error.schematic_load.cant_read_file", source.getName()));
+            addMessage(MessageType.ERROR, "litematica.error.schematic_load.cant_read_file", source.getName());
             return;
         }
         File target;
         try {
             target = SchematicSaveTarget.sourceCopy(browser.root(), browser.directory(), name.text(), extension);
         } catch (IOException | IllegalArgumentException e) {
-            setStatus(UiTranslations.format("litematica.error.schematic_save.invalid_schematic_name", name.text()));
+            addMessage(MessageType.ERROR, "litematica.error.schematic_save.invalid_schematic_name", name.text());
             return;
         }
         if (target.exists() && !isShiftKeyDown()) {
-            setStatus(UiTranslations.format("litematica.error.schematic_write_to_file_failed.exists", target.getName()));
+            addMessage(MessageType.ERROR, "litematica.error.schematic_write_to_file_failed.exists", target.getName());
             return;
         }
         try {
             String author = mc.thePlayer != null ? mc.thePlayer.getCommandSenderName() : mc.getSession().getUsername();
             File written = SchematicFiles.convert(source, target, !ignoreEntities, author);
             refreshFiles();
-            setStatus(UiTranslations.format(successKey, written.getName()));
+            addMessage(MessageType.SUCCESS, successKey, written.getName());
         } catch (IOException | RuntimeException e) {
             fail("litematica.error.schematic_load.cant_read_file", e, source.getName());
         }

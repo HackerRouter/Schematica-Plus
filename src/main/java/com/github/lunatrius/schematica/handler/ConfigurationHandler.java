@@ -94,6 +94,9 @@ public class ConfigurationHandler {
     public static boolean unhideSchematicVCS;
     public static boolean pasteRenderLayersOnly, pasteIgnoreInventories, pasteIgnoreEntities, pasteIgnoreBlockEntitiesEntirely, pasteUsingCommandsInSp;
     public static boolean layerModeFollowsPlayer, generateLowercaseNames, warnDisabledRendering = true;
+    public static double inGameMessageTimeout = 5.0;
+    public static boolean enableActionbarMessages = true;
+    public static int actionbarHudTicks = 60;
     public static int commandLimitPerTick = 8, commandTaskInterval = 1;
     public static boolean easyPlacePostRewrite, easyPlaceClickAdjacent, pickBlockAvoidDamageable = true, pickBlockAvoidTools;
     public static String pickBlockableSlots = "1,2,3,4,5";
@@ -201,6 +204,10 @@ public class ConfigurationHandler {
         parseToolItem(toolItem);
         loadTool(tool);
         loadOverlays(overlays);
+        ConfigReader malilib = debug.in(Names.Config.Category.TOOL, ConfigReader.MALILIB);
+        actionbarHudTicks = malilib.integer("actionbarHudTicks", 60, 1, 240);
+        enableActionbarMessages = malilib.flag("enableActionbarMessages", true);
+        inGameMessageTimeout = malilib.decimal("inGameMessageTimeout", 5.0, 0.5, 15.0);
         pasteWithoutUpdates = legacyTool.flag(Names.Config.PASTE_WITHOUT_UPDATES, false, Names.Config.PASTE_WITHOUT_UPDATES_DESC);
         pasteReplaceBehavior = loadPasteReplaceBehavior(configuration);
 

@@ -11,7 +11,6 @@ import java.util.Locale;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.util.ChatComponentText;
 
 import com.github.lunatrius.schematica.SchematicaPlus;
 import com.github.lunatrius.schematica.client.gui.framework.UiBounds;
@@ -39,11 +38,13 @@ import com.github.lunatrius.schematica.client.gui.material.MaterialScan;
 import com.github.lunatrius.schematica.client.gui.material.RawMaterialExport;
 import com.github.lunatrius.schematica.client.gui.material.RecipeIndex;
 import com.github.lunatrius.schematica.client.gui.save.GuiMaterialListSave;
+import com.github.lunatrius.schematica.client.util.InfoUtils;
 import com.github.lunatrius.schematica.client.world.Placements;
 import com.github.lunatrius.schematica.compat.nei.NeiBridge;
 import com.github.lunatrius.schematica.handler.ConfigurationHandler;
 import com.github.lunatrius.schematica.handler.client.WorldHandler;
 import com.github.lunatrius.schematica.reference.Reference;
+import com.github.lunatrius.schematica.util.MessageType;
 
 import cpw.mods.fml.common.registry.GameData;
 import org.lwjgl.input.Keyboard;
@@ -75,8 +76,6 @@ public class GuiSchematicMaterials extends UiScreen {
     private boolean searching;
     private int[] columns = {4, 44, 84, 124, 164};
     private int shownRevision = -1;
-    private String notice = "";
-    private long noticeUntil;
 
     public GuiSchematicMaterials(GuiScreen parent, MaterialList list) {
         super(parent, list.title());
@@ -115,7 +114,7 @@ public class GuiSchematicMaterials extends UiScreen {
         UiButton clearIgnored = action("clear_ignored", () -> { materials.clearIgnored(); saveSettings(); refreshRows(); });
         UiButton cache = action("clear_cache", () -> {
             MaterialCache.INSTANCE.clear();
-            showNotice(UiTranslations.format("litematica.message.material_list.material_cache_cleared"));
+            addMessage(MessageType.SUCCESS, 3000, "litematica.message.material_list.material_cache_cleared");
         });
         cache.setTooltip(UiTranslations.format("litematica.gui.button.hover.material_list.clear_cache").split("\\n"));
         export = action("write_to_file", this::export);
@@ -160,16 +159,11 @@ public class GuiSchematicMaterials extends UiScreen {
             .setSprite(UiSprite.SEARCH).setBackground(false));
         menu = addButton("litematica.gui.button.change_menu.to_main_menu", this::mainMenu);
         progress = root.add(new UiLabel(this::progressText, 0xFFFFFFFF));
-        if (mc.thePlayer == null) showNotice(UiTranslations.format("litematica.message.warn.material_list.no_player_inv").replace('\n', ' '));
+        if (mc.thePlayer == null) addMessage(MessageType.WARNING, 3000, "litematica.message.warn.material_list.no_player_inv");
     }
 
     private void saveSettings() {
         if (list.kind == MaterialList.Kind.PLACEMENT) WorldHandler.INSTANCE.saveSession();
-    }
-
-    private void showNotice(String text) {
-        notice = text;
-        noticeUntil = System.nanoTime() + 5_000_000_000L;
     }
 
     private UiButton action(String key, Runnable action) { return addButton(PREFIX + key, action); }
@@ -212,7 +206,7 @@ public class GuiSchematicMaterials extends UiScreen {
         ItemStack held = mc.thePlayer == null ? null : mc.thePlayer.getHeldItem();
         if (button == 1 || held == null || held.getItem() == null) {
             if (materials.replacedNames(entry.key).isEmpty()) {
-                if (button == 0) showNotice(UiTranslations.format("schematica.ui.material.replace_hold"));
+                if (button == 0) addMessage(MessageType.INFO, "schematica.ui.material.replace_hold");
                 return;
             }
             materials.restoreReplaced(entry.key);
@@ -238,15 +232,16 @@ public class GuiSchematicMaterials extends UiScreen {
             if (count <= 0) continue;
             ItemStack stack = entry.key.stack();
             if (count > Integer.MAX_VALUE) {
-                showNotice(UiTranslations.format("schematica.nei.too_large"));
+                addMessage(MessageType.ERROR, "schematica.nei.too_large");
                 return;
             }
             stack.stackSize = (int) count;
             stacks.add(stack);
         }
         int sent = NeiBridge.sendGroup(list.sourceName(), stacks);
-        showNotice(UiTranslations.format(sent == -2 ? "schematica.nei.loading"
-            : sent < 0 ? "schematica.nei.send_failed" : "schematica.nei.sent", Math.max(0, sent)));
+        if (sent == -2) addMessage(MessageType.INFO, "schematica.nei.loading");
+        else if (sent < 0) addMessage(MessageType.ERROR, "schematica.nei.send_failed");
+        else addMessage(MessageType.SUCCESS, "schematica.nei.sent", sent);
     }
 
     private void updateButtons() {
@@ -368,7 +363,6 @@ public class GuiSchematicMaterials extends UiScreen {
         if (!list.validContext()) return UiTranslations.format("schematica.ui.material.context");
         if (!list.scanError().isEmpty()) return list.scanError();
         if (list.scanning()) return UiTranslations.format("schematica.ui.material.scanning", list.scanPercent());
-        if (System.nanoTime() < noticeUntil) return notice;
         long[] counts = materials.progress();
         if (counts[4] > 0 || list.unverified() > 0 || list.skipped() > 0) return incompleteText();
         if (list.kind != MaterialList.Kind.PLACEMENT) return UiTranslations.format(LABEL + "total", counts[0]);
@@ -413,11 +407,11 @@ public class GuiSchematicMaterials extends UiScreen {
             }, UiTranslations::format);
             if (list.kind == MaterialList.Kind.AREA) text = MaterialListExport.withAnalysisStatus(text, format, list.unverified(), list.skipped(), UiTranslations::format);
             Path path = MaterialListExport.write(SchematicaPlus.proxy.getDirectory("dumps").toPath(), format, text);
-            showNotice(UiTranslations.format("litematica.message.material_list_written_to_file", path.getFileName().toString()));
-            mc.thePlayer.addChatMessage(new ChatComponentText(notice + "\n" + path.toAbsolutePath()));
+            addMessage(MessageType.SUCCESS, "litematica.message.material_list_written_to_file", path.getFileName().toString());
+            InfoUtils.sendOpenFileChatMessage(mc.thePlayer, "litematica.message.material_list_written_to_file", path.toFile());
         } catch (Exception e) {
             Reference.logger.error("Could not export the material list", e);
-            showNotice(UiTranslations.format("schematica.ui.material.export_failed"));
+            addMessage(MessageType.ERROR, "schematica.ui.material.export_failed");
         }
     }
 
@@ -430,15 +424,15 @@ public class GuiSchematicMaterials extends UiScreen {
             List<Path> files = RawMaterialExport.write(SchematicaPlus.proxy.getDirectory("dumps").toPath(), materials, missingOnly, craftingOnly,
                 ConfigurationHandler.materialListRecipeDetails, RecipeIndex.fromGame());
             if (files.isEmpty()) {
-                showNotice(UiTranslations.format("litematica.message.error.json_material_list_copy_failure"));
+                addMessage(MessageType.ERROR, "litematica.message.error.json_material_list_copy_failure");
                 return;
             }
             Path last = files.get(files.size() - 1);
-            showNotice(UiTranslations.format("litematica.message.material_list_written_to_json_file", last.getFileName().toString()));
-            mc.thePlayer.addChatMessage(new ChatComponentText(notice + "\n" + last.toAbsolutePath()));
+            addMessage(MessageType.SUCCESS, "litematica.message.material_list_written_to_json_file", last.getFileName().toString());
+            InfoUtils.sendOpenFileChatMessage(mc.thePlayer, "litematica.message.material_list_written_to_json_file", last.toFile());
         } catch (Exception e) {
             Reference.logger.error("Could not export the raw material list", e);
-            showNotice(UiTranslations.format("litematica.message.error.json_material_list_write_failure"));
+            addMessage(MessageType.ERROR, "litematica.message.error.json_material_list_write_failure");
         }
     }
 

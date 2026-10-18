@@ -2,11 +2,11 @@
 package com.github.lunatrius.schematica.client.world;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.util.ChatComponentTranslation;
-import net.minecraft.util.EnumChatFormatting;
 
+import com.github.lunatrius.schematica.client.util.InfoUtils;
 import com.github.lunatrius.schematica.handler.ConfigurationHandler;
 import com.github.lunatrius.schematica.handler.client.WorldHandler;
+import com.github.lunatrius.schematica.util.MessageType;
 
 /**
  * Every two seconds: a placement without a fingerprint (or moved since it was taken, while shown) gets the bedrock
@@ -40,11 +40,7 @@ public final class WorldFingerprints {
             WorldFingerprint.State state = fingerprint.judge(mc.theWorld);
             if (state == WorldFingerprint.State.OTHER_WORLD && !placement.otherWorld) {
                 placement.otherWorld = true;
-                if (mc.thePlayer != null) {
-                    ChatComponentTranslation text = new ChatComponentTranslation("schematica.message.other_world", placement.name);
-                    text.getChatStyle().setColor(EnumChatFormatting.GRAY);
-                    mc.thePlayer.addChatMessage(text);
-                }
+                if (mc.thePlayer != null) InfoUtils.showGuiOrInGameMessage(MessageType.INFO, "schematica.message.other_world", placement.name);
             } else if (state == WorldFingerprint.State.MATCH) {
                 placement.otherWorld = false;
             }

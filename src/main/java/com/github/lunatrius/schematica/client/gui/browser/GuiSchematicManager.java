@@ -8,11 +8,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.util.ChatComponentText;
 
 import com.github.lunatrius.schematica.client.gui.framework.UiButton;
 import com.github.lunatrius.schematica.client.gui.framework.UiTranslations;
+import com.github.lunatrius.schematica.client.util.InfoUtils;
 import com.github.lunatrius.schematica.reference.Reference;
+import com.github.lunatrius.schematica.util.MessageType;
 import com.github.lunatrius.schematica.world.schematic.SchematicFiles;
 
 import org.lwjgl.input.Keyboard;
@@ -58,11 +59,11 @@ public final class GuiSchematicManager extends GuiSchematicBrowser {
     private File selectedFile() {
         SchematicBrowserModel.Entry entry = selection();
         if (entry == null || entry.directory) {
-            setStatus(UiTranslations.format("litematica.error.schematic_load.no_schematic_selected"));
+            addMessage(MessageType.ERROR, "litematica.error.schematic_load.no_schematic_selected");
             return null;
         }
         if (!entry.file.isFile() || !entry.file.canRead()) {
-            setStatus(UiTranslations.format("litematica.error.schematic_load.cant_read_file", entry.name()));
+            addMessage(MessageType.ERROR, "litematica.error.schematic_load.cant_read_file", entry.name());
             return null;
         }
         return entry.file;
@@ -71,21 +72,21 @@ public final class GuiSchematicManager extends GuiSchematicBrowser {
     /** Schematic Edit: rename or change the author in the metadata, or set the preview image. */
     private void edit(int mouse) {
         if (choices[0] == 2 && mouse == 1) {
-            if (SchematicPreview.INSTANCE.cancel()) setStatus(UiTranslations.format("litematica.message.schematic_preview_cancelled"));
+            if (SchematicPreview.INSTANCE.cancel()) addMessage(MessageType.SUCCESS, "litematica.message.schematic_preview_cancelled");
             return;
         }
         if (mouse != 0) return;
         File file = selectedFile();
         if (file == null) return;
         if (!SchematicFiles.editable(file)) {
-            setStatus(UiTranslations.format("schematica.ui.files.metadata_unsupported"));
+            addMessage(MessageType.WARNING, "schematica.ui.files.metadata_unsupported");
             return;
         }
         if (choices[0] == 4) {
             try {
                 SchematicFileEdits.edit(file, metadata -> metadata.removeTag("PreviewImageData"));
                 refreshFiles();
-                setStatus(UiTranslations.format("schematica.ui.files.preview_removed"));
+                addMessage(MessageType.SUCCESS, "schematica.ui.files.preview_removed");
             } catch (IOException e) {
                 fail("litematica.error.schematic_load.cant_read_file", e, file.getName());
             }
@@ -97,7 +98,7 @@ public final class GuiSchematicManager extends GuiSchematicBrowser {
                 try {
                     SchematicPreview.fromThumbnail(file);
                     refreshFiles();
-                    setStatus(UiTranslations.format("litematica.info.schematic_manager.preview.success"));
+                    addMessage(MessageType.SUCCESS, "litematica.info.schematic_manager.preview.success");
                 } catch (IOException e) {
                     fail("litematica.error.schematic_load.cant_read_file", e, "thumb.png");
                 }
@@ -105,11 +106,7 @@ public final class GuiSchematicManager extends GuiSchematicBrowser {
             }
             SchematicPreview.INSTANCE.request(file);
             mc.displayGuiScreen(null);
-            if (mc.thePlayer != null) {
-                for (String line : UiTranslations.format("litematica.info.schematic_manager.preview.set_preview_by_taking_a_screenshot").split("\n")) {
-                    mc.thePlayer.addChatMessage(new ChatComponentText(line));
-                }
-            }
+            InfoUtils.showGuiAndInGameMessage(MessageType.INFO, "litematica.info.schematic_manager.preview.set_preview_by_taking_a_screenshot");
             return;
         }
         boolean author = choices[0] == 1;
@@ -148,7 +145,7 @@ public final class GuiSchematicManager extends GuiSchematicBrowser {
         File file = selectedFile();
         if (file == null) return;
         if (!SchematicFiles.editable(file)) {
-            setStatus(UiTranslations.format("schematica.ui.files.metadata_unsupported"));
+            addMessage(MessageType.WARNING, "schematica.ui.files.metadata_unsupported");
             return;
         }
         mc.displayGuiScreen(new GuiSchematicConvert(this, UiTranslations.format("litematica.gui.title.save_exported_schematic",

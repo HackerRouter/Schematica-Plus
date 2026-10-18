@@ -35,16 +35,17 @@ import com.github.lunatrius.schematica.client.printer.registry.PlacementRegistry
 import com.github.lunatrius.schematica.client.selection.AreaSelectionLibrary;
 import com.github.lunatrius.schematica.client.selection.AreaSelections;
 import com.github.lunatrius.schematica.client.util.BlockToItemStack;
+import com.github.lunatrius.schematica.client.util.InfoUtils;
 import com.github.lunatrius.schematica.client.world.Placements;
 import com.github.lunatrius.schematica.client.world.SchematicWorld;
 import com.github.lunatrius.schematica.handler.ConfigurationHandler;
-import com.github.lunatrius.schematica.handler.VisualSettings;
 import com.github.lunatrius.schematica.internal.lunatriuscore.util.vector.Vector3i;
 import com.github.lunatrius.schematica.network.message.MessagePrinterAction;
 import com.github.lunatrius.schematica.proxy.ClientProxy;
 import com.github.lunatrius.schematica.reference.Constants;
 import com.github.lunatrius.schematica.reference.Reference;
 import com.github.lunatrius.schematica.util.BlockGroups;
+import com.github.lunatrius.schematica.util.MessageType;
 
 import cpw.mods.fml.common.registry.FMLControlledNamespacedRegistry;
 import cpw.mods.fml.common.registry.GameData;
@@ -93,7 +94,7 @@ public class SchematicPrinter {
         }
         this.isPrinting = !this.isPrinting;
         if (this.isPrinting) refresh();
-        VisualSettings.printToggle(
+        InfoUtils.printBooleanConfigToggleMessage(
             UiTranslations.format("schematica.printer.name"), this.isPrinting);
     }
 
@@ -109,9 +110,9 @@ public class SchematicPrinter {
 
     public void showPendingMessage() {
         String key = this.pendingMessage;
-        if (key == null || this.minecraft.ingameGUI == null) return;
+        if (key == null) return;
         this.pendingMessage = null;
-        this.minecraft.ingameGUI.func_110326_a(UiTranslations.format(key), false);
+        InfoUtils.showGuiOrActionBarMessage(MessageType.WARNING, key);
     }
 
     public boolean isPrinting() {

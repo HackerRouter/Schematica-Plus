@@ -23,9 +23,6 @@ import net.minecraft.nbt.NBTTagList;
 import net.minecraft.nbt.NBTTagString;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.AxisAlignedBB;
-import net.minecraft.util.ChatComponentText;
-import net.minecraft.util.ChatComponentTranslation;
-import net.minecraft.util.IChatComponent;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
 
@@ -38,6 +35,8 @@ import com.github.lunatrius.schematica.nbt.TileEntitySnapshots;
 import com.github.lunatrius.schematica.reference.Reference;
 import com.github.lunatrius.schematica.task.TaskRegistry;
 import com.github.lunatrius.schematica.util.MessageException;
+import com.github.lunatrius.schematica.util.MessageType;
+import com.github.lunatrius.schematica.util.PlayerMessage;
 import com.github.lunatrius.schematica.util.SchematicLimits;
 import com.github.lunatrius.schematica.world.storage.RegionMask;
 
@@ -433,19 +432,20 @@ public final class WorldEditJob extends WorldEditTask {
     }
 
     @Override
-    public IChatComponent finishedMessage(boolean success) {
+    public PlayerMessage finishedMessage(boolean success) {
         if (kind == Kind.PASTE && firstFailure != null) {
-            IChatComponent detail = firstFailure instanceof MessageException
-                ? new ChatComponentTranslation(((MessageException) firstFailure).key(), ((MessageException) firstFailure).arguments())
-                : new ChatComponentText(firstFailure.getClass().getSimpleName());
-            return new ChatComponentTranslation("schematica.message.edit.paste_errors",
+            Object detail = firstFailure instanceof MessageException
+                ? new PlayerMessage(MessageType.ERROR, ((MessageException) firstFailure).key(), ((MessageException) firstFailure).arguments())
+                : firstFailure.getClass().getSimpleName();
+            return new PlayerMessage(MessageType.ERROR, "schematica.message.edit.paste_errors",
                 blockCount, entityCount, failedBlockCount(), failedEntities, detail);
         }
         if (success && blockCount == 0 && entityCount == 0) {
-            return new ChatComponentTranslation("schematica.message.edit.no_changes");
+            return new PlayerMessage(MessageType.INFO, "schematica.message.edit.no_changes");
         }
         if (kind != Kind.DELETE_PLACEMENT) return super.finishedMessage(success);
-        return new ChatComponentText(success ? String.format("Deleted %d blocks", blockCount) : "Deletion task failed");
+        return success ? new PlayerMessage(MessageType.SUCCESS, "schematica.message.edit.placement_deleted", blockCount)
+            : new PlayerMessage(MessageType.ERROR, "schematica.message.edit.placement_delete_failed");
     }
 
     public TaskRegistry.Kind taskKind() {

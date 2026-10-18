@@ -7,7 +7,6 @@ import java.io.IOException;
 import java.util.Locale;
 
 import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.util.EnumChatFormatting;
 
 import com.github.lunatrius.schematica.client.gui.browser.GuiSchematicBrowser;
 import com.github.lunatrius.schematica.client.gui.browser.SchematicBrowserModel;
@@ -16,8 +15,10 @@ import com.github.lunatrius.schematica.client.gui.framework.UiDraw;
 import com.github.lunatrius.schematica.client.gui.framework.UiTranslations;
 import com.github.lunatrius.schematica.client.projects.SchematicProject;
 import com.github.lunatrius.schematica.client.projects.SchematicProjects;
+import com.github.lunatrius.schematica.client.util.InfoUtils;
 import com.github.lunatrius.schematica.handler.ConfigurationHandler;
 import com.github.lunatrius.schematica.internal.lunatriuscore.util.vector.Vector3i;
+import com.github.lunatrius.schematica.util.MessageType;
 
 public final class GuiSchematicProjectsBrowser extends GuiSchematicBrowser {
     private UiButton manager, create, load, delete, close;
@@ -86,7 +87,7 @@ public final class GuiSchematicProjectsBrowser extends GuiSchematicBrowser {
             }
             SchematicProjects.create(directory, name);
             refreshFiles();
-            setStatus(UiTranslations.format("litematica.message.schematic_projects.project_created", name));
+            addMessage(MessageType.SUCCESS, "litematica.message.schematic_projects.project_created", name);
             return null;
         });
     }
@@ -98,9 +99,9 @@ public final class GuiSchematicProjectsBrowser extends GuiSchematicBrowser {
             SchematicProject project = SchematicProjects.current();
             if (project == null) return;
             mc.displayGuiScreen(new GuiSchematicProjectManager(this, project));
-            SchematicProjects.message(EnumChatFormatting.GREEN, "litematica.message.schematic_projects.project_loaded", project.name());
+            InfoUtils.showGuiOrInGameMessage(MessageType.SUCCESS, "litematica.message.schematic_projects.project_loaded", project.name());
         } else {
-            setStatus(UiTranslations.format("litematica.error.schematic_projects.failed_to_load_project"));
+            addMessage(MessageType.ERROR, "litematica.error.schematic_projects.failed_to_load_project");
         }
     }
 
@@ -115,7 +116,7 @@ public final class GuiSchematicProjectsBrowser extends GuiSchematicBrowser {
                     browser.delete(entry);
                     refreshFiles();
                 } catch (IOException e) {
-                    setStatus(UiTranslations.format("malilib.message.error.failed_to_delete_file", entry.name()));
+                    addMessage(MessageType.ERROR, "malilib.message.error.failed_to_delete_file", entry.name());
                 }
             });
     }

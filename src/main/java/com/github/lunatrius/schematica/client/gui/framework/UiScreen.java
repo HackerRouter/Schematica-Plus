@@ -13,6 +13,7 @@ import net.minecraft.util.ResourceLocation;
 
 import com.github.lunatrius.schematica.client.gui.GuiSchematicMainMenu;
 import com.github.lunatrius.schematica.client.util.IssueReport;
+import com.github.lunatrius.schematica.util.MessageType;
 
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
@@ -22,6 +23,7 @@ public abstract class UiScreen extends GuiScreen {
     protected final UiPanel root = new UiPanel();
     protected final UiInput input = new UiInput(root, () -> mc.getSoundHandler().playSound(
         PositionedSoundRecord.func_147674_a(new ResourceLocation("gui.button.press"), 1.0F)));
+    private final MessageRenderer messages = new MessageRenderer(0xDD000000, 0xFF999999, true, true);
     private final GuiScreen parent;
     private final String title;
     private boolean created;
@@ -39,6 +41,14 @@ public abstract class UiScreen extends GuiScreen {
     }
 
     protected abstract void createWidgets();
+
+    public final void addMessage(MessageType type, String translationKey, Object... args) {
+        addMessage(type, 5000, translationKey, args);
+    }
+
+    public final void addMessage(MessageType type, int lifeTime, String translationKey, Object... args) {
+        messages.add(type, lifeTime, UiTranslations.format(translationKey, args));
+    }
 
     protected abstract void layoutWidgets();
 
@@ -102,6 +112,7 @@ public abstract class UiScreen extends GuiScreen {
                 boolean top = i == modals.size() - 1;
                 modals.get(i).draw(draw, top ? mouseX : -1, top ? mouseY : -1);
             }
+            messages.draw(draw, width / 2, height / 2, fontRendererObj.FONT_HEIGHT + 1);
             drawTooltip(draw, mouseX, mouseY);
         }
     }

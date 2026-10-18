@@ -9,8 +9,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.ChatComponentText;
-import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.world.World;
 
 import com.github.lunatrius.schematica.SchematicaPlus;
@@ -20,6 +18,7 @@ import com.github.lunatrius.schematica.client.gui.framework.UiTranslations;
 import com.github.lunatrius.schematica.client.projects.SchematicProjects;
 import com.github.lunatrius.schematica.client.selection.AreaSelectionLibrary;
 import com.github.lunatrius.schematica.client.selection.AreaSelections;
+import com.github.lunatrius.schematica.client.util.InfoUtils;
 import com.github.lunatrius.schematica.client.world.GridPlacements;
 import com.github.lunatrius.schematica.client.world.Placements;
 import com.github.lunatrius.schematica.client.world.RenderLayerRange;
@@ -33,6 +32,7 @@ import com.github.lunatrius.schematica.handler.client.RemoteEditClient;
 import com.github.lunatrius.schematica.reference.Reference;
 import com.github.lunatrius.schematica.task.TaskRegistry;
 import com.github.lunatrius.schematica.util.MessageException;
+import com.github.lunatrius.schematica.util.MessageType;
 import com.github.lunatrius.schematica.util.SchematicLimits;
 import com.github.lunatrius.schematica.world.storage.RegionSelection;
 
@@ -107,7 +107,7 @@ public class ToolHandler {
         if (base.grid.isEnabled()) {
             placements.addAll(GridPlacements.INSTANCE.copiesOf(base));
         } else {
-            sendChat(player, EnumChatFormatting.GOLD + UiTranslations.format("schematica.message.grid_paste.grid_disabled"));
+            InfoUtils.showGuiOrInGameMessage(MessageType.WARNING, "schematica.message.grid_paste.grid_disabled");
         }
         List<WorldEditJob> jobs = new ArrayList<>();
         for (SchematicWorld placement : placements) jobs.add(pasteJob(player, placement));
@@ -180,7 +180,7 @@ public class ToolHandler {
                 CommandEditQueue.INSTANCE.submit(job, player.worldObj);
             }
         }
-        sendChat(player, UiTranslations.format("litematica.message.scheduled_task_added"));
+        InfoUtils.showGuiOrInGameMessage(MessageType.INFO, "litematica.message.scheduled_task_added");
     }
 
     private static void continueWith(WorldEditJob job, Runnable next) {
@@ -220,9 +220,11 @@ public class ToolHandler {
             return true;
         } catch (Exception e) {
             if (!(e instanceof MessageException)) Reference.logger.warn("Could not start schematic edit", e);
-            sendChat(player, EnumChatFormatting.RED + (e instanceof MessageException
-                ? UiTranslations.format(((MessageException) e).key(), ((MessageException) e).arguments())
-                : UiTranslations.format(kind.finishedKey(false))));
+            if (e instanceof MessageException) {
+                InfoUtils.showGuiOrInGameMessage(MessageType.ERROR, ((MessageException) e).key(), ((MessageException) e).arguments());
+            } else {
+                InfoUtils.showGuiOrInGameMessage(MessageType.ERROR, kind.finishedKey(false));
+            }
             return false;
         }
     }
@@ -287,8 +289,4 @@ public class ToolHandler {
         });
     }
 
-    private static void sendChat(EntityPlayer player, String message) {
-        player.addChatMessage(new ChatComponentText(
-            EnumChatFormatting.GREEN + "[" + Reference.NAME + "] " + EnumChatFormatting.RESET + message));
-    }
 }

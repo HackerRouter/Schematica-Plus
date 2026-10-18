@@ -20,6 +20,7 @@ import com.github.lunatrius.schematica.tool.ReplaceBehavior;
 import com.github.lunatrius.schematica.tool.WorldEditJob;
 import com.github.lunatrius.schematica.tool.WorldEditTask;
 import com.github.lunatrius.schematica.util.MessageException;
+import com.github.lunatrius.schematica.util.PlayerMessage;
 import com.github.lunatrius.schematica.world.storage.Schematic;
 
 import cpw.mods.fml.common.gameevent.TickEvent;
@@ -135,7 +136,7 @@ public class CommandEditQueueTest {
         assertEquals(1, client.commands.size());
         assertEquals(Collections.singletonList(false), client.completed);
         assertEquals("schematica.message.edit.commands_unconfirmed",
-            ((ChatComponentTranslation) client.messages.get(0)).getKey());
+            client.messages.get(0).key);
     }
 
     @Test public void wrappedCommandErrorsAndNoChangeDoNotCountAsAcknowledgedWrites() {
@@ -183,7 +184,7 @@ public class CommandEditQueueTest {
         assertTrue(client.commands.isEmpty());
         assertEquals(Collections.singletonList(true), client.completed);
         assertEquals("schematica.message.edit.no_changes",
-            ((ChatComponentTranslation) client.messages.get(0)).getKey());
+            client.messages.get(0).key);
     }
 
     @Test public void pasteCommandErrorsContinueAndReportOnlyAcknowledgedWrites() {
@@ -202,7 +203,7 @@ public class CommandEditQueueTest {
             assertEquals(1, client.job.failedBlockCount());
             assertTrue(client.job.completedTraversal);
             assertEquals("schematica.message.edit.paste_errors",
-                ((ChatComponentTranslation) client.messages.get(0)).getKey());
+                client.messages.get(0).key);
         }
     }
 
@@ -245,7 +246,7 @@ public class CommandEditQueueTest {
         WorldEditJob job;
         final List<String> commands = new ArrayList<>();
         final List<Boolean> completed = new ArrayList<>();
-        final List<IChatComponent> messages = new ArrayList<>();
+        final List<PlayerMessage> messages = new ArrayList<>();
         public boolean valid(WorldEditJob job, World world) { return valid; }
         public String command(WorldEditJob job, int index, World world) {
             if (index == failAt) throw new IllegalStateException("Command creation failed");
@@ -255,6 +256,6 @@ public class CommandEditQueueTest {
             if (failSend) { failSend = false; throw new IllegalStateException("Send failed"); }
             commands.add(command);
         }
-        public void message(IChatComponent message) { messages.add(message); }
+        public void message(PlayerMessage message) { messages.add(message); }
     }
 }

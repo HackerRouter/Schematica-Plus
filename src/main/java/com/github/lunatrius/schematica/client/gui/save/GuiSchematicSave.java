@@ -30,6 +30,7 @@ import com.github.lunatrius.schematica.handler.ConfigurationHandler;
 import com.github.lunatrius.schematica.handler.QueueTickHandler;
 import com.github.lunatrius.schematica.handler.client.WorldHandler;
 import com.github.lunatrius.schematica.reference.Reference;
+import com.github.lunatrius.schematica.util.MessageType;
 import com.github.lunatrius.schematica.world.chunk.SchematicContainer;
 import com.github.lunatrius.schematica.world.schematic.SchematicFormat;
 import com.github.lunatrius.schematica.world.storage.RegionSelection;
@@ -139,7 +140,7 @@ public final class GuiSchematicSave extends GuiSchematicBrowser {
         tickScreen();
         if (!problem.isEmpty()) return;
         if (!QueueTickHandler.INSTANCE.canQueue(mc.thePlayer)) {
-            setStatus(UiTranslations.format("schematica.ui.save.busy"));
+            addMessage(MessageType.WARNING, "schematica.ui.save.busy");
             return;
         }
         try {
@@ -148,17 +149,17 @@ public final class GuiSchematicSave extends GuiSchematicBrowser {
             AreaSelections.capture();
             RegionSelection selection = area.snapshot();
             if (file.exists() && !isShiftKeyDown()) {
-                setStatus(UiTranslations.format("litematica.error.schematic_write_to_file_failed.exists", file.getName()));
+                addMessage(MessageType.ERROR, "litematica.error.schematic_write_to_file_failed.exists", file.getName());
             } else submit(file, world, selection);
         } catch (IOException | IllegalArgumentException e) {
             Reference.logger.error("Invalid schematic save target", e);
-            setStatus(UiTranslations.format("schematica.ui.save.invalid_directory"));
+            addMessage(MessageType.ERROR, "schematica.ui.save.invalid_directory");
         }
     }
 
     private void submit(File file, World world, RegionSelection selection) {
         if (!selectionContext() || mc.theWorld != world || mc.thePlayer == null || !SchematicaPlus.proxy.isSaveEnabled) {
-            setStatus(UiTranslations.format("schematica.ui.save.disabled"));
+            addMessage(MessageType.ERROR, "schematica.ui.save.disabled");
             return;
         }
         SchematicContainer.Options capture = new SchematicContainer.Options(
@@ -166,9 +167,9 @@ public final class GuiSchematicSave extends GuiSchematicBrowser {
             captureFlags[2], captureFlags[3]);
         if (SchematicaPlus.proxy.saveSchematic(mc.thePlayer, file.getParentFile(), file.getName(), world, selection, null, capture)) {
             WorldHandler.INSTANCE.saveSession();
-            setStatus(UiTranslations.format("litematica.message.schematic_save_task_created"));
+            addMessage(MessageType.INFO, "litematica.message.schematic_save_task_created");
         } else {
-            setStatus(UiTranslations.format("schematica.ui.save.failed"));
+            addMessage(MessageType.ERROR, "schematica.ui.save.failed");
         }
         tickScreen();
     }

@@ -19,7 +19,6 @@ import net.minecraft.profiler.Profiler;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.tileentity.TileEntityChest;
 import net.minecraft.tileentity.TileEntitySkull;
-import net.minecraft.util.ChatComponentTranslation;
 import net.minecraft.util.Direction;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.util.Vec3;
@@ -36,12 +35,14 @@ import com.github.lunatrius.schematica.api.SchematicOrigin;
 import com.github.lunatrius.schematica.api.SchematicRegion;
 import com.github.lunatrius.schematica.client.gui.material.MaterialList;
 import com.github.lunatrius.schematica.client.gui.placement.PlacementTransform;
+import com.github.lunatrius.schematica.client.util.InfoUtils;
 import com.github.lunatrius.schematica.compat.VisualAdapters;
 import com.github.lunatrius.schematica.handler.VisualSettings;
 import com.github.lunatrius.schematica.internal.lunatriuscore.util.vector.Vector3f;
 import com.github.lunatrius.schematica.internal.lunatriuscore.util.vector.Vector3i;
 import com.github.lunatrius.schematica.nbt.TileEntitySnapshots;
 import com.github.lunatrius.schematica.reference.Reference;
+import com.github.lunatrius.schematica.util.MessageType;
 import com.github.lunatrius.schematica.util.SchematicTransform;
 import com.github.lunatrius.schematica.world.chunk.ChunkProviderSchematic;
 import com.github.lunatrius.schematica.world.schematic.BlockMetaTransform;
@@ -565,9 +566,9 @@ public class SchematicWorld extends World {
                     Direction.offsetZ[facing], 0, 0, 0);
                 if (normal[1] != 0) {
                     // 1.7.10 has no floor/ceiling direction for paintings and item frames.
-                    Minecraft mc = Minecraft.getMinecraft();
-                    if (mc != null && mc.thePlayer != null) mc.thePlayer.addChatMessage(
-                        new ChatComponentTranslation("schematica.message.transform.hanging_entities"));
+                    if (Minecraft.getMinecraft() != null && Minecraft.getMinecraft().thePlayer != null) {
+                        InfoUtils.showGuiOrInGameMessage(MessageType.WARNING, "schematica.message.transform.hanging_entities");
+                    }
                     return;
                 }
             }

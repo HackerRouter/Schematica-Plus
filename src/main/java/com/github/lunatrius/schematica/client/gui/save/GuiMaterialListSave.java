@@ -11,9 +11,6 @@ import java.util.List;
 import java.util.Locale;
 
 import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.event.ClickEvent;
-import net.minecraft.util.ChatComponentText;
-import net.minecraft.util.ChatStyle;
 
 import com.github.lunatrius.schematica.client.gui.browser.GuiSchematicBrowser;
 import com.github.lunatrius.schematica.client.gui.browser.SchematicBrowserModel;
@@ -21,8 +18,10 @@ import com.github.lunatrius.schematica.client.gui.framework.UiButton;
 import com.github.lunatrius.schematica.client.gui.framework.UiTextField;
 import com.github.lunatrius.schematica.client.gui.framework.UiTranslations;
 import com.github.lunatrius.schematica.client.gui.material.CustomMaterialListFile;
+import com.github.lunatrius.schematica.client.util.InfoUtils;
 import com.github.lunatrius.schematica.handler.ConfigurationHandler;
 import com.github.lunatrius.schematica.reference.Reference;
+import com.github.lunatrius.schematica.util.MessageType;
 
 /** Saves a material list as a custom list JSON file that the load browser opens as a material list again. */
 public final class GuiMaterialListSave extends GuiSchematicBrowser {
@@ -60,11 +59,11 @@ public final class GuiMaterialListSave extends GuiSchematicBrowser {
         if (browser == null) return;
         String fileName = name.text().trim();
         if (fileName.isEmpty()) {
-            setStatus(UiTranslations.format("litematica.error.material_list_save.invalid_name", fileName));
+            addMessage(MessageType.ERROR, "litematica.error.material_list_save.invalid_name", fileName);
             return;
         }
         if (items.isEmpty()) {
-            setStatus(UiTranslations.format("litematica.message.error.material_list_save"));
+            addMessage(MessageType.ERROR, "litematica.message.error.material_list_save");
             return;
         }
         if (!fileName.toLowerCase(Locale.ROOT).endsWith(CustomMaterialListFile.JSON_EXTENSION)) fileName += CustomMaterialListFile.JSON_EXTENSION;
@@ -72,28 +71,24 @@ public final class GuiMaterialListSave extends GuiSchematicBrowser {
             SchematicBrowserModel.validateName(fileName);
             File directory = browser.directory();
             if (!directory.isDirectory()) {
-                setStatus(UiTranslations.format("litematica.error.schematic_save.invalid_directory", directory.getAbsolutePath()));
+                addMessage(MessageType.ERROR, "litematica.error.schematic_save.invalid_directory", directory.getAbsolutePath());
                 return;
             }
             File file = new File(directory, fileName);
             boolean exists = file.exists();
             if (exists && !isShiftKeyDown()) {
-                setStatus(UiTranslations.format("litematica.error.material_list_write_to_file_failed.exists", fileName));
+                addMessage(MessageType.ERROR, "litematica.error.material_list_write_to_file_failed.exists", fileName);
                 return;
             }
             byte[] json = CustomMaterialListFile.toJson(listName, items).getBytes(StandardCharsets.UTF_8);
             if (exists) Files.write(file.toPath(), json, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE);
             else Files.write(file.toPath(), json, StandardOpenOption.CREATE_NEW, StandardOpenOption.WRITE);
             refreshFiles();
-            String message = UiTranslations.format("litematica.message.material_list_save.exported", file.getName());
-            setStatus(message);
-            if (mc.thePlayer != null) {
-                mc.thePlayer.addChatMessage(new ChatComponentText(message).setChatStyle(new ChatStyle().setUnderlined(true)
-                    .setChatClickEvent(new ClickEvent(ClickEvent.Action.OPEN_FILE, file.getAbsolutePath()))));
-            }
+            addMessage(MessageType.SUCCESS, "litematica.message.material_list_save.exported", file.getName());
+            InfoUtils.sendOpenFileChatMessage(mc.thePlayer, "litematica.message.material_list_save.exported", file);
         } catch (IOException | RuntimeException e) {
             Reference.logger.warn("Could not save the material list", e);
-            setStatus(UiTranslations.format("litematica.message.error.material_list.custom_export_failed", fileName));
+            addMessage(MessageType.ERROR, "litematica.message.error.material_list.custom_export_failed", fileName);
         }
     }
 

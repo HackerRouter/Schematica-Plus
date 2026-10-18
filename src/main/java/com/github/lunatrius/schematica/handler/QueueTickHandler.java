@@ -9,7 +9,6 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.ChatComponentTranslation;
 import net.minecraft.world.World;
 import net.minecraftforge.common.DimensionManager;
 
@@ -17,6 +16,8 @@ import com.github.lunatrius.schematica.SchematicaPlus;
 import com.github.lunatrius.schematica.reference.Names;
 import com.github.lunatrius.schematica.reference.Reference;
 import com.github.lunatrius.schematica.task.TaskRegistry;
+import com.github.lunatrius.schematica.util.MessageType;
+import com.github.lunatrius.schematica.util.PlayerMessage;
 import com.github.lunatrius.schematica.world.chunk.SchematicContainer;
 import com.github.lunatrius.schematica.world.schematic.SchematicFileSnapshot;
 import com.github.lunatrius.schematica.world.schematic.SchematicFormat;
@@ -89,7 +90,7 @@ public class QueueTickHandler {
             player = owner(save, clientWorld, clientPlayer);
             if (player == null || save.task.progress().cancelling) return;
             if (container.hasNext()) {
-                if (container.isFirst()) player.addChatMessage(new ChatComponentTranslation(
+                if (container.isFirst()) SchematicaPlus.proxy.sendMessage(player, new PlayerMessage(MessageType.INFO,
                     Names.Command.Save.Message.SAVE_STARTED, container.chunkCount, container.file.getName()));
                 container.next();
             }
@@ -116,16 +117,16 @@ public class QueueTickHandler {
             boolean renamed = saved != null && !saved.getName().equals(container.file.getName());
             String message = saved != null ? (renamed ? Names.Command.Save.Message.SAVE_EXTENDED
                 : Names.Command.Save.Message.SAVE_SUCCESSFUL) : Names.Command.Save.Message.SAVE_FAILED;
-            player.addChatMessage(new ChatComponentTranslation(message,
+            SchematicaPlus.proxy.sendMessage(player, new PlayerMessage(saved != null ? MessageType.SUCCESS : MessageType.ERROR, message,
                 saved != null ? saved.getName() : container.file.getName()));
         } catch (Exception e) {
             Reference.logger.error("Schematic save task failed", e);
-            if (player != null) player.addChatMessage(new ChatComponentTranslation(
+            SchematicaPlus.proxy.sendMessage(player, new PlayerMessage(MessageType.ERROR,
                 Names.Command.Save.Message.SAVE_FAILED, container.file.getName()));
         } finally {
             if (save.task.progress().cancelling) {
                 pending = false;
-                if (player != null) player.addChatMessage(new ChatComponentTranslation(
+                SchematicaPlus.proxy.sendMessage(player, new PlayerMessage(MessageType.WARNING,
                     "litematica.message.error.schematic_save_interrupted"));
             }
             if (pending) queue.offer(save);

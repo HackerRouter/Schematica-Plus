@@ -15,6 +15,7 @@ import com.github.lunatrius.schematica.client.renderer.hud.BlockInfoHud;
 import com.github.lunatrius.schematica.client.renderer.hud.MaterialListHud;
 import com.github.lunatrius.schematica.client.renderer.hud.ToolHud;
 import com.github.lunatrius.schematica.client.renderer.hud.VerifierHud;
+import com.github.lunatrius.schematica.client.util.InfoUtils;
 import com.github.lunatrius.schematica.client.world.Placements;
 import com.github.lunatrius.schematica.client.world.SchematicWorld;
 import com.github.lunatrius.schematica.handler.ConfigurationHandler;
@@ -78,6 +79,7 @@ public class OverlayHandler {
         if (event.type != RenderGameOverlayEvent.ElementType.ALL) {
             return;
         }
+        if (!this.minecraft.gameSettings.hideGUI) InfoUtils.renderInGameMessages(this.minecraft);
 
         if (!VisualSettings.rendering) {
             BlockInfoHud.INSTANCE.clear();

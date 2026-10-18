@@ -8,8 +8,6 @@ import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.ChatComponentText;
-import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.MathHelper;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.util.Vec3;
@@ -19,13 +17,13 @@ import net.minecraftforge.common.util.ForgeDirection;
 import com.github.lunatrius.schematica.SchematicaPlus;
 import com.github.lunatrius.schematica.api.SchematicOrigin;
 import com.github.lunatrius.schematica.api.SchematicRegion;
-import com.github.lunatrius.schematica.client.gui.framework.UiTranslations;
 import com.github.lunatrius.schematica.client.input.Hotkeys;
 import com.github.lunatrius.schematica.client.projects.SchematicProjects;
 import com.github.lunatrius.schematica.client.selection.AreaSelectionLibrary;
 import com.github.lunatrius.schematica.client.selection.AreaSelectionLibrary.Area;
 import com.github.lunatrius.schematica.client.selection.AreaSelections;
 import com.github.lunatrius.schematica.client.selection.SelectionRayTrace;
+import com.github.lunatrius.schematica.client.util.InfoUtils;
 import com.github.lunatrius.schematica.client.util.UiState;
 import com.github.lunatrius.schematica.client.world.Placements;
 import com.github.lunatrius.schematica.client.world.SchematicWorld;
@@ -34,6 +32,7 @@ import com.github.lunatrius.schematica.handler.ConfigurationHandler;
 import com.github.lunatrius.schematica.handler.VisualSettings;
 import com.github.lunatrius.schematica.handler.client.WorldHandler;
 import com.github.lunatrius.schematica.internal.lunatriuscore.util.vector.Vector3i;
+import com.github.lunatrius.schematica.util.MessageType;
 
 import org.lwjgl.opengl.Display;
 
@@ -78,7 +77,7 @@ public final class ToolManager {
         p.set(value);
         ConfigurationHandler.loadConfiguration();
         ConfigurationHandler.configuration.save();
-        if (message) VisualSettings.printToggle(VisualSettings.prettyName("generic", name), value);
+        if (message) InfoUtils.printBooleanConfigToggleMessage(VisualSettings.prettyName("generic", name), value);
         return value;
     }
 
@@ -119,8 +118,8 @@ public final class ToolManager {
         }
         if (Hotkeys.held("selectionGrowModifier")) {
             if (currentMode.getUsesAreaSelection()) {
-                if (area == null) message("litematica.message.error.no_area_selected");
-                else if (area.selectedBox() == null) message("litematica.error.area_selection.grow.no_sub_region_selected");
+                if (area == null) InfoUtils.showGuiOrInGameMessage(MessageType.ERROR, "litematica.message.error.no_area_selected");
+                else if (area.selectedBox() == null) InfoUtils.showGuiOrInGameMessage(MessageType.ERROR, "litematica.error.area_selection.grow.no_sub_region_selected");
                 else { AreaSelections.capture(); AreaSelections.library().growSelected(area, amount); saveArea(); }
             }
             return true;
@@ -160,10 +159,6 @@ public final class ToolManager {
         return true;
     }
 
-    private static void message(String key) {
-        if (mc().thePlayer != null) mc().thePlayer.addChatMessage(new ChatComponentText(
-            EnumChatFormatting.RED + UiTranslations.format(key)));
-    }
     static void moveEntire(Area area, Vector3i delta) {
         if (!SchematicaPlus.proxy.isSaveEnabled) return;
         AreaSelections.capture(); AreaSelections.library().moveEntire(area, delta.x, delta.y, delta.z); saveArea();

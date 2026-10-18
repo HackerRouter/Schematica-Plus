@@ -6,12 +6,13 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.world.World;
 
 import com.github.lunatrius.schematica.SchematicaPlus;
-import com.github.lunatrius.schematica.client.gui.framework.UiTranslations;
 import com.github.lunatrius.schematica.client.selection.AreaSelectionLibrary;
 import com.github.lunatrius.schematica.client.selection.AreaSelectionLibrary.Area;
 import com.github.lunatrius.schematica.client.selection.AreaSelections;
+import com.github.lunatrius.schematica.client.util.InfoUtils;
 import com.github.lunatrius.schematica.handler.ConfigurationHandler;
 import com.github.lunatrius.schematica.internal.lunatriuscore.util.vector.Vector3i;
+import com.github.lunatrius.schematica.util.MessageType;
 
 final class ToolSelectionActions {
     private ToolSelectionActions() {}
@@ -30,8 +31,8 @@ final class ToolSelectionActions {
                 AreaSelectionLibrary.Box box = library.addBox(area, name, point, point);
                 library.selectCorner(area, box, AreaSelectionLibrary.Corner.FIRST);
                 library.setGuide(area, true);
-                PlacementActions.actionBar(UiTranslations.format("litematica.message.added_selection_box",
-                    String.format("x: %d, y: %d, z: %d", point.x, point.y, point.z)));
+                InfoUtils.showGuiOrActionBarMessage(MessageType.SUCCESS, "litematica.message.added_selection_box",
+                    String.format("x: %d, y: %d, z: %d", point.x, point.y, point.z));
                 break;
             }
             case "deleteSelectionBox": {
@@ -39,14 +40,14 @@ final class ToolSelectionActions {
                 AreaSelections.capture();
                 if (area.originSelected()) {
                     library.setOrigin(area, null);
-                    PlacementActions.actionBar(UiTranslations.format("litematica.message.removed_area_origin"));
+                    InfoUtils.printActionbarMessage("litematica.message.removed_area_origin");
                     ToolManager.saveArea();
                     return false;
                 }
                 AreaSelectionLibrary.Box box = area.selectedBox();
                 if (box == null || library.mode() != AreaSelectionLibrary.Mode.NORMAL) return false;
                 library.removeBox(area, box);
-                PlacementActions.actionBar(UiTranslations.format("litematica.message.removed_selection_box", box.name()));
+                InfoUtils.printActionbarMessage("litematica.message.removed_selection_box", box.name());
                 break;
             }
             case "setAreaOrigin": AreaSelections.capture(); library.setOrigin(area, point); break;

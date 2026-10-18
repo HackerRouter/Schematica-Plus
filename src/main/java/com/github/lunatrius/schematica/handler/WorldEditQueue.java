@@ -6,15 +6,16 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.ChatComponentTranslation;
-import net.minecraft.util.IChatComponent;
 import net.minecraft.world.WorldServer;
 
+import com.github.lunatrius.schematica.SchematicaPlus;
 import com.github.lunatrius.schematica.compat.MachineUpdateLock;
 import com.github.lunatrius.schematica.reference.Reference;
 import com.github.lunatrius.schematica.task.TaskRegistry;
 import com.github.lunatrius.schematica.tool.WorldEditTask;
 import com.github.lunatrius.schematica.util.MessageException;
+import com.github.lunatrius.schematica.util.MessageType;
+import com.github.lunatrius.schematica.util.PlayerMessage;
 
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.gameevent.TickEvent;
@@ -112,7 +113,7 @@ public final class WorldEditQueue {
         }
         boolean authorized = player != null && player.dimension == job.dimension && mayEdit(player);
         if (!authorized) {
-            if (player != null && !job.cancelled) player.addChatMessage(new ChatComponentTranslation("schematica.message.edit.permissions"));
+            if (player != null && !job.cancelled) SchematicaPlus.proxy.sendMessage(player, new PlayerMessage(MessageType.ERROR, "schematica.message.edit.permissions"));
             job.cancelled = true;
             if (!job.needsRollback()) { finish(edit); return; }
         }
@@ -133,16 +134,14 @@ public final class WorldEditQueue {
             if (done) {
                 WorldEditTask.Outcome outcome = job.outcome();
                 if (job.failure() != null) Reference.logger.error("World edit finished with errors", job.failure());
-                IChatComponent message = job.finishedMessage(outcome == WorldEditTask.Outcome.FINISHED);
-                if (player != null && message != null) player.addChatMessage(message);
+                SchematicaPlus.proxy.sendMessage(player, job.finishedMessage(outcome == WorldEditTask.Outcome.FINISHED));
                 finish(edit, outcome);
             }
         } catch (Exception e) {
             Reference.logger.error("World edit stopped after partial completion", e);
-            IChatComponent message = job.finishedMessage(false);
-            if (player != null && message != null) player.addChatMessage(message);
-            if (player != null && e instanceof MessageException) {
-                player.addChatMessage(new ChatComponentTranslation(((MessageException) e).key(), ((MessageException) e).arguments()));
+            SchematicaPlus.proxy.sendMessage(player, job.finishedMessage(false));
+            if (e instanceof MessageException) {
+                SchematicaPlus.proxy.sendMessage(player, new PlayerMessage(MessageType.ERROR, ((MessageException) e).key(), ((MessageException) e).arguments()));
             }
             finish(edit);
         }

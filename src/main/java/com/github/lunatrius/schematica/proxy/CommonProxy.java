@@ -36,6 +36,7 @@ import com.github.lunatrius.schematica.network.PacketHandler;
 import com.github.lunatrius.schematica.network.message.MessageEditStatus;
 import com.github.lunatrius.schematica.reference.Reference;
 import com.github.lunatrius.schematica.util.FileUtils;
+import com.github.lunatrius.schematica.util.PlayerMessage;
 import com.github.lunatrius.schematica.util.SchematicLimits;
 import com.github.lunatrius.schematica.world.chunk.CaptureSource;
 import com.github.lunatrius.schematica.world.chunk.SchematicContainer;
@@ -68,6 +69,10 @@ public abstract class CommonProxy {
     public void remoteEditStatus(MessageEditStatus status) {}
 
     public void runSaveCallback(Runnable callback) { callback.run(); }
+
+    public void sendMessage(EntityPlayer player, PlayerMessage message) {
+        if (player != null && message != null) player.addChatMessage(message.chat());
+    }
 
     public void preInit(FMLPreInitializationEvent event) {
         GTNH = Loader.isModLoaded("dreamcraft");

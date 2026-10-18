@@ -10,6 +10,7 @@ final class ConfigReader {
     static final String GENERIC = "litematica.config.generic.name.";
     static final String INFO_OVERLAYS = "litematica.config.info_overlays.name.";
     static final String VISUALS = "litematica.config.visuals.name.";
+    static final String MALILIB = "malilib.config.generic.name.";
 
     private final Configuration config;
     private final String category, language;

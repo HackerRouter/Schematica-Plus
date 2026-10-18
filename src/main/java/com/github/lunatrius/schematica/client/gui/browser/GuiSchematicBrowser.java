@@ -33,6 +33,7 @@ import com.github.lunatrius.schematica.client.world.Placements;
 import com.github.lunatrius.schematica.handler.ConfigurationHandler;
 import com.github.lunatrius.schematica.reference.Reference;
 import com.github.lunatrius.schematica.util.FileUtils;
+import com.github.lunatrius.schematica.util.MessageType;
 import com.github.lunatrius.schematica.world.schematic.DataVersions;
 import com.github.lunatrius.schematica.world.schematic.SchematicFiles;
 
@@ -358,9 +359,10 @@ public abstract class GuiSchematicBrowser extends UiScreen {
                 try {
                     browser.delete(entry);
                     refreshFiles();
-                    setStatus(UiTranslations.format("malilib.message.file_or_directory_deleted", entry.name()));
+                    addMessage(MessageType.SUCCESS, "malilib.message.file_or_directory_deleted", entry.name());
                 } catch (IOException e) {
-                    setStatus(fileError(e));
+                    Reference.logger.warn("Schematic file operation failed", e);
+                    addMessage(MessageType.ERROR, fileErrorKey(e), fileErrorArguments(e));
                 }
             });
     }
@@ -380,14 +382,19 @@ public abstract class GuiSchematicBrowser extends UiScreen {
 
     private String fileError(IOException error) {
         Reference.logger.warn("Schematic file operation failed", error);
-        if (error instanceof SchematicBrowserModel.FileOperationException) {
-            SchematicBrowserModel.FileOperationException failure = (SchematicBrowserModel.FileOperationException) error;
-            return UiTranslations.format(failure.translationKey, failure.arguments);
-        }
-        if (error instanceof FileAlreadyExistsException) {
-            return UiTranslations.format("malilib.message.error.file_or_directory_already_exists", new File(((FileAlreadyExistsException) error).getFile()).getName());
-        }
-        return UiTranslations.format("schematica.ui.files.error.io");
+        return UiTranslations.format(fileErrorKey(error), fileErrorArguments(error));
+    }
+
+    private static String fileErrorKey(IOException error) {
+        if (error instanceof SchematicBrowserModel.FileOperationException) return ((SchematicBrowserModel.FileOperationException) error).translationKey;
+        if (error instanceof FileAlreadyExistsException) return "malilib.message.error.file_or_directory_already_exists";
+        return "schematica.ui.files.error.io";
+    }
+
+    private static Object[] fileErrorArguments(IOException error) {
+        if (error instanceof SchematicBrowserModel.FileOperationException) return ((SchematicBrowserModel.FileOperationException) error).arguments;
+        if (error instanceof FileAlreadyExistsException) return new Object[] {new File(((FileAlreadyExistsException) error).getFile()).getName()};
+        return new Object[0];
     }
 
     @Override
@@ -463,7 +470,7 @@ public abstract class GuiSchematicBrowser extends UiScreen {
 
     protected final void fail(String key, Exception error, Object... arguments) {
         Reference.logger.error(UiTranslations.format(key, arguments), error);
-        setStatus(UiTranslations.format(key, arguments));
+        addMessage(MessageType.ERROR, key, arguments);
     }
 
     protected final SchematicBrowserModel.Entry selection() {

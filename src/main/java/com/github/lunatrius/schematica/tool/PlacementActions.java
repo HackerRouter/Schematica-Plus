@@ -3,8 +3,6 @@
 package com.github.lunatrius.schematica.tool;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.util.ChatComponentTranslation;
-import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.MathHelper;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraftforge.common.util.ForgeDirection;
@@ -17,6 +15,7 @@ import com.github.lunatrius.schematica.client.printer.SchematicPrinter;
 import com.github.lunatrius.schematica.client.renderer.RendererSchematicGlobal;
 import com.github.lunatrius.schematica.client.selection.AreaSelectionLibrary.Area;
 import com.github.lunatrius.schematica.client.selection.AreaSelections;
+import com.github.lunatrius.schematica.client.util.InfoUtils;
 import com.github.lunatrius.schematica.client.world.Placements;
 import com.github.lunatrius.schematica.client.world.SchematicLibrary;
 import com.github.lunatrius.schematica.client.world.SchematicSourceData;
@@ -25,6 +24,7 @@ import com.github.lunatrius.schematica.handler.ConfigurationHandler;
 import com.github.lunatrius.schematica.handler.client.WorldHandler;
 import com.github.lunatrius.schematica.internal.lunatriuscore.util.vector.Vector3i;
 import com.github.lunatrius.schematica.reference.Reference;
+import com.github.lunatrius.schematica.util.MessageType;
 import com.github.lunatrius.schematica.world.schematic.SchematicFileSnapshot;
 import com.github.lunatrius.schematica.world.storage.RegionSelection;
 
@@ -32,17 +32,6 @@ public final class PlacementActions {
     private PlacementActions() {}
 
     private static Minecraft mc() { return Minecraft.getMinecraft(); }
-
-    public static void actionBar(String text) {
-        if (mc().ingameGUI != null) mc().ingameGUI.func_110326_a(text, false);
-    }
-
-    private static void chat(EnumChatFormatting color, String key, Object... arguments) {
-        if (mc().thePlayer == null) return;
-        ChatComponentTranslation text = new ChatComponentTranslation(key, arguments);
-        text.getChatStyle().setColor(color);
-        mc().thePlayer.addChatMessage(text);
-    }
 
     /** schematicPlacementRotation: rotates the selected placement one step clockwise. */
     public static boolean rotate() { return transform(true); }
@@ -54,12 +43,12 @@ public final class PlacementActions {
         SchematicWorld placement = Placements.selected;
         if (placement == null) return false;
         if (placement.placementSettings().locked) {
-            actionBar(UiTranslations.format("litematica.message.placement.cant_modify_is_locked"));
+            InfoUtils.showGuiOrActionBarMessage(MessageType.ERROR, "litematica.message.placement.cant_modify_is_locked");
             return true;
         }
         PlacementTransform.Orientation orientation = PlacementTransform.orientation(placement.transformOperations);
         if (orientation == null) {
-            actionBar(UiTranslations.format("schematica.ui.placement.custom"));
+            InfoUtils.showGuiOrActionBarMessage(MessageType.WARNING, "schematica.ui.placement.custom");
             return true;
         }
         String steps = rotation ? "Y" : orientation.cycleMirror(false);
@@ -71,7 +60,7 @@ public final class PlacementActions {
             }
         } catch (RuntimeException error) {
             Reference.logger.error("Failed to transform placement", error);
-            actionBar(EnumChatFormatting.RED + UiTranslations.format("schematica.ui.placement.transform_failed"));
+            InfoUtils.showGuiOrActionBarMessage(MessageType.ERROR, "schematica.ui.placement.transform_failed");
             return true;
         } finally {
             RendererSchematicGlobal.INSTANCE.createRendererSchematicChunks(placement);
@@ -79,8 +68,8 @@ public final class PlacementActions {
             WorldHandler.INSTANCE.saveSession();
         }
         PlacementTransform.Orientation next = PlacementTransform.orientation(placement.transformOperations);
-        if (next != null) actionBar(UiTranslations.format(rotation ? "litematica.message.placement.rotation_set_to" : "litematica.message.placement.mirror_set_to",
-            rotation ? next.rotationName() : next.mirrorName()));
+        if (next != null) InfoUtils.printActionbarMessage(rotation ? "litematica.message.placement.rotation_set_to" : "litematica.message.placement.mirror_set_to",
+            rotation ? next.rotationName() : next.mirrorName());
         return true;
     }
 
@@ -88,7 +77,7 @@ public final class PlacementActions {
     public static boolean cloneSelection() {
         Area area = AreaSelections.library().selected();
         if (area == null || area.boxes().isEmpty()) {
-            chat(EnumChatFormatting.RED, "litematica.message.error.no_area_selected");
+            InfoUtils.showGuiOrInGameMessage(MessageType.ERROR, "litematica.message.error.no_area_selected");
             return true;
         }
         Vector3i origin = ConfigurationHandler.cloneAtOriginalPosition ? area.origin() : targetedPosition();
@@ -109,7 +98,7 @@ public final class PlacementActions {
         if (area == null) return false;
         mc().displayGuiScreen(new GuiTextPrompt(mc().currentScreen, UiTranslations.format("litematica.gui.title.create_in_memory_schematic"), area.name(), name -> {
             if (AreaSelections.library().selected() != area || area.boxes().isEmpty()) return UiTranslations.format("litematica.message.error.no_area_selected");
-            capture(area, name, source -> chat(EnumChatFormatting.GREEN, "litematica.message.in_memory_schematic_created", name));
+            capture(area, name, source -> InfoUtils.showGuiOrInGameMessage(MessageType.SUCCESS, "litematica.message.in_memory_schematic_created", name));
             return null;
         }));
         return true;
@@ -119,13 +108,13 @@ public final class PlacementActions {
 
     private static void capture(Area area, String name, Created created) {
         if (mc().theWorld == null || mc().thePlayer == null || !SchematicaPlus.proxy.isSaveEnabled) {
-            chat(EnumChatFormatting.RED, "schematica.ui.save.disabled");
+            InfoUtils.showGuiOrInGameMessage(MessageType.ERROR, "schematica.ui.save.disabled");
             return;
         }
         RegionSelection selection;
         try { selection = area.snapshot(); }
         catch (IllegalArgumentException | ArithmeticException error) {
-            chat(EnumChatFormatting.RED, "schematica.ui.save.failed");
+            InfoUtils.showGuiOrInGameMessage(MessageType.ERROR, "schematica.ui.save.failed");
             return;
         }
         Object world = mc().theWorld;
@@ -134,10 +123,10 @@ public final class PlacementActions {
             try { created.accept(Placements.addMemorySource(name, snapshot)); }
             catch (Exception error) {
                 Reference.logger.error("Could not create the in-memory schematic", error);
-                chat(EnumChatFormatting.RED, "schematica.ui.save.failed");
+                InfoUtils.showGuiOrInGameMessage(MessageType.ERROR, "schematica.ui.save.failed");
             }
         });
-        if (!queued) chat(EnumChatFormatting.RED, "schematica.ui.save.failed");
+        if (!queued) InfoUtils.showGuiOrInGameMessage(MessageType.ERROR, "schematica.ui.save.failed");
     }
 
     /** Litematica's RayTraceUtils.getTargetedPosition (sneak for the adjacent position), or the player position. */

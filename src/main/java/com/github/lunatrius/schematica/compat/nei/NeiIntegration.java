@@ -13,6 +13,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraftforge.common.MinecraftForge;
 
 import com.github.lunatrius.schematica.client.gui.framework.UiTranslations;
+import com.github.lunatrius.schematica.client.util.InfoUtils;
 import com.github.lunatrius.schematica.reference.Reference;
 
 import codechicken.nei.BookmarkPanel;
@@ -108,24 +109,25 @@ public final class NeiIntegration {
     }
 
     static void addRecipe(RecipeHandlerRef ref) {
-        Minecraft mc = Minecraft.getMinecraft();
-        String message;
+        String key;
+        Object[] arguments = {};
         try {
             if (!groupExists()) {
-                message = UiTranslations.format("schematica.nei.no_group");
+                key = "schematica.nei.no_group";
             } else {
                 Recipe recipe = Recipe.of(ref);
                 boolean added = recipe != null && ItemPanels.bookmarkPanel.addRecipe(recipe, 1, group);
                 if (added) ItemPanels.bookmarkPanel.save();
                 ItemStack result = recipe == null ? null : recipe.getResult();
                 String name = result == null ? "?" : result.getDisplayName();
-                message = UiTranslations.format(added ? "schematica.nei.recipe_added" : "schematica.nei.recipe_present", name);
+                key = added ? "schematica.nei.recipe_added" : "schematica.nei.recipe_present";
+                arguments = new Object[] {name};
             }
         } catch (RuntimeException | LinkageError error) {
             Reference.logger.warn("Could not add a recipe to the NEI material group", error);
-            message = UiTranslations.format("schematica.nei.send_failed");
+            key = "schematica.nei.send_failed";
         }
-        if (mc.ingameGUI != null) mc.ingameGUI.func_110326_a(message, false);
+        InfoUtils.printActionbarMessage(key, arguments);
     }
 
     /** One more button above NEI's own buttons of each recipe, while a sent group exists. */

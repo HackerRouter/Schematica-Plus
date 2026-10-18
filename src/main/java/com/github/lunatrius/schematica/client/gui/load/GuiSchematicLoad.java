@@ -34,6 +34,7 @@ import com.github.lunatrius.schematica.client.util.UiState;
 import com.github.lunatrius.schematica.client.world.SchematicWorld;
 import com.github.lunatrius.schematica.handler.ConfigurationHandler;
 import com.github.lunatrius.schematica.reference.Reference;
+import com.github.lunatrius.schematica.util.MessageType;
 import com.github.lunatrius.schematica.world.schematic.SchematicFiles;
 import com.github.lunatrius.schematica.world.schematic.SchematicFormat;
 
@@ -128,7 +129,7 @@ public final class GuiSchematicLoad extends GuiSchematicBrowser {
             return;
         }
         if (!SchematicaPlus.proxy.isLoadEnabled || mc.theWorld == null || mc.thePlayer == null) {
-            setStatus(UiTranslations.format("schematica.ui.load.disabled"));
+            addMessage(MessageType.ERROR, "schematica.ui.load.disabled");
             return;
         }
         try {
@@ -137,11 +138,13 @@ public final class GuiSchematicLoad extends GuiSchematicBrowser {
             boolean[] finished = {false};
             boolean started = SchematicGuiLoader.loadAsync(mc, file, placeOnLoad, source -> {
                 finished[0] = true;
+                setStatus("");
                 UiState.addRecent(file);
-                setStatus(UiTranslations.format("litematica.message.schematic_read_from_file_success", file.getName()));
+                addMessage(MessageType.SUCCESS, "litematica.message.schematic_read_from_file_success", file.getName());
                 tickScreen();
             }, error -> {
                 finished[0] = true;
+                setStatus("");
                 fail("litematica.error.schematic_read_from_file_failed.exception", error, name);
                 tickScreen();
             });
@@ -155,7 +158,7 @@ public final class GuiSchematicLoad extends GuiSchematicBrowser {
     private File selectedFile() {
         SchematicBrowserModel.Entry entry = selection();
         if (entry == null || entry.directory) {
-            setStatus(UiTranslations.format("litematica.error.schematic_load.no_schematic_selected"));
+            addMessage(MessageType.ERROR, "litematica.error.schematic_load.no_schematic_selected");
             return null;
         }
         try {
@@ -173,19 +176,19 @@ public final class GuiSchematicLoad extends GuiSchematicBrowser {
         if (CustomMaterialListFile.isListFile(file.getName())) {
             CustomMaterialListFile custom = customList(file);
             if (custom == null) {
-                setStatus(UiTranslations.format("litematica.message.error.material_list.custom_load_failed", file.getName()));
+                addMessage(MessageType.ERROR, "litematica.message.error.material_list.custom_load_failed", file.getName());
                 return;
             }
             MaterialList list =
                 MaterialList.custom(custom.name, file, custom.items);
             MaterialLists.setCurrent(list);
-            setStatus(UiTranslations.format("litematica.info.material_list.custom_loaded", file.getName()));
+            addMessage(MessageType.SUCCESS, "litematica.info.material_list.custom_loaded", file.getName());
             mc.displayGuiScreen(new GuiSchematicMaterials(this, list));
             return;
         }
         ISchematic schematic = SchematicFormat.readFromFile(file);
         if (schematic == null) {
-            setStatus(UiTranslations.format("litematica.error.schematic_read_from_file_failed.exception", file.getName()));
+            addMessage(MessageType.ERROR, "litematica.error.schematic_read_from_file_failed.exception", file.getName());
             return;
         }
         String name = file.getName().substring(0, file.getName().lastIndexOf('.'));
@@ -217,7 +220,7 @@ public final class GuiSchematicLoad extends GuiSchematicBrowser {
         File file = selectedFile();
         if (file == null) return;
         if (!SchematicFiles.editable(file)) {
-            setStatus(UiTranslations.format("schematica.ui.files.metadata_unsupported"));
+            addMessage(MessageType.WARNING, "schematica.ui.files.metadata_unsupported");
             return;
         }
         SchematicFiles.Info info;

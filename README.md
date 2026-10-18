@@ -234,8 +234,8 @@ worlds used for large edits.
 | Sponge `.schem` | Import v1–v3; no export; biomes are ignored |
 
 Saving as `.schematic` automatically upgrades to `.schemplus` when extended block
-IDs or Plus region/origin data require it. The actual filename is reported in chat;
-automatic upgrades choose an unused name instead of overwriting another file.
+IDs or Plus region/origin data require it. The actual filename is reported in the
+save message; automatic upgrades choose an unused name instead of overwriting another file.
 `.litematic` files show an **L** icon, `.schematic` files **S**, and `.schemplus`
 uses its own texture.
 

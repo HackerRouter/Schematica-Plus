@@ -22,7 +22,6 @@ import net.minecraft.nbt.NBTTagList;
 import net.minecraft.nbt.NBTTagString;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.tileentity.TileEntityChest;
-import net.minecraft.util.ChatComponentTranslation;
 import net.minecraft.world.ChunkPosition;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldProviderSurface;
@@ -196,7 +195,7 @@ public class WorldEditPlacementTest {
         assertEquals(0, world.tileWrites);
         assertEquals(0, world.neighborUpdates);
         assertEquals("schematica.message.edit.no_changes",
-            ((ChatComponentTranslation) job.finishedMessage(true)).getKey());
+            job.finishedMessage(true).key);
     }
 
     @Test public void rejectedWriteIntoAirIsNotMistakenForSelfRemoval() throws Exception {
@@ -254,7 +253,7 @@ public class WorldEditPlacementTest {
         assertEquals(0, job.blockCount);
         assertEquals(0, world.blockUpdates);
         assertEquals("schematica.message.edit.no_changes",
-            ((ChatComponentTranslation) job.finishedMessage(true)).getKey());
+            job.finishedMessage(true).key);
     }
 
     @Test public void matchingChestStateStillRestoresSavedTileData() throws Exception {
@@ -282,7 +281,7 @@ public class WorldEditPlacementTest {
         assertSame(AIR, world.cell(5).block);
         assertSame(CHEST, world.cell(6).block);
         assertEquals("schematica.message.edit.paste_errors",
-            ((ChatComponentTranslation) job.finishedMessage(false)).getKey());
+            job.finishedMessage(false).key);
     }
 
     @Test public void placementCallbackExceptionDoesNotPreventLaterBlocksOrLeakSnapshotFlag() throws Exception {
@@ -327,7 +326,7 @@ public class WorldEditPlacementTest {
         assertEquals(1, job.blockCount);
         assertTrue(job.completedTraversal);
         assertEquals("schematica.message.edit.paste_errors",
-            ((ChatComponentTranslation) job.finishedMessage(false)).getKey());
+            job.finishedMessage(false).key);
     }
 
     @Test public void nonPasteEditsStillPropagateWriteFailures() throws Exception {

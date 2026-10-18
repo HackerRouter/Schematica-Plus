@@ -7,8 +7,6 @@ import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.Entity;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.ChatComponentTranslation;
-import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.MathHelper;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.util.Vec3;
@@ -17,7 +15,6 @@ import com.github.lunatrius.schematica.client.gui.GuiModConfig;
 import com.github.lunatrius.schematica.client.gui.GuiSchematicMainMenu;
 import com.github.lunatrius.schematica.client.gui.GuiSchematicVerifier;
 import com.github.lunatrius.schematica.client.gui.control.GuiSchematicMaterials;
-import com.github.lunatrius.schematica.client.gui.framework.UiTranslations;
 import com.github.lunatrius.schematica.client.gui.material.MaterialList;
 import com.github.lunatrius.schematica.client.gui.material.MaterialLists;
 import com.github.lunatrius.schematica.client.gui.placement.GuiPlacementConfiguration;
@@ -37,6 +34,7 @@ import com.github.lunatrius.schematica.client.projects.SchematicProject;
 import com.github.lunatrius.schematica.client.projects.SchematicProjects;
 import com.github.lunatrius.schematica.client.renderer.RendererSchematicGlobal;
 import com.github.lunatrius.schematica.client.selection.AreaSelections;
+import com.github.lunatrius.schematica.client.util.InfoUtils;
 import com.github.lunatrius.schematica.client.world.Placements;
 import com.github.lunatrius.schematica.client.world.RenderLayerRange;
 import com.github.lunatrius.schematica.client.world.RenderLayerSettings;
@@ -49,6 +47,7 @@ import com.github.lunatrius.schematica.tool.SchematicRebuild;
 import com.github.lunatrius.schematica.tool.SchematicTargets;
 import com.github.lunatrius.schematica.tool.ToolHandler;
 import com.github.lunatrius.schematica.tool.ToolManager;
+import com.github.lunatrius.schematica.util.MessageType;
 
 public class InputHandler {
 
@@ -80,7 +79,7 @@ public class InputHandler {
             case "openGuiSchematicPlacements": minecraft.displayGuiScreen(new GuiSchematicPlacementsList(parent)); break;
             case "openGuiSelectionManager":
                 if (!SchematicProjects.hasProjectOpen()) minecraft.displayGuiScreen(new GuiAreaSelectionManager(parent));
-                else SchematicProjects.message(EnumChatFormatting.GOLD, "litematica.gui.button.hover.schematic_projects.area_browser_disabled_currently_in_projects_mode");
+                else InfoUtils.showGuiOrInGameMessage(MessageType.WARNING, "litematica.gui.button.hover.schematic_projects.area_browser_disabled_currently_in_projects_mode");
                 break;
             case "openGuiSchematicProjects": return SchematicProjects.openGui(parent);
             case "openGuiAreaSettings": minecraft.displayGuiScreen(new GuiAreaSelectionEditor(parent)); break;
@@ -89,7 +88,7 @@ public class InputHandler {
                 break;
             case "openPlacementGridSettingsScreen":
                 if (placement != null) minecraft.displayGuiScreen(new GuiPlacementGridSettings(parent, placement));
-                else minecraft.thePlayer.addChatMessage(new ChatComponentTranslation("litematica.message.error.no_placement_selected"));
+                else InfoUtils.showGuiOrInGameMessage(MessageType.ERROR, "litematica.message.error.no_placement_selected");
                 break;
             case "openGuiMaterialList":
                 openMaterialList(minecraft, parent, placement);
@@ -119,7 +118,7 @@ public class InputHandler {
                 if (list == null && placement != null) list = placement.materialList;
                 if (list == null) return false;
                 list.refresh();
-                if (minecraft.ingameGUI != null) minecraft.ingameGUI.func_110326_a(UiTranslations.format("schematica.message.material_list.refreshed"), false);
+                InfoUtils.printActionbarMessage("schematica.message.material_list.refreshed");
                 return true;
             }
             case "printerWorkingSwitch": SchematicPrinter.INSTANCE.toggleWithMessage(); return true;
@@ -182,7 +181,7 @@ public class InputHandler {
         // No last-viewed material list currently stored, try to get one for the currently selected placement, if any
         if (list == null) {
             if (placement == null) {
-                minecraft.thePlayer.addChatMessage(new ChatComponentTranslation("litematica.message.error.no_placement_selected"));
+                InfoUtils.showGuiOrInGameMessage(MessageType.ERROR, "litematica.message.error.no_placement_selected");
                 return;
             }
             list = MaterialList.placement(placement);

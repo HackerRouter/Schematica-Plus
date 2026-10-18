@@ -22,6 +22,7 @@ import com.github.lunatrius.schematica.client.projects.SchematicProjects;
 import com.github.lunatrius.schematica.client.renderer.RendererSchematicGlobal;
 import com.github.lunatrius.schematica.client.renderer.hud.BlockInfoHud;
 import com.github.lunatrius.schematica.client.selection.AreaSelections;
+import com.github.lunatrius.schematica.client.util.InfoUtils;
 import com.github.lunatrius.schematica.client.verifier.VerificationManager;
 import com.github.lunatrius.schematica.client.world.Placements;
 import com.github.lunatrius.schematica.client.world.RenderLayerSettings;
@@ -40,6 +41,7 @@ import com.github.lunatrius.schematica.handler.client.WorldHandler;
 import com.github.lunatrius.schematica.network.message.MessageEditStatus;
 import com.github.lunatrius.schematica.reference.Reference;
 import com.github.lunatrius.schematica.tool.WorldMoveController;
+import com.github.lunatrius.schematica.util.PlayerMessage;
 
 import cpw.mods.fml.client.config.GuiConfigEntries;
 import cpw.mods.fml.common.FMLCommonHandler;
@@ -61,6 +63,13 @@ public class ClientProxy extends CommonProxy {
     }
     @Override public void runSaveCallback(Runnable callback) {
         MINECRAFT.func_152344_a(callback);
+    }
+    @Override public void sendMessage(EntityPlayer player, PlayerMessage message) {
+        if (player == null || message == null) return;
+        EntityPlayer local = MINECRAFT.thePlayer;
+        boolean host = MINECRAFT.getIntegratedServer() != null && local != null && local.getUniqueID().equals(player.getUniqueID());
+        if (player.worldObj.isRemote || host) MINECRAFT.func_152344_a(() -> InfoUtils.showGuiOrInGameMessage(message));
+        else super.sendMessage(player, message);
     }
 
     @Override

@@ -14,8 +14,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemBlock;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.ChatComponentTranslation;
-import net.minecraft.util.EnumChatFormatting;
 import net.minecraftforge.common.util.ForgeDirection;
 
 import com.github.lunatrius.schematica.api.ISchematic;
@@ -24,6 +22,7 @@ import com.github.lunatrius.schematica.client.input.Hotkeys;
 import com.github.lunatrius.schematica.client.printer.PlacementRestriction;
 import com.github.lunatrius.schematica.client.selection.AreaSelectionLibrary.Area;
 import com.github.lunatrius.schematica.client.selection.AreaSelections;
+import com.github.lunatrius.schematica.client.util.InfoUtils;
 import com.github.lunatrius.schematica.client.world.CellState;
 import com.github.lunatrius.schematica.client.world.Placements;
 import com.github.lunatrius.schematica.client.world.RenderLayerRange;
@@ -39,6 +38,7 @@ import com.github.lunatrius.schematica.handler.ConfigurationHandler;
 import com.github.lunatrius.schematica.handler.client.InputHandler;
 import com.github.lunatrius.schematica.internal.lunatriuscore.util.vector.Vector3i;
 import com.github.lunatrius.schematica.reference.Reference;
+import com.github.lunatrius.schematica.util.MessageType;
 
 /** Edits loaded schematic sources in memory; the real world is never changed. */
 public final class SchematicRebuild {
@@ -77,7 +77,7 @@ public final class SchematicRebuild {
             return attack ? attack() : use();
         } catch (IOException error) {
             Reference.logger.error("Could not edit the schematic source", error);
-            message(EnumChatFormatting.RED, "schematica.message.rebuild.failed");
+            InfoUtils.showGuiOrInGameMessage(MessageType.ERROR, "schematica.message.rebuild.failed");
             return false;
         }
     }
@@ -234,7 +234,7 @@ public final class SchematicRebuild {
         if (regions.selected != null) scope.add(regions.get(regions.selected));
         else if (Placements.selected == owner.world) scope.addAll(regions.regions());
         else {
-            message(EnumChatFormatting.GOLD, "litematica.message.warn.schematic_rebuild_placement_not_selected");
+            InfoUtils.showInGameMessage(MessageType.WARNING, 20000, "litematica.message.warn.schematic_rebuild_placement_not_selected");
             return false;
         }
         return RebuildJobs.start(new RebuildJobs.Bulk(owner, scope, factory, RenderLayerSettings.RANGE.mode() != RenderLayerRange.Mode.ALL));
@@ -289,10 +289,4 @@ public final class SchematicRebuild {
         }
     }
 
-    static void message(EnumChatFormatting color, String key, Object... arguments) {
-        if (mc().thePlayer == null) return;
-        ChatComponentTranslation text = new ChatComponentTranslation(key, arguments);
-        text.getChatStyle().setColor(color);
-        mc().thePlayer.addChatMessage(text);
-    }
 }

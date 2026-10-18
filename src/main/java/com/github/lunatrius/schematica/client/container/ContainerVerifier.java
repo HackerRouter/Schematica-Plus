@@ -18,12 +18,11 @@ import net.minecraftforge.client.event.GuiOpenEvent;
 import net.minecraftforge.client.event.GuiScreenEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 
-import org.lwjgl.opengl.GL11;
-
 import com.github.lunatrius.schematica.client.gui.framework.MinecraftUiDraw;
 import com.github.lunatrius.schematica.client.gui.framework.UiBounds;
 import com.github.lunatrius.schematica.client.gui.framework.UiTranslations;
 import com.github.lunatrius.schematica.client.renderer.hud.InventoryPreview;
+import com.github.lunatrius.schematica.client.util.InfoUtils;
 import com.github.lunatrius.schematica.client.world.Placements;
 import com.github.lunatrius.schematica.client.world.SchematicWorld;
 import com.github.lunatrius.schematica.handler.ConfigurationHandler;
@@ -32,6 +31,7 @@ import com.github.lunatrius.schematica.reference.Reference;
 
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.relauncher.ReflectionHelper;
+import org.lwjgl.opengl.GL11;
 
 /**
  * When a container that a visible placement also has is opened, its slots show what the schematic holds there:
@@ -119,7 +119,7 @@ public final class ContainerVerifier {
         IInventory expected = expected();
         if (expected == null || mc.thePlayer == null) return;
         if (mc.thePlayer.inventory.getItemStack() != null) {
-            message(mc, UiTranslations.format("schematica.container.autofill.cursor"));
+            InfoUtils.printActionbarMessage("schematica.container.autofill.cursor");
             return;
         }
         List<ContainerComparison.Target> targets = new ArrayList<>();
@@ -148,7 +148,7 @@ public final class ContainerVerifier {
             Slot slot = gui.inventorySlots.getSlot(target.slot);
             if (ContainerComparison.compare(target.expected, slot.getStack()) == ContainerComparison.Status.MATCH) filled++;
         }
-        message(mc, UiTranslations.format("schematica.container.autofill.done", filled, targets.size()));
+        InfoUtils.printActionbarMessage("schematica.container.autofill.done", filled, targets.size());
     }
 
     /** Keeps what the opened container holds for the in-world labels (ContainerLabels). */
@@ -181,10 +181,6 @@ public final class ContainerVerifier {
     private static ItemStack wanted(IInventory expected, Slot slot) {
         int index = slot.getSlotIndex();
         return index >= 0 && index < expected.getSizeInventory() ? expected.getStackInSlot(index) : null;
-    }
-
-    private static void message(Minecraft mc, String text) {
-        if (mc.ingameGUI != null) mc.ingameGUI.func_110326_a(text, false);
     }
 
     @SubscribeEvent

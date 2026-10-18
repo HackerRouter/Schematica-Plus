@@ -41,6 +41,7 @@ import com.github.lunatrius.schematica.client.world.SubRegionPlacements;
 import com.github.lunatrius.schematica.handler.client.WorldHandler;
 import com.github.lunatrius.schematica.reference.Constants;
 import com.github.lunatrius.schematica.reference.Reference;
+import com.github.lunatrius.schematica.util.MessageType;
 
 import org.lwjgl.input.Keyboard;
 
@@ -106,7 +107,6 @@ public final class GuiPlacementConfiguration extends UiScreen {
             placement.name = text;
             name.setText(text);
             WorldHandler.INSTANCE.saveSession();
-            status = "";
         });
         count = controls.add(new UiLabel(() -> UiTranslations.format("litematica.gui.label.schematic_placement.sub_regions", placement.subregions().regions().size()), 0xFFFFFFFF));
         allOn = button("litematica.gui.button.schematic_placement.toggle_all_on", () -> updateRegions(placement.subregions().enabled(true)));
@@ -200,7 +200,6 @@ public final class GuiPlacementConfiguration extends UiScreen {
         boolean participationChanged = settings.enabled != placement.isEnabled();
         placement.setPlacementSettings(settings);
         if (participationChanged) RendererSchematicGlobal.INSTANCE.refresh(placement);
-        status = "";
         syncGeometry();
     }
 
@@ -213,7 +212,6 @@ public final class GuiPlacementConfiguration extends UiScreen {
             RendererSchematicGlobal.INSTANCE.createRendererSchematicChunks(placement);
             if (Placements.selected == placement) SchematicPrinter.INSTANCE.refresh();
             WorldHandler.INSTANCE.saveSession();
-            status = "";
         } catch (RuntimeException e) {
             if (PlacementSettings.LOCKED_MESSAGE.equals(e.getMessage())) message(PlacementSettings.LOCKED_MESSAGE);
             else {
@@ -225,8 +223,7 @@ public final class GuiPlacementConfiguration extends UiScreen {
     }
 
     private void message(String key) {
-        status = UiTranslations.format(key);
-        feedback.setTooltip(status);
+        addMessage(MessageType.ERROR, key);
     }
 
     private int[] offset() {
@@ -255,7 +252,6 @@ public final class GuiPlacementConfiguration extends UiScreen {
             placement.moveOriginTo(adjusted.x, adjusted.y, adjusted.z);
             RendererSchematicGlobal.INSTANCE.refresh(placement);
             WorldHandler.INSTANCE.saveSession();
-            status = "";
         } catch (IllegalArgumentException e) {
             message("schematica.ui.placement.bounds");
         }
@@ -279,7 +275,6 @@ public final class GuiPlacementConfiguration extends UiScreen {
                 if (op == 'Y') placement.rotate(ForgeDirection.UP);
                 else placement.flip(op == 'x' ? ForgeDirection.EAST : ForgeDirection.SOUTH);
             }
-            status = "";
         } catch (RuntimeException e) {
             Reference.logger.error("Failed to transform placement", e);
             message("schematica.ui.placement.transform_failed");
@@ -347,8 +342,9 @@ public final class GuiPlacementConfiguration extends UiScreen {
     @Override
     protected void tickScreen() {
         controls.setEnabled(available());
+        status = available() ? "" : UiTranslations.format("schematica.ui.placement.unloaded");
         feedback.setVisible(!status.isEmpty());
-        if (!available()) { message("schematica.ui.placement.unloaded"); return; }
+        if (!available()) return;
         rendering.setTooltip(renderingHover(placement.isRendering));
         if (lastX != placement.position.x || lastY != placement.position.y || lastZ != placement.position.z
             || lastOperationCount != placement.transformOperations.size() || lastRevision != placement.placementRevision()) syncGeometry();

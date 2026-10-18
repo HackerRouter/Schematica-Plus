@@ -13,7 +13,6 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.play.client.C03PacketPlayer;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.ChatComponentTranslation;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.util.Vec3;
 import net.minecraft.world.World;
@@ -21,11 +20,11 @@ import net.minecraftforge.common.util.ForgeDirection;
 import net.minecraftforge.event.ForgeEventFactory;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent.Action;
 
-import com.github.lunatrius.schematica.client.gui.framework.UiTranslations;
 import com.github.lunatrius.schematica.client.input.Hotkeys;
 import com.github.lunatrius.schematica.client.printer.registry.PlacementData;
 import com.github.lunatrius.schematica.client.printer.registry.PlacementRegistry;
 import com.github.lunatrius.schematica.client.util.BlockToItemStack;
+import com.github.lunatrius.schematica.client.util.InfoUtils;
 import com.github.lunatrius.schematica.client.world.Placements;
 import com.github.lunatrius.schematica.client.world.SchematicWorld;
 import com.github.lunatrius.schematica.compat.MultipartItems;
@@ -34,6 +33,7 @@ import com.github.lunatrius.schematica.handler.ConfigurationHandler;
 import com.github.lunatrius.schematica.tool.SchematicTargets;
 import com.github.lunatrius.schematica.tool.ToolManager;
 import com.github.lunatrius.schematica.tool.ToolMode;
+import com.github.lunatrius.schematica.util.MessageType;
 
 /**
  * Places the targeted schematic block with the item it needs. On a Plus server with accurate placement the server sets
@@ -71,9 +71,9 @@ public final class EasyPlace {
     /** Prints a warning according to placementRestrictionWarn. */
     public static void warn(String key) {
         if ("message".equals(ConfigurationHandler.placementRestrictionWarn)) {
-            if (mc().thePlayer != null) mc().thePlayer.addChatMessage(new ChatComponentTranslation(key));
-        } else if ("actionbar".equals(ConfigurationHandler.placementRestrictionWarn) && mc().ingameGUI != null) {
-            mc().ingameGUI.func_110326_a(UiTranslations.format(key), false);
+            InfoUtils.showInGameMessage(MessageType.WARNING, key);
+        } else if ("actionbar".equals(ConfigurationHandler.placementRestrictionWarn)) {
+            InfoUtils.printActionbarMessage(key);
         }
     }
 

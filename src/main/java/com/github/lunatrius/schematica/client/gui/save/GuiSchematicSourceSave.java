@@ -17,6 +17,7 @@ import com.github.lunatrius.schematica.client.world.Placements;
 import com.github.lunatrius.schematica.client.world.SchematicLibrary.Source;
 import com.github.lunatrius.schematica.client.world.SchematicSourceData;
 import com.github.lunatrius.schematica.util.MessageException;
+import com.github.lunatrius.schematica.util.MessageType;
 
 public final class GuiSchematicSourceSave extends GuiSchematicBrowser {
 
@@ -57,7 +58,7 @@ public final class GuiSchematicSourceSave extends GuiSchematicBrowser {
         try {
             File file = SchematicSaveTarget.sourceCopy(browser.root(), browser.directory(), name.text(), source.data().saveExtension());
             if (file.exists() && !isShiftKeyDown()) {
-                setStatus(UiTranslations.format("litematica.error.schematic_write_to_file_failed.exists", file.getName()));
+                addMessage(MessageType.ERROR, "litematica.error.schematic_write_to_file_failed.exists", file.getName());
             } else write(file, file.exists());
         } catch (IOException | IllegalArgumentException e) {
             fail("schematica.ui.source.save_failed", e);
@@ -66,16 +67,16 @@ public final class GuiSchematicSourceSave extends GuiSchematicBrowser {
 
     private void write(File file, boolean replace) {
         if (!Placements.LIBRARY.sources().contains(source)) {
-            setStatus(UiTranslations.format("schematica.ui.source.unloaded"));
+            addMessage(MessageType.ERROR, "schematica.ui.source.unloaded");
             return;
         }
         try {
             File checked = SchematicSaveTarget.sourceCopy(browser.root(), file.getParentFile(), file.getName(), source.data().saveExtension());
             source.data().save(checked, replace, mc.thePlayer != null ? mc.thePlayer.getCommandSenderName() : mc.getSession().getUsername());
             refreshFiles();
-            setStatus(UiTranslations.format("litematica.message.schematic_saved_as", file.getName()));
+            addMessage(MessageType.SUCCESS, "litematica.message.schematic_saved_as", file.getName());
         } catch (MessageException e) {
-            setStatus(UiTranslations.format(e.key(), e.arguments()));
+            addMessage(MessageType.ERROR, e.key(), e.arguments());
         } catch (IOException | IllegalArgumentException e) {
             fail("schematica.ui.source.save_failed", e);
         }

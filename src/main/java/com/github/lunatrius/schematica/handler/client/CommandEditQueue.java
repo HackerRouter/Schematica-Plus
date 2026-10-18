@@ -11,12 +11,15 @@ import net.minecraft.util.IChatComponent;
 import net.minecraft.world.World;
 import net.minecraftforge.client.event.ClientChatReceivedEvent;
 
+import com.github.lunatrius.schematica.client.util.InfoUtils;
 import com.github.lunatrius.schematica.handler.ConfigurationHandler;
 import com.github.lunatrius.schematica.reference.Reference;
 import com.github.lunatrius.schematica.task.TaskRegistry;
 import com.github.lunatrius.schematica.tool.WorldEditJob;
 import com.github.lunatrius.schematica.tool.WorldEditTask;
 import com.github.lunatrius.schematica.util.MessageException;
+import com.github.lunatrius.schematica.util.MessageType;
+import com.github.lunatrius.schematica.util.PlayerMessage;
 
 import cpw.mods.fml.common.eventhandler.EventPriority;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
@@ -32,7 +35,7 @@ public final class CommandEditQueue {
         boolean valid(WorldEditJob job, World world);
         String command(WorldEditJob job, int index, World world);
         void send(String command);
-        void message(IChatComponent message);
+        void message(PlayerMessage message);
     }
     private final Client client;
     private WorldEditJob job;
@@ -50,11 +53,7 @@ public final class CommandEditQueue {
             }
             public String command(WorldEditJob job, int index, World world) { return job.command(index, world); }
             public void send(String command) { Minecraft.getMinecraft().thePlayer.sendChatMessage(command); }
-            public void message(IChatComponent message) {
-                if (message != null && Minecraft.getMinecraft().thePlayer != null) {
-                    Minecraft.getMinecraft().thePlayer.addChatMessage(message);
-                }
-            }
+            public void message(PlayerMessage message) { InfoUtils.showGuiOrInGameMessage(message); }
         });
     }
 
@@ -81,7 +80,7 @@ public final class CommandEditQueue {
         if (next.kind == WorldEditJob.Kind.PASTE && ConfigurationHandler.pasteIgnoreBlockEntitiesEntirely) next.dropTiles();
         next.validateCommandFallback(); // Preflight before sending the first command.
         if (next.removesEntities()) {
-            client.message(new ChatComponentTranslation("schematica.message.edit.entities_require_singleplayer"));
+            client.message(new PlayerMessage(MessageType.WARNING, "schematica.message.edit.entities_require_singleplayer"));
         }
         task = TaskRegistry.INSTANCE.start(next.player, next.dimension, next.taskKind(), TaskRegistry.Backend.COMMANDS,
             next.x + ", " + next.y + ", " + next.z);
@@ -133,7 +132,7 @@ public final class CommandEditQueue {
         if (!client.valid(job, world)) { cancel(); return; }
         if (pending != 0) {
             if (++waiting >= REPLY_TIMEOUT) {
-                client.message(new ChatComponentTranslation("schematica.message.edit.commands_unconfirmed", sent));
+                client.message(new PlayerMessage(MessageType.ERROR, "schematica.message.edit.commands_unconfirmed", sent));
                 cancel();
             }
             return;
@@ -167,7 +166,7 @@ public final class CommandEditQueue {
                 WorldEditTask.Outcome outcome = job.outcome();
                 boolean success = outcome == WorldEditTask.Outcome.FINISHED;
                 client.message(success && job.kind == WorldEditJob.Kind.PASTE && job.blockCount != 0
-                    ? new ChatComponentTranslation("litematica.message.schematic_pasted_using_setblock", job.blockCount)
+                    ? new PlayerMessage(MessageType.SUCCESS, "litematica.message.schematic_pasted_using_setblock", job.blockCount)
                     : job.finishedMessage(success));
                 if (!success) Reference.logger.error("Command paste finished with errors", job.failure());
                 end(outcome);

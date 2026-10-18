@@ -14,11 +14,10 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.renderer.texture.TextureUtil;
 import net.minecraft.client.shader.Framebuffer;
-import net.minecraft.util.ChatComponentTranslation;
-import net.minecraft.util.EnumChatFormatting;
 
+import com.github.lunatrius.schematica.client.util.InfoUtils;
 import com.github.lunatrius.schematica.reference.Reference;
-import com.github.lunatrius.schematica.world.schematic.SchematicFiles;
+import com.github.lunatrius.schematica.util.MessageType;
 import com.github.lunatrius.schematica.world.schematic.SchematicMetadata;
 
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
@@ -88,17 +87,11 @@ public final class SchematicPreview {
         pending = null;
         try {
             store(file, square(screenshot(mc), SIZE));
-            message(mc, "litematica.info.schematic_manager.preview.success", EnumChatFormatting.GREEN);
+            InfoUtils.showGuiOrInGameMessage(MessageType.SUCCESS, "litematica.info.schematic_manager.preview.success");
         } catch (IOException | RuntimeException e) {
             Reference.logger.warn("Exception while creating preview image", e);
-            message(mc, "litematica.error.schematic_load.cant_read_file", EnumChatFormatting.RED, file.getName());
+            InfoUtils.showGuiOrInGameMessage(MessageType.ERROR, "litematica.error.schematic_load.cant_read_file", file.getName());
         }
-    }
-
-    private static void message(Minecraft mc, String key, EnumChatFormatting color, Object... arguments) {
-        ChatComponentTranslation text = new ChatComponentTranslation(key, arguments);
-        text.getChatStyle().setColor(color);
-        mc.thePlayer.addChatMessage(text);
     }
 
     /** The current frame, read like ScreenShotHelper.saveScreenshot. */

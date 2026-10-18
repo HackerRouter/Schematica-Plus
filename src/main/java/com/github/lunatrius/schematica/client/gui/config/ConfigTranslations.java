@@ -39,6 +39,6 @@ public final class ConfigTranslations {
 
     public static String comment(String key) {
         String label = label(key);
-        return label.startsWith("litematica.config.") && label.contains(".name.") ? label.replace(".name.", ".comment.") : key + ".tooltip";
+        return (label.startsWith("litematica.config.") || label.startsWith("malilib.config.")) && label.contains(".name.") ? label.replace(".name.", ".comment.") : key + ".tooltip";
     }
 }

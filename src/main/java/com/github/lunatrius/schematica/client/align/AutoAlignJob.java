@@ -16,8 +16,6 @@ import java.util.concurrent.Future;
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.init.Blocks;
-import net.minecraft.util.ChatComponentTranslation;
-import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.MathHelper;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
@@ -28,11 +26,13 @@ import net.minecraftforge.common.util.ForgeDirection;
 import com.github.lunatrius.schematica.api.ISchematic;
 import com.github.lunatrius.schematica.client.printer.SchematicPrinter;
 import com.github.lunatrius.schematica.client.renderer.RendererSchematicGlobal;
+import com.github.lunatrius.schematica.client.util.InfoUtils;
 import com.github.lunatrius.schematica.client.world.PlacementSettings;
 import com.github.lunatrius.schematica.client.world.Placements;
 import com.github.lunatrius.schematica.client.world.SchematicWorld;
 import com.github.lunatrius.schematica.handler.client.WorldHandler;
 import com.github.lunatrius.schematica.reference.Reference;
+import com.github.lunatrius.schematica.util.MessageType;
 
 /** One auto align search at a time: planning and voting on a worker thread, world reads on the client thread. */
 public final class AutoAlignJob {
@@ -102,11 +102,11 @@ public final class AutoAlignJob {
         Minecraft mc = Minecraft.getMinecraft();
         if (mc.thePlayer == null || mc.theWorld == null || placement == null) return;
         if (placement.placementSettings().locked) {
-            message(EnumChatFormatting.RED, PlacementSettings.LOCKED_MESSAGE);
+            InfoUtils.showGuiOrInGameMessage(MessageType.ERROR, PlacementSettings.LOCKED_MESSAGE);
             return;
         }
         current = new AutoAlignJob(placement, mc.theWorld, MathHelper.floor_double(mc.thePlayer.posX), MathHelper.floor_double(mc.thePlayer.posZ));
-        message(EnumChatFormatting.GRAY, "schematica.message.auto_align.started", placement.name);
+        InfoUtils.showGuiOrInGameMessage(MessageType.INFO, "schematica.message.auto_align.started", placement.name);
     }
 
     public static boolean running(SchematicWorld placement) { return current != null && current.placement == placement; }
@@ -123,7 +123,7 @@ public final class AutoAlignJob {
         } catch (RuntimeException e) {
             Reference.logger.error("Auto align failed", e);
             current = null;
-            message(EnumChatFormatting.RED, "schematica.message.auto_align.failed", job.name);
+            InfoUtils.showGuiOrInGameMessage(MessageType.ERROR, "schematica.message.auto_align.failed", job.name);
         }
     }
 
@@ -187,7 +187,7 @@ public final class AutoAlignJob {
     private boolean finish() {
         if (best == null || !best.confident()) return fail();
         if (baseline.confident() && !best.better(baseline)) {
-            message(EnumChatFormatting.GREEN, "schematica.message.auto_align.unchanged", name, baseline.percent());
+            InfoUtils.showGuiOrInGameMessage(MessageType.SUCCESS, "schematica.message.auto_align.unchanged", name, baseline.percent());
             return true;
         }
         AutoAlign.Candidate found = best.candidate;
@@ -203,13 +203,13 @@ public final class AutoAlignJob {
             WorldHandler.INSTANCE.saveSession();
         }
         boolean moved = placement.position.x == found.x && placement.position.y == found.y && placement.position.z == found.z;
-        message(moved ? EnumChatFormatting.GREEN : EnumChatFormatting.GOLD,
+        InfoUtils.showGuiOrInGameMessage(moved ? MessageType.SUCCESS : MessageType.WARNING,
             moved ? "schematica.message.auto_align.done" : "schematica.message.auto_align.coordinate_locks", name, best.percent());
         return true;
     }
 
     private boolean fail() {
-        message(EnumChatFormatting.RED, "schematica.message.auto_align.failed", name);
+        InfoUtils.showGuiOrInGameMessage(MessageType.ERROR, "schematica.message.auto_align.failed", name);
         return true;
     }
 
@@ -222,11 +222,4 @@ public final class AutoAlignJob {
         }
     }
 
-    private static void message(EnumChatFormatting color, String key, Object... arguments) {
-        Minecraft mc = Minecraft.getMinecraft();
-        if (mc.thePlayer == null) return;
-        ChatComponentTranslation text = new ChatComponentTranslation(key, arguments);
-        text.getChatStyle().setColor(color);
-        mc.thePlayer.addChatMessage(text);
-    }
 }

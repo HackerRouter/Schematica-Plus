@@ -7,10 +7,9 @@ import java.util.Arrays;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.nbt.CompressedStreamTools;
-import net.minecraft.util.ChatComponentTranslation;
-import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.world.World;
 
+import com.github.lunatrius.schematica.client.util.InfoUtils;
 import com.github.lunatrius.schematica.handler.RemoteEdits;
 import com.github.lunatrius.schematica.network.PacketHandler;
 import com.github.lunatrius.schematica.network.message.MessageEditCancel;
@@ -20,6 +19,7 @@ import com.github.lunatrius.schematica.reference.Reference;
 import com.github.lunatrius.schematica.task.TaskRegistry;
 import com.github.lunatrius.schematica.tool.WorldEditJob;
 import com.github.lunatrius.schematica.util.MessageException;
+import com.github.lunatrius.schematica.util.MessageType;
 
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.gameevent.TickEvent;
@@ -70,20 +70,12 @@ public final class RemoteEditClient {
         onSuccess = null;
     }
 
-    private static void message(String key) {
-        Minecraft mc = Minecraft.getMinecraft();
-        if (mc.thePlayer == null) return;
-        ChatComponentTranslation text = new ChatComponentTranslation(key);
-        text.getChatStyle().setColor(EnumChatFormatting.RED);
-        mc.thePlayer.addChatMessage(text);
-    }
-
     @SubscribeEvent
     public synchronized void onTick(TickEvent.ClientTickEvent event) {
         if (event.phase != TickEvent.Phase.END || task == null) return;
         Minecraft mc = Minecraft.getMinecraft();
         if (mc.thePlayer == null || mc.theWorld != world) {
-            message("schematica.message.edit.remote_lost");
+            InfoUtils.showGuiOrInGameMessage(MessageType.ERROR, "schematica.message.edit.remote_lost");
             end();
             return;
         }
@@ -114,7 +106,7 @@ public final class RemoteEditClient {
                 task.update(stages[status.stage], status.completed, status.total, status.affected, status.entities);
                 break;
             case REJECTED:
-                if (!status.reason.isEmpty()) message(status.reason);
+                if (!status.reason.isEmpty()) InfoUtils.showGuiOrInGameMessage(MessageType.ERROR, status.reason);
                 end();
                 break;
             case FINISHED:

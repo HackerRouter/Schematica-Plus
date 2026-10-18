@@ -13,8 +13,8 @@ import java.util.concurrent.Future;
 import java.util.function.Consumer;
 
 import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.util.ChatComponentTranslation;
 
+import com.github.lunatrius.schematica.SchematicaPlus;
 import com.github.lunatrius.schematica.api.ISchematic;
 import com.github.lunatrius.schematica.network.PacketHandler;
 import com.github.lunatrius.schematica.network.message.MessageDownloadBegin;
@@ -26,6 +26,8 @@ import com.github.lunatrius.schematica.network.transfer.SliceAssembler;
 import com.github.lunatrius.schematica.reference.Constants;
 import com.github.lunatrius.schematica.reference.Names;
 import com.github.lunatrius.schematica.reference.Reference;
+import com.github.lunatrius.schematica.util.MessageType;
+import com.github.lunatrius.schematica.util.PlayerMessage;
 import com.github.lunatrius.schematica.world.schematic.LitematicaNBTReader;
 import com.github.lunatrius.schematica.world.schematic.SchematicAlpha;
 import com.github.lunatrius.schematica.world.schematic.SchematicFileSnapshot;
@@ -146,7 +148,7 @@ public class DownloadHandler {
                 Reference.logger.warn("Could not read the download {}", read.name, e);
             }
             if (schematic != null) transferMap.put(entry.getKey(), new SchematicTransfer(schematic, read.name));
-            else entry.getKey().addChatMessage(new ChatComponentTranslation(
+            else SchematicaPlus.proxy.sendMessage(entry.getKey(), new PlayerMessage(MessageType.ERROR,
                 Names.Command.Download.Message.DOWNLOAD_FAILED, read.name));
         }
     }
@@ -213,7 +215,7 @@ public class DownloadHandler {
             } catch (IOException | RuntimeException e) {
                 transfer.cancelled = true;
                 Reference.logger.warn("Could not complete the download of {}", transfer.name, e);
-                player.addChatMessage(new ChatComponentTranslation(
+                SchematicaPlus.proxy.sendMessage(player, new PlayerMessage(MessageType.ERROR,
                     Names.Command.Download.Message.DOWNLOAD_FAILED, transfer.name));
             }
             return;

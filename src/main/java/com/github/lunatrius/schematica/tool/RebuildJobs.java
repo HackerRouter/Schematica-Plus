@@ -13,7 +13,6 @@ import java.util.Map;
 import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.world.World;
 
 import com.github.lunatrius.schematica.api.ISchematic;
@@ -21,6 +20,7 @@ import com.github.lunatrius.schematica.api.SchematicOrigin;
 import com.github.lunatrius.schematica.api.SchematicRegion;
 import com.github.lunatrius.schematica.client.renderer.RendererSchematicGlobal;
 import com.github.lunatrius.schematica.client.renderer.hud.InventoryPreview;
+import com.github.lunatrius.schematica.client.util.InfoUtils;
 import com.github.lunatrius.schematica.client.world.CellState;
 import com.github.lunatrius.schematica.client.world.Placements;
 import com.github.lunatrius.schematica.client.world.SchematicLibrary;
@@ -32,6 +32,7 @@ import com.github.lunatrius.schematica.client.world.SourceEditor.Cell;
 import com.github.lunatrius.schematica.client.world.SubRegionPlacements;
 import com.github.lunatrius.schematica.reference.Reference;
 import com.github.lunatrius.schematica.task.TaskRegistry;
+import com.github.lunatrius.schematica.util.MessageType;
 import com.github.lunatrius.schematica.world.storage.SchematicCopies;
 
 /** Runs schematic edits of unbounded size in per-tick time slices; the first slice runs immediately. */
@@ -46,7 +47,7 @@ public final class RebuildJobs {
 
     static boolean start(Job job) {
         if (running != null) {
-            SchematicRebuild.message(EnumChatFormatting.RED, "schematica.message.rebuild.busy");
+            InfoUtils.showGuiOrInGameMessage(MessageType.ERROR, "schematica.message.rebuild.busy");
             return false;
         }
         running = job;
@@ -76,7 +77,7 @@ public final class RebuildJobs {
             else job.publish();
         } catch (IOException | RuntimeException error) {
             Reference.logger.error("Schematic edit task failed", error);
-            SchematicRebuild.message(EnumChatFormatting.RED, "schematica.message.rebuild.failed");
+            InfoUtils.showGuiOrInGameMessage(MessageType.ERROR, "schematica.message.rebuild.failed");
             end(job, false);
         }
     }
@@ -89,7 +90,7 @@ public final class RebuildJobs {
             if (completed && job.valid()) job.completed();
         } catch (IOException | RuntimeException error) {
             Reference.logger.error("Could not refresh placements after a schematic edit", error);
-            SchematicRebuild.message(EnumChatFormatting.RED, "schematica.message.rebuild.failed");
+            InfoUtils.showGuiOrInGameMessage(MessageType.ERROR, "schematica.message.rebuild.failed");
         } finally {
             if (job.task != null) job.task.finish();
         }
@@ -303,7 +304,7 @@ public final class RebuildJobs {
         }
 
         @Override void completed() {
-            SchematicRebuild.message(EnumChatFormatting.GREEN, "litematica.message.schematic_edit_replace_selection", origin);
+            InfoUtils.showInGameMessage(MessageType.SUCCESS, "litematica.message.schematic_edit_replace_selection", origin);
         }
     }
 }

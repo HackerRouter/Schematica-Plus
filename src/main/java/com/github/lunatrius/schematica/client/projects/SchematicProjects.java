@@ -13,9 +13,6 @@ import java.util.Locale;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.util.ChatComponentText;
-import net.minecraft.util.ChatComponentTranslation;
-import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.MathHelper;
 
 import com.github.lunatrius.schematica.SchematicaPlus;
@@ -26,6 +23,7 @@ import com.github.lunatrius.schematica.client.printer.SchematicPrinter;
 import com.github.lunatrius.schematica.client.renderer.RendererSchematicGlobal;
 import com.github.lunatrius.schematica.client.selection.AreaSelectionLibrary.Area;
 import com.github.lunatrius.schematica.client.selection.AreaSelections;
+import com.github.lunatrius.schematica.client.util.InfoUtils;
 import com.github.lunatrius.schematica.client.world.Placements;
 import com.github.lunatrius.schematica.client.world.SchematicLibrary;
 import com.github.lunatrius.schematica.client.world.SchematicSourceData;
@@ -36,6 +34,7 @@ import com.github.lunatrius.schematica.reference.Reference;
 import com.github.lunatrius.schematica.tool.PlacementDeletionMode;
 import com.github.lunatrius.schematica.tool.ToolHandler;
 import com.github.lunatrius.schematica.util.FileUtils;
+import com.github.lunatrius.schematica.util.MessageType;
 import com.github.lunatrius.schematica.util.PlusDataFiles;
 
 import com.google.gson.GsonBuilder;
@@ -58,17 +57,10 @@ public final class SchematicProjects {
 
     public static boolean hasProjectOpen() { return current != null && ConfigurationHandler.unhideSchematicVCS; }
 
-    public static void message(EnumChatFormatting color, String key, Object... arguments) {
-        if (mc().thePlayer == null) return;
-        ChatComponentTranslation text = new ChatComponentTranslation(key, arguments);
-        text.getChatStyle().setColor(color);
-        mc().thePlayer.addChatMessage(text);
-    }
-
     /** openSchematicProjectsGui: the manager for an open project, else the project browser. */
     public static boolean openGui(GuiScreen parent) {
         if (!ConfigurationHandler.unhideSchematicVCS) {
-            message(EnumChatFormatting.GOLD, "litematica.message.warning.schematic_projects_hidden");
+            InfoUtils.showGuiOrInGameMessage(MessageType.WARNING, 10000, "litematica.message.warning.schematic_projects_hidden");
             return true;
         }
         mc().displayGuiScreen(current != null ? new GuiSchematicProjectManager(parent, current) : new GuiSchematicProjectsBrowser(parent));
@@ -98,7 +90,7 @@ public final class SchematicProjects {
         close();
         current = load(file, true);
         if (current == null) {
-            message(EnumChatFormatting.RED, "litematica.error.schematic_projects.failed_to_load_project");
+            InfoUtils.showGuiOrInGameMessage(MessageType.ERROR, "litematica.error.schematic_projects.failed_to_load_project");
             return false;
         }
         syncSelections();
@@ -137,7 +129,7 @@ public final class SchematicProjects {
 
     public static boolean cycleVersion(int amount) {
         if (current == null) {
-            message(EnumChatFormatting.RED, "litematica.error.schematic_projects.no_project_open");
+            InfoUtils.showGuiOrInGameMessage(MessageType.ERROR, "litematica.error.schematic_projects.no_project_open");
             return false;
         }
         boolean changed = current.cycleVersion(amount);
@@ -171,13 +163,13 @@ public final class SchematicProjects {
     public static boolean commitNewVersion(String name, String description) {
         SchematicProject project = current;
         if (project == null) {
-            message(EnumChatFormatting.RED, "litematica.error.schematic_projects.no_project_open");
+            InfoUtils.showGuiOrInGameMessage(MessageType.ERROR, "litematica.error.schematic_projects.no_project_open");
             return false;
         }
         String error = mc().thePlayer == null ? "litematica.error.schematic_projects.null_player"
             : !SchematicaPlus.proxy.isSaveEnabled ? "schematica.ui.save.disabled" : project.saveError();
         if (error != null) {
-            message(EnumChatFormatting.RED, error);
+            InfoUtils.showGuiOrInGameMessage(MessageType.ERROR, error);
             return false;
         }
         AreaSelections.capture();
@@ -191,19 +183,19 @@ public final class SchematicProjects {
                 if (project != current) return;
                 if (file == null) {
                     project.saveFailed();
-                    message(EnumChatFormatting.RED, "litematica.message.error.schematic_save_failed", fileName);
+                    InfoUtils.showGuiOrInGameMessage(MessageType.ERROR, "litematica.message.error.schematic_save_failed", fileName);
                     return;
                 }
                 SchematicVersion version = project.addVersion(name, file.getName(), description, offset, System.currentTimeMillis(), true);
                 project.saveToFile();
-                message(EnumChatFormatting.GREEN, "litematica.message.schematic_projects.version_saved", version.version, version.name);
+                InfoUtils.showGuiOrInGameMessage(MessageType.SUCCESS, "litematica.message.schematic_projects.version_saved", version.version, version.name);
                 if (mc().currentScreen instanceof GuiSchematicProjectManager) ((GuiSchematicProjectManager) mc().currentScreen).versionsChanged();
             });
         } catch (IllegalArgumentException | ArithmeticException e) {
             queued = false;
         }
         if (!queued) {
-            message(EnumChatFormatting.RED, "schematica.ui.save.failed");
+            InfoUtils.showGuiOrInGameMessage(MessageType.ERROR, "schematica.ui.save.failed");
             return false;
         }
         project.beginSave();
@@ -216,7 +208,7 @@ public final class SchematicProjects {
         SchematicProject project = current();
         if (project == null || project.currentPlacement() == null) return false;
         if (mc().thePlayer == null || !mc().thePlayer.capabilities.isCreativeMode) {
-            message(EnumChatFormatting.RED, "litematica.error.generic.creative_mode_only");
+            InfoUtils.showGuiOrInGameMessage(MessageType.ERROR, "litematica.error.generic.creative_mode_only");
             return true;
         }
         project.cacheCurrentAreaFromPlacement();
@@ -225,7 +217,7 @@ public final class SchematicProjects {
             ToolHandler.pasteAfterClearing(mc().thePlayer, project.currentPlacement(), project.lastSeenArea(), () -> pasted(project, version));
         } else {
             if (project.lastPastedVersion() < 0 || project.lastPastedVersion() >= project.versionCount()) {
-                mc().thePlayer.addChatMessage(new ChatComponentText(EnumChatFormatting.RED + "No previous pasted version known, skipping delete"));
+                InfoUtils.showGuiOrInGameMessage(MessageType.ERROR, "schematica.message.projects.no_previous_paste");
             }
             pasteCurrentPlacement(project);
         }
@@ -248,7 +240,7 @@ public final class SchematicProjects {
         SchematicProject project = current();
         if (project == null) return false;
         if (project.lastSeenArea().isEmpty()) {
-            message(EnumChatFormatting.RED, "litematica.message.error.empty_area_selection");
+            InfoUtils.showGuiOrInGameMessage(MessageType.ERROR, "litematica.message.error.empty_area_selection");
             return true;
         }
         ToolHandler.deleteBoxes(mc().thePlayer, project.lastSeenArea(), null);
@@ -281,7 +273,7 @@ public final class SchematicProjects {
             return world;
         } catch (IOException | RuntimeException e) {
             Reference.logger.warn("Could not load the schematic project version {}", file, e);
-            message(EnumChatFormatting.RED, "litematica.error.schematic_projects.failed_to_load_schematic");
+            InfoUtils.showGuiOrInGameMessage(MessageType.ERROR, "litematica.error.schematic_projects.failed_to_load_schematic");
             return null;
         }
     }

@@ -21,12 +21,12 @@ import net.minecraftforge.client.event.RenderWorldLastEvent;
 import net.minecraftforge.client.event.sound.PlaySoundEvent17;
 
 import com.github.lunatrius.schematica.client.container.ContainerLabels;
-import com.github.lunatrius.schematica.client.gui.framework.UiTranslations;
 import com.github.lunatrius.schematica.client.printer.NextBlockHint;
 import com.github.lunatrius.schematica.client.printer.PrinterHighlights;
 import com.github.lunatrius.schematica.client.projects.SchematicProject;
 import com.github.lunatrius.schematica.client.projects.SchematicProjects;
 import com.github.lunatrius.schematica.client.selection.AreaSelections;
+import com.github.lunatrius.schematica.client.util.InfoUtils;
 import com.github.lunatrius.schematica.client.world.Placements;
 import com.github.lunatrius.schematica.client.world.SchematicWorld;
 import com.github.lunatrius.schematica.handler.ConfigurationHandler;
@@ -88,9 +88,8 @@ public class RendererSchematicGlobal {
                 }
             }
 
-            if (anyRendering && this.budget.frame(System.nanoTime()) && this.minecraft.ingameGUI != null) {
-                this.minecraft.ingameGUI.func_110326_a(UiTranslations.format(
-                    "schematica.message.render_distance_reduced", RenderBudget.minFps), false);
+            if (anyRendering && this.budget.frame(System.nanoTime())) {
+                InfoUtils.printActionbarMessage("schematica.message.render_distance_reduced", RenderBudget.minFps);
             }
             if (VisualSettings.rendering && (anyRendering || AreaSelections.isRenderingGuide)) {
                 VisualSettings.beginFrame();

@@ -13,10 +13,7 @@ import java.util.concurrent.Executors;
 import java.util.function.Consumer;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.entity.EntityClientPlayerMP;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.util.ChatComponentText;
-import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.world.World;
 
 import com.github.lunatrius.schematica.client.gui.framework.UiTranslations;
@@ -26,10 +23,12 @@ import com.github.lunatrius.schematica.client.input.Hotkeys;
 import com.github.lunatrius.schematica.client.printer.SchematicPrinter;
 import com.github.lunatrius.schematica.client.renderer.RendererSchematicGlobal;
 import com.github.lunatrius.schematica.client.renderer.hud.StatusInfoHud;
+import com.github.lunatrius.schematica.client.util.InfoUtils;
 import com.github.lunatrius.schematica.handler.ConfigurationHandler;
 import com.github.lunatrius.schematica.handler.VisualSettings;
 import com.github.lunatrius.schematica.handler.client.WorldHandler;
 import com.github.lunatrius.schematica.reference.Reference;
+import com.github.lunatrius.schematica.util.MessageType;
 import com.github.lunatrius.schematica.world.schematic.ItemIdMaps;
 import com.github.lunatrius.schematica.world.schematic.SchematicFileSnapshot;
 
@@ -141,51 +140,50 @@ public final class Placements {
     }
 
     /**
-     * Lists in chat the blocks of a newly read file that this game does not have and what replaced them, and the
+     * Lists the blocks of a newly read file that this game does not have and what replaced them, and the
      * stored item stacks whose ids were translated or removed.
      */
     private static void reportUnknownBlocks(SchematicLibrary.Source<SchematicSourceData> source) {
-        EntityClientPlayerMP player = Minecraft.getMinecraft().thePlayer;
-        if (player == null) return;
+        if (Minecraft.getMinecraft().thePlayer == null) return;
         Map<String, String> unknown = source.data().takeUnknownBlocks();
         ItemIdMaps.Result items = source.data().takeItemIds();
         if (unknown.isEmpty() && (items == null || items.removed == 0 && items.translatedWith == null && items.omittedData.isEmpty())) return;
-        Consumer<String> chat = line -> player.addChatMessage(new ChatComponentText(
-            EnumChatFormatting.GOLD + line));
-        if (items != null) reportItemIds(source.file().getName(), items, chat);
+        if (items != null) reportItemIds(source.file().getName(), items);
         if (unknown.isEmpty()) return;
         Reference.logger.warn("{}: unknown blocks replaced: {}", source.file().getName(), unknown);
-        chat.accept(UiTranslations.format("schematica.message.import.unknown_blocks",
-            source.file().getName(), unknown.size()));
+        importWarning("schematica.message.import.unknown_blocks", source.file().getName(), unknown.size());
         int shown = 0;
         for (Map.Entry<String, String> entry : unknown.entrySet()) {
             if (shown++ == 8) {
-                chat.accept(UiTranslations.format("schematica.message.import.unknown_more", unknown.size() - 8));
+                importWarning("schematica.message.import.unknown_more", unknown.size() - 8);
                 break;
             }
-            chat.accept(UiTranslations.format("schematica.message.import.unknown_block", entry.getKey(), entry.getValue()));
+            importWarning("schematica.message.import.unknown_block", entry.getKey(), entry.getValue());
         }
     }
 
-    private static void reportItemIds(String file, ItemIdMaps.Result items,
-        Consumer<String> chat) {
+    private static void importWarning(String key, Object... arguments) {
+        InfoUtils.showGuiAndInGameMessage(MessageType.WARNING, 10000, key, arguments);
+    }
+
+    private static void reportItemIds(String file, ItemIdMaps.Result items) {
         if (!items.omittedData.isEmpty()) {
             Reference.logger.warn("{}: unsupported imported data omitted: {}", file, items.omittedData);
-            chat.accept(UiTranslations.format("schematica.message.import.omitted_data", file,
-                String.join(", ", new ArrayList<>(items.omittedData).subList(0, Math.min(8, items.omittedData.size())))));
+            importWarning("schematica.message.import.omitted_data", file,
+                String.join(", ", new ArrayList<>(items.omittedData).subList(0, Math.min(8, items.omittedData.size()))));
         }
         if (items.translatedWith != null) {
             Reference.logger.info("{}: item ids translated with the id map {}", file, items.translatedWith);
-            chat.accept(UiTranslations.format("schematica.message.import.items_translated", file, items.translatedWith));
+            importWarning("schematica.message.import.items_translated", file, items.translatedWith);
         }
         if (items.removed == 0) return;
         Reference.logger.warn("{}: {} stored item stacks removed; unknown items: {}", file, items.removed, items.unknownItems);
         if (items.translatedWith == null && items.unknownItems.isEmpty()) {
-            chat.accept(UiTranslations.format("schematica.message.import.items_removed", file, items.removed,
-                ItemIdMaps.directory().getPath()));
+            importWarning("schematica.message.import.items_removed", file, items.removed,
+                ItemIdMaps.directory().getPath());
         } else {
-            chat.accept(UiTranslations.format("schematica.message.import.unknown_items", file, items.removed,
-                String.join(", ", new ArrayList<>(items.unknownItems).subList(0, Math.min(8, items.unknownItems.size())))));
+            importWarning("schematica.message.import.unknown_items", file, items.removed,
+                String.join(", ", new ArrayList<>(items.unknownItems).subList(0, Math.min(8, items.unknownItems.size()))));
         }
     }
 
@@ -219,19 +217,18 @@ public final class Placements {
 
     /** warnDisabledRendering: the layer mode and disabled renderers are pointed out when a placement is created. */
     private static void warnDisabledRendering() {
-        EntityClientPlayerMP player = Minecraft.getMinecraft().thePlayer;
-        if (!ConfigurationHandler.warnDisabledRendering || player == null) return;
+        if (!ConfigurationHandler.warnDisabledRendering || Minecraft.getMinecraft().thePlayer == null) return;
         RenderLayerRange range = RenderLayerSettings.RANGE;
         if (range.mode() != RenderLayerRange.Mode.ALL) {
-            player.addChatMessage(new ChatComponentText(EnumChatFormatting.GOLD + UiTranslations.format(
-                "litematica.message.warn.layer_mode_currently_at", UiTranslations.format(range.mode().translationKey()))));
+            InfoUtils.showGuiAndInGameMessage(MessageType.WARNING, "litematica.message.warn.layer_mode_currently_at",
+                UiTranslations.format(range.mode().translationKey()));
         }
-        warnDisabled(player, VisualSettings.rendering, "litematica.message.warn.main_rendering_disabled", "enableRendering", "toggleAllRendering");
-        warnDisabled(player, VisualSettings.schematic, "litematica.message.warn.schematic_rendering_disabled", "enableSchematicRendering", "toggleSchematicRendering");
-        warnDisabled(player, VisualSettings.blocks, "litematica.message.warn.schematic_blocks_rendering_disabled", "enableSchematicBlocksRendering", "toggleSchematicBlockRendering");
+        warnDisabled(VisualSettings.rendering, "litematica.message.warn.main_rendering_disabled", "enableRendering", "toggleAllRendering");
+        warnDisabled(VisualSettings.schematic, "litematica.message.warn.schematic_rendering_disabled", "enableSchematicRendering", "toggleSchematicRendering");
+        warnDisabled(VisualSettings.blocks, "litematica.message.warn.schematic_blocks_rendering_disabled", "enableSchematicBlocksRendering", "toggleSchematicBlockRendering");
     }
 
-    private static void warnDisabled(EntityClientPlayerMP player, boolean enabled, String key, String config, String hotkey) {
+    private static void warnDisabled(boolean enabled, String key, String config, String hotkey) {
         if (enabled) return;
         Hotkey binding = Hotkeys.get(hotkey);
         StringBuilder keys = new StringBuilder();
@@ -239,9 +236,7 @@ public final class Placements {
             if (keys.length() > 0) keys.append(" + ");
             keys.append(Keyboard.getKeyName(code));
         }
-        for (String line : UiTranslations.format(key, config, hotkey, keys).split("\n")) {
-            player.addChatMessage(new ChatComponentText(EnumChatFormatting.GOLD + line));
-        }
+        InfoUtils.showGuiAndInGameMessage(MessageType.WARNING, 8000, key, config, hotkey, keys.toString());
     }
 
     public static void reloadSource(SchematicLibrary.Source<SchematicSourceData> source) throws IOException {
