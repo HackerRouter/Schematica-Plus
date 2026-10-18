@@ -73,7 +73,7 @@ public final class GuiUploadSchematics extends UiScreen {
             @Override public void draw(UiDraw draw, int mouseX, int mouseY) {
                 draw.fill(bounds(), 0x50000000);
                 draw.border(bounds(), 0x80FFFFFF);
-                draw.flatText(draw.trim("§e/" + relative(directory), bounds().width - 8), bounds().x + 4, bounds().y + 5, 0xFFFFFFFF);
+                draw.flatText(draw.trim("\u00a7e/" + relative(directory), bounds().width - 8), bounds().x + 4, bounds().y + 5, 0xFFFFFFFF);
             }
         });
         search = root.add(new UiTextField(fontRendererObj, 256, text -> refresh()));
@@ -232,18 +232,18 @@ public final class GuiUploadSchematics extends UiScreen {
 
     private void drawInfo(UiDraw draw, int x, int y, int width) {
         if (selection.isEmpty()) {
-            draw.text("§6§l" + UiTranslations.format(PREFIX + "upload_info.title"), x, y, 0xFFFFFFFF);
-            for (String line : fontRendererObj.listFormattedStringToWidth("§7" + UiTranslations.format(PREFIX + "upload_info.select_hint"), width)) {
+            draw.text("\u00a76\u00a7l" + UiTranslations.format(PREFIX + "upload_info.title"), x, y, 0xFFFFFFFF);
+            for (String line : fontRendererObj.listFormattedStringToWidth("\u00a77" + UiTranslations.format(PREFIX + "upload_info.select_hint"), width)) {
                 draw.text(line, x, y += CloudInfo.LINE, 0xFFFFFFFF);
             }
             y = CloudInfo.divider(draw, x, y + CloudInfo.LINE, width);
-            draw.text(draw.trim(UiTranslations.format(PREFIX + "upload_info.target_server_folder", targetName()), width), x, y, 0xFFFFFFFF);
+            target(draw, x, y, width);
             return;
         }
         if (selection.size() > 1) {
             long size = 0;
             for (File file : selection) size += size(file);
-            draw.text("§a§l" + UiTranslations.format(PREFIX + "upload_info.multiple_selected", selection.size()), x, y, 0xFFFFFFFF);
+            draw.text("\u00a7a\u00a7l" + UiTranslations.format(PREFIX + "upload_info.multiple_selected", selection.size()), x, y, 0xFFFFFFFF);
             draw.text(FileUtils.humanReadableByteCount(size), x, y += CloudInfo.LINE, 0xFFAAAAAA);
             y = CloudInfo.divider(draw, x, y + CloudInfo.LINE, width);
             int bottom = info.bounds().bottom() - 30;
@@ -256,21 +256,29 @@ public final class GuiUploadSchematics extends UiScreen {
                 y += CloudInfo.LINE;
             }
             y = CloudInfo.divider(draw, x, y, width);
-            draw.text(draw.trim(UiTranslations.format(PREFIX + "upload_info.target_server_folder", targetName()), width), x, y, 0xFFFFFFFF);
+            target(draw, x, y, width);
             return;
         }
         File file = selection.iterator().next();
         if (file.isDirectory()) {
-            draw.text(draw.trim("§e§l" + file.getName() + "/", width), x, y, 0xFFFFFFFF);
+            draw.text(draw.trim("\u00a7e\u00a7l" + file.getName() + "/", width), x, y, 0xFFFFFFFF);
             draw.text(UiTranslations.format(PREFIX + "upload_info.directory_schematics", count(file)), x, y += 14, 0xFFFFFFFF);
             y = CloudInfo.divider(draw, x, y + CloudInfo.LINE, width);
-            draw.text(draw.trim(UiTranslations.format(PREFIX + "upload_info.target_server_folder", targetName()), width), x, y, 0xFFFFFFFF);
+            target(draw, x, y, width);
             return;
         }
         y = CloudInfo.schematic(draw, x, y, width, describe(file));
-        draw.text(draw.trim(UiTranslations.format(PREFIX + "info.file_label", "§f" + FileUtils.humanReadableByteCount(file.length()) + "§r", ""), width), x, y, CloudInfo.LABEL);
+        draw.text(draw.trim(UiTranslations.format(PREFIX + "info.file_label", "\u00a7f" + FileUtils.humanReadableByteCount(file.length()) + "\u00a7r", "")
+            .replace(" ()", ""), width), x, y, CloudInfo.LABEL);
         y = CloudInfo.divider(draw, x, y + CloudInfo.LINE, width);
-        draw.text(draw.trim(UiTranslations.format(PREFIX + "upload_info.target_server_folder", targetName()), width), x, y, 0xFFFFFFFF);
+        target(draw, x, y, width);
+    }
+
+    private void target(UiDraw draw, int x, int y, int width) {
+        for (String line : fontRendererObj.listFormattedStringToWidth(UiTranslations.format(PREFIX + "upload_info.target_server_folder", targetName()), width)) {
+            draw.text(line, x, y, 0xFFFFFFFF);
+            y += CloudInfo.LINE;
+        }
     }
 
     private CloudFile describe(File file) {
@@ -312,13 +320,13 @@ public final class GuiUploadSchematics extends UiScreen {
             icon.draw(draw, box.x + 3, box.y + (box.height - icon.height) / 2, true, false);
             int textY = box.y + (box.height - 8) / 2, right = box.right() - 6;
             if (isUp) {
-                draw.text("§e..", box.x + 19, textY, 0xFFFFFFFF);
+                draw.text("\u00a7e..", box.x + 19, textY, 0xFFFFFFFF);
             } else if (file.isDirectory()) {
-                String count = "§7(" + count(file) + ")";
+                String count = "\u00a77(" + count(file) + ")";
                 draw.text(count, right - draw.textWidth(count), textY, 0xFFFFFFFF);
-                draw.text(draw.trim("§6" + file.getName() + "/", right - draw.textWidth(count) - box.x - 26), box.x + 19, textY, 0xFFFFFFFF);
+                draw.text(draw.trim("\u00a76" + file.getName() + "/", right - draw.textWidth(count) - box.x - 26), box.x + 19, textY, 0xFFFFFFFF);
             } else {
-                String size = "§7" + FileUtils.humanReadableByteCount(file.length());
+                String size = "\u00a77" + FileUtils.humanReadableByteCount(file.length());
                 draw.text(size, right - draw.textWidth(size), textY, 0xFFFFFFFF);
                 draw.text(draw.trim(file.getName(), right - draw.textWidth(size) - box.x - 26), box.x + 19, textY, chosen ? 0xFFFFFFFF : 0xFFDDDDDD);
             }

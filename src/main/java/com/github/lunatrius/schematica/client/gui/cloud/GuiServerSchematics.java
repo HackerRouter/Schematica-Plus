@@ -99,10 +99,10 @@ public final class GuiServerSchematics extends UiScreen {
             }
         });
         search = root.add(new UiTextField(fontRendererObj, 256, text -> rebuild()));
-        list = root.add(new UiRowList<>(model, Row::new));
         empty = root.add(new UiWidget() {
             @Override public void draw(UiDraw draw, int mouseX, int mouseY) { drawEmpty(draw); }
         });
+        list = root.add(new UiRowList<>(model, Row::new));
         info = root.add(new UiWidget() {
             @Override public void draw(UiDraw draw, int mouseX, int mouseY) {
                 CloudInfo.box(draw, bounds());
@@ -311,7 +311,12 @@ public final class GuiServerSchematics extends UiScreen {
 
     @Override
     protected void layoutWidgets() {
-        int infoWidth = CloudInfo.infoWidth(width), browserWidth = CloudInfo.browserWidth(width), browserHeight = height - 74;
+        int infoWidth = CloudInfo.infoWidth(width), browserWidth = CloudInfo.browserWidth(width);
+        int checkboxWidth = Math.min(width - 20, fontRendererObj.getStringWidth(createPlacement.label()) + 20);
+        int actionsWidth = 0;
+        for (UiButton button : new UiButton[] {delete, publish, download}) if (button.isVisible()) actionsWidth += buttonWidth(button, 16) + 4;
+        boolean raised = width - 10 - actionsWidth < 10 + checkboxWidth + 4;
+        int browserHeight = height - 74 - (raised ? 22 : 0);
         int iconY = 29;
         home.setBounds(12, iconY - 1, 16, 16);
         up.setBounds(28, iconY - 1, 16, 16);
@@ -324,14 +329,16 @@ public final class GuiServerSchematics extends UiScreen {
         list.setBounds(10, 48, browserWidth, Math.max(0, browserHeight - 22));
         empty.setBounds(10, 48, browserWidth, Math.max(0, browserHeight - 22));
         info.setBounds(10 + browserWidth + 4, 26, infoWidth, browserHeight);
-        createPlacement.setBounds(10, height - 44, Math.min(width - 20, fontRendererObj.getStringWidth(createPlacement.label()) + 20), 11);
-        int x = 10;
-        load.setBounds(x, height - 24, buttonWidth(load, 18), 20);
-        x += load.bounds().width + 4;
-        for (UiButton button : new UiButton[] {materials, download, publish, delete}) {
+        createPlacement.setBounds(10, height - 44, checkboxWidth, 11);
+        load.setBounds(10, height - 24, buttonWidth(load, 18), 20);
+        materials.setBounds(14 + load.bounds().width, height - 24, buttonWidth(materials, 16), 20);
+        int right = width - 10;
+        for (UiButton button : new UiButton[] {delete, publish, download}) {
             if (!button.isVisible()) continue;
-            button.setBounds(x, height - 24, buttonWidth(button, 16), 20);
-            x += button.bounds().width + 4;
+            int buttonWidth = buttonWidth(button, 16);
+            right -= buttonWidth;
+            button.setBounds(right, height - (raised ? 68 : 46), buttonWidth, 20);
+            right -= 4;
         }
         int menuWidth = fontRendererObj.getStringWidth(menu.label()) + 20;
         menu.setBounds(width - menuWidth - 10, height - 24, menuWidth, 20);
@@ -342,7 +349,8 @@ public final class GuiServerSchematics extends UiScreen {
     }
 
     private void drawEmpty(UiDraw draw) {
-        if (!model.entries().isEmpty() && catalog() != null) return;
+        boolean onlyUp = model.entries().size() == 1 && model.entries().get(0).type == CloudNode.Type.UP;
+        if (!model.entries().isEmpty() && !onlyUp && catalog() != null) return;
         List<String[]> lines = new ArrayList<>();
         if (!CloudClient.INSTANCE.available()) {
             lines.add(new String[] {UiTranslations.format("schematica.ui.cloud.unavailable"), "FFDDDDDD"});
@@ -364,12 +372,12 @@ public final class GuiServerSchematics extends UiScreen {
     private void drawInfo(UiDraw draw, int x, int y, int width) {
         CloudCatalog catalog = catalog();
         if (selected == null) {
-            draw.text("§6§l" + UiTranslations.format(PREFIX + "info.title"), x, y, 0xFFFFFFFF);
-            draw.text("§7" + UiTranslations.format(PREFIX + "info.select_schematic_line1"), x, y += 14, 0xFFFFFFFF);
-            draw.text("§7" + UiTranslations.format(PREFIX + "info.select_schematic_line2"), x, y += CloudInfo.LINE, 0xFFFFFFFF);
+            draw.text("\u00a76\u00a7l" + UiTranslations.format(PREFIX + "info.title"), x, y, 0xFFFFFFFF);
+            draw.text("\u00a77" + UiTranslations.format(PREFIX + "info.select_schematic_line1"), x, y += 14, 0xFFFFFFFF);
+            draw.text("\u00a77" + UiTranslations.format(PREFIX + "info.select_schematic_line2"), x, y += CloudInfo.LINE, 0xFFFFFFFF);
             y = CloudInfo.divider(draw, x, y + CloudInfo.LINE, width);
-            draw.text("§7" + UiTranslations.format(PREFIX + "info.server_folder"), x, y, 0xFFFFFFFF);
-            draw.text(draw.trim("§e" + display(directory), width), x, y += CloudInfo.LINE, 0xFFFFFFFF);
+            draw.text("\u00a77" + UiTranslations.format(PREFIX + "info.server_folder"), x, y, 0xFFFFFFFF);
+            draw.text(draw.trim("\u00a7e" + display(directory), width), x, y += CloudInfo.LINE, 0xFFFFFFFF);
             if (catalog == null) return;
             draw.text(UiTranslations.format(PREFIX + "info.total_schematics", catalog.files.size()), x, y += 14, 0xFFFFFFFF);
             String quota = catalog.quota < 0 ? FileUtils.humanReadableByteCount(catalog.used)
@@ -378,29 +386,29 @@ public final class GuiServerSchematics extends UiScreen {
             return;
         }
         if (selected.type == CloudNode.Type.UP) {
-            draw.text("§7§l" + UiTranslations.format(PREFIX + "info.up_title"), x, y, 0xFFFFFFFF);
-            draw.text("§a" + UiTranslations.format(PREFIX + "info.up_hint1"), x, y += 14, 0xFFFFFFFF);
-            draw.text("§a" + UiTranslations.format(PREFIX + "info.up_hint2"), x, y + CloudInfo.LINE, 0xFFFFFFFF);
+            draw.text("\u00a77\u00a7l" + UiTranslations.format(PREFIX + "info.up_title"), x, y, 0xFFFFFFFF);
+            draw.text("\u00a7a" + UiTranslations.format(PREFIX + "info.up_hint1"), x, y += 14, 0xFFFFFFFF);
+            draw.text("\u00a7a" + UiTranslations.format(PREFIX + "info.up_hint2"), x, y + CloudInfo.LINE, 0xFFFFFFFF);
             return;
         }
         if (selected.type == CloudNode.Type.DIRECTORY) {
-            draw.text(draw.trim("§e§l" + (selected.path.isRoot() ? scopeName(selected.path.scope) : selected.path.name()) + "/", width), x, y, 0xFFFFFFFF);
-            draw.text(draw.trim("§7" + UiTranslations.format(PREFIX + "info.dir_path", display(selected.path).substring(1)), width), x, y += 14, 0xFFFFFFFF);
+            draw.text(draw.trim("\u00a7e\u00a7l" + (selected.path.isRoot() ? scopeName(selected.path.scope) : selected.path.name()) + "/", width), x, y, 0xFFFFFFFF);
+            draw.text(draw.trim("\u00a77" + UiTranslations.format(PREFIX + "info.dir_path", display(selected.path).substring(1)), width), x, y += 14, 0xFFFFFFFF);
             draw.text(UiTranslations.format(PREFIX + "info.dir_schematics", selected.count), x, y += CloudInfo.LINE, 0xFFFFFFFF);
             y = CloudInfo.divider(draw, x, y + CloudInfo.LINE, width);
-            draw.text("§a" + UiTranslations.format(PREFIX + "info.dir_hint1"), x, y, 0xFFFFFFFF);
-            draw.text("§a" + UiTranslations.format(PREFIX + "info.dir_hint2"), x, y + CloudInfo.LINE, 0xFFFFFFFF);
+            draw.text("\u00a7a" + UiTranslations.format(PREFIX + "info.dir_hint1"), x, y, 0xFFFFFFFF);
+            draw.text("\u00a7a" + UiTranslations.format(PREFIX + "info.dir_hint2"), x, y + CloudInfo.LINE, 0xFFFFFFFF);
             return;
         }
         CloudFile file = selected.file;
         y = CloudInfo.schematic(draw, x, y, width, file);
         if (!file.owner.isEmpty()) {
-            draw.text(draw.trim(UiTranslations.format(PREFIX + "info.owner") + ": §f" + file.owner, width), x, y, CloudInfo.LABEL);
+            draw.text(draw.trim(UiTranslations.format(PREFIX + "info.owner") + ": \u00a7f" + file.owner, width), x, y, CloudInfo.LABEL);
             y += CloudInfo.LINE;
         }
-        String status = CloudCache.cached(file) ? "§a✔ " + UiTranslations.format(PREFIX + "info.status_cached")
-            : "§e☁ " + UiTranslations.format(PREFIX + "info.status_server");
-        draw.text(draw.trim(UiTranslations.format(PREFIX + "info.file_label", "§f" + FileUtils.humanReadableByteCount(file.size) + "§r", status), width), x, y, CloudInfo.LABEL);
+        String status = CloudCache.cached(file) ? "\u00a7a\u2714 " + UiTranslations.format(PREFIX + "info.status_cached")
+            : "\u00a7e\u2601 " + UiTranslations.format(PREFIX + "info.status_server");
+        draw.text(draw.trim(UiTranslations.format(PREFIX + "info.file_label", "\u00a7f" + FileUtils.humanReadableByteCount(file.size) + "\u00a7r", status), width), x, y, CloudInfo.LABEL);
     }
 
     private final class Row extends UiPanel {
@@ -411,7 +419,8 @@ public final class GuiServerSchematics extends UiScreen {
             this.node = node;
             this.index = index;
             if (node.file != null && CloudCache.cached(node.file)) {
-                setTooltip(UiTranslations.format(PREFIX + "hover.saved_path", CloudCache.file(node.file.path).getPath()));
+                setTooltip(UiTranslations.format(PREFIX + "hover.saved_path", mc.mcDataDir.toPath().toAbsolutePath()
+                    .relativize(CloudCache.file(node.file.path).toPath().toAbsolutePath()).toString().replace('\\', '/')));
             }
         }
 
