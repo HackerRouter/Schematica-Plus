@@ -74,6 +74,7 @@ public class PlayerHandler {
             PrinterActions.INSTANCE.forget((EntityPlayerMP) event.player);
             RemoteEdits.INSTANCE.forget(event.player);
             NbtRequests.INSTANCE.forget(event.player);
+            SelectionSaves.INSTANCE.forget(event.player);
         }
     }
 }

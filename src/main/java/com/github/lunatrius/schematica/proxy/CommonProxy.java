@@ -20,14 +20,13 @@ import net.minecraftforge.common.MinecraftForge;
 import com.github.lunatrius.schematica.api.ISchematic;
 import com.github.lunatrius.schematica.api.SchematicOrigin;
 import com.github.lunatrius.schematica.api.SchematicRegion;
-import com.github.lunatrius.schematica.command.CommandSchematicaList;
+import com.github.lunatrius.schematica.command.CommandSchematic;
 import com.github.lunatrius.schematica.command.CommandSchematicaPlus;
-import com.github.lunatrius.schematica.command.CommandSchematicaRemove;
-import com.github.lunatrius.schematica.command.CommandSchematicaSave;
 import com.github.lunatrius.schematica.handler.AccuratePlacement;
 import com.github.lunatrius.schematica.handler.ConfigurationHandler;
 import com.github.lunatrius.schematica.handler.DownloadHandler;
 import com.github.lunatrius.schematica.handler.NbtRequests;
+import com.github.lunatrius.schematica.handler.SelectionSaves;
 import com.github.lunatrius.schematica.handler.PlayerHandler;
 import com.github.lunatrius.schematica.handler.PrinterActions;
 import com.github.lunatrius.schematica.handler.QueueTickHandler;
@@ -98,6 +97,7 @@ public abstract class CommonProxy {
         // Also in single player, so the integrated server's printerEnabled and accurate placement reach the client
         FMLCommonHandler.instance().bus().register(PlayerHandler.INSTANCE);
         FMLCommonHandler.instance().bus().register(NbtRequests.INSTANCE);
+        FMLCommonHandler.instance().bus().register(SelectionSaves.INSTANCE);
     }
 
     public void postInit(FMLPostInitializationEvent event) {
@@ -106,11 +106,11 @@ public abstract class CommonProxy {
 
     public void serverStarting(FMLServerStartingEvent event) {
         event.registerServerCommand(new CommandSchematicaPlus());
-        if (ConfigurationHandler.serversideSchematicsEnabled) {
-            event.registerServerCommand(new CommandSchematicaSave());
-            event.registerServerCommand(new CommandSchematicaList());
-            event.registerServerCommand(new CommandSchematicaRemove());
-        }
+        if (ConfigurationHandler.serversideSchematicsEnabled) event.registerServerCommand(new CommandSchematic());
+    }
+
+    public boolean serverDownloads() {
+        return false;
     }
 
     public void createFolders() {

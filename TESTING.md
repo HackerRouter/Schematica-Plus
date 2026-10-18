@@ -729,7 +729,7 @@ once to establish the new keys. Ordered transforms apply to newly saved sessions
 - Check origin controls at English/Chinese GUI scales 1-3, input focus, resize,
   returning from another screen and changing worlds while the editor is open.
   Hidden/disabled controls must not modify state.
-- Use /schematicaDownload with the same current Plus version on server and client
+- Use /schematic download with the same current Plus version on server and client
   for a file with two separated regions and an outside origin. Reload it and check
   gaps, origin and rotation. Repeat a plain flat file with the same current builds;
   it should still download without acquiring independent-region metadata.
@@ -1483,7 +1483,7 @@ compare with a server that does not have the mod and with each server option off
   rebuild tool and save the source as .schemplus: the save succeeds; reload it and check both regions
   keep their own blocks, chests and entities, and moving one sub-region shows the other's blocks.
 - Old Schematica / Plus builds load the same .schemplus as one flat schematic.
-- Server download (/schematicaDownload) of such a file from a dedicated server to this client: the
+- Server download (/schematic download) of such a file from a dedicated server to this client: the
   saved file restores both regions. An older Plus client gets the update-client message.
 
 ## File-based area selections (selection manager folders)
@@ -2874,7 +2874,7 @@ Build and all 671 automated tests passed.
   rotated (CW_90) and mirrored (CW_180 + LEFT_RIGHT): the frames keep their material (WAILA shows the same frame
   name), the controller forms ("Running Fine"), a mirrored controller shows its front texture mirrored.
 - Same with an AE2 build mirrored: cables connect to the mirrored sides, controllers light up, Assembly Lines form.
-- Multiplayer: download the schematic from a server (`/schematicaDownload`) and paste it through the remote edit
+- Multiplayer: download the schematic from a server (`/schematic download`) and paste it through the remote edit
   path; the frames keep their material.
 
 Dedicated GTNH server fixture (fresh disposable world, creative + op):
@@ -2889,8 +2889,8 @@ Dedicated GTNH server fixture (fresh disposable world, creative + op):
   this catches the chest placement callback auto-facing east and skipping saved NBT.
   Keep `pasteWithoutUpdates=false` and require the saved chest facing, custom name
   and all seven diamonds after pasting. Save `(-12,79,-1)..(4,84,4)` using
-  `/schematicaSave -12 79 -1 4 84 4 net_meta316`, then download it with
-  `/schematicaDownload net_meta316.schemplus`. Do not copy the file between instances.
+  `/schematic save net_meta316 -12 79 -1 4 84 4`, then download it with
+  `/schematic download net_meta316.schemplus`. Do not copy the file between instances.
   The 17-block width puts six extended-metadata frames in each of two download chunks.
   Compare block names, full metadata and tile NBT in the two files; the frame bytes
   must combine as `60 + (1 << 8) = 316`, never 60 or 12.
@@ -3183,7 +3183,7 @@ network interoperability.
 3. Build a separate powered ME-P2P carrier connecting a storage network to a remote
    export bus and chest. Put a stone microblock cover on a cable in the carrier;
    verify that its host becomes ForgeMultipart and still transfers 17 diamonds.
-4. Use `/schematicaSave` from the connected player, then `/schematicaDownload` for
+4. Use `/schematic save` from the connected player, then `/schematic download` for
    the server file. A local client capture cannot recover unsynchronized disks,
    patterns or machine inventories, even when the server runs Plus.
 5. Paste ordinary, Y-rotated and X-mirrored copies. Each EBF must form and process
@@ -3430,7 +3430,7 @@ intersection. Earlier live replacement of graphics classes bypassed the packs'
 OpenGL transformation and is excluded from graphical acceptance. The final cold
 runs verify the actual pack-transformed classes.
 
-In both final clients, real `/schematicaSave` captures and subsequent downloads
+In both final clients, real `/schematic save` captures and subsequent downloads
 write the saving player, file-stem title, creation time and empty description;
 previews remain absent until explicitly set. Native structure-author edits made
 outside the optional namespace survive a subsequent description change. The

@@ -257,7 +257,8 @@ its position. Give button presses and low-FPS frames time to complete.
 Bind Execute Operation in Hotkeys before testing paste. It normally requires the
 tool item and a selected placement; clicking the selected placement again deselects
 it. Use WAILA to check machine facing and formed status, then verify actual behavior.
-The `/schematicaSave` command also captures a world box without the selection UI.
+`/schematic save <name>` saves the current area selection on the server; with six
+corner coordinates after the name it captures a single box without the selection UI.
 
 `tools/headless/regions.py` reads vanilla, NotEnoughIDs and EndlessIDs sections.
 Use its `tiles`, `verify`, `blocks` and `around` commands on a **saved copy** to check

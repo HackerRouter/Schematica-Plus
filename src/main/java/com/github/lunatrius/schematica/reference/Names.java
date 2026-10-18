@@ -85,6 +85,9 @@ public final class Names {
 
     public static final class Command {
 
+        public static final String NAME = "schematic";
+        public static final String USAGE = "schematica.command.schematic.usage";
+
         public static final class Save {
 
             public static final class Message {
@@ -95,11 +98,12 @@ public final class Names {
                 public static final String SAVE_SUCCESSFUL = "litematica.message.schematic_saved_as";
                 public static final String SAVE_EXTENDED = "schematica.command.save.saveExtended";
                 public static final String SAVE_FAILED = "litematica.message.error.schematic_save_failed";
+                public static final String NO_AREA_SELECTED = "litematica.message.error.schematic_save_no_area_selected";
                 public static final String QUOTA_EXCEEDED = "schematica.command.save.quotaExceeded";
                 public static final String PLAYER_SCHEMATIC_DIR_UNAVAILABLE = "schematica.command.save.playerSchematicDirUnavailable";
             }
 
-            public static final String NAME = "schematicaSave";
+            public static final String NAME = "save";
         }
 
         public static final class List {
@@ -114,7 +118,7 @@ public final class Names {
                 public static final String NO_SCHEMATICS = "schematica.command.list.noSchematics";
             }
 
-            public static final String NAME = "schematicaList";
+            public static final String NAME = "list";
         }
 
         public static final class Remove {
@@ -122,14 +126,13 @@ public final class Names {
             public static final class Message {
 
                 public static final String USAGE = "schematica.command.remove.usage";
-                public static final String PLAYERS_ONLY = "schematica.command.save.playersOnly";
                 public static final String SCHEMATIC_REMOVED = "schematica.command.remove.schematicRemoved";
                 public static final String SCHEMATIC_NOT_FOUND = "schematica.command.remove.schematicNotFound";
                 public static final String ARE_YOU_SURE_START = "schematica.command.remove.areYouSure";
                 public static final String YES = "gui.yes";
             }
 
-            public static final String NAME = "schematicaRemove";
+            public static final String NAME = "remove";
         }
 
         public static final class Download {
@@ -137,13 +140,12 @@ public final class Names {
             public static final class Message {
 
                 public static final String USAGE = "schematica.command.download.usage";
-                public static final String PLAYERS_ONLY = "schematica.command.save.playersOnly";
                 public static final String DOWNLOAD_STARTED = "schematica.command.download.started";
                 public static final String DOWNLOAD_SUCCEEDED = "schematica.command.download.downloadSucceeded";
                 public static final String DOWNLOAD_FAILED = "schematica.command.download.downloadFail";
             }
 
-            public static final String NAME = "schematicaDownload";
+            public static final String NAME = "download";
         }
     }
 

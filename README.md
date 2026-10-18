@@ -95,6 +95,9 @@ server for full-NBT remote edits, world MOVE, the accurate-placement protocol an
 complete block entity/entity data when saving (`nbtRequestsEnabled`,
 `nbtRequestPermissionLevel`). Server configuration and player permissions still apply. Operators manage the
 server options in game with `/schematicaplus list|info|set|search|reload|save`.
+Players keep schematics on the server with `/schematic save|list|remove|download`
+(`serversideSchematicsEnabled`); `/schematic save <name>` saves the current area
+selection, and six corner coordinates after the name save a single box instead.
 
 Hotkeys are stored separately in `config/schematica_plus_hotkeys.json`.
 

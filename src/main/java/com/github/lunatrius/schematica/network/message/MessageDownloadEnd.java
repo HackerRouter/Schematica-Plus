@@ -4,14 +4,15 @@ import java.io.File;
 import java.io.IOException;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.util.ChatComponentTranslation;
 
 import com.github.lunatrius.schematica.SchematicaPlus;
 import com.github.lunatrius.schematica.api.ISchematic;
+import com.github.lunatrius.schematica.client.util.InfoUtils;
 import com.github.lunatrius.schematica.handler.DownloadHandler;
 import com.github.lunatrius.schematica.reference.Names;
 import com.github.lunatrius.schematica.reference.Reference;
 import com.github.lunatrius.schematica.util.FileUtils;
+import com.github.lunatrius.schematica.util.MessageType;
 import com.github.lunatrius.schematica.world.schematic.SchematicFormat;
 
 import cpw.mods.fml.common.network.ByteBufUtils;
@@ -58,11 +59,8 @@ public class MessageDownloadEnd implements IMessage, IMessageHandler<MessageDown
             Reference.logger.warn("Could not restore the downloaded regions", e);
         }
 
-        if (Minecraft.getMinecraft().thePlayer != null) {
-            Minecraft.getMinecraft().thePlayer.addChatMessage(
-                new ChatComponentTranslation(saved != null ? Names.Command.Download.Message.DOWNLOAD_SUCCEEDED
-                    : Names.Command.Download.Message.DOWNLOAD_FAILED, saved != null ? saved.getName() : message.name));
-        }
+        if (saved != null) InfoUtils.sendOpenFileChatMessage(Minecraft.getMinecraft().thePlayer, Names.Command.Download.Message.DOWNLOAD_SUCCEEDED, saved);
+        else InfoUtils.showGuiOrInGameMessage(MessageType.ERROR, Names.Command.Download.Message.DOWNLOAD_FAILED, message.name);
 
         DownloadHandler.INSTANCE.beginDownload(null);
     }

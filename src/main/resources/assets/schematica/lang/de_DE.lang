@@ -17,7 +17,7 @@ schematica.config.loadEnabled.tooltip=Erlaubt es Spielern, Schematics zu laden.
 # commands - save
 schematica.command.save.playersOnly=Nur Spieler können dieses Kommando ausführen.
 schematica.command.save.started=%d Chunks werden in %s gespeichert.
-schematica.command.save.quotaExceeded=Du kannst keine Schematics mehr speichern, da das Limit erreicht wurde. Bitte nutze /schematicaList und /schematicaRemove um alte Schematics zu löschen.
+schematica.command.save.quotaExceeded=Du kannst keine Schematics mehr speichern, da das Limit erreicht wurde. Bitte nutze /schematic list und /schematic remove um alte Schematics zu löschen.
 schematica.command.save.playerSchematicDirUnavailable=Es gab ein Problem, deine Schematic zu speichern. Bitte kontaktiere umgehend einen Server Administrator.
 
 # commands - list

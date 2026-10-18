@@ -7,20 +7,14 @@ import java.util.UUID;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.server.MinecraftServer;
 
-import com.github.lunatrius.schematica.command.CommandSchematicaDownload;
 import com.github.lunatrius.schematica.handler.ConfigurationHandler;
 import com.github.lunatrius.schematica.reference.Reference;
-
-import cpw.mods.fml.common.event.FMLServerStartingEvent;
 
 public class ServerProxy extends CommonProxy {
 
     @Override
-    public void serverStarting(FMLServerStartingEvent event) {
-        super.serverStarting(event);
-        if (ConfigurationHandler.serversideSchematicsEnabled) {
-            event.registerServerCommand(new CommandSchematicaDownload());
-        }
+    public boolean serverDownloads() {
+        return true;
     }
 
     @Override

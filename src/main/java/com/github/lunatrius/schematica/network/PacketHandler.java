@@ -16,6 +16,8 @@ import com.github.lunatrius.schematica.network.message.MessageNbtData;
 import com.github.lunatrius.schematica.network.message.MessageNbtRequest;
 import com.github.lunatrius.schematica.network.message.MessagePlacementIntent;
 import com.github.lunatrius.schematica.network.message.MessagePrinterAction;
+import com.github.lunatrius.schematica.network.message.MessageSaveSelection;
+import com.github.lunatrius.schematica.network.message.MessageSaveSelectionRequest;
 import com.github.lunatrius.schematica.reference.Reference;
 
 import cpw.mods.fml.common.network.NetworkRegistry;
@@ -53,5 +55,7 @@ public class PacketHandler {
             MessageDownloadRegions.class, 12, Side.CLIENT);
         INSTANCE.registerMessage(MessageNbtRequest.class, MessageNbtRequest.class, 14, Side.SERVER);
         INSTANCE.registerMessage(MessageNbtData.class, MessageNbtData.class, 15, Side.CLIENT);
+        INSTANCE.registerMessage(MessageSaveSelectionRequest.class, MessageSaveSelectionRequest.class, 16, Side.CLIENT);
+        INSTANCE.registerMessage(MessageSaveSelection.class, MessageSaveSelection.class, 17, Side.SERVER);
     }
 }
