@@ -13,8 +13,13 @@ import com.github.lunatrius.schematica.reference.Reference;
 public class ServerProxy extends CommonProxy {
 
     @Override
-    public boolean serverDownloads() {
+    public boolean dedicatedServer() {
         return true;
+    }
+
+    @Override
+    public File cloudDirectory() {
+        return ConfigurationHandler.schematicDirectory;
     }
 
     @Override

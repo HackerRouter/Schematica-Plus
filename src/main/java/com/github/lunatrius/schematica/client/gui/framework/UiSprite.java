@@ -21,8 +21,11 @@ public enum UiSprite {
     SCHEMATIC(144, 12, 12, 12, false),
     SPONGE(144, 24, 12, 12, false),
     VANILLA(144, 36, 12, 12, false),
-    SCHEMPLUS(0, 0, 12, 12, false),
-    REPORT_ISSUE(0, 0, 13, 13, false),
+    SCHEMPLUS("schemplus", 12, 12),
+    REPORT_ISSUE("bug", 13, 13),
+    SERVER("sync_server_icon", 11, 11),
+    DOWNLOADED("sync_download_icon", 11, 11),
+    UPLOAD("sync_upload", 9, 9),
     MEMORY(186, 0, 12, 12, false),
     JSON(144, 48, 12, 12, false),
     DIRECTORY(156, 0, 12, 12, false),
@@ -50,7 +53,7 @@ public enum UiSprite {
     public final int width;
     public final int height;
     private final boolean states;
-    private final boolean malilib;
+    private final String texture;
 
     UiSprite(int u, int v, int width, int height, boolean states) {
         this(u, v, width, height, states, false);
@@ -62,16 +65,24 @@ public enum UiSprite {
         this.width = width;
         this.height = height;
         this.states = states;
-        this.malilib = malilib;
+        this.texture = malilib ? "schematica_plus:textures/gui/malilib_widgets.png" : TEXTURE;
+    }
+
+    UiSprite(String file, int width, int height) {
+        this.u = 0;
+        this.v = 0;
+        this.width = width;
+        this.height = height;
+        this.states = false;
+        this.texture = "schematica_plus:textures/gui/" + file + ".png";
     }
 
     public void draw(UiDraw draw, int x, int y, boolean enabled, boolean hovered) {
         int state = states ? !enabled ? 0 : hovered ? 2 : 1 : 0;
-        String texture = this == SCHEMPLUS ? "schematica_plus:textures/gui/schemplus.png"
-            : this == REPORT_ISSUE ? "schematica_plus:textures/gui/bug.png"
-            : malilib ? "schematica_plus:textures/gui/malilib_widgets.png" : TEXTURE;
-        int size = this == SCHEMPLUS ? 12 : this == REPORT_ISSUE ? 13 : 256;
-        draw.texture(texture, new UiBounds(x, y, width, height), u + state * width, v, width, height, size, size);
+        boolean whole = !texture.equals(TEXTURE) && !texture.endsWith("malilib_widgets.png");
+        String file = this == SERVER && hovered ? "schematica_plus:textures/gui/sync_server_icon_highlight.png" : texture;
+        draw.texture(file, new UiBounds(x, y, width, height), u + state * width, v, width, height,
+            whole ? width : 256, whole ? height : 256);
     }
 
     public static UiSprite schematicFile(String name) {

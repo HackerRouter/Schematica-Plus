@@ -15,7 +15,7 @@ public class MessageCapabilities implements IMessage, IMessageHandler<MessageCap
     public boolean isPrinterEnabled;
     public boolean isSaveEnabled;
     public boolean isLoadEnabled;
-    public boolean supportsAccuratePlacement, supportsNbtRequests;
+    public boolean supportsAccuratePlacement, supportsNbtRequests, supportsCloud, supportsSharedPlacements;
     public double printerMaxRange;
 
     public MessageCapabilities() {
@@ -35,6 +35,8 @@ public class MessageCapabilities implements IMessage, IMessageHandler<MessageCap
         this.isLoadEnabled = buf.readBoolean();
         supportsAccuratePlacement = buf.readBoolean();
         supportsNbtRequests = buf.readBoolean();
+        supportsCloud = buf.readBoolean();
+        supportsSharedPlacements = buf.readBoolean();
         printerMaxRange = PrinterRange.clamp(buf.readDouble());
     }
 
@@ -45,6 +47,8 @@ public class MessageCapabilities implements IMessage, IMessageHandler<MessageCap
         buf.writeBoolean(this.isLoadEnabled);
         buf.writeBoolean(supportsAccuratePlacement);
         buf.writeBoolean(supportsNbtRequests);
+        buf.writeBoolean(supportsCloud);
+        buf.writeBoolean(supportsSharedPlacements);
         buf.writeDouble(printerMaxRange);
     }
 
@@ -71,6 +75,8 @@ public class MessageCapabilities implements IMessage, IMessageHandler<MessageCap
         SchematicaPlus.proxy.supportsRemoteEdit = true;
         SchematicaPlus.proxy.supportsAccuratePlacement = message.supportsAccuratePlacement;
         SchematicaPlus.proxy.supportsNbtRequests = message.supportsNbtRequests;
+        SchematicaPlus.proxy.supportsCloud = message.supportsCloud;
+        SchematicaPlus.proxy.supportsSharedPlacements = message.supportsSharedPlacements;
         SchematicaPlus.proxy.printerMaxRange = message.printerMaxRange;
 
         Reference.logger.info(

@@ -98,6 +98,11 @@ server options in game with `/schematicaplus list|info|set|search|reload|save`.
 Players keep schematics on the server with `/schematic save|list|remove|download`
 (`serversideSchematicsEnabled`); `/schematic save <name>` saves the current area
 selection, and six corner coordinates after the name save a single box instead.
+**Server Schematics** in the main menu browses the player's private folder and a
+public folder shared by everyone, with upload, download, load and material list
+(`cloudEnabled`, `cloudUploadPermissionLevel`, `cloudPublicPermissionLevel`,
+`cloudManagePermissionLevel`, `cloudMaxUploadKilobytes`; uploads count against
+`playerQuotaKilobytes` on dedicated servers).
 
 Hotkeys are stored separately in `config/schematica_plus_hotkeys.json`.
 

@@ -115,6 +115,10 @@ public class ConfigurationHandler {
     public static boolean loadEnabled = true;
     public static int playerQuotaKilobytes = PLAYER_QUOTA_KILOBYTES_DEFAULT;
     public static boolean serversideSchematicsEnabled = true;
+    public static boolean cloudEnabled = true, sharedPlacementsEnabled = true, sharedPlacementsAutoLoad = true;
+    public static int cloudUploadPermissionLevel, cloudPublicPermissionLevel, cloudManagePermissionLevel = 2;
+    public static int cloudMaxUploadKilobytes = 51200;
+    public static int sharedPlacementPermissionLevel, sharedPlacementManagePermissionLevel = 2, sharedPlacementsPerPlayer = 64;
 
     public static Property propAlpha = null;
     public static Property propBlockDelta = null;
@@ -210,6 +214,7 @@ public class ConfigurationHandler {
         actionbarHudTicks = malilib.integer("actionbarHudTicks", 60, 1, 240);
         enableActionbarMessages = malilib.flag("enableActionbarMessages", true);
         inGameMessageTimeout = malilib.decimal("inGameMessageTimeout", 5.0, 0.5, 15.0);
+        sharedPlacementsAutoLoad = legacyTool.flag(Names.Config.SHARED_PLACEMENTS_AUTO_LOAD, true);
         pasteWithoutUpdates = legacyTool.flag(Names.Config.PASTE_WITHOUT_UPDATES, false, Names.Config.PASTE_WITHOUT_UPDATES_DESC);
         pasteReplaceBehavior = loadPasteReplaceBehavior(configuration);
 
@@ -230,6 +235,17 @@ public class ConfigurationHandler {
             Names.Config.PLAYER_QUOTA_KILOBYTES, PLAYER_QUOTA_KILOBYTES_DEFAULT, Names.Config.PLAYER_QUOTA_KILOBYTES_DESC))
             .getInt(PLAYER_QUOTA_KILOBYTES_DEFAULT);
         serversideSchematicsEnabled = server.flag(Names.Config.SERVERSIDE_SCHEMATICS_ENABLED, true, Names.Config.SERVERSIDE_SCHEMATICS_ENABLED_DESC);
+        cloudEnabled = server.flag(Names.Config.CLOUD_ENABLED, true, Names.Config.CLOUD_ENABLED_DESC);
+        cloudUploadPermissionLevel = server.integer(Names.Config.CLOUD_UPLOAD_PERMISSION_LEVEL, 0, 0, 4, Names.Config.CLOUD_UPLOAD_PERMISSION_LEVEL_DESC);
+        cloudPublicPermissionLevel = server.integer(Names.Config.CLOUD_PUBLIC_PERMISSION_LEVEL, 0, 0, 4, Names.Config.CLOUD_PUBLIC_PERMISSION_LEVEL_DESC);
+        cloudManagePermissionLevel = server.integer(Names.Config.CLOUD_MANAGE_PERMISSION_LEVEL, 2, 0, 4, Names.Config.CLOUD_MANAGE_PERMISSION_LEVEL_DESC);
+        cloudMaxUploadKilobytes = server.integer(Names.Config.CLOUD_MAX_UPLOAD_KILOBYTES, 51200, 1, 1048576, Names.Config.CLOUD_MAX_UPLOAD_KILOBYTES_DESC);
+        sharedPlacementsEnabled = server.flag(Names.Config.SHARED_PLACEMENTS_ENABLED, true, Names.Config.SHARED_PLACEMENTS_ENABLED_DESC);
+        sharedPlacementPermissionLevel = server.integer(Names.Config.SHARED_PLACEMENT_PERMISSION_LEVEL, 0, 0, 4,
+            Names.Config.SHARED_PLACEMENT_PERMISSION_LEVEL_DESC);
+        sharedPlacementManagePermissionLevel = server.integer(Names.Config.SHARED_PLACEMENT_MANAGE_PERMISSION_LEVEL, 2, 0, 4,
+            Names.Config.SHARED_PLACEMENT_MANAGE_PERMISSION_LEVEL_DESC);
+        sharedPlacementsPerPlayer = server.integer(Names.Config.SHARED_PLACEMENTS_PER_PLAYER, 64, 0, 4096, Names.Config.SHARED_PLACEMENTS_PER_PLAYER_DESC);
 
         SchematicaPlus.proxy.createFolders();
 

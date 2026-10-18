@@ -32,7 +32,11 @@ final class ConfigReader {
     }
 
     int integer(String name, int fallback, int min, int max) {
-        Property property = label(name, config.get(category, name, fallback));
+        return integer(name, fallback, min, max, null);
+    }
+
+    int integer(String name, int fallback, int min, int max, String comment) {
+        Property property = label(name, comment == null ? config.get(category, name, fallback) : config.get(category, name, fallback, comment));
         property.setMinValue(min).setMaxValue(max);
         int stored = property.getInt(fallback), value = Math.max(min, Math.min(max, stored));
         if (value != stored) property.set(value);

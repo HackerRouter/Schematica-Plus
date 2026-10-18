@@ -52,6 +52,23 @@ source distribution: https://github.com/HackerRouter/Schematica-Plus.
 No MaLiLib runtime is bundled; button backgrounds are resolved from the running
 Minecraft 1.7.10 resource pack.
 
+## Syncmatica and Schematic Synchronizer
+
+The server schematic and shared placement screens follow the layouts of Syncmatica
+26.3-0.3.20 (https://github.com/sakura-ryoko/syncmatica, originally
+https://github.com/End-Tech/syncmatica) and Schematic Synchronizer for 26.2
+(https://github.com/xiader-45/Schematic-Synchronizer), both dedicated to the public
+domain under CC0 1.0 Universal.
+
+- `assets/schematica_plus_sharing/lang/*.lang` contains their language catalogs with
+  the original keys, converted from JSON by `tools/import_sharing_translations.py`;
+  `tools/translations/schematic_synchronizer_zh_cn.json` adds a Simplified Chinese
+  translation of the Schematic Synchronizer keys.
+- `assets/schematica_plus/textures/gui/sync_server_icon.png`,
+  `sync_server_icon_highlight.png`, `sync_download_icon.png` and `sync_upload.png` are
+  the unmodified Schematic Synchronizer `server_icon`, `server_icon_highlight`,
+  `download_icon` and `upload` textures.
+
 ## Minecraft report icon
 
 `assets/schematica_plus/textures/gui/bug.png` is the unmodified 13x13 icon from

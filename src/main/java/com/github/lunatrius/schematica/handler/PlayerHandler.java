@@ -26,11 +26,13 @@ public class PlayerHandler {
         capabilities.printerMaxRange = ConfigurationHandler.printerEnabled ? PrinterRange.clamp(ConfigurationHandler.printerMaxRange) : 0;
         capabilities.supportsAccuratePlacement = ConfigurationHandler.accuratePlacementEnabled;
         capabilities.supportsNbtRequests = ConfigurationHandler.nbtRequestsEnabled;
+        capabilities.supportsCloud = ConfigurationHandler.cloudEnabled;
+        capabilities.supportsSharedPlacements = ConfigurationHandler.sharedPlacementsEnabled;
         return capabilities;
     }
 
     private static String key(MessageCapabilities c) {
-        return c.isPrinterEnabled + "," + c.isSaveEnabled + "," + c.isLoadEnabled + "," + c.supportsAccuratePlacement + "," + c.supportsNbtRequests + "," + c.printerMaxRange;
+        return c.isPrinterEnabled + "," + c.isSaveEnabled + "," + c.isLoadEnabled + "," + c.supportsAccuratePlacement + "," + c.supportsNbtRequests + "," + c.supportsCloud + "," + c.supportsSharedPlacements + "," + c.printerMaxRange;
     }
 
     @SubscribeEvent
@@ -75,6 +77,7 @@ public class PlayerHandler {
             RemoteEdits.INSTANCE.forget(event.player);
             NbtRequests.INSTANCE.forget(event.player);
             SelectionSaves.INSTANCE.forget(event.player);
+            ServerCloud.INSTANCE.forget(event.player);
         }
     }
 }

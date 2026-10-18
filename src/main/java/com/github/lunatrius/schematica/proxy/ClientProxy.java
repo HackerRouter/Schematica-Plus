@@ -31,6 +31,7 @@ import com.github.lunatrius.schematica.compat.NoLOTRProxy;
 import com.github.lunatrius.schematica.compat.nei.NeiBridge;
 import com.github.lunatrius.schematica.handler.ConfigurationHandler;
 import com.github.lunatrius.schematica.handler.client.ChatEventHandler;
+import com.github.lunatrius.schematica.handler.client.CloudClient;
 import com.github.lunatrius.schematica.handler.client.CommandEditQueue;
 import com.github.lunatrius.schematica.handler.client.ModInfoHandler;
 import com.github.lunatrius.schematica.handler.client.NbtRequestClient;
@@ -109,6 +110,7 @@ public class ClientProxy extends CommonProxy {
         FMLCommonHandler.instance().bus().register(
             RemoteEditClient.INSTANCE);
         FMLCommonHandler.instance().bus().register(NbtRequestClient.INSTANCE);
+        FMLCommonHandler.instance().bus().register(CloudClient.INSTANCE);
         FMLCommonHandler.instance().bus().register(
             SchematicPreview.INSTANCE);
 
@@ -175,6 +177,7 @@ public class ClientProxy extends CommonProxy {
 
         WorldHandler.INSTANCE.closeSession();
         NbtRequestClient.INSTANCE.clear();
+        CloudClient.INSTANCE.clear();
         clearWorldState();
     }
 

@@ -15,6 +15,7 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
+import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.common.MinecraftForge;
 
 import com.github.lunatrius.schematica.api.ISchematic;
@@ -27,6 +28,7 @@ import com.github.lunatrius.schematica.handler.ConfigurationHandler;
 import com.github.lunatrius.schematica.handler.DownloadHandler;
 import com.github.lunatrius.schematica.handler.NbtRequests;
 import com.github.lunatrius.schematica.handler.SelectionSaves;
+import com.github.lunatrius.schematica.handler.ServerCloud;
 import com.github.lunatrius.schematica.handler.PlayerHandler;
 import com.github.lunatrius.schematica.handler.PrinterActions;
 import com.github.lunatrius.schematica.handler.QueueTickHandler;
@@ -65,6 +67,7 @@ public abstract class CommonProxy {
     /** The server runs Plus and applies placement intents (accurate placement protocol). */
     public volatile boolean supportsAccuratePlacement;
     public volatile boolean supportsNbtRequests;
+    public volatile boolean supportsCloud, supportsSharedPlacements;
     public volatile double printerMaxRange;
     public void worldMoveFinished(long id, boolean success) {}
 
@@ -98,6 +101,7 @@ public abstract class CommonProxy {
         FMLCommonHandler.instance().bus().register(PlayerHandler.INSTANCE);
         FMLCommonHandler.instance().bus().register(NbtRequests.INSTANCE);
         FMLCommonHandler.instance().bus().register(SelectionSaves.INSTANCE);
+        FMLCommonHandler.instance().bus().register(ServerCloud.INSTANCE);
     }
 
     public void postInit(FMLPostInitializationEvent event) {
@@ -109,8 +113,12 @@ public abstract class CommonProxy {
         if (ConfigurationHandler.serversideSchematicsEnabled) event.registerServerCommand(new CommandSchematic());
     }
 
-    public boolean serverDownloads() {
+    public boolean dedicatedServer() {
         return false;
+    }
+
+    public File cloudDirectory() {
+        return new File(DimensionManager.getCurrentSaveRootDirectory(), "schematica_plus/cloud");
     }
 
     public void createFolders() {
@@ -149,6 +157,8 @@ public abstract class CommonProxy {
         supportsRemoteEdit = false;
         supportsAccuratePlacement = false;
         supportsNbtRequests = false;
+        supportsCloud = false;
+        supportsSharedPlacements = false;
         printerMaxRange = 0;
         this.isSaveEnabled = true;
         this.isLoadEnabled = true;

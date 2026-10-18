@@ -1,6 +1,10 @@
 package com.github.lunatrius.schematica.network;
 
 import com.github.lunatrius.schematica.network.message.MessageCapabilities;
+import com.github.lunatrius.schematica.network.message.MessageCloudData;
+import com.github.lunatrius.schematica.network.message.MessageCloudRequest;
+import com.github.lunatrius.schematica.network.message.MessageCloudResult;
+import com.github.lunatrius.schematica.network.message.MessageCloudUpload;
 import com.github.lunatrius.schematica.network.message.MessageDownloadBegin;
 import com.github.lunatrius.schematica.network.message.MessageDownloadBeginAck;
 import com.github.lunatrius.schematica.network.message.MessageDownloadChunk;
@@ -57,5 +61,9 @@ public class PacketHandler {
         INSTANCE.registerMessage(MessageNbtData.class, MessageNbtData.class, 15, Side.CLIENT);
         INSTANCE.registerMessage(MessageSaveSelectionRequest.class, MessageSaveSelectionRequest.class, 16, Side.CLIENT);
         INSTANCE.registerMessage(MessageSaveSelection.class, MessageSaveSelection.class, 17, Side.SERVER);
+        INSTANCE.registerMessage(MessageCloudRequest.class, MessageCloudRequest.class, 18, Side.SERVER);
+        INSTANCE.registerMessage(MessageCloudUpload.class, MessageCloudUpload.class, 19, Side.SERVER);
+        INSTANCE.registerMessage(MessageCloudData.class, MessageCloudData.class, 20, Side.CLIENT);
+        INSTANCE.registerMessage(MessageCloudResult.class, MessageCloudResult.class, 21, Side.CLIENT);
     }
 }

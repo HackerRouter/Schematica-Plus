@@ -80,6 +80,26 @@ public final class Names {
         public static final String NBT_REQUEST_PERMISSION_LEVEL = "nbtRequestPermissionLevel";
         public static final String NBT_REQUEST_PERMISSION_LEVEL_DESC = "The operator level a player needs for complete data requests; 0 allows every player.";
 
+        public static final String CLOUD_ENABLED = "cloudEnabled";
+        public static final String CLOUD_ENABLED_DESC = "Let players browse, download and upload schematics stored on the server.";
+        public static final String CLOUD_UPLOAD_PERMISSION_LEVEL = "cloudUploadPermissionLevel";
+        public static final String CLOUD_UPLOAD_PERMISSION_LEVEL_DESC = "The operator level a player needs to upload schematics; 0 allows every player.";
+        public static final String CLOUD_PUBLIC_PERMISSION_LEVEL = "cloudPublicPermissionLevel";
+        public static final String CLOUD_PUBLIC_PERMISSION_LEVEL_DESC = "The operator level a player needs to add files or folders to the public folder; 0 allows every player.";
+        public static final String CLOUD_MANAGE_PERMISSION_LEVEL = "cloudManagePermissionLevel";
+        public static final String CLOUD_MANAGE_PERMISSION_LEVEL_DESC = "The operator level a player needs to delete public files of other players.";
+        public static final String CLOUD_MAX_UPLOAD_KILOBYTES = "cloudMaxUploadKilobytes";
+        public static final String CLOUD_MAX_UPLOAD_KILOBYTES_DESC = "The largest schematic file a player can upload, in kilobytes.";
+        public static final String SHARED_PLACEMENTS_ENABLED = "sharedPlacementsEnabled";
+        public static final String SHARED_PLACEMENTS_ENABLED_DESC = "Let players share placements with everyone on the server.";
+        public static final String SHARED_PLACEMENT_PERMISSION_LEVEL = "sharedPlacementPermissionLevel";
+        public static final String SHARED_PLACEMENT_PERMISSION_LEVEL_DESC = "The operator level a player needs to share and modify placements; 0 allows every player.";
+        public static final String SHARED_PLACEMENT_MANAGE_PERMISSION_LEVEL = "sharedPlacementManagePermissionLevel";
+        public static final String SHARED_PLACEMENT_MANAGE_PERMISSION_LEVEL_DESC = "The operator level a player needs to remove placements shared by other players.";
+        public static final String SHARED_PLACEMENTS_PER_PLAYER = "sharedPlacementsPerPlayer";
+        public static final String SHARED_PLACEMENTS_PER_PLAYER_DESC = "How many placements one player can share at the same time.";
+        public static final String SHARED_PLACEMENTS_AUTO_LOAD = "sharedPlacementsAutoLoad";
+
         public static final String LANG_PREFIX = "schematica.config";
     }
 

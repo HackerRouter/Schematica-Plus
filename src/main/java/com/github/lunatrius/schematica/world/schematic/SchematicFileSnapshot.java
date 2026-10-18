@@ -27,13 +27,23 @@ public final class SchematicFileSnapshot {
         this.extension = extension;
     }
 
-    public static SchematicFileSnapshot read(File file) throws IOException {
-        String name = file.getName().toLowerCase(Locale.ROOT);
+    private static String extension(String filename) throws IOException {
+        String name = filename.toLowerCase(Locale.ROOT);
         int dot = name.lastIndexOf('.');
         String extension = dot < 0 ? "" : name.substring(dot);
         if (!extension.equals(".schematic") && !extension.equals(".schemplus") && !extension.equals(".litematic") && !extension.equals(".nbt") && !extension.equals(".schem")) {
             throw new IOException("Unsupported source extension");
         }
+        return extension;
+    }
+
+    public static SchematicFileSnapshot of(String filename, byte[] bytes) throws IOException {
+        if (bytes.length > SchematicLimits.MAX_NBT_BYTES) throw new IOException("Source file exceeds memory limit");
+        return new SchematicFileSnapshot(bytes.clone(), extension(filename));
+    }
+
+    public static SchematicFileSnapshot read(File file) throws IOException {
+        String extension = extension(file.getName());
         if (Files.size(file.toPath()) > SchematicLimits.MAX_NBT_BYTES) throw new IOException("Source file exceeds memory limit");
         ByteArrayOutputStream output = new ByteArrayOutputStream();
         try (InputStream input = Files.newInputStream(file.toPath())) {

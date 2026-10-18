@@ -79,7 +79,7 @@ public class CommandSchematic extends CommandBase {
                 remove(player, rest);
                 return;
             case Names.Command.Download.NAME:
-                if (!SchematicaPlus.proxy.serverDownloads()) break;
+                if (!SchematicaPlus.proxy.dedicatedServer()) break;
                 download(player, rest);
                 return;
             default:
@@ -171,7 +171,7 @@ public class CommandSchematic extends CommandBase {
                 FileUtils.humanReadableByteCount(file.length()), file.getName()));
             line.appendSibling(link(Names.Command.List.Message.REMOVE, Names.Command.Remove.NAME, file.getName(), EnumChatFormatting.RED));
             line.appendText("]");
-            if (SchematicaPlus.proxy.serverDownloads()) {
+            if (SchematicaPlus.proxy.dedicatedServer()) {
                 line.appendText("[");
                 line.appendSibling(link(Names.Command.List.Message.DOWNLOAD, Names.Command.Download.NAME, file.getName(), EnumChatFormatting.GREEN));
                 line.appendText("]");
@@ -246,7 +246,7 @@ public class CommandSchematic extends CommandBase {
 
     private static List<String> subcommands() {
         List<String> names = new ArrayList<>(Arrays.asList(Names.Command.Save.NAME, Names.Command.List.NAME, Names.Command.Remove.NAME));
-        if (SchematicaPlus.proxy.serverDownloads()) names.add(Names.Command.Download.NAME);
+        if (SchematicaPlus.proxy.dedicatedServer()) names.add(Names.Command.Download.NAME);
         return names;
     }
 
@@ -257,7 +257,7 @@ public class CommandSchematic extends CommandBase {
         if (args.length != 2 || !(sender instanceof EntityPlayer player)) return null;
         String subcommand = args[0].toLowerCase(Locale.ROOT);
         if (!subcommand.equals(Names.Command.Remove.NAME)
-            && !(SchematicaPlus.proxy.serverDownloads() && subcommand.equals(Names.Command.Download.NAME))) return null;
+            && !(SchematicaPlus.proxy.dedicatedServer() && subcommand.equals(Names.Command.Download.NAME))) return null;
         File directory = SchematicaPlus.proxy.getPlayerSchematicDirectory(player, true);
         File[] files = directory == null ? null : directory.listFiles(FILE_FILTER_SCHEMATIC);
         if (files == null) return null;
