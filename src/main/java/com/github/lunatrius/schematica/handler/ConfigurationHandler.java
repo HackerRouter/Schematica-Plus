@@ -117,7 +117,7 @@ public class ConfigurationHandler {
     public static boolean serversideSchematicsEnabled = true;
     public static boolean cloudEnabled = true, sharedPlacementsEnabled = true, sharedPlacementsAutoLoad = true;
     public static int cloudUploadPermissionLevel, cloudPublicPermissionLevel, cloudManagePermissionLevel = 2;
-    public static int cloudMaxUploadKilobytes = 51200;
+    public static int cloudMaxUploadKilobytes = 8192;
     public static int sharedPlacementPermissionLevel, sharedPlacementManagePermissionLevel = 2, sharedPlacementsPerPlayer = 64;
 
     public static Property propAlpha = null;
@@ -239,7 +239,7 @@ public class ConfigurationHandler {
         cloudUploadPermissionLevel = server.integer(Names.Config.CLOUD_UPLOAD_PERMISSION_LEVEL, 0, 0, 4, Names.Config.CLOUD_UPLOAD_PERMISSION_LEVEL_DESC);
         cloudPublicPermissionLevel = server.integer(Names.Config.CLOUD_PUBLIC_PERMISSION_LEVEL, 0, 0, 4, Names.Config.CLOUD_PUBLIC_PERMISSION_LEVEL_DESC);
         cloudManagePermissionLevel = server.integer(Names.Config.CLOUD_MANAGE_PERMISSION_LEVEL, 2, 0, 4, Names.Config.CLOUD_MANAGE_PERMISSION_LEVEL_DESC);
-        cloudMaxUploadKilobytes = server.integer(Names.Config.CLOUD_MAX_UPLOAD_KILOBYTES, 51200, 1, 1048576, Names.Config.CLOUD_MAX_UPLOAD_KILOBYTES_DESC);
+        cloudMaxUploadKilobytes = server.integer(Names.Config.CLOUD_MAX_UPLOAD_KILOBYTES, 8192, 1, 1048576, Names.Config.CLOUD_MAX_UPLOAD_KILOBYTES_DESC);
         sharedPlacementsEnabled = server.flag(Names.Config.SHARED_PLACEMENTS_ENABLED, true, Names.Config.SHARED_PLACEMENTS_ENABLED_DESC);
         sharedPlacementPermissionLevel = server.integer(Names.Config.SHARED_PLACEMENT_PERMISSION_LEVEL, 0, 0, 4,
             Names.Config.SHARED_PLACEMENT_PERMISSION_LEVEL_DESC);
