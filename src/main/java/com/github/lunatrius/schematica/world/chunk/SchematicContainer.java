@@ -39,6 +39,8 @@ public class SchematicContainer {
     public CaptureSource source;
     /** Upstream "Visible blocks only" (only blocks with an uncovered face) and "Include support blocks". */
     public boolean visibleOnly, supportBlocks;
+    public int pendingNbt;
+    public boolean nbtUnavailable;
 
     public final int minX;
     public final int maxX;

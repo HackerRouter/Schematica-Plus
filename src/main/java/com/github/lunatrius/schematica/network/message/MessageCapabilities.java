@@ -15,7 +15,7 @@ public class MessageCapabilities implements IMessage, IMessageHandler<MessageCap
     public boolean isPrinterEnabled;
     public boolean isSaveEnabled;
     public boolean isLoadEnabled;
-    public boolean supportsAccuratePlacement;
+    public boolean supportsAccuratePlacement, supportsNbtRequests;
     public double printerMaxRange;
 
     public MessageCapabilities() {
@@ -34,6 +34,7 @@ public class MessageCapabilities implements IMessage, IMessageHandler<MessageCap
         this.isSaveEnabled = buf.readBoolean();
         this.isLoadEnabled = buf.readBoolean();
         supportsAccuratePlacement = buf.readBoolean();
+        supportsNbtRequests = buf.readBoolean();
         printerMaxRange = PrinterRange.clamp(buf.readDouble());
     }
 
@@ -43,6 +44,7 @@ public class MessageCapabilities implements IMessage, IMessageHandler<MessageCap
         buf.writeBoolean(this.isSaveEnabled);
         buf.writeBoolean(this.isLoadEnabled);
         buf.writeBoolean(supportsAccuratePlacement);
+        buf.writeBoolean(supportsNbtRequests);
         buf.writeDouble(printerMaxRange);
     }
 
@@ -68,6 +70,7 @@ public class MessageCapabilities implements IMessage, IMessageHandler<MessageCap
         SchematicaPlus.proxy.supportsWorldMove = true;
         SchematicaPlus.proxy.supportsRemoteEdit = true;
         SchematicaPlus.proxy.supportsAccuratePlacement = message.supportsAccuratePlacement;
+        SchematicaPlus.proxy.supportsNbtRequests = message.supportsNbtRequests;
         SchematicaPlus.proxy.printerMaxRange = message.printerMaxRange;
 
         Reference.logger.info(

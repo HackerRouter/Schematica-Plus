@@ -3050,6 +3050,16 @@ coverage; section 6 of HANDOUT.md records the exact completed scenarios.
   advertises the protocol but rejects remote editing must not fall back to chat
   commands to evade that server policy.
 
+### Complete data requests when saving
+
+- With Plus on a dedicated server, save an area containing a filled chest, a sign,
+  a GregTech machine and an item frame. The saved file must contain the server's
+  inventory, text, machine data and frame item, not only the client's view.
+- Set `nbtRequestPermissionLevel` above the player's level, or disable
+  `nbtRequestsEnabled`, and repeat: the save must finish with the client data and
+  show the incomplete-data warning. Save an area larger than 64 chunks and one with
+  unloaded chunks; both must finish without stalling.
+
 ### Command paste replies and permissions
 
 - On a dedicated server without Plus, whitelist a creative player but remove OP.

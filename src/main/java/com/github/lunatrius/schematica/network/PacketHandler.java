@@ -12,6 +12,8 @@ import com.github.lunatrius.schematica.network.message.MessageEditStatus;
 import com.github.lunatrius.schematica.network.message.MessageEditUpload;
 import com.github.lunatrius.schematica.network.message.MessageMoveRequest;
 import com.github.lunatrius.schematica.network.message.MessageMoveResult;
+import com.github.lunatrius.schematica.network.message.MessageNbtData;
+import com.github.lunatrius.schematica.network.message.MessageNbtRequest;
 import com.github.lunatrius.schematica.network.message.MessagePlacementIntent;
 import com.github.lunatrius.schematica.network.message.MessagePrinterAction;
 import com.github.lunatrius.schematica.reference.Reference;
@@ -49,5 +51,7 @@ public class PacketHandler {
             MessagePlacementIntent.class, 11, Side.SERVER);
         INSTANCE.registerMessage(MessageDownloadRegions.class,
             MessageDownloadRegions.class, 12, Side.CLIENT);
+        INSTANCE.registerMessage(MessageNbtRequest.class, MessageNbtRequest.class, 14, Side.SERVER);
+        INSTANCE.registerMessage(MessageNbtData.class, MessageNbtData.class, 15, Side.CLIENT);
     }
 }

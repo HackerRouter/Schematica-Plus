@@ -99,6 +99,10 @@ public class QueueTickHandler {
                 pending = true;
                 return;
             }
+            if (container.pendingNbt > 0) {
+                pending = true;
+                return;
+            }
             if (!save.task.beginWrite()) return;
             for (TileEntity entity : container.schematic.getTileEntities()) {
                 if (!entity.hasWorldObj()) entity.setWorldObj(container.world);
@@ -114,6 +118,7 @@ public class QueueTickHandler {
             File saved = SchematicFormat.saveToFile(container.file, container.schematic, container.world,
                 container.includeNBT, container.includeEntities, player.getCommandSenderName());
             written = saved;
+            if (container.nbtUnavailable) SchematicaPlus.proxy.sendMessage(player, new PlayerMessage(MessageType.WARNING, "schematica.message.save.nbt_unavailable"));
             boolean renamed = saved != null && !saved.getName().equals(container.file.getName());
             String message = saved != null ? (renamed ? Names.Command.Save.Message.SAVE_EXTENDED
                 : Names.Command.Save.Message.SAVE_SUCCESSFUL) : Names.Command.Save.Message.SAVE_FAILED;

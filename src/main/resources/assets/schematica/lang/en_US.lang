@@ -149,6 +149,10 @@ schematica.config.remoteEditsEnabled=remoteEditsEnabled
 schematica.config.remoteEditsEnabled.tooltip=Let players in creative mode with command permission paste, fill and delete through Schematica Plus clients, with full block NBT, entities and block-update suppression.
 schematica.config.accuratePlacementEnabled=accuratePlacementEnabled
 schematica.config.accuratePlacementEnabled.tooltip=Let Easy Place and the printer on Schematica Plus clients set the exact metadata (orientation) of blocks they place. Only orientation-like properties (facing, slab half, axis, rail shape, repeater delay, comparator mode, open) are applied.
+schematica.config.nbtRequestsEnabled=nbtRequestsEnabled
+schematica.config.nbtRequestsEnabled.tooltip=Send the complete block entity and entity data of loaded chunks to Schematica Plus clients that save schematics, so containers, signs and machines keep their contents.
+schematica.config.nbtRequestPermissionLevel=nbtRequestPermissionLevel
+schematica.config.nbtRequestPermissionLevel.tooltip=The operator level a player needs to request complete block entity and entity data. 0 allows every player.
 
 # gui - config - tool
 schematica.config.pasteWithoutUpdates=pasteWithoutUpdates
@@ -431,6 +435,7 @@ schematica.ui.report.dont_show_again=Don't show this message again
 schematica.ui.report.open_failed=Could not open the browser; copy the link
 schematica.ui.report.copy_link=Copy link
 schematica.message.import.omitted_data=%s: some imported data could not be safely restored in this environment and was omitted: %s. See the log for details.
+schematica.message.save.nbt_unavailable=The server did not send the complete data of every chunk; those parts were saved with the data your client knows.
 
 schematica.ui.files.edit_type.change_description=Edit Description
 schematica.ui.files.edit_type.remove_preview=Remove Preview

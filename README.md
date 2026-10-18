@@ -91,8 +91,9 @@ that every block in either pack has passed an in-game test.
 
 The client can preview schematics, capture synchronized client data and use native
 item placement without Plus on the server. Install a matching Plus version on the
-server for full-NBT remote edits, world MOVE and the accurate-placement protocol.
-Server configuration and player permissions still apply. Operators manage the
+server for full-NBT remote edits, world MOVE, the accurate-placement protocol and
+complete block entity/entity data when saving (`nbtRequestsEnabled`,
+`nbtRequestPermissionLevel`). Server configuration and player permissions still apply. Operators manage the
 server options in game with `/schematicaplus list|info|set|search|reload|save`.
 
 Hotkeys are stored separately in `config/schematica_plus_hotkeys.json`.

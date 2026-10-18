@@ -27,6 +27,7 @@ import com.github.lunatrius.schematica.command.CommandSchematicaSave;
 import com.github.lunatrius.schematica.handler.AccuratePlacement;
 import com.github.lunatrius.schematica.handler.ConfigurationHandler;
 import com.github.lunatrius.schematica.handler.DownloadHandler;
+import com.github.lunatrius.schematica.handler.NbtRequests;
 import com.github.lunatrius.schematica.handler.PlayerHandler;
 import com.github.lunatrius.schematica.handler.PrinterActions;
 import com.github.lunatrius.schematica.handler.QueueTickHandler;
@@ -64,6 +65,7 @@ public abstract class CommonProxy {
     public volatile boolean supportsRemoteEdit;
     /** The server runs Plus and applies placement intents (accurate placement protocol). */
     public volatile boolean supportsAccuratePlacement;
+    public volatile boolean supportsNbtRequests;
     public volatile double printerMaxRange;
     public void worldMoveFinished(long id, boolean success) {}
 
@@ -95,6 +97,7 @@ public abstract class CommonProxy {
             .register(DownloadHandler.INSTANCE);
         // Also in single player, so the integrated server's printerEnabled and accurate placement reach the client
         FMLCommonHandler.instance().bus().register(PlayerHandler.INSTANCE);
+        FMLCommonHandler.instance().bus().register(NbtRequests.INSTANCE);
     }
 
     public void postInit(FMLPostInitializationEvent event) {
@@ -145,6 +148,7 @@ public abstract class CommonProxy {
         supportsWorldMove = false;
         supportsRemoteEdit = false;
         supportsAccuratePlacement = false;
+        supportsNbtRequests = false;
         printerMaxRange = 0;
         this.isSaveEnabled = true;
         this.isLoadEnabled = true;

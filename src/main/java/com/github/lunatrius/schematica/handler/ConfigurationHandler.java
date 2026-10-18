@@ -108,6 +108,8 @@ public class ConfigurationHandler {
     public static boolean printerEnabled = true;
     public static boolean remoteEditsEnabled = true;
     public static boolean accuratePlacementEnabled = true;
+    public static boolean nbtRequestsEnabled = true;
+    public static int nbtRequestPermissionLevel = 0;
     public static String easyPlaceProtocolVersion = "auto";
     public static boolean saveEnabled = true;
     public static boolean loadEnabled = true;
@@ -218,6 +220,10 @@ public class ConfigurationHandler {
         printerMaxRange = PrinterRange.clamp(maxRange.getDouble(PrinterRange.MAX));
         remoteEditsEnabled = server.flag(Names.Config.REMOTE_EDITS_ENABLED, true, Names.Config.REMOTE_EDITS_ENABLED_DESC);
         accuratePlacementEnabled = server.flag(Names.Config.ACCURATE_PLACEMENT_ENABLED, true, Names.Config.ACCURATE_PLACEMENT_ENABLED_DESC);
+        nbtRequestsEnabled = server.flag(Names.Config.NBT_REQUESTS_ENABLED, true, Names.Config.NBT_REQUESTS_ENABLED_DESC);
+        nbtRequestPermissionLevel = server.label(Names.Config.NBT_REQUEST_PERMISSION_LEVEL, configuration.get(Names.Config.Category.SERVER,
+            Names.Config.NBT_REQUEST_PERMISSION_LEVEL, 0, Names.Config.NBT_REQUEST_PERMISSION_LEVEL_DESC, 0, 4)).getInt(0);
+        nbtRequestPermissionLevel = Math.max(0, Math.min(4, nbtRequestPermissionLevel));
         saveEnabled = server.flag(Names.Config.SAVE_ENABLED, true, Names.Config.SAVE_ENABLED_DESC);
         loadEnabled = server.flag(Names.Config.LOAD_ENABLED, true, Names.Config.LOAD_ENABLED_DESC);
         playerQuotaKilobytes = server.label(Names.Config.PLAYER_QUOTA_KILOBYTES, configuration.get(Names.Config.Category.SERVER,

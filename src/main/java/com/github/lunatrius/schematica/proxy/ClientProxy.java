@@ -33,6 +33,7 @@ import com.github.lunatrius.schematica.handler.ConfigurationHandler;
 import com.github.lunatrius.schematica.handler.client.ChatEventHandler;
 import com.github.lunatrius.schematica.handler.client.CommandEditQueue;
 import com.github.lunatrius.schematica.handler.client.ModInfoHandler;
+import com.github.lunatrius.schematica.handler.client.NbtRequestClient;
 import com.github.lunatrius.schematica.handler.client.OverlayHandler;
 import com.github.lunatrius.schematica.handler.client.RemoteEditClient;
 import com.github.lunatrius.schematica.handler.client.RenderTickHandler;
@@ -42,6 +43,8 @@ import com.github.lunatrius.schematica.network.message.MessageEditStatus;
 import com.github.lunatrius.schematica.reference.Reference;
 import com.github.lunatrius.schematica.tool.WorldMoveController;
 import com.github.lunatrius.schematica.util.PlayerMessage;
+import com.github.lunatrius.schematica.world.chunk.ChunkNbt;
+import com.github.lunatrius.schematica.world.chunk.SchematicContainer;
 
 import cpw.mods.fml.client.config.GuiConfigEntries;
 import cpw.mods.fml.common.FMLCommonHandler;
@@ -63,6 +66,16 @@ public class ClientProxy extends CommonProxy {
     }
     @Override public void runSaveCallback(Runnable callback) {
         MINECRAFT.func_152344_a(callback);
+    }
+    @Override public void copyChunkToSchematic(SchematicContainer container, int chunkX, int chunkZ) {
+        super.copyChunkToSchematic(container, chunkX, chunkZ);
+        if (!container.world.isRemote || container.source != null || !NbtRequestClient.INSTANCE.available()) return;
+        container.pendingNbt++;
+        NbtRequestClient.INSTANCE.request(chunkX, chunkZ, container.minY, container.maxY, data -> {
+            container.pendingNbt--;
+            if (data == null) container.nbtUnavailable = true;
+            else ChunkNbt.merge(container, chunkX, chunkZ, data);
+        });
     }
     @Override public void sendMessage(EntityPlayer player, PlayerMessage message) {
         if (player == null || message == null) return;
@@ -95,6 +108,7 @@ public class ClientProxy extends CommonProxy {
         MinecraftForge.EVENT_BUS.register(CommandEditQueue.INSTANCE);
         FMLCommonHandler.instance().bus().register(
             RemoteEditClient.INSTANCE);
+        FMLCommonHandler.instance().bus().register(NbtRequestClient.INSTANCE);
         FMLCommonHandler.instance().bus().register(
             SchematicPreview.INSTANCE);
 
@@ -160,6 +174,7 @@ public class ClientProxy extends CommonProxy {
         SchematicPrinter.INSTANCE.setEnabled(true);
 
         WorldHandler.INSTANCE.closeSession();
+        NbtRequestClient.INSTANCE.clear();
         clearWorldState();
     }
 

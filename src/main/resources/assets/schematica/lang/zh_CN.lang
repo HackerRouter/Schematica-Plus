@@ -149,6 +149,10 @@ schematica.config.remoteEditsEnabled=远程编辑
 schematica.config.remoteEditsEnabled.tooltip=允许创造模式且有命令权限的玩家通过 Schematica Plus 客户端粘贴、填充和删除，支持完整方块 NBT、实体和抑制方块更新。
 schematica.config.accuratePlacementEnabled=精确放置
 schematica.config.accuratePlacementEnabled.tooltip=允许 Schematica Plus 客户端的 Easy Place 和打印机设置所放方块的精确元数据（朝向）。只应用朝向类属性（朝向、台阶上下半、轴向、铁轨形状、中继器延迟、比较器模式、开关状态）。
+schematica.config.nbtRequestsEnabled=完整数据请求
+schematica.config.nbtRequestsEnabled.tooltip=向保存原理图的 Schematica Plus 客户端发送已加载区块的完整方块实体和实体数据，使容器、告示牌和机器保留其内容。
+schematica.config.nbtRequestPermissionLevel=完整数据请求权限等级
+schematica.config.nbtRequestPermissionLevel.tooltip=请求完整方块实体和实体数据所需的管理员等级。0 表示所有玩家均可。
 
 # gui - config - tool
 schematica.config.pasteWithoutUpdates=粘贴时不发出方块更新
@@ -431,6 +435,7 @@ schematica.ui.report.dont_show_again=不再显示此提示
 schematica.ui.report.open_failed=无法打开浏览器，请复制链接
 schematica.ui.report.copy_link=复制链接
 schematica.message.import.omitted_data=%s：部分导入数据无法在当前环境中安全还原，已略过：%s。详情见日志。
+schematica.message.save.nbt_unavailable=服务器未发送所有区块的完整数据，这些部分按客户端已知的数据保存。
 
 schematica.ui.files.edit_type.change_description=编辑描述
 schematica.ui.files.edit_type.remove_preview=移除预览图
