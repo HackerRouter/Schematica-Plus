@@ -22,9 +22,7 @@ import com.github.lunatrius.schematica.util.FileUtils;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
-import com.google.gson.JsonNull;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 
 /** A versioned area: its own area selections, a project origin and saved schematic versions in one directory. */
 public final class SchematicProject {
@@ -251,25 +249,21 @@ public final class SchematicProject {
 
     static SchematicProject fromJson(JsonObject data, File projectFile, boolean createPlacement) {
         Vector3i origin = point(data.get("origin"));
-        if (origin == null || !SchematicVersion.string(data, "name") || !SchematicVersion.number(data, "current_version_id")) return null;
+        if (origin == null || !SchematicVersion.string(data, "name") || !SchematicVersion.number(data, "current_version_id")
+            || !SchematicVersion.number(data, "last_pasted_version") || !data.has("selections") || !data.get("selections").isJsonObject()
+            || !data.has("last_seen_area") || !data.get("last_seen_area").isJsonArray()) return null;
         File file = projectFile.getAbsoluteFile();
         try { file = projectFile.getCanonicalFile(); } catch (IOException ignored) {}
         SchematicProject project = new SchematicProject(file.getParentFile(), file);
         project.name = data.get("name").getAsString();
         project.origin = origin;
-        JsonElement selections = data.get("selections");
-        if (selections != null && selections.isJsonObject()) project.selections = readSelections(selections.getAsJsonObject());
-        else project.selections = create(file.getParentFile(), project.name, origin).selections;
-        JsonElement seen = data.get("last_seen_area");
-        if (seen != null && seen.isJsonArray()) {
-            for (JsonElement element : seen.getAsJsonArray()) {
-                if (!element.isJsonObject()) continue;
-                JsonObject box = element.getAsJsonObject();
-                Vector3i min = point(box.get("min")), max = point(box.get("max"));
-                if (min == null || max == null) continue;
-                String boxName = SchematicVersion.string(box, "name") ? box.get("name").getAsString() : project.name;
-                project.lastSeenArea.add(new SchematicRegion(boxName, min.x, min.y, min.z, max.x, max.y, max.z));
-            }
+        project.selections = AreaSelectionLibrary.fromJson(data.getAsJsonObject("selections"));
+        for (JsonElement element : data.getAsJsonArray("last_seen_area")) {
+            if (!element.isJsonObject()) continue;
+            JsonObject box = element.getAsJsonObject();
+            Vector3i min = point(box.get("min")), max = point(box.get("max"));
+            if (min == null || max == null || !SchematicVersion.string(box, "name")) continue;
+            project.lastSeenArea.add(new SchematicRegion(box.get("name").getAsString(), min.x, min.y, min.z, max.x, max.y, max.z));
         }
         JsonElement list = data.get("versions");
         if (list != null && list.isJsonArray()) {
@@ -278,33 +272,13 @@ public final class SchematicProject {
                 if (version != null) project.versions.add(version);
             }
         }
-        if (SchematicVersion.number(data, "last_pasted_version")) project.lastPastedVersion = data.get("last_pasted_version").getAsInt();
+        project.lastPastedVersion = data.get("last_pasted_version").getAsInt();
         int id = project.versions.size() - 1;
         int stored = data.get("current_version_id").getAsInt();
         if (stored >= 0 && stored < project.versions.size()) id = stored;
         project.switchVersion(id, createPlacement);
         project.dirty = false;
         return project;
-    }
-
-    private static AreaSelectionLibrary readSelections(JsonObject saved) {
-        // Earlier project writers omitted explicit nulls required by the selection format.
-        JsonObject data = new JsonParser().parse(saved.toString()).getAsJsonObject();
-        if (!data.has("selected")) data.add("selected", JsonNull.INSTANCE);
-        if (data.has("simple") && data.get("simple").isJsonObject()) restoreNullSelectionFields(data.getAsJsonObject("simple"));
-        if (data.has("selections") && data.get("selections").isJsonArray()) {
-            for (JsonElement area : data.getAsJsonArray("selections")) {
-                if (area.isJsonObject()) restoreNullSelectionFields(area.getAsJsonObject());
-            }
-        }
-        return AreaSelectionLibrary.fromJson(data);
-    }
-
-    private static void restoreNullSelectionFields(JsonObject area) {
-        if (!area.has("selectedBox")) area.add("selectedBox", JsonNull.INSTANCE);
-        JsonElement selected = area.get("originSelected");
-        if (!area.has("origin") && selected != null && selected.isJsonPrimitive()
-            && selected.getAsJsonPrimitive().isBoolean() && !selected.getAsBoolean()) area.add("origin", JsonNull.INSTANCE);
     }
 
     static JsonObject pointJson(Vector3i point) {

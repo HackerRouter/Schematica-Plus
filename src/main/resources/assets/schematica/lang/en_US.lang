@@ -304,7 +304,6 @@ schematica.ui.material.unverified_positions=Unverified positions
 schematica.ui.material.skipped_positions=Skipped positions
 schematica.ui.conflict.title=Schematica Plus: incompatible mods
 schematica.ui.conflict.message=Schematica Plus (schematica_plus) cannot load alongside %s. Remove the original/GTNH Schematica jar, or remove Schematica Plus.
-schematica.message.download.update_client=Schematica Plus: update the client to download schematics with subregions or custom origins.
 schematica.ui.placement.custom=Custom
 
 schematica.ui.task.backend.client=Client-side capture

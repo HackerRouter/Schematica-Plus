@@ -17,9 +17,8 @@ public final class SchematicOrigin {
         return new SchematicOrigin(Math.subtractExact(worldOrigin.x, x), Math.subtractExact(worldOrigin.y, y), Math.subtractExact(worldOrigin.z, z));
     }
 
-    public SchematicOrigin restoredMinimum(int x, int y, int z, int[] savedOrigin) {
-        if (savedOrigin == null) return new SchematicOrigin(x, y, z);
-        if (savedOrigin.length != 3) throw new IllegalArgumentException("Invalid saved placement origin");
+    public SchematicOrigin restoredMinimum(int[] savedOrigin) {
+        if (savedOrigin == null || savedOrigin.length != 3) throw new IllegalArgumentException("Invalid saved placement origin");
         return minimumAt(new SchematicOrigin(savedOrigin[0], savedOrigin[1], savedOrigin[2]));
     }
 

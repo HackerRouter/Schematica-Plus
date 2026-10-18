@@ -30,27 +30,9 @@ public class PasteReplaceBehaviorConfigTest {
 
     @After public void reset() { SchematicaPlus.proxy = previousProxy; }
 
-    private static Configuration legacy(Boolean onlyAir) {
-        Configuration config = new Configuration();
-        if (onlyAir != null) config.get("tool", "pasteOnlyAir", false).set(onlyAir);
-        return config;
-    }
-
     @Test public void freshConfigUsesTheLitematicaDefault() {
-        Configuration config = legacy(null);
+        Configuration config = new Configuration();
         assertEquals(ReplaceBehavior.NONE, ConfigurationHandler.loadPasteReplaceBehavior(config));
         assertEquals("none", config.getCategory("tool").get("pasteReplaceBehavior").getString());
-    }
-
-    @Test public void legacyOnlyAirSettingsMigrateOnce() {
-        Configuration onlyAir = legacy(true);
-        assertEquals(ReplaceBehavior.NONE, ConfigurationHandler.loadPasteReplaceBehavior(onlyAir));
-        assertFalse(onlyAir.getCategory("tool").containsKey("pasteOnlyAir"));
-        Configuration replacing = legacy(false);
-        assertEquals(ReplaceBehavior.WITH_NON_AIR, ConfigurationHandler.loadPasteReplaceBehavior(replacing));
-        replacing.getCategory("tool").get("pasteReplaceBehavior").set("all");
-        replacing.get("tool", "pasteOnlyAir", true);
-        assertEquals(ReplaceBehavior.ALL, ConfigurationHandler.loadPasteReplaceBehavior(replacing));
-        assertFalse(replacing.getCategory("tool").containsKey("pasteOnlyAir"));
     }
 }

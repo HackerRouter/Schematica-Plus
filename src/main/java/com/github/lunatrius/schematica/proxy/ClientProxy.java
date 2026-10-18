@@ -75,8 +75,7 @@ public class ClientProxy extends CommonProxy {
             prop.setConfigEntryClass(GuiConfigEntries.NumberSliderEntry.class);
         }
 
-        Hotkeys.initialize(
-            event.getModConfigurationDirectory().toPath(), Minecraft.getMinecraft().mcDataDir.toPath());
+        Hotkeys.initialize(event.getModConfigurationDirectory().toPath());
     }
 
     @Override

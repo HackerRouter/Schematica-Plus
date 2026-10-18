@@ -25,7 +25,6 @@ import static org.junit.Assert.assertTrue;
 public class DownloadCompletionTest {
     private SchematicTransfer ready(ISchematic schematic) {
         SchematicTransfer transfer = new SchematicTransfer(schematic, "download.schemplus");
-        assertTrue(transfer.acceptRegionSupport(true));
         transfer.setState(SchematicTransfer.State.CHUNK);
         assertFalse(transfer.confirmChunk(0, 0, 0));
         assertEquals(SchematicTransfer.State.END_WAIT, transfer.state);
@@ -43,16 +42,6 @@ public class DownloadCompletionTest {
             assertEquals("download.schemplus", ((MessageDownloadEnd) packets.get(0)).name);
             assertEquals(SchematicTransfer.State.END, transfer.state);
         }
-    }
-
-    @Test public void legacyClientsFinishFlatDownloadsWithoutRegionSupport() throws Exception {
-        SchematicTransfer transfer = ready(new Schematic(null, 1, 1, 1));
-        assertTrue(transfer.acceptRegionSupport(false));
-        List<IMessage> packets = new ArrayList<>();
-        assertFalse(DownloadHandler.sendEnd(transfer, packets::add));
-        assertEquals(1, packets.size());
-        assertTrue(packets.get(0) instanceof MessageDownloadEnd);
-        assertEquals(SchematicTransfer.State.END, transfer.state);
     }
 
     private SchematicTransfer cachedRegions(int bytes) {

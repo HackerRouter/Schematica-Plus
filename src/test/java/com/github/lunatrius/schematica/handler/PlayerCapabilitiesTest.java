@@ -18,7 +18,6 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 public class PlayerCapabilitiesTest {
     @Rule public TemporaryFolder temporary = new TemporaryFolder();
@@ -33,11 +32,9 @@ public class PlayerCapabilitiesTest {
 
     @After public void reset() { SchematicaPlus.proxy = previousProxy; }
 
-    private MessageCapabilities advertised(boolean enabled) throws Exception {
-        boolean previous = ConfigurationHandler.remoteEditsEnabled;
+    private MessageCapabilities advertised() throws Exception {
         ByteBuf wire = Unpooled.buffer();
         try {
-            ConfigurationHandler.remoteEditsEnabled = enabled;
             Method factory = PlayerHandler.class.getDeclaredMethod("capabilities");
             factory.setAccessible(true);
             ((MessageCapabilities) factory.invoke(null)).toBytes(wire);
@@ -47,12 +44,7 @@ public class PlayerCapabilitiesTest {
             return received;
         } finally {
             wire.release();
-            ConfigurationHandler.remoteEditsEnabled = previous;
         }
-    }
-
-    @Test public void disabledEditsStillAdvertiseProtocolSoRequestsReachServerRejection() throws Exception {
-        assertTrue(advertised(false).supportsRemoteEdit);
     }
 
     @Test public void printerLimitTravelsWithCapabilities() throws Exception {
@@ -61,9 +53,9 @@ public class PlayerCapabilitiesTest {
         try {
             ConfigurationHandler.printerEnabled = true;
             ConfigurationHandler.printerMaxRange = 24;
-            assertEquals(24, advertised(true).printerMaxRange, 0);
+            assertEquals(24, advertised().printerMaxRange, 0);
             ConfigurationHandler.printerEnabled = false;
-            assertEquals(0, advertised(true).printerMaxRange, 0);
+            assertEquals(0, advertised().printerMaxRange, 0);
         } finally {
             ConfigurationHandler.printerMaxRange = previous;
             ConfigurationHandler.printerEnabled = enabled;

@@ -13,17 +13,6 @@ import com.github.lunatrius.schematica.reference.Reference;
 
 public class FileUtils {
 
-    public static void migrateLegacyConfiguration(File configFile) throws IOException {
-        if (configFile.exists()) return;
-        for (String name : new String[] {"Schematica.cfg", "schematica.cfg"}) {
-            File legacy = new File(configFile.getAbsoluteFile().getParentFile(), name);
-            if (legacy.isFile()) {
-                Files.copy(legacy.toPath(), configFile.toPath());
-                return;
-            }
-        }
-    }
-
     public static void writeUtf8Atomically(File file, String text) throws IOException {
         Path target = file.toPath().toAbsolutePath();
         Path temporary = Files.createTempFile(target.getParent(), ".schematica-", ".tmp");

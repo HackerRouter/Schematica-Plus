@@ -120,8 +120,7 @@ public final class SubRegionPlacements {
 
     public SubRegionPlacements restore(JsonObject root) {
         if (root == null) return this;
-        int version = integer(root.get("version"));
-        if (version < 1 || version > 2 || !root.has("regions") || !root.get("regions").isJsonArray()) {
+        if (integer(root.get("version")) != 2 || !root.has("regions") || !root.get("regions").isJsonArray()) {
             throw new IllegalArgumentException("Invalid subregion placement data");
         }
         JsonArray entries = root.getAsJsonArray("regions");
@@ -140,10 +139,6 @@ public final class SubRegionPlacements {
             boolean enabled = bool(entry.get("enabled")), rendering = bool(entry.get("rendering")), ignore = bool(entry.get("ignoreEntities"));
             validate(position, rotation, mirror, locks);
             for (Region region : regions) if (region.name().equals(name)) {
-                if (version == 1) {
-                    SchematicOrigin pivot = vector(region.pivot, region.rotation(rotation).mirror(mirror).operations(), false);
-                    position = position.atMinimum(pivot.x, pivot.y, pivot.z);
-                }
                 result = result.replace(new Region(region, position, rotation, mirror, enabled, rendering, ignore, locks));
                 break;
             }

@@ -42,12 +42,10 @@ public final class SchematicVersion {
 
     static SchematicVersion fromJson(JsonObject data) {
         Vector3i offset = SchematicProject.point(data.get("area_offset"));
-        if (offset == null || !string(data, "name") || !string(data, "file_name")) return null;
-        String name = data.get("name").getAsString();
-        String description = string(data, "description") ? data.get("description").getAsString() : name;
-        int version = number(data, "version") ? data.get("version").getAsInt() : 0;
-        long time = number(data, "timestamp") ? data.get("timestamp").getAsLong() : 0;
-        return new SchematicVersion(name, data.get("file_name").getAsString(), description, offset, version, time);
+        if (offset == null || !string(data, "name") || !string(data, "file_name") || !string(data, "description")
+            || !number(data, "version") || !number(data, "timestamp")) return null;
+        return new SchematicVersion(data.get("name").getAsString(), data.get("file_name").getAsString(), data.get("description").getAsString(),
+            offset, data.get("version").getAsInt(), data.get("timestamp").getAsLong());
     }
 
     static boolean string(JsonObject data, String key) {

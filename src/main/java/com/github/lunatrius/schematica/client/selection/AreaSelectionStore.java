@@ -10,13 +10,13 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
 import com.github.lunatrius.schematica.client.selection.AreaSelectionLibrary.Area;
+import com.github.lunatrius.schematica.internal.lunatriuscore.util.vector.Vector3i;
 import com.github.lunatrius.schematica.reference.Reference;
 import com.github.lunatrius.schematica.util.FileUtils;
 
@@ -28,7 +28,6 @@ import com.google.gson.JsonParser;
 /**
  * Litematica's SelectionManager storage: every normal selection is a JSON file in a directory tree, as in
  * area_selections(_per_world); the world's modes, simple selection and selected file stay in the settings file.
- * Selections of older versions (kept inside the settings) are moved to files on the first save.
  */
 public final class AreaSelectionStore {
     private static final int MAX_DEPTH = 8;
@@ -49,20 +48,16 @@ public final class AreaSelectionStore {
         Map<String, Area> byPath = new HashMap<>();
         load(directory, "", 0, byPath);
         JsonObject data = previous == null || !previous.isJsonObject() ? null : previous.getAsJsonObject();
-        if (data != null && data.has("version") && data.get("version").getAsInt() == 6) {
+        if (data != null) {
             JsonElement selected = data.get("selected");
             library.restoreState(data, selected == null || selected.isJsonNull() ? null : byPath.get(selected.getAsString()));
-        } else if (data == null && library.areas().isEmpty() && AreaSelectionLibrary.defaultMode == AreaSelectionLibrary.Mode.SIMPLE) {
+        } else if (library.areas().isEmpty() && AreaSelectionLibrary.defaultMode == AreaSelectionLibrary.Mode.SIMPLE) {
             // defaultSelectionMode: a new world starts in Simple mode with its one box at 0, 0, 0
             library.setMode(AreaSelectionLibrary.Mode.SIMPLE);
-        } else if (data != null || library.areas().isEmpty()) {
-            AreaSelectionLibrary legacy = AreaSelectionLibrary.fromJson(data);
-            Area selected = null;
-            for (Area area : new ArrayList<>(legacy.areas())) {
-                Area adopted = library.adopt(area);
-                if (area == legacy.normalSelection()) selected = adopted;
-            }
-            library.adoptSettings(legacy, selected);
+        } else if (library.areas().isEmpty()) {
+            Area area = library.create(AreaSelectionLibrary.DEFAULT_NAME, new Vector3i(), new Vector3i());
+            library.setGuide(area, false);
+            library.select(area);
         }
     }
 

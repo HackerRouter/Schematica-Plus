@@ -2,7 +2,6 @@ package com.github.lunatrius.schematica.client.selection;
 
 import com.github.lunatrius.schematica.internal.lunatriuscore.util.vector.Vector3i;
 import com.github.lunatrius.schematica.world.storage.RegionSelection;
-import com.google.gson.JsonObject;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -56,7 +55,5 @@ public class AreaOriginTest {
         assertNull(AreaSelectionLibrary.fromJson(restored.toJson()).selected().manualOrigin());
         assertThrows(IllegalArgumentException.class, () -> library.setOrigin(area, new Vector3i(0, 256, 0)));
         assertEquals(new Vector3i(40, 80, 50), area.origin());
-        JsonObject version3 = library.toJson(); version3.addProperty("version", 3);
-        assertNull(AreaSelectionLibrary.fromJson(version3).selected().manualOrigin());
     }
 }

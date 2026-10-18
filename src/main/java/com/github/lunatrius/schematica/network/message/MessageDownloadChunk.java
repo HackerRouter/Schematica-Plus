@@ -31,7 +31,7 @@ public class MessageDownloadChunk implements IMessage, IMessageHandler<MessageDo
     public int baseZ;
 
     public short[][][] blocks;
-    /** 16 bits for EndlessIDs extended metadata; the high bytes travel after the entities, so older readers skip them. */
+    /** 16 bits for EndlessIDs extended metadata; the high bytes travel after the entities. */
     public short[][][] metadata;
     public List<TileEntity> tileEntities;
     public List<Entity> entities;
@@ -116,7 +116,7 @@ public class MessageDownloadChunk implements IMessage, IMessageHandler<MessageDo
         final NBTTagCompound compound2 = ByteBufUtils.readTag(buf);
         this.entities = NBTHelper.readEntitiesFromCompound(compound2, this.entities);
 
-        if (buf.isReadable() && buf.readBoolean()) {
+        if (buf.readBoolean()) {
             for (int x = 0; x < Constants.SchematicChunk.WIDTH; x++) {
                 for (int y = 0; y < Constants.SchematicChunk.HEIGHT; y++) {
                     for (int z = 0; z < Constants.SchematicChunk.LENGTH; z++) {

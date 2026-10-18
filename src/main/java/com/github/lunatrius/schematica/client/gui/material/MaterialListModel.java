@@ -168,9 +168,6 @@ public final class MaterialListModel<T> {
                 boolean reverse = Boolean.parseBoolean(parts[1]);
                 sort = parsed;
                 descending = reverse;
-            } else if (value.startsWith("NAME_") || value.startsWith("SIZE_")) {
-                sort = value.startsWith("NAME_") ? Sort.NAME : Sort.TOTAL;
-                descending = value.endsWith("DESC");
             }
         } catch (IllegalArgumentException | IndexOutOfBoundsException ignored) {}
     }

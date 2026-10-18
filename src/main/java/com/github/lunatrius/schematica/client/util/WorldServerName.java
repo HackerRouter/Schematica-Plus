@@ -15,10 +15,6 @@ public class WorldServerName {
      * @param mc {@link Minecraft}
      * @return {@link String} world name or server name
      */
-    public static String worldServerName(Minecraft mc) {
-        return worldServerName(mc, mc.theWorld);
-    }
-
     public static String worldServerName(Minecraft mc, World world) {
         String WorldOrServerName;
         if (mc.isSingleplayer()) {

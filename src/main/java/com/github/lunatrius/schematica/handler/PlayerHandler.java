@@ -24,13 +24,12 @@ public class PlayerHandler {
             ConfigurationHandler.saveEnabled,
             ConfigurationHandler.loadEnabled);
         capabilities.printerMaxRange = ConfigurationHandler.printerEnabled ? PrinterRange.clamp(ConfigurationHandler.printerMaxRange) : 0;
-        capabilities.supportsRemoteEdit = true;
         capabilities.supportsAccuratePlacement = ConfigurationHandler.accuratePlacementEnabled;
         return capabilities;
     }
 
     private static String key(MessageCapabilities c) {
-        return c.isPrinterEnabled + "," + c.isSaveEnabled + "," + c.isLoadEnabled + "," + c.supportsRemoteEdit + "," + c.supportsAccuratePlacement + "," + c.printerMaxRange;
+        return c.isPrinterEnabled + "," + c.isSaveEnabled + "," + c.isLoadEnabled + "," + c.supportsAccuratePlacement + "," + c.printerMaxRange;
     }
 
     @SubscribeEvent

@@ -15,7 +15,7 @@ import com.github.lunatrius.schematica.util.SchematicLimits;
 import io.netty.buffer.ByteBuf;
 
 public final class DownloadGeometry {
-    public static final DownloadGeometry LEGACY = new DownloadGeometry(SchematicOrigin.ZERO, Collections.emptyList());
+    public static final DownloadGeometry EMPTY = new DownloadGeometry(SchematicOrigin.ZERO, Collections.emptyList());
 
     public final SchematicOrigin origin;
     public final List<SchematicRegion> regions;
@@ -30,10 +30,6 @@ public final class DownloadGeometry {
         return new DownloadGeometry(schematic.getOrigin(), schematic.getRegions());
     }
 
-    public boolean requiresSupport() {
-        return !origin.isZero() || !regions.isEmpty();
-    }
-
     public void validate(int width, int height, int length) {
         SchematicLimits.volume(width, height, length);
         Set<String> names = new HashSet<>();
@@ -46,7 +42,6 @@ public final class DownloadGeometry {
     }
 
     public static DownloadGeometry read(ByteBuf buf) {
-        if (!buf.isReadable()) return LEGACY;
         if (buf.readUnsignedByte() != 1) throw new IllegalArgumentException("Unsupported download geometry");
         SchematicOrigin origin = new SchematicOrigin(buf.readInt(), buf.readInt(), buf.readInt());
         int count = buf.readUnsignedShort();

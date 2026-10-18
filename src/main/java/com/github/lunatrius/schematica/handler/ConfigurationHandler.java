@@ -3,7 +3,6 @@ package com.github.lunatrius.schematica.handler;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayDeque;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Queue;
 import java.util.Set;
@@ -11,7 +10,6 @@ import java.util.Set;
 import net.minecraft.block.Block;
 import net.minecraft.init.Blocks;
 import net.minecraft.item.Item;
-import net.minecraftforge.common.config.ConfigCategory;
 import net.minecraftforge.common.config.Configuration;
 import net.minecraftforge.common.config.Property;
 
@@ -23,10 +21,8 @@ import com.github.lunatrius.schematica.tool.PlacementDeletionMode;
 import com.github.lunatrius.schematica.tool.ReplaceBehavior;
 import com.github.lunatrius.schematica.tool.WorldEditJob;
 import com.github.lunatrius.schematica.util.BlockGroups;
-import com.github.lunatrius.schematica.util.FileUtils;
 
 import cpw.mods.fml.client.event.ConfigChangedEvent;
-import cpw.mods.fml.common.LoaderException;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.registry.GameData;
 
@@ -130,11 +126,6 @@ public class ConfigurationHandler {
 
     public static void init(File configFile) {
         if (configuration == null) {
-            try {
-                FileUtils.migrateLegacyConfiguration(configFile);
-            } catch (IOException e) {
-                throw new LoaderException("Cannot migrate the Schematica configuration to " + configFile + ": " + e);
-            }
             configuration = new Configuration(configFile, VERSION);
             loadConfiguration();
         }
@@ -253,10 +244,6 @@ public class ConfigurationHandler {
     }
 
     private static void loadPrinter(ConfigReader printer) {
-        ConfigCategory category = configuration.getCategory(Names.Config.Category.PRINTER);
-        // Replaced by placeBlocksPerTick and placeInAir
-        category.remove("placeInstantly");
-        category.remove("placeAdjacent");
         Property range = printer.label("printerWorkRange", configuration.get(Names.Config.Category.PRINTER, "printerWorkRange", 0.0));
         range.setMinValue(0.0).setMaxValue(PrinterRange.MAX);
         printerWorkRange = PrinterRange.clamp(range.getDouble(0));
@@ -352,19 +339,11 @@ public class ConfigurationHandler {
         statusInfoHudAuto = overlays.flag("statusInfoHudAuto", true);
     }
 
-    /**
-     * Litematica's pasteReplaceBehavior. A legacy pasteOnlyAir setting is converted once: only-air becomes None and
-     * the old default, which pasted non-air blocks over anything, becomes With non-air.
-     */
+    /** Litematica's pasteReplaceBehavior. */
     static ReplaceBehavior loadPasteReplaceBehavior(Configuration config) {
-        ConfigCategory tool = config.getCategory(Names.Config.Category.TOOL);
-        Property legacy = tool.get("pasteOnlyAir");
-        boolean migrate = legacy != null && !tool.containsKey("pasteReplaceBehavior");
         Property property = config.get(Names.Config.Category.TOOL, "pasteReplaceBehavior", ReplaceBehavior.NONE.value);
         property.setLanguageKey("litematica.config.generic.name.pasteReplaceBehavior");
         property.setValidValues(ReplaceBehavior.names());
-        if (migrate) property.set((legacy.getBoolean(false) ? ReplaceBehavior.NONE : ReplaceBehavior.WITH_NON_AIR).value);
-        if (legacy != null) tool.remove("pasteOnlyAir");
         ReplaceBehavior behavior = ReplaceBehavior.parse(property.getString());
         property.set(behavior.value);
         return behavior;

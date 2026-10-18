@@ -24,13 +24,13 @@ public class SchematicOriginTest {
         }
     }
 
-    @Test public void reloadAndLegacyRestoreUseTheCorrectCoordinateMeaning() {
+    @Test public void reloadAndRestoreUseTheCorrectCoordinateMeaning() {
         SchematicOrigin previous = new SchematicOrigin(2, 1, -4);
         SchematicOrigin next = new SchematicOrigin(10, 3, -7);
         SchematicOrigin world = previous.atMinimum(100, 60, -200);
-        assertArrayEquals(new int[] {92, 58, -197}, next.restoredMinimum(100, 60, -200, world.coordinates()).coordinates());
-        assertArrayEquals(new int[] {100, 60, -200}, next.restoredMinimum(100, 60, -200, null).coordinates());
-        assertThrows(IllegalArgumentException.class, () -> next.restoredMinimum(0, 0, 0, new int[2]));
+        assertArrayEquals(new int[] {92, 58, -197}, next.restoredMinimum(world.coordinates()).coordinates());
+        assertThrows(IllegalArgumentException.class, () -> next.restoredMinimum(null));
+        assertThrows(IllegalArgumentException.class, () -> next.restoredMinimum(new int[2]));
     }
 
     @Test public void completeTurnsAndMirrorsRestoreOutsideOriginsWithoutMutation() {

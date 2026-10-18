@@ -26,10 +26,9 @@ final class SchematicSourceIndex {
         this.updated = updated;
     }
 
-    static SchematicSourceIndex prepare(File root, File source, File target) throws IOException {
-        File file = new File(root, "LoadedSchematics.json");
+    static SchematicSourceIndex prepare(File file, File root, File source, File target) throws IOException {
         if (!Files.exists(file.toPath(), LinkOption.NOFOLLOW_LINKS)) return new SchematicSourceIndex(file, null, null);
-        if (!file.getCanonicalFile().equals(file.getAbsoluteFile())) throw new SchematicBrowserModel.FileOperationException("index");
+        if (!file.getCanonicalFile().equals(new File(file.getAbsoluteFile().getParentFile().getCanonicalFile(), file.getName()))) throw new SchematicBrowserModel.FileOperationException("index");
         byte[] original = Files.readAllBytes(file.toPath());
         try {
             JsonElement parsed = new JsonParser().parse(new String(original, StandardCharsets.UTF_8));

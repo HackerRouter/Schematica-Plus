@@ -53,20 +53,10 @@ public class PlacementSettingsTest {
         }
     }
 
-    @Test public void legacySessionsKeepTheirExistingEnclosingOutlineAndVisibilityMeaning() {
-        PlacementSettings legacy = PlacementSettings.fromJson(null);
-        assertTrue(legacy.enabled);
-        assertTrue(legacy.enclosingBox);
-        assertFalse(legacy.locked);
-        assertEquals(0, legacy.coordinateLocks);
-        assertFalse(legacy.renders(false));
-        assertTrue(legacy.renders(true));
-        assertFalse(PlacementSettings.DEFAULT.enclosingBox);
-    }
-
     @Test public void invalidSavedSettingsFailWithoutChangingDefaults() {
         JsonObject version = PlacementSettings.DEFAULT.toJson(); version.addProperty("version", 2);
         assertThrows(IllegalArgumentException.class, () -> PlacementSettings.fromJson(version));
+        assertThrows(IllegalArgumentException.class, () -> PlacementSettings.fromJson(null));
         for (String key : new String[] {"enabled", "locked", "enclosingBox", "coordinateLocks", "version"}) {
             JsonObject missing = PlacementSettings.DEFAULT.toJson(); missing.remove(key);
             assertThrows(IllegalArgumentException.class, () -> PlacementSettings.fromJson(missing));

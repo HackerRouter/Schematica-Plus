@@ -113,25 +113,9 @@ public class SchematicProjectTest {
         assertEquals("first\nsecond", restored.currentVersionDescription());
     }
 
-    @Test public void oldProjectFilesRestoreOmittedNullsWithoutChangingTheirInput() {
+    @Test public void missingSelectedManualOriginIsRejected() {
         SchematicProject project = project();
-        project.selections().setMode(AreaSelectionLibrary.Mode.NORMAL);
-        project.selections().selectBox(project.selections().selected(), null);
-        project.selections().select(null);
-        Vector3i manual = new Vector3i(12, 70, -4);
-        project.selections().setOrigin(project.selections().simpleSelection(), manual);
-        JsonObject data = new JsonParser().parse(new GsonBuilder().create().toJson(project.toJson())).getAsJsonObject();
-        String before = data.toString();
-        SchematicProject restored = SchematicProject.fromJson(data, project.projectFile(), false);
-        assertNull(restored.selections().selected());
-        assertNull(restored.selections().areas().get(0).selectedBox());
-        assertEquals(manual, restored.selections().simpleSelection().origin());
-        assertEquals(before, data.toString());
-    }
-
-    @Test public void missingSelectedManualOriginIsStillRejected() {
-        SchematicProject project = project();
-        JsonObject data = new JsonParser().parse(new GsonBuilder().create().toJson(project.toJson())).getAsJsonObject();
+        JsonObject data = new JsonParser().parse(new GsonBuilder().serializeNulls().create().toJson(project.toJson())).getAsJsonObject();
         data.getAsJsonObject("selections").getAsJsonObject("simple").addProperty("originSelected", true);
         try {
             SchematicProject.fromJson(data, project.projectFile(), false);

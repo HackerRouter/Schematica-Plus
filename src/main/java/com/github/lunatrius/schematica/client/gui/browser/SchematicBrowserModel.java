@@ -17,13 +17,16 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 import com.github.lunatrius.schematica.util.FileUtils;
+import com.github.lunatrius.schematica.util.PlusDataFiles;
 
 public final class SchematicBrowserModel {
 
     private final Path root;
     private final Predicate<String> filter;
+    private final Supplier<File> sessionIndex;
     private Path directory;
     private List<Entry> entries = Collections.emptyList();
     /** The files listed instead of the directory (favorites, recent), or null. */
@@ -35,7 +38,12 @@ public final class SchematicBrowserModel {
 
     /** A browser listing directories and the files whose names the filter accepts. */
     public SchematicBrowserModel(File root, Predicate<String> filter) throws IOException {
+        this(root, filter, () -> PlusDataFiles.file("LoadedSchematics.json"));
+    }
+
+    SchematicBrowserModel(File root, Predicate<String> filter, Supplier<File> sessionIndex) throws IOException {
         this.filter = filter;
+        this.sessionIndex = sessionIndex;
         this.root = root.getCanonicalFile().toPath();
         this.directory = this.root;
     }
@@ -135,7 +143,7 @@ public final class SchematicBrowserModel {
         Path target = destination(source, name);
         if (source.equals(target) && entry.name().equals(name)) return source.toFile();
         requireAbsent(target);
-        SchematicSourceIndex update = SchematicSourceIndex.prepare(root.toFile(), source.toFile(), target.toFile());
+        SchematicSourceIndex update = SchematicSourceIndex.prepare(sessionIndex.get(), root.toFile(), source.toFile(), target.toFile());
         Files.move(source, target);
         try {
             update.save();

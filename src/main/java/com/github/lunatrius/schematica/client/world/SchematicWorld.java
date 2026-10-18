@@ -37,7 +37,6 @@ import com.github.lunatrius.schematica.api.SchematicRegion;
 import com.github.lunatrius.schematica.client.gui.material.MaterialList;
 import com.github.lunatrius.schematica.client.gui.placement.PlacementTransform;
 import com.github.lunatrius.schematica.compat.VisualAdapters;
-import com.github.lunatrius.schematica.handler.ConfigurationHandler;
 import com.github.lunatrius.schematica.handler.VisualSettings;
 import com.github.lunatrius.schematica.internal.lunatriuscore.util.vector.Vector3f;
 import com.github.lunatrius.schematica.internal.lunatriuscore.util.vector.Vector3i;
@@ -198,8 +197,6 @@ public class SchematicWorld extends World {
         this.position.set(minimum.x, minimum.y, minimum.z);
         this.transformOperations.clear();
         this.transformOperations.addAll(operations);
-        rotationStateX = composed.world.rotationStateX; rotationStateY = composed.world.rotationStateY; rotationStateZ = composed.world.rotationStateZ;
-        flipStateX = composed.world.flipStateX; flipStateY = composed.world.flipStateY; flipStateZ = composed.world.flipStateZ;
         renderingLayer = Math.min(renderingLayer, getHeight() - 1);
         for (TileEntity tile : schematic.getTileEntities()) bindTileEntity(tile);
         for (TileEntity tile : schematic.getTileEntities()) validateTileEntity(tile);
@@ -276,13 +273,6 @@ public class SchematicWorld extends World {
     public boolean isRenderingEntities = false;
     /** Whether to paste block NBT (tile entity data) when pasting this schematic. */
     public boolean isPastingBlockNBT = true;
-    public int rotationState;
-    public int rotationStateX;
-    public int rotationStateY;
-    public int rotationStateZ;
-    public int flipStateX;
-    public int flipStateY;
-    public int flipStateZ;
 
     /** The directory this schematic was loaded from (for persistence). */
     public File sourceDirectory;
@@ -705,11 +695,6 @@ public class SchematicWorld extends World {
                         .getBlockMetadata(tileEntity.xCoord, tileEntity.yCoord, tileEntity.zCoord);
                     schematicFlipped.setTileEntity(tileEntity.xCoord, tileEntity.yCoord, tileEntity.zCoord, tileEntity);
                 }
-                flipStateX++;
-                if (flipStateX > 1) {
-                    flipStateX = 0;
-                }
-
                 break;
             case SOUTH: {
                 for (int y = 0; y < height; y++) {
@@ -727,11 +712,6 @@ public class SchematicWorld extends World {
                         .getBlockMetadata(tileEntity.xCoord, tileEntity.yCoord, tileEntity.zCoord);
                     schematicFlipped.setTileEntity(tileEntity.xCoord, tileEntity.yCoord, tileEntity.zCoord, tileEntity);
                 }
-                flipStateZ++;
-                if (flipStateZ > 1) {
-                    flipStateZ = 0;
-                }
-
                 break;
             }
             case UP:
@@ -750,11 +730,6 @@ public class SchematicWorld extends World {
                         .getBlockMetadata(tileEntity.xCoord, tileEntity.yCoord, tileEntity.zCoord);
                     schematicFlipped.setTileEntity(tileEntity.xCoord, tileEntity.yCoord, tileEntity.zCoord, tileEntity);
                 }
-                flipStateY++;
-                if (flipStateY > 1) {
-                    flipStateY = 0;
-                }
-
                 break;
             default:
                 Reference.logger.debug("Incorrect direction given to flip function!");
@@ -794,11 +769,6 @@ public class SchematicWorld extends World {
                     schematicRotated.setTileEntity(tileEntity.xCoord, tileEntity.yCoord, tileEntity.zCoord, tileEntity);
                 }
 
-                rotationStateX++;
-                if (rotationStateX > 3) {
-                    rotationStateX = 0;
-                }
-
                 this.schematic = schematicRotated;
 
                 refreshChests();
@@ -828,11 +798,6 @@ public class SchematicWorld extends World {
                     schematicRotated.setTileEntity(tileEntity.xCoord, tileEntity.yCoord, tileEntity.zCoord, tileEntity);
                 }
 
-                rotationStateY++;
-                if (rotationStateY > 3) {
-                    rotationStateY = 0;
-                }
-
                 this.schematic = schematicRotated;
 
                 refreshChests();
@@ -859,10 +824,6 @@ public class SchematicWorld extends World {
                     schematicRotated.setTileEntity(tileEntity.xCoord, tileEntity.yCoord, tileEntity.zCoord, tileEntity);
                 }
 
-                rotationStateZ++;
-                if (rotationStateZ > 3) {
-                    rotationStateZ = 0;
-                }
                 this.schematic = schematicRotated;
 
                 refreshChests();

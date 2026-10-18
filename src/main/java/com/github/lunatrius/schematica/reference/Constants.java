@@ -47,10 +47,4 @@ public final class Constants {
         public static final int MINIMUM_COORD = -30000000;
         public static final int MAXIMUM_COORD = +30000000;
     }
-
-    public static final class Files {
-
-        // + .json
-        public static final String Coordinates = "Coordinates";
-    }
 }

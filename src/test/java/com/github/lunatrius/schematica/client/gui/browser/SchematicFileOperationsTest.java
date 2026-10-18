@@ -22,9 +22,13 @@ public class SchematicFileOperationsTest {
     @Rule public TemporaryFolder temporary = new TemporaryFolder();
 
     private SchematicBrowserModel browser(File root) throws IOException {
-        SchematicBrowserModel model = new SchematicBrowserModel(root);
+        SchematicBrowserModel model = new SchematicBrowserModel(root, SchematicBrowserModel::supported, this::index);
         model.refresh();
         return model;
+    }
+
+    private File index() {
+        return new File(temporary.getRoot(), "LoadedSchematics.json");
     }
 
     private File write(File root, String name, byte[] bytes) throws IOException {
@@ -128,7 +132,7 @@ public class SchematicFileOperationsTest {
     @Test public void renameUpdatesEveryMatchingSessionWithoutChangingPlacementState() throws IOException {
         File root = temporary.newFolder();
         write(root, "a.schemplus", new byte[] {9});
-        File index = write(root, "LoadedSchematics.json", ("{\"server@0\":[{\"filename\":\"a.schemplus\","
+        File index = write(temporary.getRoot(), "LoadedSchematics.json", ("{\"server@0\":[{\"filename\":\"a.schemplus\","
             + "\"directory\":\"\",\"displayName\":\"custom\",\"transforms\":[\"RX\"],\"X\":42,\"future\":true}],"
             + "\"server@1\":[{\"filename\":\"a.schemplus\"},{\"filename\":\"other.schemplus\"}]}")
             .getBytes(StandardCharsets.UTF_8));
@@ -151,7 +155,7 @@ public class SchematicFileOperationsTest {
         File root = temporary.newFolder();
         File original = write(root, "a.schematic", new byte[] {1});
         byte[] invalid = "broken {".getBytes(StandardCharsets.UTF_8);
-        File index = write(root, "LoadedSchematics.json", invalid);
+        File index = write(temporary.getRoot(), "LoadedSchematics.json", invalid);
         SchematicBrowserModel model = browser(root);
         try {
             model.rename(model.entries().get(0), "b.schematic");
@@ -167,8 +171,8 @@ public class SchematicFileOperationsTest {
     @Test public void refusesToOverwriteAnIndexChangedAfterPreparation() throws IOException {
         File root = temporary.newFolder();
         File source = write(root, "a.schematic", new byte[] {1});
-        File index = write(root, "LoadedSchematics.json", "{}".getBytes(StandardCharsets.UTF_8));
-        SchematicSourceIndex update = SchematicSourceIndex.prepare(root, source, new File(root, "b.schematic"));
+        File index = write(temporary.getRoot(), "LoadedSchematics.json", "{}".getBytes(StandardCharsets.UTF_8));
+        SchematicSourceIndex update = SchematicSourceIndex.prepare(index, root, source, new File(root, "b.schematic"));
         byte[] changed = "{\"new\":[]}".getBytes(StandardCharsets.UTF_8);
         Files.write(index.toPath(), changed);
         try {
@@ -181,7 +185,7 @@ public class SchematicFileOperationsTest {
     @Test public void renameRetainsUnplacedSourceRecordsAndPlacementLayerSettings() throws IOException {
         File root = temporary.newFolder();
         write(root, "source.litematic", new byte[] {1});
-        File index = write(root, "LoadedSchematics.json", ("{\"dimension0\":[{\"filename\":\"source.litematic\",\"sourceOnly\":true}],"
+        File index = write(temporary.getRoot(), "LoadedSchematics.json", ("{\"dimension0\":[{\"filename\":\"source.litematic\",\"sourceOnly\":true}],"
             + "\"dimension1\":[{\"filename\":\"source.litematic\",\"layerMode\":true,\"layer\":7}]}").getBytes(StandardCharsets.UTF_8));
         SchematicBrowserModel model = browser(root);
         model.rename(model.entries().get(0), "renamed.litematic");

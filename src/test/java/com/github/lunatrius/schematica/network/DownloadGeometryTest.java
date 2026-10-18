@@ -10,9 +10,7 @@ import com.github.lunatrius.schematica.api.ISchematic;
 import com.github.lunatrius.schematica.api.SchematicOrigin;
 import com.github.lunatrius.schematica.api.SchematicRegion;
 import com.github.lunatrius.schematica.network.message.MessageDownloadBegin;
-import com.github.lunatrius.schematica.network.message.MessageDownloadBeginAck;
 import com.github.lunatrius.schematica.network.transfer.DownloadGeometry;
-import com.github.lunatrius.schematica.network.transfer.SchematicTransfer;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -49,7 +47,6 @@ public class DownloadGeometryTest {
             received.validate(1024, 4, 4);
             assertFalse(buf.isReadable());
             assertEquals(256, received.regions.size());
-            assertTrue(received.requiresSupport());
             assertArrayEquals(sent.origin.coordinates(), received.origin.coordinates());
             for (int i = 0; i < 256; i++) {
                 SchematicRegion a = sent.regions.get(i), b = received.regions.get(i);
@@ -61,24 +58,7 @@ public class DownloadGeometryTest {
         } finally { buf.release(); }
     }
 
-    @Test public void legacyHeaderAndAcknowledgementRemainCompatible() {
-        ByteBuf buf = Unpooled.buffer();
-        try {
-            DownloadGeometry geometry = DownloadGeometry.read(buf);
-            assertFalse(geometry.requiresSupport());
-            assertTrue(geometry.origin.isZero());
-            assertTrue(geometry.regions.isEmpty());
-            MessageDownloadBeginAck legacy = new MessageDownloadBeginAck();
-            legacy.fromBytes(buf);
-            assertFalse(legacy.supportsGeometry);
-            new MessageDownloadBeginAck().toBytes(buf);
-            MessageDownloadBeginAck current = new MessageDownloadBeginAck();
-            current.fromBytes(buf);
-            assertTrue(current.supportsGeometry);
-        } finally { buf.release(); }
-    }
-
-    @Test public void beginPacketCarriesGeometryAfterTheLegacyPrefix() {
+    @Test public void beginPacketCarriesGeometry() {
         DownloadGeometry geometry = new DownloadGeometry(new SchematicOrigin(5, -7, 9),
             Collections.singletonList(new SchematicRegion("part", 1, 1, 1, 2, 2, 2)));
         ByteBuf buf = Unpooled.buffer();
@@ -92,29 +72,7 @@ public class DownloadGeometryTest {
             assertArrayEquals(geometry.origin.coordinates(), received.geometry.origin.coordinates());
             assertEquals("part", received.geometry.regions.get(0).name);
             assertFalse(buf.isReadable());
-            buf.clear().writeShort(-1).writeShort(7).writeShort(8).writeShort(9);
-            received.fromBytes(buf);
-            assertEquals(7, received.width);
-            assertEquals(8, received.height);
-            assertEquals(9, received.length);
-            assertFalse(received.geometry.requiresSupport());
         } finally { buf.release(); }
-    }
-
-    @Test public void unsupportedClientsCannotSilentlyLoseGeometry() {
-        SchematicTransfer plain = new SchematicTransfer(schematic(DownloadGeometry.LEGACY), "plain");
-        assertTrue(plain.acceptGeometrySupport(false));
-        for (DownloadGeometry geometry : Arrays.asList(
-            new DownloadGeometry(new SchematicOrigin(1, 0, 0), Collections.emptyList()),
-            new DownloadGeometry(SchematicOrigin.ZERO, Collections.singletonList(new SchematicRegion("part", 0, 0, 0, 0, 0, 0))))) {
-            SchematicTransfer compatible = new SchematicTransfer(schematic(geometry), "current");
-            assertTrue(compatible.acceptGeometrySupport(true));
-            assertFalse(compatible.cancelled);
-            SchematicTransfer legacy = new SchematicTransfer(schematic(geometry), "legacy");
-            assertFalse(legacy.acceptGeometrySupport(false));
-            assertTrue(legacy.cancelled);
-            assertFalse(legacy.acceptGeometrySupport(true));
-        }
     }
 
     @Test public void invalidRegionBoundsNamesAndAllocationSizesAreRejected() {
@@ -125,8 +83,8 @@ public class DownloadGeometryTest {
             Collections.singletonList(a)).validate(1, 4, 4));
         assertThrows(IllegalArgumentException.class, () -> new DownloadGeometry(SchematicOrigin.ZERO,
             Collections.singletonList(a.offset(-1, 0, 0))).validate(4, 4, 4));
-        assertThrows(IllegalArgumentException.class, () -> DownloadGeometry.LEGACY.validate(0, 1, 1));
-        assertThrows(IllegalArgumentException.class, () -> DownloadGeometry.LEGACY.validate(32767, 32767, 32767));
+        assertThrows(IllegalArgumentException.class, () -> DownloadGeometry.EMPTY.validate(0, 1, 1));
+        assertThrows(IllegalArgumentException.class, () -> DownloadGeometry.EMPTY.validate(32767, 32767, 32767));
         assertThrows(IllegalArgumentException.class, () -> new DownloadGeometry(SchematicOrigin.ZERO, Collections.nCopies(257, a)));
     }
 

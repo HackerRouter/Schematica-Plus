@@ -15,8 +15,7 @@ public class MessageCapabilities implements IMessage, IMessageHandler<MessageCap
     public boolean isPrinterEnabled;
     public boolean isSaveEnabled;
     public boolean isLoadEnabled;
-    public boolean supportsWorldMove = true;
-    public boolean supportsRemoteEdit, supportsAccuratePlacement;
+    public boolean supportsAccuratePlacement;
     public double printerMaxRange;
 
     public MessageCapabilities() {
@@ -34,9 +33,7 @@ public class MessageCapabilities implements IMessage, IMessageHandler<MessageCap
         this.isPrinterEnabled = buf.readBoolean();
         this.isSaveEnabled = buf.readBoolean();
         this.isLoadEnabled = buf.readBoolean();
-        supportsWorldMove = buf.isReadable() && buf.readBoolean();
-        supportsRemoteEdit = buf.isReadable() && buf.readBoolean();
-        supportsAccuratePlacement = buf.isReadable() && buf.readBoolean();
+        supportsAccuratePlacement = buf.readBoolean();
         printerMaxRange = PrinterRange.clamp(buf.readDouble());
     }
 
@@ -45,8 +42,6 @@ public class MessageCapabilities implements IMessage, IMessageHandler<MessageCap
         buf.writeBoolean(this.isPrinterEnabled);
         buf.writeBoolean(this.isSaveEnabled);
         buf.writeBoolean(this.isLoadEnabled);
-        buf.writeBoolean(supportsWorldMove);
-        buf.writeBoolean(supportsRemoteEdit);
         buf.writeBoolean(supportsAccuratePlacement);
         buf.writeDouble(printerMaxRange);
     }
@@ -70,17 +65,16 @@ public class MessageCapabilities implements IMessage, IMessageHandler<MessageCap
         SchematicPrinter.INSTANCE.setEnabled(message.isPrinterEnabled);
         SchematicaPlus.proxy.isSaveEnabled = message.isSaveEnabled;
         SchematicaPlus.proxy.isLoadEnabled = message.isLoadEnabled;
-        SchematicaPlus.proxy.supportsWorldMove = message.supportsWorldMove;
-        SchematicaPlus.proxy.supportsRemoteEdit = message.supportsRemoteEdit;
+        SchematicaPlus.proxy.supportsWorldMove = true;
+        SchematicaPlus.proxy.supportsRemoteEdit = true;
         SchematicaPlus.proxy.supportsAccuratePlacement = message.supportsAccuratePlacement;
         SchematicaPlus.proxy.printerMaxRange = message.printerMaxRange;
 
         Reference.logger.info(
-            "Server capabilities{printer={}, save={}, load={}, remoteEdit={}, accuratePlacement={}}",
+            "Server capabilities{printer={}, save={}, load={}, accuratePlacement={}}",
             message.isPrinterEnabled,
             message.isSaveEnabled,
             message.isLoadEnabled,
-            message.supportsRemoteEdit,
             message.supportsAccuratePlacement);
     }
 }

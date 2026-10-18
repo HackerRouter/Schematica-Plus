@@ -65,7 +65,7 @@ public class ExtendedMetadataTest {
         assertEquals(316, entry.getInteger(LitematicExport.META_KEY));
     }
 
-    @Test public void downloadedChunksCarryTheHighByteAndStillReadOldPayloads() {
+    @Test public void downloadedChunksCarryTheHighByte() {
         Schematic schematic = new Schematic(null, 16, 16, 16);
         schematic.setBlock(1, 2, 3, frame, 316);
         MessageDownloadChunk message =
@@ -76,12 +76,5 @@ public class ExtendedMetadataTest {
             new MessageDownloadChunk();
         read.fromBytes(buffer.copy());
         assertEquals(316, read.metadata[1][2][3] & 0xffff);
-
-        // an older sender writes no trailer: the low byte is all there is
-        ByteBuf old = buffer.copy(0, buffer.writerIndex() - 1 - 4096);
-        MessageDownloadChunk legacy =
-            new MessageDownloadChunk();
-        legacy.fromBytes(old);
-        assertEquals(60, legacy.metadata[1][2][3] & 0xffff);
     }
 }

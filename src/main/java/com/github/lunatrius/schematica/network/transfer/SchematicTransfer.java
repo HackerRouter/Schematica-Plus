@@ -2,7 +2,6 @@ package com.github.lunatrius.schematica.network.transfer;
 
 import com.github.lunatrius.schematica.api.ISchematic;
 import com.github.lunatrius.schematica.reference.Constants;
-import com.github.lunatrius.schematica.world.storage.SchematicCopies;
 
 public class SchematicTransfer {
 
@@ -40,8 +39,6 @@ public class SchematicTransfer {
     public int retries = 0;
     public volatile boolean cancelled;
 
-    /** The client can restore independent regions; their payload is sent after the chunks. */
-    public boolean regionSupport;
     public byte[] regionPayload;
     public int regionSent;
 
@@ -56,18 +53,6 @@ public class SchematicTransfer {
         this.width = schematic.getWidth();
         this.height = schematic.getHeight();
         this.length = schematic.getLength();
-    }
-
-    public boolean acceptGeometrySupport(boolean supported) {
-        if (!supported && DownloadGeometry.of(this.schematic).requiresSupport()) this.cancelled = true;
-        return !this.cancelled;
-    }
-
-    /** Older Plus clients cannot restore independent (overlapping) regions; they get the update message. */
-    public boolean acceptRegionSupport(boolean supported) {
-        regionSupport = supported;
-        if (!supported && SchematicCopies.independent(this.schematic)) this.cancelled = true;
-        return !this.cancelled;
     }
 
     public boolean confirmChunk(final int chunkX, final int chunkY, final int chunkZ) {

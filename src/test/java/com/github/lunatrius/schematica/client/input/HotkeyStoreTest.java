@@ -8,10 +8,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.stream.Stream;
 
-import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.google.gson.JsonPrimitive;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -20,39 +18,6 @@ import static org.junit.Assert.*;
 
 public class HotkeyStoreTest {
     @Rule public TemporaryFolder temporary = new TemporaryFolder();
-    @Test public void renamedPrinterKeyRetainsItsChordAndSettingsAcrossSaves() throws Exception {
-        Path file = temporary.getRoot().toPath().resolve("hotkeys.json");
-        Hotkey old = new Hotkey("workingSwitch", new Hotkey.Settings(), 66);
-        old.settings.action = Hotkey.Action.RELEASE; old.settings.allowExtra = true;
-        new HotkeyStore(file).save(Collections.singletonList(old));
-        Hotkey renamed = new Hotkey("printerWorkingSwitch", new Hotkey.Settings());
-        HotkeyStore store = new HotkeyStore(file);
-        assertTrue(store.load(Collections.singletonList(renamed)));
-        assertEquals(old.keys(), renamed.keys()); assertEquals(old.settings, renamed.settings);
-        store.save(Collections.singletonList(renamed));
-        String text = new String(Files.readAllBytes(file), StandardCharsets.UTF_8);
-        assertFalse(text.contains("\"workingSwitch\"")); assertTrue(text.contains("\"printerWorkingSwitch\""));
-        Hotkey reloaded = new Hotkey("printerWorkingSwitch", new Hotkey.Settings());
-        assertTrue(new HotkeyStore(file).load(Collections.singletonList(reloaded)));
-        assertEquals(old.keys(), reloaded.keys()); assertEquals(old.settings, reloaded.settings);
-    }
-
-    @Test public void explicitNewPrinterBindingWinsOverThePreviousName() throws Exception {
-        Path file = temporary.getRoot().toPath().resolve("hotkeys.json");
-        new HotkeyStore(file).save(Arrays.asList(new Hotkey("workingSwitch", new Hotkey.Settings(), 66),
-            new Hotkey("printerWorkingSwitch", new Hotkey.Settings(), 67)));
-        String saved = new String(Files.readAllBytes(file), StandardCharsets.UTF_8);
-        JsonObject data = new JsonParser().parse(saved).getAsJsonObject();
-        JsonObject entries = data.getAsJsonObject("hotkeys");
-        JsonObject old = new JsonParser().parse(entries.get("printerWorkingSwitch").toString()).getAsJsonObject();
-        JsonArray keys = new JsonArray(); keys.add(new JsonPrimitive(66));
-        old.add("keys", keys); entries.add("workingSwitch", old);
-        Files.write(file, data.toString().getBytes(StandardCharsets.UTF_8));
-        Hotkey renamed = new Hotkey("printerWorkingSwitch", new Hotkey.Settings());
-        assertTrue(new HotkeyStore(file).load(Collections.singletonList(renamed)));
-        assertEquals(Collections.singletonList(67), renamed.keys());
-    }
-
     @Test public void chordsAndAllAdvancedSettingsSurviveRestartAndReset() throws Exception {
         Path file = temporary.getRoot().toPath().resolve("hotkeys.json");
         Hotkey key = new Hotkey("action", new Hotkey.Settings(), 50);

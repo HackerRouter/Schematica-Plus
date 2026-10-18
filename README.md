@@ -94,9 +94,7 @@ item placement without Plus on the server. Install a matching Plus version on th
 server for full-NBT remote edits, world MOVE and the accurate-placement protocol.
 Server configuration and player permissions still apply.
 
-On first launch, an existing `Schematica.cfg` is copied to `schematica_plus.cfg`
-if the new file does not exist. Hotkeys are stored separately in
-`config/schematica_plus_hotkeys.json`; customized legacy bindings migrate once.
+Hotkeys are stored separately in `config/schematica_plus_hotkeys.json`.
 
 ## Quick start and default controls
 
@@ -143,9 +141,9 @@ use the adjacent face by default and target inside the block while sneaking.
   selections have one box. Corners/Expand modes, picking, grabbing, nudging,
   growing/shrinking and area analysis are available.
 - Normal selections are individual JSON files that can be organized in folders.
-  By default they live under `schematics/area_selections_per_world/`; disable
-  `areaSelectionsPerWorld` for a shared `schematics/area_selections/` directory.
-  Existing selection-library data migrates on save.
+  By default they live under `config/schematica_plus/area_selections_per_world/`;
+  disable `areaSelectionsPerWorld` for a shared
+  `config/schematica_plus/area_selections/` directory.
 - Placements have independent origins, rotations, mirrors, subregion transforms,
   enable/render/entity switches, coordinate locks and enclosing boxes. Sessions
   preserve source references and placement settings per world/server/dimension.
@@ -210,10 +208,9 @@ configuration.
 
 Paste uses `pasteReplaceBehavior`: **None** replaces only existing air, **All** also
 clears destination blocks where the schematic has air, and **With non-air** only
-pastes non-air schematic blocks. Fresh configurations default to None. The older
-`pasteOnlyAir` setting migrates once. `pasteWithoutUpdates` defaults off; when on,
-direct placement suppresses normal block/neighbor update hooks, but does not freeze
-normal ticks or arbitrary mod logic.
+pastes non-air schematic blocks. Fresh configurations default to None.
+`pasteWithoutUpdates` defaults off; when on, direct placement suppresses normal
+block/neighbor update hooks, but does not freeze normal ticks or arbitrary mod logic.
 
 On other servers, the rate-limited command fallback cannot transfer general NBT,
 suppress updates or provide MOVE. It waits for native server command replies and stops on errors or unconfirmed

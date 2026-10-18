@@ -12,6 +12,11 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 
 public class TileUpdateDataTest {
+    private static NBTTagCompound stored(NBTTagCompound packet) {
+        packet.setString("Protocol", "1");
+        return TileUpdateData.combine("test.Tile", packet, new NBTTagCompound());
+    }
+
     @Test public void skipsForeignModStreamsWithoutLosingNamedAdapterData() throws Exception {
         NBTTagCompound packet = TileUpdateData.capture("test.Tile",
             new S35PacketUpdateTileEntity(0, 0, 0, 64, new NBTTagCompound()));
@@ -24,19 +29,20 @@ public class TileUpdateDataTest {
         assertEquals(adapters, TileUpdateData.adapters(tag, "test.Tile"));
     }
 
-    @Test public void keepsAdaptersSeparateAndReadsLegacyPackets() throws Exception {
-        NBTTagCompound legacy = TileUpdateData.capture("test.Tile",
+    @Test public void keepsAdaptersSeparateAndRejectsUnwrappedPackets() throws Exception {
+        NBTTagCompound packet = TileUpdateData.capture("test.Tile",
             new S35PacketUpdateTileEntity(0, 0, 0, 7, new NBTTagCompound()));
+        packet.setString("Protocol", "1");
         NBTTagCompound adapters = new NBTTagCompound();
         NBTTagCompound adapter = new NBTTagCompound();
         adapter.setByteArray("Data", new byte[] { 1, 2, 3 });
         adapters.setTag("example:tile", adapter);
-        NBTTagCompound combined = TileUpdateData.combine("test.Tile", legacy, adapters);
-        assertEquals(7, TileUpdateData.packet(combined, "test.Tile", 4, 5, 6).func_148853_f());
-        assertEquals(7, TileUpdateData.packet(legacy, "test.Tile", 4, 5, 6).func_148853_f());
+        NBTTagCompound combined = TileUpdateData.combine("test.Tile", packet, adapters);
+        assertEquals(7, TileUpdateData.packet(combined, "test.Tile", "1", 4, 5, 6).func_148853_f());
+        assertNull(TileUpdateData.packet(packet, "test.Tile", "1", 4, 5, 6));
         assertEquals(adapters, TileUpdateData.adapters(combined, "test.Tile"));
         assertTrue(TileUpdateData.adapters(combined, "wrong.Tile").hasNoTags());
-        assertNull(TileUpdateData.packet(TileUpdateData.combine("test.Tile", null, adapters), "test.Tile", 0, 0, 0));
+        assertNull(TileUpdateData.packet(TileUpdateData.combine("test.Tile", null, adapters), "test.Tile", "1", 0, 0, 0));
     }
 
     @Test public void roundTripsUpdateTypeAndRebasesOnlyRootCoordinates() throws Exception {
@@ -50,7 +56,7 @@ public class TileUpdateDataTest {
         payload.setTag("LinkedMachine", linked);
         NBTTagCompound data = TileUpdateData.capture("test.Tile",
             new S35PacketUpdateTileEntity(1200, 70, -90, 255, payload));
-        S35PacketUpdateTileEntity packet = TileUpdateData.packet(data, "test.Tile", 2, 3, 4);
+        S35PacketUpdateTileEntity packet = TileUpdateData.packet(stored(data), "test.Tile", "1", 2, 3, 4);
         assertEquals(255, packet.func_148853_f());
         assertEquals(2, packet.func_148856_c());
         assertEquals(3, packet.func_148855_d());
@@ -71,7 +77,7 @@ public class TileUpdateDataTest {
                 throw new IOException("serialized by another mod");
             }
         };
-        S35PacketUpdateTileEntity packet = TileUpdateData.packet(TileUpdateData.capture("test.Tile", patched), "test.Tile", 0, 0, 0);
+        S35PacketUpdateTileEntity packet = TileUpdateData.packet(stored(TileUpdateData.capture("test.Tile", patched)), "test.Tile", "1", 0, 0, 0);
         assertEquals(64, packet.func_148853_f());
         assertArrayEquals(new byte[] { 4, 5 }, packet.func_148857_g().getByteArray("X"));
     }
@@ -79,12 +85,19 @@ public class TileUpdateDataTest {
     @Test public void rejectsMismatchedClassesAndUnknownVersions() throws Exception {
         NBTTagCompound data = TileUpdateData.capture("test.Tile",
             new S35PacketUpdateTileEntity(0, 0, 0, 1, new NBTTagCompound()));
-        assertNull(TileUpdateData.packet(data, "test.OtherTile", 0, 0, 0));
+        NBTTagCompound tag = stored(data);
+        assertNull(TileUpdateData.packet(tag, "test.OtherTile", "1", 0, 0, 0));
+        tag.setInteger("Version", 1);
+        assertNull(TileUpdateData.packet(tag, "test.Tile", "1", 0, 0, 0));
+        tag.setInteger("Version", 2);
         data.setInteger("Version", 2);
-        assertNull(TileUpdateData.packet(data, "test.Tile", 0, 0, 0));
+        assertNull(TileUpdateData.packet(tag, "test.Tile", "1", 0, 0, 0));
         data.setInteger("Version", 1);
+        data.removeTag("Protocol");
+        assertNull(TileUpdateData.packet(tag, "test.Tile", "1", 0, 0, 0));
+        data.setString("Protocol", "1");
         data.setInteger("Type", 256);
-        assertNull(TileUpdateData.packet(data, "test.Tile", 0, 0, 0));
+        assertNull(TileUpdateData.packet(tag, "test.Tile", "1", 0, 0, 0));
         assertNull(TileUpdateData.capture("test.Tile", null));
     }
 

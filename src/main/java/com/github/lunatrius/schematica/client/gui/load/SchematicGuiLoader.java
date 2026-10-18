@@ -9,19 +9,15 @@ import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.MovingObjectPosition;
 import net.minecraft.util.Vec3;
-import net.minecraftforge.common.util.ForgeDirection;
 
 import com.github.lunatrius.schematica.SchematicaPlus;
 import com.github.lunatrius.schematica.client.printer.SchematicPrinter;
-import com.github.lunatrius.schematica.client.world.LegacyCoordinates;
 import com.github.lunatrius.schematica.client.world.Placements;
 import com.github.lunatrius.schematica.client.world.SchematicLibrary;
 import com.github.lunatrius.schematica.client.world.SchematicSourceData;
 import com.github.lunatrius.schematica.client.world.SchematicWorld;
 import com.github.lunatrius.schematica.handler.client.WorldHandler;
-import com.github.lunatrius.schematica.util.Coordinates;
 
-import static com.github.lunatrius.schematica.client.util.WorldServerName.worldServerName;
 
 public final class SchematicGuiLoader {
 
@@ -55,29 +51,17 @@ public final class SchematicGuiLoader {
     }
 
     public static SchematicWorld createPlacement(Minecraft minecraft, SchematicLibrary.Source<SchematicSourceData> source,
-        boolean restoreCoordinates) throws IOException {
+        boolean atLookTarget) throws IOException {
         if (minecraft.theWorld == null || minecraft.thePlayer == null || !SchematicaPlus.proxy.isLoadEnabled) {
             throw new IOException("Schematic loading is unavailable in this world");
         }
         SchematicWorld previous = Placements.selected;
         SchematicWorld schematic = Placements.create(source);
         try {
-            Coordinates coord = restoreCoordinates ? LegacyCoordinates.get(worldServerName(minecraft), schematic.name) : null;
-            if (!restoreCoordinates) {
-                Placements.moveToPlayer(schematic);
-            } else if (coord == null) {
+            if (atLookTarget) {
                 moveToLookTarget(minecraft, schematic);
             } else {
-                ForgeDirection[] axes = {ForgeDirection.EAST, ForgeDirection.UP, ForgeDirection.SOUTH};
-                int[] rotations = {coord.rotX, coord.rotY, coord.rotZ};
-                int[] flips = {coord.flipX, coord.flipY, coord.flipZ};
-                for (int axis = 0; axis < axes.length; axis++) {
-                    for (int i = 0; i < Math.floorMod(rotations[axis], 4); i++) schematic.rotate(axes[axis]);
-                }
-                for (int axis = 0; axis < axes.length; axis++) {
-                    if (Math.floorMod(flips[axis], 2) != 0) schematic.flip(axes[axis]);
-                }
-                Placements.moveMinimumTo(schematic, coord.posX, coord.posY, coord.posZ);
+                Placements.moveToPlayer(schematic);
             }
             if (GuiScreen.isShiftKeyDown()) schematic.setPlacementSettings(schematic.placementSettings().enabled(false));
             Placements.select(schematic);

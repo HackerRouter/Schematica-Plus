@@ -69,12 +69,6 @@ public final class Placements {
             (int) Math.floor(player.posY - player.yOffset), (int) Math.floor(player.posZ));
     }
 
-    public static void moveMinimumTo(SchematicWorld schematic, Integer x, Integer y, Integer z) {
-        if (schematic != null) {
-            schematic.moveMinimumTo(x, y, z);
-        }
-    }
-
     public static void remove(SchematicWorld world) {
         if (!LIBRARY.remove(world)) return;
         RendererSchematicGlobal.INSTANCE.removeRendererSchematicChunks(world);

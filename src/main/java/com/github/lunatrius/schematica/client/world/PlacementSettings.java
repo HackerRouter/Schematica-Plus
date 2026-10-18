@@ -50,8 +50,7 @@ public final class PlacementSettings {
     }
 
     public static PlacementSettings fromJson(JsonObject data) {
-        if (data == null) return DEFAULT.enclosingBox(true);
-        if (integer(data.get("version")) != 1) throw new IllegalArgumentException("Unsupported placement settings");
+        if (data == null || integer(data.get("version")) != 1) throw new IllegalArgumentException("Unsupported placement settings");
         return new PlacementSettings(bool(data.get("enabled")), bool(data.get("locked")),
             integer(data.get("coordinateLocks")), bool(data.get("enclosingBox")));
     }

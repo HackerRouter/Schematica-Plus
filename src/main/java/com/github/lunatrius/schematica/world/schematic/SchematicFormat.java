@@ -86,9 +86,6 @@ public abstract class SchematicFormat {
         if (name.endsWith(".litematic")) return FORMATS.get("Litematica").readFromNBT(tag);
         if (name.endsWith(".nbt")) return FORMATS.get("Structure").readFromNBT(tag);
         if (name.endsWith(".schem") || !tag.hasKey(Names.NBT.MATERIALS) && SpongeSchematic.isSponge(tag)) return FORMATS.get("Sponge").readFromNBT(tag);
-        if (name.endsWith(".schemplus") && !tag.hasKey(SchematicBlockIds.ENCODING)) {
-            tag.setString(SchematicBlockIds.ENCODING, SchematicBlockIds.EXTENDED);
-        }
         String format = tag.getString(Names.NBT.MATERIALS);
         SchematicFormat reader = FORMATS.get(format);
         if (reader == null) throw new IllegalArgumentException("Unsupported schematic format: " + format);

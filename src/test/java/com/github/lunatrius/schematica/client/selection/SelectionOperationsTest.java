@@ -89,18 +89,13 @@ public class SelectionOperationsTest {
         assertEquals(new Vector3i(1, 251, -2), area.first());
     }
 
-    @Test public void legacyModeDefaultsAndInvalidNewStateAreRejected() {
-        JsonObject data = AreaSelectionLibrary.fromJson(null).toJson();
-        data.addProperty("version", 4);
-        data.remove("simple"); data.remove("mode"); data.remove("cornerMode");
-        AreaSelectionLibrary migrated = AreaSelectionLibrary.fromJson(data);
-        assertEquals(Mode.NORMAL, migrated.mode());
-        assertEquals(Corner.NONE, migrated.selected().selectedCorner());
-        data = migrated.toJson();
+    @Test public void invalidSimpleSelectionAndModeAreRejected() {
+        AreaSelectionLibrary library = AreaSelectionLibrary.fromJson(null);
+        JsonObject data = library.toJson();
         data.getAsJsonObject("simple").add("selectedBox", JsonNull.INSTANCE);
         final JsonObject invalidSimple = data;
         assertThrows(IllegalArgumentException.class, () -> AreaSelectionLibrary.fromJson(invalidSimple));
-        data = migrated.toJson(); data.addProperty("mode", "unknown");
+        data = library.toJson(); data.addProperty("mode", "unknown");
         final JsonObject invalidMode = data;
         assertThrows(IllegalArgumentException.class, () -> AreaSelectionLibrary.fromJson(invalidMode));
     }

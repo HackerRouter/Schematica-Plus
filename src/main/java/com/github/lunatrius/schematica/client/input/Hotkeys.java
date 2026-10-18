@@ -3,8 +3,6 @@
 package com.github.lunatrius.schematica.client.input;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -109,10 +107,10 @@ public final class Hotkeys {
     private static Hotkey.Settings release() { Hotkey.Settings s = normal(); s.action = Hotkey.Action.RELEASE; s.exclusive = true; return s; }
     private static void add(String id, Hotkey.Settings settings, int... codes) { BY_ID.put(id, new Hotkey(id, settings, codes)); }
 
-    public static void initialize(Path configDirectory, Path gameDirectory) {
+    public static void initialize(Path configDirectory) {
         store = new HotkeyStore(configDirectory.resolve("schematica_plus_hotkeys.json"));
         try {
-            if (!store.load(ALL)) { migrate(gameDirectory.resolve("options.txt")); store.save(ALL); }
+            if (!store.load(ALL)) store.save(ALL);
         } catch (IOException error) { Reference.logger.error("Could not load hotkeys; keeping the original configuration file", error); }
         HotkeyHooks.initialize(ALL, InputHandler.INSTANCE::onHotkey, ToolManager::scroll);
         HotkeyHooks.click(SchematicRebuild::click);
@@ -121,25 +119,5 @@ public final class Hotkeys {
         if (store == null) return;
         try { store.save(ALL); }
         catch (IOException error) { Reference.logger.error("Could not save hotkeys", error); }
-    }
-
-    private static void migrate(Path options) throws IOException {
-        if (!Files.isRegularFile(options)) return;
-        Map<String, String> old = new LinkedHashMap<>();
-        old.put("save", "saveAreaAsSchematicToFile"); old.put("control", "openGuiMainMenu");
-        old.put("layerInc", "layerNext"); old.put("layerDec", "layerPrevious"); old.put("execute", "executeOperation");
-        old.put("load", "openGuiLoadedSchematics"); old.put("manipulate", "openGuiPlacementSettings");
-        for (String line : Files.readAllLines(options, StandardCharsets.UTF_8)) {
-            for (Map.Entry<String, String> entry : old.entrySet()) {
-                String prefix = "key_schematica.key." + entry.getKey() + ":";
-                if (!line.startsWith(prefix)) continue;
-                try {
-                    int code = Integer.parseInt(line.substring(prefix.length()));
-                    int previousDefault = entry.getKey().equals("save") ? Keyboard.KEY_N : entry.getKey().equals("control")
-                        ? Keyboard.KEY_M : entry.getKey().equals("execute") ? Keyboard.KEY_RETURN : 0;
-                    if (code != previousDefault) get(entry.getValue()).setKeys(code == 0 ? Collections.emptyList() : Collections.singletonList(code));
-                } catch (IllegalArgumentException error) { Reference.logger.warn("Ignoring invalid legacy hotkey: " + entry.getKey()); }
-            }
-        }
     }
 }

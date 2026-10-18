@@ -20,7 +20,7 @@ public class MessageDownloadBegin implements IMessage, IMessageHandler<MessageDo
     public int width;
     public int height;
     public int length;
-    public DownloadGeometry geometry = DownloadGeometry.LEGACY;
+    public DownloadGeometry geometry = DownloadGeometry.EMPTY;
     private boolean invalid;
 
     public MessageDownloadBegin() {}

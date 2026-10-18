@@ -151,15 +151,9 @@ public class DownloadHandler {
         }
     }
 
-    public synchronized boolean acceptBegin(EntityPlayerMP player, boolean geometry, boolean regions) {
+    public synchronized void acceptBegin(EntityPlayerMP player) {
         SchematicTransfer transfer = transferMap.get(player);
-        if (transfer == null || transfer.state != SchematicTransfer.State.BEGIN) return true;
-        if (!transfer.acceptGeometrySupport(geometry) || !transfer.acceptRegionSupport(regions)) {
-            transferMap.remove(player);
-            return false;
-        }
-        transfer.setState(SchematicTransfer.State.CHUNK_WAIT);
-        return true;
+        if (transfer != null && transfer.state == SchematicTransfer.State.BEGIN) transfer.setState(SchematicTransfer.State.CHUNK_WAIT);
     }
 
     public synchronized void acceptChunk(EntityPlayerMP player, int x, int y, int z) {
@@ -250,7 +244,6 @@ public class DownloadHandler {
     /** Sends up to eight slices of the independent region payload; returns whether slices remain to be sent. */
     private static boolean sendRegions(SchematicTransfer transfer,
         Consumer<IMessage> sender) throws IOException {
-        if (!transfer.regionSupport) return false;
         if (transfer.regionPayload == null) {
             transfer.regionPayload = SchematicAlpha.regionPayload(transfer.schematic);
         }

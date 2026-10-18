@@ -43,7 +43,6 @@ public final class AreaSelectionLibrary {
 
     /** AreaSelection's and Box's default name. */
     public static final String DEFAULT_NAME = "Unnamed";
-    private static final String OLD_SIMPLE_NAME = "Simple selection";
 
     private static Area defaultSimple() {
         Area area = new Area(UUID.randomUUID().toString(), DEFAULT_NAME);
@@ -389,7 +388,6 @@ public final class AreaSelectionLibrary {
         JsonArray entries = new JsonArray();
         for (Area area : areas) entries.add(writeArea(area));
         data.add("selections", entries);
-        for (String key : new String[] {"ax", "ay", "az", "bx", "by", "bz", "renderingGuide"}) data.remove(key);
         return data;
     }
 
@@ -409,7 +407,6 @@ public final class AreaSelectionLibrary {
         }
         entry.add("boxes", boxes);
         entry.add("selectedBox", area.selectedBox == null ? JsonNull.INSTANCE : new JsonPrimitive(area.selectedBox.name));
-        for (String key : new String[] {"boxName", "ax", "ay", "az", "bx", "by", "bz"}) entry.remove(key);
         entry.addProperty("renderingGuide", area.guide);
         JsonObject origin = new JsonObject();
         if (area.manualOrigin != null) {
@@ -424,7 +421,6 @@ public final class AreaSelectionLibrary {
     /** The world settings stored beside the selection files: modes, the simple selection and the selected file. */
     public JsonObject stateJson(String selectedFile) {
         JsonObject data = copyJson(extra);
-        data.remove("selections");
         data.addProperty("version", 6);
         data.addProperty("mode", mode.name());
         data.addProperty("cornerMode", cornerMode.name());
@@ -437,31 +433,11 @@ public final class AreaSelectionLibrary {
     public void restoreState(JsonObject data, Area selectedArea) {
         if (integer(data, "version") != 6) throw new IllegalArgumentException("Unsupported selection settings version");
         extra = copyJson(data);
-        simple = readArea(data.getAsJsonObject("simple"), 5);
+        simple = readArea(data.getAsJsonObject("simple"));
         if (simple.boxes.size() != 1 || simple.selectedBox == null) throw new IllegalArgumentException("Invalid simple selection");
-        renameOldSimple(simple);
         mode = Mode.valueOf(data.get("mode").getAsString());
         cornerMode = CornerMode.valueOf(data.get("cornerMode").getAsString());
         selected = selectedArea != null && areas.contains(selectedArea) ? selectedArea : null;
-    }
-
-    /** Takes over the modes, simple selection, unknown settings and selection of an older per-world library. */
-    public void adoptSettings(AreaSelectionLibrary legacy, Area selectedArea) {
-        extra = copyJson(legacy.extra);
-        extra.remove("selections");
-        simple = legacy.simple;
-        mode = legacy.mode;
-        cornerMode = legacy.cornerMode;
-        selected = selectedArea != null && areas.contains(selectedArea) ? selectedArea : null;
-    }
-
-    /** Adds a selection of another library to the root folder, renamed when the name is taken there. */
-    public Area adopt(Area area) {
-        if (areas.size() >= 4096) throw new IllegalArgumentException("Too many selections");
-        area.folder = "";
-        area.name = freeName(area.name, "");
-        areas.add(area);
-        return area;
     }
 
     private static JsonArray position(Vector3i point) {
@@ -484,8 +460,8 @@ public final class AreaSelectionLibrary {
     /** AreaSelection.toJson: one selection file (name, current, boxes with pos1/pos2, explicit origin) plus Plus state. */
     public static JsonObject toFile(Area area) {
         JsonObject data = copyJson(area.extra);
-        for (String key : new String[] {"id", "folder", "selectedBox", "renderingGuide", "originSelected", "selectedCorner", "boxName",
-            "ax", "ay", "az", "bx", "by", "bz", "current", "origin"}) data.remove(key);
+        for (String key : new String[] {"id", "folder", "selectedBox", "renderingGuide", "originSelected", "selectedCorner", "current",
+            "origin"}) data.remove(key);
         data.addProperty("name", area.name);
         if (area.selectedBox != null) data.addProperty("current", area.selectedBox.name);
         JsonArray boxes = new JsonArray();
@@ -549,18 +525,10 @@ public final class AreaSelectionLibrary {
             return library;
         }
         library.extra = copyJson(data);
-        if (!data.has("version")) {
-            if (data.has("selections")) throw new IllegalArgumentException("Missing selection library version");
-            Area area = library.create(DEFAULT_NAME, point(data, "a"), point(data, "b"));
-            library.setGuide(area, guide(data));
-            library.select(area);
-            return library;
-        }
-        int version = integer(data, "version");
-        if (version < 2 || version > 5) throw new IllegalArgumentException("Unsupported selection library version");
+        if (integer(data, "version") != 5) throw new IllegalArgumentException("Unsupported selection library version");
         for (JsonElement element : data.getAsJsonArray("selections")) {
             if (library.areas.size() >= 4096) throw new IllegalArgumentException("Too many selections");
-            Area checked = readArea(element.getAsJsonObject(), version);
+            Area checked = readArea(element.getAsJsonObject());
             library.uniqueName(checked.name, null, checked.folder);
             for (Area area : library.areas) if (area.id.equals(checked.id)) throw new IllegalArgumentException("Duplicate selection ID");
             library.areas.add(checked);
@@ -571,53 +539,36 @@ public final class AreaSelectionLibrary {
             for (Area area : library.areas) if (area.id.equals(selected.getAsString())) library.selected = area;
             if (library.selected == null) throw new IllegalArgumentException("Unknown selected area");
         }
-        if (version >= 5) {
-            library.simple = readArea(data.getAsJsonObject("simple"), version);
-            if (library.simple.boxes.size() != 1 || library.simple.selectedBox == null) throw new IllegalArgumentException("Invalid simple selection");
-            renameOldSimple(library.simple);
-            library.mode = Mode.valueOf(data.get("mode").getAsString());
-            library.cornerMode = CornerMode.valueOf(data.get("cornerMode").getAsString());
-        }
+        library.simple = readArea(data.getAsJsonObject("simple"));
+        if (library.simple.boxes.size() != 1 || library.simple.selectedBox == null) throw new IllegalArgumentException("Invalid simple selection");
+        library.mode = Mode.valueOf(data.get("mode").getAsString());
+        library.cornerMode = CornerMode.valueOf(data.get("cornerMode").getAsString());
         return library;
     }
 
-    /** Simple selections saved before the default became "Unnamed" keep the old default name for the area and its box. */
-    private static void renameOldSimple(Area area) {
-        if (!OLD_SIMPLE_NAME.equals(area.name)) return;
-        area.name = DEFAULT_NAME;
-        if (OLD_SIMPLE_NAME.equals(area.selectedBox.name)) area.selectedBox.name = DEFAULT_NAME;
-    }
-
-    private static Area readArea(JsonObject entry, int version) {
+    private static Area readArea(JsonObject entry) {
         Area area = new Area(UUID.fromString(entry.get("id").getAsString()).toString(), validName(entry.get("name").getAsString()));
-        if (version == 2) {
-            area.selectedBox = readBox(entry, entry.get("boxName").getAsString());
-            area.boxes.add(area.selectedBox);
-        } else {
-            for (JsonElement element : entry.getAsJsonArray("boxes")) {
-                if (area.boxes.size() >= 256) throw new IllegalArgumentException("Too many subregions");
-                JsonObject value = element.getAsJsonObject();
-                area.boxes.add(readBox(value, uniqueBoxName(area, value.get("name").getAsString(), null)));
-            }
-            JsonElement selectedBox = entry.get("selectedBox");
-            if (selectedBox == null) throw new IllegalArgumentException("Missing selected subregion");
-            if (!selectedBox.isJsonNull()) {
-                for (Box box : area.boxes) if (box.name.equals(selectedBox.getAsString())) area.selectedBox = box;
-                if (area.selectedBox == null) throw new IllegalArgumentException("Unknown selected subregion");
-            }
+        for (JsonElement element : entry.getAsJsonArray("boxes")) {
+            if (area.boxes.size() >= 256) throw new IllegalArgumentException("Too many subregions");
+            JsonObject value = element.getAsJsonObject();
+            area.boxes.add(readBox(value, uniqueBoxName(area, value.get("name").getAsString(), null)));
         }
-        if (version >= 4) {
-            JsonElement origin = entry.get("origin");
-            if (origin == null) throw new IllegalArgumentException("Missing origin state");
-            if (!origin.isJsonNull()) { area.manualOrigin = point(origin.getAsJsonObject(), ""); checkPoint(area.manualOrigin); }
-            if (!entry.get("originSelected").getAsJsonPrimitive().isBoolean()) throw new IllegalArgumentException("Invalid origin selection flag");
-            area.originSelected = entry.get("originSelected").getAsBoolean();
-            if (area.originSelected && area.manualOrigin == null) throw new IllegalArgumentException("Manual origin is disabled");
+        JsonElement selectedBox = entry.get("selectedBox");
+        if (selectedBox == null) throw new IllegalArgumentException("Missing selected subregion");
+        if (!selectedBox.isJsonNull()) {
+            for (Box box : area.boxes) if (box.name.equals(selectedBox.getAsString())) area.selectedBox = box;
+            if (area.selectedBox == null) throw new IllegalArgumentException("Unknown selected subregion");
         }
+        JsonElement origin = entry.get("origin");
+        if (origin == null) throw new IllegalArgumentException("Missing origin state");
+        if (!origin.isJsonNull()) { area.manualOrigin = point(origin.getAsJsonObject(), ""); checkPoint(area.manualOrigin); }
+        if (!entry.get("originSelected").getAsJsonPrimitive().isBoolean()) throw new IllegalArgumentException("Invalid origin selection flag");
+        area.originSelected = entry.get("originSelected").getAsBoolean();
+        if (area.originSelected && area.manualOrigin == null) throw new IllegalArgumentException("Manual origin is disabled");
         area.guide = guide(entry);
         area.extra = copyJson(entry);
         if (entry.has("folder")) area.folder = validFolder(entry.get("folder").getAsString());
-        if (version >= 5) readCorner(area, entry);
+        readCorner(area, entry);
         return area;
     }
 

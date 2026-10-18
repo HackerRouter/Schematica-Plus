@@ -51,7 +51,7 @@ public class MaterialListModelTest {
         assertEquals(8, model.progress()[0]);
     }
 
-    @Test public void numericSortAndLegacySortPreferencesRemainStable() {
+    @Test public void numericSortAndSavedSortPreferencesRemainStable() {
         MaterialListModel<String> model = new MaterialListModel<>();
         model.setEntries(Arrays.asList(entry("Beta", 20, 1, 0), entry("Alpha", 4, 4, 9)));
         // CACHE_ORDER is the default, by name while no container was scanned
@@ -63,7 +63,7 @@ public class MaterialListModelTest {
         model.sortBy(MaterialListModel.Sort.MISSING);
         assertEquals("Beta", model.visible().get(0).key);
         String saved = model.savedSort();
-        model.restoreSort("NAME_ASC");
+        model.restoreSort("MATERIAL_NAME:false");
         assertEquals("Alpha", model.visible().get(0).key);
         model.restoreSort(saved);
         assertEquals("Beta", model.visible().get(0).key);

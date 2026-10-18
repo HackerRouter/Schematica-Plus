@@ -50,31 +50,6 @@ public class AreaSelectionStoreTest {
         assertTrue(new File(areas("world"), "Unnamed.json").isFile());
     }
 
-    @Test public void migratesLegacyDataIntoFilesAndPreservesOtherWorldsAndUnknownFields() throws Exception {
-        write(settings(), "{\"world|0\":{\"ax\":1,\"ay\":60,\"az\":-3,\"bx\":20,\"by\":80,\"bz\":9,\"renderingGuide\":true,\"future\":42},\"world|-1\":{\"future\":true}}");
-        AreaSelectionStore store = new AreaSelectionStore(settings(), areas("world"), "world|0");
-        Area area = store.library().selected();
-        assertEquals(new Vector3i(1, 60, -3), area.first());
-        assertTrue(area.guide());
-        store.library().rename(area, "工厂");
-        store.library().renameBox(area, "机器");
-        store.save();
-        store.save();
-        JsonObject data = read(settings());
-        assertEquals(42, data.getAsJsonObject("world|0").get("future").getAsInt());
-        assertEquals(6, data.getAsJsonObject("world|0").get("version").getAsInt());
-        assertFalse(data.getAsJsonObject("world|0").has("selections"));
-        assertTrue(data.getAsJsonObject("world|-1").get("future").getAsBoolean());
-        JsonObject file = read(new File(areas("world"), "工厂.json"));
-        assertEquals("工厂", file.get("name").getAsString());
-        assertEquals("机器", file.get("current").getAsString());
-        assertEquals(20, file.getAsJsonArray("boxes").get(0).getAsJsonObject().getAsJsonArray("pos2").get(0).getAsInt());
-        Area restored = new AreaSelectionStore(settings(), areas("world"), "world|0").library().selected();
-        assertEquals("工厂", restored.name());
-        assertEquals("机器", restored.boxName());
-        assertEquals(new Vector3i(20, 80, 9), restored.second());
-    }
-
     @Test public void deletedAndDeselectedAreasStayGoneAndOtherWorldsKeepTheirOwnFiles() throws Exception {
         AreaSelectionStore first = new AreaSelectionStore(settings(), areas("one"), "one|0");
         first.library().select(null);

@@ -35,9 +35,6 @@ public final class PlacementSessions {
         public String displayName;
         public String filename;
         public String directory;
-        public int X, Y, Z;
-        public int RotationX, RotationY, RotationZ;
-        public int FlipX, FlipY, FlipZ;
         public boolean isActive;
         public List<String> transforms;
         public Boolean visible, entities, blockNBT, sourceOnly, layerMode;
@@ -77,9 +74,6 @@ public final class PlacementSessions {
                 entry.displayName = sw.name;
                 entry.filename = sw.sourceFilename;
                 entry.directory = sw.sourceDirectory != null ? sw.sourceDirectory.getAbsolutePath() : "";
-                entry.X = sw.position.x;
-                entry.Y = sw.position.y;
-                entry.Z = sw.position.z;
                 entry.origin = sw.originPosition().coordinates();
                 entry.subregions = sw.subregions() == null ? null : sw.subregions().toJson();
                 entry.placementSettings = sw.placementSettings().toJson();
@@ -87,12 +81,6 @@ public final class PlacementSessions {
                 entry.materialList = sw.materialList != null ? sw.materialList.toJson() : sw.materialListData;
                 entry.bb_color = sw.boxColor;
                 entry.fingerprint = sw.fingerprint == null ? null : sw.fingerprint.toJson();
-                entry.RotationX = sw.rotationStateX;
-                entry.RotationY = sw.rotationStateY;
-                entry.RotationZ = sw.rotationStateZ;
-                entry.FlipX = sw.flipStateX;
-                entry.FlipY = sw.flipStateY;
-                entry.FlipZ = sw.flipStateZ;
                 entry.isActive = (sw == Placements.selected);
                 entry.transforms = new ArrayList<>(sw.transformOperations);
                 entry.visible = sw.isRendering;
@@ -148,25 +136,15 @@ public final class PlacementSessions {
                     SchematicWorld world = Placements.LIBRARY.create(source, (data, previous) -> {
                         SchematicWorld restored = Placements.instantiate(source, data);
                         if (entry.displayName != null && !entry.displayName.trim().isEmpty()) restored.name = entry.displayName;
-                        List<String> operations = entry.transforms;
-                        if (operations == null) {
-                            operations = new ArrayList<>();
-                            int[] values = {entry.RotationX, entry.RotationY, entry.RotationZ, entry.FlipX, entry.FlipY, entry.FlipZ};
-                            String[] axes = {"X", "Y", "Z", "x", "y", "z"};
-                            for (int i = 0; i < values.length; i++) {
-                                for (int j = 0; j < Math.floorMod(values[i], i < 3 ? 4 : 2); j++) operations.add(axes[i]);
-                            }
-                        }
-                        PlacementState.applyTransforms(restored, operations);
+                        PlacementState.applyTransforms(restored, entry.transforms);
                         restored.restoreSubregions(entry.subregions);
-                        SchematicOrigin minimum = restored.getSchematic().getOrigin()
-                            .restoredMinimum(entry.X, entry.Y, entry.Z, entry.origin);
+                        SchematicOrigin minimum = restored.getSchematic().getOrigin().restoredMinimum(entry.origin);
                         restored.position.set(minimum.x, minimum.y, minimum.z);
-                        if (entry.visible != null) restored.isRendering = entry.visible;
-                        if (entry.entities != null) restored.isRenderingEntities = entry.entities;
-                        if (entry.blockNBT != null) restored.isPastingBlockNBT = entry.blockNBT;
-                        restored.isRenderingLayer = Boolean.TRUE.equals(entry.layerMode);
-                        if (entry.layer != null) restored.renderingLayer = Math.max(0, Math.min(entry.layer, restored.getHeight() - 1));
+                        restored.isRendering = entry.visible;
+                        restored.isRenderingEntities = entry.entities;
+                        restored.isPastingBlockNBT = entry.blockNBT;
+                        restored.isRenderingLayer = entry.layerMode;
+                        restored.renderingLayer = Math.max(0, Math.min(entry.layer, restored.getHeight() - 1));
                         restored.setPlacementSettings(PlacementSettings.fromJson(entry.placementSettings));
                         restored.grid.fromJson(entry.grid);
                         restored.materialListData = entry.materialList;

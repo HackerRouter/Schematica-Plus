@@ -171,25 +171,6 @@ public class SubRegionPlacementsTest {
         }
     }
 
-    @Test public void migratesOldMinimumCornerPlacementsWithoutMovingTheirBlocks() {
-        SchematicRegion box = new SchematicRegion("A", 0, 0, 0, 2, 3, 4);
-        SubRegionPlacements old = model(SchematicOrigin.ZERO, box);
-        SubRegionPlacements current = modelWithPivot(SchematicOrigin.ZERO, new SchematicOrigin(2, 3, 4), box);
-        for (int r = 0; r < 4; r++) for (int m = 0; m < 3; m++) {
-            SubRegionPlacements.Region before = old.get("A").position(new SchematicOrigin(11, -4, 8)).rotation(r).mirror(m).locks(5);
-            JsonObject saved = old.replace(before).select("A").toJson();
-            saved.addProperty("version", 1);
-            SubRegionPlacements migrated = current.restore(saved);
-            SchematicRegion expected = before.bounds(), actual = migrated.get("A").bounds();
-            assertArrayEquals(new int[] {expected.minX, expected.minY, expected.minZ, expected.maxX, expected.maxY, expected.maxZ},
-                new int[] {actual.minX, actual.minY, actual.minZ, actual.maxX, actual.maxY, actual.maxZ});
-            assertEquals(5, migrated.get("A").locks);
-            assertEquals("A", migrated.selected);
-            assertEquals(2, migrated.toJson().get("version").getAsInt());
-            assertEquals(migrated.toJson(), current.restore(migrated.toJson()).toJson());
-        }
-    }
-
     @Test public void legacyFilesExposeOneEditableFullRegion() {
         SubRegionPlacements legacy = model(SchematicOrigin.ZERO);
         assertEquals(1, legacy.regions().size());

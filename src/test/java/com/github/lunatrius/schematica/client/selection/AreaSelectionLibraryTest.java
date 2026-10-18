@@ -8,7 +8,6 @@ import com.github.lunatrius.schematica.client.selection.AreaSelectionLibrary.Are
 import com.github.lunatrius.schematica.internal.lunatriuscore.util.vector.Vector3i;
 
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -57,17 +56,14 @@ public class AreaSelectionLibraryTest {
         assertEquals("Pipes", restored.areas().get(1).selectedBox().name());
     }
 
-    @Test public void migratesVersionTwoAndPreservesUnknownSubregionFields() {
-        JsonObject legacy = new JsonParser().parse("{\"version\":2,\"selected\":\"00000000-0000-0000-0000-000000000001\",\"selections\":[{\"id\":\"00000000-0000-0000-0000-000000000001\",\"name\":\"Factory\",\"boxName\":\"Machines\",\"ax\":1,\"ay\":64,\"az\":-3,\"bx\":4,\"by\":70,\"bz\":-9,\"renderingGuide\":true,\"future\":42}]}").getAsJsonObject();
-        AreaSelectionLibrary library = AreaSelectionLibrary.fromJson(legacy);
-        assertEquals("Machines", library.selected().selectedBox().name());
-        assertEquals(new Vector3i(4, 70, -9), library.selected().second());
-        JsonObject entry = library.toJson().getAsJsonArray("selections").get(0).getAsJsonObject();
-        assertEquals(42, entry.get("future").getAsInt());
-        JsonObject data = library.toJson();
-        data.getAsJsonArray("selections").get(0).getAsJsonObject().getAsJsonArray("boxes").get(0).getAsJsonObject().addProperty("futureBox", true);
-        assertTrue(AreaSelectionLibrary.fromJson(data).toJson().getAsJsonArray("selections").get(0).getAsJsonObject()
-            .getAsJsonArray("boxes").get(0).getAsJsonObject().get("futureBox").getAsBoolean());
+    @Test public void preservesUnknownSelectionAndSubregionFields() {
+        JsonObject data = AreaSelectionLibrary.fromJson(null).toJson();
+        JsonObject entry = data.getAsJsonArray("selections").get(0).getAsJsonObject();
+        entry.addProperty("future", 42);
+        entry.getAsJsonArray("boxes").get(0).getAsJsonObject().addProperty("futureBox", true);
+        JsonObject saved = AreaSelectionLibrary.fromJson(data).toJson().getAsJsonArray("selections").get(0).getAsJsonObject();
+        assertEquals(42, saved.get("future").getAsInt());
+        assertTrue(saved.getAsJsonArray("boxes").get(0).getAsJsonObject().get("futureBox").getAsBoolean());
     }
     @Test public void selectionsAndCopiesKeepIndependentCornersNamesAndVisibility() {
         AreaSelectionLibrary library = new AreaSelectionLibrary();
@@ -126,7 +122,7 @@ public class AreaSelectionLibraryTest {
         JsonObject valid = AreaSelectionLibrary.fromJson(null).toJson();
         valid.addProperty("version", 6);
         assertThrows(IllegalArgumentException.class, () -> AreaSelectionLibrary.fromJson(valid));
-        valid.addProperty("version", 4);
+        valid.addProperty("version", 5);
         JsonObject entry = valid.getAsJsonArray("selections").get(0).getAsJsonObject();
         JsonObject box = entry.getAsJsonArray("boxes").get(0).getAsJsonObject();
         box.addProperty("ax", 0.5);
@@ -138,16 +134,8 @@ public class AreaSelectionLibraryTest {
         assertThrows(IllegalArgumentException.class, () -> AreaSelectionLibrary.fromJson(valid));
     }
 
-    @Test public void oldSimpleSelectionNameBecomesUnnamed() {
-        JsonObject state = new AreaSelectionLibrary().stateJson(null);
-        JsonObject simple = state.getAsJsonObject("simple");
-        simple.addProperty("name", "Simple selection");
-        simple.getAsJsonArray("boxes").get(0).getAsJsonObject().addProperty("name", "Simple selection");
-        simple.addProperty("selectedBox", "Simple selection");
-        AreaSelectionLibrary library = new AreaSelectionLibrary();
-        library.restoreState(state, null);
-        assertEquals("Unnamed", library.simpleSelection().name());
-        assertEquals("Unnamed", library.simpleSelection().boxName());
+    @Test public void defaultSelectionsAreUnnamed() {
         assertEquals("Unnamed", AreaSelectionLibrary.fromJson(null).normalSelection().name());
+        assertEquals("Unnamed", new AreaSelectionLibrary().simpleSelection().name());
     }
 }
