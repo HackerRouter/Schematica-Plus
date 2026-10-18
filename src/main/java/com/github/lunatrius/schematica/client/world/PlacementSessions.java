@@ -69,7 +69,7 @@ public final class PlacementSessions {
 
             List<LoadedSchematicEntry> entries = new ArrayList<>();
             for (SchematicWorld sw : Placements.loaded) {
-                if (Placements.LIBRARY.sourceOf(sw).memory() || sw.projectVersion) continue;
+                if (Placements.LIBRARY.sourceOf(sw).memory() || sw.projectVersion || sw.sharedId != null) continue;
                 LoadedSchematicEntry entry = new LoadedSchematicEntry();
                 entry.displayName = sw.name;
                 entry.filename = sw.sourceFilename;

@@ -71,6 +71,7 @@ public final class CloudStorage {
     public File root() { return root; }
 
     public File base(String scope, UUID player) {
+        if (CloudPath.SHARED.equals(scope)) return new File(root, CloudPath.SHARED);
         return CloudPath.PUBLIC.equals(scope) ? publicBase() : new File(new File(root, player.toString()), CloudPath.PRIVATE);
     }
 
@@ -192,7 +193,26 @@ public final class CloudStorage {
         return total;
     }
 
+    public synchronized File writeShared(CloudPath path, byte[] data) throws IOException {
+        if (!CloudPath.SHARED.equals(path.scope) || path.parts().size() != 1 || !path.name().startsWith(hash(data) + ".")) {
+            throw new MessageException("schematica.message.cloud.upload_failed", path.name());
+        }
+        File target = file(path, null);
+        if (target.isFile()) return target;
+        SchematicFileSnapshot snapshot = SchematicFileSnapshot.of(path.name(), data);
+        try {
+            validator.check(snapshot);
+        } catch (IOException | RuntimeException e) {
+            throw new MessageException("schematica.message.cloud.invalid_file", path.name());
+        }
+        File base = base(CloudPath.SHARED, null);
+        if (!base.isDirectory() && !base.mkdirs()) throw new IOException("Could not create " + base);
+        snapshot.write(target, false);
+        return target;
+    }
+
     public synchronized File write(CloudPath path, UUID player, String playerName, byte[] data, long quota) throws IOException {
+        if (CloudPath.SHARED.equals(path.scope)) throw new MessageException("schematica.message.cloud.no_permission");
         if (path.isRoot() || !CloudPath.schematicName(path.name())) throw new MessageException("schematica.message.cloud.invalid_name", path.name());
         File target = file(path, player);
         if (target.exists()) throw new MessageException("schematica.message.cloud.exists", path.name());
@@ -212,6 +232,7 @@ public final class CloudStorage {
     }
 
     public synchronized void createDirectory(CloudPath path, UUID player, String playerName) throws IOException {
+        if (CloudPath.SHARED.equals(path.scope)) throw new MessageException("schematica.message.cloud.no_permission");
         if (path.isRoot()) throw new MessageException("schematica.message.cloud.invalid_name", path.name());
         File target = file(path, player);
         if (target.exists()) throw new MessageException("schematica.message.cloud.exists", path.name());
@@ -227,6 +248,7 @@ public final class CloudStorage {
     }
 
     public synchronized void delete(CloudPath path, UUID player, boolean manage) throws IOException {
+        if (CloudPath.SHARED.equals(path.scope)) throw new MessageException("schematica.message.cloud.no_permission");
         File target = file(path, player);
         if (path.isRoot() || !target.exists()) throw new MessageException("schematica.message.cloud.not_found", path.toString());
         if (!manage && !owns(path, player)) throw new MessageException("schematica.message.cloud.no_permission");

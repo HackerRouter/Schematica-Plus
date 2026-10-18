@@ -42,6 +42,7 @@ public class PlayerHandler {
                 MessageCapabilities capabilities = capabilities();
                 if (sent == null) sent = key(capabilities);
                 PacketHandler.INSTANCE.sendTo(capabilities, (EntityPlayerMP) event.player);
+                SharedPlacements.INSTANCE.joined((EntityPlayerMP) event.player);
             } catch (Exception ex) {
                 Reference.logger.error("Failed to send capabilities!", ex);
             }
@@ -78,6 +79,7 @@ public class PlayerHandler {
             NbtRequests.INSTANCE.forget(event.player);
             SelectionSaves.INSTANCE.forget(event.player);
             ServerCloud.INSTANCE.forget(event.player);
+            SharedPlacements.INSTANCE.forget(event.player);
         }
     }
 }

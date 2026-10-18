@@ -38,6 +38,7 @@ import com.github.lunatrius.schematica.client.world.PlacementSettings;
 import com.github.lunatrius.schematica.client.world.Placements;
 import com.github.lunatrius.schematica.client.world.SchematicWorld;
 import com.github.lunatrius.schematica.client.world.SubRegionPlacements;
+import com.github.lunatrius.schematica.handler.client.SharedPlacementsClient;
 import com.github.lunatrius.schematica.handler.client.WorldHandler;
 import com.github.lunatrius.schematica.reference.Constants;
 import com.github.lunatrius.schematica.reference.Reference;
@@ -117,8 +118,11 @@ public final class GuiPlacementConfiguration extends UiScreen {
             + UiTranslations.format("litematica.gui.button.schematic_placement.abbr.rendering"), mouse -> {
                 if (mouse == 0) { placement.toggleRendering(); WorldHandler.INSTANCE.saveSession(); }
             });
-        locked = toggle("litematica.gui.button.schematic_placements.locked", () -> placement.placementSettings().locked,
-            () -> configure(placement.placementSettings().locked(!placement.placementSettings().locked)));
+        locked = toggle("litematica.gui.button.schematic_placements.locked", () -> placement.placementSettings().locked, () -> {
+            if (placement.sharedId == null) configure(placement.placementSettings().locked(!placement.placementSettings().locked));
+            else if (placement.placementSettings().locked) SharedPlacementsClient.INSTANCE.requestModification(placement);
+            else SharedPlacementsClient.INSTANCE.finishModification(placement);
+        });
         locked.setTooltip(UiTranslations.format("litematica.gui.button.schematic_placement.hover.lock"));
         box = button(() -> "", mouse -> {
             if (mouse == 0) { configure(placement.placementSettings().enclosingBox(!placement.placementSettings().enclosingBox)); WorldHandler.INSTANCE.saveSession(); }

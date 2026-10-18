@@ -98,7 +98,7 @@ public final class ServerCloud {
         return Math.min(SchematicLimits.MAX_NBT_BYTES, ConfigurationHandler.cloudMaxUploadKilobytes * 1024L);
     }
 
-    private static void result(EntityPlayerMP player, int id, MessageType type, String key, Object... arguments) {
+    static void result(EntityPlayerMP player, int id, MessageType type, String key, Object... arguments) {
         String[] text = new String[Math.min(8, arguments.length)];
         for (int i = 0; i < text.length; i++) text[i] = String.valueOf(arguments[i]);
         PacketHandler.INSTANCE.sendTo(new MessageCloudResult(id, type, key, text), player);
@@ -172,6 +172,7 @@ public final class ServerCloud {
                 });
                 return;
             case DOWNLOAD:
+                if (CloudPath.SHARED.equals(path.scope) && !SharedPlacements.INSTANCE.references(path.name())) break;
                 work(done, () -> {
                     try {
                         send(player, message.id, storage().read(path, id, SchematicLimits.MAX_NBT_BYTES));
@@ -267,9 +268,9 @@ public final class ServerCloud {
             } catch (IllegalArgumentException e) {
                 throw new MessageException("schematica.message.cloud.invalid_name", message.path);
             }
-            if (!ConfigurationHandler.cloudEnabled || !mayUpload(player) || CloudPath.PUBLIC.equals(path.scope) && !mayPublish(player)) {
-                throw new MessageException("schematica.message.cloud.no_permission");
-            }
+            boolean allowed = CloudPath.SHARED.equals(path.scope) ? SharedPlacements.mayShare(player) && SharedPlacements.INSTANCE.awaiting(player, path.name())
+                : ConfigurationHandler.cloudEnabled && mayUpload(player) && (!CloudPath.PUBLIC.equals(path.scope) || mayPublish(player));
+            if (!allowed) throw new MessageException("schematica.message.cloud.no_permission");
             SliceAssembler slices = SliceAssembler.create(message.count, MessageCloudUpload.CHUNK_SIZE, (int) maxUpload());
             if (slices == null) throw new MessageException("schematica.message.cloud.too_large", path.name(), FileUtils.humanReadableByteCount(maxUpload()));
             upload = new Upload(message.id, path, slices);
@@ -293,6 +294,12 @@ public final class ServerCloud {
         String name = player.getCommandSenderName();
         worker.execute(() -> {
             try {
+                if (CloudPath.SHARED.equals(upload.path.scope)) {
+                    storage().writeShared(upload.path, upload.slices.join());
+                    result(player, upload.id, MessageType.SUCCESS, "");
+                    SharedPlacements.INSTANCE.uploaded(player, upload.path.name());
+                    return;
+                }
                 storage().write(upload.path, id, name, upload.slices.join(), quota());
                 result(player, upload.id, MessageType.SUCCESS, "schematica.message.cloud.uploaded", upload.path.name());
                 changed(player, upload.path);

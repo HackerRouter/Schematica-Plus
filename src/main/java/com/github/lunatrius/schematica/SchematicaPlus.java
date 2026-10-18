@@ -8,6 +8,7 @@ import com.github.lunatrius.schematica.client.gui.SchematicaPlusConflictExceptio
 import com.github.lunatrius.schematica.handler.DownloadHandler;
 import com.github.lunatrius.schematica.handler.QueueTickHandler;
 import com.github.lunatrius.schematica.handler.RemoteEdits;
+import com.github.lunatrius.schematica.handler.SharedPlacements;
 import com.github.lunatrius.schematica.handler.WorldEditQueue;
 import com.github.lunatrius.schematica.proxy.CommonProxy;
 import com.github.lunatrius.schematica.reference.Reference;
@@ -109,5 +110,6 @@ public class SchematicaPlus {
         WorldEditQueue.INSTANCE.clear();
         QueueTickHandler.INSTANCE.clear();
         DownloadHandler.INSTANCE.stopAll();
+        SharedPlacements.INSTANCE.clear();
     }
 }

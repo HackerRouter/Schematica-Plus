@@ -103,6 +103,12 @@ public folder shared by everyone, with upload, download, load and material list
 (`cloudEnabled`, `cloudUploadPermissionLevel`, `cloudPublicPermissionLevel`,
 `cloudManagePermissionLevel`, `cloudMaxUploadKilobytes`; uploads count against
 `playerQuotaKilobytes` on dedicated servers).
+**View Syncmatics** lists the placements shared on the server; Shift-click **Share** in
+the placement list to share one. Shared placements load automatically in their
+dimension (`sharedPlacementsAutoLoad`) and stay locked; unlocking one in its
+configuration asks the server for exclusive editing, and locking it again publishes
+the change (`sharedPlacementsEnabled`, `sharedPlacementPermissionLevel`,
+`sharedPlacementManagePermissionLevel`, `sharedPlacementsPerPlayer`).
 
 Hotkeys are stored separately in `config/schematica_plus_hotkeys.json`.
 

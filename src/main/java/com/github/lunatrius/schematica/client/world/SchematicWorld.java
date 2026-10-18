@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockRailBase;
@@ -281,6 +282,8 @@ public class SchematicWorld extends World {
     public String sourceFilename;
     /** A schematic project's checked-out version, which the world session does not save. */
     public boolean projectVersion;
+
+    public UUID sharedId;
 
     public SchematicWorld(ISchematic schematic) {
         this(schematic, (SchematicWorld) null);

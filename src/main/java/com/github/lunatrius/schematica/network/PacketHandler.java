@@ -22,6 +22,8 @@ import com.github.lunatrius.schematica.network.message.MessagePlacementIntent;
 import com.github.lunatrius.schematica.network.message.MessagePrinterAction;
 import com.github.lunatrius.schematica.network.message.MessageSaveSelection;
 import com.github.lunatrius.schematica.network.message.MessageSaveSelectionRequest;
+import com.github.lunatrius.schematica.network.message.MessageSharedRequest;
+import com.github.lunatrius.schematica.network.message.MessageSharedUpdate;
 import com.github.lunatrius.schematica.reference.Reference;
 
 import cpw.mods.fml.common.network.NetworkRegistry;
@@ -65,5 +67,7 @@ public class PacketHandler {
         INSTANCE.registerMessage(MessageCloudUpload.class, MessageCloudUpload.class, 19, Side.SERVER);
         INSTANCE.registerMessage(MessageCloudData.class, MessageCloudData.class, 20, Side.CLIENT);
         INSTANCE.registerMessage(MessageCloudResult.class, MessageCloudResult.class, 21, Side.CLIENT);
+        INSTANCE.registerMessage(MessageSharedRequest.class, MessageSharedRequest.class, 22, Side.SERVER);
+        INSTANCE.registerMessage(MessageSharedUpdate.class, MessageSharedUpdate.class, 23, Side.CLIENT);
     }
 }

@@ -346,6 +346,7 @@ schematica.message.cloud.disabled=The server does not allow schematic storage
 schematica.message.cloud.unavailable=The server could not list its schematics
 schematica.message.cloud.request_failed=The server could not complete the request
 schematica.message.cloud.timed_out=The server did not answer in time
+schematica.message.shared.limit=You can share at most %s placements
 schematica.message.edit.updates_require_singleplayer=Pasting without block updates requires singleplayer or Schematica Plus on the server. Minecraft 1.7.10 commands cannot suppress updates.
 schematica.message.edit.nbt_requires_singleplayer=Complete schematic NBT requires singleplayer or Schematica Plus on the server. Use Paste to choose a blocks-only command paste.
 schematica.ui.command_paste.title=Paste using commands?

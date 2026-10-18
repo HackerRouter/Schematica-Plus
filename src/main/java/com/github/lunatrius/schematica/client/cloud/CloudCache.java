@@ -39,10 +39,6 @@ public final class CloudCache {
         return path.resolve(new File(root(), path.scope));
     }
 
-    public static File shared(String hash, String extension) {
-        return new File(new File(root(), "shared"), hash + extension);
-    }
-
     public static boolean cached(CloudFile file) {
         return matches(file(file.path), file.size, file.hash);
     }
@@ -56,7 +52,7 @@ public final class CloudCache {
         }
     }
 
-    static synchronized String hash(File file) throws IOException {
+    public static synchronized String hash(File file) throws IOException {
         String key = file.getAbsolutePath();
         Hashed known = HASHES.get(key);
         if (known != null && known.size == file.length() && known.modified == file.lastModified()) return known.hash;

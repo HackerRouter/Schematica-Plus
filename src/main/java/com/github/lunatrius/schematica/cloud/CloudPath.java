@@ -11,7 +11,7 @@ import java.util.Objects;
 import com.github.lunatrius.schematica.util.FileUtils;
 
 public final class CloudPath {
-    public static final String PRIVATE = "private", PUBLIC = "public";
+    public static final String PRIVATE = "private", PUBLIC = "public", SHARED = "shared";
     public static final List<String> EXTENSIONS = Collections.unmodifiableList(Arrays.asList(".litematic", ".schematic", ".schemplus", ".schem", ".nbt"));
     static final int MAX_DEPTH = 16, MAX_NAME = 128;
 
@@ -24,7 +24,7 @@ public final class CloudPath {
     }
 
     public static CloudPath root(String scope) {
-        if (!PRIVATE.equals(scope) && !PUBLIC.equals(scope)) throw new IllegalArgumentException("Unknown scope");
+        if (!PRIVATE.equals(scope) && !PUBLIC.equals(scope) && !SHARED.equals(scope)) throw new IllegalArgumentException("Unknown scope");
         return new CloudPath(scope, new ArrayList<>());
     }
 

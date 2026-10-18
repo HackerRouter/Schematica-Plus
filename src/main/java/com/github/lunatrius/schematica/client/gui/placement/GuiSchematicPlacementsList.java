@@ -3,6 +3,7 @@
 package com.github.lunatrius.schematica.client.gui.placement;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import net.minecraft.client.gui.GuiScreen;
@@ -16,7 +17,9 @@ import com.github.lunatrius.schematica.client.gui.framework.UiTranslations;
 import com.github.lunatrius.schematica.client.renderer.RendererSchematicGlobal;
 import com.github.lunatrius.schematica.client.world.Placements;
 import com.github.lunatrius.schematica.client.world.SchematicWorld;
+import com.github.lunatrius.schematica.handler.client.SharedPlacementsClient;
 import com.github.lunatrius.schematica.handler.client.WorldHandler;
+import com.github.lunatrius.schematica.util.MessageType;
 
 import org.lwjgl.input.Keyboard;
 
@@ -33,11 +36,15 @@ public final class GuiSchematicPlacementsList extends GuiSchematicList<Schematic
         private final int index;
         private final List<UiButton> buttons = new ArrayList<>();
         private int buttonsStart;
+        private UiButton share;
 
         Entry(SchematicWorld world, int index) {
             this.world = world;
             this.index = index;
-            button("litematica.gui.button.schematic_placements.remove", () -> Placements.remove(world));
+            button("litematica.gui.button.schematic_placements.remove", () -> {
+                if (world.sharedId != null) SharedPlacementsClient.INSTANCE.unload(world.sharedId, true);
+                else Placements.remove(world);
+            });
             UiButton toggle = add(new UiButton(() -> UiTranslations.format("litematica.gui.button.schematic_placements.placement_enabled",
                 (world.isEnabled() ? "\u00a7a" : "\u00a7c") + UiTranslations.format(world.isEnabled() ? "options.on" : "options.off")),
                 mouse -> { if (mouse == 0 && Placements.loaded.contains(world)) { world.setPlacementSettings(world.placementSettings().enabled(!world.isEnabled()));
@@ -46,6 +53,13 @@ public final class GuiSchematicPlacementsList extends GuiSchematicList<Schematic
             button("litematica.gui.button.schematic_placements.configure", () -> {
                 mc.displayGuiScreen(new GuiPlacementConfiguration(GuiSchematicPlacementsList.this, world));
             });
+            if (SharedPlacementsClient.INSTANCE.available()) {
+                share = button("syncmatica.gui.button.share", () -> {
+                    if (!isShiftKeyDown()) addMessage(MessageType.ERROR, "syncmatica.error.share_without_shift");
+                    else SharedPlacementsClient.INSTANCE.share(world);
+                });
+                share.setEnabled(!SharedPlacementsClient.INSTANCE.shared(world));
+            }
             setTooltip(world.name, world.sourceFilename == null ? "" : world.sourceFilename);
         }
 
@@ -69,6 +83,7 @@ public final class GuiSchematicPlacementsList extends GuiSchematicList<Schematic
 
         @Override
         public void draw(UiDraw draw, int mouseX, int mouseY) {
+            if (share != null) share.setEnabled(!SharedPlacementsClient.INSTANCE.shared(world));
             boolean selected = Placements.selected == world;
             boolean hover = containsVisible(mouseX, mouseY);
             int color = selected || hover ? 0xA0707070 : index % 2 == 1 ? 0xA0101010 : 0xA0303030;
@@ -76,8 +91,23 @@ public final class GuiSchematicPlacementsList extends GuiSchematicList<Schematic
             if (selected) draw.border(bounds(), 0xFFE0E0E0);
             UiSprite.schematicFile(world.sourceFilename).draw(draw, bounds().x + 2, bounds().y + 5, false, false);
             String name = (world.isEnabled() ? "\u00a7a" : "\u00a7c") + world.name;
-            draw.text(draw.trim(name, buttonsStart - bounds().x - 24), bounds().x + 20, bounds().y + 7, 0xFFFFFFFF);
+            int textEnd = buttonsStart;
+            if (world.sharedId != null) {
+                textEnd -= 13;
+                UiSprite.SERVER.draw(draw, textEnd, bounds().y + 6, true, badge(mouseX, mouseY));
+            }
+            draw.text(draw.trim(name, textEnd - bounds().x - 24), bounds().x + 20, bounds().y + 7, 0xFFFFFFFF);
             super.draw(draw, mouseX, mouseY);
+        }
+
+        private boolean badge(int mouseX, int mouseY) {
+            return world.sharedId != null && mouseX >= buttonsStart - 13 && mouseX < buttonsStart - 2 && mouseY >= bounds().y + 6 && mouseY < bounds().y + 17;
+        }
+
+        @Override
+        public List<String> tooltip(int mouseX, int mouseY) {
+            if (badge(mouseX, mouseY)) return Collections.singletonList(UiTranslations.format("schematic_synchronizer.gui.placement.hover.server_schematic"));
+            return super.tooltip(mouseX, mouseY);
         }
 
         @Override

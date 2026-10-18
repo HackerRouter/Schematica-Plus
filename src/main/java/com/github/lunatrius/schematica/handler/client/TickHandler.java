@@ -55,6 +55,7 @@ public class TickHandler {
         DownloadHandler.INSTANCE.beginDownload(null);
         this.minecraft.func_152344_a(CommandEditQueue.INSTANCE::cancel);
         MessageCapabilities.clearPending();
+        SharedPlacementsClient.INSTANCE.clearPending();
         Reference.logger.info("Scheduling client settings reset.");
         this.isPendingReset = true;
     }
@@ -72,6 +73,7 @@ public class TickHandler {
             }
             MessageCapabilities.applyPending();
             WorldHandler.INSTANCE.updateWorld(this.minecraft);
+            SharedPlacementsClient.INSTANCE.applyPending();
             QueueTickHandler.INSTANCE.clientTick(this.minecraft.theWorld, this.minecraft.thePlayer);
             GridPlacements.INSTANCE.tick(this.minecraft);
             VerificationManager.INSTANCE.tick(this.minecraft);

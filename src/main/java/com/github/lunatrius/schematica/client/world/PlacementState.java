@@ -30,6 +30,7 @@ public final class PlacementState {
         SchematicOrigin minimum = next.getSchematic().getOrigin().minimumAt(previous.originPosition());
         next.position.set(minimum.x, minimum.y, minimum.z);
         next.name = previous.name;
+        next.sharedId = previous.sharedId;
         next.isRendering = previous.isRendering;
         next.isRenderingEntities = previous.isRenderingEntities;
         next.isPastingBlockNBT = previous.isPastingBlockNBT;

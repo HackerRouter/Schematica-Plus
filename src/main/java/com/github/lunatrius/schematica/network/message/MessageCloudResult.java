@@ -12,7 +12,7 @@ import cpw.mods.fml.common.network.simpleimpl.MessageContext;
 import io.netty.buffer.ByteBuf;
 
 public final class MessageCloudResult implements IMessage, IMessageHandler<MessageCloudResult, IMessage> {
-    public static final int CHANGED = -1;
+    public static final int CHANGED = -1, NOTICE = -2;
     public int id;
     public MessageType type;
     public String key;

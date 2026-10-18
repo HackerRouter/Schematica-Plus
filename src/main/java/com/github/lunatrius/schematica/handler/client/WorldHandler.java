@@ -35,6 +35,7 @@ public class WorldHandler {
         SchematicProjects.restoreSession(key);
         RenderLayerSettings.restore(key);
         ToolManager.restoreMode(key);
+        SharedPlacementsClient.INSTANCE.worldChanged();
     });
 
     private WorldHandler() {}

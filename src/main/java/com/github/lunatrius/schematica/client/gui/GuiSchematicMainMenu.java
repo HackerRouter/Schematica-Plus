@@ -12,6 +12,7 @@ import com.github.lunatrius.schematica.client.gui.framework.UiSprite;
 import com.github.lunatrius.schematica.client.gui.load.GuiSchematicLoad;
 import com.github.lunatrius.schematica.client.gui.browser.GuiSchematicManager;
 import com.github.lunatrius.schematica.client.gui.cloud.GuiServerSchematics;
+import com.github.lunatrius.schematica.client.gui.cloud.GuiSharedPlacements;
 import com.github.lunatrius.schematica.client.gui.placement.GuiSchematicLoadedList;
 import com.github.lunatrius.schematica.client.gui.placement.GuiSchematicPlacementsList;
 import com.github.lunatrius.schematica.client.gui.save.GuiAreaSelectionEditor;
@@ -20,6 +21,7 @@ import com.github.lunatrius.schematica.client.projects.SchematicProjects;
 import com.github.lunatrius.schematica.client.selection.AreaSelections;
 import com.github.lunatrius.schematica.handler.ConfigurationHandler;
 import com.github.lunatrius.schematica.handler.client.CloudClient;
+import com.github.lunatrius.schematica.handler.client.SharedPlacementsClient;
 import com.github.lunatrius.schematica.reference.Reference;
 import com.github.lunatrius.schematica.tool.ToolManager;
 
@@ -37,6 +39,7 @@ public final class GuiSchematicMainMenu extends UiScreen {
     private UiButton mode;
     private UiButton report;
     private UiButton cloud;
+    private UiButton shared;
 
     public GuiSchematicMainMenu(GuiScreen parent) {
         super(parent, Reference.NAME + " v" + Reference.VERSION);
@@ -65,6 +68,7 @@ public final class GuiSchematicMainMenu extends UiScreen {
         tasks = menu("task_manager", UiSprite.TASK_MANAGER, () -> mc.displayGuiScreen(new GuiTaskManager(this)));
         cloud = addButton("schematic_synchronizer.gui.button.server_schematics", () -> mc.displayGuiScreen(new GuiServerSchematics(this)))
             .setSprite(UiSprite.SERVER);
+        shared = addButton("syncmatica.gui.button.view_syncmatics", () -> mc.displayGuiScreen(new GuiSharedPlacements(this)));
         projects = menu("schematic_projects_manager", UiSprite.SCHEMATIC_PROJECTS, () -> SchematicProjects.openGui(this));
         projects.setTooltip(UiTranslations.format("litematica.gui.button.hover.schematic_projects.menu_warning").split("\n"));
         mode = root.add(new UiButton(() -> UiTranslations.format("litematica.gui.button.tool_mode", ToolManager.getCurrentMode().getDisplayName()),
@@ -83,6 +87,7 @@ public final class GuiSchematicMainMenu extends UiScreen {
         projects.setVisible(ConfigurationHandler.unhideSchematicVCS);
         projects.setEnabled(world);
         cloud.setEnabled(world && CloudClient.INSTANCE.available());
+        shared.setEnabled(world && SharedPlacementsClient.INSTANCE.available());
         if (cloud.isEnabled()) cloud.setTooltip();
         else cloud.setTooltip(UiTranslations.format("schematica.ui.cloud.unavailable"));
         mode.setEnabled(world);
@@ -107,6 +112,8 @@ public final class GuiSchematicMainMenu extends UiScreen {
         selectionMode.setBounds(12, 162, column, 20);
         config.setBounds(32 + column, 30, column, 20);
         cloud.setBounds(32 + column, 52, column, 20);
+        if (52 + 3 * column <= width) shared.setBounds(52 + 2 * column, 30, column, 20);
+        else shared.setBounds(32 + column, 74, column, 20);
         manager.setBounds(32 + column, 118, column, 20);
         tasks.setBounds(32 + column, 140, column, 20);
         projects.setBounds(32 + column, 162, column, 20);

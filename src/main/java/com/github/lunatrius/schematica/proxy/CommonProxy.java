@@ -29,6 +29,7 @@ import com.github.lunatrius.schematica.handler.DownloadHandler;
 import com.github.lunatrius.schematica.handler.NbtRequests;
 import com.github.lunatrius.schematica.handler.SelectionSaves;
 import com.github.lunatrius.schematica.handler.ServerCloud;
+import com.github.lunatrius.schematica.handler.SharedPlacements;
 import com.github.lunatrius.schematica.handler.PlayerHandler;
 import com.github.lunatrius.schematica.handler.PrinterActions;
 import com.github.lunatrius.schematica.handler.QueueTickHandler;
@@ -102,6 +103,7 @@ public abstract class CommonProxy {
         FMLCommonHandler.instance().bus().register(NbtRequests.INSTANCE);
         FMLCommonHandler.instance().bus().register(SelectionSaves.INSTANCE);
         FMLCommonHandler.instance().bus().register(ServerCloud.INSTANCE);
+        FMLCommonHandler.instance().bus().register(SharedPlacements.INSTANCE);
     }
 
     public void postInit(FMLPostInitializationEvent event) {

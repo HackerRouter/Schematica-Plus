@@ -37,6 +37,7 @@ import com.github.lunatrius.schematica.handler.client.ModInfoHandler;
 import com.github.lunatrius.schematica.handler.client.NbtRequestClient;
 import com.github.lunatrius.schematica.handler.client.OverlayHandler;
 import com.github.lunatrius.schematica.handler.client.RemoteEditClient;
+import com.github.lunatrius.schematica.handler.client.SharedPlacementsClient;
 import com.github.lunatrius.schematica.handler.client.RenderTickHandler;
 import com.github.lunatrius.schematica.handler.client.TickHandler;
 import com.github.lunatrius.schematica.handler.client.WorldHandler;
@@ -178,6 +179,7 @@ public class ClientProxy extends CommonProxy {
         WorldHandler.INSTANCE.closeSession();
         NbtRequestClient.INSTANCE.clear();
         CloudClient.INSTANCE.clear();
+        SharedPlacementsClient.INSTANCE.clear();
         clearWorldState();
     }
 
