@@ -26,6 +26,7 @@ public enum UiSprite {
     SERVER("sync_server_icon", 11, 11),
     DOWNLOADED("sync_download_icon", 11, 11),
     SHARED_PLACEMENTS("shared_placements", 14, 14, true),
+    EXPAND("preview_expand", 12, 12),
     MEMORY(186, 0, 12, 12, false),
     JSON(144, 48, 12, 12, false),
     DIRECTORY(156, 0, 12, 12, false),

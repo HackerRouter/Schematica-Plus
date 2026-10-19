@@ -84,8 +84,8 @@ public final class SchematicInfoPanel extends UiPanel {
         int size = width - 14;
         if (size <= 8) return;
         preview.setVisible(true);
-        int viewHeight = Math.min(SchematicPreview.SIZE, Math.max(32, bounds().height - reserve - 54));
-        preview.setBounds(x + 4, y, size, viewHeight + 43);
+        int viewHeight = Math.min(SchematicPreview.SIZE, Math.max(32, bounds().height - reserve - 32));
+        preview.setBounds(x + 4, y, size, viewHeight + SchematicPreviewPane.HEADER);
         preview.layout(screen.bounds());
         contentBottom = preview.bounds().bottom() + 4;
     }

@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.List;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.FontRenderer;
 import net.minecraft.util.ResourceLocation;
 
 import org.lwjgl.input.Keyboard;
@@ -15,12 +16,14 @@ import com.github.lunatrius.schematica.client.gui.framework.UiDraw;
 import com.github.lunatrius.schematica.client.gui.framework.UiInput;
 import com.github.lunatrius.schematica.client.gui.framework.UiPanel;
 import com.github.lunatrius.schematica.client.gui.framework.UiSlideSwitch;
+import com.github.lunatrius.schematica.client.gui.framework.UiSprite;
 import com.github.lunatrius.schematica.client.gui.framework.UiTranslations;
 import com.github.lunatrius.schematica.client.gui.framework.UiWidget;
 import com.github.lunatrius.schematica.handler.ConfigurationHandler;
 import com.github.lunatrius.schematica.world.schematic.SchematicFiles;
 
 final class SchematicPreviewPane extends UiPanel {
+    static final int HEADER = 21;
     private final UiInput input;
     private final boolean expanded;
     private final UiSlideSwitch mode;
@@ -35,9 +38,9 @@ final class SchematicPreviewPane extends UiPanel {
         mode = add(new UiSlideSwitch(() -> tr("image"), () -> "3D", () -> content != null && content.showModel(), value -> {
             if (content != null) content.modelSelected = value;
         }));
-        expand = add(new UiButton(() -> expanded ? UiTranslations.format("gui.back") : tr("fullscreen"), button -> {
-            if (button == 0) expandOrClose.run();
-        }));
+        expand = add(expanded ? new UiButton(() -> UiTranslations.format("gui.back"), button -> { if (button == 0) expandOrClose.run(); })
+            : new UiButton(() -> "", button -> { if (button == 0) expandOrClose.run(); }).setSprite(UiSprite.EXPAND).setBackground(false));
+        if (!expanded) expand.setTooltip(tr("fullscreen"));
         rotate = add(new UiButton(() -> tr(model() != null && model().camera.rotating ? "pause" : "resume"), button -> {
             SchematicPreview3D model = model();
             if (button == 0 && model != null) {
@@ -70,13 +73,24 @@ final class SchematicPreviewPane extends UiPanel {
     @Override public void layout(UiBounds screen) {
         if (expanded) setBounds(screen.x + 6, screen.y + 6, screen.width - 12, screen.height - 12);
         UiBounds b = bounds();
-        int pad = expanded ? 6 : 0, x = b.x + pad, y = b.y + pad, w = b.width - pad * 2;
-        int fullWidth = Math.min(w / 2, expanded ? 65 : 52);
-        mode.setBounds(x, y, w - fullWidth - 4, 18);
-        expand.setBounds(x + w - fullWidth, y, fullWidth, 18);
-        rotate.setBounds(x, y + 21, (w - 4) / 2, 18);
-        reset.setBounds(x + (w - 4) / 2 + 4, y + 21, w - (w - 4) / 2 - 4, 18);
-        viewport.setBounds(x, y + 43, w, Math.max(1, b.bottom() - pad - (y + 43)));
+        if (!expanded) {
+            mode.setBounds(b.x, b.y, b.width - 18, 18);
+            expand.setBounds(b.right() - 13, b.y + 3, 12, 12);
+            viewport.setBounds(b.x, b.y + HEADER, b.width, Math.max(1, b.height - HEADER));
+            return;
+        }
+        int pad = 6, x = b.x + pad, w = b.width - pad * 2, row = b.bottom() - pad - 20;
+        FontRenderer font = Minecraft.getMinecraft().fontRenderer;
+        int backWidth = font.getStringWidth(expand.label()) + 20, left = x;
+        if (content != null && content.image() != null && content.canModel()) {
+            mode.setBounds(left, row + 1, 80, 18);
+            left += 84;
+        }
+        int rotateWidth = Math.max(font.getStringWidth(tr("pause")), font.getStringWidth(tr("resume"))) + 20;
+        rotate.setBounds(left, row, rotateWidth, 20);
+        reset.setBounds(left + rotateWidth + 4, row, font.getStringWidth(reset.label()) + 20, 20);
+        expand.setBounds(x + w - backWidth, row, backWidth, 20);
+        viewport.setBounds(x, b.y + pad, w, Math.max(1, row - 4 - b.y - pad));
     }
 
     @Override public void draw(UiDraw draw, int mouseX, int mouseY) {
@@ -84,6 +98,8 @@ final class SchematicPreviewPane extends UiPanel {
         if (expanded) { draw.fill(bounds(), 0xFF151A20); draw.border(bounds(), 0xFF999999); }
         mode.setVisible(content.image() != null && content.canModel());
         expand.setVisible(expanded || content.canModel());
+        rotate.setVisible(expanded);
+        reset.setVisible(expanded);
         SchematicPreview3D model = model();
         rotate.setEnabled(model != null && !model.failed());
         reset.setEnabled(model != null && !model.failed());
