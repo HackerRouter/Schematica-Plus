@@ -11,15 +11,21 @@ import java.util.function.Consumer;
 import net.minecraft.client.gui.GuiScreen;
 
 import com.github.lunatrius.schematica.client.gui.framework.UiButton;
-import com.github.lunatrius.schematica.client.gui.framework.UiCheckBox;
+import com.github.lunatrius.schematica.client.gui.framework.UiDraw;
+import com.github.lunatrius.schematica.client.gui.framework.UiListModel;
+import com.github.lunatrius.schematica.client.gui.framework.UiPanel;
+import com.github.lunatrius.schematica.client.gui.framework.UiRowList;
 import com.github.lunatrius.schematica.client.gui.framework.UiScreen;
+
+import org.lwjgl.input.Keyboard;
 
 /** Picks any number of strings; OK passes the selection on, Cancel returns to the parent. */
 public final class GuiStringListSelection extends UiScreen {
     private final List<String> strings;
     private final Set<String> selected = new LinkedHashSet<>();
     private final Consumer<List<String>> consumer;
-    private final List<UiCheckBox> boxes = new ArrayList<>();
+    private final UiListModel<String> model = new UiListModel<>(22, string -> string);
+    private UiRowList<String> list;
     private UiButton ok, cancel;
 
     public GuiStringListSelection(GuiScreen parent, String title, List<String> strings, Consumer<List<String>> consumer) {
@@ -30,12 +36,8 @@ public final class GuiStringListSelection extends UiScreen {
 
     @Override
     protected void createWidgets() {
-        for (String string : strings) {
-            boxes.add(root.add(new UiCheckBox(() -> string, () -> selected.contains(string), value -> {
-                if (value) selected.add(string);
-                else selected.remove(string);
-            })));
-        }
+        list = root.add(new UiRowList<>(model, Row::new));
+        model.setEntries(strings);
         ok = addButton("malilib.gui.button.ok", () -> consumer.accept(new ArrayList<>(selected)));
         cancel = addButton("malilib.gui.button.cancel", this::closeScreen);
     }
@@ -45,13 +47,48 @@ public final class GuiStringListSelection extends UiScreen {
 
     @Override
     protected void layoutWidgets() {
-        int rows = Math.max(1, (height - 70) / 12), column = 0, row = 0;
-        for (UiCheckBox box : boxes) {
-            box.setBounds(12 + column * 170, 30 + row * 12, 164, 11);
-            if (++row >= rows) { row = 0; column++; }
-        }
+        list.setBounds(10, 30, Math.max(0, width - 20), Math.max(0, height - 64));
         int okWidth = fontRendererObj.getStringWidth(ok.label()) + 10;
-        ok.setBounds(12, height - 30, okWidth, 20);
-        cancel.setBounds(14 + okWidth, height - 30, fontRendererObj.getStringWidth(cancel.label()) + 10, 20);
+        ok.setBounds(12, height - 32, okWidth, 20);
+        cancel.setBounds(14 + okWidth, height - 32, fontRendererObj.getStringWidth(cancel.label()) + 10, 20);
+    }
+
+    private final class Row extends UiPanel {
+        private final String string;
+        private final int index;
+
+        Row(String string, int index) {
+            this.string = string;
+            this.index = index;
+        }
+
+        private void toggle() {
+            if (!selected.remove(string)) selected.add(string);
+        }
+
+        @Override
+        public void draw(UiDraw draw, int mouseX, int mouseY) {
+            boolean chosen = selected.contains(string);
+            draw.fill(bounds(), chosen || containsVisible(mouseX, mouseY) ? 0xA0707070 : index % 2 == 1 ? 0xA0101010 : 0xA0303030);
+            if (chosen) draw.border(bounds(), 0xFF90D0F0);
+            draw.shadowText(draw.trim(string, bounds().width - 4), bounds().x + 2, bounds().y + (bounds().height - 9) / 2 + 1, 0xFFFFFFFF);
+        }
+
+        @Override
+        public boolean isFocusable() { return true; }
+
+        @Override
+        public boolean mouseDown(int x, int y, int button) {
+            if (button != 0) return false;
+            toggle();
+            return true;
+        }
+
+        @Override
+        public boolean keyTyped(char character, int keyCode) {
+            if (keyCode != Keyboard.KEY_RETURN && keyCode != Keyboard.KEY_SPACE) return false;
+            toggle();
+            return true;
+        }
     }
 }

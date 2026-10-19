@@ -2,11 +2,17 @@
 // Litematica GuiConfigs and MaLiLib config rows, adapted for 1.7.10 by HackerRouter, 2026.
 package com.github.lunatrius.schematica.client.gui;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -75,6 +81,20 @@ public class GuiModConfig extends UiScreen implements HotkeyHooks.Capture {
         boolean keySearch() { return this == ALL || this == GENERIC || this == VISUALS || this == HOTKEYS; }
     }
 
+    private static final Map<String, Integer> ORDER = order();
+
+    private static Map<String, Integer> order() {
+        Map<String, Integer> order = new HashMap<>();
+        try (InputStream stream = GuiModConfig.class.getResourceAsStream("/assets/schematica_plus_litematica/config_order.txt")) {
+            if (stream == null) return order;
+            BufferedReader reader = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8));
+            for (String line; (line = reader.readLine()) != null;) if (!line.trim().isEmpty()) order.putIfAbsent(line.trim(), order.size());
+        } catch (IOException e) {
+            Reference.logger.debug("Could not read the config order", e);
+        }
+        return order;
+    }
+
     private static Tab lastTab = savedTab();
     private final List<Entry> entries = new ArrayList<>();
 
@@ -114,7 +134,9 @@ public class GuiModConfig extends UiScreen implements HotkeyHooks.Capture {
             }
         }
         for (Hotkey key : Hotkeys.ALL) if (key.toggleGroup == null) entries.add(new Entry(key));
-        entries.sort(Comparator.comparing(Entry::name, String.CASE_INSENSITIVE_ORDER));
+        entries.sort(Comparator.comparingInt((Entry entry) -> entry.tab().ordinal())
+            .thenComparingInt(entry -> ORDER.getOrDefault(entry.orderName(), Integer.MAX_VALUE))
+            .thenComparing(Entry::name, String.CASE_INSENSITIVE_ORDER));
         for (Tab value : Tab.values()) {
             UiButton button = addButton(value.key, () -> changeTab(value));
             tabs.put(value, button);
@@ -356,6 +378,7 @@ public class GuiModConfig extends UiScreen implements HotkeyHooks.Capture {
         }
 
         String name() { return key == null ? draft.property.getName() : key.translationKey(); }
+        String orderName() { return key == null ? draft.property.getName() : key.id; }
         String label() { return UiTranslations.format(ConfigTranslations.label(key == null ? draft.property.getLanguageKey() : key.translationKey())); }
         String searchText() { return name() + " " + label() + " " + category + (modified() ? " modified" : ""); }
         boolean modified() { return key == null ? draft.modified() || toggleKey != null && toggleKey.modified() : key.modified(); }

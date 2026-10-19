@@ -68,8 +68,13 @@ public class GuiSchematicMaterials extends UiScreen {
     private UiButton scope;
     private UiButton hide;
     private UiButton hud;
+    private static final String[][] EXPORT_TYPES = {
+        {"write_to_file", "litematica.gui.button.hover.material_list.write_hold_shift_for_csv"},
+        {"write_to_json", "litematica.gui.button.hover.material_list.json_hold_shift_for_missing_only"},
+        {"export_custom_json", "litematica.gui.button.hover.material_list.export_custom_json"}};
+    private static int exportType;
     private UiButton export;
-    private UiButton raw;
+    private UiButton type;
     private UiButton menu;
     private UiWidget info;
     private UiLabel progress;
@@ -117,15 +122,20 @@ public class GuiSchematicMaterials extends UiScreen {
             addMessage(MessageType.SUCCESS, 3000, "litematica.message.material_list.material_cache_cleared");
         });
         cache.setTooltip(UiTranslations.format("litematica.gui.button.hover.material_list.clear_cache").split("\\n"));
-        export = action("write_to_file", this::export);
-        export.setTooltip(UiTranslations.format("litematica.gui.button.hover.material_list.write_hold_shift_for_csv").split("\\n"));
-        raw = action("write_to_json", this::exportRaw);
-        raw.setTooltip(UiTranslations.format("litematica.gui.button.hover.material_list.json_hold_shift_for_missing_only").split("\\n"));
-        UiButton custom = action("export", () -> {
-            if (exportable()) mc.displayGuiScreen(new GuiMaterialListSave(this, list.name(), list.customItems()));
+        export = action("export", () -> {
+            if (exportType == 0) export();
+            else if (exportType == 1) exportRaw();
+            else if (exportable()) mc.displayGuiScreen(new GuiMaterialListSave(this, list.name(), list.customItems()));
         });
-        custom.setTooltip(UiTranslations.format("litematica.gui.button.hover.material_list.export_custom_json").split("\\n"));
-        secondary.addAll(Arrays.asList(clearIgnored, cache, export, raw, custom));
+        export.setTooltip(UiTranslations.format("litematica.gui.button.schematic_manager.export_as.hover"));
+        type = root.add(new UiButton(() -> UiTranslations.format(PREFIX + EXPORT_TYPES[exportType][0]), button -> {
+            exportType = Math.floorMod(exportType + (button == 1 ? -1 : 1), EXPORT_TYPES.length);
+            type.setTooltip(UiTranslations.format(EXPORT_TYPES[exportType][1]).split("\\n"));
+            updateButtons();
+            layoutWidgets();
+        }));
+        type.setTooltip(UiTranslations.format(EXPORT_TYPES[exportType][1]).split("\\n"));
+        secondary.addAll(Arrays.asList(clearIgnored, cache, export, type));
         if (NeiBridge.available()) {
             UiButton nei = addButton("schematica.nei.send", this::sendToNei);
             nei.setTooltip(UiTranslations.format("schematica.nei.send.hover").split("\\n"));
@@ -253,8 +263,7 @@ public class GuiSchematicMaterials extends UiScreen {
         boolean valid = list.validContext();
         refresh.setEnabled(valid);
         scope.setEnabled(valid);
-        export.setEnabled(valid && list.hasResult() && !rowsModel.entries().isEmpty());
-        raw.setEnabled(valid && list.hasResult() && !materials.entries().isEmpty());
+        export.setEnabled(valid && list.hasResult() && !(exportType == 0 ? rowsModel.entries() : materials.entries()).isEmpty());
         multiplier.setEnabled(valid);
     }
 

@@ -10,7 +10,7 @@ public final class UiTranslations {
     private UiTranslations() {}
 
     public static String format(String key, Object... arguments) {
-        if (!key.startsWith("litematica.") && !key.startsWith("malilib.")) return I18n.format(key, arguments);
+        if (!key.startsWith("litematica.") && !key.startsWith("malilib.")) return formatTemplate(I18n.format(key, arguments));
         return formatTemplate(StatCollector.translateToLocal(key), arguments);
     }
 
