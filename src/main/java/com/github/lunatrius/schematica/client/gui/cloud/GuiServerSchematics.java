@@ -5,8 +5,10 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.function.Consumer;
 
 import net.minecraft.client.gui.GuiScreen;
@@ -53,6 +55,7 @@ public final class GuiServerSchematics extends UiScreen {
     private CloudPath directory;
     private int revision = -1;
     private CloudFile shown;
+    private final Set<CloudPath> previewing = new HashSet<>();
     private boolean searching;
     private boolean placeOnLoad = Boolean.parseBoolean(UiState.get("create_placement_on_load", "true"));
 
@@ -62,7 +65,7 @@ public final class GuiServerSchematics extends UiScreen {
     private UiList<CloudNode> list;
     private UiTextField search;
     private UiButton home, up, createDirectory, openFolder, searchButton, back;
-    private UiButton load, materials, upload, download, publish, delete;
+    private UiButton load, materials, upload, download, publish, delete, loadPreview;
     private UiCheckBox createPlacement;
 
     public GuiServerSchematics(GuiScreen parent) {
@@ -106,6 +109,9 @@ public final class GuiServerSchematics extends UiScreen {
             ? Collections.singletonList(UiTranslations.format(PREFIX + "hover.saved_path", relative(CloudCache.file(node.file.path))))
             : Collections.singletonList(node.type == CloudNode.Type.DIRECTORY ? label(node) : node.name()));
         info = root.add(new SchematicInfoPanel(input, root, 28, this::drawInfo));
+        loadPreview = info.add(new UiButton(() -> UiTranslations.format(shown != null && previewing.contains(shown.path)
+            ? "schematica.ui.preview.downloading" : "schematica.ui.preview.load"), mouse -> { if (mouse == 0) loadPreview(); }));
+        loadPreview.setTooltip(UiTranslations.format("schematica.ui.preview.load.hover"));
         status = root.add(new UiLabel(this::storage));
         load = action("litematica.gui.button.load_schematic_to_memory", this::loadSelected);
         materials = action("litematica.gui.button.material_list", this::materialList);
@@ -225,6 +231,19 @@ public final class GuiServerSchematics extends UiScreen {
                 addMessage(MessageType.ERROR, "litematica.error.schematic_read_from_file_failed.exception", local.getName());
             }
         });
+    }
+
+    private void loadPreview() {
+        CloudFile file = selectedFile();
+        if (file == null || !previewing.add(file.path)) return;
+        CloudClient.INSTANCE.fetch(file, local -> {
+            previewing.remove(file.path);
+            if (local == null) addMessage(MessageType.ERROR, "schematica.message.cloud.download_failed", file.path.name());
+        });
+    }
+
+    private static boolean previewable(CloudFile file) {
+        return ConfigurationHandler.schematicPreview3D && file.size <= (32L << 20) || "litematic".equals(file.format);
     }
 
     private void materialList() {
@@ -397,6 +416,7 @@ public final class GuiServerSchematics extends UiScreen {
     }
 
     private void drawInfo(UiDraw draw, int x, int y, int width) {
+        loadPreview.setVisible(false);
         CloudNode node = selection();
         if (node == null) return;
         if (node.type == CloudNode.Type.DIRECTORY) {
@@ -414,6 +434,12 @@ public final class GuiServerSchematics extends UiScreen {
         String state = UiTranslations.format(PREFIX + (CloudCache.cached(file) ? "info.status_cached" : "info.status_server"));
         draw.text(draw.trim(UiTranslations.format(PREFIX + "info.file_label", FileUtils.humanReadableByteCount(file.size), state), width - 8), x, y, CloudInfo.LABEL);
         info.setContentBottom(y + 12);
-        info.preview(x, y + 24, width);
+        if (CloudCache.cached(file)) info.preview(x, y + 24, width);
+        else if (previewable(file)) {
+            loadPreview.setVisible(true);
+            loadPreview.setEnabled(!previewing.contains(file.path));
+            loadPreview.setBounds(x + 4, y + 24, width - 14, 20);
+            info.setContentBottom(y + 48);
+        }
     }
 }
