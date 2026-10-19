@@ -23,10 +23,9 @@ import com.github.lunatrius.schematica.handler.ConfigurationHandler;
 import com.github.lunatrius.schematica.world.schematic.SchematicFiles;
 
 final class SchematicPreviewPane extends UiPanel {
-    static final int HEADER = 21;
     private final UiInput input;
     private final boolean expanded;
-    private final UiSlideSwitch mode;
+    private final UiWidget mode;
     private final UiButton expand, rotate, reset;
     final Viewport viewport;
     private Content content;
@@ -35,9 +34,11 @@ final class SchematicPreviewPane extends UiPanel {
         this.input = input;
         this.expanded = expanded;
         viewport = add(new Viewport());
-        mode = add(new UiSlideSwitch(() -> tr("image"), () -> "3D", () -> content != null && content.showModel(), value -> {
+        mode = add(expanded ? new UiSlideSwitch(() -> tr("image"), () -> "3D", () -> content != null && content.showModel(), value -> {
             if (content != null) content.modelSelected = value;
-        }));
+        }) : new UiButton(() -> "", button -> {
+            if (button == 0 && content != null) content.modelSelected = !content.showModel();
+        }).setSprite(UiSprite.ENCLOSING_BOX_ENABLED).setBackground(false));
         expand = add(expanded ? new UiButton(() -> UiTranslations.format("gui.back"), button -> { if (button == 0) expandOrClose.run(); })
             : new UiButton(() -> "", button -> { if (button == 0) expandOrClose.run(); }).setSprite(UiSprite.EXPAND).setBackground(false));
         if (!expanded) expand.setTooltip(tr("fullscreen"));
@@ -54,6 +55,8 @@ final class SchematicPreviewPane extends UiPanel {
         viewport.setTooltip(tr("controls").replace("\\n", "\n").split("\n"));
         reset.setTooltip(tr("reset.hover"));
     }
+
+    private boolean switchable() { return content != null && content.image() != null && content.canModel(); }
 
     private static String tr(String name) { return UiTranslations.format("schematica.ui.preview." + name); }
 
@@ -74,15 +77,15 @@ final class SchematicPreviewPane extends UiPanel {
         if (expanded) setBounds(screen.x + 6, screen.y + 6, screen.width - 12, screen.height - 12);
         UiBounds b = bounds();
         if (!expanded) {
-            mode.setBounds(b.x, b.y, b.width - 18, 18);
-            expand.setBounds(b.right() - 13, b.y + 3, 12, 12);
-            viewport.setBounds(b.x, b.y + HEADER, b.width, Math.max(1, b.height - HEADER));
+            viewport.setBounds(b.x, b.y, b.width, b.height);
+            mode.setBounds(b.x + 2, b.y + 2, 16, 16);
+            expand.setBounds(b.right() - 16, b.y + 4, 12, 12);
             return;
         }
         int pad = 6, x = b.x + pad, w = b.width - pad * 2, row = b.bottom() - pad - 20;
         FontRenderer font = Minecraft.getMinecraft().fontRenderer;
         int backWidth = font.getStringWidth(expand.label()) + 20, left = x;
-        if (content != null && content.image() != null && content.canModel()) {
+        if (switchable()) {
             mode.setBounds(left, row + 1, 80, 18);
             left += 84;
         }
@@ -96,7 +99,12 @@ final class SchematicPreviewPane extends UiPanel {
     @Override public void draw(UiDraw draw, int mouseX, int mouseY) {
         if (content == null) return;
         if (expanded) { draw.fill(bounds(), 0xFF151A20); draw.border(bounds(), 0xFF999999); }
-        mode.setVisible(content.image() != null && content.canModel());
+        mode.setVisible(switchable());
+        if (!expanded) {
+            UiButton toggle = (UiButton) mode;
+            toggle.setSprite(content.showModel() ? UiSprite.ENCLOSING_BOX_ENABLED : UiSprite.ENCLOSING_BOX_DISABLED);
+            toggle.setTooltip(content.showModel() ? tr("image") + " / \u00a7a3D" : "\u00a7a" + tr("image") + "\u00a7r / 3D");
+        }
         expand.setVisible(expanded || content.canModel());
         rotate.setVisible(expanded);
         reset.setVisible(expanded);
@@ -175,6 +183,10 @@ final class SchematicPreviewPane extends UiPanel {
                     int side = Math.min(b.width, b.height) - 2;
                     draw.texture(image.toString(), new UiBounds(b.x + (b.width - side) / 2, b.y + (b.height - side) / 2, side, side), 0, 0, 1, 1, 1, 1);
                 }
+            }
+            if (!expanded && expand.isVisible()) {
+                UiBounds icon = expand.bounds();
+                draw.fill(new UiBounds(icon.x - 2, icon.y - 2, icon.width + 4, icon.height + 4), 0x90000000);
             }
         }
 
