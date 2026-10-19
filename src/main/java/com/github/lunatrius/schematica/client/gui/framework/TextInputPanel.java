@@ -82,8 +82,8 @@ public final class TextInputPanel extends UiPanel {
     @Override
     public void draw(UiDraw draw, int mouseX, int mouseY) {
         draw.fill(bounds(), 0xE0000000);
-        draw.border(bounds(), UiTheme.BORDER);
-        draw.text(draw.trim(title, bounds().width - 20), bounds().x + 10, bounds().y + 4, UiTheme.TEXT);
+        draw.outline(bounds(), 0xFF999999);
+        draw.shadowText(draw.trim(title, bounds().width - 20), bounds().x + 10, bounds().y + 4, 0xFFFFFFFF);
         int y = bounds().y + 76;
         for (String line : errorLines) {
             draw.text(line, bounds().x + 10, y, 0xFFFF6666);

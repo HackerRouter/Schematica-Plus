@@ -113,13 +113,13 @@ public final class MinecraftUiDraw implements UiDraw, AutoCloseable {
     @Override
     public void text(String text, int x, int y, int color) {
         prepareTextured();
-        minecraft.fontRenderer.drawStringWithShadow(text, x, y, color);
+        minecraft.fontRenderer.drawString(text, x, y, color);
     }
 
     @Override
-    public void flatText(String text, int x, int y, int color) {
+    public void shadowText(String text, int x, int y, int color) {
         prepareTextured();
-        minecraft.fontRenderer.drawString(text, x, y, color);
+        minecraft.fontRenderer.drawStringWithShadow(text, x, y, color);
     }
 
     @Override

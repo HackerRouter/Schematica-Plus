@@ -77,7 +77,7 @@ public class UiButton extends UiWidget {
                 isEnabled(), hovered);
             String shown = draw.trim(label.get(), box.width - slot() - 12);
             cut = !shown.equals(label.get());
-            draw.text(shown, box.x + slot() + 8, box.y + (box.height - 8) / 2, color);
+            draw.shadowText(shown, box.x + slot() + 8, box.y + (box.height - 8) / 2, color);
             drawIconHighlight(draw, hovered);
             return;
         }
@@ -85,7 +85,7 @@ public class UiButton extends UiWidget {
         cut = !text.equals(label.get());
         if (icon != null) icon.draw(draw, box.x + 5, box.y + (box.height - 7) / 2, color);
         int x = icon == null ? box.x + (box.width - draw.textWidth(text)) / 2 : box.x + 17;
-        draw.text(text, x, box.y + (box.height - 8) / 2, color);
+        draw.shadowText(text, x, box.y + (box.height - 8) / 2, color);
         drawIconHighlight(draw, hovered);
     }
 

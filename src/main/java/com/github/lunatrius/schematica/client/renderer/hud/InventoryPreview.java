@@ -107,7 +107,7 @@ public final class InventoryPreview {
                 draw.item(stack, sx + 1, sy + 1);
                 if (stack.stackSize > 1) {
                     String count = Integer.toString(stack.stackSize);
-                    draw.text(count, sx + 18 - draw.textWidth(count), sy + 10, 0xFFFFFFFF);
+                    draw.shadowText(count, sx + 18 - draw.textWidth(count), sy + 10, 0xFFFFFFFF);
                 }
             } catch (RuntimeException error) {
                 Reference.logger.debug("Could not draw an inventory preview item", error);

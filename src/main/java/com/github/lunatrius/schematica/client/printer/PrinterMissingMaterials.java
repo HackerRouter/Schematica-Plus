@@ -87,8 +87,8 @@ public final class PrinterMissingMaterials {
             }
             int lineLength = maxText + 4;
             int offsetY = (int) ((InfoHudSettings.offsetY + offsetHeight) / scale);
-            int x = InfoHudSettings.alignment.x(screen.getScaledWidth(), lineLength, scale, InfoHudSettings.offsetX) + bgMargin;
-            int y = InfoHudSettings.alignment.y(screen.getScaledHeight(), contentHeight, scale, offsetY) + bgMargin;
+            int x = InfoHudSettings.alignment.x(screen.getScaledWidth(), lineLength, scale, InfoHudSettings.offsetX);
+            int y = InfoHudSettings.alignment.y(screen.getScaledHeight(), contentHeight, scale, offsetY);
             GL11.glScalef((float) scale, (float) scale, 1);
             draw.fill(new UiBounds(x - bgMargin, y - bgMargin, lineLength + bgMargin * 2, contentHeight + bgMargin), 0xA0000000);
             draw.text(title, x + 2, y + 2, 0xFFFFFFFF);

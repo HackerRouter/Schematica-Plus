@@ -46,7 +46,7 @@ public final class GuiSchematicPlacementsList extends GuiSchematicList<Schematic
                 else Placements.remove(world);
             });
             UiButton toggle = add(new UiButton(() -> UiTranslations.format("litematica.gui.button.schematic_placements.placement_enabled",
-                (world.isEnabled() ? "\u00a7a" : "\u00a7c") + UiTranslations.format(world.isEnabled() ? "options.on" : "options.off")),
+                UiTranslations.format(world.isEnabled() ? "malilib.gui.label_colored.on" : "malilib.gui.label_colored.off")),
                 mouse -> { if (mouse == 0 && Placements.loaded.contains(world)) { world.setPlacementSettings(world.placementSettings().enabled(!world.isEnabled()));
                     RendererSchematicGlobal.INSTANCE.refresh(world); WorldHandler.INSTANCE.saveSession(); } }));
             buttons.add(toggle);

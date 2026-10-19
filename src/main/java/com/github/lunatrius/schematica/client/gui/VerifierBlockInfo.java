@@ -66,9 +66,9 @@ public final class VerifierBlockInfo {
 
     private void column(UiDraw draw, Visual visual, State state, String label, int x, int y, int width) {
         try (UiDraw.Clip ignored = draw.clip(new UiBounds(x, y + 1, width, HEIGHT - 2))) {
-            draw.flatText(draw.trim(label, width), x, y + 4, 0xFFFFFFFF);
+            draw.text(draw.trim(label, width), x, y + 4, 0xFFFFFFFF);
             visual.draw(draw, x, y + 13, width);
-            draw.flatText(draw.trim(state.block, width), x, y + 36, 0xFF4060FF);
+            draw.text(draw.trim(state.block, width), x, y + 36, 0xFF4060FF);
             draw.text(draw.trim(metadata(state), width), x, y + 49, 0xFFB0B0B0);
         }
     }
@@ -93,7 +93,7 @@ public final class VerifierBlockInfo {
             draw.fill(new UiBounds(x, y + 3, 16, 16), 0x20FFFFFF);
             if (icon != null) try { draw.item(icon, x, y + 3); }
             catch (RuntimeException error) { icon = null; Reference.logger.debug("Could not draw verifier item", error); }
-            draw.flatText(draw.trim(name, Math.max(0, width - 24)), x + 20, y + 7, 0xFFFFFFFF);
+            draw.text(draw.trim(name, Math.max(0, width - 24)), x + 20, y + 7, 0xFFFFFFFF);
         }
     }
 }

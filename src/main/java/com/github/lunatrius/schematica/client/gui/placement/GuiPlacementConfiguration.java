@@ -89,7 +89,7 @@ public final class GuiPlacementConfiguration extends UiScreen {
     }
 
     private String value(boolean enabled) {
-        return (enabled ? "\u00a7a" : "\u00a7c") + UiTranslations.format(enabled ? "options.on" : "options.off") + "\u00a7r";
+        return UiTranslations.format(enabled ? "malilib.gui.label_colored.on" : "malilib.gui.label_colored.off");
     }
 
     private UiButton toggle(String key, BooleanSupplier state, Runnable action) {

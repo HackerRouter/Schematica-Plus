@@ -36,7 +36,7 @@ public final class GuiPlacementGridSettings extends UiScreen {
     static String toggleLabel(SchematicWorld placement) {
         boolean on = placement.grid.isEnabled();
         return UiTranslations.format("schematica.ui.placement.grid_settings",
-            (on ? "§a" : "§c") + UiTranslations.format(on ? "options.on" : "options.off") + "§r");
+            UiTranslations.format(on ? "malilib.gui.label_colored.on" : "malilib.gui.label_colored.off"));
     }
 
     private boolean available() {

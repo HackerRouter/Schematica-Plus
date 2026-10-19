@@ -18,7 +18,7 @@ public final class UiCheckBox extends UiButton {
     public void draw(UiDraw draw, int mouseX, int mouseY) {
         UiBounds box = bounds();
         (checked.getAsBoolean() ? UiSprite.CHECK_ON : UiSprite.CHECK_OFF).draw(draw, box.x, box.y, isEnabled(), false);
-        draw.text(draw.trim(label(), box.width - 15), box.x + 15, box.y + 2,
+        draw.shadowText(draw.trim(label(), box.width - 15), box.x + 15, box.y + 2,
             isEnabled() ? 0xFFFFFFFF : 0xFFA0A0A0);
     }
 }

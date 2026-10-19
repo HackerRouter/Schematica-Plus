@@ -38,9 +38,9 @@ public class UiTextField extends UiWidget {
     @Override
     public void setBounds(int x, int y, int width, int height) {
         super.setBounds(x, y, width, height);
-        field.xPosition = x + 4;
+        field.xPosition = x + 5;
         field.yPosition = y + (height - 8) / 2;
-        field.width = Math.max(1, width - 8);
+        field.width = Math.max(1, width - 10);
         field.height = 8;
         field.setSelectionPos(field.getSelectionEnd());
     }
@@ -62,8 +62,8 @@ public class UiTextField extends UiWidget {
 
     @Override
     public void draw(UiDraw draw, int mouseX, int mouseY) {
-        draw.fill(bounds(), UiTheme.FIELD);
-        draw.border(bounds(), isFocused() ? UiTheme.FOCUS : UiTheme.BORDER);
+        draw.fill(bounds(), 0xFFA0A0A0);
+        draw.fill(bounds().inset(1), 0xFF000000);
         field.setEnabled(isEnabled());
         field.drawTextBox();
     }

@@ -4,12 +4,10 @@ import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-import net.minecraft.client.resources.I18n;
-
 public final class UiToggleButton extends UiButton {
 
     public UiToggleButton(Supplier<String> label, BooleanSupplier value, Consumer<Boolean> changed) {
-        super(() -> label.get() + ": " + I18n.format(value.getAsBoolean() ? "options.on" : "options.off"),
+        super(() -> label.get() + ": " + UiTranslations.format(value.getAsBoolean() ? "malilib.gui.label_colored.on" : "malilib.gui.label_colored.off"),
             button -> changed.accept(!value.getAsBoolean()));
     }
 }

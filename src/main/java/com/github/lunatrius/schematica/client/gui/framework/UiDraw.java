@@ -12,8 +12,7 @@ public interface UiDraw {
 
     void text(String text, int x, int y, int color);
 
-    /** Text without the drop shadow (MaLiLib's drawString(..., false) spots). */
-    default void flatText(String text, int x, int y, int color) {
+    default void shadowText(String text, int x, int y, int color) {
         text(text, x, y, color);
     }
 
@@ -27,6 +26,10 @@ public interface UiDraw {
 
     void texture(String texture, UiBounds destination, int u, int v, int sourceWidth,
         int sourceHeight, int textureWidth, int textureHeight);
+
+    default void outline(UiBounds bounds, int color) {
+        border(new UiBounds(bounds.x - 1, bounds.y - 1, bounds.width + 2, bounds.height + 2), color);
+    }
 
     default void border(UiBounds bounds, int color) {
         if (bounds.isEmpty()) return;

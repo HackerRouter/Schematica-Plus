@@ -57,7 +57,7 @@ public final class GuiSubRegionConfiguration extends UiScreen {
 
     private Region region() { return placement.subregions().get(regionName); }
     private boolean available() { return mc.thePlayer != null && mc.theWorld == clientWorld && Placements.loaded.contains(placement); }
-    private String value(boolean value) { return (value ? "\u00a7a" : "\u00a7c") + UiTranslations.format(value ? "options.on" : "options.off") + "\u00a7r"; }
+    private String value(boolean value) { return UiTranslations.format(value ? "malilib.gui.label_colored.on" : "malilib.gui.label_colored.off"); }
     private UiButton button(Supplier<String> label, IntConsumer action) {
         return controls.add(new UiButton(label, mouse -> { if (available()) action.accept(mouse); }));
     }

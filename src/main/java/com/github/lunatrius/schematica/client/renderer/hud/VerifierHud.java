@@ -51,7 +51,7 @@ public final class VerifierHud {
         if (lines.size() > maxLines) lines = lines.subList(0, maxLines);
         // MaLiLib RenderUtils.renderText: shadowed lines on a per-line background
         int y = InfoHudSettings.alignment.y(screen.getScaledHeight(), lines.size() * lineHeight - 2, scale, InfoHudSettings.offsetY);
-        textHeight = (int) Math.ceil(lines.size() * lineHeight * scale);
+        textHeight = (int) Math.ceil((lines.size() * lineHeight + 2) * scale);
         int maxWidth = Math.max(0, (int) (screen.getScaledWidth() / scale) - 8);
         try (MinecraftUiDraw draw = new MinecraftUiDraw(mc)) {
             GL11.glScalef((float) scale, (float) scale, 1);
@@ -60,7 +60,7 @@ public final class VerifierHud {
                 int width = draw.textWidth(line);
                 int x = InfoHudSettings.alignment.x(screen.getScaledWidth(), width, scale, InfoHudSettings.offsetX);
                 draw.fill(new UiBounds(x - 2, y - 2, width + 2, mc.fontRenderer.FONT_HEIGHT + 2), 0x80000000);
-                draw.text(line, x, y, 0xFFFFFFFF);
+                draw.shadowText(line, x, y, 0xFFFFFFFF);
                 y += lineHeight;
             }
         }

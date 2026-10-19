@@ -29,8 +29,8 @@ public final class UiSlideSwitch extends UiWidget {
         draw.fill(new UiBounds(b.x + 2 + Math.round(p * half), b.y + 2, half, b.height - 4), isEnabled() ? 0xFF586E85 : 0xFF444444);
         String a = draw.trim(left.get(), half - 4), c = draw.trim(right.get(), half - 4);
         int color = isEnabled() ? 0xFFFFFFFF : 0xFFA0A0A0;
-        draw.text(a, b.x + 2 + (half - draw.textWidth(a)) / 2, b.y + (b.height - 8) / 2, color);
-        draw.text(c, b.x + 2 + half + (half - draw.textWidth(c)) / 2, b.y + (b.height - 8) / 2, color);
+        draw.shadowText(a, b.x + 2 + (half - draw.textWidth(a)) / 2, b.y + (b.height - 8) / 2, color);
+        draw.shadowText(c, b.x + 2 + half + (half - draw.textWidth(c)) / 2, b.y + (b.height - 8) / 2, color);
     }
 
     @Override public boolean mouseDown(int x, int y, int button) {

@@ -59,8 +59,8 @@ public final class UiTextArea extends UiWidget {
     @Override
     public void draw(UiDraw draw, int mouseX, int mouseY) {
         UiBounds b = bounds();
-        draw.fill(b, UiTheme.FIELD);
-        draw.border(b, isFocused() ? UiTheme.FOCUS : UiTheme.BORDER);
+        draw.fill(b, 0xFFA0A0A0);
+        draw.fill(b.inset(1), 0xFF000000);
         List<TextAreaModel.Line> lines = lines();
         scroll = Math.max(0, Math.min(maxScroll(), scroll));
         int x = b.x + PADDING, top = b.y + PADDING;
@@ -78,7 +78,7 @@ public final class UiTextArea extends UiWidget {
                 if (selStart >= selEnd) left = right - 3;
                 draw.fill(new UiBounds(left, y - 1, Math.max(1, right - left), LINE_HEIGHT), UiTheme.SELECTED);
             }
-            draw.text(content, x, y, color);
+            draw.shadowText(content, x, y, color);
         }
         if (isFocused() && blink / 6 % 2 == 0) {
             int line = model.lineOf(model.cursor());

@@ -111,7 +111,7 @@ public final class GuiAreaSelectionEditor extends UiScreen {
             library.addBox(area, value, point, point);
         }));
         origin = root.add(new UiButton(() -> UiTranslations.format("litematica.gui.button.area_editor.origin_enabled",
-            (manualOrigin() ? "\u00a7a" : "\u00a7c") + UiTranslations.format(manualOrigin() ? "options.on" : "options.off")),
+            UiTranslations.format(manualOrigin() ? "malilib.gui.label_colored.on" : "malilib.gui.label_colored.off")),
             button -> { if (button == 0) change(() -> library.setOrigin(area, manualOrigin() ? null : simple ? area.origin() : GuiAreaSelectionManager.playerPoint())); }));
         save = SchematicProjects.hasProjectOpen()
             ? action("litematica.gui.button.save_new_schematic_version", () -> {

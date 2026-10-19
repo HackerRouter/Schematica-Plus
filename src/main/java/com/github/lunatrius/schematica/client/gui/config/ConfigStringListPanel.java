@@ -57,9 +57,9 @@ public final class ConfigStringListPanel extends UiPanel {
     @Override
     public void draw(UiDraw draw, int mouseX, int mouseY) {
         draw.fill(bounds(), 0xFF000000);
-        draw.border(bounds(), 0xFF808080);
+        draw.outline(bounds(), 0xFF999999);
         String title = UiTranslations.format("malilib.gui.title.string_list_edit", draft.property.getName());
-        draw.text(draw.trim(title, bounds().width - 20), bounds().x + 10, bounds().y + 6, 0xFFFFFFFF);
+        draw.shadowText(draw.trim(title, bounds().width - 20), bounds().x + 10, bounds().y + 6, 0xFFFFFFFF);
         super.draw(draw, mouseX, mouseY);
     }
 

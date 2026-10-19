@@ -520,7 +520,7 @@ public class GuiModConfig extends UiScreen implements HotkeyHooks.Capture {
             reset.setBounds(x + optionWidth + 2, y, resetWidth, 20);
             if (text != null) {
                 int fieldWidth = optionWidth - (swatch != null ? 22 : sliderToggle == null ? 0 : 18);
-                text.setBounds(x + 2, y + 1, fieldWidth - 4, 17);
+                text.setBounds(x + 1, y, fieldWidth - 2, 19);
                 if (swatch != null) swatch.setBounds(x + fieldWidth + 2, y + 1, 18, 18);
                 if (sliderToggle != null) {
                     text.setVisible(!entry.draft.slider);

@@ -18,7 +18,7 @@ public final class UiLabel extends UiWidget {
 
     @Override
     public void draw(UiDraw draw, int mouseX, int mouseY) {
-        draw.text(draw.trim(label.get(), bounds().width), bounds().x,
-            bounds().y + (bounds().height - 8) / 2, color);
+        draw.shadowText(draw.trim(label.get(), bounds().width), bounds().x,
+            bounds().y + bounds().height / 2 - 5, color);
     }
 }

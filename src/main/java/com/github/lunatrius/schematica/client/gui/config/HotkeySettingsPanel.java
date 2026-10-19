@@ -69,8 +69,8 @@ public final class HotkeySettingsPanel extends UiPanel {
         }
     }
     @Override public void draw(UiDraw draw, int x, int y) {
-        draw.fill(bounds(), 0xFF000000); draw.border(bounds(), 0xFF808080);
-        draw.text(draw.trim(title(), bounds().width - 20), bounds().x + 10, bounds().y + 6, 0xFFFFFFFF);
+        draw.fill(bounds(), 0xFF000000); draw.outline(bounds(), 0xFF999999);
+        draw.shadowText(draw.trim("\u00a7l" + title() + "\u00a7r", bounds().width - 20), bounds().x + 10, bounds().y + 6, 0xFFFFFFFF);
         super.draw(draw, x, y);
     }
 }

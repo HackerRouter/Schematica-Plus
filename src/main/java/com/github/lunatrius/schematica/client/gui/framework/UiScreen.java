@@ -30,10 +30,6 @@ public abstract class UiScreen extends GuiScreen {
     private boolean repeatOwned;
     private boolean previousRepeat;
     private UiWidget resumeFocus;
-    private UiWidget hovered;
-    private int lastMouseX;
-    private int lastMouseY;
-    private long hoverSince;
 
     protected UiScreen(GuiScreen parent, String title) {
         this.parent = parent;
@@ -108,30 +104,25 @@ public abstract class UiScreen extends GuiScreen {
             List<UiPanel> modals = input.modalPanels();
             root.draw(draw, modals.isEmpty() ? mouseX : -1, modals.isEmpty() ? mouseY : -1);
             for (int i = 0; i < modals.size(); i++) {
-                draw.fill(root.bounds(), 0x99000000);
                 boolean top = i == modals.size() - 1;
                 modals.get(i).draw(draw, top ? mouseX : -1, top ? mouseY : -1);
             }
-            messages.draw(draw, width / 2, height / 2, fontRendererObj.FONT_HEIGHT + 1);
             drawTooltip(draw, mouseX, mouseY);
+            messages.draw(draw, width / 2, height / 2, fontRendererObj.FONT_HEIGHT + 1);
         }
     }
 
     private void drawTooltip(UiDraw draw, int mouseX, int mouseY) {
         UiWidget target = input.hit(mouseX, mouseY);
-        long now = System.nanoTime();
-        if (target != hovered || mouseX != lastMouseX || mouseY != lastMouseY) hoverSince = now;
-        hovered = target;
-        lastMouseX = mouseX;
-        lastMouseY = mouseY;
-        if (target == null || now - hoverSince < 400_000_000L) return;
+        if (target == null) return;
         if (target.drawTooltip(draw, mouseX, mouseY, root.bounds())) return;
         List<String> lines = new ArrayList<>();
-        int maxWidth = Math.max(1, Math.min(320, width - 20));
+        int maxWidth = Math.max(1, width - 16);
         for (String text : target.tooltip(mouseX, mouseY)) {
-            lines.addAll(fontRendererObj.listFormattedStringToWidth(text, maxWidth));
+            for (String line : text.split("\n")) lines.addAll(fontRendererObj.listFormattedStringToWidth(line, maxWidth));
         }
-        int maxLines = Math.max(1, (height - 16) / 11);
+        int lineHeight = fontRendererObj.FONT_HEIGHT + 1;
+        int maxLines = Math.max(1, (height - 16) / lineHeight);
         if (lines.size() > maxLines) {
             lines = new ArrayList<>(lines.subList(0, maxLines));
             lines.set(maxLines - 1, "...");
@@ -139,15 +130,24 @@ public abstract class UiScreen extends GuiScreen {
         if (lines.isEmpty()) return;
         int textWidth = 0;
         for (String line : lines) textWidth = Math.max(textWidth, draw.textWidth(line));
-        int boxWidth = textWidth + 8;
-        int boxHeight = lines.size() * 11 + 6;
-        int x = Math.max(4, Math.min(mouseX + 12, width - boxWidth - 4));
-        int y = Math.max(4, Math.min(mouseY + 12, height - boxHeight - 4));
-        draw.fill(new UiBounds(x, y, boxWidth, boxHeight), UiTheme.PANEL);
-        draw.border(new UiBounds(x, y, boxWidth, boxHeight), UiTheme.BORDER);
+        int textHeight = lines.size() * lineHeight - 2;
+        int x = mouseX + 4;
+        int y = Math.max(8, mouseY - textHeight - 6);
+        if (x + textWidth + 6 > width) x = Math.max(2, width - textWidth - 8);
+        int left = x - 3, top = y - 3, right = x + textWidth + 3, bottom = y + textHeight + 3;
+        int background = 0xF0100010, light = 0x505000FF, dark = 0x5028007F;
+        draw.fill(new UiBounds(left, top - 1, right - left, 1), background);
+        draw.fill(new UiBounds(left, bottom, right - left, 1), background);
+        draw.fill(new UiBounds(left, top, right - left, bottom - top), background);
+        draw.fill(new UiBounds(left - 1, top, 1, bottom - top), background);
+        draw.fill(new UiBounds(right, top, 1, bottom - top), background);
+        draw.colorGrid(new UiBounds(left, top + 1, 1, bottom - top - 2), 1, 1, new int[] {light, light, dark, dark});
+        draw.colorGrid(new UiBounds(right - 1, top + 1, 1, bottom - top - 2), 1, 1, new int[] {light, light, dark, dark});
+        draw.fill(new UiBounds(left, top, right - left, 1), light);
+        draw.fill(new UiBounds(left, bottom - 1, right - left, 1), dark);
         for (String line : lines) {
-            draw.text(line, x + 4, y + 4, UiTheme.TEXT);
-            y += 11;
+            draw.text(line, x, y, 0xFFFFFFFF);
+            y += lineHeight;
         }
     }
 
@@ -329,21 +329,21 @@ public abstract class UiScreen extends GuiScreen {
             setBounds((screen.width - width) / 2, (screen.height - height) / 2, width, height);
             content = new UiBounds(bounds().x + 10, bounds().y + 20, width - 20, height - 48 - footer);
             setScroll(scroll);
-            cancel.setBounds(bounds().right() - 10 - buttonWidth, bounds().bottom() - 24, buttonWidth, 20);
-            accept.setBounds(cancel.bounds().x - 10 - buttonWidth, bounds().bottom() - 24, buttonWidth, 20);
-            if (remember != null) remember.setBounds(bounds().x + 10, bounds().bottom() - 21 - footer,
-                footer == 0 ? accept.bounds().x - bounds().x - 20 : width - 20, 14);
+            accept.setBounds(bounds().x + 10, bounds().bottom() - 24, buttonWidth, 20);
+            cancel.setBounds(accept.bounds().right() + 10, bounds().bottom() - 24, buttonWidth, 20);
+            if (remember != null) {
+                if (footer == 0) remember.setBounds(cancel.bounds().right() + 10, bounds().bottom() - 21, bounds().right() - cancel.bounds().right() - 20, 14);
+                else remember.setBounds(bounds().x + 10, bounds().bottom() - 21 - footer, width - 20, 14);
+            }
         }
 
         private int lineHeight() { return fontRendererObj.FONT_HEIGHT + 1; }
         private int maxScroll() { return Math.max(0, lines.size() * lineHeight() - content.height); }
         private void setScroll(int value) { scroll = Math.max(0, Math.min(maxScroll(), value)); }
 
-        private UiBounds thumb() {
-            int height = Math.min(content.height, Math.max(12, content.height * content.height / Math.max(1, lines.size() * lineHeight())));
-            int y = (content.height - height) * scroll / Math.max(1, maxScroll());
-            return new UiBounds(content.right() - 4, content.y + y, 4, height);
-        }
+        private UiBounds track() { return new UiBounds(content.right() - 6, content.y, 6, content.height); }
+
+        private UiBounds thumb() { return UiScrollBar.thumb(track(), lines.size() * lineHeight(), scroll, maxScroll()); }
 
         @Override public boolean isFocusable() { return maxScroll() > 0; }
 
@@ -379,8 +379,7 @@ public abstract class UiScreen extends GuiScreen {
         @Override
         public void mouseDrag(int x, int y, int button) {
             if (dragging) {
-                double fraction = (double) (y - content.y - dragOffset) / Math.max(1, content.height - thumb().height);
-                setScroll((int) Math.round(Math.max(0, Math.min(1, fraction)) * maxScroll()));
+                setScroll(UiScrollBar.offset(track(), thumb(), y, dragOffset, maxScroll()));
             }
         }
 
@@ -390,8 +389,8 @@ public abstract class UiScreen extends GuiScreen {
         @Override
         public void draw(UiDraw draw, int mouseX, int mouseY) {
             draw.fill(bounds(), 0xF0000000);
-            draw.border(bounds(), UiTheme.BORDER);
-            draw.text(draw.trim(dialogTitle, bounds().width - 20), bounds().x + 10, bounds().y + 4, UiTheme.TEXT);
+            draw.outline(bounds(), 0xFF999999);
+            draw.shadowText(draw.trim(dialogTitle, bounds().width - 20), bounds().x + 10, bounds().y + 4, 0xFFFFFFFF);
             try (UiDraw.Clip ignored = draw.clip(new UiBounds(content.x, content.y, content.width - 6, content.height))) {
                 int y = content.y - scroll;
                 for (String line : lines) {
@@ -399,10 +398,7 @@ public abstract class UiScreen extends GuiScreen {
                     y += lineHeight();
                 }
             }
-            if (maxScroll() > 0) {
-                draw.fill(new UiBounds(content.right() - 4, content.y, 4, content.height), UiTheme.CONTROL);
-                draw.fill(thumb(), dragging ? UiTheme.FOCUS : UiTheme.BORDER);
-            }
+            if (maxScroll() > 0) UiScrollBar.draw(draw, track(), thumb());
             super.draw(draw, mouseX, mouseY);
         }
     }
