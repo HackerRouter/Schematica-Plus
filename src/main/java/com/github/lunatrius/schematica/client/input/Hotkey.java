@@ -47,6 +47,19 @@ public final class Hotkey {
         setKeys(values); defaults = this.keys;
     }
     public List<Integer> keys() { return keys; }
+
+    public boolean overlaps(Hotkey other) {
+        List<Integer> keys1 = keys, keys2 = other.keys;
+        if (other == this || keys2.size() > keys1.size() || keys1.isEmpty() || keys2.isEmpty()) return false;
+        Settings a = settings, b = other.settings;
+        if (!(a.context == Context.ANY || b.context == Context.ANY || a.context == b.context)) return false;
+        if (!(a.action == Action.BOTH || b.action == Action.BOTH || a.action == b.action)) return false;
+        int l1 = keys1.size(), l2 = keys2.size();
+        boolean sameFirst = keys1.get(0).equals(keys2.get(0));
+        if (!a.allowExtra && l1 < l2 && !sameFirst || !b.allowExtra && l2 < l1 && !sameFirst) return false;
+        if (a.ordered && b.ordered) return l1 < l2 ? Collections.indexOfSubList(keys2, keys1) != -1 : Collections.indexOfSubList(keys1, keys2) != -1;
+        return l1 <= l2 ? keys2.containsAll(keys1) : keys1.containsAll(keys2);
+    }
     public void setKeys(List<Integer> values) {
         if (values.size() > 16) throw new IllegalArgumentException("Too many keys");
         List<Integer> next = new ArrayList<>();

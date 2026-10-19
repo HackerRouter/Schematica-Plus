@@ -13,6 +13,7 @@ import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.world.World;
 
 import com.github.lunatrius.schematica.SchematicaPlus;
+import com.github.lunatrius.schematica.client.gui.GuiModConfig;
 import com.github.lunatrius.schematica.client.gui.GuiSchematicMainMenu;
 import com.github.lunatrius.schematica.client.gui.control.GuiSchematicMaterials;
 import com.github.lunatrius.schematica.client.gui.framework.UiBounds;
@@ -27,15 +28,20 @@ import com.github.lunatrius.schematica.client.gui.framework.UiRowList;
 import com.github.lunatrius.schematica.client.gui.framework.UiScreen;
 import com.github.lunatrius.schematica.client.gui.framework.UiSprite;
 import com.github.lunatrius.schematica.client.gui.framework.UiTextField;
+import com.github.lunatrius.schematica.client.gui.framework.UiTextWrap;
 import com.github.lunatrius.schematica.client.gui.framework.UiTranslations;
+import com.github.lunatrius.schematica.client.gui.framework.UiWidget;
 import com.github.lunatrius.schematica.client.gui.material.MaterialList;
 import com.github.lunatrius.schematica.client.gui.material.MaterialLists;
 import com.github.lunatrius.schematica.client.gui.projects.GuiVersionPrompt;
+import com.github.lunatrius.schematica.client.input.Hotkey;
+import com.github.lunatrius.schematica.client.input.Hotkeys;
 import com.github.lunatrius.schematica.client.projects.SchematicProjects;
 import com.github.lunatrius.schematica.client.selection.AreaSelectionLibrary;
 import com.github.lunatrius.schematica.client.selection.AreaSelectionLibrary.Area;
 import com.github.lunatrius.schematica.client.selection.AreaSelectionLibrary.Box;
 import com.github.lunatrius.schematica.client.selection.AreaSelections;
+import com.github.lunatrius.schematica.handler.VisualSettings;
 import com.github.lunatrius.schematica.internal.lunatriuscore.util.vector.Vector3i;
 
 import org.lwjgl.input.Keyboard;
@@ -51,6 +57,7 @@ public final class GuiAreaSelectionEditor extends UiScreen {
     private UiButton setName, mode, corners, create, origin, save, browser, analyze, main;
     private UiCheckBox guide;
     private UiLabel count, status;
+    private UiWidget renderingWarning;
     private String message = "";
     private UiPanel originControls;
     private UiCheckBox originSelected;
@@ -118,6 +125,15 @@ public final class GuiAreaSelectionEditor extends UiScreen {
                 if (SchematicProjects.current() != null) mc.displayGuiScreen(new GuiVersionPrompt(this, SchematicProjects.current()));
             })
             : action("litematica.gui.button.area_editor.create_schematic", () -> mc.displayGuiScreen(new GuiSchematicSave(this, area.name())));
+        renderingWarning = root.add(new UiWidget() {
+            @Override public void draw(UiDraw draw, int mouseX, int mouseY) {
+                int y = bounds().y;
+                for (String line : renderingWarningLines(bounds().width)) {
+                    draw.shadowText(line, bounds().x, y, 0xFFFFAA00);
+                    y += fontRendererObj.FONT_HEIGHT + 1;
+                }
+            }
+        });
         count = root.add(new UiLabel(() -> "\u00a7l" + UiTranslations.format("litematica.gui.label.area_editor.sub_regions", area == null ? 0 : area.boxes().size())));
         guide = root.add(new UiCheckBox(() -> UiTranslations.format("schematica.ui.save.guide"), () -> area != null && area.guide(),
             value -> change(() -> library.setGuide(area, value))));
@@ -272,7 +288,13 @@ public final class GuiAreaSelectionEditor extends UiScreen {
         int countWidth = fontRendererObj.getStringWidth(label) + 4;
         count.setBounds(12, 104, countWidth, 12);
         guide.setBounds(24 + countWidth, 104, 150, 11);
-        list.setBounds(8, 116, width - 20, Math.max(0, height - 146));
+        int warningX = Math.max(120, guide.bounds().x + fontRendererObj.getStringWidth(guide.label()) + 24);
+        int warningWidth = Math.max(0, width - warningX - 20);
+        int warningLines = VisualSettings.areaBoxes ? 0 : renderingWarningLines(warningWidth).size();
+        renderingWarning.setVisible(warningLines > 0);
+        renderingWarning.setBounds(warningX, 106, warningWidth, warningLines * (fontRendererObj.FONT_HEIGHT + 1));
+        int listY = Math.max(116, 106 + warningLines * (fontRendererObj.FONT_HEIGHT + 1) + 2);
+        list.setBounds(8, listY, width - 20, Math.max(0, height - 30 - listY));
         int statusX = setName.bounds().right() + 10;
         status.setBounds(statusX, 59, Math.max(0, (manualOrigin() ? originX : width) - statusX - 12), 16);
         x = place(browser, 12, height - 26, true);
@@ -280,7 +302,17 @@ public final class GuiAreaSelectionEditor extends UiScreen {
         place(main, width - fontRendererObj.getStringWidth(main.label()) - 20, height - 26, false);
     }
 
+    private List<String> renderingWarningLines(int width) {
+        Hotkey toggle = Hotkeys.get("toggleAreaSelectionBoxesRendering");
+        String text = UiTranslations.format("litematica.warning.area_editor.area_rendering_disabled", "enableAreaSelectionBoxesRendering",
+            "toggleAreaSelectionBoxesRendering", toggle == null ? "" : GuiModConfig.chordLabel(toggle));
+        List<String> lines = new ArrayList<>();
+        for (String part : text.split("\n")) lines.addAll(UiTextWrap.wrap(part, Math.max(1, width), fontRendererObj::getStringWidth));
+        return lines;
+    }
+
     private void layoutSimple() {
+        renderingWarning.setVisible(false);
         int x = place(mode, 10, 24, false);
         x = place(corners, x, 24, false);
         place(origin, x, 24, false);

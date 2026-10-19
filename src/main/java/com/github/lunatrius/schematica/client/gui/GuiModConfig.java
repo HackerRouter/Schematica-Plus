@@ -13,6 +13,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.EnumMap;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -297,13 +298,50 @@ public class GuiModConfig extends UiScreen implements HotkeyHooks.Capture {
     }
     private String bindingLabel(Hotkey key) {
         if (capturingButton != null && capturingKey == key) return captureLabel();
-        for (Hotkey other : Hotkeys.ALL) {
-            if (other != key && !key.keys().isEmpty() && key.keys().equals(other.keys())
-                && key.settings.cancel && other.settings.cancel
-                && (key.settings.context == other.settings.context || key.settings.context == Hotkey.Context.ANY || other.settings.context == Hotkey.Context.ANY))
-                return "§6" + chordLabel(key);
+        return overlaps(key).isEmpty() ? chordLabel(key) : "§6" + chordLabel(key) + "§r";
+    }
+
+    private static List<Hotkey> overlaps(Hotkey key) {
+        List<Hotkey> found = new ArrayList<>();
+        for (Hotkey other : Hotkeys.ALL) if (key.overlaps(other)) found.add(other);
+        return found;
+    }
+
+    private static List<String> overlapInfo(Hotkey key) {
+        List<Hotkey> found = overlaps(key);
+        if (found.isEmpty()) return Collections.emptyList();
+        if (!isShiftKeyDown()) return Collections.singletonList(UiTranslations.format("malilib.gui.button.hover.hold_shift_for_info"));
+        List<String> info = new ArrayList<>();
+        Map<String, List<Hotkey>> groups = new LinkedHashMap<>();
+        for (Hotkey other : found) groups.computeIfAbsent(other.toggleGroup == null ? "hotkeys" : other.toggleGroup, group -> new ArrayList<>()).add(other);
+        for (Map.Entry<String, List<Hotkey>> group : groups.entrySet()) {
+            if (!info.isEmpty()) info.add("-----");
+            info.add(Reference.NAME);
+            info.add(" > " + UiTranslations.format("litematica.gui.button.config_gui." + group.getKey()));
+            for (Hotkey other : group.getValue()) info.add("    - " + other.id + " [ §6" + chordLabel(other) + "§r ]");
         }
-        return chordLabel(key);
+        return info;
+    }
+
+    private static List<String> settingsInfo(Hotkey key) {
+        String yes = UiTranslations.format("malilib.gui.label.yes"), no = UiTranslations.format("malilib.gui.label.no");
+        Hotkey.Settings s = key.settings;
+        List<String> text = new ArrayList<>();
+        text.add("§f§n" + UiTranslations.format("malilib.gui.label.keybind_settings.title_advanced_keybind_settings"));
+        text.add(setting("activate_on", "§9" + s.action.name()));
+        text.add(setting("allow_empty_keybind", s.allowEmpty ? "§a" + yes : "§6" + no));
+        text.add(setting("allow_extra_keys", s.allowExtra ? "§a" + yes : "§6" + no));
+        text.add(setting("order_sensitive", s.ordered ? "§6" + yes : "§a" + no));
+        text.add(setting("cancel_further", s.cancel ? "§6" + yes : "§a" + no));
+        text.add(setting("exclusive", s.exclusive ? "§6" + yes : "§a" + no));
+        text.add(setting("context", "§9" + s.context.name()));
+        text.add("");
+        text.addAll(Arrays.asList(UiTranslations.format("malilib.gui.label.keybind_settings.tips").split("\n")));
+        return text;
+    }
+
+    private static String setting(String name, String value) {
+        return UiTranslations.format("malilib.gui.label.keybind_settings." + name) + ": " + value;
     }
 
     private String statusText() {
@@ -425,7 +463,9 @@ public class GuiModConfig extends UiScreen implements HotkeyHooks.Capture {
             label.setTooltip(entry.description().split("\n"));
             reset = add(new UiButton(() -> UiTranslations.format("malilib.gui.button.reset.caps"), button -> reset()));
             if (entry.key != null) {
-                editor = add(new UiButton(() -> bindingLabel(entry.key), button -> captureEntry()));
+                editor = add(new UiButton(() -> bindingLabel(entry.key), button -> captureEntry()) {
+                    @Override public List<String> tooltip(int mouseX, int mouseY) { return overlapInfo(entry.key); }
+                });
                 keySettings = keySettingsButton(entry.key);
             } else if (entry.draft.property.isList()) {
                 editor = add(new UiButton(() -> "[ " + String.join(", ", entry.draft.values()) + " ]", button -> {
@@ -458,7 +498,9 @@ public class GuiModConfig extends UiScreen implements HotkeyHooks.Capture {
                     ? "malilib.gui.button.true" : "malilib.gui.button.false"),
                     button -> entry.draft.setText(Boolean.toString(!Boolean.parseBoolean(entry.draft.text())))));
                 if (entry.toggleKey != null) {
-                    toggleBinding = add(new UiButton(() -> bindingLabel(entry.toggleKey), button -> beginCapture(entry.toggleKey, toggleBinding)));
+                    toggleBinding = add(new UiButton(() -> bindingLabel(entry.toggleKey), button -> beginCapture(entry.toggleKey, toggleBinding)) {
+                        @Override public List<String> tooltip(int mouseX, int mouseY) { return overlapInfo(entry.toggleKey); }
+                    });
                     keySettings = keySettingsButton(entry.toggleKey);
                 }
             } else {
@@ -512,11 +554,10 @@ public class GuiModConfig extends UiScreen implements HotkeyHooks.Capture {
                     int[] v = {s.action.ordinal() * 18, s.allowExtra ? 0 : 18, s.ordered ? 18 : 0, s.exclusive ? 18 : 0, s.cancel ? 18 : 0};
                     for (int i = 0; i < v.length; i++) draw.texture("schematica_plus:textures/gui/malilib_widgets.png",
                         new UiBounds(bounds().x + 1, bounds().y + 1, 18, 18), i * 18, v[i], 18, 18, 256, 256);
-                    if (bounds().contains(mouseX, mouseY)) draw.border(bounds(), 0xFFFFFF55);
                 }
+
+                @Override public List<String> tooltip(int mouseX, int mouseY) { return settingsInfo(key); }
             });
-            widget.setTooltip(UiTranslations.format("malilib.gui.label.keybind_settings.title_advanced_keybind_settings"),
-                UiTranslations.format("malilib.gui.label.keybind_settings.tips"));
             return widget;
         }
 
