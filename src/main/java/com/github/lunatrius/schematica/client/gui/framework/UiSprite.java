@@ -38,6 +38,7 @@ public enum UiSprite {
     CHECK_ON(198, 11, 11, 11, false),
     INFO(168, 18, 11, 11, false),
     NOTICE(168, 29, 11, 11, false),
+    LOCK(168, 51, 11, 11, false),
     SORT_UP(209, 0, 15, 15, false),
     SORT_DOWN(209, 15, 15, 15, false),
     CONFIG_SEARCH(201, 0, 12, 12, false, true),

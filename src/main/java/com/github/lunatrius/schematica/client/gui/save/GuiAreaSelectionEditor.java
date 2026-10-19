@@ -118,7 +118,7 @@ public final class GuiAreaSelectionEditor extends UiScreen {
                 if (SchematicProjects.current() != null) mc.displayGuiScreen(new GuiVersionPrompt(this, SchematicProjects.current()));
             })
             : action("litematica.gui.button.area_editor.create_schematic", () -> mc.displayGuiScreen(new GuiSchematicSave(this, area.name())));
-        count = root.add(new UiLabel(() -> UiTranslations.format("litematica.gui.label.area_editor.sub_regions", area == null ? 0 : area.boxes().size())));
+        count = root.add(new UiLabel(() -> "\u00a7l" + UiTranslations.format("litematica.gui.label.area_editor.sub_regions", area == null ? 0 : area.boxes().size())));
         guide = root.add(new UiCheckBox(() -> UiTranslations.format("schematica.ui.save.guide"), () -> area != null && area.guide(),
             value -> change(() -> library.setGuide(area, value))));
         list = root.add(new UiRowList<>(model, Entry::new));
@@ -268,7 +268,7 @@ public final class GuiAreaSelectionEditor extends UiScreen {
             originNudges[axis].setBounds(originX + 84, 21 + axis * 20, 16, 16);
         }
         originToPlayer.setBounds(originX + 10, 81, fontRendererObj.getStringWidth(originToPlayer.label()) + 10, 20);
-        String label = UiTranslations.format("litematica.gui.label.area_editor.sub_regions", area == null ? 0 : area.boxes().size());
+        String label = "\u00a7l" + UiTranslations.format("litematica.gui.label.area_editor.sub_regions", area == null ? 0 : area.boxes().size());
         int countWidth = fontRendererObj.getStringWidth(label) + 4;
         count.setBounds(12, 104, countWidth, 12);
         guide.setBounds(24 + countWidth, 104, 150, 11);

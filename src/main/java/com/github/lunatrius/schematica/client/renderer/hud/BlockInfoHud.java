@@ -147,7 +147,7 @@ public final class BlockInfoHud {
                 if (!line.isEmpty()) {
                     int width = mc.fontRenderer.getStringWidth(line);
                     int x = BlockInfoHudSettings.alignment.x(screen.getScaledWidth(), width, scale, BlockInfoHudSettings.offsetX);
-                    Gui.drawRect(x - 2, y - 2, x + width + 2, y + mc.fontRenderer.FONT_HEIGHT + 2, 0xA0505050);
+                    Gui.drawRect(x - 2, y - 2, x + width, y + mc.fontRenderer.FONT_HEIGHT, 0xA0505050);
                     mc.fontRenderer.drawString(line, x, y, 0xFFFFFFFF);
                 }
                 y += lineHeight;

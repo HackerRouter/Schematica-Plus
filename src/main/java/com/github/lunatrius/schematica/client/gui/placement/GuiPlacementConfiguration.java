@@ -168,7 +168,9 @@ public final class GuiPlacementConfiguration extends UiScreen {
             mouse -> transform(mouse == 1 ? "YYY" : "Y"));
         mirror = button(() -> UiTranslations.format("litematica.gui.button.mirror_value", orientation == null ? UiTranslations.format("schematica.ui.placement.custom") : orientation.mirrorName()),
             mouse -> { if (orientation != null) transform(orientation.cycleMirror(mouse == 1)); });
-        reset = button("litematica.gui.button.schematic_placement.reset_sub_region_placements", () -> updateRegions(() -> placement.resetSubregions(null)));
+        reset = button(() -> (placement.subregions() != null && placement.subregions().modified() ? "\u00a76" : "")
+            + UiTranslations.format("litematica.gui.button.schematic_placement.reset_sub_region_placements"),
+            mouse -> { if (mouse == 0) updateRegions(() -> placement.resetSubregions(null)); });
         grid = button(() -> GuiPlacementGridSettings.toggleLabel(placement), mouse -> {
             if (mouse != 0) return;
             if (isShiftKeyDown()) {

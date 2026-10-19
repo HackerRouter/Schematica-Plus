@@ -149,7 +149,12 @@ public class GuiSchematicMaterials extends UiScreen {
                 return lines;
             }
         });
-        header = root.add(new UiPanel());
+        header = root.add(new UiPanel() {
+            @Override public void draw(UiDraw draw, int mouseX, int mouseY) {
+                draw.fill(bounds(), 0xA0101010);
+                super.draw(draw, mouseX, mouseY);
+            }
+        });
         for (int i = 0; i < 4; i++) header.add(new ColumnHeader(i));
         rows = root.add(new UiRowList<>(rowsModel, MaterialRow::new, 10));
         search = root.add(new UiTextField(fontRendererObj, 256, text -> {
@@ -324,7 +329,7 @@ public class GuiSchematicMaterials extends UiScreen {
         searchButton.setBounds(width - 37, browserY + 9, 12, 12);
         search.setBounds(13, browserY + 8, Math.max(0, width - 55), 14);
         search.setVisible(searching);
-        header.setVisible(!searching);
+        for (UiWidget column : header.children()) column.setVisible(!searching);
         rows.setBounds(12, browserY + 26, Math.max(0, width - 24), Math.max(0, footerY - browserY - 26));
         updateColumns();
     }
@@ -458,7 +463,6 @@ public class GuiSchematicMaterials extends UiScreen {
             refreshRows();
         }
         @Override public void draw(UiDraw draw, int x, int y) {
-            draw.fill(bounds(), 0xA0101010);
             draw.border(bounds(), containsVisible(x, y) || isFocused() ? 0xFFFFFFFF : 0xC0707070);
             boolean sorted = materials.sort().ordinal() == column || column == 0 && materials.sort() == MaterialListModel.Sort.CACHE_ORDER;
             draw.text(draw.trim("§l" + UiTranslations.format(LABEL + "title." + HEADERS[column]), bounds().width - (sorted ? 21 : 4)),
@@ -531,21 +535,27 @@ public class GuiSchematicMaterials extends UiScreen {
                 MaterialColumns.storage(missing > 0 ? missing : materials.total(entry), size, UiTranslations::format)});
             List<String> replaced = materials.replacedNames(entry.key);
             if (!replaced.isEmpty()) lines.add(new String[] {"§l" + UiTranslations.format("schematica.ui.material.replaces"), String.join(", ", replaced)});
-            int labels = 0, values = draw.textWidth(entry.name) + 20;
+            String item = "§l" + UiTranslations.format(LABEL + "title." + HEADERS[0]);
+            String name = (materials.isStarred(entry.key) ? "§e\u2605 §r" : "") + entry.name;
+            int labels = draw.textWidth(item), values = draw.textWidth(name) + 20;
             for (String[] line : lines) { labels = Math.max(labels, draw.textWidth(line[0])); values = Math.max(values, draw.textWidth(line[1])); }
-            int w = Math.min(screen.width - 8, labels + values + 40), h = 28 + lines.size() * 16;
-            int x = Math.max(4, Math.min(mouseX + 10, screen.width - w - 4));
+            int w = Math.min(screen.width - 8, labels + values + 60), h = 28 + lines.size() * 16;
+            int x = mouseX + 10;
+            if (x + w - 20 >= screen.width) x -= w + 20;
+            x = Math.max(4, x);
             int y = Math.max(4, Math.min(mouseY - 10, screen.height - h - 4));
             UiBounds box = new UiBounds(x, y, w, h);
             draw.fill(box, 0xFF000000);
-            draw.border(box, 0xFF808080);
-            int valueX = x + labels + 30;
-            try (UiDraw.Clip ignored = draw.clip(box.inset(2))) {
-                renderItem(draw, x + 8, y + 6);
-                draw.text(draw.trim((materials.isStarred(entry.key) ? "§e\u2605 §r" : "") + entry.name, box.right() - x - 36), x + 28, y + 10, 0xFFFFFFFF);
+            draw.outline(box, 0xFF999999);
+            int labelX = x + 10, valueX = labelX + labels + 20;
+            try (UiDraw.Clip ignored = draw.clip(box)) {
+                draw.text(item, labelX, y + 10, 0xFFFFFFFF);
+                draw.text(draw.trim(name, box.right() - valueX - 28), valueX + 20, y + 10, 0xFFFFFFFF);
+                draw.fill(new UiBounds(valueX, y + 6, 16, 16), 0x20FFFFFF);
+                renderItem(draw, valueX, y + 6);
                 for (int i = 0; i < lines.size(); i++) {
-                    draw.text(lines.get(i)[0], x + 10, y + 28 + i * 16, 0xFFFFFFFF);
-                    draw.text(draw.trim(lines.get(i)[1], box.right() - valueX - 8), valueX, y + 28 + i * 16, 0xFFFFFFFF);
+                    draw.text(lines.get(i)[0], labelX, y + 26 + i * 16, 0xFFFFFFFF);
+                    draw.text(draw.trim(lines.get(i)[1], box.right() - valueX - 8), valueX, y + 26 + i * 16, 0xFFFFFFFF);
                 }
             }
             return true;

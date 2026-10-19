@@ -45,7 +45,8 @@ public final class VerifierBlockInfo {
     private String foundLabel() { return "§l" + UiTranslations.format("litematica.gui.label.schematic_verifier.found"); }
     private String singleLabel() { return "§l" + UiTranslations.format(title); }
     public int width(UiDraw draw, int max) {
-        if (single != null) return Math.min(max, columnWidth(draw, expected, single, singleLabel()) + 20);
+        if (single != null) return Math.min(max, Math.max(draw.textWidth(expected.name) + 20, Math.max(draw.textWidth(single.block),
+            Math.max(draw.textWidth(singleLabel()), draw.textWidth(metadata(single))))) + 40);
         return Math.min(max, columnWidth(draw, expected, pair.expected, expectedLabel()) + columnWidth(draw, found, pair.found, foundLabel()) + 40);
     }
 
@@ -67,7 +68,7 @@ public final class VerifierBlockInfo {
     private void column(UiDraw draw, Visual visual, State state, String label, int x, int y, int width) {
         try (UiDraw.Clip ignored = draw.clip(new UiBounds(x, y + 1, width, HEIGHT - 2))) {
             draw.text(draw.trim(label, width), x, y + 4, 0xFFFFFFFF);
-            visual.draw(draw, x, y + 13, width);
+            visual.draw(draw, x, y + 13, width, single != null ? 0x20FFFFFF : 0x50C0C0C0);
             draw.text(draw.trim(state.block, width), x, y + 36, 0xFF4060FF);
             draw.text(draw.trim(metadata(state), width), x, y + 49, 0xFFB0B0B0);
         }
@@ -88,9 +89,11 @@ public final class VerifierBlockInfo {
             } catch (RuntimeException error) { icon = null; }
             name = label;
         }
-        public void draw(UiDraw draw, int x, int y, int width) {
+        public void draw(UiDraw draw, int x, int y, int width) { draw(draw, x, y, width, 0x20FFFFFF); }
+
+        public void draw(UiDraw draw, int x, int y, int width, int background) {
             if (width < 20) return;
-            draw.fill(new UiBounds(x, y + 3, 16, 16), 0x20FFFFFF);
+            draw.fill(new UiBounds(x, y + 3, 16, 16), background);
             if (icon != null) try { draw.item(icon, x, y + 3); }
             catch (RuntimeException error) { icon = null; Reference.logger.debug("Could not draw verifier item", error); }
             draw.text(draw.trim(name, Math.max(0, width - 24)), x + 20, y + 7, 0xFFFFFFFF);

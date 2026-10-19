@@ -19,17 +19,29 @@ public final class UiConfigSlider extends UiWidget {
     @Override
     public boolean isFocusable() { return true; }
 
+    private int knobWidth() {
+        int usable = bounds().width - 4;
+        long steps = draft.property.getType() == Property.Type.INTEGER
+            ? Long.parseLong(draft.property.getMaxValue()) - Long.parseLong(draft.property.getMinValue()) + 1 : Integer.MAX_VALUE;
+        return (int) Math.max(8, Math.min(usable / 2, usable / Math.max(1, steps)));
+    }
+
+    private static void button(UiDraw draw, UiBounds box, int v) {
+        int left = box.width / 2, right = box.width - left;
+        draw.texture("minecraft:textures/gui/widgets.png", new UiBounds(box.x, box.y, left, 20), 0, v, left, 20, 256, 256);
+        draw.texture("minecraft:textures/gui/widgets.png", new UiBounds(box.x + left, box.y, right, 20), 200 - right, v, right, 20, 256, 256);
+    }
+
     @Override
     public void draw(UiDraw draw, int mouseX, int mouseY) {
         UiBounds box = bounds();
-        draw.texture("minecraft:textures/gui/widgets.png", box, 0, 46, 200, 20, 256, 256);
-        int x = box.x + 2 + (int) (draft.fraction() * Math.max(0, box.width - 12));
-        draw.texture("minecraft:textures/gui/widgets.png", new UiBounds(x, box.y, 4, box.height),
-            0, 66, 4, 20, 256, 256);
-        draw.texture("minecraft:textures/gui/widgets.png", new UiBounds(x + 4, box.y, 4, box.height),
-            196, 66, 4, 20, 256, 256);
-        String label = draw.trim(draft.text(), box.width - 6);
-        draw.text(label, box.x + (box.width - draw.textWidth(label)) / 2, box.y + 6, 0xFFFFFFA0);
+        button(draw, new UiBounds(box.x + 1, box.y, box.width - 3, 20), 46);
+        int knob = knobWidth();
+        button(draw, new UiBounds(box.x + 2 + (int) (draft.fraction() * (box.width - 4 - knob)), box.y, knob, 20), 66);
+        String label = draft.property.getType() == Property.Type.DOUBLE && draft.valid()
+            ? String.format("%.4f", Double.parseDouble(draft.text())) : draft.text();
+        label = draw.trim(label, box.width - 6);
+        draw.text(label, box.x + box.width / 2 - draw.textWidth(label) / 2, box.y + 6, 0xFFFFFFA0);
         if (isFocused() && UiInput.focusVisible()) draw.border(box, 0xFFE0E0E0);
     }
 
@@ -42,7 +54,8 @@ public final class UiConfigSlider extends UiWidget {
 
     @Override
     public void mouseDrag(int x, int y, int button) {
-        draft.setFraction((double) (x - bounds().x - 4) / Math.max(1, bounds().width - 12));
+        int knob = knobWidth();
+        draft.setFraction((double) (x - bounds().x - knob / 2) / Math.max(1, bounds().width - knob - 4));
     }
 
     @Override

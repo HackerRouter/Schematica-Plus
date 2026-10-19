@@ -3,11 +3,13 @@
 package com.github.lunatrius.schematica.client.gui.placement;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
 import net.minecraft.client.gui.GuiScreen;
 
+import com.github.lunatrius.schematica.api.SchematicOrigin;
 import com.github.lunatrius.schematica.client.gui.framework.UiBounds;
 import com.github.lunatrius.schematica.client.gui.framework.UiButton;
 import com.github.lunatrius.schematica.client.gui.framework.UiDraw;
@@ -60,7 +62,14 @@ public final class GuiSchematicPlacementsList extends GuiSchematicList<Schematic
                 });
                 share.setEnabled(!SharedPlacementsClient.INSTANCE.shared(world));
             }
-            setTooltip(world.name, world.sourceFilename == null ? "" : world.sourceFilename);
+        }
+
+        private List<UiSprite> icons() {
+            List<UiSprite> icons = new ArrayList<>();
+            if (world.subregions() != null && world.subregions().modified()) icons.add(UiSprite.NOTICE);
+            if (world.placementSettings().locked) icons.add(UiSprite.LOCK);
+            if (world.sharedId != null) icons.add(UiSprite.SERVER);
+            return icons;
         }
 
         private UiButton button(String key, Runnable action) {
@@ -91,23 +100,40 @@ public final class GuiSchematicPlacementsList extends GuiSchematicList<Schematic
             if (selected) draw.border(bounds(), 0xFFE0E0E0);
             UiSprite.schematicFile(world.sourceFilename).draw(draw, bounds().x + 2, bounds().y + 5, false, false);
             String name = (world.isEnabled() ? "\u00a7a" : "\u00a7c") + world.name;
-            int textEnd = buttonsStart;
-            if (world.sharedId != null) {
-                textEnd -= 13;
-                UiSprite.SERVER.draw(draw, textEnd, bounds().y + 6, true, badge(mouseX, mouseY));
+            List<UiSprite> icons = icons();
+            int textEnd = buttonsStart - 13 * icons.size();
+            UiSprite hovered = icon(mouseX, mouseY);
+            for (int i = 0; i < icons.size(); i++) {
+                UiSprite icon = icons.get(i);
+                icon.draw(draw, buttonsStart - 13 * (i + 1), bounds().y + 6, true, icon == hovered);
             }
             draw.text(draw.trim(name, textEnd - bounds().x - 24), bounds().x + 20, bounds().y + 7, 0xFFFFFFFF);
             super.draw(draw, mouseX, mouseY);
         }
 
-        private boolean badge(int mouseX, int mouseY) {
-            return world.sharedId != null && mouseX >= buttonsStart - 13 && mouseX < buttonsStart - 2 && mouseY >= bounds().y + 6 && mouseY < bounds().y + 17;
+        private UiSprite icon(int mouseX, int mouseY) {
+            if (mouseY < bounds().y + 6 || mouseY >= bounds().y + 17 || mouseX >= buttonsStart) return null;
+            List<UiSprite> icons = icons();
+            int index = (buttonsStart - 1 - mouseX) / 13;
+            return index < icons.size() && mouseX < buttonsStart - 13 * index - 2 ? icons.get(index) : null;
         }
 
         @Override
         public List<String> tooltip(int mouseX, int mouseY) {
-            if (badge(mouseX, mouseY)) return Collections.singletonList(UiTranslations.format("schematic_synchronizer.gui.placement.hover.server_schematic"));
-            return super.tooltip(mouseX, mouseY);
+            UiSprite icon = icon(mouseX, mouseY);
+            if (icon == UiSprite.SERVER) return Collections.singletonList(UiTranslations.format("schematic_synchronizer.gui.placement.hover.server_schematic"));
+            if (icon == UiSprite.LOCK) return Collections.singletonList(UiTranslations.format("litematica.hud.schematic_placement.hover_info.placement_locked"));
+            if (icon == UiSprite.NOTICE) return Collections.singletonList(UiTranslations.format("litematica.hud.schematic_placement.hover_info.placement_modified"));
+            if (mouseX >= buttonsStart - 18) return super.tooltip(mouseX, mouseY);
+            SchematicOrigin origin = world.originPosition();
+            return Arrays.asList(
+                UiTranslations.format("litematica.gui.label.schematic_placement.schematic_name", world.name),
+                UiTranslations.format("litematica.gui.label.schematic_placement.schematic_file", world.sourceFilename != null
+                    ? world.sourceFilename : UiTranslations.format("litematica.gui.label.schematic_placement.in_memory")),
+                UiTranslations.format("litematica.gui.label.schematic_placement.origin", String.format("x: %d, y: %d, z: %d", origin.x, origin.y, origin.z)),
+                UiTranslations.format("litematica.gui.label.schematic_placement.sub_region_count", String.valueOf(Math.max(1, world.getSchematic().getRegions().size()))),
+                UiTranslations.format("litematica.gui.label.schematic_placement.enclosing_size",
+                    String.format("%d x %d x %d", world.getWidth(), world.getHeight(), world.getLength())));
         }
 
         @Override

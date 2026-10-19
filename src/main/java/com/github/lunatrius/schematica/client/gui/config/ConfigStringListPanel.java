@@ -41,7 +41,7 @@ public final class ConfigStringListPanel extends UiPanel {
     private void refresh() {
         publish();
         List<Value> entries = new ArrayList<>(values);
-        entries.add(dummy);
+        if (entries.isEmpty()) entries.add(dummy);
         model.setEntries(entries);
         rows.sync();
     }
@@ -83,7 +83,7 @@ public final class ConfigStringListPanel extends UiPanel {
             this.value = value;
             this.index = index;
             boolean isDummy = value == dummy;
-            number = add(new UiLabel(() -> String.format("%3d:", index + 1), 0xFFC0C0C0));
+            number = add(new UiLabel(() -> String.format("%3d:", index + 1), 0xC0C0C0C0));
             text = add(new UiTextField(font, 65535, edited -> { value.text = edited; if (!isDummy) publish(); }));
             text.setText(value.text);
             reset = add(new UiButton(() -> UiTranslations.format("malilib.gui.button.reset.caps"), button -> text.setText("")));
@@ -121,13 +121,19 @@ public final class ConfigStringListPanel extends UiPanel {
             int resetWidth = font.getStringWidth(reset.label()) + 10;
             int textWidth = Math.max(30, bounds().width - Math.max(160, resetWidth + 100));
             number.setBounds(x + 2, y + 6, 20, 12);
-            text.setBounds(x + 22, y + 2, textWidth - 4, 17);
+            text.setBounds(x + 19, y + 1, textWidth - 2, 19);
             reset.setBounds(x + 22 + textWidth, y + 1, resetWidth, 20);
             int bx = value == dummy ? x + 20 : reset.bounds().right() + 4;
             insert.setBounds(bx, y + 4, 15, 15);
             remove.setBounds(bx + 18, y + 4, 15, 15);
             down.setBounds(bx + 36, y + 4, 15, 15);
             up.setBounds(bx + 54, y + 4, 15, 15);
+        }
+
+        @Override
+        public void draw(UiDraw draw, int mouseX, int mouseY) {
+            draw.fill(bounds(), index % 2 == 1 ? 0x20FFFFFF : 0x30FFFFFF);
+            super.draw(draw, mouseX, mouseY);
         }
 
         @Override

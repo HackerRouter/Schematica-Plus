@@ -21,11 +21,13 @@ import com.github.lunatrius.schematica.client.gui.framework.UiDraw;
 import com.github.lunatrius.schematica.client.gui.framework.UiLabel;
 import com.github.lunatrius.schematica.client.gui.framework.UiListModel;
 import com.github.lunatrius.schematica.client.gui.framework.UiPanel;
+import com.github.lunatrius.schematica.client.gui.framework.UiPathBar;
 import com.github.lunatrius.schematica.client.gui.framework.UiRowList;
 import com.github.lunatrius.schematica.client.gui.framework.UiScreen;
 import com.github.lunatrius.schematica.client.gui.framework.UiSprite;
 import com.github.lunatrius.schematica.client.gui.framework.UiTextField;
 import com.github.lunatrius.schematica.client.gui.framework.UiTranslations;
+import com.github.lunatrius.schematica.client.gui.framework.UiWidget;
 import com.github.lunatrius.schematica.client.selection.AreaSelectionLibrary;
 import com.github.lunatrius.schematica.client.selection.AreaSelectionLibrary.Area;
 import com.github.lunatrius.schematica.client.selection.AreaSelections;
@@ -52,7 +54,8 @@ public final class GuiAreaSelectionManager extends UiScreen {
         : row.name() + " " + row.area.boxes().stream().map(box -> box.name()).collect(Collectors.joining(" ")));
     private UiRowList<Row> list;
     private UiButton home, up, createFolder;
-    private UiLabel path;
+    private UiPathBar path;
+    private UiWidget frame;
     private UiTextField search;
     private UiButton searchButton;
     private UiButton editor;
@@ -72,6 +75,12 @@ public final class GuiAreaSelectionManager extends UiScreen {
     }
 
     @Override protected void createWidgets() {
+        frame = root.add(new UiWidget() {
+            @Override public void draw(UiDraw draw, int mouseX, int mouseY) {
+                draw.fill(bounds(), 0xB0000000);
+                draw.border(bounds(), 0xFF999999);
+            }
+        });
         editor = addButton("litematica.gui.button.change_menu.area_editor", () -> configure(library.normalSelection())).setSprite(UiSprite.AREA_EDITOR);
         unselect = addButton("litematica.gui.button.area_selections.unselect", () -> { if (available()) AreaSelections.select(null); });
         unselect.setTooltip(UiTranslations.format("litematica.gui.button.hover.area_selections.unselect"));
@@ -96,7 +105,12 @@ public final class GuiAreaSelectionManager extends UiScreen {
         up = icon(UiSprite.UP, "malilib.gui.button.hover.directory_widget.up",
             () -> navigate(AreaSelectionLibrary.parentFolder(library.targetFolder())));
         createFolder = icon(UiSprite.CREATE_DIRECTORY, "malilib.gui.button.hover.directory_widget.create_directory", this::createFolder);
-        path = root.add(new UiLabel(() -> "/" + library.targetFolder()));
+        path = root.add(new UiPathBar(() -> {
+            List<String> elements = new ArrayList<>();
+            elements.add("area_selections");
+            for (String part : library.targetFolder().split("/")) if (!part.isEmpty()) elements.add(part);
+            return elements;
+        }));
         list = root.add(new UiRowList<>(model, (row, index) -> row.area == null ? new FolderEntry(row, index) : new Entry(row.area, index)));
         status = root.add(new UiLabel(this::statusText));
     }
@@ -237,14 +251,15 @@ public final class GuiAreaSelectionManager extends UiScreen {
             right -= w + 2;
             button.setBounds(right, 24, w, 20);
         }
-        home.setBounds(14, 54, 12, 12);
-        up.setBounds(28, 54, 12, 12);
-        createFolder.setBounds(42, 54, 12, 12);
-        path.setBounds(58, 53, Math.max(0, width - 96), 14);
+        frame.setBounds(10, 50, Math.max(0, width - 26), Math.max(0, height - 68));
+        home.setBounds(12, 55, 12, 12);
+        up.setBounds(26, 55, 12, 12);
+        createFolder.setBounds(40, 55, 12, 12);
+        path.setBounds(58, 54, Math.max(0, width - 103), 14);
         path.setVisible(!searching);
-        searchButton.setBounds(width - 26, 54, 12, 12);
-        search.setBounds(58, 53, Math.max(0, width - 96), 16);
-        list.setBounds(10, 72, width - 20, Math.max(0, height - 90));
+        searchButton.setBounds(width - 41, 55, 12, 12);
+        search.setBounds(12, 54, Math.max(0, width - 56), 14);
+        list.setBounds(12, 71, Math.max(0, width - 30), Math.max(0, height - 93));
         status.setBounds(10, height - 15, width - 20, 14);
     }
 
@@ -291,10 +306,10 @@ public final class GuiAreaSelectionManager extends UiScreen {
 
         @Override public void draw(UiDraw draw, int mouseX, int mouseY) {
             boolean selected = library.normalSelection() == area;
-            draw.fill(bounds(), selected || containsVisible(mouseX, mouseY) ? 0xA0707070 : index % 2 == 1 ? 0xA0101010 : 0xA0303030);
-            if (selected) draw.border(bounds(), 0xFFE0E0E0);
-            UiSprite.AREA_SELECTION.draw(draw, bounds().x + 2, bounds().y + 5, false, false);
-            draw.text(draw.trim(area.name(), buttonsStart - bounds().x - 24), bounds().x + 20, bounds().y + 7, 0xFFFFFFFF);
+            draw.fill(bounds(), selected || containsVisible(mouseX, mouseY) ? 0x70FFFFFF : index % 2 == 1 ? 0x20FFFFFF : 0x38FFFFFF);
+            UiSprite.JSON.draw(draw, bounds().x, bounds().y + 5, false, false);
+            if (selected) draw.border(bounds(), 0xEEEEEEEE);
+            draw.text(draw.trim(area.name(), buttonsStart - bounds().x - 20), bounds().x + 16, bounds().y + 8, 0xFFFFFFFF);
             super.draw(draw, mouseX, mouseY);
         }
 
@@ -340,9 +355,9 @@ public final class GuiAreaSelectionManager extends UiScreen {
         FolderEntry(Row row, int index) { this.row = row; this.index = index; }
 
         @Override public void draw(UiDraw draw, int mouseX, int mouseY) {
-            draw.fill(bounds(), containsVisible(mouseX, mouseY) ? 0xA0707070 : index % 2 == 1 ? 0xA0101010 : 0xA0303030);
-            UiSprite.DIRECTORY.draw(draw, bounds().x + 2, bounds().y + 5, false, false);
-            draw.text(draw.trim(row.name(), bounds().width - 24), bounds().x + 20, bounds().y + 7, 0xFFFFFFFF);
+            draw.fill(bounds(), containsVisible(mouseX, mouseY) ? 0x70FFFFFF : index % 2 == 1 ? 0x20FFFFFF : 0x38FFFFFF);
+            UiSprite.DIRECTORY.draw(draw, bounds().x, bounds().y + 5, false, false);
+            draw.text(draw.trim(row.name(), bounds().width - 20), bounds().x + 16, bounds().y + 8, 0xFFFFFFFF);
         }
 
         @Override public boolean isFocusable() { return true; }

@@ -170,11 +170,11 @@ public class GuiModConfig extends UiScreen implements HotkeyHooks.Capture {
     protected void layoutWidgets() {
         report.setBounds(width - 32, 10, 20, 20);
         int x = 10;
-        int y = 34;
+        int y = 26;
         for (Tab value : Tab.values()) {
             UiButton button = tabs.get(value);
             int w = fontRendererObj.getStringWidth(button.label()) + 10;
-            if (x > 10 && x + w > width - 10) { x = 10; y += 22; }
+            if (x > 10 && x + w > (y == 26 ? report.bounds().x - 4 : width - 10)) { x = 10; y += 22; }
             button.setBounds(x, y, w, 20);
             button.setEnabled(value != tab);
             x += w + 2;
@@ -262,7 +262,7 @@ public class GuiModConfig extends UiScreen implements HotkeyHooks.Capture {
 
     private void endCapture() { capturingButton = null; HotkeyHooks.reset(); refreshEntries(); }
     private String captureLabel() {
-        return "§e> " + (capturingKey == null ? keyLabel(keyFilter) : chordLabel(capturingKey)) + " <§r";
+        return "> §e" + (capturingKey == null ? keyLabel(keyFilter) : chordLabel(capturingKey)) + "§r <";
     }
     private static String keyLabel(int code) {
         return code == 0 ? UiTranslations.format("malilib.gui.button.empty_keybind") : GameSettings.getKeyDisplayString(code);

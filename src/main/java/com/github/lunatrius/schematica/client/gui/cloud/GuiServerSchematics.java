@@ -26,6 +26,7 @@ import com.github.lunatrius.schematica.client.gui.framework.UiDraw;
 import com.github.lunatrius.schematica.client.gui.framework.UiLabel;
 import com.github.lunatrius.schematica.client.gui.framework.UiList;
 import com.github.lunatrius.schematica.client.gui.framework.UiListModel;
+import com.github.lunatrius.schematica.client.gui.framework.UiPathBar;
 import com.github.lunatrius.schematica.client.gui.framework.UiScreen;
 import com.github.lunatrius.schematica.client.gui.framework.UiSprite;
 import com.github.lunatrius.schematica.client.gui.framework.UiTextField;
@@ -61,7 +62,8 @@ public final class GuiServerSchematics extends UiScreen {
 
     private UiWidget frame;
     private SchematicInfoPanel info;
-    private UiLabel path, status;
+    private UiPathBar path;
+    private UiLabel status;
     private UiList<CloudNode> list;
     private UiTextField search;
     private UiButton home, up, createDirectory, openFolder, searchButton, back;
@@ -81,6 +83,14 @@ public final class GuiServerSchematics extends UiScreen {
         return "/" + scopeName(path.scope) + (path.isRoot() ? "" : "/" + path.relative()) + "/";
     }
 
+    private List<String> pathElements() {
+        List<String> elements = new ArrayList<>();
+        if (directory == null) return elements;
+        elements.add(scopeName(directory.scope));
+        if (!directory.isRoot()) for (String part : directory.relative().split("/")) if (!part.isEmpty()) elements.add(part);
+        return elements;
+    }
+
     @Override
     protected void createWidgets() {
         frame = root.add(new UiWidget() {
@@ -89,7 +99,7 @@ public final class GuiServerSchematics extends UiScreen {
                 draw.border(bounds(), 0xFF999999);
             }
         });
-        path = root.add(new UiLabel(() -> display(directory)));
+        path = root.add(new UiPathBar(this::pathElements));
         home = icon(UiSprite.ROOT, "malilib.gui.button.hover.directory_widget.root", () -> navigate(null));
         up = icon(UiSprite.UP, "malilib.gui.button.hover.directory_widget.up", this::goUp);
         createDirectory = icon(UiSprite.CREATE_DIRECTORY, "malilib.gui.button.hover.directory_widget.create_directory", this::createDirectory);

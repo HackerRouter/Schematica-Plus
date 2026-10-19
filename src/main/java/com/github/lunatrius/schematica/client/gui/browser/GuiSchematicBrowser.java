@@ -22,6 +22,7 @@ import com.github.lunatrius.schematica.client.gui.framework.UiDraw;
 import com.github.lunatrius.schematica.client.gui.framework.UiLabel;
 import com.github.lunatrius.schematica.client.gui.framework.UiList;
 import com.github.lunatrius.schematica.client.gui.framework.UiListModel;
+import com.github.lunatrius.schematica.client.gui.framework.UiPathBar;
 import com.github.lunatrius.schematica.client.gui.framework.UiScreen;
 import com.github.lunatrius.schematica.client.gui.framework.UiSprite;
 import com.github.lunatrius.schematica.client.gui.framework.UiTextField;
@@ -45,7 +46,7 @@ public abstract class GuiSchematicBrowser extends UiScreen {
     protected SchematicBrowserModel browser;
     protected final UiListModel<SchematicBrowserModel.Entry> files = new UiListModel<>(14, SchematicBrowserModel.Entry::label);
     private final boolean directoriesOnly;
-    private UiLabel path;
+    private UiPathBar path;
     private UiButton up;
     private UiButton home;
     private UiButton createDirectory;
@@ -78,7 +79,7 @@ public abstract class GuiSchematicBrowser extends UiScreen {
                 draw.border(bounds(), 0xFF999999);
             }
         });
-        path = root.add(new UiLabel(() -> browser == null ? "" : browser.listing() ? listName : browser.relativeDirectory()));
+        path = root.add(new UiPathBar(this::pathElements));
         up = icon(UiSprite.UP, "malilib.gui.button.hover.directory_widget.up", this::goUp);
         favorites = root.add(new UiButton(() -> (listName != null && browser != null && browser.listing()
             && listName.equals(UiTranslations.format("schematica.ui.browser.favorites")) ? "\u00a7e" : "\u00a77") + "\u2605",
@@ -182,6 +183,19 @@ public abstract class GuiSchematicBrowser extends UiScreen {
         }
         info.setContentBottom(y + 12);
         info.preview(x, y + 24, width);
+    }
+
+    private List<String> pathElements() {
+        List<String> elements = new ArrayList<>();
+        if (browser == null) return elements;
+        if (browser.listing()) {
+            elements.add(listName);
+            return elements;
+        }
+        elements.add(browser.root().getName());
+        String relative = browser.relativeDirectory();
+        for (String part : relative.split("/")) if (!part.isEmpty()) elements.add(part);
+        return elements;
     }
 
     /** Whether the browser offers favorite and recent files (the load browser). */

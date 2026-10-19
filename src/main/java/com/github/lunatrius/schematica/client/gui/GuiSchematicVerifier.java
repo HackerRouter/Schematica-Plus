@@ -48,7 +48,7 @@ public final class GuiSchematicVerifier extends UiScreen {
     private final UiButton[] columns = new UiButton[3];
     private VerificationScan previous;
     private long revision = -1;
-    private int expectedWidth, foundWidth;
+    private int expectedWidth, foundWidth, nameExpected, nameFound;
     private int refreshTicks;
     private String message = "";
 
@@ -84,7 +84,12 @@ public final class GuiSchematicVerifier extends UiScreen {
         for (Type type : Type.values()) filters.add(root.add(new UiButton(() -> type.color + UiTranslations.format(type.key), mouse -> {
             if (mouse == 0) { session.filter = type; refresh(); }
         })));
-        header = root.add(new UiPanel());
+        header = root.add(new UiPanel() {
+            @Override public void draw(UiDraw draw, int mouseX, int mouseY) {
+                draw.fill(bounds(), 0xA0303030);
+                super.draw(draw, mouseX, mouseY);
+            }
+        });
         String[] keys = {"litematica.gui.label.schematic_verifier.expected", "litematica.gui.label.schematic_verifier.found",
             "litematica.gui.label.schematic_verifier.count"};
         for (int i = 0; i < columns.length; i++) {
@@ -96,10 +101,12 @@ public final class GuiSchematicVerifier extends UiScreen {
                 refresh();
             }) {
                 @Override public void draw(UiDraw draw, int mouseX, int mouseY) {
-                    draw.text(draw.trim("§l" + label(), Math.max(0, bounds().width - 18)), bounds().x, bounds().y + 7, 0xFFFFFFFF);
+                    boolean hovered = containsVisible(mouseX, mouseY);
+                    draw.text(draw.trim("§l" + label(), Math.max(0, bounds().width - 24)), bounds().x + 3, bounds().y + 7, 0xFFFFFFFF);
                     if (session.sortColumn == column) (session.reverse ? UiSprite.SORT_UP : UiSprite.SORT_DOWN)
-                        .draw(draw, bounds().right() - 16, bounds().y + 3, true, false);
-                    if (isFocused() && UiInput.focusVisible()) draw.border(bounds(), 0xFFE0E0E0);
+                        .draw(draw, bounds().right() - 18, bounds().y + 3, true, hovered);
+                    draw.border(new UiBounds(bounds().x, bounds().y + 1, Math.max(0, bounds().width - 2), 20),
+                        hovered || isFocused() && UiInput.focusVisible() ? 0xFFFFFFFF : 0xC0707070);
                 }
             });
         }
@@ -128,6 +135,15 @@ public final class GuiSchematicVerifier extends UiScreen {
             if (session.reverse) order = order.reversed();
             groups.sort(order);
             for (Group group : groups) rows.add(new Row(type, group));
+        }
+        int header0 = fontRendererObj.getStringWidth("§l" + UiTranslations.format("litematica.gui.label.schematic_verifier.expected"));
+        int header1 = fontRendererObj.getStringWidth("§l" + UiTranslations.format("litematica.gui.label.schematic_verifier.found"));
+        nameExpected = header0;
+        nameFound = header1;
+        for (Row row : rows) {
+            if (row.group == null) continue;
+            nameExpected = Math.max(nameExpected, fontRendererObj.getStringWidth(visual(row.group.pair.expected).name));
+            nameFound = Math.max(nameFound, fontRendererObj.getStringWidth(visual(row.group.pair.found).name));
         }
         model.setEntries(rows);
         list.sync();
@@ -170,12 +186,18 @@ public final class GuiSchematicVerifier extends UiScreen {
         int usable = Math.max(0, width - 34);
         int ignoreWidth = fontRendererObj.getStringWidth(UiTranslations.format("litematica.gui.button.schematic_verifier.ignore")) + 16;
         int content = Math.max(0, usable - ignoreWidth - 58);
-        expectedWidth = Math.max(0, content / 2);
-        foundWidth = Math.max(0, content - expectedWidth);
+        int wantExpected = nameExpected + 40, wantFound = nameFound + 40;
+        if (wantExpected + wantFound > content) {
+            expectedWidth = Math.max(0, (int) ((long) content * wantExpected / Math.max(1, wantExpected + wantFound)));
+            foundWidth = Math.max(0, content - expectedWidth);
+        } else {
+            expectedWidth = wantExpected;
+            foundWidth = wantFound;
+        }
         header.setBounds(12, top, usable, 22);
-        columns[0].setBounds(16, top, expectedWidth, 22);
-        columns[1].setBounds(16 + expectedWidth, top, foundWidth, 22);
-        columns[2].setBounds(16 + expectedWidth + foundWidth, top, 52, 22);
+        columns[0].setBounds(13, top, expectedWidth, 22);
+        columns[1].setBounds(13 + expectedWidth, top, foundWidth, 22);
+        columns[2].setBounds(13 + expectedWidth + foundWidth, top, 52, 22);
         list.setBounds(12, top + 22, Math.max(0, width - 22), Math.max(0, height - 36 - top - 22));
         int w = fontRendererObj.getStringWidth(menu.label()) + 20;
         menu.setBounds(width - w - 10, height - 36, w, 20);
