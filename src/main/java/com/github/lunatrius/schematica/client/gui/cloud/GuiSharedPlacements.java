@@ -167,12 +167,20 @@ public final class GuiSharedPlacements extends UiScreen {
             return UiTranslations.format(PREFIX + "button." + key);
         }
 
+        private int stateWidth() {
+            int width = fontRendererObj.getStringWidth(buttons.get(2).label());
+            for (String key : new String[] {"load", "unload"}) {
+                width = Math.max(width, fontRendererObj.getStringWidth(UiTranslations.format(PREFIX + "button." + key)));
+            }
+            return width;
+        }
+
         @Override
         public void layout(UiBounds screen) {
             int right = bounds().right() - 2;
             for (int i = 0; i < buttons.size(); i++) {
                 UiButton button = buttons.get(i);
-                int width = fontRendererObj.getStringWidth(button.label()) + 10;
+                int width = (i == 2 ? stateWidth() : fontRendererObj.getStringWidth(button.label())) + 10;
                 button.setBounds(right - width, bounds().y + 1, width, 20);
                 right -= width + 1;
             }

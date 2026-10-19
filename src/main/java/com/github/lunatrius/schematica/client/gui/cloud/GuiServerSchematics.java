@@ -14,6 +14,7 @@ import com.github.lunatrius.schematica.SchematicaPlus;
 import com.github.lunatrius.schematica.api.ISchematic;
 import com.github.lunatrius.schematica.api.SchematicRegion;
 import com.github.lunatrius.schematica.client.cloud.CloudCache;
+import com.github.lunatrius.schematica.client.gui.GuiStringListSelection;
 import com.github.lunatrius.schematica.client.gui.control.GuiSchematicMaterials;
 import com.github.lunatrius.schematica.client.gui.framework.UiBounds;
 import com.github.lunatrius.schematica.client.gui.framework.UiButton;
@@ -96,12 +97,11 @@ public final class GuiServerSchematics extends UiScreen {
         });
         list = root.add(new UiList<>(model, "", this::activate));
         list.setFileStyle(node -> node.type == CloudNode.Type.DIRECTORY ? UiSprite.DIRECTORY : UiSprite.schematicFile(node.name()),
-            node -> node.type == CloudNode.Type.DIRECTORY ? (node.path.isRoot() ? scopeName(node.path.scope) : node.name())
-                : node.name().substring(0, node.name().lastIndexOf('.')));
+            node -> node.type == CloudNode.Type.DIRECTORY ? label(node) : node.name().substring(0, node.name().lastIndexOf('.')));
         list.setBadges(node -> node.file != null && CloudCache.cached(node.file) ? UiSprite.DOWNLOADED : null);
         list.setEntryTooltip(node -> node.file != null && CloudCache.cached(node.file)
             ? Collections.singletonList(UiTranslations.format(PREFIX + "hover.saved_path", relative(CloudCache.file(node.file.path))))
-            : Collections.singletonList(node.name()));
+            : Collections.singletonList(node.type == CloudNode.Type.DIRECTORY ? label(node) : node.name()));
         info = root.add(new UiWidget() {
             @Override public void draw(UiDraw draw, int mouseX, int mouseY) {
                 draw.fill(bounds(), 0xA0000000);
@@ -114,6 +114,7 @@ public final class GuiServerSchematics extends UiScreen {
         status = root.add(new UiLabel(this::storage));
         load = action("litematica.gui.button.load_schematic_to_memory", this::loadSelected);
         materials = action("litematica.gui.button.material_list", this::materialList);
+        materials.setTooltip(UiTranslations.format("litematica.gui.button.hover.material_list_shift_to_select_sub_regions"));
         upload = action(PREFIX + "button.upload_to_server", () -> mc.displayGuiScreen(new GuiUploadSchematics(this, directory)));
         upload.setTooltip(UiTranslations.format(PREFIX + "button.hover.upload_to_server"));
         download = action("schematica.ui.cloud.download", this::downloadSelected);
@@ -126,6 +127,10 @@ public final class GuiServerSchematics extends UiScreen {
             }));
         createPlacement.setTooltip(UiTranslations.format("litematica.gui.label.schematic_load.hoverinfo.create_placement").split("\n"));
         back = addButton("litematica.gui.button.change_menu.to_main_menu", this::mainMenu);
+    }
+
+    private static String label(CloudNode node) {
+        return node.path.isRoot() ? scopeName(node.path.scope) : node.name();
     }
 
     private UiButton icon(UiSprite sprite, String tooltip, Runnable action) {
@@ -230,18 +235,36 @@ public final class GuiServerSchematics extends UiScreen {
     private void materialList() {
         CloudFile file = selectedFile();
         if (file == null) return;
+        boolean pick = isShiftKeyDown();
         fetch(file, local -> {
             ISchematic schematic = SchematicFormat.readFromFile(local);
             if (schematic == null) {
                 addMessage(MessageType.ERROR, "litematica.error.schematic_read_from_file_failed.exception", local.getName());
                 return;
             }
+            String name = local.getName().substring(0, local.getName().lastIndexOf('.'));
             SchematicWorld world = new SchematicWorld(schematic, local.getName());
             world.sourceFilename = local.getName();
-            MaterialList list = MaterialList.schematic(world, file.name, Collections.<SchematicRegion>emptyList());
-            MaterialLists.setCurrent(list);
-            mc.displayGuiScreen(new GuiSchematicMaterials(this, list));
+            List<SchematicRegion> regions = schematic.getRegions();
+            if (pick && regions.size() > 1) {
+                List<String> names = new ArrayList<>();
+                for (SchematicRegion region : regions) names.add(region.name);
+                mc.displayGuiScreen(new GuiStringListSelection(this,
+                    UiTranslations.format("litematica.gui.title.material_list.select_schematic_regions", name), names, chosen -> {
+                        List<SchematicRegion> selected = new ArrayList<>();
+                        for (SchematicRegion region : regions) if (chosen.contains(region.name)) selected.add(region);
+                        openMaterials(world, name, selected);
+                    }));
+            } else {
+                openMaterials(world, name, Collections.<SchematicRegion>emptyList());
+            }
         });
+    }
+
+    private void openMaterials(SchematicWorld world, String name, List<SchematicRegion> regions) {
+        MaterialList list = MaterialList.schematic(world, name, regions);
+        MaterialLists.setCurrent(list);
+        mc.displayGuiScreen(new GuiSchematicMaterials(this, list));
     }
 
     private void downloadSelected() {
@@ -373,12 +396,12 @@ public final class GuiServerSchematics extends UiScreen {
         if (node == null) return;
         if (node.type == CloudNode.Type.DIRECTORY) {
             draw.text(UiTranslations.format("litematica.gui.label.schematic_info.name"), x, y, CloudInfo.LABEL);
-            draw.text(draw.trim(node.path.isRoot() ? scopeName(node.path.scope) : node.name(), width - 12), x + 4, y += CloudInfo.LINE, CloudInfo.VALUE);
+            draw.text(draw.trim(label(node), width - 12), x + 4, y += CloudInfo.LINE, CloudInfo.VALUE);
             draw.text(UiTranslations.format(PREFIX + "info.dir_schematics", node.count), x, y + CloudInfo.LINE, CloudInfo.LABEL);
             return;
         }
         CloudFile file = node.file;
-        y = CloudInfo.schematic(draw, x, y, width, file);
+        y = CloudInfo.schematic(draw, x, y, width, height, file);
         if (!file.owner.isEmpty()) {
             draw.text(draw.trim(UiTranslations.format(PREFIX + "info.owner") + ": " + file.owner, width - 8), x, y, CloudInfo.LABEL);
             y += CloudInfo.LINE;

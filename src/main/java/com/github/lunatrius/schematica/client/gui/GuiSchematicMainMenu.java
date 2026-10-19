@@ -91,6 +91,8 @@ public final class GuiSchematicMainMenu extends UiScreen {
         shared.setEnabled(world && SharedPlacementsClient.INSTANCE.available());
         if (cloud.isEnabled()) cloud.setTooltip();
         else cloud.setTooltip(UiTranslations.format("schematica.ui.cloud.unavailable"));
+        if (shared.isEnabled()) shared.setTooltip();
+        else shared.setTooltip(UiTranslations.format("schematica.ui.shared.unavailable"));
         mode.setEnabled(world);
         selectionMode.setEnabled(world && SchematicaPlus.proxy.isSaveEnabled && AreaSelections.available(AreaSelections.library()));
     }

@@ -15,23 +15,32 @@ final class CloudInfo {
 
     private CloudInfo() {}
 
-    static int schematic(UiDraw draw, int x, int y, int width, CloudFile file) {
+    static int schematic(UiDraw draw, int x, int y, int width, int screenHeight, CloudFile file) {
         int limit = width - 8;
         draw.text(UiTranslations.format("litematica.gui.label.schematic_info.name"), x, y, LABEL);
-        draw.text(draw.trim(file.name, limit - 4), x + 4, y += LINE, VALUE);
-        if (!file.author.isEmpty() && !"?".equals(file.author)) {
-            draw.text(draw.trim(UiTranslations.format("litematica.gui.label.schematic_info.schematic_author", file.author), limit), x, y += LINE, LABEL);
-        }
+        draw.text(draw.trim(file.name.isEmpty() ? file.path.name() : file.name, limit - 4), x + 4, y += LINE, VALUE);
+        draw.text(draw.trim(UiTranslations.format("litematica.gui.label.schematic_info.schematic_author", file.author), limit), x, y += LINE, LABEL);
         if (file.created > 0) {
             draw.text(draw.trim(UiTranslations.format("litematica.gui.label.schematic_info.time_created",
                 DATE_FORMAT.format(new Date(file.created))), limit), x, y += LINE, LABEL);
         }
         draw.text(UiTranslations.format("litematica.gui.label.schematic_info.region_count", file.regions), x, y += LINE, LABEL);
-        if (file.volume > 0) draw.text(UiTranslations.format("litematica.gui.label.schematic_info.total_volume", file.volume), x, y += LINE, LABEL);
-        if (file.blocks > 0) draw.text(UiTranslations.format("litematica.gui.label.schematic_info.total_blocks", file.blocks), x, y += LINE, LABEL);
-        if (file.sizeX > 0) {
+        String size = String.format("%d x %d x %d", file.sizeX, file.sizeY, file.sizeZ);
+        if (screenHeight >= 340) {
+            draw.text(UiTranslations.format("litematica.gui.label.schematic_info.total_volume", file.volume), x, y += LINE, LABEL);
+            if (file.blocks > 0) draw.text(UiTranslations.format("litematica.gui.label.schematic_info.total_blocks", file.blocks), x, y += LINE, LABEL);
             draw.text(UiTranslations.format("litematica.gui.label.schematic_info.enclosing_size"), x, y += LINE, LABEL);
-            draw.text(String.format("%d x %d x %d", file.sizeX, file.sizeY, file.sizeZ), x + 4, y += LINE, VALUE);
+            draw.text(size, x + 4, y += LINE, VALUE);
+        } else {
+            draw.text(draw.trim(file.blocks > 0
+                ? UiTranslations.format("litematica.gui.label.schematic_info.total_blocks_and_volume", file.blocks, file.volume)
+                : UiTranslations.format("litematica.gui.label.schematic_info.total_volume", file.volume), limit), x, y += LINE, LABEL);
+            draw.text(UiTranslations.format("litematica.gui.label.schematic_info.enclosing_size_value", size), x, y += LINE, LABEL);
+        }
+        if (!file.format.isEmpty()) {
+            draw.text("litematic".equals(file.format) ? UiTranslations.format("litematica.gui.label.schematic_info.version", file.version)
+                : "nbt".equals(file.format) ? UiTranslations.format("litematica.gui.label.schematic_info.vanilla_version")
+                : "." + file.format, x, y += LINE, LABEL);
         }
         String schema = file.dataVersion < 0 ? null : DataVersions.name(file.dataVersion);
         if (schema != null) {

@@ -335,6 +335,7 @@ schematica.ui.cloud.delete_confirm=Delete %s from the server?
 schematica.ui.cloud.storage=Storage: %s
 schematica.ui.cloud.loading=Loading...
 schematica.ui.cloud.unavailable=The server does not have Schematica Plus or does not allow schematic storage
+schematica.ui.shared.unavailable=The server does not have Schematica Plus or does not allow shared placements
 schematica.message.cloud.invalid_name=Invalid name: %s
 schematica.message.cloud.exists=%s already exists
 schematica.message.cloud.not_found=%s could not be found

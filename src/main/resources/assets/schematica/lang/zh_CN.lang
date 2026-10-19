@@ -335,6 +335,7 @@ schematica.ui.cloud.delete_confirm=要从服务器删除 %s 吗？
 schematica.ui.cloud.storage=存储空间：%s
 schematica.ui.cloud.loading=加载中……
 schematica.ui.cloud.unavailable=服务器未安装 Schematica Plus 或不允许存储原理图
+schematica.ui.shared.unavailable=服务器未安装 Schematica Plus 或不允许共享放置
 schematica.message.cloud.invalid_name=无效的名称：%s
 schematica.message.cloud.exists=%s 已存在
 schematica.message.cloud.not_found=找不到 %s
