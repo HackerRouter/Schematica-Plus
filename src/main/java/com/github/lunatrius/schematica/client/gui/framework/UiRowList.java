@@ -18,7 +18,7 @@ public final class UiRowList<T> extends UiPanel {
     }
 
     public UiRowList(UiListModel<T> model, BiFunction<T, Integer, UiPanel> factory, int rowRightInset) {
-        if (rowRightInset < 8) throw new IllegalArgumentException("Rows overlap the scrollbar");
+        if (rowRightInset < UiScrollBar.WIDTH) throw new IllegalArgumentException("Rows overlap the scrollbar");
         this.model = model;
         this.factory = factory;
         this.rowRightInset = rowRightInset;
@@ -28,7 +28,7 @@ public final class UiRowList<T> extends UiPanel {
     public void setBounds(int x, int y, int width, int height) {
         super.setBounds(x, y, width, height);
         rows.setBounds(x, y, Math.max(0, width - rowRightInset), height);
-        scrollBar.setBounds(x + width - 8, y, 8, height);
+        scrollBar.setBounds(x + width - UiScrollBar.WIDTH, y, UiScrollBar.WIDTH, height);
         model.setViewportHeight(height);
         sync();
     }
@@ -68,18 +68,12 @@ public final class UiRowList<T> extends UiPanel {
         private int grab;
 
         private UiBounds thumb() {
-            int total = Math.max(1, model.entries().size() * model.rowHeight());
-            int height = Math.min(bounds().height, Math.max(10, bounds().height * bounds().height / total));
-            int travel = bounds().height - height;
-            int y = model.maxOffset() == 0 ? 0 : (int) ((long) model.offset() * travel / model.maxOffset());
-            return new UiBounds(bounds().x, bounds().y + y, bounds().width, height);
+            return UiScrollBar.thumb(bounds(), model.entries().size() * model.rowHeight(), model.offset(), model.maxOffset());
         }
 
         @Override
         public void draw(UiDraw draw, int mouseX, int mouseY) {
-            draw.fill(bounds(), 0xA0101010);
-            draw.fill(thumb(), 0xFF808080);
-            draw.border(thumb(), 0xFFC0C0C0);
+            UiScrollBar.draw(draw, bounds(), thumb());
         }
 
         @Override
@@ -92,8 +86,7 @@ public final class UiRowList<T> extends UiPanel {
 
         @Override
         public void mouseDrag(int x, int y, int button) {
-            int travel = Math.max(1, bounds().height - thumb().height);
-            model.setOffset((int) ((long) (y - bounds().y - grab) * model.maxOffset() / travel));
+            model.setOffset(UiScrollBar.offset(bounds(), thumb(), y, grab, model.maxOffset()));
             sync();
         }
     }

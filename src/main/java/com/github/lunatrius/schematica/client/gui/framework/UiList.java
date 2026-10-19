@@ -71,13 +71,13 @@ public final class UiList<T> extends UiWidget {
         return icons == null ? bounds().inset(1) : bounds();
     }
 
-    private UiBounds thumb() {
+    private UiBounds track() {
         UiBounds content = content();
-        int total = Math.max(content.height, model.entries().size() * model.rowHeight());
-        int height = Math.min(content.height, Math.max(12, (int) ((long) content.height * content.height / Math.max(1, total))));
-        int travel = content.height - height;
-        int y = model.maxOffset() == 0 ? 0 : (int) ((long) model.offset() * travel / model.maxOffset());
-        return new UiBounds(content.right() - 6, content.y + y, 6, height);
+        return new UiBounds(content.right() - UiScrollBar.WIDTH, content.y, UiScrollBar.WIDTH, content.height);
+    }
+
+    private UiBounds thumb() {
+        return UiScrollBar.thumb(track(), model.entries().size() * model.rowHeight(), model.offset(), model.maxOffset());
     }
 
     @Override
@@ -93,7 +93,7 @@ public final class UiList<T> extends UiWidget {
             int selected = model.selectedIndex();
             if (chosen != null) chosen.retainAll(model.entries());
             int hovered = content.contains(mouseX, mouseY) ? model.indexAt(mouseY - content.y) : -1;
-            int rowWidth = Math.max(0, content.width - (icons != null ? 12 : model.maxOffset() > 0 ? 7 : 0));
+            int rowWidth = Math.max(0, content.width - (icons != null ? 12 : UiScrollBar.WIDTH + 1));
             for (int index = first; index < end; index++) {
                 int y = content.y + index * model.rowHeight() - model.offset();
                 int background = index == selected ? UiTheme.SELECTED
@@ -122,17 +122,14 @@ public final class UiList<T> extends UiWidget {
             if (model.entries().isEmpty()) {
                 draw.text(draw.trim(emptyText, content.width - 8), content.x + 4, content.y + 6, UiTheme.DISABLED);
             }
-            if (model.maxOffset() > 0) {
-                draw.fill(new UiBounds(content.right() - 6, content.y, 6, content.height), UiTheme.CONTROL);
-                draw.fill(thumb(), dragging ? UiTheme.FOCUS : UiTheme.BORDER);
-            }
+            UiScrollBar.draw(draw, track(), thumb());
         }
     }
 
     @Override
     public List<String> tooltip(int x, int y) {
         int index = model.indexAt(y - content().y);
-        if (index >= 0 && x < content().right() - 7) {
+        if (index >= 0 && x < track().x) {
             T entry = model.entries().get(index);
             return entryTooltip != null ? entryTooltip.apply(entry) : Collections.singletonList(model.label(entry));
         }
@@ -142,7 +139,8 @@ public final class UiList<T> extends UiWidget {
     @Override
     public boolean mouseDown(int x, int y, int button) {
         if (button != 0 || !content().contains(x, y)) return false;
-        if (model.maxOffset() > 0 && x >= thumb().x) {
+        if (x >= track().x) {
+            if (model.maxOffset() == 0) return true;
             UiBounds thumb = thumb();
             dragOffset = thumb.contains(x, y) ? y - thumb.y : thumb.height / 2;
             dragging = true;
@@ -185,9 +183,7 @@ public final class UiList<T> extends UiWidget {
     @Override
     public void mouseDrag(int x, int y, int button) {
         if (dragging) {
-            int travel = content().height - thumb().height;
-            double fraction = (double) (y - content().y - dragOffset) / Math.max(1, travel);
-            model.setOffset((int) Math.round(Math.max(0, Math.min(1, fraction)) * model.maxOffset()));
+            model.setOffset(UiScrollBar.offset(track(), thumb(), y, dragOffset, model.maxOffset()));
         }
     }
 
