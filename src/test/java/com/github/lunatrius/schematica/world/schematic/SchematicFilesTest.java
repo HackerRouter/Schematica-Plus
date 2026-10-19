@@ -7,13 +7,16 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Collections;
+import java.util.List;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
+import net.minecraft.tileentity.TileEntity;
 
 import com.github.lunatrius.schematica.api.ISchematic;
+import com.github.lunatrius.schematica.nbt.NBTHelper;
 
 import cpw.mods.fml.common.registry.GameData;
 import org.junit.BeforeClass;
@@ -23,6 +26,7 @@ import org.junit.rules.TemporaryFolder;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertThrows;
@@ -105,7 +109,7 @@ public class SchematicFilesTest {
 
     @Test public void structuresUseThe112Layout() throws Exception {
         ISchematic grid = new LitematicExportTestGrid(block);
-        NBTTagCompound tag = VanillaStructure.encode(grid, null, true, "Steve");
+        NBTTagCompound tag = VanillaStructure.encode(grid, null, true, true, "Steve");
         assertTrue(VanillaStructure.isStructure(tag));
         assertEquals(1343, tag.getInteger("DataVersion"));
         assertEquals("Steve", tag.getString("author"));
@@ -117,5 +121,32 @@ public class SchematicFilesTest {
         assertEquals(1, blocks.getCompoundTagAt(0).getInteger("state"));
         assertEquals(0, blocks.getCompoundTagAt(1).getInteger("state"));
         assertSame(block, SchematicLitematica.legacyMapping(palette.getCompoundTagAt(1), null).block);
+    }
+
+    private static List<TileEntity> visualChest() {
+        NBTTagCompound tag = new NBTTagCompound();
+        tag.setString("id", "Chest");
+        NBTTagCompound visual = new NBTTagCompound();
+        visual.setString("Type", "test");
+        tag.setTag("SchematicaVisualState", visual);
+        return Collections.singletonList(NBTHelper.readTileEntityFromCompound(tag));
+    }
+
+    @Test public void namedFormatsKeepVisualStateAndStructuresHonourTheNbtOption() {
+        ISchematic grid = new LitematicExportTestGrid(block, visualChest());
+        LitematicExport.Document document = LitematicExport.encode(grid, null, true, false, "visual", "", 0);
+        NBTTagCompound region = document.root.getCompoundTag("Regions").getCompoundTag("visual");
+        NBTTagCompound tile = region.getTagList("TileEntities", 10).getCompoundTagAt(0);
+        assertEquals("minecraft:chest", tile.getString("id"));
+        assertEquals("test", tile.getCompoundTag("SchematicaVisualState").getString("Type"));
+        NBTTagCompound restored = LegacyNbt.tileFrom112(tile);
+        assertEquals("Chest", restored.getString("id"));
+        assertTrue(restored.hasKey("SchematicaVisualState", 10));
+
+        NBTTagCompound structure = VanillaStructure.encode(grid, null, true, false, "");
+        assertEquals("test", structure.getTagList("blocks", 10).getCompoundTagAt(0).getCompoundTag("nbt")
+            .getCompoundTag("SchematicaVisualState").getString("Type"));
+        NBTTagCompound blocksOnly = VanillaStructure.encode(grid, null, false, false, "");
+        assertFalse(blocksOnly.getTagList("blocks", 10).getCompoundTagAt(0).hasKey("nbt"));
     }
 }

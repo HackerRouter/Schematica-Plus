@@ -2,6 +2,7 @@
 // Litematica VanillaStructure / structure export, adapted for 1.7.10 by HackerRouter, 2026.
 package com.github.lunatrius.schematica.world.schematic;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,7 +25,6 @@ import com.github.lunatrius.schematica.compat.BlockStateTranslator;
 import com.github.lunatrius.schematica.compat.EntityTranslator;
 import com.github.lunatrius.schematica.compat.TileEntityTranslator;
 import com.github.lunatrius.schematica.nbt.NBTHelper;
-import com.github.lunatrius.schematica.nbt.TileEntitySnapshots;
 import com.github.lunatrius.schematica.reference.Reference;
 import com.github.lunatrius.schematica.util.SchematicLimits;
 import com.github.lunatrius.schematica.world.storage.Schematic;
@@ -129,17 +129,16 @@ public final class VanillaStructure extends SchematicFormat {
     }
 
     /** The structure template of a schematic; positions outside its regions are left out, like structure voids. */
-    public static NBTTagCompound encode(ISchematic schematic, World backupWorld, boolean includeEntities, String author) {
+    public static NBTTagCompound encode(ISchematic schematic, World backupWorld, boolean includeNBT, boolean includeEntities, String author) {
         int width = schematic.getWidth(), height = schematic.getHeight(), length = schematic.getLength();
         NBTTagList palette = new NBTTagList(), blocks = new NBTTagList();
         palette.appendTag(LegacyBlockStates.tag("minecraft:air"));
         Map<Long, Integer> indices = new HashMap<>();
         Map<Long, NBTTagCompound> tiles = new HashMap<>();
-        for (TileEntity tile : schematic.getTileEntities()) {
+        for (TileEntity tile : includeNBT ? schematic.getTileEntities() : Collections.<TileEntity>emptyList()) {
             try {
                 if (!tile.hasWorldObj() && backupWorld != null) tile.setWorldObj(backupWorld);
                 NBTTagCompound tag = NBTHelper.writeTileEntityToCompound(tile);
-                TileEntitySnapshots.removeVisualData(tag);
                 tag = LegacyNbt.tileTo112(tag);
                 tag.removeTag("x");
                 tag.removeTag("y");

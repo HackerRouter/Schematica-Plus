@@ -137,7 +137,7 @@ public abstract class SchematicFormat {
             return document;
         }
         if (fileName.toLowerCase(Locale.ROOT).endsWith(".nbt")) {
-            NBTTagCompound tag = VanillaStructure.encode(schematic, backupWorld, includeEntities, author);
+            NBTTagCompound tag = VanillaStructure.encode(schematic, backupWorld, includeNBT, includeEntities, author);
             NBTTagCompound metadata = SchematicMetadata.forSave(schematic, SchematicMetadata.stem(fileName), author, System.currentTimeMillis());
             SchematicMetadata.size(metadata, schematic, -1);
             SchematicMetadata.write(tag, metadata, false);

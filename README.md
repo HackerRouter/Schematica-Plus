@@ -255,6 +255,8 @@ worlds used for large edits.
 Saving as `.schematic` automatically upgrades to `.schemplus` when extended block
 IDs or Plus region/origin data require it. The actual filename is reported in the
 save message; automatic upgrades choose an unused name instead of overwriting another file.
+`.schematic` stores block IDs above 255 in the order used by original and GTNH
+Schematica; files written in WorldEdit's order are still read.
 `.litematic` files show an **L** icon, `.schematic` files **S**, and `.schemplus`
 uses its own texture.
 

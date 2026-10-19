@@ -22,7 +22,6 @@ import com.github.lunatrius.schematica.api.ISchematic;
 import com.github.lunatrius.schematica.api.SchematicOrigin;
 import com.github.lunatrius.schematica.api.SchematicRegion;
 import com.github.lunatrius.schematica.nbt.NBTHelper;
-import com.github.lunatrius.schematica.nbt.TileEntitySnapshots;
 import com.github.lunatrius.schematica.reference.Reference;
 
 import cpw.mods.fml.common.registry.GameData;
@@ -171,7 +170,6 @@ public final class LitematicExport {
             try {
                 if (!tile.hasWorldObj() && backupWorld != null) tile.setWorldObj(backupWorld);
                 NBTTagCompound tag = NBTHelper.writeTileEntityToCompound(tile);
-                TileEntitySnapshots.removeVisualData(tag);
                 tag = LegacyNbt.tileTo112(tag);
                 tag.setInteger("x", x);
                 tag.setInteger("y", y);

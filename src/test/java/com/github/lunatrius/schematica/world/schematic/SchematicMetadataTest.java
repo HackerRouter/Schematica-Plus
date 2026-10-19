@@ -118,7 +118,7 @@ public class SchematicMetadataTest {
         SchematicFileWriter.write(file, before);
         decorate(file);
         NBTTagCompound after = LitematicaNBTReader.readFromFile(file);
-        assertEquals("nibble12", after.getString(SchematicBlockIds.ENCODING));
+        assertEquals(SchematicBlockIds.STANDARD, after.getString(SchematicBlockIds.ENCODING));
         assertArrayEquals(before.getByteArray("Blocks"), after.getByteArray("Blocks"));
         assertArrayEquals(before.getByteArray("AddBlocks"), after.getByteArray("AddBlocks"));
         assertArrayEquals(before.getByteArray("Data"), after.getByteArray("Data"));

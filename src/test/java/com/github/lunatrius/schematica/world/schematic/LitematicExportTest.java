@@ -242,4 +242,14 @@ public class LitematicExportTest {
         tag.setString("id", "Pig");
         return tag;
     }
+
+    @Test public void storedMetadataWinsOverAPropertylessVanillaState() throws Exception {
+        Block glass = block("minecraft:glass", 4091);
+        NBTTagCompound entry = new NBTTagCompound();
+        entry.setString("Name", "minecraft:glass");
+        entry.setInteger(LitematicExport.META_KEY, 5);
+        BlockMapping mapping = SchematicLitematica.legacyMapping(entry, null);
+        assertSame(glass, mapping.block);
+        assertEquals(5, mapping.metadata);
+    }
 }

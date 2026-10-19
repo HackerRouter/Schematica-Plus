@@ -87,6 +87,8 @@ public class SchematicLitematica extends SchematicFormat {
 
     /** A 1.12 palette entry: vanilla states by the 1.12 table, other blocks by name and SchematicaPlusMeta. */
     static BlockMapping legacyMapping(NBTTagCompound entry, BlockStateTranslator translator) {
+        Block named = registered(entry.getString("Name"));
+        if (named != null && entry.hasKey(LitematicExport.META_KEY)) return new BlockMapping(named, entry.getInteger(LitematicExport.META_KEY) & 0xffff);
         String state = LegacyBlockStates.state(entry);
         LegacyBlockStates.Entry known = LegacyBlockStates.entry(state);
         if (known != null) {
@@ -94,13 +96,10 @@ public class SchematicLitematica extends SchematicFormat {
             if (block != null && !newerVariant(known.name, known.meta())) return new BlockMapping(block, known.meta());
             return translator.translate(known.modern);
         }
-        Block block = registered(entry.getString("Name"));
-        if (block == null) return translator.translate(state);
-        if (entry.hasKey(LitematicExport.META_KEY) || !entry.hasKey("Properties")) {
-            return new BlockMapping(block, entry.getInteger(LitematicExport.META_KEY) & 0xffff);
-        }
+        if (named == null) return translator.translate(state);
+        if (!entry.hasKey("Properties")) return new BlockMapping(named, 0);
         BlockMapping translated = translator.translate(state);
-        return translated.block == block ? translated : new BlockMapping(block, 0);
+        return translated.block == named ? translated : new BlockMapping(named, 0);
     }
 
     private void readRegion(LitematicRegions.Region rd, ISchematic schematic, BlockStateTranslator translator, boolean legacy, int dataVersion) {

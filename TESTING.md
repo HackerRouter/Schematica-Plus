@@ -239,8 +239,9 @@ Before a release, use a disposable 1.7.10 world to check:
   queued save uses its original options.
 - Save adjacent mod blocks with different ID high bytes in both formats. Load
   them after changing the format preference and verify names and metadata. Import
-  a WorldEdit schematic, including one with an odd block count. Check old files
-  made with reversed nibbles against their saved name mappings.
+  a WorldEdit schematic, including one with an odd block count. Open a saved
+  `.schematic` with adjacent IDs above 255 in GTNH Schematica and check every block.
+  Check old files made with either nibble order against their saved name mappings.
 - With the extended-format preference off, save blocks with IDs above 4095 from
   the GUI and save command, and download them from a server. The output must use
   `.schemplus` and the completion message must show its actual filename. Repeat

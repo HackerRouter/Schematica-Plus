@@ -10,17 +10,23 @@ import net.minecraft.tileentity.TileEntity;
 
 import com.github.lunatrius.schematica.api.ISchematic;
 
-/** A 2x1x1 schematic: the given block with metadata 5, then air. */
+/** A 2x1x1 schematic: the given block with metadata 5 and the given block entities, then air. */
 final class LitematicExportTestGrid implements ISchematic {
     private final Block block;
+    private final List<TileEntity> tiles;
 
-    LitematicExportTestGrid(Block block) { this.block = block; }
+    LitematicExportTestGrid(Block block) { this(block, Collections.emptyList()); }
+
+    LitematicExportTestGrid(Block block, List<TileEntity> tiles) {
+        this.block = block;
+        this.tiles = tiles;
+    }
 
     @Override public Block getBlock(int x, int y, int z) { return x == 0 ? block : null; }
     @Override public boolean setBlock(int x, int y, int z, Block block) { return false; }
     @Override public boolean setBlock(int x, int y, int z, Block block, int metadata) { return false; }
     @Override public TileEntity getTileEntity(int x, int y, int z) { return null; }
-    @Override public List<TileEntity> getTileEntities() { return Collections.emptyList(); }
+    @Override public List<TileEntity> getTileEntities() { return tiles; }
     @Override public void setTileEntity(int x, int y, int z, TileEntity tileEntity) {}
     @Override public void removeTileEntity(int x, int y, int z) {}
     @Override public int getBlockMetadata(int x, int y, int z) { return x == 0 ? 5 : 0; }
