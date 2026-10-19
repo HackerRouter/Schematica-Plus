@@ -84,6 +84,10 @@ public class CommandSchematicaPlusTest {
         assertThrows(CommandException.class, () -> command.processCommand(admin, new String[] {"set", "printerMaxRange", "-1"}));
         assertThrows(CommandException.class, () -> command.processCommand(admin, new String[] {"set", "printerEnabled", "maybe"}));
         assertThrows(CommandException.class, () -> command.processCommand(admin, new String[] {"set", "unknownSetting", "1"}));
+        command.processCommand(admin, new String[] {"set", "printerEnabled", "false"});
+        assertFalse(ConfigurationHandler.printerEnabled);
+        command.processCommand(admin, new String[] {"set", "cloudMaxUploadKilobytes", "2048"});
+        assertEquals(2048, ConfigurationHandler.cloudMaxUploadKilobytes);
         command.processCommand(admin, new String[] {"set", "printerMaxRange"});
         assertEquals(Double.parseDouble(ConfigurationHandler.configuration.getCategory("server").get("printerMaxRange").getDefault()),
             ConfigurationHandler.printerMaxRange, 0);
@@ -95,7 +99,10 @@ public class CommandSchematicaPlusTest {
         List<String> names = new ArrayList<>();
         for (IChatComponent message : admin.messages) names.add(message.getUnformattedText().split(":")[0]);
         assertTrue(names.contains("printerEnabled"));
+        for (String name : new String[] {"cloudEnabled", "cloudUploadPermissionLevel", "cloudMaxUploadKilobytes", "sharedPlacementsEnabled",
+            "sharedPlacementManagePermissionLevel", "sharedPlacementsPerPlayer"}) assertTrue(name, names.contains(name));
         assertFalse(names.contains("pasteReplaceBehavior"));
+        assertFalse(names.contains("sharedPlacementsAutoLoad"));
         Sender moderator = new Sender(3);
         command.processCommand(moderator, new String[0]);
         assertEquals("schematica.command.config.about", key(moderator.messages.get(0)));

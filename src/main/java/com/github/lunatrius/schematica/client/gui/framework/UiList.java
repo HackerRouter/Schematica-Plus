@@ -3,9 +3,13 @@
 package com.github.lunatrius.schematica.client.gui.framework;
 
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
+
+import net.minecraft.client.gui.GuiScreen;
 
 import org.lwjgl.input.Keyboard;
 
@@ -21,6 +25,8 @@ public final class UiList<T> extends UiWidget {
     private Function<T, UiSprite> icons;
     private Function<T, String> displayName;
     private Function<T, UiSprite> badges;
+    private Set<T> chosen;
+    private int anchor = -1;
 
     private Function<T, List<String>> entryTooltip;
 
@@ -35,6 +41,14 @@ public final class UiList<T> extends UiWidget {
     public void setBadges(Function<T, UiSprite> badges) { this.badges = badges; }
 
     public void setEmptyText(String text) { this.emptyText = text; }
+
+    public void enableMultiSelect() { chosen = new LinkedHashSet<>(); }
+
+    public Set<T> chosen() {
+        if (chosen == null) return model.selectedIndex() < 0 ? Collections.<T>emptySet() : Collections.singleton(model.selected());
+        chosen.retainAll(model.entries());
+        return Collections.unmodifiableSet(chosen);
+    }
 
     public UiList(UiListModel<T> model, String emptyText, Consumer<T> activated) {
         this.model = model;
@@ -77,6 +91,7 @@ public final class UiList<T> extends UiWidget {
             int first = model.offset() / model.rowHeight();
             int end = Math.min(model.entries().size(), first + content.height / model.rowHeight() + 2);
             int selected = model.selectedIndex();
+            if (chosen != null) chosen.retainAll(model.entries());
             int hovered = content.contains(mouseX, mouseY) ? model.indexAt(mouseY - content.y) : -1;
             int rowWidth = Math.max(0, content.width - (icons != null ? 12 : model.maxOffset() > 0 ? 7 : 0));
             for (int index = first; index < end; index++) {
@@ -86,8 +101,9 @@ public final class UiList<T> extends UiWidget {
                 UiBounds row = new UiBounds(content.x, y, rowWidth, model.rowHeight());
                 if (icons != null) {
                     T entry = model.entries().get(index);
-                    draw.fill(row, index == selected || index == hovered ? 0x70FFFFFF : index % 2 == 1 ? 0x20FFFFFF : 0x38FFFFFF);
-                    if (index == selected) draw.border(row, 0xEEEEEEEE);
+                    boolean picked = chosen == null ? index == selected : chosen.contains(entry);
+                    draw.fill(row, picked || index == hovered ? 0x70FFFFFF : index % 2 == 1 ? 0x20FFFFFF : 0x38FFFFFF);
+                    if (picked) draw.border(row, 0xEEEEEEEE);
                     icons.apply(entry).draw(draw, content.x, y + 1, false, false);
                     UiSprite badge = badges == null ? null : badges.apply(entry);
                     int nameWidth = rowWidth - 18;
@@ -134,7 +150,25 @@ public final class UiList<T> extends UiWidget {
             return true;
         }
         int index = model.indexAt(y - content().y);
+        if (index >= 0 && chosen != null && (GuiScreen.isCtrlKeyDown() || GuiScreen.isShiftKeyDown())) {
+            T entry = model.entries().get(index);
+            if (GuiScreen.isShiftKeyDown() && anchor >= 0 && anchor < model.entries().size()) {
+                if (!GuiScreen.isCtrlKeyDown()) chosen.clear();
+                for (int i = Math.min(anchor, index); i <= Math.max(anchor, index); i++) chosen.add(model.entries().get(i));
+            } else {
+                if (!chosen.remove(entry)) chosen.add(entry);
+                anchor = index;
+            }
+            model.select(index);
+            lastClickIndex = -1;
+            return true;
+        }
         if (index >= 0) {
+            if (chosen != null) {
+                chosen.clear();
+                chosen.add(model.entries().get(index));
+                anchor = index;
+            }
             boolean doubleClick = index == lastClickIndex && index == model.selectedIndex()
                 && System.nanoTime() - lastClickTime < 250_000_000L;
             model.select(index);

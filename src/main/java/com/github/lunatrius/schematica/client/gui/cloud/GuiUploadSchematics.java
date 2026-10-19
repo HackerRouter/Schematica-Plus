@@ -21,7 +21,7 @@ public final class GuiUploadSchematics extends GuiSchematicBrowser {
     private UiButton upload;
 
     public GuiUploadSchematics(GuiScreen parent, CloudPath target) {
-        super(parent, UiTranslations.format(PREFIX + "title.upload_schematics"), false);
+        super(parent, UiTranslations.format(PREFIX + "title.upload_schematics") + " - " + GuiServerSchematics.display(target), false);
         this.target = target;
     }
 
@@ -34,20 +34,18 @@ public final class GuiUploadSchematics extends GuiSchematicBrowser {
     protected boolean returnsToParent() { return true; }
 
     @Override
+    protected boolean multiSelect() { return true; }
+
+    @Override
     protected boolean accept(SchematicBrowserModel.Entry entry) {
         return !entry.name().startsWith(".") && !entry.name().equals(CloudCache.DIRECTORY);
     }
 
     @Override
     protected void createActions() {
-        upload = addAction(PREFIX + "button.upload_to_server", this::uploadSelection);
+        upload = addAction(() -> chosen().size() > 1 ? UiTranslations.format(PREFIX + "button.upload_to_server_count", chosen().size())
+            : UiTranslations.format(PREFIX + "button.upload_to_server"), this::uploadSelection);
         upload.setTooltip(UiTranslations.format(PREFIX + "button.hover.upload_to_server"));
-    }
-
-    @Override
-    protected void opened() {
-        super.opened();
-        setStatus(GuiServerSchematics.display(target));
     }
 
     @Override
@@ -56,9 +54,8 @@ public final class GuiUploadSchematics extends GuiSchematicBrowser {
     }
 
     private void uploadSelection() {
-        SchematicBrowserModel.Entry entry = selection();
-        if (entry == null || target == null) return;
-        queue(entry.file, target);
+        if (chosen().isEmpty() || target == null) return;
+        for (SchematicBrowserModel.Entry entry : chosen()) queue(entry.file, target);
         CloudClient.INSTANCE.refresh();
         closeScreen();
     }
@@ -81,6 +78,8 @@ public final class GuiUploadSchematics extends GuiSchematicBrowser {
     @Override
     protected void tickScreen() {
         super.tickScreen();
-        if (upload != null) upload.setEnabled(target != null && selection() != null);
+        if (upload == null) return;
+        upload.setEnabled(target != null && !chosen().isEmpty());
+        layoutActions();
     }
 }

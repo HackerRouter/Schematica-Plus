@@ -11,6 +11,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
+import java.util.function.Supplier;
 
 import net.minecraft.client.gui.GuiScreen;
 
@@ -117,6 +119,7 @@ public abstract class GuiSchematicBrowser extends UiScreen {
             else search.setText("");
         });
         list = root.add(new UiList<>(files, "", this::activate));
+        if (multiSelect()) list.enableMultiSelect();
         list.setFileStyle(entry -> entry.directory ? UiSprite.DIRECTORY
             : UiSprite.schematicFile(entry.name()),
             entry -> entry.directory ? entry.name() : (collections() && UiState.favorite(entry.file)
@@ -287,6 +290,16 @@ public abstract class GuiSchematicBrowser extends UiScreen {
         actions.add(button);
         return button;
     }
+
+    protected final UiButton addAction(Supplier<String> label, Runnable action) {
+        UiButton button = root.add(new UiButton(label, mouse -> { if (mouse == 0) action.run(); }));
+        actions.add(button);
+        return button;
+    }
+
+    protected boolean multiSelect() { return false; }
+
+    protected final Set<SchematicBrowserModel.Entry> chosen() { return list.chosen(); }
 
     @Override
     protected void opened() {
