@@ -93,6 +93,25 @@ public class CommandSchematicaPlusTest {
             ConfigurationHandler.printerMaxRange, 0);
     }
 
+    @Test public void resetsOneOrAllServerSettings() {
+        Sender admin = new Sender(4);
+        command.processCommand(admin, new String[] {"set", "printerEnabled", "false"});
+        command.processCommand(admin, new String[] {"set", "cloudMaxUploadKilobytes", "2048"});
+        command.processCommand(admin, new String[] {"reset", "printerEnabled"});
+        assertTrue(ConfigurationHandler.printerEnabled);
+        assertEquals(2048, ConfigurationHandler.cloudMaxUploadKilobytes);
+        command.processCommand(admin, new String[] {"set", "sharedPlacementsEnabled", "false"});
+        admin.messages.clear();
+        command.processCommand(admin, new String[] {"reset", "all"});
+        assertEquals(8192, ConfigurationHandler.cloudMaxUploadKilobytes);
+        assertTrue(ConfigurationHandler.sharedPlacementsEnabled);
+        ChatComponentTranslation message = (ChatComponentTranslation) admin.messages.get(0);
+        assertEquals("schematica.command.config.reset_all", message.getKey());
+        assertEquals(2, message.getFormatArgs()[0]);
+        assertThrows(CommandException.class, () -> command.processCommand(admin, new String[] {"reset", "unknownSetting"}));
+        assertTrue(command.addTabCompletionOptions(admin, new String[] {"reset", "a"}).contains("all"));
+    }
+
     @Test public void listsOnlyServerSettingsAndRequiresOperatorLevels() {
         Sender admin = new Sender(4);
         command.processCommand(admin, new String[] {"list"});

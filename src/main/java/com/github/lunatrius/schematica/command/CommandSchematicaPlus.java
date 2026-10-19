@@ -76,6 +76,11 @@ public class CommandSchematicaPlus extends CommandBase {
                 if (args.length < 2) break;
                 set(sender, setting(args[1]), args.length == 2 ? null : func_82360_a(sender, args, 2));
                 return;
+            case "reset":
+                if (args.length != 2) break;
+                if ("all".equalsIgnoreCase(args[1])) resetAll(sender);
+                else set(sender, setting(args[1]), null);
+                return;
             case "search":
                 if (args.length < 2) break;
                 search(sender, func_82360_a(sender, args, 1));
@@ -141,7 +146,7 @@ public class CommandSchematicaPlus extends CommandBase {
             suffix.getChatStyle().setColor(EnumChatFormatting.GREEN);
             IChatComponent reset = new ChatComponentTranslation(PREFIX + "info.reset");
             reset.getChatStyle().setColor(EnumChatFormatting.GRAY)
-                .setChatClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, setCommand + property.getDefault()))
+                .setChatClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/" + NAME + " reset " + property.getName()))
                 .setChatHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ChatComponentTranslation(PREFIX + "info.click_to_reset_to", property.getDefault())));
             line.appendSibling(suffix).appendText(" ").appendSibling(reset);
         }
@@ -200,6 +205,18 @@ public class CommandSchematicaPlus extends CommandBase {
         sender.addChatMessage(text);
     }
 
+    private static void resetAll(ICommandSender sender) {
+        int count = 0;
+        for (Property property : settings().values()) {
+            if (property.getString().equals(property.getDefault())) continue;
+            property.set(property.getDefault());
+            count++;
+        }
+        ConfigurationHandler.loadConfiguration();
+        ConfigurationHandler.configuration.save();
+        sender.addChatMessage(new ChatComponentTranslation(PREFIX + "reset_all", count));
+    }
+
     private static void search(ICommandSender sender, String query) {
         List<Property> found = new ArrayList<>();
         for (Property property : settings().values()) {
@@ -220,9 +237,15 @@ public class CommandSchematicaPlus extends CommandBase {
     @Override
     @SuppressWarnings("rawtypes")
     public List addTabCompletionOptions(ICommandSender sender, String[] args) {
-        if (args.length == 1) return getListOfStringsMatchingLastWord(args, "list", "info", "set", "search", "reload", "save");
+        if (args.length == 1) return getListOfStringsMatchingLastWord(args, "list", "info", "set", "reset", "search", "reload", "save");
         if (args.length == 2 && ("info".equalsIgnoreCase(args[0]) || "set".equalsIgnoreCase(args[0]))) {
             return getListOfStringsFromIterableMatchingLastWord(args, settings().keySet());
+        }
+        if (args.length == 2 && "reset".equalsIgnoreCase(args[0])) {
+            List<String> names = new ArrayList<>();
+            names.add("all");
+            names.addAll(settings().keySet());
+            return getListOfStringsFromIterableMatchingLastWord(args, names);
         }
         if (args.length == 3 && "set".equalsIgnoreCase(args[0])) {
             Property property = settings().get(args[1]);
