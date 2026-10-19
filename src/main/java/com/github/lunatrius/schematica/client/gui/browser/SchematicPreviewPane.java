@@ -96,8 +96,8 @@ final class SchematicPreviewPane extends UiPanel {
         final SchematicInfoCache cache;
         boolean modelSelected = ConfigurationHandler.schematicPreview3DReplacesImage;
 
-        Content(SchematicBrowserModel.Entry entry, SchematicInfoCache cache) {
-            file = entry.file; size = entry.size; this.cache = cache;
+        Content(File file, long size, SchematicInfoCache cache) {
+            this.file = file; this.size = size; this.cache = cache;
         }
 
         boolean canModel() {

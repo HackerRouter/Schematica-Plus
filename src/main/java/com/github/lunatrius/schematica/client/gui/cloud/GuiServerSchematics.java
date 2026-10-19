@@ -6,6 +6,7 @@ import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Consumer;
 
 import net.minecraft.client.gui.GuiScreen;
@@ -15,8 +16,8 @@ import com.github.lunatrius.schematica.api.ISchematic;
 import com.github.lunatrius.schematica.api.SchematicRegion;
 import com.github.lunatrius.schematica.client.cloud.CloudCache;
 import com.github.lunatrius.schematica.client.gui.GuiStringListSelection;
+import com.github.lunatrius.schematica.client.gui.browser.SchematicInfoPanel;
 import com.github.lunatrius.schematica.client.gui.control.GuiSchematicMaterials;
-import com.github.lunatrius.schematica.client.gui.framework.UiBounds;
 import com.github.lunatrius.schematica.client.gui.framework.UiButton;
 import com.github.lunatrius.schematica.client.gui.framework.UiCheckBox;
 import com.github.lunatrius.schematica.client.gui.framework.UiDraw;
@@ -51,10 +52,12 @@ public final class GuiServerSchematics extends UiScreen {
     private final List<UiButton> actions = new ArrayList<>();
     private CloudPath directory;
     private int revision = -1;
+    private CloudFile shown;
     private boolean searching;
     private boolean placeOnLoad = Boolean.parseBoolean(UiState.get("create_placement_on_load", "true"));
 
-    private UiWidget frame, info;
+    private UiWidget frame;
+    private SchematicInfoPanel info;
     private UiLabel path, status;
     private UiList<CloudNode> list;
     private UiTextField search;
@@ -102,15 +105,7 @@ public final class GuiServerSchematics extends UiScreen {
         list.setEntryTooltip(node -> node.file != null && CloudCache.cached(node.file)
             ? Collections.singletonList(UiTranslations.format(PREFIX + "hover.saved_path", relative(CloudCache.file(node.file.path))))
             : Collections.singletonList(node.type == CloudNode.Type.DIRECTORY ? label(node) : node.name()));
-        info = root.add(new UiWidget() {
-            @Override public void draw(UiDraw draw, int mouseX, int mouseY) {
-                draw.fill(bounds(), 0xA0000000);
-                draw.border(bounds(), 0xFF999999);
-                try (UiDraw.Clip ignored = draw.clip(new UiBounds(bounds().x + 1, bounds().y + 1, bounds().width - 2, bounds().height - 30))) {
-                    drawInfo(draw, bounds().x + 3, bounds().y + 3, bounds().width - 4);
-                }
-            }
-        });
+        info = root.add(new SchematicInfoPanel(input, root, 28, this::drawInfo));
         status = root.add(new UiLabel(this::storage));
         load = action("litematica.gui.button.load_schematic_to_memory", this::loadSelected);
         materials = action("litematica.gui.button.material_list", this::materialList);
@@ -319,14 +314,24 @@ public final class GuiServerSchematics extends UiScreen {
     }
 
     @Override
+    protected void closed() { info.clear(); }
+
+    @Override
     protected void tickScreen() {
         if (CloudClient.INSTANCE.revision() != revision && list != null) {
             revision = CloudClient.INSTANCE.revision();
+            info.clear();
             rebuild();
         }
         CloudCatalog catalog = catalog();
         CloudNode node = selection();
-        boolean file = selectedFile() != null;
+        CloudFile selected = selectedFile();
+        if (!Objects.equals(selected, shown)) {
+            shown = selected;
+            info.resetScroll();
+        }
+        info.show(selected != null && CloudCache.cached(selected) ? CloudCache.file(selected.path) : null, selected == null ? 0 : selected.size);
+        boolean file = selected != null;
         boolean entry = node != null && !node.path.isRoot();
         up.setEnabled(directory != null);
         createDirectory.setEnabled(mayWrite(directory));
@@ -408,5 +413,7 @@ public final class GuiServerSchematics extends UiScreen {
         }
         String state = UiTranslations.format(PREFIX + (CloudCache.cached(file) ? "info.status_cached" : "info.status_server"));
         draw.text(draw.trim(UiTranslations.format(PREFIX + "info.file_label", FileUtils.humanReadableByteCount(file.size), state), width - 8), x, y, CloudInfo.LABEL);
+        info.setContentBottom(y + 12);
+        info.preview(x, y + 24, width);
     }
 }
