@@ -1,7 +1,7 @@
 # Verification
 
-Current scenario guide, reviewed 2026-10-15. Run `./gradlew build` and
-`LC_ALL=C.UTF-8 ./gradlew test`; the current suite contains **702 tests**.
+Current scenario guide, reviewed 2026-10-20. Run `./gradlew build` and
+`LC_ALL=C.UTF-8 ./gradlew test`; the current suite contains **718 tests**.
 Steps below are regression scenarios, not claims that every combination passed.
 Only dated observation paragraphs record actual game checks; their test counts and
 artifact hashes describe that historical build. Use disposable copies and the
@@ -121,6 +121,8 @@ This is a documentation change; it records no new in-game test result.
 
 - `ServerSaveQueueLoadingTest` loads the shared save queue with Minecraft client,
   Plus client and LWJGL classes unavailable, including event-method reflection.
+  It also constructs `MessageDownloadEnd` and reflects its methods under the same
+  restrictions, covering packet registration on a dedicated server.
 - Start `gradlew runServer` in a fresh test directory with the EULA accepted.
   Require the normal `Done (...)!` startup message and clean shutdown after `stop`.
   Initialization must not load EntityClientPlayerMP, WorldClient or Minecraft.
@@ -133,6 +135,13 @@ This is a documentation change; it records no new in-game test result.
   client callbacks must still run on the client thread after capture completes.
 - The tag release workflow runs the same build/tests/server smoke check before
   publishing. Keep that gate enabled and publish only the main runtime JAR.
+
+2026-10-20: The download-message loading regression reproduced
+`NoClassDefFoundError: EntityClientPlayerMP` before changing the file-link chat
+recipient to `ICommandSender`. After the change, `build` and all 718 tests passed.
+A fresh Forge 1614 development dedicated server on Java 8u504 reached `Done` and
+exited successfully after `stop`. This check did not exercise client downloads or
+native GTNH pack gameplay.
 
 Run `gradlew build` for compilation, packaging, Checkstyle and unit tests. The tests
 exercise bounded file/NBT inputs and pure transformation logic without starting

@@ -19,6 +19,14 @@ public class ServerSaveQueueLoadingTest {
     private static final String UTIL = "com.github.lunatrius.schematica.world.schematic.SchematicUtil";
 
     @Test
+    public void loadsDownloadCompletionWithoutClientClasses() throws Exception {
+        String message = "com.github.lunatrius.schematica.network.message.MessageDownloadEnd";
+        Class<?> type = Class.forName(message, true, serverClassLoader(message));
+        assertNotNull(type.getConstructor().newInstance());
+        assertNotNull(type.getDeclaredMethods());
+    }
+
+    @Test
     public void loadsAndExposesServerEventsWithoutClientClasses() throws Exception {
         Class<?> queue = Class.forName(QUEUE, true, serverClassLoader(QUEUE));
         assertNotNull(queue.getField("INSTANCE").get(null));

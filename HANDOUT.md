@@ -133,7 +133,7 @@ LC_ALL=C.UTF-8 ./gradlew test
 
 Build includes compilation, reobfuscation, Checkstyle and JUnit. Artifacts are in
 `build/libs/`; XML results in `build/test-results/test/`. The latest completed suite
-has **705 tests, no failures or skips**. These tests do not launch Minecraft.
+has **718 tests, no failures or skips**. These tests do not launch Minecraft.
 The generated MCP source is under `build/rfg/minecraft-src/java/`.
 First builds require network access; `--offline` only works with a populated cache.
 CI also starts and cleanly stops a dedicated development server. Branch pushes
@@ -347,6 +347,7 @@ steps and limitations are in TESTING; the full implementation history is in Git.
 
 | Status | Date | Work and location |
 | --- | --- | --- |
+| DONE | 2026-10-20 | Fix dedicated-server loading of `MessageDownloadEnd` by accepting `ICommandSender` in `client/util/InfoUtils.sendOpenFileChatMessage`. The added `ServerSaveQueueLoadingTest` regression fails with `EntityClientPlayerMP` before the fix. Build and all 718 tests pass; a fresh Forge 1614 development server reaches `Done` and stops cleanly. See TESTING for scope. |
 | DONE | 2026-10-13 | Prepare `1.0.0-beta.3` using tag-derived runtime version and the existing GitHub Actions release workflow; release verification procedure in TESTING. |
 | IMPLEMENTED_HEADLESS | 2026-10-04 | Sponge v1-v3 reader, v2/v3 varint/origin and malformed-input tests; `world/schematic/SpongeSchematic.java`, `SpongeSchematicTest`. |
 | VISUAL_CHECKED_HEADLESS | 2026-10-07–08 | Dedicated-server extended metadata, independent-region download, full-NBT paste, permissions, cancellation/disconnect/retry, entities and two-player cases; TESTING multiplayer sections. |

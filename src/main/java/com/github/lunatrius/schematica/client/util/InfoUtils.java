@@ -8,7 +8,7 @@ import java.lang.reflect.Field;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiIngame;
 import net.minecraft.client.gui.ScaledResolution;
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.command.ICommandSender;
 import net.minecraft.event.ClickEvent;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.ChatComponentTranslation;
@@ -102,7 +102,7 @@ public final class InfoUtils {
         printActionbarMessage("malilib.message.toggled", prettyName, status);
     }
 
-    public static void sendOpenFileChatMessage(EntityPlayer player, String messageKey, File file) {
+    public static void sendOpenFileChatMessage(ICommandSender player, String messageKey, File file) {
         if (player == null) return;
         IChatComponent name = new ChatComponentText(file.getName());
         name.getChatStyle().setUnderlined(true).setChatClickEvent(new ClickEvent(ClickEvent.Action.OPEN_FILE, file.getAbsolutePath()));
