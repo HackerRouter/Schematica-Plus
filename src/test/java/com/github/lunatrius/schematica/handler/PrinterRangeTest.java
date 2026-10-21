@@ -2,10 +2,12 @@ package com.github.lunatrius.schematica.handler;
 
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.play.client.C07PacketPlayerDigging;
 import net.minecraft.network.play.client.C08PacketPlayerBlockPlacement;
 
 import com.github.lunatrius.schematica.network.message.MessagePrinterAction;
+import com.github.lunatrius.schematica.network.message.MessagePlacementIntent;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -59,6 +61,9 @@ public class PrinterRangeTest {
         MessagePrinterAction m = new MessagePrinterAction();
         m.action = MessagePrinterAction.PLACE; m.x = -123; m.y = 65; m.z = 42; m.side = 4; m.slot = 8;
         m.hitX = .25f; m.hitY = 1; m.hitZ = .75f; m.yaw = -135; m.pitch = -30; m.sneaking = true;
+        m.targetX = -123; m.targetY = 66; m.targetZ = 42;
+        m.clickedBlock = 4; m.clickedMeta = 2; m.targetBlock = 0;
+        m.intents.add(new MessagePlacementIntent(-123, 66, 42, "minecraft:oak_stairs", 5));
         ByteBuf wire = Unpooled.buffer();
         try {
             m.toBytes(wire);
@@ -67,6 +72,9 @@ public class PrinterRangeTest {
             assertEquals(m.x, decoded.x); assertEquals(m.slot, decoded.slot); assertEquals(m.side, decoded.side);
             assertEquals(m.hitX, decoded.hitX, 0); assertEquals(m.hitY, decoded.hitY, 0); assertEquals(m.hitZ, decoded.hitZ, 0);
             assertEquals(m.yaw, decoded.yaw, 0); assertEquals(m.pitch, decoded.pitch, 0); assertTrue(decoded.sneaking);
+            assertEquals(66, decoded.targetY); assertEquals(4, decoded.clickedBlock); assertEquals(2, decoded.clickedMeta);
+            assertEquals(1, decoded.intents.size()); assertEquals("minecraft:oak_stairs", decoded.intents.get(0).block);
+            assertEquals(5, decoded.intents.get(0).metadata);
             assertEquals(0, wire.readableBytes());
         } finally { wire.release(); }
     }
@@ -76,10 +84,46 @@ public class PrinterRangeTest {
         assertTrue(m.valid());
         m.side = 255; assertFalse(m.valid()); m.side = 0;
         m.slot = 9; assertFalse(m.valid()); m.slot = 0;
-        m.action = 4; assertFalse(m.valid()); m.action = 3;
+        m.action = 5; assertFalse(m.valid()); m.action = 3;
         m.hitX = Float.NaN; assertFalse(m.valid()); m.hitX = 0;
         m.hitY = 1.1f; assertFalse(m.valid()); m.hitY = 0;
         m.yaw = Float.POSITIVE_INFINITY; assertFalse(m.valid()); m.yaw = 0;
         m.y = 256; assertFalse(m.valid());
+    }
+
+    @Test public void movedStacksAreFoundWithoutSubstitutingDifferentBlockVariantsOrNbt() {
+        Item item = new Item();
+        ItemStack wanted = new ItemStack(item, 1, 2);
+        wanted.setTagCompound(new NBTTagCompound());
+        wanted.getTagCompound().setString("variant", "first");
+        ItemStack[] inventory = new ItemStack[36];
+        inventory[0] = new ItemStack(item, 64, 3);
+        inventory[1] = wanted.copy();
+        inventory[1].getTagCompound().setString("variant", "second");
+        inventory[20] = wanted.copy();
+        inventory[20].stackSize = 13;
+        assertEquals(20, PrinterActions.findItem(inventory, 0, wanted));
+        inventory[20] = null;
+        assertEquals(-1, PrinterActions.findItem(inventory, 0, wanted));
+    }
+
+    @Test public void toolWearDoesNotInvalidateTheRemainingQueuedBreaks() {
+        Item tool = new Item().setMaxDamage(250);
+        ItemStack expected = new ItemStack(tool, 1, 10);
+        ItemStack actual = new ItemStack(tool, 1, 25);
+        assertTrue(PrinterActions.matchesItem(actual, expected));
+        actual.stackSize = 0;
+        assertFalse(PrinterActions.matchesItem(actual, expected));
+    }
+
+    @Test public void targetsAndIntentsCannotReachOutsideTheRequestedInteraction() {
+        MessagePrinterAction m = new MessagePrinterAction();
+        m.action = MessagePrinterAction.BREAK;
+        assertTrue(m.valid());
+        m.targetX = 2;
+        assertFalse(m.valid());
+        m.targetX = 0;
+        m.intents.add(new MessagePlacementIntent(0, 3, 0, "minecraft:stone", 0));
+        assertFalse(m.valid());
     }
 }

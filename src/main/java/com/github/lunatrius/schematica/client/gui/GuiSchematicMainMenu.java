@@ -115,8 +115,7 @@ public final class GuiSchematicMainMenu extends UiScreen {
         selectionMode.setBounds(12, 162, column, 20);
         config.setBounds(32 + column, 30, column, 20);
         cloud.setBounds(32 + column, 52, column, 20);
-        if (52 + 3 * column <= width) shared.setBounds(52 + 2 * column, 30, column, 20);
-        else shared.setBounds(32 + column, 74, column, 20);
+        shared.setBounds(32 + column, 74, column, 20);
         manager.setBounds(32 + column, 118, column, 20);
         tasks.setBounds(32 + column, 140, column, 20);
         projects.setBounds(32 + column, 162, column, 20);

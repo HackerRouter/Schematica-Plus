@@ -61,6 +61,9 @@ def convert(roots):
             read(file, file.stem, prefix, locales, False)
         for file in sorted(SUPPLEMENTS.glob(f"{mod}_*.json")):
             read(file, file.stem[len(mod) + 1:], prefix, locales, True)
+    overrides = json.loads((Path(__file__).resolve().parent / "translations/sharing_overrides.json").read_text(encoding="utf-8"))
+    for code, entries in overrides.items():
+        locales.setdefault(code, {}).update(entries)
     header = "# SPDX-License-Identifier: CC0-1.0\n"
     header += "# " + "; ".join(source for _, _, source in SOURCES.values()) + ".\n"
     header += "# Converted for Minecraft 1.7.10 by HackerRouter, 2026. Regenerate with tools/import_sharing_translations.py.\n"

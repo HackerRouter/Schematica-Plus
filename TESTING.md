@@ -1,13 +1,80 @@
 # Verification
 
-Current scenario guide, reviewed 2026-10-20. Run `./gradlew build` and
-`LC_ALL=C.UTF-8 ./gradlew test`; the current suite contains **718 tests**.
+Current scenario guide, reviewed 2026-10-21. Run `./gradlew build` and
+`LC_ALL=C.UTF-8 ./gradlew test`; the current suite contains **726 tests**.
 Steps below are regression scenarios, not claims that every combination passed.
 Only dated observation paragraphs record actual game checks; their test counts and
 artifact hashes describe that historical build. Use disposable copies and the
 same current Plus build on both sides, except explicit client-only cases.
 `<evidence-dir>` denotes private, local validation artifacts outside the repository;
 these are scenario labels, not distributed files or public download links.
+
+## Ordered printer actions and browser follow-up
+
+- Install the same Plus build on both sides. Mix near and remote targets, alternate
+  items and directional states, and increase client placement/break limits to 64.
+  Requests must retain their order, held-item identity and orientation even when
+  the inventory moves before execution. Stale clicked/target block states must be
+  rejected and synchronized back to the client. Test lower independent server
+  quotas, range changes, disconnects and server fast breaking disabled at 0.
+- Check native harvesting, actual tool damage, durability reserve, drops and
+  protection cancellation. Survival must not create a missing requested item.
+  Without server support, retain normal reach and mining speed. Server assistance
+  corrects supported placement orientations; protection events still apply.
+- M must put Shared Schematic Placements directly below Server Schematics.
+  Chinese sharing actions must use the shared-placement terminology. Check the
+  browser clock, favorite star, file badge and material-list favorite toggle.
+- Click the path bar or magnifier, type a filter, and press Escape to clear it.
+  Typing without a focused text field must also open search. Check text fields,
+  modal dialogs and the focused 3D preview retain their own keyboard handling.
+- Set Preview must show a centered square, including with F1 hiding the HUD.
+  F2 must save the centered 120x120 image without the frame and dismiss the frame.
+  Reopen the manager to verify the saved preview. Check portrait and landscape
+  dimensions, cancellation and GUI scales separately when changing rendering.
+- The work-radius slider must use integers; old decimal settings round and clamp.
+  Fresh placement/break limits are 64, and pasteWithoutUpdates defaults to true.
+  Existing saved values remain intact. Server-assisted placement offers Auto,
+  Slabs only and None; obsolete v2/v3 settings migrate to Auto.
+
+Observed 2026-10-20--21 on Minecraft 1.7.10, Forge 10.13.4.1614, MCP stable_12:
+the build and all 726 UTF-8 tests passed. The separate
+`tools/headless/printer_smoke` test mod ran in a real dedicated-server world with
+a Forge fake player and native interaction handlers. One queue pass harvested 64
+stone blocks, used 64 iron-pickaxe durability and produced 64 cobblestone drops.
+A durability reserve stopped subsequent queued breaks. Interaction/BreakEvent
+cancellation preserved blocks/tools, and survival bedrock stayed unbreakable.
+Another pass placed 64 stairs in request order with the requested metadata and
+consumed 64 items after their stack moved to another inventory slot. The player's
+orientation was restored. Stale targets, mixed near/remote FIFO order, separate
+per-tick quotas and disabled fast breaking passed. The fixture JAR is excluded
+from production artifacts. This is native server execution, not client input or
+a simulated multiplayer latency test; arbitrary mod blocks and protection plugins
+were not revalidated in this round.
+
+A registered fixture pickaxe also changed its NBT from native harvesting callbacks.
+All 64 queued breaks completed with both 64 durability damage and 64 recorded NBT
+uses; another pickaxe with different NBT stayed untouched. Queued tool identities
+follow changes made by the server's preceding harvest. This fixture establishes
+the NBT-update path, not compatibility with every powered mod tool. Double-slab
+completion consumed two slab items; with one item it left a single slab. A separate
+development server without the fixture mod reached Done and stopped cleanly.
+
+Development-client mouse/keyboard checks used Chinese, GUI scale 2, an 854x480
+window, a disposable creative superflat world and Xvfb/Mesa software rendering.
+The shared-placement menu position/name, visible clock/star sprites, material
+favorite toggle, path-click search, direct typing and Escape passed. The integer
+radius slider moved from 66 to 67. Auto/Slabs only/None and the Plus-specific help
+were inspected. Set Preview drew a centered square with and without F1; F2 wrote
+14,400 preview pixels, and independent NBT readback found no white frame pixels
+on the image edges. The manager displayed the saved preview. Evidence includes
+`<evidence-dir>/ui-search.png`, `ui-material-star.png`, `ui-protocol-help.png`,
+`ui-integer-range-next.png` and `ui-preview-frame-f1.png`.
+
+The upstream comparison used Litematica 26.3 commit
+`64e74592f631cfa5b084bedb0eda5dac8a3b3cb8` and MaLiLib 26.3 commit
+`b043d04c21009a9ac1d19078e56c501d63d56ec8`. The inspected search widget toggles
+through its icon and supports typing to search; activating it by clicking the path
+bar is a Plus addition. The centered preview frame follows the upstream behavior.
 
 ## Issue report entry and introduction
 

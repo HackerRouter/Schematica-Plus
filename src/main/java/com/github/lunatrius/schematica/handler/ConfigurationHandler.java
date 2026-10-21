@@ -59,9 +59,11 @@ public class ConfigurationHandler {
     public static int placeDelay = PLACE_DELAY_DEFAULT;
     public static int timeout = TIMEOUT_DEFAULT;
     // Printer pass, after the behavior of litematica-printer and the Entropy5 Schematica fork
-    public static double printerWorkRange;
-    public static double printerMaxRange = PrinterRange.MAX;
-    public static int printerIterationTimeLimit = 8, placeBlocksPerTick = 1, printerLagCheckMax = 20;
+    public static final int PRINTER_MAX_ACTIONS = 64;
+    public static int printerWorkRange;
+    public static int printerMaxRange = (int) PrinterRange.MAX;
+    public static int printerMaxPlacementsPerTick = PRINTER_MAX_ACTIONS, printerMaxBreaksPerTick = PRINTER_MAX_ACTIONS;
+    public static int printerIterationTimeLimit = 8, placeBlocksPerTick = PRINTER_MAX_ACTIONS, breakBlocksPerTick = PRINTER_MAX_ACTIONS, printerLagCheckMax = 20;
     public static String printerIteratorShape = "sphere", printerIteratorMode = "xzy", printSelectionType = "render_layers";
     public static String printerBuildOrder = "layers";
     public static boolean printerXAxisReverse, printerYAxisReverse, printerZAxisReverse, printerLagCheck = true;
@@ -87,7 +89,7 @@ public class ConfigurationHandler {
     public static int easyPlaceSwapInterval;
     /** MaLiLib MessageOutputType for Easy Place and Placement Restriction warnings: none, message or actionbar. */
     public static String placementRestrictionWarn = "actionbar";
-    public static boolean pasteWithoutUpdates = false;
+    public static boolean pasteWithoutUpdates = true;
     public static ReplaceBehavior pasteReplaceBehavior = ReplaceBehavior.NONE;
     /** Area selection files per world (area_selections_per_world/<world>/area_selections) or shared. */
     public static boolean areaSelectionsPerWorld = true;
@@ -215,14 +217,14 @@ public class ConfigurationHandler {
         enableActionbarMessages = malilib.flag("enableActionbarMessages", true);
         inGameMessageTimeout = malilib.decimal("inGameMessageTimeout", 5.0, 0.5, 15.0);
         sharedPlacementsAutoLoad = legacyTool.flag(Names.Config.SHARED_PLACEMENTS_AUTO_LOAD, true);
-        pasteWithoutUpdates = legacyTool.flag(Names.Config.PASTE_WITHOUT_UPDATES, false, Names.Config.PASTE_WITHOUT_UPDATES_DESC);
+        pasteWithoutUpdates = legacyTool.flag(Names.Config.PASTE_WITHOUT_UPDATES, true, Names.Config.PASTE_WITHOUT_UPDATES_DESC);
         pasteReplaceBehavior = loadPasteReplaceBehavior(configuration);
 
         printerEnabled = server.flag(Names.Config.PRINTER_ENABLED, true, Names.Config.PRINTER_ENABLED_DESC);
-        Property maxRange = server.label("printerMaxRange", configuration.get(Names.Config.Category.SERVER, "printerMaxRange", PrinterRange.MAX,
-            "Maximum printer distance in blocks. 0 keeps normal reach; extended reach requires Plus on both sides."));
-        maxRange.setMinValue(0.0).setMaxValue(PrinterRange.MAX);
-        printerMaxRange = PrinterRange.clamp(maxRange.getDouble(PrinterRange.MAX));
+        printerMaxRange = server.integer("printerMaxRange", (int) PrinterRange.MAX, 0, (int) PrinterRange.MAX,
+            "Maximum printer distance in blocks. 0 keeps normal reach; extended reach requires Plus on both sides.");
+        printerMaxPlacementsPerTick = server.integer("printerMaxPlacementsPerTick", PRINTER_MAX_ACTIONS, 1, PRINTER_MAX_ACTIONS);
+        printerMaxBreaksPerTick = server.integer("printerMaxBreaksPerTick", PRINTER_MAX_ACTIONS, 0, PRINTER_MAX_ACTIONS);
         remoteEditsEnabled = server.flag(Names.Config.REMOTE_EDITS_ENABLED, true, Names.Config.REMOTE_EDITS_ENABLED_DESC);
         accuratePlacementEnabled = server.flag(Names.Config.ACCURATE_PLACEMENT_ENABLED, true, Names.Config.ACCURATE_PLACEMENT_ENABLED_DESC);
         nbtRequestsEnabled = server.flag(Names.Config.NBT_REQUESTS_ENABLED, true, Names.Config.NBT_REQUESTS_ENABLED_DESC);
@@ -273,11 +275,10 @@ public class ConfigurationHandler {
     }
 
     private static void loadPrinter(ConfigReader printer) {
-        Property range = printer.label("printerWorkRange", configuration.get(Names.Config.Category.PRINTER, "printerWorkRange", 0.0));
-        range.setMinValue(0.0).setMaxValue(PrinterRange.MAX);
-        printerWorkRange = PrinterRange.clamp(range.getDouble(0));
+        printerWorkRange = printer.integer("printerWorkRange", 0, 0, (int) PrinterRange.MAX);
         printerIterationTimeLimit = printer.integer("printerIterationTimeLimit", 8, 0, 32);
-        placeBlocksPerTick = printer.integer("placeBlocksPerTick", 1, 1, 64);
+        placeBlocksPerTick = printer.integer("placeBlocksPerTick", PRINTER_MAX_ACTIONS, 1, PRINTER_MAX_ACTIONS);
+        breakBlocksPerTick = printer.integer("breakBlocksPerTick", PRINTER_MAX_ACTIONS, 1, PRINTER_MAX_ACTIONS);
         printerBuildOrder = printer.choice("printerBuildOrder", "layers", "layers", "iterator");
         printerIteratorShape = printer.choice("printerIteratorShape", "sphere", "sphere", "octahedron", "cube");
         printerIteratorMode = printer.choice("printerIteratorMode", "xzy", "xzy", "xyz", "yxz", "yzx", "zxy", "zyx");
@@ -348,7 +349,7 @@ public class ConfigurationHandler {
         materialListRecipeDetails = tool.flag("materialListRecipeDetails", true);
         renderMaterialListInGuis = tool.flag("renderMaterialListInGuis", true);
         highlightBlockInInventory = tool.flag("highlightBlockInInventory", false);
-        easyPlaceProtocolVersion = tool.choice("easyPlaceProtocolVersion", "auto", "auto", "v3", "v2", "slabs_only", "none");
+        easyPlaceProtocolVersion = tool.choice("easyPlaceProtocolVersion", "auto", "auto", "slabs_only", "none");
         Property vcsDelete = tool.label("schematicVcsDeleteMode",
             configuration.get(Names.Config.Category.TOOL, "schematicVcsDeleteMode", "matching_block"));
         vcsDelete.setValidValues(PlacementDeletionMode.names());

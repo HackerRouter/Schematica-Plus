@@ -36,6 +36,12 @@ final class ConfigReader {
     }
 
     int integer(String name, int fallback, int min, int max, String comment) {
+        Property previous = config.getCategory(category).get(name);
+        if (previous != null && previous.getType() == Property.Type.DOUBLE) {
+            double value = previous.getDouble(fallback);
+            int rounded = Double.isFinite(value) ? (int) Math.round(Math.max(min, Math.min(max, value))) : fallback;
+            config.getCategory(category).put(name, new Property(name, Integer.toString(rounded), Property.Type.INTEGER));
+        }
         Property property = label(name, comment == null ? config.get(category, name, fallback) : config.get(category, name, fallback, comment));
         property.setMinValue(min).setMaxValue(max);
         int stored = property.getInt(fallback), value = Math.max(min, Math.min(max, stored));

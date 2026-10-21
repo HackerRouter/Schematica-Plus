@@ -48,7 +48,7 @@ public class PlayerCapabilitiesTest {
     }
 
     @Test public void printerLimitTravelsWithCapabilities() throws Exception {
-        double previous = ConfigurationHandler.printerMaxRange;
+        int previous = ConfigurationHandler.printerMaxRange;
         boolean enabled = ConfigurationHandler.printerEnabled;
         try {
             ConfigurationHandler.printerEnabled = true;
@@ -58,6 +58,25 @@ public class PlayerCapabilitiesTest {
             assertEquals(0, advertised().printerMaxRange, 0);
         } finally {
             ConfigurationHandler.printerMaxRange = previous;
+            ConfigurationHandler.printerEnabled = enabled;
+        }
+    }
+
+    @Test public void separateActionLimitsTravelWithCapabilitiesAndResetWhenDisabled() throws Exception {
+        int places = ConfigurationHandler.printerMaxPlacementsPerTick, breaks = ConfigurationHandler.printerMaxBreaksPerTick;
+        boolean enabled = ConfigurationHandler.printerEnabled;
+        try {
+            ConfigurationHandler.printerEnabled = true;
+            ConfigurationHandler.printerMaxPlacementsPerTick = 12;
+            ConfigurationHandler.printerMaxBreaksPerTick = 47;
+            assertEquals(12, advertised().printerMaxPlacementsPerTick);
+            assertEquals(47, advertised().printerMaxBreaksPerTick);
+            ConfigurationHandler.printerEnabled = false;
+            assertEquals(0, advertised().printerMaxPlacementsPerTick);
+            assertEquals(0, advertised().printerMaxBreaksPerTick);
+        } finally {
+            ConfigurationHandler.printerMaxPlacementsPerTick = places;
+            ConfigurationHandler.printerMaxBreaksPerTick = breaks;
             ConfigurationHandler.printerEnabled = enabled;
         }
     }

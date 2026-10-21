@@ -1,0 +1,43 @@
+{
+  "en_US": {
+    "syncmatica.gui.button.view_syncmatics": "Shared Schematic Placements",
+    "syncmatica.gui.title.manage_server_placements": "Shared Schematic Placements - %s"
+  },
+  "zh_CN": {
+    "schematic_synchronizer.gui.button.hover.share_placement": "与服务器上的其他玩家共享此放置",
+    "schematic_synchronizer.gui.button.share_placement": "共享放置：%s",
+    "syncmatica.error.invalid_file": "不支持共享此文件类型",
+    "syncmatica.error.share_incompatible_schematic": "请通过主菜单的原理图管理器转换此文件后再共享",
+    "syncmatica.error.share_modified_subregions": "共享失败 - 服务器暂不支持修改后的子区域共享，请更新服务端模组",
+    "syncmatica.error.share_without_shift": "按住 Shift 键进行共享",
+    "syncmatica.gui.button.share": "共享",
+    "syncmatica.gui.label.placement_info.owner": "初始共享者",
+    "syncmatica.gui.button.view_syncmatics": "共享原理图放置",
+    "syncmatica.gui.title.manage_server_placements": "共享原理图放置 - %s"
+  },
+  "zh_TW": {
+    "syncmatica.error.invalid_file": "無法共享此類型的檔案。",
+    "syncmatica.error.share_incompatible_schematic": "請使用主選單中的原理圖管理員轉換此檔案以共享。",
+    "syncmatica.error.share_modified_subregions": "共享錯誤：伺服器不支持共享已修改的子區域，需要更新。",
+    "syncmatica.error.share_without_shift": "按下 Shift 鍵以共享原理圖",
+    "syncmatica.gui.button.share": "共享",
+    "syncmatica.gui.button.view_syncmatics": "共享原理圖放置",
+    "syncmatica.gui.title.manage_server_placements": "共享原理圖放置 - %s"
+  },
+  "ko_KR": {
+    "syncmatica.gui.button.view_syncmatics": "공유된 설계도 배치",
+    "syncmatica.gui.title.manage_server_placements": "공유된 설계도 배치 - %s"
+  },
+  "ru_RU": {
+    "syncmatica.gui.button.view_syncmatics": "Общие размещения схем",
+    "syncmatica.gui.title.manage_server_placements": "Общие размещения схем - %s"
+  },
+  "sv_SE": {
+    "syncmatica.gui.button.view_syncmatics": "Delade schemaplaceringar",
+    "syncmatica.gui.title.manage_server_placements": "Delade schemaplaceringar - %s"
+  },
+  "uk_UA": {
+    "syncmatica.gui.button.view_syncmatics": "Спільні розміщення схем",
+    "syncmatica.gui.title.manage_server_placements": "Спільні розміщення схем - %s"
+  }
+}

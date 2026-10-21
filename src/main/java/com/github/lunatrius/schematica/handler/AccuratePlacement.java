@@ -71,6 +71,7 @@ public final class AccuratePlacement {
 
     /** Intents arrive on the network thread ahead of the placements queued for the server thread, so several can wait. */
     private final Map<UUID, Map<Long, Intent>> intents = new ConcurrentHashMap<>();
+    private final Map<UUID, Map<Long, Intent>> actions = new ConcurrentHashMap<>();
 
     private AccuratePlacement() {}
 
@@ -91,12 +92,24 @@ public final class AccuratePlacement {
         }
     }
 
-    public void forget(EntityPlayer player) { intents.remove(player.getUniqueID()); }
+    public void forget(EntityPlayer player) {
+        intents.remove(player.getUniqueID());
+        actions.remove(player.getUniqueID());
+    }
+
+    public void beginAction(EntityPlayer player, Iterable<MessagePlacementIntent> messages) {
+        Map<Long, Intent> pending = new LinkedHashMap<>();
+        for (MessagePlacementIntent message : messages) pending.put(key(message.x, message.y, message.z), new Intent(message));
+        actions.put(player.getUniqueID(), pending);
+    }
+
+    public void endAction(EntityPlayer player) { actions.remove(player.getUniqueID()); }
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public void onPlace(BlockEvent.PlaceEvent event) {
         if (event.world.isRemote || !(event.player instanceof EntityPlayerMP)) return;
-        Map<Long, Intent> pending = intents.get(event.player.getUniqueID());
+        Map<Long, Intent> pending = actions.get(event.player.getUniqueID());
+        if (pending == null) pending = intents.get(event.player.getUniqueID());
         if (pending == null) return;
         if (event instanceof BlockEvent.MultiPlaceEvent) {
             // Doors: both halves come from one item use; only door intents apply here

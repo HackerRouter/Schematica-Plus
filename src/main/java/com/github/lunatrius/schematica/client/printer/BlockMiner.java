@@ -41,7 +41,7 @@ public final class BlockMiner {
         slot = -1;
         syncSlot(player);
         x = bx; y = by; z = bz; side = face; progress = 0; ticks = 0;
-        remote = PrinterReach.remote(x, y, z);
+        remote = PrinterReach.assisted();
         send(0, side);
         if (mc.playerController.isInCreativeMode()) {
             mc.playerController.onPlayerDestroyBlock(x, y, z, side);

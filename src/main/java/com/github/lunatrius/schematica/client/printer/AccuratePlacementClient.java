@@ -17,7 +17,6 @@ import cpw.mods.fml.common.registry.GameData;
 public final class AccuratePlacementClient {
     private AccuratePlacementClient() {}
 
-    /** Whether the server will set this block's orientation: auto, v3 and v2 use the protocol, slabs_only only for slabs. */
     public static boolean active(Block block) {
         if (!SchematicaPlus.proxy.supportsAccuratePlacement
             || !AccuratePlacement.supports(block)) return false;

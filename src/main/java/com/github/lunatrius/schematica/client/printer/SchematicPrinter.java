@@ -41,6 +41,8 @@ import com.github.lunatrius.schematica.client.world.SchematicWorld;
 import com.github.lunatrius.schematica.handler.ConfigurationHandler;
 import com.github.lunatrius.schematica.internal.lunatriuscore.util.vector.Vector3i;
 import com.github.lunatrius.schematica.network.message.MessagePrinterAction;
+import com.github.lunatrius.schematica.network.message.MessagePlacementIntent;
+import com.github.lunatrius.schematica.network.PacketHandler;
 import com.github.lunatrius.schematica.proxy.ClientProxy;
 import com.github.lunatrius.schematica.reference.Constants;
 import com.github.lunatrius.schematica.reference.Reference;
@@ -177,8 +179,10 @@ public class SchematicPrinter {
      * slab click completes are left to the placement.
      */
     private boolean startBreak(World world, SchematicWorld schematic, int wx, int wy, int wz) {
-        return breakWanted(world, schematic, wx, wy, wz, ConfigurationHandler.printBreakExtraBlock, ConfigurationHandler.printBreakWrongBlock,
-            ConfigurationHandler.printBreakWrongStateBlock) && beginMining(world, wx, wy, wz);
+        boolean creative = PrinterReach.assisted() && ConfigurationHandler.destroyBlocks && this.minecraft.playerController.isInCreativeMode()
+            && !world.isAirBlock(wx, wy, wz);
+        return (creative || breakWanted(world, schematic, wx, wy, wz, ConfigurationHandler.printBreakExtraBlock,
+            ConfigurationHandler.printBreakWrongBlock, ConfigurationHandler.printBreakWrongStateBlock)) && beginMining(world, wx, wy, wz);
     }
 
     /** Whether the world block is an extra, wrong or wrong-state block of the placement that may be mined. */
@@ -211,6 +215,15 @@ public class SchematicPrinter {
     boolean beginMining(World world, int wx, int wy, int wz) {
         int previous = this.minecraft.thePlayer.inventory.currentItem;
         boolean switched = selectTool(this.minecraft.thePlayer, world, world.getBlock(wx, wy, wz), wx, wy, wz);
+        if (PrinterReach.fastBreaking()) {
+            MessagePrinterAction request = PrinterReach.request(MessagePrinterAction.BREAK, wx, wy, wz, ForgeDirection.UP.ordinal(), null);
+            request.minimumDurability = ConfigurationHandler.printAutoTool ? ConfigurationHandler.printAutoToolDurability : 0;
+            PacketHandler.INSTANCE.sendToServer(request);
+            this.minecraft.thePlayer.swingItem();
+            PrinterHighlights.add(wx, wy, wz, PrinterHighlights.Type.BREAK);
+            if (this.pass == null) this.minecraft.thePlayer.inventory.currentItem = previous;
+            return true;
+        }
         BlockMiner.State state = this.miner.start(wx, wy, wz, ForgeDirection.UP.ordinal());
         if (state == BlockMiner.State.IDLE) return false;
         this.minecraft.thePlayer.swingItem();
@@ -324,7 +337,7 @@ public class SchematicPrinter {
         }
         if (layers) candidates.sort(PrinterBuildOrder.order(eyeX, eyeY, eyeZ, feetY, ConfigurationHandler.printerYAxisReverse));
         this.pass = new Pass(player);
-        int placed = 0;
+        int placed = 0, broken = 0;
         try {
             int attempted = 0;
             for (PrinterBuildOrder.Candidate candidate : candidates) {
@@ -332,15 +345,18 @@ public class SchematicPrinter {
                 int x = candidate.x, y = candidate.y, z = candidate.z;
                 long key = key(x, y, z);
                 SchematicWorld placement = (SchematicWorld) candidate.placement;
-                if (startBreak(world, placement, x, y, z)) {
+                if (broken < PrinterReach.breakLimit() && startBreak(world, placement, x, y, z)) {
                     this.cooldowns.put(key, this.tick + Math.max(1, ConfigurationHandler.timeout));
-                    break;
+                    broken++;
+                    if (!PrinterReach.fastBreaking()) break;
+                    continue;
                 }
-                if (placeBlock(world, player, placement, x, y, z)) {
+                if (placed < PrinterReach.placementLimit() && placeBlock(world, player, placement, x, y, z)) {
                     PrinterHighlights.add(x, y, z, PrinterHighlights.Type.PLACE);
                     this.cooldowns.put(key, this.tick + Math.max(1, ConfigurationHandler.timeout));
-                    if (++placed >= Math.max(1, ConfigurationHandler.placeBlocksPerTick)) break;
+                    placed++;
                 }
+                if (placed >= PrinterReach.placementLimit() && broken >= PrinterReach.breakLimit()) break;
             }
         } catch (RuntimeException e) {
             Reference.logger.error("Could not place block!", e);
@@ -384,6 +400,9 @@ public class SchematicPrinter {
         final boolean sneaking;
         final float yaw, pitch;
         boolean sneakSent, lookSent;
+        final List<MessagePlacementIntent> intents = new ArrayList<>();
+        int targetX, targetY, targetZ;
+        boolean completeSlab;
 
         Pass(EntityClientPlayerMP player) {
             this.player = player; this.slot = player.inventory.currentItem; this.sneaking = player.isSneaking();
@@ -393,14 +412,15 @@ public class SchematicPrinter {
         /** Sneaks for clicks on a neighbor so that containers and other interactive blocks are not opened. */
         void sneak() {
             if (sneakSent || player.isSneaking()) return;
-            syncSneaking(player, true);
+            if (PrinterReach.assisted()) player.setSneaking(true);
+            else syncSneaking(player, true);
             sneakSent = true;
         }
 
         void look(PrinterLook look) {
             player.rotationYaw = look.yaw;
             player.rotationPitch = look.pitch;
-            player.sendQueue.addToSendQueue(new C05PacketPlayerLook(look.yaw, look.pitch, player.onGround));
+            if (!PrinterReach.assisted()) player.sendQueue.addToSendQueue(new C05PacketPlayerLook(look.yaw, look.pitch, player.onGround));
             lookSent = true;
         }
 
@@ -412,12 +432,18 @@ public class SchematicPrinter {
         void restore() {
             player.inventory.currentItem = mining != null && toolSlot >= 0 ? toolSlot : slot;
             restoreLook();
-            if (lookSent) player.sendQueue.addToSendQueue(new C05PacketPlayerLook(yaw, pitch, player.onGround));
-            if (sneakSent) syncSneaking(player, sneaking);
+            if (lookSent && !PrinterReach.assisted()) player.sendQueue.addToSendQueue(new C05PacketPlayerLook(yaw, pitch, player.onGround));
+            if (sneakSent) {
+                if (PrinterReach.assisted()) player.setSneaking(sneaking);
+                else syncSneaking(player, sneaking);
+            }
         }
     }
 
     private boolean placeBlock(World world, EntityClientPlayerMP player, SchematicWorld schematic, int wx, int wy, int wz) {
+        this.pass.targetX = wx; this.pass.targetY = wy; this.pass.targetZ = wz;
+        this.pass.intents.clear();
+        this.pass.completeSlab = false;
         final int x = wx - schematic.position.x, y = wy - schematic.position.y, z = wz - schematic.position.z;
         final Block block = schematic.getBlock(x, y, z);
         final Block realBlock = world.getBlock(wx, wy, wz);
@@ -441,10 +467,9 @@ public class SchematicPrinter {
                 });
         }
 
-        if (ConfigurationHandler.destroyBlocks && !world.isAirBlock(wx, wy, wz)
+        if (!PrinterReach.assisted() && ConfigurationHandler.destroyBlocks && !world.isAirBlock(wx, wy, wz)
             && this.minecraft.playerController.isInCreativeMode()) {
-            if (PrinterReach.remote(wx, wy, wz)) this.miner.start(wx, wy, wz, 0);
-            else this.minecraft.playerController.clickBlock(wx, wy, wz, 0);
+            this.minecraft.playerController.clickBlock(wx, wy, wz, 0);
             return !ConfigurationHandler.destroyInstantly;
         }
 
@@ -516,10 +541,11 @@ public class SchematicPrinter {
 
         if (ConfigurationHandler.printForcedSneak || click.neighbor) this.pass.sneak();
         if (look != null) this.pass.look(look);
-        if (accurate) AccuratePlacementClient.announce(wx, wy, wz, block, metadata);
+        if (accurate) announce(wx, wy, wz, block, metadata);
+        this.pass.completeSlab = extraClicks > 0 && block instanceof BlockSlab;
         try {
             boolean success = placeBlock(world, player, held, click.x, click.y, click.z, click.side, click.hit);
-            for (int i = 0; success && i < extraClicks; i++) {
+            for (int i = 0; success && !PrinterReach.assisted() && i < extraClicks; i++) {
                 // A double slab: the second half goes onto the single slab just placed
                 Click second = block instanceof BlockSlab && world.getBlock(wx, wy, wz) instanceof BlockSlab
                     ? slabClick(wx, wy, wz, world.getBlockMetadata(wx, wy, wz)) : click;
@@ -566,8 +592,8 @@ public class SchematicPrinter {
         this.pass.sneak();
         if (look != null) this.pass.look(look);
         if (kind == MultiBlockPlacement.Kind.DOOR && AccuratePlacementClient.active(block)) {
-            AccuratePlacementClient.announce(wx, wy, wz, block, metadata);
-            if (second == block && MultiBlockPlacement.secondary(secondMeta)) AccuratePlacementClient.announce(sx, sy, sz, block, secondMeta);
+            announce(wx, wy, wz, block, metadata);
+            if (second == block && MultiBlockPlacement.secondary(secondMeta)) announce(sx, sy, sz, block, secondMeta);
         }
         try {
             boolean success = placeBlock(world, player, held, wx, wy - 1, wz, ForgeDirection.UP.ordinal(), Vec3.createVectorHelper(wx + 0.5, wy, wz + 0.5));
@@ -716,8 +742,12 @@ public class SchematicPrinter {
         Vec3 hitVec) {
         boolean success = !ForgeEventFactory.onPlayerInteract(player, Action.RIGHT_CLICK_BLOCK, x, y, z, side, world)
             .isCanceled();
-        if (success && PrinterReach.remote(x, y, z)) {
-            PrinterReach.send(MessagePrinterAction.PLACE, x, y, z, side, hitVec);
+        if (success && PrinterReach.assisted()) {
+            MessagePrinterAction request = PrinterReach.request(MessagePrinterAction.PLACE, x, y, z, side, hitVec);
+            request.snapshot(world, this.pass.targetX, this.pass.targetY, this.pass.targetZ);
+            request.intents.addAll(this.pass.intents);
+            request.completeSlab = this.pass.completeSlab;
+            PacketHandler.INSTANCE.sendToServer(request);
             player.swingItem();
             return true;
         }
@@ -730,6 +760,11 @@ public class SchematicPrinter {
         }
 
         return success;
+    }
+
+    private void announce(int x, int y, int z, Block block, int metadata) {
+        if (PrinterReach.assisted()) this.pass.intents.add(new MessagePlacementIntent(x, y, z, BLOCK_REGISTRY.getNameForObject(block), metadata & 15));
+        else AccuratePlacementClient.announce(x, y, z, block, metadata);
     }
 
     void syncSneaking(EntityClientPlayerMP player, boolean isSneaking) {

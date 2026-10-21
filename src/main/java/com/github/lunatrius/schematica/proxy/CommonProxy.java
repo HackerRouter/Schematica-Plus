@@ -70,6 +70,7 @@ public abstract class CommonProxy {
     public volatile boolean supportsNbtRequests;
     public volatile boolean supportsCloud, supportsSharedPlacements;
     public volatile double printerMaxRange;
+    public volatile int printerMaxPlacementsPerTick, printerMaxBreaksPerTick;
     public void worldMoveFinished(long id, boolean success) {}
 
     public void remoteEditStatus(MessageEditStatus status) {}
@@ -162,6 +163,8 @@ public abstract class CommonProxy {
         supportsCloud = false;
         supportsSharedPlacements = false;
         printerMaxRange = 0;
+        printerMaxPlacementsPerTick = 0;
+        printerMaxBreaksPerTick = 0;
         this.isSaveEnabled = true;
         this.isLoadEnabled = true;
     }

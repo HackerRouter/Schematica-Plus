@@ -7,8 +7,21 @@ import java.util.function.Supplier;
 
 public final class UiPathBar extends UiWidget {
     private final Supplier<List<String>> elements;
+    private final Runnable activate;
 
-    public UiPathBar(Supplier<List<String>> elements) { this.elements = elements; }
+    public UiPathBar(Supplier<List<String>> elements) { this(elements, null); }
+
+    public UiPathBar(Supplier<List<String>> elements, Runnable activate) {
+        this.elements = elements;
+        this.activate = activate;
+    }
+
+    @Override
+    public boolean mouseDown(int x, int y, int button) {
+        if (button != 0 || activate == null) return false;
+        activate.run();
+        return true;
+    }
 
     @Override
     public void draw(UiDraw draw, int mouseX, int mouseY) {

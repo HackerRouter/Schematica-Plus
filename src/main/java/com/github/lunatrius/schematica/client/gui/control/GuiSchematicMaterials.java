@@ -497,9 +497,9 @@ public class GuiSchematicMaterials extends UiScreen {
             }));
             replace = add(new UiButton(() -> UiTranslations.format("schematica.ui.material.replace"), button -> replace(entry, button)));
             replace.setTooltip(UiTranslations.format("schematica.ui.material.replace.hover").split("\\n"));
-            star = add(new UiButton(() -> materials.isStarred(entry.key) ? "\u00a7e\u2605" : "\u2606", button -> {
+            star = add(new UiButton(() -> "", button -> {
                 if (button == 0) { materials.toggleStar(entry.key); saveSettings(); refreshRows(); }
-            }));
+            }).setSprite(materials.isStarred(entry.key) ? UiSprite.STAR : UiSprite.STAR_OUTLINE));
             star.setTooltip(UiTranslations.format("schematica.ui.material.star"));
         }
         @Override public void layout(UiBounds screen) {
@@ -545,7 +545,7 @@ public class GuiSchematicMaterials extends UiScreen {
             List<String> replaced = materials.replacedNames(entry.key);
             if (!replaced.isEmpty()) lines.add(new String[] {"§l" + UiTranslations.format("schematica.ui.material.replaces"), String.join(", ", replaced)});
             String item = "§l" + UiTranslations.format(LABEL + "title." + HEADERS[0]);
-            String name = (materials.isStarred(entry.key) ? "§e\u2605 §r" : "") + entry.name;
+            String name = entry.name;
             int labels = draw.textWidth(item), values = draw.textWidth(name) + 20;
             for (String[] line : lines) { labels = Math.max(labels, draw.textWidth(line[0])); values = Math.max(values, draw.textWidth(line[1])); }
             int w = Math.min(screen.width - 8, labels + values + 60), h = 28 + lines.size() * 16;
@@ -559,6 +559,7 @@ public class GuiSchematicMaterials extends UiScreen {
             int labelX = x + 10, valueX = labelX + labels + 20;
             try (UiDraw.Clip ignored = draw.clip(box)) {
                 draw.text(item, labelX, y + 10, 0xFFFFFFFF);
+                if (materials.isStarred(entry.key)) UiSprite.STAR.draw(draw, x + 2, y + 2, true, false);
                 draw.text(draw.trim(name, box.right() - valueX - 28), valueX + 20, y + 10, 0xFFFFFFFF);
                 draw.fill(new UiBounds(valueX, y + 6, 16, 16), 0x20FFFFFF);
                 renderItem(draw, valueX, y + 6);

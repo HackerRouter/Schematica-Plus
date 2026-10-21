@@ -17,6 +17,7 @@ public class MessageCapabilities implements IMessage, IMessageHandler<MessageCap
     public boolean isLoadEnabled;
     public boolean supportsAccuratePlacement, supportsNbtRequests, supportsCloud, supportsSharedPlacements;
     public double printerMaxRange;
+    public int printerMaxPlacementsPerTick, printerMaxBreaksPerTick;
 
     public MessageCapabilities() {
         this(false, false, false);
@@ -38,6 +39,8 @@ public class MessageCapabilities implements IMessage, IMessageHandler<MessageCap
         supportsCloud = buf.readBoolean();
         supportsSharedPlacements = buf.readBoolean();
         printerMaxRange = PrinterRange.clamp(buf.readDouble());
+        printerMaxPlacementsPerTick = Math.min(64, buf.readUnsignedByte());
+        printerMaxBreaksPerTick = Math.min(64, buf.readUnsignedByte());
     }
 
     @Override
@@ -50,6 +53,8 @@ public class MessageCapabilities implements IMessage, IMessageHandler<MessageCap
         buf.writeBoolean(supportsCloud);
         buf.writeBoolean(supportsSharedPlacements);
         buf.writeDouble(printerMaxRange);
+        buf.writeByte(printerMaxPlacementsPerTick);
+        buf.writeByte(printerMaxBreaksPerTick);
     }
 
     private static volatile MessageCapabilities pending;
@@ -78,6 +83,8 @@ public class MessageCapabilities implements IMessage, IMessageHandler<MessageCap
         SchematicaPlus.proxy.supportsCloud = message.supportsCloud;
         SchematicaPlus.proxy.supportsSharedPlacements = message.supportsSharedPlacements;
         SchematicaPlus.proxy.printerMaxRange = message.printerMaxRange;
+        SchematicaPlus.proxy.printerMaxPlacementsPerTick = message.printerMaxPlacementsPerTick;
+        SchematicaPlus.proxy.printerMaxBreaksPerTick = message.printerMaxBreaksPerTick;
 
         Reference.logger.info(
             "Server capabilities{printer={}, save={}, load={}, accuratePlacement={}}",

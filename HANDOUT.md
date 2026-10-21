@@ -86,7 +86,7 @@ mod. Original Schematica conflicts with Plus and must be removed from the instan
   Area Save offers the first three output formats; structure `.nbt` export is
   available through Schematic Manager conversion.
 - Paste defaults to `pasteReplaceBehavior=None` (existing air only), with
-  `pasteWithoutUpdates=false`. All and With non-air have distinct source-air rules.
+  `pasteWithoutUpdates=true`. All and With non-air have distinct source-air rules.
 - Paste continues after per-position block, tile, entity and update failures,
   including silent refresh and native command errors. Failed positions are not
   counted as successful writes; finish with counts and the first error. Unsupported
@@ -347,6 +347,7 @@ steps and limitations are in TESTING; the full implementation history is in Git.
 
 | Status | Date | Work and location |
 | --- | --- | --- |
+| DONE | 2026-10-21 | Unify near/far printer actions in a bounded server FIFO with per-action inventory/orientation/state, independent placement/break limits (default 64), native fast harvesting, integer work radius and accurate-placement mode cleanup. Correct shared-placement layout/names, browser search and clock/star sprites, and add a screenshot preview frame. Build and 726 tests pass; native Forge server fixture and development-client UI checks are recorded in TESTING. |
 | DONE | 2026-10-20 | Fix dedicated-server loading of `MessageDownloadEnd` by accepting `ICommandSender` in `client/util/InfoUtils.sendOpenFileChatMessage`. The added `ServerSaveQueueLoadingTest` regression fails with `EntityClientPlayerMP` before the fix. Build and all 718 tests pass; a fresh Forge 1614 development server reaches `Done` and stops cleanly. See TESTING for scope. |
 | DONE | 2026-10-13 | Prepare `1.0.0-beta.3` using tag-derived runtime version and the existing GitHub Actions release workflow; release verification procedure in TESTING. |
 | IMPLEMENTED_HEADLESS | 2026-10-04 | Sponge v1-v3 reader, v2/v3 varint/origin and malformed-input tests; `world/schematic/SpongeSchematic.java`, `SpongeSchematicTest`. |
@@ -407,7 +408,10 @@ See [compatibility scope](compatibility/README.md) for precise adapter boundarie
 
 There are 14 bundled locale catalogs, imported from 14 Litematica and 13 MaLiLib
 catalogs at the references in section 2. Preserve keys and translator credits;
-`tools/import_translations.py` applies the documented branding/format repairs.
+`tools/import_translations.py` applies the documented branding/format repairs and
+`tools/translations/litematica_overrides.json` adapts descriptions to Plus features.
+The sharing importer applies `tools/translations/sharing_overrides.json` for
+shared-placement terminology; preserve these overrides when refreshing catalogs.
 Plus-only changes require English and Chinese entries. Prefer shared production
 controls to screen-specific drawing/input. The removed UI demonstration page is
 not a supported menu or hotkey; test the framework through real screens and tests.

@@ -103,7 +103,7 @@ public folder shared by everyone, with upload, download, load and material list
 (`cloudEnabled`, `cloudUploadPermissionLevel`, `cloudPublicPermissionLevel`,
 `cloudManagePermissionLevel`, `cloudMaxUploadKilobytes`; uploads count against
 `playerQuotaKilobytes` on dedicated servers).
-**View Syncmatics** lists the placements shared on the server; Shift-click **Share** in
+**Shared Schematic Placements** lists the placements shared on the server; Shift-click **Share** in
 the placement list to share one. Shared placements load automatically in their
 dimension (`sharedPlacementsAutoLoad`) and stay locked; unlocking one in its
 configuration asks the server for exclusive editing, and locking it again publishes
@@ -203,11 +203,20 @@ use the adjacent face by default and target inside the block while sneaking.
 
 ### Printer and Easy Place
 
-The survival printer and Easy Place are separate features. They use available
-inventory items and normal server placement checks. Easy Place adds targeted
+The survival printer and Easy Place are separate features. They consume available
+inventory items and respect server permissions. Easy Place adds targeted
 placement, placement restriction, sign-text paste and optional accurate orientation
 on a server advertising the Plus protocol. It does not grant creative permissions
 or bypass protected blocks.
+
+With Plus on both sides, printer requests execute in one ordered server queue with
+per-request item, orientation and block-state checks. Server assistance corrects
+supported block orientations without client aim checks. `placeBlocksPerTick` and
+`breakBlocksPerTick` default to 64 targets per pass, capped by the server settings
+`printerMaxPlacementsPerTick` and `printerMaxBreaksPerTick` (also 64 by default).
+Fast breaking skips mining delay but uses native harvesting, including tool wear,
+drops and Forge protection events. A server break limit of 0 retains normal mining.
+Work radius uses integer steps from 0 to 128; 0 retains normal reach.
 
 Source fluids can be placed through registered buckets, Forestry/Railcraft buckets,
 GT volumetric flasks and IC2 universal fluid cells. At least 1000 mB and a valid,
@@ -226,7 +235,7 @@ configuration.
 Paste uses `pasteReplaceBehavior`: **None** replaces only existing air, **All** also
 clears destination blocks where the schematic has air, and **With non-air** only
 pastes non-air schematic blocks. Fresh configurations default to None.
-`pasteWithoutUpdates` defaults off; when on, direct placement suppresses normal
+`pasteWithoutUpdates` defaults on; when on, direct placement suppresses normal
 block/neighbor update hooks, but does not freeze normal ticks or arbitrary mod logic.
 
 On other servers, the rate-limited command fallback cannot transfer general NBT,
@@ -268,12 +277,18 @@ and import/export conversion. `.schematic`, `.schemplus`, `.litematic` and struc
 `.nbt` save names, authors, creation/modification times and dimensions. The manager
 can change the name/author, edit a multiline description, and set or remove the
 embedded preview. Scroll the info panel when details or the preview extend below
-the window. Set Preview uses the next screenshot key press; Ctrl+Alt+Shift
+the window. Set Preview displays a centered square frame for the next screenshot
+key press, including with the HUD hidden; the frame is excluded from the preview.
+Ctrl+Alt+Shift
 click imports `thumb.png` beside the schematic, cropped to a centered 120x120 square.
 New area saves use the saving player's name; descriptions start empty and previews
 are added explicitly. Conversion and REBUILD saves retain existing attribution,
 description, creation time and preview. Metadata edits also update an already loaded
 source without discarding its unsaved block edits.
+
+Click the browser's path bar or search icon to enter a filter; typing while no
+text field is focused also opens search. Escape clears the filter and returns
+to the path bar. Favorites use star icons and Recent uses a clock icon.
 
 The browser's Image/3D slider switches between an embedded thumbnail and the live
 model when both are available. Expand opens the model across the window; Escape

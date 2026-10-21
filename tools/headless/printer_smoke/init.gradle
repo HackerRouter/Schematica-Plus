@@ -1,0 +1,35 @@
+gradle.projectsEvaluated {
+    def directory = System.getProperty('schematica.smoke.directory')
+    if (!directory) throw new GradleException('Set schematica.smoke.directory to an isolated test server directory')
+    def smoke = rootProject.sourceSets.create('printerSmoke') {
+        java.srcDir(new File(rootProject.projectDir, 'tools/headless/printer_smoke/src'))
+        compileClasspath = rootProject.sourceSets.main.compileClasspath + rootProject.sourceSets.main.output
+    }
+    rootProject.tasks.named(smoke.compileJavaTaskName).configure {
+        sourceCompatibility = '8'
+        targetCompatibility = '8'
+        options.annotationProcessorPath = rootProject.sourceSets.main.annotationProcessorPath
+    }
+    def smokeJar = rootProject.tasks.register('printerSmokeJar', Jar) {
+        from smoke.output
+        archiveFileName = 'printer-smoke.jar'
+        destinationDirectory = rootProject.layout.buildDirectory.dir('printer-smoke')
+    }
+    rootProject.tasks.named('runServer').configure {
+        dependsOn smokeJar
+        workingDir = new File(directory)
+        standardInput = System.in
+        maxHeapSize = '1024m'
+        doFirst {
+            delete new File(directory, 'printer-smoke-result.txt')
+            copy {
+                from smokeJar.get().archiveFile
+                into new File(directory, 'mods')
+            }
+        }
+        doLast {
+            def result = new File(directory, 'printer-smoke-result.txt')
+            if (!result.isFile() || result.text != 'PASSED') throw new GradleException('Printer smoke tests failed; inspect the server log')
+        }
+    }
+}

@@ -1,0 +1,76 @@
+{
+  "en_US": {
+    "litematica.config.generic.name.easyPlaceProtocolVersion": "Server-assisted placement",
+    "litematica.config.generic.comment.easyPlaceProtocolVersion": "Auto: use Schematica Plus on the server to correct supported block orientations.\nSlabs only: apply this assistance only to slabs.\nNone: disable assistance.\nWithout server support, use normal placement. No other server mod or protocol is used.",
+    "litematica.config.info_overlays.comment.blockInfoOverlayEnabled": "Enable Block Info Overlay rendering to show info\nabout the looked-at block or verifier error marker,\nwhile holding the 'renderInfoOverlay' key",
+    "litematica.config.hotkeys.comment.renderInfoOverlay": "The key that enables rendering the block info overlay.\nUse NONE for not requiring a key to be pressed,\nin addition to setting \"Allow Empty\" under the Advanced Keybind settings.\nDisable the similarly named option in the Visuals\nconfigs to disable the overlay completely."
+  },
+  "zh_CN": {
+    "litematica.config.generic.name.easyPlaceProtocolVersion": "服务端辅助放置",
+    "litematica.config.generic.comment.easyPlaceProtocolVersion": "自动：服务端安装 Schematica Plus 并允许此功能时，修正支持的方块朝向。\n仅台阶：仅对台阶启用辅助。\n关闭：不使用辅助。\n服务端没有支持时使用普通放置。不使用其他服务端模组或协议。",
+    "litematica.config.info_overlays.comment.blockInfoOverlayEnabled": "启用方块信息显示\n按住“渲染信息显示（renderInfoOverlay）”键时\n显示目标方块信息或验证器错误标记的详细信息",
+    "litematica.config.hotkeys.comment.renderInfoOverlay": "启用渲染方块信息叠加层的按键。\n想要无需按下任何按键就可以一直显示，你可以：\n - 设置将此快捷键设置为“None”，\n - 并且在此快捷键的高级按键绑定设置（右侧奇怪小图标）\n - 中将“允许空键”设置为true。\n在“视效”配置中禁用同名选项，即可完全禁用叠加层。"
+  },
+  "zh_TW": {
+    "litematica.config.generic.name.easyPlaceProtocolVersion": "伺服器輔助放置",
+    "litematica.config.generic.comment.easyPlaceProtocolVersion": "自動：伺服器安裝 Schematica Plus 並允許此功能時，修正支援的方塊朝向。\n僅半磚：僅對半磚啟用輔助。\n關閉：不使用輔助。\n伺服器未提供支援時使用一般放置，不使用其他伺服器模組或協定。",
+    "litematica.config.info_overlays.comment.blockInfoOverlayEnabled": "啟用方塊資訊彈出視窗，以圖形方式顯示方塊貼圖\n可以在投影放錯時，為您提供投影原本方塊的資訊",
+    "litematica.config.hotkeys.comment.renderInfoOverlay": "按下時顯示在原理圖中和實際世界中你看向的方塊的狀態資訊，包括類型和方塊屬性。,\n若不需要按鍵即永遠顯示，請使用NONE，並在進階按鍵設定中設定「Allow Empty」。\n此外，請在視覺設定中禁用同名的選項，以完全禁用疊層。"
+  },
+  "lzh": {
+    "litematica.config.generic.name.easyPlaceProtocolVersion": "伺服器助置",
+    "litematica.config.generic.comment.easyPlaceProtocolVersion": "自動：伺服器備 Schematica Plus 且許之，則正所支之塊向。\n惟半磚：僅助置半磚。\n無：不用輔助。\n伺服器未支者，循常法置塊，無須他模組或協定。",
+    "litematica.config.info_overlays.comment.blockInfoOverlayEnabled": "啟塊訊之繪\n押[繪塊訊]之鍵位，則示所見之塊訊，驗圖器之誌誤",
+    "litematica.config.hotkeys.comment.renderInfoOverlay": "啟塊訊覆層之鍵。\n以「NONE」示鍵之不需者，可設「允空鍵」於精進鍵設。\n禁名似之項於「觀」以禁覆層。"
+  },
+  "ja_JP": {
+    "litematica.config.generic.name.easyPlaceProtocolVersion": "サーバー補助配置",
+    "litematica.config.generic.comment.easyPlaceProtocolVersion": "自動: サーバーの Schematica Plus が許可している場合、対応するブロックの向きを補正します。\nハーフブロックのみ: ハーフブロックだけを補正します。\nなし: 補正を無効にします。\nサーバーが対応していない場合は通常の配置を使用します。他のサーバーMODやプロトコルは使用しません。"
+  },
+  "ko_KR": {
+    "litematica.config.generic.name.easyPlaceProtocolVersion": "서버 보조 배치",
+    "litematica.config.generic.comment.easyPlaceProtocolVersion": "자동: 서버의 Schematica Plus가 허용하면 지원하는 블록의 방향을 보정합니다.\n반 블록만: 반 블록에만 보정을 적용합니다.\n없음: 보정을 사용하지 않습니다.\n서버가 지원하지 않으면 일반 배치를 사용합니다. 다른 서버 모드나 프로토콜은 사용하지 않습니다.",
+    "litematica.config.info_overlays.comment.blockInfoOverlayEnabled": "'렌더 정보 오버레이' 키를 누른 상태에서, 바라보고\n있는 블록 또는 검증기 오류 마커에 대한 정보를\n표시하는 블록 정보 오버레이 렌더링을 활성화합니다.",
+    "litematica.config.hotkeys.comment.renderInfoOverlay": "블록 정보 오버레이 렌더링을 활성화하는 단축키입니다.\n키를 누르고 있을 필요가 없게 하려면 NONE을 선택하고,\n고급 키지정 설정에서 \"빈 키지정 허용\"을 '예'로 설정하세요.\n오버레이를 완전히 비활성화하려면 표시 설정에서 비슷한\n이름의 옵션을 비활성화하세요."
+  },
+  "fr_FR": {
+    "litematica.config.generic.name.easyPlaceProtocolVersion": "Placement assisté par le serveur",
+    "litematica.config.generic.comment.easyPlaceProtocolVersion": "Auto : Schematica Plus sur le serveur corrige les orientations prises en charge, si autorisé.\nDalles uniquement : limiter cette aide aux dalles.\nAucun : désactiver cette aide.\nSans prise en charge du serveur, utiliser le placement normal. Aucun autre mod ou protocole serveur n’est utilisé."
+  },
+  "es_ES": {
+    "litematica.config.generic.name.easyPlaceProtocolVersion": "Colocación asistida por el servidor",
+    "litematica.config.generic.comment.easyPlaceProtocolVersion": "Auto: Schematica Plus en el servidor corrige las orientaciones compatibles, si está permitido.\nSolo losas: aplicar esta ayuda solo a las losas.\nNinguno: desactivar la ayuda.\nSin soporte del servidor se usa la colocación normal. No se usa otro mod ni protocolo de servidor."
+  },
+  "it_IT": {
+    "litematica.config.generic.name.easyPlaceProtocolVersion": "Piazzamento assistito dal server",
+    "litematica.config.generic.comment.easyPlaceProtocolVersion": "Auto: Schematica Plus sul server corregge gli orientamenti supportati, se consentito.\nSolo lastre: applica questo aiuto solo alle lastre.\nNessuno: disattiva questo aiuto.\nSenza supporto del server viene usato il piazzamento normale. Non vengono usati altri mod o protocolli server."
+  },
+  "nl_NL": {
+    "litematica.config.generic.name.easyPlaceProtocolVersion": "Plaatsing met serverondersteuning",
+    "litematica.config.generic.comment.easyPlaceProtocolVersion": "Auto: Schematica Plus op de server corrigeert ondersteunde blokrichtingen, indien toegestaan.\nAlleen platen: pas deze hulp alleen op platen toe.\nGeen: schakel deze hulp uit.\nZonder serverondersteuning wordt normale plaatsing gebruikt. Er wordt geen andere servermod of protocol gebruikt.",
+    "litematica.config.info_overlays.comment.blockInfoOverlayEnabled": "Enable Block Info Overlay rendering to show info\nabout the looked-at block or verifier error marker,\nwhile holding the 'renderInfoOverlay' key",
+    "litematica.config.hotkeys.comment.renderInfoOverlay": "The key that enables rendering the block info overlay.\nUse NONE for not requiring a key to be pressed,\nin addition to setting \"Allow Empty\" under the Advanced Keybind settings.\nDisable the similarly named option in the Visuals\nconfigs to disable the overlay completely."
+  },
+  "ru_RU": {
+    "litematica.config.generic.name.easyPlaceProtocolVersion": "Размещение с помощью сервера",
+    "litematica.config.generic.comment.easyPlaceProtocolVersion": "Авто: Schematica Plus на сервере исправляет поддерживаемые направления блоков, если это разрешено.\nТолько плиты: применять помощь только к плитам.\nНет: отключить помощь.\nБез поддержки сервера используется обычное размещение. Другие серверные моды и протоколы не используются.",
+    "litematica.config.info_overlays.comment.blockInfoOverlayEnabled": "Показывать ли оверлей с информацией о блоке, на который\nвы смотрите при удержании клавиши 'renderInfoOverlay'\n(Block Info Overlay)",
+    "litematica.config.hotkeys.comment.renderInfoOverlay": "Клавиша, которая включает показ информационного оверлея.\nИспользуйте NONE, чтобы для показа не нужна была клавиша,\nв дополнение к настройке \"Allow Empty\" в расширенных\nнастройках клавиш.\nОтключите похожую настройку в разделе отображения, чтобы выключить\nэтот оверлей полностью."
+  },
+  "sv_SE": {
+    "litematica.config.generic.name.easyPlaceProtocolVersion": "Serverassisterad placering",
+    "litematica.config.generic.comment.easyPlaceProtocolVersion": "Auto: Schematica Plus på servern korrigerar blockriktningar som stöds, om det tillåts.\nEndast plattor: använd hjälpen endast för plattor.\nIngen: stäng av hjälpen.\nUtan serverstöd används vanlig placering. Ingen annan servermod eller något annat protokoll används.",
+    "litematica.config.info_overlays.comment.blockInfoOverlayEnabled": "Om aktiverad renderas Block Info Overlay för att visa information\nom blocket du tittar på eller verifierarens felmarkör,\nmedan tangenten 'renderInfoOverlay' hålls nere",
+    "litematica.config.hotkeys.comment.renderInfoOverlay": "Tangenten som aktiverar rendering av överlagringen för blockinfo.\nAnvänd NONE om ingen tangent ska behöva hållas nere,\nutöver att även ställa in \"Allow Empty\" under de avancerade tangentbindningsinställningarna.\nInaktivera alternativet med liknande namn i\nde visuella inställningarna för att stänga av överlagringen helt."
+  },
+  "uk_UA": {
+    "litematica.config.generic.name.easyPlaceProtocolVersion": "Розміщення за допомогою сервера",
+    "litematica.config.generic.comment.easyPlaceProtocolVersion": "Авто: Schematica Plus на сервері виправляє підтримувані напрямки блоків, якщо це дозволено.\nЛише плити: застосовувати допомогу лише до плит.\nНемає: вимкнути допомогу.\nБез підтримки сервера використовується звичайне розміщення. Інші серверні моди та протоколи не використовуються."
+  },
+  "tr_TR": {
+    "litematica.config.generic.name.easyPlaceProtocolVersion": "Sunucu destekli yerleştirme",
+    "litematica.config.generic.comment.easyPlaceProtocolVersion": "Otomatik: Sunucudaki Schematica Plus, izin verilmişse desteklenen blok yönlerini düzeltir.\nYalnızca basamaklar: bu yardımı yalnızca basamaklara uygular.\nHiçbiri: yardımı kapatır.\nSunucu desteği yoksa normal yerleştirme kullanılır. Başka sunucu modu veya protokolü kullanılmaz.",
+    "litematica.config.info_overlays.comment.blockInfoOverlayEnabled": "Bakılan blok veya doğrulayıcı hata işareti hakkında\nbilgi göstermek için Blok Bilgisi Kaplamasını etkinleştirir.\n'renderInfoOverlay' tuşu basılıyken görünür.",
+    "litematica.config.hotkeys.comment.renderInfoOverlay": "Blok bilgisi kaplamasını etkinleştiren tuş.\nTuş gerektirmemesi için NONE kullanın.\nKaplamayı tamamen kapatmak için Görsel ayarlar altındaki\nayni isimli seçeneği devre dışı bırakın."
+  }
+}
