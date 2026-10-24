@@ -6,6 +6,30 @@ Actual clients ran under Xvfb and Mesa llvmpipe, using generated test worlds.
 No uploaded world or schematic was used. `<evidence-dir>` below denotes private
 local artifacts outside the repository, not distributed files or download links.
 
+## Cache replay source review (2026-10-24)
+
+The new optional sorting cache was checked against Angelica's public source at
+1.0.0-beta66b (`7059ee0eecbee9cc66a3b9a301bf42d7242669b3`) and 2.2.28
+(`0a4d48964edc7a20c0a93c456123860a4a9e16de`). Both expose
+[`IrisApi.isShaderPackInUse`](https://github.com/GTNewHorizons/Angelica/blob/0a4d48964edc7a20c0a93c456123860a4a9e16de/src/main/java/net/irisshaders/iris/api/v0/IrisApi.java).
+The newer renderer also collects per-vertex AO/material information during
+[`StateAwareTessellator`](https://github.com/GTNewHorizons/Angelica/blob/0a4d48964edc7a20c0a93c456123860a4a9e16de/src/mixin/java/com/gtnewhorizons/angelica/mixins/early/rendering/MixinTessellator.java)
+terrain meshing, and its streaming draw path can derive extended shader attributes.
+These states cannot be inferred from the vanilla eight-integer vertex stride alone.
+
+`GeometrySupport` retains ordinary rendering while Iris/OptiFine shaders, OptiFine
+multitexture or Angelica terrain meshing are active. Reflection failure for an
+installed optional API also declines replay. `NativeGeometry` rejects replacement
+Tessellator classes, non-quad/extended formats and oversized buffers. Custom block
+classes and tile-bearing sections continue through the existing renderer. Shader
+activation drops existing sorted caches and cancels their jobs. No optional mod
+implementation or dependency was copied into Plus.
+
+The added automated probe tests cover absent/changed/broken optional APIs; the
+native Forge fixture covers the vanilla capture/sort/replay path. This is a source
+review and conservative fallback, not a new full GTNH or external-shader runtime
+acceptance run. The pack observations below describe their historical revisions.
+
 ## Findings
 
 The chest fix covers opaque tile renderers, but it did not fix every source of

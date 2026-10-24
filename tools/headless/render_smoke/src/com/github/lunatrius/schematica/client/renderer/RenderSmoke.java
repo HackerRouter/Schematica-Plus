@@ -36,6 +36,8 @@ import com.github.lunatrius.schematica.client.world.RenderLayerRange;
 import com.github.lunatrius.schematica.client.world.RenderLayerSettings;
 import com.github.lunatrius.schematica.client.world.SchematicWorld;
 import com.github.lunatrius.schematica.handler.VisualSettings;
+import com.github.lunatrius.schematica.handler.ConfigurationHandler;
+import com.github.lunatrius.schematica.client.verifier.VerifierSmoke;
 import com.github.lunatrius.schematica.world.storage.Schematic;
 
 import org.lwjgl.opengl.GL11;
@@ -47,7 +49,13 @@ public class RenderSmoke {
     private final Block custom = new Block(Material.rock) {
         @Override public IIcon getIcon(int side, int meta) { return Blocks.stone.getIcon(side, meta); }
     };
-    private boolean started, finished;
+    private boolean started, prepared, finished;
+    private int sortStage;
+    private CountingChunk sortingChunk;
+    private SchematicWorld sortingWorld;
+    private SortedGeometryCache sortingCache;
+    private int[] firstOrder;
+    private VerifierSmoke verifier;
     private int ticks, x, z;
     private static final int Y = 161;
 
@@ -75,29 +83,102 @@ public class RenderSmoke {
             if (mc.thePlayer == null || mc.theWorld == null) return;
             x = ((int) Math.floor(mc.thePlayer.posX) >> 4) * 16 + 2;
             z = ((int) Math.floor(mc.thePlayer.posZ) >> 4) * 16 + 2;
-            if (!LoadedAirSections.containsOnlyAir(mc.theWorld, x - 1, Y - 1, z - 1, x + 48, Y + 20, z + 20)) return;
+            if (!prepared) {
+                if (!LoadedAirSections.containsOnlyAir(mc.theWorld, x - 1, Y - 1, z - 1, x + 48, Y + 40, z + 20)) return;
+                prepared = true;
+                RenderLayerSettings.RANGE.load(null);
+                VisualSettings.fakeLighting = true;
+                VisualSettings.fakeLightLevel = 15;
+                while (GL11.glGetError() != GL11.GL_NO_ERROR) {}
+                translations();
+                invalidation();
+                grids();
+                sortingWorld = schematic(4, 4, 4, Blocks.stained_glass);
+                for (int sx = 0; sx < 4; sx++) sortingWorld.setBlock(sx, 0, 0, Blocks.stained_glass, sx + 1, 0);
+                sortingChunk = new CountingChunk(sortingWorld);
+                check(sortingChunk.updateRenderer(), "sorted geometry initial build");
+                sortingCache = (SortedGeometryCache) field(RendererSchematicChunk.class, sortingChunk, "sortedGeometry");
+                verifier = new VerifierSmoke(mc, x, Y, z + 16);
+                return;
+            }
+            boolean sorted = sorting();
+            boolean verified = verifier.tick();
+            if (!sorted || !verified) return;
             finished = true;
-            RenderLayerSettings.RANGE.load(null);
-            VisualSettings.fakeLighting = true;
-            VisualSettings.fakeLightLevel = 15;
-            while (GL11.glGetError() != GL11.GL_NO_ERROR) {}
-            translations();
-            invalidation();
-            grids();
             check(GL11.glGetError() == GL11.GL_NO_ERROR, "OpenGL error");
             Files.write(Paths.get("render-smoke-result.txt"), "PASSED".getBytes(StandardCharsets.UTF_8));
-            System.out.println("RENDER_SMOKE_PASSED: cached translation, air witnesses, lighting, layers, edits, custom blocks, dirty index, grid identities");
+            System.out.println("RENDER_SMOKE_PASSED: cached translation, air witnesses, lighting, layers, edits, custom blocks, dirty index, grid identities, background verification, native transparent sorting");
         } catch (Throwable failure) {
             finished = true;
             failure.printStackTrace();
             System.out.println("RENDER_SMOKE_FAILED");
         } finally {
             if (finished) {
+                if (sortingChunk != null) sortingChunk.delete();
+                if (verifier != null) verifier.close();
                 GridPlacements.INSTANCE.clear();
                 Placements.clear();
                 mc.shutdown();
             }
         }
+    }
+
+    private boolean sorting() throws Exception {
+        if (sortStage == 3) return true;
+        SortedGeometryCache.beginFrame();
+        double camera = sortStage == 0 ? 20 : -20;
+        sortingChunk.updateSortPosition(x + camera, Y + camera, z + camera);
+        SortedGeometryCache.update();
+        Object[] entries = (Object[]) field(SortedGeometryCache.class, sortingCache, "passes");
+        Object entry = entries[1];
+        java.util.concurrent.Future<?> job = (java.util.concurrent.Future<?>) field(entry.getClass(), entry, "job");
+        if (job != null) job.get(5, java.util.concurrent.TimeUnit.SECONDS);
+        SortedGeometryCache.update();
+        if (sortingCache.list(1, 0) == 0) return false;
+        int[] order = (int[]) field(entry.getClass(), entry, "order");
+        if (order == null) return false;
+        if (sortStage == 0) {
+            firstOrder = order.clone();
+            pixels(sortingChunk, sortingWorld);
+            sortStage = 1;
+            return false;
+        }
+        if (sortStage == 1) {
+            if (Arrays.equals(order, firstOrder)) return false;
+            check(sortingChunk.passes == 3, "camera sorting must not call block renderers again");
+            pixels(sortingChunk, sortingWorld);
+            int list = sortingCache.list(1, 0);
+            sortingChunk.setDirty(); sortingChunk.updateRenderer();
+            check(entries[1] == entry && sortingCache.list(1, 0) == list, "identical geometry retains its sorted display list");
+            SortedGeometryCache.beginFrame();
+            sortingChunk.updateSortPosition(x + 40, Y + 40, z + 40);
+            SortedGeometryCache.update();
+            check(field(entry.getClass(), entry, "job") != null, "visible geometry requests sorting");
+            SortedGeometryCache.beginFrame(); SortedGeometryCache.update();
+            check(field(entry.getClass(), entry, "job") == null, "offscreen geometry releases background work slots");
+            SortedGeometryCache.beginFrame();
+            sortingChunk.updateSortPosition(x + 40, Y + 40, z + 40);
+            SortedGeometryCache.update();
+            check(field(entry.getClass(), entry, "job") != null, "visible sorting resumes after cancellation");
+            SortedGeometryCache.suspend();
+            check(field(entry.getClass(), entry, "job") == null, "globally hidden rendering releases background work slots");
+            sortingWorld.setBlock(0, 0, 0, Blocks.stone, 0, 0);
+            sortingChunk.setDirty(); sortingChunk.updateRenderer();
+            check((Boolean) field(entry.getClass(), entry, "deleted"), "old sorted geometry is discarded after edits");
+            check(field(entry.getClass(), entry, "geometry") == null, "discarded geometry releases its vertex storage");
+            sortStage = 2;
+            return false;
+        }
+        pixels(sortingChunk, sortingWorld);
+        sortingChunk.delete(); sortingChunk = null;
+        check(((Number) field(SortedGeometryCache.class, null, "retained")).longValue() == 0, "all geometry cache memory released");
+        System.out.println("RENDER_SMOKE_SORTING: opposite camera orders, no model rebuild, stale geometry discarded, cache memory released");
+        sortStage = 3;
+        return true;
+    }
+
+    private static Object field(Class<?> type, Object instance, String name) throws Exception {
+        Field field = type.getDeclaredField(name); field.setAccessible(true); return field.get(instance);
     }
 
     private SchematicWorld schematic(int width, int height, int length, Block block) {

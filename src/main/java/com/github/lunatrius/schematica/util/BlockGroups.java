@@ -80,6 +80,25 @@ public final class BlockGroups {
 
     private BlockGroups() {}
 
+    public static final class Snapshot {
+        public final String group, switched;
+        public final int variants, age, survival;
+        public final boolean known;
+
+        private Snapshot(Block block) {
+            known = block != null;
+            group = known ? group(block) : null;
+            variants = group == null ? 0 : variantBits(block);
+            age = known ? ageBits(block) : 0;
+            survival = known ? survivalBits(block) : 0;
+            String pair = null;
+            if (known) for (Class<?> type : SWITCHED) if (type == block.getClass()) pair = type.getName();
+            switched = pair;
+        }
+    }
+
+    public static Snapshot snapshot(String name) { return new Snapshot(block(name)); }
+
     /** The replaceable group of a block, or null. */
     public static synchronized String group(Block block) {
         if (block == null) return null;

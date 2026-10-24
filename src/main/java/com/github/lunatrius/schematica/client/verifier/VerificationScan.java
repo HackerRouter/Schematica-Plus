@@ -2,11 +2,14 @@ package com.github.lunatrius.schematica.client.verifier;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.concurrent.CancellationException;
 import java.util.BitSet;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -56,7 +59,7 @@ public final class VerificationScan {
         public final Pair pair;
         public final Type type;
         private int count;
-        private Group(Pair pair) { this.pair = pair; type = classify(pair.expected, pair.found); }
+        private Group(Pair pair, Type type) { this.pair = pair; this.type = type; }
         public int count() { return count; }
     }
 
@@ -78,6 +81,9 @@ public final class VerificationScan {
     private final Map<Pair, Integer> groupIds = new HashMap<>();
     private final Set<Pair> ignored = new HashSet<>();
     private Work active;
+    private Batch inFlight;
+    private final List<Part> captured = new ArrayList<>();
+    private final Set<Work> held = new LinkedHashSet<>();
     private int skipped, checked, total;
     private long revision;
 
@@ -119,43 +125,172 @@ public final class VerificationScan {
     }
 
     public void step(Reader reader, int limit, long deadline) {
-        int attempts = pending.size();
-        Boolean loaded = null;
-        for (int work = 0; work < limit && System.nanoTime() < deadline; work++) {
+        VerificationRules rules = new VerificationRules();
+        int attempts = pending.size() + 1;
+        while (limit > 0 && System.nanoTime() < deadline) {
+            Batch batch = capture(reader, Math.min(4096, limit), deadline, rules);
+            if (batch == null) { if (--attempts <= 0) return; continue; }
+            apply(batch.compare(), reader);
+            limit -= batch.indices.length;
+        }
+    }
+
+    static final class Batch {
+        private final int[] indices, skipped;
+        private final Pair[] pairs;
+        private final Map<String, BlockGroups.Snapshot> descriptions;
+        private final VerificationRules rules;
+
+        private Batch(int[] indices, int[] skipped, Pair[] pairs,
+            Map<String, BlockGroups.Snapshot> descriptions, VerificationRules rules) {
+            this.indices = indices; this.skipped = skipped;
+            this.pairs = pairs; this.descriptions = descriptions; this.rules = rules;
+        }
+
+        Result compare() {
+            Map<Pair, Integer> ids = new HashMap<>();
+            List<Pair> unique = new ArrayList<>();
+            List<Type> types = new ArrayList<>();
+            int[] cells = skipped.clone();
+            for (int i = 0; i < pairs.length; i++) {
+                if (Thread.currentThread().isInterrupted()) throw new CancellationException();
+                Pair pair = pairs[i];
+                if (pair == null) continue;
+                Integer id = ids.get(pair);
+                if (id == null) {
+                    id = unique.size(); ids.put(pair, id); unique.add(pair);
+                    types.add(rules.classify(pair.expected, pair.found,
+                        descriptions.get(pair.expected.block), descriptions.get(pair.found.block)));
+                }
+                cells[i] = id + 1;
+            }
+            return new Result(this, cells, unique, types);
+        }
+    }
+
+    static final class Result {
+        private final Batch batch;
+        private final int[] cells;
+        private final List<Pair> pairs;
+        private final List<Type> types;
+        private Result(Batch batch, int[] cells, List<Pair> pairs, List<Type> types) {
+            this.batch = batch; this.cells = cells; this.pairs = pairs; this.types = types;
+        }
+    }
+
+    Batch capture(Reader reader, int limit, long deadline, VerificationRules rules) {
+        if (inFlight != null || limit < 1 || System.nanoTime() >= deadline) return null;
+        int capacity = Math.min(4096, limit), attempts = pending.size(), count = 0;
+        int[] indices = new int[capacity], statuses = new int[capacity];
+        Pair[] pairs = new Pair[capacity];
+        Map<String, BlockGroups.Snapshot> descriptions = new HashMap<>();
+        while (count < capacity && System.nanoTime() < deadline) {
             if (active == null) {
                 if (attempts-- <= 0 || pending.isEmpty()) break;
                 active = pending.remove();
-                loaded = null;
             }
-            int sx = active.minX + active.cursor % active.width;
-            int sz = active.minZ + active.cursor / active.width % active.length;
-            int sy = bounds[1] + active.cursor / (active.width * active.length);
-            int index = sx - bounds[0] + width * (sz - bounds[2] + length * (sy - bounds[1]));
-            try {
-                if (!reader.included(sx, sy, sz)) replace(index, -1);
-                else {
-                    if (loaded == null) loaded = reader.loaded(active.chunkX, active.chunkZ);
-                    if (!loaded) { pending.add(active); active = null; continue; }
-                    State expected = Objects.requireNonNull(reader.expected(sx, sy, sz));
-                    State found = Objects.requireNonNull(reader.found(x + sx, y + sy, z + sz));
-                    if (expected.air() && (found.air() || reader.ignorable(found))) replace(index, -1);
+            if (active.section < 0) active.beginSection();
+            Part part = new Part(active, count);
+            Boolean loaded = null;
+            while (count < capacity && active.cursor < active.end && System.nanoTime() < deadline) {
+                int sx = active.minX + active.cursor % active.width;
+                int sz = active.minZ + active.cursor / active.width % active.length;
+                int sy = bounds[1] + active.cursor / (active.width * active.length);
+                indices[count] = sx - bounds[0] + width * (sz - bounds[2] + length * (sy - bounds[1]));
+                try {
+                    if (!reader.included(sx, sy, sz)) statuses[count] = -1;
                     else {
-                        Pair pair = new Pair(expected, found);
-                        Integer id = groupIds.get(pair);
-                        if (id == null) { id = groups.size(); groups.add(new Group(pair)); groupIds.put(pair, id); }
-                        replace(index, id);
+                        if (loaded == null) loaded = reader.loaded(active.chunkX, active.chunkZ);
+                        if (!loaded) break;
+                        part.needsChunk = true;
+                        State expected = Objects.requireNonNull(reader.expected(sx, sy, sz));
+                        State found = Objects.requireNonNull(reader.found(x + sx, y + sy, z + sz));
+                        if (expected.air() && (found.air() || reader.ignorable(found))) statuses[count] = -1;
+                        else {
+                            descriptions.computeIfAbsent(expected.block, BlockGroups::snapshot);
+                            descriptions.computeIfAbsent(found.block, BlockGroups::snapshot);
+                            pairs[count] = new Pair(expected, found);
+                        }
                     }
+                } catch (RuntimeException error) {
+                    statuses[count] = -2;
+                    reader.failed(x + sx, y + sy, z + sz, error);
                 }
-            } catch (RuntimeException error) {
-                replace(index, -2);
-                reader.failed(x + sx, y + sy, z + sz, error);
+                active.cursor++; count++;
             }
-            if (++active.cursor == active.volume) {
-                active.queued = false;
-                if (active.again) enqueue(active);
+            part.end = count;
+            if (part.end > part.start) { captured.add(part); held.add(active); }
+            if (active.cursor == active.end) {
+                active.section = -1;
+                if (active.sections == 0) active = null;
+            } else {
+                if (!held.contains(active)) pending.add(active);
                 active = null;
             }
         }
+        active = null;
+        if (count == 0) return null;
+        inFlight = new Batch(Arrays.copyOf(indices, count), Arrays.copyOf(statuses, count), Arrays.copyOf(pairs, count), descriptions, rules);
+        return inFlight;
+    }
+
+    boolean apply(Result result, Reader reader) {
+        if (result.batch != inFlight || inFlight == null) return false;
+        Set<Work> invalid = new HashSet<>();
+        for (Part part : captured) if (part.work.version != part.version
+            || part.needsChunk && !reader.loaded(part.work.chunkX, part.work.chunkZ)) invalid.add(part.work);
+        int[] ids = new int[result.pairs.size()];
+        boolean applied = false;
+        for (Part part : captured) {
+            if (invalid.contains(part.work)) {
+                part.work.sections |= 1 << part.section;
+                part.work.section = -1;
+                continue;
+            }
+            active = part.work;
+            for (int i = part.start; i < part.end; i++) {
+                int local = result.cells[i], id = local;
+                if (local > 0) {
+                    if (ids[local - 1] == 0) {
+                        Pair pair = result.pairs.get(local - 1);
+                        Integer known = groupIds.get(pair);
+                        if (known == null) { known = groups.size(); groups.add(new Group(pair, result.types.get(local - 1))); groupIds.put(pair, known); }
+                        ids[local - 1] = known;
+                    }
+                    id = ids[local - 1];
+                }
+                replace(inFlight.indices[i], id);
+            }
+            applied = true;
+        }
+        releaseCaptured();
+        return applied;
+    }
+
+    void cancelBatch() {
+        if (inFlight == null) return;
+        for (Part part : captured) {
+            part.work.sections |= 1 << part.section;
+            part.work.section = -1;
+        }
+        releaseCaptured();
+    }
+
+    private void releaseCaptured() {
+        for (Work work : held) {
+            if (work.section >= 0 || work.sections != 0) pending.add(work);
+            else work.queued = false;
+        }
+        active = null; inFlight = null; captured.clear(); held.clear();
+    }
+
+    private final class Part {
+        final Work work;
+        final int start, section;
+        final long version;
+        int end;
+        boolean needsChunk;
+        Part(Work work, int start) { this.work = work; this.start = start; section = work.section; version = work.version; }
     }
 
     private void replace(int index, int id) {
@@ -173,29 +308,29 @@ public final class VerificationScan {
     }
 
     public void changed(int minX, int minY, int minZ, int maxX, int maxY, int maxZ) {
-        if (total == 0 || maxY < (long) y + bounds[1] || minY >= (long) y + bounds[4]) return;
+        if (total == 0 || minX > maxX || minY > maxY || minZ > maxZ
+            || maxY < (long) y + bounds[1] || minY >= (long) y + bounds[4]) return;
         int firstX = Math.max(minX >> 4, minChunkX), firstZ = Math.max(minZ >> 4, minChunkZ);
         int lastX = Math.min(maxX >> 4, minChunkX + chunks.size() / chunkColumns - 1);
         int lastZ = Math.min(maxZ >> 4, minChunkZ + chunkColumns - 1);
+        int mask = 0;
+        for (int sy = Math.max(minY, y + bounds[1]) >> 4; sy <= (Math.min(maxY, y + bounds[4] - 1) >> 4); sy++) mask |= 1 << sy;
         for (int cx = firstX; cx <= lastX; cx++) for (int cz = firstZ; cz <= lastZ; cz++) {
             Work chunk = chunks.get((cx - minChunkX) * chunkColumns + cz - minChunkZ);
-            if (chunk == active) chunk.again = true;
-            else if (!chunk.queued) enqueue(chunk);
+            chunk.sections |= mask;
+            chunk.version++;
+            if (!chunk.queued) { chunk.queued = true; pending.add(chunk); }
         }
     }
 
-    private void enqueue(Work work) {
-        work.cursor = 0; work.queued = true; work.again = false;
-        pending.add(work);
-    }
-
-    public boolean done() { return active == null && pending.isEmpty(); }
-    public int remainingChunks() { return pending.size() + (active == null ? 0 : 1); }
+    public boolean done() { return inFlight == null && active == null && pending.isEmpty(); }
+    public int remainingChunks() { return pending.size() + held.size() + (active != null && !held.contains(active) ? 1 : 0); }
     public int totalChunks() { return chunks.size(); }
     /** The chunk coordinates still to verify, closest to the block position first. */
     public List<int[]> pendingChunks(int blockX, int blockZ) {
         List<int[]> result = new ArrayList<>();
-        if (active != null) result.add(new int[] {active.chunkX, active.chunkZ});
+        for (Work work : held) result.add(new int[] {work.chunkX, work.chunkZ});
+        if (active != null && !held.contains(active)) result.add(new int[] {active.chunkX, active.chunkZ});
         for (Work work : pending) if (work != active) result.add(new int[] {work.chunkX, work.chunkZ});
         result.sort(Comparator.comparingLong(c -> {
             long dx = (c[0] << 4) + 8 - blockX, dz = (c[1] << 4) + 8 - blockZ;
@@ -321,8 +456,9 @@ public final class VerificationScan {
 
     private final class Work {
         final int chunkX, chunkZ, minX, minZ, width, length, volume;
-        int cursor, errors;
-        boolean queued = true, again;
+        int cursor, end, errors, sections, section = -1;
+        long version;
+        boolean queued = true;
         Work(int cx, int cz) {
             chunkX = cx; chunkZ = cz;
             minX = Math.max(bounds[0], (cx << 4) - x);
@@ -330,6 +466,15 @@ public final class VerificationScan {
             width = Math.min(bounds[3], (cx << 4) + 16 - x) - minX;
             length = Math.min(bounds[5], (cz << 4) + 16 - z) - minZ;
             volume = width * length * (bounds[4] - bounds[1]);
+            for (int sy = (y + bounds[1]) >> 4; sy <= ((y + bounds[4] - 1) >> 4); sy++) sections |= 1 << sy;
+        }
+
+        void beginSection() {
+            if (sections == 0) return;
+            section = Integer.numberOfTrailingZeros(sections);
+            sections &= ~(1 << section);
+            cursor = width * length * (Math.max(bounds[1], (section << 4) - y) - bounds[1]);
+            end = width * length * (Math.min(bounds[4], ((section + 1) << 4) - y) - bounds[1]);
         }
     }
 }

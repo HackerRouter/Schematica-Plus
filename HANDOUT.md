@@ -133,7 +133,7 @@ LC_ALL=C.UTF-8 ./gradlew test
 
 Build includes compilation, reobfuscation, Checkstyle and JUnit. Artifacts are in
 `build/libs/`; XML results in `build/test-results/test/`. The latest completed suite
-has **735 tests, no failures or skips**. These tests do not launch Minecraft.
+has **749 tests, no failures or skips**. These tests do not launch Minecraft.
 The generated MCP source is under `build/rfg/minecraft-src/java/`.
 First builds require network access; `--offline` only works with a populated cache.
 CI also starts and cleanly stops a dedicated development server. Branch pushes
@@ -347,6 +347,7 @@ steps and limitations are in TESTING; the full implementation history is in Git.
 
 | Status | Date | Work and location |
 | --- | --- | --- |
+| DONE | 2026-10-24 | Add immutable verification snapshots, bounded background comparisons, sparse 16-cube invalidation and multi-column batches in `client/verifier`; add independent quad sorting, geometry equality reuse, bounded upload/memory budgets and optional-renderer guards in `client/renderer`. Build and 749 tests pass. Extended native `tools/headless/render_smoke` checks verification, cancellation, transparent order changes without model rebuilds, identical geometry reuse and cleanup. World/model callbacks remain on the client thread; new full-pack/shader acceptance is not claimed. See TESTING and the rendering source audit. |
 | DONE | 2026-10-24 | Reuse eligible fixed-light vanilla display lists during translation in `client/renderer`, index dirty sections by local coordinates, retain grid copies and renderer identities during pure base movement in `client/world/GridPlacements`, and resume budgeted scans across frames. Build and 735 tests pass. The native `tools/headless/render_smoke` fixture verifies zero extra builds over 64 air moves, cached/fresh pixel equality, invalidation and grid lifecycle; see TESTING for conservative fallback and pack-validation limits. |
 | DONE | 2026-10-24 | Redraw filled and outlined favorite stars with mirrored pixel rows and use a native 8x8 toolbar star in a padded 12x12 frame. All three states preserve exact horizontal pixel symmetry and the directory palette. Verification is recorded in TESTING. |
 | DONE | 2026-10-24 | Match the filled and outlined favorite stars to the directory icon's yellow palette, retaining brighter hover states and gray disabled states. Sprite dimensions and transparency are unchanged. Build and 726 tests pass; palette verification is recorded in TESTING. |

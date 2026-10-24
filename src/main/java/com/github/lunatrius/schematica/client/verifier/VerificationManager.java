@@ -1,6 +1,7 @@
 package com.github.lunatrius.schematica.client.verifier;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -20,6 +21,7 @@ import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.EmptyChunk;
 
 import com.github.lunatrius.schematica.api.ISchematic;
+import com.github.lunatrius.schematica.client.ClientWorkPool;
 import com.github.lunatrius.schematica.api.SchematicRegion;
 import com.github.lunatrius.schematica.client.gui.framework.UiTranslations;
 import com.github.lunatrius.schematica.client.renderer.RendererSchematicChunk;
@@ -38,7 +40,7 @@ import cpw.mods.fml.common.registry.GameData;
 public final class VerificationManager {
     public static final VerificationManager INSTANCE = new VerificationManager();
     private final Map<SchematicWorld, Session> sessions = new LinkedHashMap<>();
-    private int[] dirty;
+    private final VerificationChanges dirty = new VerificationChanges();
     private int next;
     private Session focused;
 
@@ -58,21 +60,15 @@ public final class VerificationManager {
         for (Session session : sessions.values()) session.reset();
         sessions.clear();
         focused = null;
-        takeChanges();
+        dirty.drain();
     }
 
-    public synchronized void changed(int x0, int y0, int z0, int x1, int y1, int z1) {
-        if (dirty == null) dirty = new int[] {x0, y0, z0, x1, y1, z1};
-        else {
-            dirty[0] = Math.min(dirty[0], x0); dirty[1] = Math.min(dirty[1], y0); dirty[2] = Math.min(dirty[2], z0);
-            dirty[3] = Math.max(dirty[3], x1); dirty[4] = Math.max(dirty[4], y1); dirty[5] = Math.max(dirty[5], z1);
-        }
+    public void changed(int x0, int y0, int z0, int x1, int y1, int z1) {
+        dirty.add(x0, y0, z0, x1, y1, z1);
     }
-
-    private synchronized int[] takeChanges() { int[] changed = dirty; dirty = null; return changed; }
 
     public void tick(Minecraft mc) {
-        int[] changes = takeChanges();
+        VerificationChanges changes = dirty.drain();
         Iterator<Session> iterator = sessions.values().iterator();
         while (iterator.hasNext()) {
             Session session = iterator.next();
@@ -86,7 +82,7 @@ public final class VerificationManager {
                 session.reset();
                 session.notice = "schematica.ui.verifier.changed";
             }
-            if (changes != null && session.scan != null) session.scan.changed(changes[0], changes[1], changes[2], changes[3], changes[4], changes[5]);
+            if (session.scan != null) changes.apply(session.scan);
             if (session.task != null && session.task.progress().cancelling) session.pause();
         }
         List<Session> pending = new ArrayList<>(sessions.values());
@@ -111,8 +107,11 @@ public final class VerificationManager {
         private ISchematic source;
         private VerificationScan.Reader reader;
         private VerificationScan scan;
+        private VerificationRules rules;
+        private String[] extraAir;
+        private ClientWorkPool.Job<VerificationScan.Result> work;
         private TaskRegistry.Task task;
-        private int x, y, z, revision;
+        private int x, y, z, revision, placementRevision;
         private int[] bounds;
         private boolean running, layers;
         public boolean hud = true;
@@ -141,7 +140,8 @@ public final class VerificationManager {
         private boolean valid(Minecraft mc) {
             return available(mc) && world == mc.theWorld && source == placement.getSchematic()
                 && x == placement.position.x && y == placement.position.y && z == placement.position.z
-                && revision == placement.contentRevision();
+                && revision == placement.contentRevision() && placementRevision == placement.placementRevision()
+                && rules != null && rules.current() && Arrays.equals(extraAir, ConfigurationHandler.extraAirBlocks);
         }
 
         public void setLayers(boolean value) { reset(); layers = value; }
@@ -161,6 +161,9 @@ public final class VerificationManager {
             source = placement.getSchematic();
             x = placement.position.x; y = placement.position.y; z = placement.position.z;
             revision = placement.contentRevision();
+            placementRevision = placement.placementRevision();
+            rules = new VerificationRules();
+            extraAir = ConfigurationHandler.extraAirBlocks.clone();
             bounds = bounds();
             try {
                 scan = new VerificationScan(x, y, z, placement.getWidth(), placement.getHeight(), placement.getLength(), bounds);
@@ -235,7 +238,17 @@ public final class VerificationManager {
             if (System.nanoTime() >= deadline) return;
             ensureTask(mc);
             try {
-                scan.step(reader, 4096, deadline);
+                if (work != null && work.isDone()) {
+                    try { scan.apply(work.result(), reader); }
+                    finally { work.close(); work = null; }
+                }
+                if (work == null && ClientWorkPool.INSTANCE.available() && System.nanoTime() < deadline) {
+                    VerificationScan.Batch batch = scan.capture(reader, 4096, deadline, rules);
+                    if (batch != null) {
+                        work = ClientWorkPool.INSTANCE.submit(batch::compare);
+                        if (work == null) scan.cancelBatch();
+                    }
+                }
                 if (task != null) {
                     task.update(TaskRegistry.Stage.VERIFY, scan.totalChunks() - scan.remainingChunks(), scan.totalChunks(), 0, 0);
                     if (scan.done()) finishTask();
@@ -248,9 +261,14 @@ public final class VerificationManager {
         }
 
         private void finishTask() { if (task != null) task.finish(); task = null; }
-        public void pause() { running = false; finishTask(); }
+        public void pause() {
+            running = false;
+            if (work != null) { work.close(); work = null; }
+            if (scan != null) scan.cancelBatch();
+            finishTask();
+        }
         public void reset() {
-            pause(); scan = null; reader = null; world = null; source = null; bounds = null; notice = "";
+            pause(); scan = null; reader = null; world = null; source = null; rules = null; bounds = null; notice = "";
             markers.clear();
         }
 

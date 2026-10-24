@@ -63,6 +63,8 @@ public class RendererSchematicChunk {
     private World compiledWorld;
     private int compiledRevision, compiledLightLevel;
     private int[] compiledBounds;
+    private final SortedGeometryCache sortedGeometry = new SortedGeometryCache();
+    private final NativeGeometry[] capturedGeometry = new NativeGeometry[2];
     private int glList = -1;
     // TODO: move this away from GL lists
     private int glListHighlight = -1;
@@ -104,6 +106,8 @@ public class RendererSchematicChunk {
     }
 
     public void delete() {
+        sortedGeometry.clear();
+        Arrays.fill(capturedGeometry, null);
         if (this.glList != -1) {
             GL11.glDeleteLists(this.glList, 3);
         }
@@ -136,6 +140,7 @@ public class RendererSchematicChunk {
             }
             reusableTranslation = false;
             translationSafe = true;
+            Arrays.fill(capturedGeometry, null);
             RenderHelper.createBuffers();
             try {
                 for (int pass = 0; pass < 3; pass++) {
@@ -200,6 +205,8 @@ public class RendererSchematicChunk {
             compiledRevision = schematic.contentRevision();
             compiledLightLevel = VisualSettings.fakeLightLevel;
             compiledBounds = limits;
+            for (int pass = 0; pass < 2; pass++) sortedGeometry.replace(pass, translationSafe ? capturedGeometry[pass] : null);
+            Arrays.fill(capturedGeometry, null);
             reusableTranslation = translationSafe && VisualSettings.fakeLighting && hasLoadedAir();
             layerRevision = RenderLayerSettings.RANGE.revision();
             originX = schematic.position.x; originY = schematic.position.y; originZ = schematic.position.z;
@@ -227,6 +234,10 @@ public class RendererSchematicChunk {
             (long) schematic.position.x + Math.min((int) boundingBox.maxX, schematic.getWidth()),
             (long) schematic.position.y + Math.min((int) boundingBox.maxY, schematic.getHeight()),
             (long) schematic.position.z + Math.min((int) boundingBox.maxZ, schematic.getLength()));
+    }
+
+    void updateSortPosition(double x, double y, double z) {
+        if (!getDirty()) sortedGeometry.touch(x - schematic.position.x, y - schematic.position.y, z - schematic.position.z);
     }
 
     public void render(int renderPass) {
@@ -258,7 +269,7 @@ public class RendererSchematicChunk {
                     GL20.glUniform1f(GL20.glGetUniformLocation(SHADER_ALPHA.getProgram(), "alpha_multiplier"),
                         ConfigurationHandler.alpha);
                 }
-                GL11.glCallList(this.glList + renderPass);
+                GL11.glCallList(sortedGeometry.list(renderPass, this.glList + renderPass));
                 if (alpha) GL20.glUseProgram(previousProgram);
             }
             this.profiler.endStartSection("highlight");
@@ -408,6 +419,7 @@ public class RendererSchematicChunk {
 
         } finally {
             this.minecraft.gameSettings.ambientOcclusion = ambientOcclusion;
+            if (renderPass < 2 && translationSafe) capturedGeometry[renderPass] = NativeGeometry.capture(Tessellator.instance);
             Tessellator.instance.draw();
         }
     }

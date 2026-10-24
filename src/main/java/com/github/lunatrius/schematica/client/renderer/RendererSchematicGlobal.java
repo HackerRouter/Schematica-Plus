@@ -106,10 +106,10 @@ public class RendererSchematicGlobal {
                 renderAll(event.partialTicks);
                 VerifierOverlayRenderer.render(this.minecraft, event.partialTicks, this.cameraPosition.x, this.cameraPosition.y, this.cameraPosition.z);
                 RebuildOverlayRenderer.render(this.minecraft, event.partialTicks, this.cameraPosition.x, this.cameraPosition.y, this.cameraPosition.z);
-            }
+            } else SortedGeometryCache.suspend();
 
             this.profiler.endSection();
-        }
+        } else SortedGeometryCache.suspend();
     }
 
     /** Renders all loaded schematics plus the guide overlay. */
@@ -218,6 +218,7 @@ public class RendererSchematicGlobal {
     }
 
     private void updateRenderers() {
+        SortedGeometryCache.beginFrame();
         List<List<RendererSchematicChunk>> groups = new ArrayList<>();
         for (SchematicWorld schematic : Placements.visible()) {
             if (!schematic.isRenderingEnabled()) continue;
@@ -242,6 +243,10 @@ public class RendererSchematicGlobal {
         long deadline = System.nanoTime() + 4_000_000L;
         updateScheduler.update(groups, 3, () -> System.nanoTime() < deadline,
             chunk -> chunk.inRange && chunk.getDirty(), RendererSchematicChunk::updateRenderer);
+        for (List<RendererSchematicChunk> group : groups) for (RendererSchematicChunk chunk : group) {
+            if (chunk.isInFrustrum) chunk.updateSortPosition(cameraPosition.x, cameraPosition.y, cameraPosition.z);
+        }
+        SortedGeometryCache.update();
     }
 
     public void selectSchematic(SchematicWorld schematic) {

@@ -1,7 +1,7 @@
 # Verification
 
 Current scenario guide, reviewed 2026-10-24. Run `./gradlew build` and
-`LC_ALL=C.UTF-8 ./gradlew test`; the current suite contains **735 tests**.
+`LC_ALL=C.UTF-8 ./gradlew test`; the current suite contains **749 tests**.
 Steps below are regression scenarios, not claims that every combination passed.
 Only dated observation paragraphs record actual game checks; their test counts and
 artifact hashes describe that historical build. Use disposable copies and the
@@ -9,13 +9,65 @@ same current Plus build on both sides, except explicit client-only cases.
 `<evidence-dir>` denotes private, local validation artifacts outside the repository;
 these are scenario labels, not distributed files or public download links.
 
+## Background verification and translucent sorting
+
+The second optimization batch keeps world reads, mod callbacks and OpenGL on the
+client thread. Up to 4,096 captured cells per session are compared on a bounded
+worker pool, then merged on the client thread. Multiple thin columns and vertical
+sections share a batch. The shared snapshot/merge budget is four milliseconds per
+tick; this is a soft budget, not a deadline that can interrupt a mod callback.
+
+- Verify a large placement, including thin schematics and partially unloaded
+  chunks. Counts, pending-chunk indicators, ignored pairs and error markers must
+  agree with a complete scan. World access must never occur on the worker threads.
+- Change two distant blocks, including blocks at different heights in one column.
+  Repeated notifications must deduplicate into affected 16x16x16 sections, without
+  scanning the intervening region. More than 4,096 dirty columns falls back to a
+  bounded full invalidation instead of growing the notification map indefinitely.
+- Move, rotate, edit or unload a placement while comparison is pending. Old results
+  must not enter the current scan. Pause/resume and leaving the world must cancel
+  outstanding work and release its queue slots. Changes to comparison settings
+  invalidate snapshots. A changed/unloaded column rejects only its own batch parts.
+- View colored glass from opposite sides with schematic alpha both off and on.
+  Sorting must change the order of cached quads without calling block renderers
+  again. Each quad must retain all vertex attributes and deterministic tie order.
+- Explicitly dirty an unchanged section: identical geometry must retain its sorted
+  display list. Unused native vertex fields are normalized before equality checks.
+  Edit the source, hide the section and remove the placement: stale jobs must be
+  cancelled, replaced geometry discarded and retained memory released.
+- Repeat with native GTNH renderers and shaders. The new raw-vertex replay path
+  excludes custom/tile-bearing geometry, nonstandard Tessellators/formats, active
+  Iris/OptiFine shaders, OptiFine multitexture and Angelica terrain meshing.
+  Missing optional APIs are harmless; an installed but incompatible API retains
+  ordinary rendering. See the dated source audit in `compatibility/render-audit.md`.
+
+Sorting shares two workers and at most eight owned tasks/results with verification,
+reserving two slots from render submissions. Retained raw geometry/order metadata
+has a 32 MiB cap; each capture is at most 4 MiB. Completed sorting uploads have an
+8 MiB / three-millisecond soft frame budget, checked between sections. Invisible
+work releases its slot; oversized/unsupported geometry uses ordinary rendering.
+Equal sorted orders avoid another upload. This does not move native model callbacks
+to workers or deduplicate the ordinary fallback display-list compilation.
+
+Observed 2026-10-24: build, Checkstyle and 749 UTF-8 JUnit tests passed. A sparse
+update fixture rereads 512 of 5,120 cells, preserving the untouched counts. Unit
+tests cover worker isolation, cancellation, stale/partially valid batches, thin
+column batching, queue bounds, sort attributes and optional renderer API failures.
+The native `tools/headless/render_smoke` client also checks 4,000 comparisons
+against the original rules, real verification counts and changes, move/edit
+cancellation, pause/resume, world cleanup, opposite-camera sorting without model
+rebuilds, identical geometry reuse and offscreen cancellation. Evidence is under
+`<evidence-dir>/remaining-client.log` and `render-client/render-smoke-result.txt`.
+The previous translation/pixel tests run in the same fixture. These development
+client checks do not establish new full-pack/shader acceptance or an FPS gain.
+
 ## Translation caches and indexed render updates
 
 The first rendering optimization batch uses
 [LitematicaFastMove](https://github.com/hotpad100c/litematicafastmove/tree/c58102a017d6685920b6fd09b0023ce074d5777e)
 as a behavior reference. It retains the 1.7.10 display-list renderer and synchronous
-world access. It does not add delayed logical movement, background model building
-or asynchronous verification.
+world access. That first batch did not add delayed logical movement, background
+model building or asynchronous verification; the latter is covered above.
 
 - Move a vanilla projection repeatedly through loaded empty sections with fixed
   lighting. Reuse is allowed only when the compiled and destination regions,

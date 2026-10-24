@@ -12,7 +12,8 @@ Mesa software rendering. The fixture is not included in production artifacts.
 ```
 
 The task requires a fresh `render-smoke-result.txt` containing `PASSED`. The log
-prints `RENDER_SMOKE_COUNTS` and `RENDER_SMOKE_PASSED`. Checks cover:
+prints `RENDER_SMOKE_COUNTS`, `RENDER_SMOKE_SORTING`, `RENDER_SMOKE_VERIFIER` and
+`RENDER_SMOKE_PASSED`. Checks cover:
 
 - 64 translations in loaded air without additional geometry builds, with
   immediate logical coordinates and fixed lighting.
@@ -26,6 +27,14 @@ prints `RENDER_SMOKE_COUNTS` and `RENDER_SMOKE_PASSED`. Checks cover:
   halo and outside the projection, after the draw list is reordered.
 - Grid copy and renderer identities across translation, updated logical positions,
   replacement after content edits, area entry/exit and disabled-grid cleanup.
+- Background verification of a native 48x32x1 placement, correct/missing/wrong-block
+  counts, incremental changes, 4,000 snapshot/original comparison-rule pairs,
+  movement/content cancellation, pause/resume and world cleanup.
+- Opposite-camera transparent quad orders without another model build, nonempty
+  rendered pixels, identical-geometry display-list reuse, offscreen job cancellation,
+  replacement after edits and complete retained-cache release on deletion. The
+  fixture waits for each sorting job within its controlled frame so the unrelated
+  normal renderer cannot classify the test-only section as offscreen first.
 
 The fixture uses native Minecraft 1.7.10 / Forge behavior, with a registered
 custom block to exercise the fallback. It does not establish GTNH pack acceptance,
