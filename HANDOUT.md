@@ -347,6 +347,7 @@ steps and limitations are in TESTING; the full implementation history is in Git.
 
 | Status | Date | Work and location |
 | --- | --- | --- |
+| DONE | 2026-10-24 | Render the browser toolbar's favorite/recent sprites at 8x8, centered in 12x13 buttons and aligned with the directory controls. Sprite source dimensions and other uses retain their existing sizes. Build and 726 tests pass; development-client appearance, hover and edge clicks are recorded in TESTING. |
 | DONE | 2026-10-21 | Unify near/far printer actions in a bounded server FIFO with per-action inventory/orientation/state, independent placement/break limits (default 64), native fast harvesting, integer work radius and accurate-placement mode cleanup. Correct shared-placement layout/names, browser search and clock/star sprites, and add a screenshot preview frame. Build and 726 tests pass; native Forge server fixture and development-client UI checks are recorded in TESTING. |
 | DONE | 2026-10-20 | Fix dedicated-server loading of `MessageDownloadEnd` by accepting `ICommandSender` in `client/util/InfoUtils.sendOpenFileChatMessage`. The added `ServerSaveQueueLoadingTest` regression fails with `EntityClientPlayerMP` before the fix. Build and all 718 tests pass; a fresh Forge 1614 development server reaches `Done` and stops cleanly. See TESTING for scope. |
 | DONE | 2026-10-13 | Prepare `1.0.0-beta.3` using tag-derived runtime version and the existing GitHub Actions release workflow; release verification procedure in TESTING. |

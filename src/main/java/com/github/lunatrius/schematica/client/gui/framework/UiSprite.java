@@ -87,10 +87,14 @@ public enum UiSprite {
     }
 
     public void draw(UiDraw draw, int x, int y, boolean enabled, boolean hovered) {
+        draw(draw, new UiBounds(x, y, width, height), enabled, hovered);
+    }
+
+    public void draw(UiDraw draw, UiBounds destination, boolean enabled, boolean hovered) {
         int state = states ? !enabled ? 0 : hovered ? 2 : 1 : 0;
         boolean whole = !texture.equals(TEXTURE) && !texture.endsWith("malilib_widgets.png");
         String file = this == SERVER && hovered ? "schematica_plus:textures/gui/sync_server_icon_highlight.png" : texture;
-        draw.texture(file, new UiBounds(x, y, width, height), u + state * width, v, width, height,
+        draw.texture(file, destination, u + state * width, v, width, height,
             whole ? width * (states ? 3 : 1) : 256, whole ? height : 256);
     }
 

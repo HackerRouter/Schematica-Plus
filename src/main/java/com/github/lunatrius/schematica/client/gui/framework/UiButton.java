@@ -15,6 +15,7 @@ public class UiButton extends UiWidget {
     private final IntConsumer action;
     private final UiIcon icon;
     private UiSprite sprite;
+    private int spriteWidth, spriteHeight;
     private boolean background = true;
     private int pressed = -1;
     /** The label did not fit when last drawn; it is then shown in full on hover (MaLiLib buttons are never cut). */
@@ -42,6 +43,12 @@ public class UiButton extends UiWidget {
 
     public UiButton setBackground(boolean background) {
         this.background = background;
+        return this;
+    }
+
+    public UiButton setSpriteSize(int width, int height) {
+        spriteWidth = Math.max(1, width);
+        spriteHeight = Math.max(1, height);
         return this;
     }
 
@@ -73,8 +80,10 @@ public class UiButton extends UiWidget {
         }
         int color = !isEnabled() ? 0xFFA0A0A0 : hovered ? 0xFFFFFFFF : 0xFFE0E0E0;
         if (sprite != null) {
-            sprite.draw(draw, box.x + (background ? 4 : 0) + (slot() - sprite.width) / 2, box.y + (box.height - sprite.height) / 2,
-                isEnabled(), hovered);
+            int width = spriteWidth > 0 ? spriteWidth : sprite.width;
+            int height = spriteHeight > 0 ? spriteHeight : sprite.height;
+            sprite.draw(draw, new UiBounds(box.x + (background ? 4 : 0) + (slot() - width) / 2,
+                box.y + (box.height - height) / 2, width, height), isEnabled(), hovered);
             String shown = draw.trim(label.get(), box.width - slot() - 12);
             cut = !shown.equals(label.get());
             draw.shadowText(shown, box.x + slot() + 8, box.y + (box.height - 8) / 2, color);

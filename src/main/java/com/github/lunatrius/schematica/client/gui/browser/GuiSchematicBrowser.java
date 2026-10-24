@@ -84,11 +84,11 @@ public abstract class GuiSchematicBrowser extends UiScreen {
         up = icon(UiSprite.UP, "malilib.gui.button.hover.directory_widget.up", this::goUp);
         favorites = root.add(new UiButton(() -> "",
             mouse -> { if (mouse == 0) showList("favorite_schematics", "schematica.ui.browser.favorites"); })
-            .setSprite(UiSprite.STAR).setBackground(false));
+            .setSprite(UiSprite.STAR).setSpriteSize(8, 8).setBackground(false));
         favorites.setTooltip(UiTranslations.format("schematica.ui.browser.favorites.hover").split("\n"));
         recent = root.add(new UiButton(() -> "",
             mouse -> { if (mouse == 0) showList("recent_schematics", "schematica.ui.browser.recent"); })
-            .setSprite(UiSprite.RECENT).setBackground(false));
+            .setSprite(UiSprite.RECENT).setSpriteSize(8, 8).setBackground(false));
         recent.setTooltip(UiTranslations.format("schematica.ui.browser.recent.hover").split("\n"));
         star = root.add(new UiButton(() -> "", mouse -> {
             SchematicBrowserModel.Entry entry = selection();
@@ -505,8 +505,8 @@ public abstract class GuiSchematicBrowser extends UiScreen {
         up.setBounds(x + 16, y + 5, 12, 12);
         createDirectory.setBounds(x + 30, y + 5, 12, 12);
         openFolder.setBounds(x + 44, y + 5, 12, 12);
-        favorites.setBounds(x + 58, y + 4, 12, 13);
-        recent.setBounds(x + 72, y + 4, 12, 13);
+        favorites.setBounds(x + 58, y + 5, 12, 13);
+        recent.setBounds(x + 72, y + 5, 12, 13);
         favorites.setVisible(collections() && !searching);
         recent.setVisible(collections() && !searching);
         int pathX = collections() ? x + 90 : x + 62;

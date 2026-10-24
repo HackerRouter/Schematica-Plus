@@ -1,6 +1,6 @@
 # Verification
 
-Current scenario guide, reviewed 2026-10-21. Run `./gradlew build` and
+Current scenario guide, reviewed 2026-10-24. Run `./gradlew build` and
 `LC_ALL=C.UTF-8 ./gradlew test`; the current suite contains **726 tests**.
 Steps below are regression scenarios, not claims that every combination passed.
 Only dated observation paragraphs record actual game checks; their test counts and
@@ -10,6 +10,17 @@ same current Plus build on both sides, except explicit client-only cases.
 these are scenario labels, not distributed files or public download links.
 
 ## Ordered printer actions and browser follow-up
+
+Toolbar follow-up (2026-10-24): the favorite and recent buttons draw their sprites
+at 8x8 GUI pixels, centered within the existing 12x13 click areas and vertically
+aligned with the directory buttons. The 12x12 source sprites remain available to
+the other controls. Build and 726 tests passed. In the Forge development client
+at GUI scale 2 and 854x480, the smaller sprites, hover outlines/tooltips and clicks
+near the button edges were checked through the actual browser. Both collection
+buttons opened their lists and returned to the directory. Evidence:
+`<evidence-dir>/ui-small-toolbar.png` and `ui-toolbar-recent-hit.png`.
+When adjusting toolbar graphics, check their size against the directory icons and
+confirm that reducing the graphic does not shrink the clickable area.
 
 - Install the same Plus build on both sides. Mix near and remote targets, alternate
   items and directional states, and increase client placement/break limits to 64.
