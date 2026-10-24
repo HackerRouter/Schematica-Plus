@@ -1,6 +1,7 @@
 package com.github.lunatrius.schematica.client.renderer;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import net.minecraft.block.Block;
@@ -16,6 +17,7 @@ import net.minecraft.profiler.Profiler;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.world.IBlockAccess;
+import net.minecraft.world.World;
 import net.minecraftforge.fluids.IFluidBlock;
 
 import com.github.lunatrius.schematica.client.renderer.shader.ShaderProgram;
@@ -56,6 +58,11 @@ public class RendererSchematicChunk {
     private long layerRevision = -1;
     private int originX, originY, originZ, localLayer;
     private boolean localLayerEnabled;
+    private boolean translationSafe, reusableTranslation;
+    private Object compiledSource;
+    private World compiledWorld;
+    private int compiledRevision, compiledLightLevel;
+    private int[] compiledBounds;
     private int glList = -1;
     // TODO: move this away from GL lists
     private int glListHighlight = -1;
@@ -120,72 +127,106 @@ public class RendererSchematicChunk {
             || localLayer != schematic.renderingLayer || localLayerEnabled != schematic.isRenderingLayer;
     }
 
-    public void updateRenderer() {
+    public boolean updateRenderer() {
         if (getDirty()) {
-            this.needsUpdate = false;
-            layerRevision = RenderLayerSettings.RANGE.revision();
-            originX = schematic.position.x; originY = schematic.position.y; originZ = schematic.position.z;
-            localLayer = schematic.renderingLayer; localLayerEnabled = schematic.isRenderingLayer;
-
+            int[] limits = schematic.renderBounds();
+            if (canReuseTranslation(limits)) {
+                originX = schematic.position.x; originY = schematic.position.y; originZ = schematic.position.z;
+                return false;
+            }
+            reusableTranslation = false;
+            translationSafe = true;
             RenderHelper.createBuffers();
+            try {
+                for (int pass = 0; pass < 3; pass++) {
+                    RenderHelper.initBuffers();
 
-            for (int pass = 0; pass < 3; pass++) {
-                RenderHelper.initBuffers();
+                    int minX, maxX, minY, maxY, minZ, maxZ;
 
-                int minX, maxX, minY, maxY, minZ, maxZ;
+                    minX = (int) this.boundingBox.minX;
+                    maxX = Math.min((int) this.boundingBox.maxX, this.schematic.getWidth());
+                    minY = (int) this.boundingBox.minY;
+                    maxY = Math.min((int) this.boundingBox.maxY, this.schematic.getHeight());
+                    minZ = (int) this.boundingBox.minZ;
+                    maxZ = Math.min((int) this.boundingBox.maxZ, this.schematic.getLength());
 
-                minX = (int) this.boundingBox.minX;
-                maxX = Math.min((int) this.boundingBox.maxX, this.schematic.getWidth());
-                minY = (int) this.boundingBox.minY;
-                maxY = Math.min((int) this.boundingBox.maxY, this.schematic.getHeight());
-                minZ = (int) this.boundingBox.minZ;
-                maxZ = Math.min((int) this.boundingBox.maxZ, this.schematic.getLength());
+                    minX = Math.max(minX, limits[0]); maxX = Math.min(maxX, limits[3]);
+                    minY = Math.max(minY, limits[1]); maxY = Math.min(maxY, limits[4]);
+                    minZ = Math.max(minZ, limits[2]); maxZ = Math.min(maxZ, limits[5]);
 
-                int[] limits = schematic.renderBounds();
-                minX = Math.max(minX, limits[0]); maxX = Math.min(maxX, limits[3]);
-                minY = Math.max(minY, limits[1]); maxY = Math.min(maxY, limits[4]);
-                minZ = Math.max(minZ, limits[2]); maxZ = Math.min(maxZ, limits[5]);
+                    GL11.glNewList(this.glList + pass, GL11.GL_COMPILE);
+                    try (SchematicRenderPass context = new SchematicRenderPass(pass)) {
+                        renderBlocks(pass, minX, minY, minZ, maxX, maxY, maxZ);
+                    } finally {
+                        GL11.glEndList();
+                    }
 
-                GL11.glNewList(this.glList + pass, GL11.GL_COMPILE);
-                try (SchematicRenderPass context = new SchematicRenderPass(pass)) {
-                    renderBlocks(pass, minX, minY, minZ, maxX, maxY, maxZ);
-                } finally {
+                    GL11.glNewList(this.glListHighlight + pass, GL11.GL_COMPILE);
+                    int quadCount = RenderHelper.getQuadCount();
+                    int lineCount = RenderHelper.getLineCount();
+
+                    if (quadCount > 0 || lineCount > 0) {
+                        GL11.glDisable(GL11.GL_TEXTURE_2D);
+
+                        GL11.glEnableClientState(GL11.GL_VERTEX_ARRAY);
+                        GL11.glEnableClientState(GL11.GL_COLOR_ARRAY);
+
+                        if (quadCount > 0) {
+                            GL11.glVertexPointer(3, 0, RenderHelper.getQuadVertexBuffer());
+                            GL11.glColorPointer(4, 0, RenderHelper.getQuadColorBuffer());
+                            GL11.glDrawArrays(GL11.GL_QUADS, 0, quadCount);
+                        }
+
+                        if (lineCount > 0) {
+                            GL11.glVertexPointer(3, 0, RenderHelper.getLineVertexBuffer());
+                            GL11.glColorPointer(4, 0, RenderHelper.getLineColorBuffer());
+                            GL11.glDrawArrays(GL11.GL_LINES, 0, lineCount);
+                        }
+
+                        GL11.glDisableClientState(GL11.GL_COLOR_ARRAY);
+                        GL11.glDisableClientState(GL11.GL_VERTEX_ARRAY);
+
+                        GL11.glEnable(GL11.GL_TEXTURE_2D);
+                    }
+
                     GL11.glEndList();
                 }
 
-                GL11.glNewList(this.glListHighlight + pass, GL11.GL_COMPILE);
-                int quadCount = RenderHelper.getQuadCount();
-                int lineCount = RenderHelper.getLineCount();
-
-                if (quadCount > 0 || lineCount > 0) {
-                    GL11.glDisable(GL11.GL_TEXTURE_2D);
-
-                    GL11.glEnableClientState(GL11.GL_VERTEX_ARRAY);
-                    GL11.glEnableClientState(GL11.GL_COLOR_ARRAY);
-
-                    if (quadCount > 0) {
-                        GL11.glVertexPointer(3, 0, RenderHelper.getQuadVertexBuffer());
-                        GL11.glColorPointer(4, 0, RenderHelper.getQuadColorBuffer());
-                        GL11.glDrawArrays(GL11.GL_QUADS, 0, quadCount);
-                    }
-
-                    if (lineCount > 0) {
-                        GL11.glVertexPointer(3, 0, RenderHelper.getLineVertexBuffer());
-                        GL11.glColorPointer(4, 0, RenderHelper.getLineColorBuffer());
-                        GL11.glDrawArrays(GL11.GL_LINES, 0, lineCount);
-                    }
-
-                    GL11.glDisableClientState(GL11.GL_COLOR_ARRAY);
-                    GL11.glDisableClientState(GL11.GL_VERTEX_ARRAY);
-
-                    GL11.glEnable(GL11.GL_TEXTURE_2D);
-                }
-
-                GL11.glEndList();
+            } finally {
+                RenderHelper.destroyBuffers();
             }
-
-            RenderHelper.destroyBuffers();
+            compiledWorld = minecraft.theWorld;
+            compiledSource = schematic.getSchematic();
+            compiledRevision = schematic.contentRevision();
+            compiledLightLevel = VisualSettings.fakeLightLevel;
+            compiledBounds = limits;
+            reusableTranslation = translationSafe && VisualSettings.fakeLighting && hasLoadedAir();
+            layerRevision = RenderLayerSettings.RANGE.revision();
+            originX = schematic.position.x; originY = schematic.position.y; originZ = schematic.position.z;
+            localLayer = schematic.renderingLayer; localLayerEnabled = schematic.isRenderingLayer;
+            this.needsUpdate = false;
+            return true;
         }
+        return false;
+    }
+
+    private boolean canReuseTranslation(int[] limits) {
+        return !needsUpdate && reusableTranslation && compiledWorld == minecraft.theWorld
+            && compiledSource == schematic.getSchematic() && compiledRevision == schematic.contentRevision()
+            && layerRevision == RenderLayerSettings.RANGE.revision()
+            && localLayer == schematic.renderingLayer && localLayerEnabled == schematic.isRenderingLayer
+            && VisualSettings.fakeLighting && compiledLightLevel == VisualSettings.fakeLightLevel
+            && Arrays.equals(compiledBounds, limits) && hasLoadedAir();
+    }
+
+    private boolean hasLoadedAir() {
+        return LoadedAirSections.containsOnlyAir(minecraft.theWorld,
+            (long) schematic.position.x + (int) boundingBox.minX - 1,
+            (long) schematic.position.y + (int) boundingBox.minY - 1,
+            (long) schematic.position.z + (int) boundingBox.minZ - 1,
+            (long) schematic.position.x + Math.min((int) boundingBox.maxX, schematic.getWidth()),
+            (long) schematic.position.y + Math.min((int) boundingBox.maxY, schematic.getHeight()),
+            (long) schematic.position.z + Math.min((int) boundingBox.maxZ, schematic.getLength()));
     }
 
     public void render(int renderPass) {
@@ -331,6 +372,8 @@ public class RendererSchematicChunk {
                     try {
                         block = this.schematic.getBlock(x, y, z);
                         boolean isAirBlock = this.schematic.isAirBlock(x, y, z);
+                        if (translationSafe && renderPass == 0 && !isAirBlock && (!block.getClass().getName().startsWith("net.minecraft.block.")
+                            || block.hasTileEntity(schematic.getBlockMetadata(x, y, z)))) translationSafe = false;
                         // enableSchematicFluidRendering off: no fluid and no overlay where the fluid is
                         if (!isAirBlock && !VisualSettings.fluids && isFluid(block)) continue;
 
@@ -356,6 +399,7 @@ public class RendererSchematicChunk {
                             renderBlocks.renderBlockByRenderType(block, x, y, z);
                         }
                     } catch (Exception e) {
+                        translationSafe = false;
                         Reference.logger.error("Failed to render block!", e);
                     }
                 }

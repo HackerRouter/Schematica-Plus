@@ -18,14 +18,9 @@ import net.minecraft.entity.player.EntityPlayer;
 import com.github.lunatrius.schematica.client.renderer.RendererSchematicGlobal;
 import com.github.lunatrius.schematica.reference.Reference;
 
-/**
- * Keeps the repeated copies of placements with an enabled grid, only within the client's loaded area
- * (render distance plus one chunk, 512 blocks up and down), and recreates them when the base placement changes.
- */
 public final class GridPlacements {
     public static final GridPlacements INSTANCE = new GridPlacements();
 
-    /** What a base placement looked like when its copies were made; any change recreates them. */
     private static final class Signature {
         final Object schematic, source;
         final int[] box;
@@ -38,6 +33,7 @@ public final class GridPlacements {
             source = base.sourceData();
             box = base.enclosingBox();
             x = base.position.x; y = base.position.y; z = base.position.z;
+            for (int i = 0; i < 6; i++) box[i] -= i % 3 == 0 ? x : i % 3 == 1 ? y : z;
             placementRevision = base.placementRevision();
             contentRevision = base.contentRevision();
             enabled = base.isEnabled();
@@ -49,8 +45,12 @@ public final class GridPlacements {
         }
 
         boolean same(Signature other) {
+            return x == other.x && y == other.y && z == other.z && sameContent(other);
+        }
+
+        boolean sameContent(Signature other) {
             return schematic == other.schematic && source == other.source && Arrays.equals(box, other.box)
-                && x == other.x && y == other.y && z == other.z && placementRevision == other.placementRevision
+                && placementRevision == other.placementRevision
                 && contentRevision == other.contentRevision && enabled == other.enabled && rendering == other.rendering
                 && entities == other.entities && layerMode == other.layerMode && layer == other.layer && grid.equals(other.grid);
         }
@@ -138,11 +138,12 @@ public final class GridPlacements {
         for (SchematicWorld base : bases) {
             Signature now = new Signature(base);
             Signature before = signatures.get(base);
-            if (before == null || !before.same(now)) {
+            if (before == null || !before.sameContent(now)) {
                 remove(base);
                 signatures.put(base, now);
                 update(base, area);
-            } else if (moved) {
+            } else if (moved || !before.same(now)) {
+                signatures.put(base, now);
                 update(base, area);
             }
         }
@@ -160,11 +161,17 @@ public final class GridPlacements {
             int[] box = base.enclosingBox(), size = base.grid.size();
             for (int[] point : points(box, base.grid, area)) {
                 long key = key(point[0], point[1], point[2]);
-                wanted.add(key);
-                if (existing.containsKey(key)) continue;
                 try {
-                    SchematicWorld copy = SchematicWorld.repeatedCopy(base, base.position.x + point[0] * size[0],
-                        base.position.y + point[1] * size[1], base.position.z + point[2] * size[2]);
+                    int x = Math.toIntExact(base.position.x + (long) point[0] * size[0]);
+                    int y = Math.toIntExact(base.position.y + (long) point[1] * size[1]);
+                    int z = Math.toIntExact(base.position.z + (long) point[2] * size[2]);
+                    wanted.add(key);
+                    SchematicWorld copy = existing.get(key);
+                    if (copy != null) {
+                        copy.position.set(x, y, z);
+                        continue;
+                    }
+                    copy = SchematicWorld.repeatedCopy(base, x, y, z);
                     RendererSchematicGlobal.INSTANCE.createRendererSchematicChunks(copy);
                     existing.put(key, copy);
                     all.add(copy);

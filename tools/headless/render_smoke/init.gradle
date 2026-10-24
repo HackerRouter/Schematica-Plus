@@ -1,0 +1,34 @@
+gradle.projectsEvaluated {
+    def directory = System.getProperty('schematica.smoke.directory')
+    if (!directory) throw new GradleException('Set schematica.smoke.directory to an isolated test client directory')
+    def smoke = rootProject.sourceSets.create('renderSmoke') {
+        java.srcDir(new File(rootProject.projectDir, 'tools/headless/render_smoke/src'))
+        compileClasspath = rootProject.sourceSets.main.compileClasspath + rootProject.sourceSets.main.output
+    }
+    rootProject.tasks.named(smoke.compileJavaTaskName).configure {
+        sourceCompatibility = '8'
+        targetCompatibility = '8'
+        options.annotationProcessorPath = rootProject.sourceSets.main.annotationProcessorPath
+    }
+    def smokeJar = rootProject.tasks.register('renderSmokeJar', Jar) {
+        from smoke.output
+        archiveFileName = 'render-smoke.jar'
+        destinationDirectory = rootProject.layout.buildDirectory.dir('render-smoke')
+    }
+    rootProject.tasks.named('runClient').configure {
+        dependsOn smokeJar
+        workingDir = new File(directory)
+        maxHeapSize = '2048m'
+        doFirst {
+            delete new File(directory, 'render-smoke-result.txt')
+            copy {
+                from smokeJar.get().archiveFile
+                into new File(directory, 'mods')
+            }
+        }
+        doLast {
+            def result = new File(directory, 'render-smoke-result.txt')
+            if (!result.isFile() || result.text != 'PASSED') throw new GradleException('Render smoke tests failed; inspect the client log')
+        }
+    }
+}

@@ -1,24 +1,39 @@
 package com.github.lunatrius.schematica.client.renderer;
 
+import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.BooleanSupplier;
-import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 final class RenderUpdateScheduler<T> {
     private int nextGroup;
+    private Map<List<T>, Integer> nextEntries = new IdentityHashMap<>();
 
     int update(List<? extends List<T>> groups, int budget, BooleanSupplier hasTime,
-        Predicate<T> isDirty, Consumer<T> rebuild) {
+        Predicate<T> isDirty, Predicate<T> rebuild) {
+        Map<List<T>, Integer> active = new IdentityHashMap<>();
+        for (List<T> group : groups) active.put(group, nextEntries.getOrDefault(group, 0));
+        nextEntries = active;
         if (groups.isEmpty()) return 0;
+        int[] examined = new int[groups.size()];
         int updated = 0;
         int skipped = 0;
-        while (updated < budget && skipped < groups.size() && (updated == 0 || hasTime.getAsBoolean())) {
+        boolean visited = false;
+        while (updated < budget && skipped < groups.size()) {
+            if (visited && !hasTime.getAsBoolean()) return updated;
             nextGroup %= groups.size();
-            List<T> group = groups.get(nextGroup);
+            int index = nextGroup;
+            List<T> group = groups.get(index);
             nextGroup = (nextGroup + 1) % groups.size();
             T pending = null;
-            for (T entry : group) {
+            while (examined[index] < group.size()) {
+                if (visited && !hasTime.getAsBoolean()) return updated;
+                visited = true;
+                int cursor = nextEntries.get(group) % group.size();
+                T entry = group.get(cursor);
+                nextEntries.put(group, (cursor + 1) % group.size());
+                examined[index]++;
                 if (isDirty.test(entry)) {
                     pending = entry;
                     break;
@@ -27,8 +42,7 @@ final class RenderUpdateScheduler<T> {
             if (pending == null) {
                 skipped++;
             } else {
-                rebuild.accept(pending);
-                updated++;
+                if (rebuild.test(pending)) updated++;
                 skipped = 0;
             }
         }

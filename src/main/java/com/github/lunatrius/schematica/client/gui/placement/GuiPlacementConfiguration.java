@@ -256,7 +256,6 @@ public final class GuiPlacementConfiguration extends UiScreen {
                 placement.originPosition(), new SchematicOrigin(target[0], target[1], target[2]));
             minimum(adjusted.coordinates(), offset());
             placement.moveOriginTo(adjusted.x, adjusted.y, adjusted.z);
-            RendererSchematicGlobal.INSTANCE.refresh(placement);
             WorldHandler.INSTANCE.saveSession();
         } catch (IllegalArgumentException e) {
             message("schematica.ui.placement.bounds");

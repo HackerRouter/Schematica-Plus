@@ -67,6 +67,7 @@ public class RendererSchematicGlobal {
     private static class SchematicRenderData {
         RenderBlocks renderBlocks;
         final List<RendererSchematicChunk> chunks = new ArrayList<>();
+        RenderSectionIndex<RendererSchematicChunk> index;
     }
 
     @SubscribeEvent(priority = EventPriority.LOWEST)
@@ -273,6 +274,7 @@ public class RendererSchematicGlobal {
             for (RendererSchematicChunk chunk : data.chunks) chunk.delete();
             throw e;
         }
+        data.index = new RenderSectionIndex<>(width, height, length, data.chunks);
         renderDataMap.put(schematic, data);
 
         // Also update the legacy fields for the active schematic
@@ -336,18 +338,9 @@ public class RendererSchematicGlobal {
         for (Map.Entry<SchematicWorld, SchematicRenderData> entry : renderDataMap.entrySet()) {
             SchematicWorld sw = entry.getKey();
             SchematicRenderData data = entry.getValue();
-            final AxisAlignedBB boundingBox = AxisAlignedBB.getBoundingBox(
-                wx0 - sw.position.x,
-                wy0 - sw.position.y,
-                wz0 - sw.position.z,
-                wx1 - sw.position.x,
-                wy1 - sw.position.y,
-                wz1 - sw.position.z);
-            for (RendererSchematicChunk renderer : data.chunks) {
-                if (!renderer.getDirty() && renderer.getBoundingBox().intersectsWith(boundingBox)) {
-                    renderer.setDirty();
-                }
-            }
+            data.index.visit((long) wx0 - sw.position.x, (long) wy0 - sw.position.y, (long) wz0 - sw.position.z,
+                (long) wx1 - sw.position.x, (long) wy1 - sw.position.y, (long) wz1 - sw.position.z,
+                RendererSchematicChunk::setDirty);
         }
     }
 

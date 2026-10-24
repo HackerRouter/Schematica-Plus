@@ -1,13 +1,60 @@
 # Verification
 
 Current scenario guide, reviewed 2026-10-24. Run `./gradlew build` and
-`LC_ALL=C.UTF-8 ./gradlew test`; the current suite contains **726 tests**.
+`LC_ALL=C.UTF-8 ./gradlew test`; the current suite contains **735 tests**.
 Steps below are regression scenarios, not claims that every combination passed.
 Only dated observation paragraphs record actual game checks; their test counts and
 artifact hashes describe that historical build. Use disposable copies and the
 same current Plus build on both sides, except explicit client-only cases.
 `<evidence-dir>` denotes private, local validation artifacts outside the repository;
 these are scenario labels, not distributed files or public download links.
+
+## Translation caches and indexed render updates
+
+The first rendering optimization batch uses
+[LitematicaFastMove](https://github.com/hotpad100c/litematicafastmove/tree/c58102a017d6685920b6fd09b0023ce074d5777e)
+as a behavior reference. It retains the 1.7.10 display-list renderer and synchronous
+world access. It does not add delayed logical movement, background model building
+or asynchronous verification.
+
+- Move a vanilla projection repeatedly through loaded empty sections with fixed
+  lighting. Reuse is allowed only when the compiled and destination regions,
+  including a one-block neighbor halo, are proven empty. The check conservatively
+  examines entire world sections and rejects unloaded/placeholder chunks.
+- Repeat across existing blocks, unloaded terrain, world-lighting changes,
+  fixed-light-level changes, world slices and local layers. Invalidated sections
+  must rebuild. Custom block classes and tile-bearing blocks retain normal builds.
+- Change one real block on a projection's section boundary. Both affected sections
+  must update after the existing neighbor halo is applied; unrelated sections must
+  remain clean. Repeat after camera movement changes draw ordering and at negative
+  world coordinates.
+- Enable a repeat grid and move its base. Retain copies and render data for grid
+  cells still in range, update their coordinates in the same client tick, remove
+  departed cells and create newly entered cells. Content, rotation, mirror and
+  grid-setting changes must still rebuild the appropriate copies.
+- Check selection and printer targeting immediately after movement. The logical
+  placement origin has no settling delay. Rendering retains its shared three-build
+  and four-millisecond soft frame budget; cache reuse does not consume build slots.
+  Clean scans resume across frames so a long clean prefix cannot starve dirty work.
+
+Observed 2026-10-24: the full build and 735 UTF-8 JUnit tests passed. New unit
+coverage includes inclusive section boundaries, neighbor halos, disjoint and
+inverted ranges, large coordinate differences, stable indexing after sorting,
+1,000 seeded intersection comparisons, reuse budgets and cross-frame fairness.
+The separate `tools/headless/render_smoke` fixture passed in a real Minecraft
+1.7.10 / Forge 10.13.4.1614 development client with MCP stable_12, Java 8 and
+Xvfb/Mesa. After one three-pass compilation, 64 air translations produced zero
+additional section builds. Reused and freshly rebuilt complete/sliced projections
+matched pixel for pixel in a nonempty 128x128 framebuffer. Obstruction, lighting,
+layers, edits, unloaded regions, custom/tile block fallbacks, indexed updates and
+grid identity/lifecycle checks passed. The client and integrated server stopped
+cleanly. Evidence: `<evidence-dir>/fastmove-client.log` and
+`<evidence-dir>/render-client/render-smoke-result.txt`.
+
+These are native renderer/coordinate assertions, not mouse-driven printer tests.
+This round does not establish full GTNH 2.8.4/2.9.0-RC-2 acceptance, arbitrary
+renderer/coremod compatibility or an FPS gain. Use the scenarios above for those
+pack checks; custom mod geometry deliberately keeps the normal rebuild path.
 
 ## Ordered printer actions and browser follow-up
 
