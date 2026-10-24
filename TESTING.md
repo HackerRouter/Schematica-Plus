@@ -22,6 +22,15 @@ buttons opened their lists and returned to the directory. Evidence:
 When adjusting toolbar graphics, check their size against the directory icons and
 confirm that reducing the graphic does not shrink the clickable area.
 
+Star palette follow-up (2026-10-24): the filled and outlined stars use the directory
+icon's yellow (`#EAE816`) and shading (`#DCBB07`), with a brighter yellow on hover.
+Both 36x12 sprite sheets retain their alpha masks and gray disabled frames.
+Build and 726 tests passed. The sprite sheets were inspected in all three states;
+the Forge development client confirmed the toolbar's normal and hover colors at
+GUI scale 2. Evidence: `<evidence-dir>/ui-star-palette.png` and
+`ui-star-palette-hover.png`. Compare the stars with the adjacent directory icons
+and check filled, outlined, hovered and disabled states after palette changes.
+
 - Install the same Plus build on both sides. Mix near and remote targets, alternate
   items and directional states, and increase client placement/break limits to 64.
   Requests must retain their order, held-item identity and orientation even when
