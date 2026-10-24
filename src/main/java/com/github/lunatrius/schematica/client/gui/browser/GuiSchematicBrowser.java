@@ -84,7 +84,7 @@ public abstract class GuiSchematicBrowser extends UiScreen {
         up = icon(UiSprite.UP, "malilib.gui.button.hover.directory_widget.up", this::goUp);
         favorites = root.add(new UiButton(() -> "",
             mouse -> { if (mouse == 0) showList("favorite_schematics", "schematica.ui.browser.favorites"); })
-            .setSprite(UiSprite.STAR).setSpriteSize(8, 8).setBackground(false));
+            .setSprite(UiSprite.STAR_SMALL).setBackground(false));
         favorites.setTooltip(UiTranslations.format("schematica.ui.browser.favorites.hover").split("\n"));
         recent = root.add(new UiButton(() -> "",
             mouse -> { if (mouse == 0) showList("recent_schematics", "schematica.ui.browser.recent"); })

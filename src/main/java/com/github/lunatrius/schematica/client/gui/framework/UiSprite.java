@@ -28,6 +28,7 @@ public enum UiSprite {
     SHARED_PLACEMENTS("shared_placements", 14, 14, true),
     EXPAND("preview_expand", 12, 12),
     STAR("star", 12, 12, true),
+    STAR_SMALL("star_small", 12, 12, true),
     STAR_OUTLINE("star_outline", 12, 12, true),
     RECENT("recent", 12, 12, true),
     MEMORY(186, 0, 12, 12, false),

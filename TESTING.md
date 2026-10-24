@@ -11,10 +11,11 @@ these are scenario labels, not distributed files or public download links.
 
 ## Ordered printer actions and browser follow-up
 
-Toolbar follow-up (2026-10-24): the favorite and recent buttons draw their sprites
-at 8x8 GUI pixels, centered within the existing 12x13 click areas and vertically
-aligned with the directory buttons. The 12x12 source sprites remain available to
-the other controls. Build and 726 tests passed. In the Forge development client
+Toolbar follow-up (2026-10-24): the favorite and recent graphics occupy 8x8 GUI
+pixels, centered within the existing 12x13 click areas and vertically aligned with
+the directory buttons. The favorite uses a native 8x8 pixel shape padded to a
+12x12 frame; the recent sprite scales to 8x8. The full-size star sprites remain
+available to other controls. Build and 726 tests passed. In the Forge development client
 at GUI scale 2 and 854x480, the smaller sprites, hover outlines/tooltips and clicks
 near the button edges were checked through the actual browser. Both collection
 buttons opened their lists and returned to the directory. Evidence:
@@ -24,12 +25,20 @@ confirm that reducing the graphic does not shrink the clickable area.
 
 Star palette follow-up (2026-10-24): the filled and outlined stars use the directory
 icon's yellow (`#EAE816`) and shading (`#DCBB07`), with a brighter yellow on hover.
-Both 36x12 sprite sheets retain their alpha masks and gray disabled frames.
+The 36x12 sprite sheets use gray disabled frames.
 Build and 726 tests passed. The sprite sheets were inspected in all three states;
 the Forge development client confirmed the toolbar's normal and hover colors at
 GUI scale 2. Evidence: `<evidence-dir>/ui-star-palette.png` and
 `ui-star-palette-hover.png`. Compare the stars with the adjacent directory icons
 and check filled, outlined, hovered and disabled states after palette changes.
+
+Star symmetry follow-up (2026-10-24): the full-size filled/outlined sprites and the
+native 8x8 toolbar shape were checked pixel by pixel against their horizontal
+mirrors, including RGBA colors in disabled, normal and hover states. In the Forge
+development client at GUI scale 2, the toolbar star occupied 16x16 screen pixels;
+normal and hover screenshots also passed the pixel symmetry check. Keep tooltips
+clear of the icon when checking screenshots. Build and 726 tests passed. Evidence:
+`<evidence-dir>/ui-star-symmetric.png` and `ui-star-symmetric-hover.png`.
 
 - Install the same Plus build on both sides. Mix near and remote targets, alternate
   items and directional states, and increase client placement/break limits to 64.
