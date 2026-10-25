@@ -1,7 +1,7 @@
 # Schematica Plus: development handoff
 
 Current guide, reviewed 2026-10-25. Runtime baseline: Minecraft 1.7.10 / Forge
-10.13.4.1614, release `1.0.0-beta.3`, with subsequent fixes on `master`.
+10.13.4.1614, release `1.0.0-beta.4`, with subsequent fixes on `master`.
 Support targets: GTNH **2.8.4** and **2.9.0-RC-2**, using each pack's native
 mod versions. Named combinations of individually installed mods are also checked
 in TESTING's selective-mod migration section. See [README](README.md) for usage, [TESTING](TESTING.md) for regression
@@ -351,6 +351,7 @@ steps and limitations are in TESTING; the full implementation history is in Git.
 
 | Status | Date | Work and location |
 | --- | --- | --- |
+| DONE | 2026-10-25 | Prepare the `1.0.0-beta.4` release metadata in README and the tag-driven build workflow. The release tag supplies the generated mod version, `mcmod.info` value and runtime JAR name; privacy review found no local paths, credentials, world identifiers or actual player names in tracked documentation. |
 | DONE | 2026-10-25 | Prefer an available mining tool over an empty hand when printer mining speeds tie or a pack reduces a regular tool's client break speed, while still choosing the fastest tool among tools in `client/printer/SchematicPrinter`. Build, 749 tests and the native 64-block stone, wrong-block, sand and glass printer fixture pass. The GTNH instance audit found `bruh.schematic` at a 3x11x49 placement within its configured 45-block range; remaining saved mismatches are concentrated in higher layers after an incomplete run, with no printer exception in the log. |
 | DONE | 2026-10-25 | Enable `destroyBlocks` for normal and server-assisted survival printing in `client/printer/SchematicPrinter`, excluding survival-unbreakable blocks and fluids while retaining creative behavior. Update six language catalogs and configuration descriptions, including the scope of `destroyInstantly`. Build, Checkstyle and 749 tests pass. Native client dispatch checks and dedicated-server survival/creative harvesting checks pass; creative tool damage is unchanged after 64 breaks. See TESTING and the headless fixture guides. |
 | DONE | 2026-10-24 | Add immutable verification snapshots, bounded background comparisons, sparse 16-cube invalidation and multi-column batches in `client/verifier`; add independent quad sorting, geometry equality reuse, bounded upload/memory budgets and optional-renderer guards in `client/renderer`. Build and 749 tests pass. Extended native `tools/headless/render_smoke` checks verification, cancellation, transparent order changes without model rebuilds, identical geometry reuse and cleanup. World/model callbacks remain on the client thread; new full-pack/shader acceptance is not claimed. See TESTING and the rendering source audit. |
