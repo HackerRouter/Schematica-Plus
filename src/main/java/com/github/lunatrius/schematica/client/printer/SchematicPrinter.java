@@ -179,9 +179,12 @@ public class SchematicPrinter {
      * slab click completes are left to the placement.
      */
     private boolean startBreak(World world, SchematicWorld schematic, int wx, int wy, int wz) {
-        boolean creative = PrinterReach.assisted() && ConfigurationHandler.destroyBlocks && this.minecraft.playerController.isInCreativeMode()
-            && !world.isAirBlock(wx, wy, wz);
-        return (creative || breakWanted(world, schematic, wx, wy, wz, ConfigurationHandler.printBreakExtraBlock,
+        boolean creative = this.minecraft.playerController.isInCreativeMode();
+        Block real = world.getBlock(wx, wy, wz);
+        boolean destroy = ConfigurationHandler.destroyBlocks && (PrinterReach.assisted() || !creative)
+            && !real.isAir(world, wx, wy, wz)
+            && (creative || !FluidPrinter.isFluid(real) && real.getBlockHardness(world, wx, wy, wz) >= 0);
+        return (destroy || breakWanted(world, schematic, wx, wy, wz, ConfigurationHandler.printBreakExtraBlock,
             ConfigurationHandler.printBreakWrongBlock, ConfigurationHandler.printBreakWrongStateBlock)) && beginMining(world, wx, wy, wz);
     }
 

@@ -8,9 +8,9 @@ schematica.config.placeDelay.tooltip=놓기 시도간의 지연시간 (틱 단�
 schematica.config.timeout=시간 제한
 schematica.config.timeout.tooltip=실패한 블럭을 재시도하기 전의 시간 제한.
 schematica.config.destroyBlocks=블럭 부수기
-schematica.config.destroyBlocks.tooltip=프린터가 블럭을 부숩니다 (크리에이티브 모드 전용).
+schematica.config.destroyBlocks.tooltip=서바이벌과 크리에이티브 모드에서 프린터가 설계도와 일치하지 않는 블록을 제거합니다. 서바이벌에서는 도구 내구도와 채굴 아이템 드롭이 일반 규칙을 따르며, 크리에이티브에서는 내구도를 소모하지 않습니다. 빠른 파괴에는 서버 지원이 필요합니다.
 schematica.config.destroyInstantly=즉시 부수기
-schematica.config.destroyInstantly.tooltip=1틱안에 가능한 모든 블럭을 부수기.
+schematica.config.destroyInstantly.tooltip=서버 지원이 없을 때 크리에이티브 모드에서 같은 출력 주기 안에 더 많은 파괴 대상을 처리합니다. 서바이벌 채굴 시간은 바뀌지 않으며, 서버 지원 파괴에는 설정된 제한이 적용됩니다.
 
 # gui - config - server
 schematica.config.printerEnabled=프린터 허용

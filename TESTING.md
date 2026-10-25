@@ -1,6 +1,6 @@
 # Verification
 
-Current scenario guide, reviewed 2026-10-24. Run `./gradlew build` and
+Current scenario guide, reviewed 2026-10-25. Run `./gradlew build` and
 `LC_ALL=C.UTF-8 ./gradlew test`; the current suite contains **749 tests**.
 Steps below are regression scenarios, not claims that every combination passed.
 Only dated observation paragraphs record actual game checks; their test counts and
@@ -8,6 +8,35 @@ artifact hashes describe that historical build. Use disposable copies and the
 same current Plus build on both sides, except explicit client-only cases.
 `<evidence-dir>` denotes private, local validation artifacts outside the repository;
 these are scenario labels, not distributed files or public download links.
+
+## Survival printer destruction
+
+- Enable `destroyBlocks` with `printBreakWrongBlock`, `printBreakExtraBlock` and
+  `printBreakWrongStateBlock` disabled. Survival printing must remove nonmatching
+  solid blocks, including extra blocks where the schematic has air. Matching
+  blocks, fluids and unbreakable blocks must remain intact.
+- Without server assistance, or with server fast breaking disabled, keep native
+  mining progress across ticks. With fast breaking available, use the existing
+  queued harvesting path and its client/server limits. Check tool wear, harvest
+  drops, tool selection and protection cancellation in survival.
+- Repeat in creative mode with and without server assistance. Tool durability must
+  remain unchanged, including when a durability reserve exceeds the tool's remaining
+  uses. Preserve native creative harvesting and the existing `destroyInstantly`
+  path. That option must not promise instant survival mining without server support.
+- Check all six existing `destroyBlocks` translations and the generated config
+  description: none must still label it creative-only. English and Chinese wrong-
+  block mining descriptions must distinguish normal and server-assisted speed.
+
+Observed 2026-10-25: build, Checkstyle and 749 JUnit tests pass. The native Forge
+development client passes dispatch checks for unassisted, assisted-normal and
+assisted-fast survival with only `destroyBlocks` enabled, fluid/bedrock exclusions,
+the disabled toggle and retained creative paths. These checks call the actual
+client target dispatcher; they do not simulate the complete multiplayer exchange.
+The dedicated-server printer fixture separately harvests 64 stone blocks in
+survival with 64 tool-damage points and 64 cobblestone drops, then breaks 64 in
+creative with unchanged tool damage and no harvest drops. Existing protection,
+inventory, durability-reserve and queue-quota checks also pass. Evidence:
+`<evidence-dir>/destroy-survival-client.log` and `destroy-survival-server.log`.
 
 ## Background verification and translucent sorting
 

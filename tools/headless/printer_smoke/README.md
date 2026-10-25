@@ -15,7 +15,8 @@ The fixture changes blocks and inventories, then stops the server automatically.
 ```
 
 The task fails unless the fixture writes a fresh passing result. The log includes
-`PRINTER_SMOKE_PASSED` after checking 64-block harvesting, tool durability, drops,
+`PRINTER_SMOKE_PASSED` after checking 64-block survival harvesting, tool durability, drops,
+64 creative-mode breaks without tool wear or harvest drops,
 durability reserves, tool NBT changes, interaction and break cancellation, unbreakable blocks,
 64 ordered directional placements, inventory relocation, stale targets and
 double-slab consumption and independent placement/break quotas.

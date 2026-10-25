@@ -40,9 +40,9 @@ public final class Names {
         public static final String TIMEOUT = "timeout";
         public static final String TIMEOUT_DESC = "Timeout before re-trying failed blocks.";
         public static final String DESTROY_BLOCKS = "destroyBlocks";
-        public static final String DESTROY_BLOCKS_DESC = "The printer will destroy blocks (creative mode only).";
+        public static final String DESTROY_BLOCKS_DESC = "Allow the printer to remove nonmatching blocks in survival and creative modes. Survival retains native tool wear and harvest drops; creative does not consume tool durability. Fast breaking requires server support.";
         public static final String DESTROY_INSTANTLY = "destroyInstantly";
-        public static final String DESTROY_INSTANTLY_DESC = "Destroy all blocks that can be destroyed in one tick.";
+        public static final String DESTROY_INSTANTLY_DESC = "Continue through additional creative-mode break targets in the same pass without server assistance. Survival mining time is unchanged; server-assisted breaking uses the configured limits.";
         public static final String SWAP_SLOT = "swapSlot";
         public static final String SWAP_SLOT_DESC = "Allow the printer to use this hotbar slot.";
 

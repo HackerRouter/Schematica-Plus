@@ -30,6 +30,12 @@ prints `RENDER_SMOKE_COUNTS`, `RENDER_SMOKE_SORTING`, `RENDER_SMOKE_VERIFIER` an
 - Background verification of a native 48x32x1 placement, correct/missing/wrong-block
   counts, incremental changes, 4,000 snapshot/original comparison-rule pairs,
   movement/content cancellation, pause/resume and world cleanup.
+- The printer's `destroyBlocks` dispatch with the individual break toggles off:
+  unassisted, assisted-normal and assisted-fast survival mining, fluid/bedrock
+  exclusions and the existing creative paths. This prints
+  `PRINTER_DESTROY_SMOKE_PASSED`. It checks native client dispatch, not an entire
+  multiplayer exchange; the dedicated printer fixture checks actual harvesting,
+  durability and drops in each game mode.
 - Opposite-camera transparent quad orders without another model build, nonempty
   rendered pixels, identical-geometry display-list reuse, offscreen job cancellation,
   replacement after edits and complete retained-cache release on deletion. The

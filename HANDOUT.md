@@ -1,6 +1,6 @@
 # Schematica Plus: development handoff
 
-Current guide, reviewed 2026-10-24. Runtime baseline: Minecraft 1.7.10 / Forge
+Current guide, reviewed 2026-10-25. Runtime baseline: Minecraft 1.7.10 / Forge
 10.13.4.1614, release `1.0.0-beta.3`, with subsequent fixes on `master`.
 Support targets: GTNH **2.8.4** and **2.9.0-RC-2**, using each pack's native
 mod versions. Named combinations of individually installed mods are also checked
@@ -72,6 +72,10 @@ mod. Original Schematica conflicts with Plus and must be removed from the instan
   0 retains normal reach. Extended printing requires the server to advertise its
   `printerMaxRange` (default 128); ordinary input and fluid ray tracing retain normal
   reach. Native survival item use, mining and permission checks still apply.
+- `destroyBlocks` works in survival and creative modes. Survival retains native
+  tool wear and harvest drops, using normal mining time unless server fast breaking
+  is available. Creative retains its native behavior without tool wear. The legacy
+  `destroyInstantly` option only controls the unassisted creative printing path.
 - `.schematic`, `.schemplus`, `.litematic` and structure `.nbt` support reading and
   writing. Sponge `.schem` v1-v3 is **import-only**; biomes are ignored and modern
   block/NBT conversion is partial. Automated Sponge fixtures cover v1/v2/v3 and reject malformed block streams.
@@ -347,6 +351,7 @@ steps and limitations are in TESTING; the full implementation history is in Git.
 
 | Status | Date | Work and location |
 | --- | --- | --- |
+| DONE | 2026-10-25 | Enable `destroyBlocks` for normal and server-assisted survival printing in `client/printer/SchematicPrinter`, excluding survival-unbreakable blocks and fluids while retaining creative behavior. Update six language catalogs and configuration descriptions, including the scope of `destroyInstantly`. Build, Checkstyle and 749 tests pass. Native client dispatch checks and dedicated-server survival/creative harvesting checks pass; creative tool damage is unchanged after 64 breaks. See TESTING and the headless fixture guides. |
 | DONE | 2026-10-24 | Add immutable verification snapshots, bounded background comparisons, sparse 16-cube invalidation and multi-column batches in `client/verifier`; add independent quad sorting, geometry equality reuse, bounded upload/memory budgets and optional-renderer guards in `client/renderer`. Build and 749 tests pass. Extended native `tools/headless/render_smoke` checks verification, cancellation, transparent order changes without model rebuilds, identical geometry reuse and cleanup. World/model callbacks remain on the client thread; new full-pack/shader acceptance is not claimed. See TESTING and the rendering source audit. |
 | DONE | 2026-10-24 | Reuse eligible fixed-light vanilla display lists during translation in `client/renderer`, index dirty sections by local coordinates, retain grid copies and renderer identities during pure base movement in `client/world/GridPlacements`, and resume budgeted scans across frames. Build and 735 tests pass. The native `tools/headless/render_smoke` fixture verifies zero extra builds over 64 air moves, cached/fresh pixel equality, invalidation and grid lifecycle; see TESTING for conservative fallback and pack-validation limits. |
 | DONE | 2026-10-24 | Redraw filled and outlined favorite stars with mirrored pixel rows and use a native 8x8 toolbar star in a padded 12x12 frame. All three states preserve exact horizontal pixel symmetry and the directory palette. Verification is recorded in TESTING. |

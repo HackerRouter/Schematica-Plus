@@ -2,9 +2,9 @@
 schematica.config.placeDelay=Abstand zwischen Blockplatzierung
 schematica.config.placeDelay.tooltip=Abstan (in ticks) in der ein Spieler Blöcke setzen kann.
 schematica.config.destroyBlocks=Zerstöre Blöcke
-schematica.config.destroyBlocks.tooltip=Der Drucker wird Blöcke entfernen können (Nur im Kreativmodus verfügbar).
+schematica.config.destroyBlocks.tooltip=Der Drucker kann abweichende Blöcke im Überlebens- und Kreativmodus entfernen. Im Überlebensmodus gelten normaler Werkzeugverschleiß und normale Abbau-Drops; im Kreativmodus wird keine Werkzeughaltbarkeit verbraucht. Schneller Abbau benötigt Serverunterstützung.
 schematica.config.destroyInstantly=Zerstöre Blöcke sofort
-schematica.config.destroyInstantly.tooltip=Zerstöre alle Blöcke innerhalb eines Ticks.
+schematica.config.destroyInstantly.tooltip=Ohne Serverunterstützung im Kreativmodus weitere Abbauziele im selben Druckdurchlauf bearbeiten. Die Abbauzeit im Überlebensmodus bleibt unverändert; servergestützter Abbau verwendet die eingestellten Obergrenzen.
 
 # gui - config - server
 schematica.config.printerEnabled=Drucken erlauben

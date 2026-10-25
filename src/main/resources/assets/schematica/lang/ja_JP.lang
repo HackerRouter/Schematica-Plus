@@ -12,9 +12,9 @@ schematica.config.placeDelay.tooltip=設置と設置の間に何tick遅延する
 schematica.config.timeout=タイムアウト
 schematica.config.timeout.tooltip=何回設置に失敗したらあきらめるかを指定します
 schematica.config.destroyBlocks=ブロック破壊
-schematica.config.destroyBlocks.tooltip=クリエイティブモードにおいて、ブロックの破壊をします
+schematica.config.destroyBlocks.tooltip=サバイバルとクリエイティブの両モードで、設計図と一致しないブロックをプリンターが破壊します。サバイバルでは通常どおり道具の耐久値を消費し、採掘によるドロップが発生します。クリエイティブでは耐久値を消費しません。高速破壊にはサーバー側の対応が必要です。
 schematica.config.destroyInstantly=同時破壊
-schematica.config.destroyInstantly.tooltip=1tickで壊すのできるすべてのブロックを破壊します
+schematica.config.destroyInstantly.tooltip=サーバー側の補助がない場合、クリエイティブモードで同じ印刷処理中に複数の破壊対象を続けて処理します。サバイバルの採掘時間は変わりません。サーバー補助による破壊には設定された上限が適用されます。
 
 # gui - config - printer - swap slots
 schematica.config.swapSlot0=第1スロットの使用

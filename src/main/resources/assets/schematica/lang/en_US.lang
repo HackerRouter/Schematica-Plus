@@ -77,7 +77,7 @@ schematica.printer.selection.selection=Area selection
 schematica.printer.selection.below_player=Below the player
 schematica.printer.selection.above_player=Above the player
 schematica.config.printBreakWrongBlock=printBreakWrongBlock
-schematica.config.printBreakWrongBlock.tooltip=Mine blocks that differ from the schematic before placing the right one (survival mining takes the normal time).
+schematica.config.printBreakWrongBlock.tooltip=Mine blocks that differ from the schematic before placing the right one. Survival uses normal mining time unless the server supports fast breaking; native tool wear, drops and protection checks still apply.
 schematica.config.printBreakExtraBlock=printBreakExtraBlock
 schematica.config.printBreakExtraBlock.tooltip=Mine blocks where the schematic has air. Fluids and blocks in extraAirBlocks are left alone.
 schematica.config.printBreakWrongStateBlock=printBreakWrongStateBlock
@@ -110,9 +110,9 @@ schematica.message.auto_align.unchanged=Auto align: %s is already at the best sp
 schematica.message.auto_align.coordinate_locks=Auto align: %s found (%s%% match), but locked coordinates kept it from moving all the way
 schematica.message.auto_align.failed=Auto align: %s was not found nearby
 schematica.config.destroyBlocks=destroyBlocks
-schematica.config.destroyBlocks.tooltip=The printer will destroy blocks (creative mode only).
+schematica.config.destroyBlocks.tooltip=Allow the printer to remove nonmatching blocks in survival and creative modes. Survival retains native tool wear and harvest drops; creative does not consume tool durability. Fast breaking requires server support.
 schematica.config.destroyInstantly=destroyInstantly
-schematica.config.destroyInstantly.tooltip=Destroy all blocks that can be destroyed in one tick.
+schematica.config.destroyInstantly.tooltip=Continue through additional creative-mode break targets in the same pass without server assistance. Survival mining time is unchanged; server-assisted breaking uses the configured limits.
 
 # gui - config - printer - swap slots
 schematica.config.swapSlot0=swapSlot0

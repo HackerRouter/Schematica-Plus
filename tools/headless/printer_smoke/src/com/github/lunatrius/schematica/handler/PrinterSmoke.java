@@ -4,19 +4,29 @@ import java.lang.reflect.Field;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import net.minecraft.block.Block;
 import net.minecraft.entity.item.EntityItem;
 import net.minecraft.entity.EntityLivingBase;
-import net.minecraft.entity.player.*;
-import net.minecraft.init.*;
-import net.minecraft.item.*;
-import net.minecraft.network.*;
+import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.init.Blocks;
+import net.minecraft.init.Items;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemPickaxe;
+import net.minecraft.item.ItemStack;
+import net.minecraft.network.NetHandlerPlayServer;
+import net.minecraft.network.NetworkManager;
+import net.minecraft.network.Packet;
 import net.minecraft.network.play.client.C08PacketPlayerBlockPlacement;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.AxisAlignedBB;
-import net.minecraft.world.*;
+import net.minecraft.world.World;
+import net.minecraft.world.WorldServer;
+import net.minecraft.world.WorldSettings;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.common.util.FakePlayerFactory;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
@@ -27,7 +37,8 @@ import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.gameevent.TickEvent;
 import cpw.mods.fml.common.registry.GameRegistry;
-import com.github.lunatrius.schematica.network.message.*;
+import com.github.lunatrius.schematica.network.message.MessagePlacementIntent;
+import com.github.lunatrius.schematica.network.message.MessagePrinterAction;
 
 @Mod(modid="printer_smoke", name="Printer Smoke", version="1", dependencies="required-after:schematica_plus", acceptableRemoteVersions="*")
 public class PrinterSmoke {
@@ -65,6 +76,7 @@ public class PrinterSmoke {
             ConfigurationHandler.printerMaxBreaksPerTick = 64;
             MinecraftForge.EVENT_BUS.register(protection);
             breaks();
+            creativeBreaks();
             nbtTools();
             protections();
             placements();
@@ -122,6 +134,26 @@ public class PrinterSmoke {
             if (entity.getEntityItem().getItem() == Item.getItemFromBlock(Blocks.cobblestone)) drops += entity.getEntityItem().stackSize;
         }
         return drops;
+    }
+
+    private void creativeBreaks() {
+        int previousDrops = droppedStone();
+        ItemStack tool = new ItemStack(Items.iron_pickaxe);
+        tool.setItemDamage(37);
+        player.inventory.mainInventory[0] = tool;
+        player.theItemInWorldManager.setGameType(WorldSettings.GameType.CREATIVE);
+        try {
+            for (int x = 1; x <= 64; x++) {
+                world.setBlock(BASE + x, Y, 0, Blocks.stone);
+                MessagePrinterAction request = action(MessagePrinterAction.BREAK, x, tool);
+                request.minimumDurability = tool.getMaxDamage();
+                PrinterActions.INSTANCE.enqueue(player, request);
+            }
+            tick();
+            for (int x = 1; x <= 64; x++) check(world.isAirBlock(BASE + x, Y, 0), "creative break " + x);
+            check(tool.getItemDamage() == 37, "creative does not consume tool durability");
+            check(droppedStone() == previousDrops, "creative does not produce harvest drops");
+        } finally { player.theItemInWorldManager.setGameType(WorldSettings.GameType.SURVIVAL); }
     }
 
     private void nbtTools() {
