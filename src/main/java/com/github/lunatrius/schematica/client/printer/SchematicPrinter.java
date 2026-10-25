@@ -17,7 +17,10 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.entity.player.InventoryPlayer;
 import net.minecraft.init.Items;
 import net.minecraft.item.ItemBucket;
+import net.minecraft.item.ItemShears;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.ItemSword;
+import net.minecraft.item.ItemTool;
 import net.minecraft.network.play.client.C03PacketPlayer.C05PacketPlayerLook;
 import net.minecraft.network.play.client.C0BPacketEntityAction;
 import net.minecraft.util.MathHelper;
@@ -241,22 +244,21 @@ public class SchematicPrinter {
         return true;
     }
 
-    /**
-     * printAutoTool: holds the item of the hotbar, or of the inventory through the swap slots, that mines the block
-     * fastest (harvest level and enchantments included); tools at or below printAutoToolDurability uses left are not
-     * used. The held item stays when nothing is faster. True when another slot was selected.
-     */
     private boolean selectTool(EntityClientPlayerMP player, World world, Block block, int x, int y, int z) {
         if (!ConfigurationHandler.printAutoTool || this.minecraft.playerController.isInCreativeMode()) return false;
         InventoryPlayer inventory = player.inventory;
         int current = inventory.currentItem;
         float best = usableTool(inventory.mainInventory[current]) ? strength(player, world, block, x, y, z, inventory.mainInventory[current]) : -1;
+        boolean bestTool = miningTool(inventory.mainInventory[current]);
         int bestSlot = -1;
         int slots = ConfigurationHandler.swapSlotsQueue.isEmpty() ? Constants.Inventory.Size.HOTBAR : inventory.mainInventory.length;
         for (int slot = 0; slot < slots; slot++) {
             if (slot == current || !usableTool(inventory.mainInventory[slot])) continue;
             float strength = strength(player, world, block, x, y, z, inventory.mainInventory[slot]);
-            if (strength > best) { best = strength; bestSlot = slot; }
+            boolean tool = miningTool(inventory.mainInventory[slot]);
+            if (tool && !bestTool || tool == bestTool && strength > best) {
+                best = strength; bestSlot = slot; bestTool = tool;
+            }
         }
         if (bestSlot < 0) return false;
         if (bestSlot >= Constants.Inventory.Size.HOTBAR) {
@@ -266,6 +268,11 @@ public class SchematicPrinter {
         }
         inventory.currentItem = bestSlot;
         return true;
+    }
+
+    private static boolean miningTool(ItemStack stack) {
+        return stack != null && (stack.getItem() instanceof ItemTool || stack.getItem() instanceof ItemShears
+            || stack.getItem() instanceof ItemSword || !stack.getItem().getToolClasses(stack).isEmpty());
     }
 
     private static boolean usableTool(ItemStack stack) {

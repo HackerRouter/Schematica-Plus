@@ -93,6 +93,7 @@ public class RenderSmoke {
                 translations();
                 invalidation();
                 grids();
+                com.github.lunatrius.schematica.client.printer.PrinterBatchSmoke.run(mc, x, (int) mc.thePlayer.boundingBox.minY + 8, z);
                 com.github.lunatrius.schematica.client.printer.PrinterDestroySmoke.run(mc, x, Y, z + 8);
                 sortingWorld = schematic(4, 4, 4, Blocks.stained_glass);
                 for (int sx = 0; sx < 4; sx++) sortingWorld.setBlock(sx, 0, 0, Blocks.stained_glass, sx + 1, 0);

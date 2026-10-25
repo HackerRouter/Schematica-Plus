@@ -38,6 +38,18 @@ creative with unchanged tool damage and no harvest drops. Existing protection,
 inventory, durability-reserve and queue-quota checks also pass. Evidence:
 `<evidence-dir>/destroy-survival-client.log` and `destroy-survival-server.log`.
 
+Observed 2026-10-25 in the supplied GTNH instance: `schematica_plus.cfg` has
+`destroyBlocks`, all three break-mismatch switches, auto-tool and 64 break targets
+enabled, with a 45-block work range and an 8 ms iteration budget. The saved `bruh`
+placement is 3x11x49 at the recorded player position and is inside that range.
+The saved world still contains 463 extra and 332 wrong non-air cells, concentrated
+in the higher layers; `latest.log` has no printer exception. This is consistent
+with stopping a bottom-up pass before the placement completed. The inventory audit
+also found low-durability ordinary tools, and GTNH IguanaTweaks is configured to
+reduce regular-tool break speed to zero; auto-tool selection now keeps a usable
+tool ahead of an empty hand in that situation. The supplied world and schematic
+were read only; no original files were changed.
+
 ## Background verification and translucent sorting
 
 The second optimization batch keeps world reads, mod callbacks and OpenGL on the

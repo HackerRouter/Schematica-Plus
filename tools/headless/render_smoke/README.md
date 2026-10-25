@@ -36,6 +36,13 @@ prints `RENDER_SMOKE_COUNTS`, `RENDER_SMOKE_SORTING`, `RENDER_SMOKE_VERIFIER` an
   `PRINTER_DESTROY_SMOKE_PASSED`. It checks native client dispatch, not an entire
   multiplayer exchange; the dedicated printer fixture checks actual harvesting,
   durability and drops in each game mode.
+- Complete singleplayer printer passes using the real capability handshake,
+  client scan, network requests and integrated-server harvesting. Each of four
+  64-block fixtures clears extra stone, wrong stone, extra sand or extra glass,
+  with 64 native break events and 64 points of wear on the selected tool. Glass
+  checks tool priority when its mining speed equals an empty hand. This prints
+  `PRINTER_BATCH_SMOKE_PASSED` and uses an unlimited scan time budget to isolate
+  dispatch and harvesting from scheduling.
 - Opposite-camera transparent quad orders without another model build, nonempty
   rendered pixels, identical-geometry display-list reuse, offscreen job cancellation,
   replacement after edits and complete retained-cache release on deletion. The
