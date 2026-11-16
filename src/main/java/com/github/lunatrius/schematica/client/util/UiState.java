@@ -46,7 +46,9 @@ public final class UiState {
 
     private static synchronized void save() {
         try {
-            FileUtils.writeUtf8Atomically(PlusDataFiles.file("UiState.json"), new GsonBuilder().setPrettyPrinting().create().toJson(root()));
+            File file = PlusDataFiles.file("UiState.json");
+            Files.createDirectories(file.toPath().toAbsolutePath().getParent());
+            FileUtils.writeUtf8Atomically(file, new GsonBuilder().setPrettyPrinting().create().toJson(root()));
         } catch (Exception e) {
             Reference.logger.warn("Could not save the UI state", e);
         }

@@ -119,7 +119,7 @@ public final class GuiSchematicLoad extends GuiSchematicBrowser {
     @Override
     protected void layoutActions() {
         super.layoutActions();
-        createPlacement.setBounds(12, height - 40, width - 24, 11);
+        createPlacement.setBounds(12, height - 40, Math.min(width - 24, fontRendererObj.getStringWidth(createPlacement.label()) + 20), 11);
     }
 
     @Override

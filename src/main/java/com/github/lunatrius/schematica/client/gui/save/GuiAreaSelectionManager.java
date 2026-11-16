@@ -94,8 +94,7 @@ public final class GuiAreaSelectionManager extends UiScreen {
         });
         searchButton = root.add(new UiButton(() -> "", button -> {
             searching = !searching;
-            search.setVisible(searching);
-            path.setVisible(!searching);
+            layoutWidgets();
             if (searching) input.focus(search);
             else search.setText("");
         }).setSprite(UiSprite.SEARCH).setBackground(false));
@@ -257,8 +256,12 @@ public final class GuiAreaSelectionManager extends UiScreen {
         createFolder.setBounds(40, 55, 12, 12);
         path.setBounds(58, 54, Math.max(0, width - 103), 14);
         path.setVisible(!searching);
+        home.setVisible(!searching);
+        up.setVisible(!searching);
+        createFolder.setVisible(!searching);
         searchButton.setBounds(width - 41, 55, 12, 12);
         search.setBounds(12, 54, Math.max(0, width - 56), 14);
+        search.setVisible(searching);
         list.setBounds(12, 71, Math.max(0, width - 30), Math.max(0, height - 93));
         status.setBounds(10, height - 15, width - 20, 14);
     }
