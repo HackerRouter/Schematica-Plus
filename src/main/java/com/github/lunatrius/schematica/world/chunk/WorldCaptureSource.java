@@ -14,6 +14,7 @@ import net.minecraftforge.common.util.ForgeDirection;
 
 import com.github.lunatrius.schematica.nbt.NBTHelper;
 import com.github.lunatrius.schematica.reference.Reference;
+import com.github.lunatrius.schematica.compat.CubicChunks;
 
 /** The world being saved; block entities come from the server world when there is one (full inventories). */
 public final class WorldCaptureSource implements CaptureSource {
@@ -49,9 +50,11 @@ public final class WorldCaptureSource implements CaptureSource {
         return copies;
     }
 
+    @Override public int maxY() { return CubicChunks.maxHeight(world); }
+
     @Override
     public boolean covers(int x, int y, int z, ForgeDirection side) {
-        if (y < 0 || y > 255) return false;
+        if (!CubicChunks.containsY(world, y)) return false;
         Block block = world.getBlock(x, y, z);
         return block.isOpaqueCube() && block.isSideSolid(world, x, y, z, side);
     }

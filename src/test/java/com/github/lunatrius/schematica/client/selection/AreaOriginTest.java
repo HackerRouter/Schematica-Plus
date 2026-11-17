@@ -53,7 +53,7 @@ public class AreaOriginTest {
         restored.setOrigin(restored.selected(), null);
         assertEquals(new Vector3i(8, 60, -10), restored.selected().origin());
         assertNull(AreaSelectionLibrary.fromJson(restored.toJson()).selected().manualOrigin());
-        assertThrows(IllegalArgumentException.class, () -> library.setOrigin(area, new Vector3i(0, 256, 0)));
+        assertThrows(IllegalArgumentException.class, () -> library.setOrigin(area, new Vector3i(30000000, 256, 0)));
         assertEquals(new Vector3i(40, 80, 50), area.origin());
     }
 }

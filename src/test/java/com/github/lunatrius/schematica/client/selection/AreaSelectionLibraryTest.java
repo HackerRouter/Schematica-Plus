@@ -25,7 +25,7 @@ public class AreaSelectionLibraryTest {
         assertEquals("Pipes", imported.boxes().get(1).name());
         assertSame(original, library.selected());
         assertThrows(IllegalArgumentException.class, () -> library.createFromRegions("Invalid", Arrays.asList(regions.get(0),
-            new SchematicRegion("Bad", 0, 256, 0, 0, 257, 0))));
+            new SchematicRegion("Bad", 30000000, 256, 0, 30000000, 257, 0))));
         assertEquals(2, library.areas().size());
         assertSame(original, library.selected());
         library.select(imported);
@@ -97,7 +97,7 @@ public class AreaSelectionLibraryTest {
         assertThrows(AreaSelectionLibrary.NameConflictException.class, () -> library.rename(other, " area "));
         assertEquals("Other", other.name());
         assertThrows(IllegalArgumentException.class, () -> library.rename(area, "\n"));
-        assertThrows(IllegalArgumentException.class, () -> library.setPoints(area, new Vector3i(2, 2, 2), new Vector3i(0, 256, 0)));
+        assertThrows(IllegalArgumentException.class, () -> library.setPoints(area, new Vector3i(2, 2, 2), new Vector3i(30000000, 256, 0)));
         assertEquals(new Vector3i(), area.first());
         assertThrows(IllegalArgumentException.class, () -> new AreaSelectionLibrary().select(area));
         library.remove(area);

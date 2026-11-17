@@ -24,6 +24,12 @@ public final class PlacementCaptureSource implements CaptureSource {
         for (SchematicWorld placement : loaded) if (placement.isEnabled()) placements.add(placement);
     }
 
+    @Override public int maxY() {
+        long top = Integer.MIN_VALUE;
+        for (SchematicWorld placement : placements) top = Math.max(top, (long) placement.position.y + placement.getHeight());
+        return (int) Math.min(Integer.MAX_VALUE, top);
+    }
+
     private SchematicWorld owner(int x, int y, int z) {
         for (SchematicWorld placement : placements) {
             int lx = x - placement.position.x, ly = y - placement.position.y, lz = z - placement.position.z;

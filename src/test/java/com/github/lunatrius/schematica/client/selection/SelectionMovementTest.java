@@ -14,7 +14,7 @@ public class SelectionMovementTest {
         AreaSelectionLibrary.Box box = library.addBox(area, "Other", new Vector3i(5, 245, 8), new Vector3i(7, 250, 12));
         library.setOrigin(area, new Vector3i(-21, 59, -9)); library.selectCorner(area, box, AreaSelectionLibrary.Corner.SECOND);
         String before = library.toJson().toString();
-        assertThrows(IllegalArgumentException.class, () -> library.moveEntire(area, 1, 20, 1));
+        assertThrows(IllegalArgumentException.class, () -> library.moveEntire(area, 30000000, 20, 1));
         assertEquals(before, library.toJson().toString());
         library.moveEntire(area, -2, 3, -4);
         assertEquals(new Vector3i(3, 248, 4), box.first());

@@ -18,6 +18,9 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.MathHelper;
 import net.minecraft.world.World;
+import net.minecraft.world.ChunkPosition;
+
+import com.github.lunatrius.schematica.compat.CubicChunks;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.EmptyChunk;
 import net.minecraft.world.chunk.storage.ExtendedBlockStorage;
@@ -58,7 +61,7 @@ public final class AutoAlignJob {
     private Future<List<AutoAlign.Candidate>> voting;
     private AutoAlign.Plan plan;
     private final Map<Block, Integer> index = new IdentityHashMap<>();
-    private final List<List<Long>> hits = new ArrayList<>();
+    private final List<List<ChunkPosition>> hits = new ArrayList<>();
     private final List<int[]> chunks = new ArrayList<>();
     private int nextChunk, nextCandidate;
     private List<AutoAlign.Candidate> candidates;
@@ -82,6 +85,7 @@ public final class AutoAlignJob {
         };
         this.target = new AutoAlign.Target() {
             @Override public Object block(int bx, int by, int bz) { return world.getBlock(bx, by, bz); }
+            @Override public boolean loaded(int bx, int by, int bz) { return CubicChunks.loaded(world, bx, by, bz); }
             @Override public boolean loaded(int bx, int bz) { return !(world.getChunkFromChunkCoords(bx >> 4, bz >> 4) instanceof EmptyChunk); }
         };
         int radius = Math.max(4, (Math.max(width, length) + 15) / 16 + 1), cx = x >> 4, cz = z >> 4;
@@ -144,9 +148,9 @@ public final class AutoAlignJob {
             case SCANNING:
                 while (nextChunk < chunks.size() && System.nanoTime() < deadline) scan(chunks.get(nextChunk++));
                 if (nextChunk < chunks.size()) return false;
-                List<long[]> found = new ArrayList<>();
-                for (List<Long> list : hits) {
-                    long[] array = new long[list.size()];
+                List<ChunkPosition[]> found = new ArrayList<>();
+                for (List<ChunkPosition> list : hits) {
+                    ChunkPosition[] array = new ChunkPosition[list.size()];
                     for (int i = 0; i < array.length; i++) array[i] = list.get(i);
                     found.add(array);
                 }
@@ -171,10 +175,11 @@ public final class AutoAlignJob {
     }
 
     private void scan(int[] column) {
+        if (!world.getChunkProvider().chunkExists(column[0], column[1])) return;
         Chunk chunk = world.getChunkFromChunkCoords(column[0], column[1]);
         if (chunk instanceof EmptyChunk) return;
         int bx = column[0] << 4, bz = column[1] << 4;
-        for (ExtendedBlockStorage storage : chunk.getBlockStorageArray()) {
+        for (ExtendedBlockStorage storage : CubicChunks.loadedStorage(chunk)) {
             if (storage == null || storage.isEmpty()) continue;
             int by = storage.getYLocation();
             for (int y = 0; y < 16; y++) for (int z = 0; z < 16; z++) for (int x = 0; x < 16; x++) {

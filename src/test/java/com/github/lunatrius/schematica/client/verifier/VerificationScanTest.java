@@ -26,6 +26,47 @@ public class VerificationScanTest {
         assertTrue("Scan did not finish", scan.done());
     }
 
+    @Test public void scansAndInvalidatesSignedCubesWithoutHeightAliasing() {
+        for (int bottom : new int[] {-1000000, -17, -1, 255, 4095, 1000000}) {
+            VerificationScan scan = new VerificationScan(-13, bottom, 37, 1, 40, 1, new int[] {0, 0, 0, 1, 40, 1});
+            Set<Integer> seen = new HashSet<>();
+            Reader reader = new Reader() {
+                @Override public State found(int x, int y, int z) { seen.add(y); return DIRT; }
+            };
+            finish(scan, reader);
+            assertEquals(40, seen.size());
+            for (int y = bottom; y < bottom + 40; y++) assertTrue(seen.contains(y));
+            seen.clear();
+            VerificationChanges changes = new VerificationChanges();
+            changes.add(-13, bottom, 37, -13, bottom, 37);
+            changes.drain().apply(scan);
+            finish(scan, reader);
+            assertTrue(seen.contains(bottom));
+            for (int y : seen) assertEquals(bottom >> 4, y >> 4);
+            VerificationMarkers markers = new VerificationMarkers();
+            markers.selection.toggle(Type.WRONG_BLOCK);
+            for (int i = 0; i < 10; i++) markers.update(scan, -13, bottom, 37, 40, 100, Long.MAX_VALUE);
+            assertNotNull(markers.at(-13, bottom, 37));
+            assertNull(markers.at(-13, bottom + 4096, 37));
+        }
+    }
+
+    @Test public void waitsForTheSpecificCubeBeforeReadingItsBlocks() {
+        VerificationScan scan = new VerificationScan(0, -1, 0, 1, 2, 1, new int[] {0, 0, 0, 1, 2, 1});
+        Set<Integer> loaded = new HashSet<>();
+        loaded.add(-1);
+        Reader reader = new Reader() {
+            @Override public boolean loaded(int x, int y, int z) { return loaded.contains(y); }
+            @Override public State found(int x, int y, int z) { assertTrue(loaded.contains(y >> 4)); return STONE; }
+        };
+        scan.step(reader, 100, Long.MAX_VALUE);
+        assertFalse(scan.done());
+        assertEquals(1, scan.checked());
+        loaded.add(0);
+        finish(scan, reader);
+        assertEquals(2, scan.checked());
+    }
+
     @Test public void classifiesAllFiveResultsWithoutCountingAirAsCorrectOrAsMaterial() {
         VerificationScan scan = line(6);
         finish(scan, new Reader() {
@@ -210,7 +251,7 @@ public class VerificationScanTest {
 
     @Test public void rejectsUnboundedAllocationAndInvalidWorldRangesBeforeScanning() {
         assertThrows(IllegalArgumentException.class, () -> new VerificationScan(0, 0, 0, 1024, 256, 1024, new int[] {0, 0, 0, 1, 1, 1}));
-        assertThrows(IllegalArgumentException.class, () -> new VerificationScan(0, 255, 0, 1, 2, 1, new int[] {0, 0, 0, 1, 2, 1}));
+        assertThrows(IllegalArgumentException.class, () -> new VerificationScan(0, Integer.MAX_VALUE - 1, 0, 1, 2, 1, new int[] {0, 0, 0, 1, 2, 1}));
         assertThrows(IllegalArgumentException.class, () -> new VerificationScan(Integer.MAX_VALUE, 0, 0, 2, 1, 1, new int[] {0, 0, 0, 2, 1, 1}));
         assertThrows(IllegalArgumentException.class, () -> new VerificationScan(0, 0, 0, 2, 1, 1, new int[] {1, 0, 0, 0, 1, 1}));
     }

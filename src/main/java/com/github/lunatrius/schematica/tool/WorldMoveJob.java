@@ -14,6 +14,7 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.world.WorldServer;
+import net.minecraft.world.World;
 
 import com.github.lunatrius.schematica.api.SchematicRegion;
 import com.github.lunatrius.schematica.compat.CoordinateLinks;
@@ -32,6 +33,7 @@ public final class WorldMoveJob extends WorldEditTask {
     private final SilentBlockPlacement writer = new SilentBlockPlacement();
     private final List<Entity> entities = new ArrayList<>();
     private boolean capturedEntities;
+    private boolean worldValidated;
 
     public WorldMoveJob(UUID player, int dimension, List<SchematicRegion> regions, int dx, int dy, int dz) {
         this(player, dimension, new RegionSelection(regions), dx, dy, dz);
@@ -39,13 +41,13 @@ public final class WorldMoveJob extends WorldEditTask {
     private WorldMoveJob(UUID player, int dimension, RegionSelection selection, int dx, int dy, int dz) {
         super(player, dimension, Math.addExact(selection.minX, dx), Math.addExact(selection.minY, dy), Math.addExact(selection.minZ, dz));
         this.selection = selection; this.dx = dx; this.dy = dy; this.dz = dz;
-        SchematicLimits.worldBounds(selection.minX, selection.minY, selection.minZ, selection.maxX, selection.maxY, selection.maxZ);
-        SchematicLimits.worldBounds(x, y, z, (long) selection.maxX + dx, (long) selection.maxY + dy, (long) selection.maxZ + dz);
+        SchematicLimits.coordinateBounds(x, y, z, (long) selection.maxX + dx, (long) selection.maxY + dy, (long) selection.maxZ + dz);
         int width = selection.maxX - selection.minX + 1, height = selection.maxY - selection.minY + 1, length = selection.maxZ - selection.minZ + 1;
         mask = RegionMask.create(selection.localRegions, width, height, length);
         transaction = new BlockMoveTransaction<>(selection.minX, selection.minY, selection.minZ, width, height, length, dx, dy, dz, mask, new Cell(Blocks.air, 0, null, null));
     }
     @Override public boolean step(WorldServer world) {
+        if (!worldValidated) { validate(world); worldValidated = true; }
         boolean done = transaction.step(new BlockMoveTransaction.Access<Cell>() {
             @Override public Cell read(int x, int y, int z) {
                 if (!world.blockExists(x, y, z)) throw new IllegalArgumentException("Move requires loaded source and target chunks");
@@ -91,6 +93,11 @@ public final class WorldMoveJob extends WorldEditTask {
         }
         return done;
     }
+    @Override public void validate(World world) {
+        SchematicLimits.worldBounds(world, selection.minX, selection.minY, selection.minZ, selection.maxX, selection.maxY, selection.maxZ);
+        SchematicLimits.worldBounds(world, x, y, z, (long) selection.maxX + dx, (long) selection.maxY + dy, (long) selection.maxZ + dz);
+    }
+
     private boolean contains(Entity entity) {
         int x = (int) Math.floor(entity.posX) - selection.minX, y = (int) Math.floor(entity.posY) - selection.minY, z = (int) Math.floor(entity.posZ) - selection.minZ;
         int width = selection.maxX - selection.minX + 1, length = selection.maxZ - selection.minZ + 1;

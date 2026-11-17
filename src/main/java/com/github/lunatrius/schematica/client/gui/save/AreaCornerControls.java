@@ -19,6 +19,7 @@ import com.github.lunatrius.schematica.client.selection.AreaSelectionLibrary.Are
 import com.github.lunatrius.schematica.client.selection.AreaSelectionLibrary.Box;
 import com.github.lunatrius.schematica.client.selection.AreaSelectionLibrary.Corner;
 import com.github.lunatrius.schematica.internal.lunatriuscore.util.vector.Vector3i;
+import com.github.lunatrius.schematica.compat.CubicChunks;
 
 import org.lwjgl.input.Keyboard;
 
@@ -40,7 +41,7 @@ final class AreaCornerControls extends UiPanel {
         for (int axis = 0; axis < 3; axis++) {
             final int component = axis;
             axes[axis] = add(new UiLabel(() -> "XYZ".charAt(component) + ":"));
-            UiIntegerField field = add(new UiIntegerField(font, 0, axis == 1 ? 0 : -30000000, axis == 1 ? 255 : 29999999, value -> {
+            UiIntegerField field = add(new UiIntegerField(font, 0, axis == 1 ? CubicChunks.minHeight(Minecraft.getMinecraft().theWorld) : -30000000, axis == 1 ? CubicChunks.maxHeight(Minecraft.getMinecraft().theWorld) - 1 : 29999999, value -> {
                 if (syncing) return;
                 change.accept(() -> {
                     Vector3i point = point();

@@ -24,7 +24,7 @@ public final class RegionSelection {
             ax = Math.min(ax, region.minX); ay = Math.min(ay, region.minY); az = Math.min(az, region.minZ);
             bx = Math.max(bx, region.maxX); by = Math.max(by, region.maxY); bz = Math.max(bz, region.maxZ);
         }
-        SchematicLimits.worldBounds(ax, ay, az, bx, by, bz);
+        SchematicLimits.coordinateBounds(ax, ay, az, bx, by, bz);
         minX = ax; minY = ay; minZ = az; maxX = bx; maxY = by; maxZ = bz;
         List<SchematicRegion> local = new ArrayList<>();
         for (SchematicRegion region : regions) local.add(region.offset(-minX, -minY, -minZ));

@@ -14,13 +14,14 @@ import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.storage.ExtendedBlockStorage;
 
 import com.github.lunatrius.schematica.nbt.ForgeMultipart;
+import com.github.lunatrius.schematica.compat.CubicChunks;
 
 import cpw.mods.fml.relauncher.ReflectionHelper;
 
 final class SilentBlockPlacement {
     private static final Method RELIGHT = ReflectionHelper.findMethod(Chunk.class, null,
         new String[] {"relightBlock", "func_76615_h"}, int.class, int.class, int.class);
-    private final Map<Chunk, BitSet> changed = new LinkedHashMap<>();
+    private final Map<Chunk, Map<Integer, BitSet>> changed = new LinkedHashMap<>();
 
     void setBlock(WorldServer world, int x, int y, int z, Block block, int metadata) {
         Chunk chunk = world.getChunkFromChunkCoords(x >> 4, z >> 4);
@@ -35,11 +36,16 @@ final class SilentBlockPlacement {
                 world.restoringBlockSnapshots = restoring;
             }
         }
+        changed.computeIfAbsent(chunk, ignored -> new LinkedHashMap<>()).computeIfAbsent(y >> 4, ignored -> new BitSet(4096))
+            .set(((y & 15) << 8) | ((z & 15) << 4) | (x & 15));
         writeStorage(chunk, x & 15, y, z & 15, block, metadata, !world.provider.hasNoSky);
-        changed.computeIfAbsent(chunk, ignored -> new BitSet()).set((y << 8) | ((z & 15) << 4) | (x & 15));
     }
 
     static void writeStorage(Chunk chunk, int x, int y, int z, Block block, int metadata, boolean skylight) {
+        if (CubicChunks.enabled(chunk.worldObj)) {
+            CubicChunks.write(chunk, x, y, z, block, metadata);
+            return;
+        }
         ExtendedBlockStorage[] storage = chunk.getBlockStorageArray();
         if (storage[y >> 4] == null) {
             ExtendedBlockStorage section = new ExtendedBlockStorage(y & ~15, skylight);
@@ -48,9 +54,9 @@ final class SilentBlockPlacement {
                     for (int sz = 0; sz < 16; sz++) {
                         for (int sy = 0; sy < 16; sy++) {
                             section.setExtSkylightValue(sx, sy, sz, (y & ~15) + sy >= chunk.getHeightValue(sx, sz) ? 15 : 0);
-                        }
-                    }
-                }
+                          }
+                      }
+                  }
             }
             storage[y >> 4] = section;
         }
@@ -73,30 +79,38 @@ final class SilentBlockPlacement {
     }
 
     void flush(WorldServer world, FailureHandler failures) {
-        for (Map.Entry<Chunk, BitSet> entry : changed.entrySet()) {
+        boolean cubic = CubicChunks.enabled(world);
+        for (Map.Entry<Chunk, Map<Integer, BitSet>> entry : changed.entrySet()) {
             Chunk chunk = entry.getKey();
-            BitSet cells = entry.getValue();
-            int[] tops = new int[256];
-            for (int cell = cells.nextSetBit(0); cell >= 0; cell = cells.nextSetBit(cell + 1)) {
-                tops[cell & 255] = (cell >> 8) + 1;
-            }
-            for (int column = 0; column < tops.length; column++) {
-                if (tops[column] == 0) continue;
-                try { RELIGHT.invoke(chunk, column & 15, tops[column], column >> 4); }
-                catch (Exception | LinkageError error) {
-                    Throwable cause = error instanceof InvocationTargetException && error.getCause() != null ? error.getCause() : error;
-                    failures.failed((chunk.xPosition << 4) + (column & 15), tops[column] - 1,
-                        (chunk.zPosition << 4) + (column >> 4), cause);
+            if (!cubic) {
+                int[] tops = new int[256];
+                for (Map.Entry<Integer, BitSet> section : entry.getValue().entrySet()) {
+                    BitSet cells = section.getValue();
+                    for (int cell = cells.nextSetBit(0); cell >= 0; cell = cells.nextSetBit(cell + 1)) {
+                        tops[cell & 255] = Math.max(tops[cell & 255], (section.getKey() << 4) + (cell >> 8) + 1);
+                    }
+                }
+                for (int column = 0; column < tops.length; column++) {
+                    if (tops[column] == 0) continue;
+                    try { RELIGHT.invoke(chunk, column & 15, tops[column], column >> 4); }
+                    catch (Exception | LinkageError error) {
+                        Throwable cause = error instanceof InvocationTargetException && error.getCause() != null ? error.getCause() : error;
+                        failures.failed((chunk.xPosition << 4) + (column & 15), tops[column] - 1,
+                            (chunk.zPosition << 4) + (column >> 4), cause);
+                    }
                 }
             }
-            for (int cell = cells.nextSetBit(0); cell >= 0; cell = cells.nextSetBit(cell + 1)) {
-                int x = (chunk.xPosition << 4) + (cell & 15);
-                int y = cell >> 8;
-                int z = (chunk.zPosition << 4) + ((cell >> 4) & 15);
-                try {
-                    world.func_147451_t(x, y, z);
-                    world.markBlockForUpdate(x, y, z);
-                } catch (RuntimeException | LinkageError error) { failures.failed(x, y, z, error); }
+            for (Map.Entry<Integer, BitSet> section : entry.getValue().entrySet()) {
+                BitSet cells = section.getValue();
+                for (int cell = cells.nextSetBit(0); cell >= 0; cell = cells.nextSetBit(cell + 1)) {
+                    int x = (chunk.xPosition << 4) + (cell & 15);
+                    int y = (section.getKey() << 4) + (cell >> 8);
+                    int z = (chunk.zPosition << 4) + ((cell >> 4) & 15);
+                    try {
+                        world.func_147451_t(x, y, z);
+                        world.markBlockForUpdate(x, y, z);
+                    } catch (RuntimeException | LinkageError error) { failures.failed(x, y, z, error); }
+                }
             }
         }
         changed.clear();

@@ -9,6 +9,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import net.minecraft.world.ChunkPosition;
+
 /**
  * The rarest non-terrain blocks of the schematic are anchors. Each anchor position, in each of the eight
  * orientations (rotations about Y and the X mirror), votes for every offset that puts it on a block of its kind
@@ -36,15 +38,16 @@ public final class AutoAlign {
     public interface Target {
         Object block(int x, int y, int z);
         boolean loaded(int x, int z);
+        default boolean loaded(int x, int y, int z) { return y >= 0 && y < 256 && loaded(x, z); }
     }
 
     /** The anchor kinds, their positions in the schematic and the cells that scores sample. */
     public static final class Plan {
         public final List<Object> ids;
-        final List<long[]> anchors;
-        final long[] samples;
+        final List<ChunkPosition[]> anchors;
+        final ChunkPosition[] samples;
 
-        Plan(List<Object> ids, List<long[]> anchors, long[] samples) { this.ids = ids; this.anchors = anchors; this.samples = samples; }
+        Plan(List<Object> ids, List<ChunkPosition[]> anchors, ChunkPosition[] samples) { this.ids = ids; this.anchors = anchors; this.samples = samples; }
 
         public boolean isEmpty() { return ids.isEmpty(); }
     }
@@ -76,10 +79,10 @@ public final class AutoAlign {
         }
     }
 
-    public static long pack(int x, int y, int z) { return ((long) x & 0x3FFFFFF) << 38 | ((long) y & 0xFFF) << 26 | (long) z & 0x3FFFFFF; }
-    public static int x(long packed) { return (int) (packed >> 38); }
-    public static int y(long packed) { return (int) (packed << 26 >> 52); }
-    public static int z(long packed) { return (int) (packed << 38 >> 38); }
+    public static ChunkPosition pack(int x, int y, int z) { return new ChunkPosition(x, y, z); }
+    public static int x(ChunkPosition position) { return position.chunkPosX; }
+    public static int y(ChunkPosition position) { return position.chunkPosY; }
+    public static int z(ChunkPosition position) { return position.chunkPosZ; }
 
     /** The cell (x, z) of a width x length schematic after the steps, and the new width and length. */
     public static int[] cell(String steps, int x, int z, int width, int length) {
@@ -112,18 +115,18 @@ public final class AutoAlign {
         List<Object> ids = new ArrayList<>();
         int total = pick(ranked, ids, terrain, false, 0);
         if (total < MIN_MATCHED * 4) pick(ranked, ids, terrain, true, total);
-        if (ids.isEmpty()) return new Plan(ids, new ArrayList<>(), new long[0]);
+        if (ids.isEmpty()) return new Plan(ids, new ArrayList<>(), new ChunkPosition[0]);
 
         Map<Object, Integer> index = new IdentityHashMap<>();
         for (int i = 0; i < ids.size(); i++) index.put(ids.get(i), i);
-        List<List<Long>> anchors = new ArrayList<>();
+        List<List<ChunkPosition>> anchors = new ArrayList<>();
         int[] seen = new int[ids.size()], stride = new int[ids.size()];
         for (int i = 0; i < ids.size(); i++) {
             anchors.add(new ArrayList<>());
             stride[i] = Math.max(1, counts.get(ids.get(i)) / MAX_ANCHORS_PER_ID);
         }
         long sampleStride = Math.max(1, cells / SAMPLES);
-        List<Long> samples = new ArrayList<>();
+        List<ChunkPosition> samples = new ArrayList<>();
         long cell = 0;
         for (int y = 0; y < h; y++) for (int z = 0; z < l; z++) for (int x = 0; x < w; x++) {
             Object block = source.block(x, y, z);
@@ -132,8 +135,8 @@ public final class AutoAlign {
             Integer k = index.get(block);
             if (k != null && seen[k]++ % stride[k] == 0) anchors.get(k).add(pack(x, y, z));
         }
-        List<long[]> anchorArrays = new ArrayList<>();
-        for (List<Long> list : anchors) anchorArrays.add(toArray(list));
+        List<ChunkPosition[]> anchorArrays = new ArrayList<>();
+        for (List<ChunkPosition> list : anchors) anchorArrays.add(toArray(list));
         return new Plan(ids, anchorArrays, toArray(samples));
     }
 
@@ -147,31 +150,35 @@ public final class AutoAlign {
         return total;
     }
 
-    private static long[] toArray(List<Long> list) {
-        long[] result = new long[list.size()];
+    private static ChunkPosition[] toArray(List<ChunkPosition> list) {
+        ChunkPosition[] result = new ChunkPosition[list.size()];
         for (int i = 0; i < result.length; i++) result[i] = list.get(i);
         return result;
     }
 
     /** The best voted offsets per orientation; hits are the world positions of each anchor kind, in plan order. */
-    public static List<Candidate> vote(int width, int length, Plan plan, List<long[]> hits) {
+    public static List<Candidate> vote(int width, int length, Plan plan, List<ChunkPosition[]> hits) {
         List<Candidate> result = new ArrayList<>();
         for (String steps : ORIENTATIONS) {
-            Map<Long, Integer> votes = new HashMap<>();
+            Map<ChunkPosition, Integer> votes = new HashMap<>();
             for (int k = 0; k < plan.anchors.size(); k++) {
-                long[] anchors = plan.anchors.get(k), found = hits.get(k);
+                ChunkPosition[] anchors = plan.anchors.get(k), found = hits.get(k);
                 if (anchors.length == 0 || found.length == 0) continue;
                 int stride = Math.max(1, (int) ((long) anchors.length * found.length / MAX_PAIRS_PER_ID) + 1);
                 for (int a = 0; a < anchors.length; a += stride) {
                     int[] moved = cell(steps, x(anchors[a]), z(anchors[a]), width, length);
                     int ay = y(anchors[a]);
-                    for (long hit : found) votes.merge(pack(x(hit) - moved[0], y(hit) - ay, z(hit) - moved[1]), 1, Integer::sum);
+                    for (ChunkPosition hit : found) {
+                        long offsetY = (long) y(hit) - ay;
+                        if (offsetY <= Integer.MIN_VALUE || offsetY >= Integer.MAX_VALUE) continue;
+                        votes.merge(pack(x(hit) - moved[0], (int) offsetY, z(hit) - moved[1]), 1, Integer::sum);
+                    }
                 }
             }
-            List<Map.Entry<Long, Integer>> top = new ArrayList<>(votes.entrySet());
+            List<Map.Entry<ChunkPosition, Integer>> top = new ArrayList<>(votes.entrySet());
             top.sort((a, b) -> b.getValue() - a.getValue());
             for (int i = 0; i < Math.min(PER_ORIENTATION, top.size()); i++) {
-                long key = top.get(i).getKey();
+                ChunkPosition key = top.get(i).getKey();
                 result.add(new Candidate(steps, x(key), y(key), z(key), top.get(i).getValue()));
             }
         }
@@ -182,10 +189,12 @@ public final class AutoAlign {
     /** How many sampled schematic blocks the world has at the candidate's positions. */
     public static Result score(Source source, Target target, Plan plan, Candidate candidate) {
         int matched = 0, checked = 0;
-        for (long sample : plan.samples) {
+        for (ChunkPosition sample : plan.samples) {
             int[] moved = cell(candidate.steps, x(sample), z(sample), source.width(), source.length());
-            int wx = candidate.x + moved[0], wy = candidate.y + y(sample), wz = candidate.z + moved[1];
-            if (wy < 0 || wy > 255 || !target.loaded(wx, wz)) continue;
+            long worldY = (long) candidate.y + y(sample);
+            if (worldY <= Integer.MIN_VALUE || worldY >= Integer.MAX_VALUE) continue;
+            int wx = candidate.x + moved[0], wy = (int) worldY, wz = candidate.z + moved[1];
+            if (!target.loaded(wx, wy, wz)) continue;
             checked++;
             if (target.block(wx, wy, wz) == source.block(x(sample), y(sample), z(sample))) matched++;
         }

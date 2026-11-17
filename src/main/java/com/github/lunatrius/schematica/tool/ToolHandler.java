@@ -13,6 +13,7 @@ import net.minecraft.world.World;
 
 import com.github.lunatrius.schematica.SchematicaPlus;
 import com.github.lunatrius.schematica.api.SchematicRegion;
+import com.github.lunatrius.schematica.compat.CubicChunks;
 import com.github.lunatrius.schematica.client.gui.GuiConfirmAction;
 import com.github.lunatrius.schematica.client.gui.framework.UiTranslations;
 import com.github.lunatrius.schematica.client.projects.SchematicProjects;
@@ -132,6 +133,7 @@ public class ToolHandler {
             schematic.getWidth(), schematic.getHeight(), schematic.getLength(), null, 0, null, 0,
             ConfigurationHandler.pasteWithoutUpdates,
             ConfigurationHandler.pasteReplaceBehavior);
+        job.validate(player.worldObj);
         job.capture(schematic.getSchematic(), schematic.isPastingBlockNBT,
             schematic.isRenderingEntities && !ConfigurationHandler.pasteIgnoreEntities,
             ConfigurationHandler.pasteRenderLayersOnly ? schematic.renderBounds() : null,
@@ -157,6 +159,7 @@ public class ToolHandler {
      * to any other server; onSuccess runs on the client thread.
      */
     private static void submit(EntityPlayer player, WorldEditJob job, Runnable onSuccess) {
+        job.validate(player.worldObj);
         MinecraftServer server = Minecraft.getMinecraft().getIntegratedServer();
         boolean commands = ConfigurationHandler.pasteUsingCommandsInSp && job.kind == WorldEditJob.Kind.PASTE;
         if (server != null && !commands) {
@@ -231,10 +234,15 @@ public class ToolHandler {
 
     /** PositionUtils.getClampedBox: the parts of the boxes inside the render layer range and world height. */
     static List<SchematicRegion> clampToLayers(List<SchematicRegion> boxes) {
+        return clampToLayers(boxes, Minecraft.getMinecraft().theWorld);
+    }
+
+    static List<SchematicRegion> clampToLayers(List<SchematicRegion> boxes, World world) {
         RenderLayerRange range = RenderLayerSettings.RANGE;
         List<SchematicRegion> clamped = new ArrayList<>();
         for (SchematicRegion box : boxes) {
-            long[] min = {box.minX, Math.max(0, box.minY), box.minZ}, max = {box.maxX, Math.min(255, box.maxY), box.maxZ};
+            long[] min = {box.minX, Math.max(CubicChunks.minHeight(world), box.minY), box.minZ},
+                max = {box.maxX, Math.min(CubicChunks.maxHeight(world) - 1, box.maxY), box.maxZ};
             int axis = range.axis().ordinal();
             min[axis] = Math.max(min[axis], range.minimum());
             max[axis] = Math.min(max[axis], range.maximum());
@@ -283,7 +291,7 @@ public class ToolHandler {
                 placement.getWidth(), placement.getHeight(), placement.getLength(), Blocks.air, 0, null, 0);
             job.capture(placement.getSchematic(), false, false);
             job.deletion = mode;
-            job.restrict((x, y, z) -> y >= 0 && y < 256 && RenderLayerSettings.RANGE.contains(x, y, z));
+            job.restrict((x, y, z) -> CubicChunks.containsY(p.worldObj, y) && RenderLayerSettings.RANGE.contains(x, y, z));
             job.removeEntitiesIn(clampToLayers(placement.enabledRegionBounds()));
             submit(p, job, null);
         });

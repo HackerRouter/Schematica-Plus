@@ -2,6 +2,7 @@ package com.github.lunatrius.schematica.client.verifier;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.TreeSet;
 import java.util.Arrays;
 import java.util.concurrent.CancellationException;
 import java.util.BitSet;
@@ -66,6 +67,7 @@ public final class VerificationScan {
     public interface Reader {
         boolean included(int x, int y, int z);
         boolean loaded(int chunkX, int chunkZ);
+        default boolean loaded(int chunkX, int sectionY, int chunkZ) { return loaded(chunkX, chunkZ); }
         State expected(int x, int y, int z);
         State found(int worldX, int worldY, int worldZ);
         /** An existing block that is not an extra block where the schematic has air (ignoreExistingFluids, ignorable blocks). */
@@ -95,7 +97,7 @@ public final class VerificationScan {
         this.x = x; this.y = y; this.z = z; this.width = bounds[3] - bounds[0]; this.length = bounds[5] - bounds[2];
         this.bounds = bounds.clone();
         total = (bounds[3] - bounds[0]) * (bounds[4] - bounds[1]) * (bounds[5] - bounds[2]);
-        if (total > 0) SchematicLimits.worldBounds((long) x + bounds[0], (long) y + bounds[1], (long) z + bounds[2],
+        if (total > 0) SchematicLimits.coordinateBounds((long) x + bounds[0], (long) y + bounds[1], (long) z + bounds[2],
             (long) x + bounds[3] - 1, (long) y + bounds[4] - 1, (long) z + bounds[5] - 1);
         cells = new int[total];
         minChunkX = (x + bounds[0]) >> 4;
@@ -189,7 +191,7 @@ public final class VerificationScan {
                 if (attempts-- <= 0 || pending.isEmpty()) break;
                 active = pending.remove();
             }
-            if (active.section < 0) active.beginSection();
+            if (active.section == Integer.MIN_VALUE) active.beginSection();
             Part part = new Part(active, count);
             Boolean loaded = null;
             while (count < capacity && active.cursor < active.end && System.nanoTime() < deadline) {
@@ -200,7 +202,7 @@ public final class VerificationScan {
                 try {
                     if (!reader.included(sx, sy, sz)) statuses[count] = -1;
                     else {
-                        if (loaded == null) loaded = reader.loaded(active.chunkX, active.chunkZ);
+                        if (loaded == null) loaded = reader.loaded(active.chunkX, active.section, active.chunkZ);
                         if (!loaded) break;
                         part.needsChunk = true;
                         State expected = Objects.requireNonNull(reader.expected(sx, sy, sz));
@@ -221,8 +223,8 @@ public final class VerificationScan {
             part.end = count;
             if (part.end > part.start) { captured.add(part); held.add(active); }
             if (active.cursor == active.end) {
-                active.section = -1;
-                if (active.sections == 0) active = null;
+                active.section = Integer.MIN_VALUE;
+                if (active.sections.isEmpty()) active = null;
             } else {
                 if (!held.contains(active)) pending.add(active);
                 active = null;
@@ -238,13 +240,13 @@ public final class VerificationScan {
         if (result.batch != inFlight || inFlight == null) return false;
         Set<Work> invalid = new HashSet<>();
         for (Part part : captured) if (part.work.version != part.version
-            || part.needsChunk && !reader.loaded(part.work.chunkX, part.work.chunkZ)) invalid.add(part.work);
+            || part.needsChunk && !reader.loaded(part.work.chunkX, part.section, part.work.chunkZ)) invalid.add(part.work);
         int[] ids = new int[result.pairs.size()];
         boolean applied = false;
         for (Part part : captured) {
             if (invalid.contains(part.work)) {
-                part.work.sections |= 1 << part.section;
-                part.work.section = -1;
+                part.work.sections.add(part.section);
+                part.work.section = Integer.MIN_VALUE;
                 continue;
             }
             active = part.work;
@@ -270,15 +272,15 @@ public final class VerificationScan {
     void cancelBatch() {
         if (inFlight == null) return;
         for (Part part : captured) {
-            part.work.sections |= 1 << part.section;
-            part.work.section = -1;
+            part.work.sections.add(part.section);
+            part.work.section = Integer.MIN_VALUE;
         }
         releaseCaptured();
     }
 
     private void releaseCaptured() {
         for (Work work : held) {
-            if (work.section >= 0 || work.sections != 0) pending.add(work);
+            if (work.section != Integer.MIN_VALUE || !work.sections.isEmpty()) pending.add(work);
             else work.queued = false;
         }
         active = null; inFlight = null; captured.clear(); held.clear();
@@ -313,11 +315,11 @@ public final class VerificationScan {
         int firstX = Math.max(minX >> 4, minChunkX), firstZ = Math.max(minZ >> 4, minChunkZ);
         int lastX = Math.min(maxX >> 4, minChunkX + chunks.size() / chunkColumns - 1);
         int lastZ = Math.min(maxZ >> 4, minChunkZ + chunkColumns - 1);
-        int mask = 0;
-        for (int sy = Math.max(minY, y + bounds[1]) >> 4; sy <= (Math.min(maxY, y + bounds[4] - 1) >> 4); sy++) mask |= 1 << sy;
+        Set<Integer> mask = new TreeSet<>();
+        for (int sy = Math.max(minY, y + bounds[1]) >> 4; sy <= (Math.min(maxY, y + bounds[4] - 1) >> 4); sy++) mask.add(sy);
         for (int cx = firstX; cx <= lastX; cx++) for (int cz = firstZ; cz <= lastZ; cz++) {
             Work chunk = chunks.get((cx - minChunkX) * chunkColumns + cz - minChunkZ);
-            chunk.sections |= mask;
+            chunk.sections.addAll(mask);
             chunk.version++;
             if (!chunk.queued) { chunk.queued = true; pending.add(chunk); }
         }
@@ -456,7 +458,8 @@ public final class VerificationScan {
 
     private final class Work {
         final int chunkX, chunkZ, minX, minZ, width, length, volume;
-        int cursor, end, errors, sections, section = -1;
+        int cursor, end, errors, section = Integer.MIN_VALUE;
+        final TreeSet<Integer> sections = new TreeSet<>();
         long version;
         boolean queued = true;
         Work(int cx, int cz) {
@@ -466,15 +469,14 @@ public final class VerificationScan {
             width = Math.min(bounds[3], (cx << 4) + 16 - x) - minX;
             length = Math.min(bounds[5], (cz << 4) + 16 - z) - minZ;
             volume = width * length * (bounds[4] - bounds[1]);
-            for (int sy = (y + bounds[1]) >> 4; sy <= ((y + bounds[4] - 1) >> 4); sy++) sections |= 1 << sy;
+            for (int sy = (y + bounds[1]) >> 4; sy <= ((y + bounds[4] - 1) >> 4); sy++) sections.add(sy);
         }
 
         void beginSection() {
-            if (sections == 0) return;
-            section = Integer.numberOfTrailingZeros(sections);
-            sections &= ~(1 << section);
+            if (sections.isEmpty()) return;
+            section = sections.pollFirst();
             cursor = width * length * (Math.max(bounds[1], (section << 4) - y) - bounds[1]);
-            end = width * length * (Math.min(bounds[4], ((section + 1) << 4) - y) - bounds[1]);
+            end = width * length * ((int) Math.min(bounds[4], ((long) section + 1) * 16 - y) - bounds[1]);
         }
     }
 }

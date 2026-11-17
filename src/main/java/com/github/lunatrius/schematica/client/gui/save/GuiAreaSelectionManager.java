@@ -34,6 +34,7 @@ import com.github.lunatrius.schematica.client.selection.AreaSelections;
 import com.github.lunatrius.schematica.client.world.Placements;
 import com.github.lunatrius.schematica.client.world.SchematicWorld;
 import com.github.lunatrius.schematica.internal.lunatriuscore.util.vector.Vector3i;
+import com.github.lunatrius.schematica.compat.CubicChunks;
 
 import org.lwjgl.input.Keyboard;
 
@@ -211,7 +212,7 @@ public final class GuiAreaSelectionManager extends UiScreen {
         EntityPlayer player = Minecraft.getMinecraft().thePlayer;
         if (player == null) return new Vector3i();
         return new Vector3i((int) Math.max(-30000000, Math.min(29999999, Math.floor(player.posX))),
-            (int) Math.max(0, Math.min(255, Math.floor(player.posY - player.yOffset))),
+            (int) Math.max(CubicChunks.minHeight(player.worldObj), Math.min(CubicChunks.maxHeight(player.worldObj) - 1, Math.floor(player.posY - player.yOffset))),
             (int) Math.max(-30000000, Math.min(29999999, Math.floor(player.posZ))));
     }
 

@@ -2,6 +2,8 @@
 // Litematica selection actions, adapted for 1.7.10 by HackerRouter, 2026.
 package com.github.lunatrius.schematica.tool;
 
+import com.github.lunatrius.schematica.compat.CubicChunks;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.world.World;
 
@@ -94,7 +96,7 @@ final class ToolSelectionActions {
         int[] budget = {2_000_000};
         for (int step = 0; step < 256; step++) {
             if (grow) for (int axis = 0; axis < 3; axis++) { min[axis]--; max[axis]++; }
-            if (min[1] < 0 || max[1] > 255) return;
+            if (!CubicChunks.containsY(Minecraft.getMinecraft().theWorld, min[1]) || !CubicChunks.containsY(Minecraft.getMinecraft().theWorld, max[1])) return;
             int empty = 0;
             for (int axis = 0; axis < 3; axis++) {
                 if (emptySlice(min, max, axis, min[axis], budget)) { min[axis]++; empty++; }

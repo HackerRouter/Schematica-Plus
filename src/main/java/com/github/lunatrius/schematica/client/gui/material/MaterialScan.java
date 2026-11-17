@@ -18,6 +18,7 @@ import com.github.lunatrius.schematica.compat.MultipartItems;
 import com.github.lunatrius.schematica.handler.ConfigurationHandler;
 import com.github.lunatrius.schematica.reference.Reference;
 import com.github.lunatrius.schematica.util.BlockGroups;
+import com.github.lunatrius.schematica.compat.CubicChunks;
 
 import cpw.mods.fml.common.registry.GameData;
 
@@ -129,7 +130,8 @@ public final class MaterialScan implements MaterialScanner {
     }
 
     static boolean verifiedChunk(Chunk chunk, int y) {
-        return y >= 0 && y < 256 && chunk != null && chunk.isChunkLoaded && !chunk.isEmpty();
+        return chunk != null && CubicChunks.containsY(chunk.worldObj, y) && chunk.isChunkLoaded
+            && (CubicChunks.enabled(chunk.worldObj) ? CubicChunks.loaded(chunk.worldObj, chunk.xPosition << 4, y, chunk.zPosition << 4) : !chunk.isEmpty());
     }
 
     public static boolean updateAvailable(List<MaterialListModel.Entry<MaterialItemKey>> entries, EntityPlayer player) {

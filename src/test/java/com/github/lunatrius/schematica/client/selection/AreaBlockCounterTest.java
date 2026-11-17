@@ -93,7 +93,7 @@ public class AreaBlockCounterTest {
         assertThrows(IllegalArgumentException.class, () -> new AreaBlockCounter<>(Collections.singletonList(
             new SchematicRegion("large", 0, 0, 0, 1023, 255, 1023))));
         assertThrows(IllegalArgumentException.class, () -> new AreaBlockCounter<>(Collections.singletonList(
-            new SchematicRegion("outside", 0, -1, 0, 2, 3, 4))));
+            new SchematicRegion("outside", 0, Integer.MIN_VALUE, 0, 2, 3, 4))));
     }
 
     @Test public void xAndZLayerFiltersCanProduceEmptyResults() {

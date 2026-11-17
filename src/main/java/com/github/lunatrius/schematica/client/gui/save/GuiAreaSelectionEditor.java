@@ -43,6 +43,7 @@ import com.github.lunatrius.schematica.client.selection.AreaSelectionLibrary.Box
 import com.github.lunatrius.schematica.client.selection.AreaSelections;
 import com.github.lunatrius.schematica.handler.VisualSettings;
 import com.github.lunatrius.schematica.internal.lunatriuscore.util.vector.Vector3i;
+import com.github.lunatrius.schematica.compat.CubicChunks;
 
 import org.lwjgl.input.Keyboard;
 
@@ -172,7 +173,7 @@ public final class GuiAreaSelectionEditor extends UiScreen {
             final int component = axis;
             originAxes[axis] = originControls.add(new UiLabel(() -> "XYZ".charAt(component) + ":"));
             UiIntegerField field = originControls.add(new UiIntegerField(fontRendererObj, 0,
-                axis == 1 ? 0 : -30000000, axis == 1 ? 255 : 29999999, value -> {
+                axis == 1 ? CubicChunks.minHeight(Minecraft.getMinecraft().theWorld) : -30000000, axis == 1 ? CubicChunks.maxHeight(Minecraft.getMinecraft().theWorld) - 1 : 29999999, value -> {
                     if (syncingOrigin || !manualOrigin()) return;
                     change(() -> {
                         Vector3i point = area.manualOrigin();

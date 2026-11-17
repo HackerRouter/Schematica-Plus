@@ -375,7 +375,7 @@ public final class AreaSelectionLibrary {
     }
 
     private static void checkPoint(Vector3i point) {
-        SchematicLimits.worldBounds(point.x, point.y, point.z, point.x, point.y, point.z);
+        SchematicLimits.coordinateBounds(point.x, point.y, point.z, point.x, point.y, point.z);
     }
 
     public JsonObject toJson() {

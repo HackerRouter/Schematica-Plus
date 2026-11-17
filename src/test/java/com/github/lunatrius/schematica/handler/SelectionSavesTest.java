@@ -38,7 +38,7 @@ public class SelectionSavesTest {
     @Test public void emptyOrInvalidSelectionsAreRejected() {
         assertNull(SelectionSaves.selection(new MessageSaveSelection("empty", Collections.emptyList(), SchematicOrigin.ZERO)));
         assertNull(SelectionSaves.selection(new MessageSaveSelection("deep", Collections.singletonList(
-            new SchematicRegion("box", 0, -5, 0, 1, 1, 1)), SchematicOrigin.ZERO)));
+            new SchematicRegion("box", 0, Integer.MIN_VALUE, 0, 1, 1, 1)), SchematicOrigin.ZERO)));
         ByteBuf buffer = Unpooled.buffer();
         new MessageSaveSelection("trailing", Collections.emptyList(), SchematicOrigin.ZERO).toBytes(buffer);
         buffer.writeByte(1);

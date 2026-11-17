@@ -206,7 +206,7 @@ public class WorldEditJobTest {
     @Test public void rejectsOutOfWorldPasteBeforeCapturingData() {
         UUID player = UUID.randomUUID();
         assertThrows(IllegalArgumentException.class, () -> new WorldEditJob(player, 0,
-            WorldEditJob.Kind.PASTE, 0, 255, 0, 2, 2, 2, null, 0, null, 0));
+            WorldEditJob.Kind.PASTE, 0, 255, 0, 2, 2, 2, null, 0, null, 0).validate(null));
         assertThrows(IllegalArgumentException.class, () -> new WorldEditJob(player, 0,
             WorldEditJob.Kind.PASTE, Integer.MAX_VALUE, 0, 0, 2, 2, 2, null, 0, null, 0));
         WorldEditJob job = new WorldEditJob(player, 0, WorldEditJob.Kind.PASTE, -1, 254, -1,

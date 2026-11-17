@@ -24,6 +24,7 @@ import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
 
 import com.github.lunatrius.schematica.command.CommandSchematicaPlus;
+import com.github.lunatrius.schematica.compat.CubicChunks;
 import com.github.lunatrius.schematica.nbt.NBTHelper;
 import com.github.lunatrius.schematica.network.PacketHandler;
 import com.github.lunatrius.schematica.network.message.MessageNbtData;
@@ -94,7 +95,8 @@ public final class NbtRequests {
 
     private static void answer(EntityPlayerMP player, MessageNbtRequest message) throws IOException {
         World world = player.worldObj;
-        if (!allowed(player) || !world.getChunkProvider().chunkExists(message.chunkX, message.chunkZ)) {
+        if (!allowed(player) || !CubicChunks.containsY(world, message.minY) || !CubicChunks.containsY(world, message.maxY)
+            || !world.getChunkProvider().chunkExists(message.chunkX, message.chunkZ)) {
             deny(player, message.id);
             return;
         }

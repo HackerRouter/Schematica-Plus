@@ -18,7 +18,7 @@ public final class MessageNbtRequest implements IMessage, IMessageHandler<Messag
 
     @Override public void fromBytes(ByteBuf buffer) {
         id = buffer.readInt(); chunkX = buffer.readInt(); chunkZ = buffer.readInt(); minY = buffer.readInt(); maxY = buffer.readInt();
-        if (minY < 0 || maxY > 255 || minY > maxY || buffer.isReadable()) throw new IllegalArgumentException("Invalid data request");
+        if (minY > maxY || (long) maxY - minY >= Short.MAX_VALUE || buffer.isReadable()) throw new IllegalArgumentException("Invalid data request");
     }
 
     @Override public void toBytes(ByteBuf buffer) {

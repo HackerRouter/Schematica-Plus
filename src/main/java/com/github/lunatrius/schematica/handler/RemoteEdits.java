@@ -119,6 +119,7 @@ public final class RemoteEdits {
         WorldEditJob job;
         try {
             job = WorldEditJob.read(read(upload.slices.join()), player.getUniqueID(), upload.dimension);
+            job.validate(player.worldObj);
         } catch (IOException | RuntimeException e) {
             Reference.logger.warn("Rejected an invalid remote edit from {}", player.getCommandSenderName(), e);
             if (operations.finish(upload.operation)) send(player, MessageEditStatus.rejected(upload.operation.id, "schematica.message.edit.remote_invalid"));

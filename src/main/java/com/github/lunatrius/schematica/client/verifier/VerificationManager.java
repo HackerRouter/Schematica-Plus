@@ -34,6 +34,8 @@ import com.github.lunatrius.schematica.reference.Reference;
 import com.github.lunatrius.schematica.task.TaskRegistry;
 import com.github.lunatrius.schematica.util.BlockGroups;
 import com.github.lunatrius.schematica.util.MessageException;
+import com.github.lunatrius.schematica.compat.CubicChunks;
+import com.github.lunatrius.schematica.util.SchematicLimits;
 
 import cpw.mods.fml.common.registry.GameData;
 
@@ -166,6 +168,10 @@ public final class VerificationManager {
             extraAir = ConfigurationHandler.extraAirBlocks.clone();
             bounds = bounds();
             try {
+                if (bounds[3] > bounds[0] && bounds[4] > bounds[1] && bounds[5] > bounds[2]) {
+                    SchematicLimits.worldBounds(world, (long) x + bounds[0], (long) y + bounds[1], (long) z + bounds[2],
+                        (long) x + bounds[3] - 1, (long) y + bounds[4] - 1, (long) z + bounds[5] - 1);
+                }
                 scan = new VerificationScan(x, y, z, placement.getWidth(), placement.getHeight(), placement.getLength(), bounds);
             } catch (IllegalArgumentException error) {
                 reset();
@@ -183,6 +189,9 @@ public final class VerificationManager {
                     if (!world.getChunkProvider().chunkExists(cx, cz)) return false;
                     Chunk chunk = world.getChunkFromChunkCoords(cx, cz);
                     return chunk != null && chunk.isChunkLoaded && !(chunk instanceof EmptyChunk);
+                }
+                @Override public boolean loaded(int cx, int cy, int cz) {
+                    return CubicChunks.enabled(world) ? CubicChunks.loaded(world, cx << 4, cy << 4, cz << 4) : loaded(cx, cz);
                 }
                 @Override public VerificationScan.State expected(int x, int y, int z) { return state(placement, x, y, z); }
                 @Override public VerificationScan.State found(int x, int y, int z) { return state(world, x, y, z); }

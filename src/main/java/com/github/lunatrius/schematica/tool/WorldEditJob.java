@@ -26,6 +26,7 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
+import net.minecraft.world.World;
 
 import com.github.lunatrius.schematica.api.ISchematic;
 import com.github.lunatrius.schematica.api.SchematicRegion;
@@ -73,6 +74,7 @@ public final class WorldEditJob extends WorldEditTask {
     private final SilentBlockPlacement silentPlacement;
     private int cursor, phase, entityCursor;
     private boolean metadataPassComplete;
+    private boolean worldValidated;
 
     public WorldEditJob(UUID player, int dimension, Kind kind, int x, int y, int z,
         int width, int height, int length, Block replacement, int replacementMeta, Block target, int targetMeta) {
@@ -83,7 +85,7 @@ public final class WorldEditJob extends WorldEditTask {
         int width, int height, int length, Block replacement, int replacementMeta, Block target, int targetMeta,
         boolean pasteWithoutUpdates, ReplaceBehavior replace) {
         super(player, dimension, x, y, z);
-        SchematicLimits.worldBounds(x, y, z, (long) x + width - 1, (long) y + height - 1, (long) z + length - 1);
+        SchematicLimits.coordinateBounds(x, y, z, (long) x + width - 1, (long) y + height - 1, (long) z + length - 1);
         this.kind = kind;
         this.width = width; this.height = height; this.length = length;
         this.volume = SchematicLimits.volume(width, height, length);
@@ -194,7 +196,8 @@ public final class WorldEditJob extends WorldEditTask {
             Block block = kind == Kind.PASTE ? GameData.getBlockRegistry().getObjectById(blocks[i] & 0xffff) : replacement;
             if (block != null && checked.add(block)) {
                 String name = GameData.getBlockRegistry().getNameForObject(block);
-                if (name == null || blockCommand(-30000000, 255, -30000000, name, 15).length() > 100) {
+                int checkY = Math.abs((long) y) > Math.abs((long) y + height - 1) ? y : y + height - 1;
+                if (name == null || blockCommand(-30000000, checkY, -30000000, name, 15).length() > 100) {
                     throw new MessageException("schematica.message.edit.command_too_long");
                 }
             }
@@ -528,6 +531,10 @@ public final class WorldEditJob extends WorldEditTask {
         task.update(stage, completed, total, blockCount, entityCount);
     }
 
+    @Override public void validate(World world) {
+        SchematicLimits.worldBounds(world, x, y, z, (long) x + width - 1, (long) y + height - 1, (long) z + length - 1);
+    }
+
     private boolean restoreMetadata(WorldServer world, int wx, int wy, int wz, Block block, int meta) {
         if (world.getBlock(wx, wy, wz) != block) return false;
         int stored = world.getBlockMetadata(wx, wy, wz);
@@ -546,6 +553,7 @@ public final class WorldEditJob extends WorldEditTask {
 
     /** Process one cell/entity, returning true only when all phases are finished. */
     public boolean step(WorldServer world) {
+        if (!worldValidated) { validate(world); worldValidated = true; }
         if (cancelled && phase < 2) { phase = 2; cursor = 0; }
         if (!entitiesRemoved) {
             entitiesRemoved = true;

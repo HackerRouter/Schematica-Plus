@@ -75,7 +75,7 @@ public class SelectionOperationsTest {
         library.moveSelected(area, 0, 1, 0);
         assertEquals(251, area.first().y); assertEquals(255, area.second().y);
         library.selectCorner(area, area.selectedBox(), Corner.NONE);
-        assertThrows(IllegalArgumentException.class, () -> library.moveSelected(area, 0, 1, 0));
+        assertThrows(IllegalArgumentException.class, () -> library.moveSelected(area, 30000000, 1, 0));
         assertEquals(251, area.first().y);
         library.moveSelected(area, 1, 0, -2);
         assertEquals(new Vector3i(1, 251, -2), area.first());

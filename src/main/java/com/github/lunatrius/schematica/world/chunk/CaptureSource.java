@@ -16,6 +16,7 @@ import net.minecraftforge.common.util.ForgeDirection;
 
 /** Where a save reads blocks from: the world, or the schematic placements ("Save from schematic world"). */
 public interface CaptureSource {
+    default int maxY() { return 256; }
     Block block(int x, int y, int z);
 
     int meta(int x, int y, int z);
@@ -52,7 +53,7 @@ public interface CaptureSource {
     }
 
     static boolean supportsExposed(CaptureSource source, int x, int y, int z) {
-        for (int up = y + 1; up < 256; up++) {
+        for (int up = y + 1; up < source.maxY(); up++) {
             Block block = source.block(x, up, z);
             if (needsSupport(block)) return true;
             if (!gravity(block)) return false;

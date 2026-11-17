@@ -4,6 +4,7 @@ import java.util.UUID;
 import java.util.function.Consumer;
 
 import net.minecraft.world.WorldServer;
+import net.minecraft.world.World;
 
 import com.github.lunatrius.schematica.task.TaskRegistry;
 import com.github.lunatrius.schematica.util.MessageType;
@@ -28,6 +29,7 @@ public abstract class WorldEditTask {
         this.player = player; this.dimension = dimension; this.x = x; this.y = y; this.z = z;
     }
     public abstract boolean step(WorldServer world);
+    public void validate(World world) {}
     public abstract void flushBlockChanges(WorldServer world);
     public abstract TaskRegistry.Kind taskKind();
     public abstract void publishProgress(TaskRegistry.Task task);

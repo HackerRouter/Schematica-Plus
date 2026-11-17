@@ -19,6 +19,7 @@ import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.common.MinecraftForge;
 
 import com.github.lunatrius.schematica.api.ISchematic;
+import com.github.lunatrius.schematica.compat.CubicChunks;
 import com.github.lunatrius.schematica.api.SchematicOrigin;
 import com.github.lunatrius.schematica.api.SchematicRegion;
 import com.github.lunatrius.schematica.command.CommandSchematic;
@@ -199,6 +200,13 @@ public abstract class CommonProxy {
         final CaptureSource source = container.source != null ? container.source
             : new WorldCaptureSource(container.world, getServerWorld(container.world));
 
+        if (container.source == null && container.world.isRemote && CubicChunks.enabled(container.world)) {
+            for (int section = minY >> 4; section <= (maxY >> 4); section++) {
+                if (!CubicChunks.loaded(container.world, chunkX << 4, Math.max(minY, section << 4), chunkZ << 4)) {
+                    throw new IllegalStateException("Schematic source cube is not loaded at " + chunkX + ", " + section + ", " + chunkZ);
+                }
+            }
+        }
         final int localMinX = minX < (chunkX << 4) ? 0 : (minX & 15);
         final int localMaxX = maxX > ((chunkX << 4) + 15) ? 15 : (maxX & 15);
         final int localMinZ = minZ < (chunkZ << 4) ? 0 : (minZ & 15);
@@ -313,7 +321,7 @@ public abstract class CommonProxy {
             final int minZ = Math.min(from.z, to.z);
             final int maxZ = Math.max(from.z, to.z);
 
-            SchematicLimits.worldBounds(minX, minY, minZ, maxX, maxY, maxZ);
+            SchematicLimits.worldBounds(getServerWorld(world), minX, minY, minZ, maxX, maxY, maxZ);
             final int width = SchematicLimits.dimension(minX, maxX);
             final int height = SchematicLimits.dimension(minY, maxY);
             final int length = SchematicLimits.dimension(minZ, maxZ);

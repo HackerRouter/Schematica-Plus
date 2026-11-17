@@ -23,6 +23,7 @@ import com.github.lunatrius.schematica.client.selection.AreaSelectionLibrary.Are
 import com.github.lunatrius.schematica.client.selection.AreaSelectionLibrary.Box;
 import com.github.lunatrius.schematica.client.selection.AreaSelections;
 import com.github.lunatrius.schematica.internal.lunatriuscore.util.vector.Vector3i;
+import com.github.lunatrius.schematica.compat.CubicChunks;
 
 public final class GuiSubRegionEditor extends UiScreen {
     private final AreaSelectionLibrary library = AreaSelections.library();
@@ -69,7 +70,7 @@ public final class GuiSubRegionEditor extends UiScreen {
             for (int axis = 0; axis < 3; axis++) {
                 final int component = axis;
                 root.add(new UiLabel(() -> "XYZ".charAt(component) + ":")).setBounds(x, 71 + axis * 20, 12, 20);
-                UiIntegerField field = root.add(new UiIntegerField(fontRendererObj, 0, axis == 1 ? 0 : -30000000, axis == 1 ? 255 : 29999999,
+                UiIntegerField field = root.add(new UiIntegerField(fontRendererObj, 0, axis == 1 ? CubicChunks.minHeight(Minecraft.getMinecraft().theWorld) : -30000000, axis == 1 ? CubicChunks.maxHeight(Minecraft.getMinecraft().theWorld) - 1 : 29999999,
                     value -> {
                         if (syncing) return;
                         change(() -> {

@@ -3,6 +3,7 @@ package com.github.lunatrius.schematica.network;
 import org.junit.Test;
 
 import com.github.lunatrius.schematica.network.message.MessageEditStatus;
+import com.github.lunatrius.schematica.network.message.MessageNbtRequest;
 import com.github.lunatrius.schematica.network.message.MessageEditUpload;
 import com.github.lunatrius.schematica.network.message.MessagePlacementIntent;
 
@@ -13,6 +14,20 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
 
 public class RemoteEditMessagesTest {
+    @Test public void nbtRequestsPreserveSignedHeightsAndBoundTheRequestedSpan() {
+        for (int y : new int[] {-1000000, -1, 255, 1000000}) {
+            ByteBuf buffer = Unpooled.buffer();
+            new MessageNbtRequest(7, -3, 2, y, y + 16).toBytes(buffer);
+            MessageNbtRequest read = new MessageNbtRequest();
+            read.fromBytes(buffer);
+            assertEquals(y, read.minY);
+            assertEquals(y + 16, read.maxY);
+        }
+        ByteBuf buffer = Unpooled.buffer();
+        new MessageNbtRequest(7, 0, 0, Integer.MIN_VALUE, Integer.MAX_VALUE).toBytes(buffer);
+        assertThrows(IllegalArgumentException.class, () -> new MessageNbtRequest().fromBytes(buffer));
+    }
+
     @Test public void uploadSlicesRoundTripAndRejectOversizedData() {
         ByteBuf buffer = Unpooled.buffer();
         new MessageEditUpload(42L, -1, 2, 3, new byte[] {1, 2, 3}).toBytes(buffer);

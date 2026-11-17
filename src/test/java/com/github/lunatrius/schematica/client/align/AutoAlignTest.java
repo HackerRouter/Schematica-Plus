@@ -9,6 +9,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
+import net.minecraft.world.ChunkPosition;
+
 import com.github.lunatrius.schematica.util.SchematicTransform;
 
 import org.junit.Test;
@@ -48,23 +50,24 @@ public class AutoAlignTest {
 
     @Test public void findsATurnedAndMirroredBuildAmongTerrain() {
         House house = new House();
-        for (String steps : new String[] {"", "YY", "Yx", "YYYx"}) {
-            Map<Long, Object> world = new HashMap<>();
+        for (int height : new int[] {-1000000, -16, 64, 256, 1000000}) for (String steps : new String[] {"", "YY", "Yx", "YYYx"}) {
+            Map<ChunkPosition, Object> world = new HashMap<>();
             Random random = new Random(7);
             for (int x = -40; x < 40; x++) for (int z = -40; z < 40; z++) {
                 world.put(AutoAlign.pack(x, 63, z), STONE);
                 if (random.nextInt(50) == 0) world.put(AutoAlign.pack(x, 64, z), PLANKS);
             }
-            int ox = 11, oy = 64, oz = -17;
+            int ox = 11, oy = height, oz = -17;
             for (int y = 0; y < house.height(); y++) for (int z = 0; z < house.length(); z++) for (int x = 0; x < house.width(); x++) {
                 Object block = house.block(x, y, z);
                 int[] moved = AutoAlign.cell(steps, x, z, house.width(), house.length());
-                long key = AutoAlign.pack(ox + moved[0], oy + y, oz + moved[1]);
+                ChunkPosition key = AutoAlign.pack(ox + moved[0], oy + y, oz + moved[1]);
                 if (block == null) world.remove(key);
                 else world.put(key, block);
             }
             AutoAlign.Target target = new AutoAlign.Target() {
                 @Override public Object block(int x, int y, int z) { return world.get(AutoAlign.pack(x, y, z)); }
+                @Override public boolean loaded(int x, int y, int z) { return loaded(x, z); }
                 @Override public boolean loaded(int x, int z) { return x >= -40 && x < 40 && z >= -40 && z < 40; }
             };
 
@@ -72,11 +75,11 @@ public class AutoAlignTest {
             // gold and the torch occur once each: the rarest kinds come first
             assertEquals(new HashSet<Object>(Arrays.asList(GOLD, TORCH)), new HashSet<>(plan.ids.subList(0, 2)));
             assertFalse(plan.ids.contains(STONE));
-            List<long[]> hits = new ArrayList<>();
+            List<ChunkPosition[]> hits = new ArrayList<>();
             for (Object id : plan.ids) {
-                List<Long> found = new ArrayList<>();
-                for (Map.Entry<Long, Object> entry : world.entrySet()) if (entry.getValue() == id) found.add(entry.getKey());
-                long[] array = new long[found.size()];
+                List<ChunkPosition> found = new ArrayList<>();
+                for (Map.Entry<ChunkPosition, Object> entry : world.entrySet()) if (entry.getValue() == id) found.add(entry.getKey());
+                ChunkPosition[] array = new ChunkPosition[found.size()];
                 for (int i = 0; i < array.length; i++) array[i] = found.get(i);
                 hits.add(array);
             }
