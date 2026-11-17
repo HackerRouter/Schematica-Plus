@@ -472,4 +472,83 @@ public class CoordinateLinksTest {
         CoordinateLinks.paste(CoordinateLinks.rulesFor(station + "TileEntityAirlock"), airlock, 12, 41, 10, 0);
         assertArrayEquals(new int[] {10, 40, 10}, blockPosition(airlock, "stationControllers", 0));
     }
+
+    private static NBTTagCompound quarryArea(int lowX, int lowZ, int highX, int highZ) {
+        NBTTagCompound holder = new NBTTagCompound(), area = new NBTTagCompound();
+        area.setInteger("lowX", lowX); area.setInteger("lowZ", lowZ); area.setInteger("highX", highX); area.setInteger("highZ", highZ);
+        holder.setTag("area", area);
+        return holder;
+    }
+
+    private static NBTTagCompound voidQuarry() {
+        NBTTagCompound tag = quarryArea(2, 3, 20, 9);
+        tag.setInteger(CoordinateLinks.MARKER, 0);
+        tag.setInteger("x", 0); tag.setInteger("y", 10); tag.setInteger("z", 0);
+        tag.setString("state", "RUNNING");
+        tag.setInteger("dx", 5); tag.setInteger("dy", 7); tag.setInteger("dz", 4);
+        tag.setInteger("lowerYBound", 1); tag.setInteger("upperYBound", 12);
+        NBTTagList next = new NBTTagList();
+        next.appendTag(quarryArea(21, 3, 25, 4));
+        tag.setTag("nextAreas", next);
+        return tag;
+    }
+
+    private static int[] area(NBTTagCompound holder) {
+        NBTTagCompound area = holder.getCompoundTag("area");
+        return new int[] {area.getInteger("lowX"), area.getInteger("lowZ"), area.getInteger("highX"), area.getInteger("highZ")};
+    }
+
+    private static final String EXCESS = "com.fouristhenumber.utilitiesinexcess.common.tileentities.";
+
+    @Test public void voidQuarryAreasAndCursorFollowAPasteOffTheChunkGrid() {
+        NBTTagCompound tag = voidQuarry();
+        CoordinateLinks.paste(CoordinateLinks.rulesFor(EXCESS + "TileEntityVoidQuarry"), tag, 7, 13, -5, 0);
+        assertArrayEquals(new int[] {9, -2, 27, 4}, area(tag));
+        assertArrayEquals(new int[] {28, -2, 32, -1}, area(tag.getTagList("nextAreas", 10).getCompoundTagAt(0)));
+        assertEquals(12, tag.getInteger("dx"));
+        assertEquals(10, tag.getInteger("dy"));
+        assertEquals(-1, tag.getInteger("dz"));
+        assertEquals(4, tag.getInteger("lowerYBound"));
+        assertEquals(15, tag.getInteger("upperYBound"));
+    }
+
+    @Test public void voidQuarryRestartsItsCursorInTheTurnedArea() {
+        List<CoordinateLinks.Spec> rules = CoordinateLinks.rulesFor(EXCESS + "TileEntityVoidQuarry");
+        NBTTagCompound turned = voidQuarry();
+        CoordinateLinks.transform(rules, turned, 'Y', 30, 20, 10);
+        assertArrayEquals(new int[] {0, 2, 6, 20}, area(turned));
+        assertArrayEquals(new int[] {5, 21, 6, 25}, area(turned.getTagList("nextAreas", 10).getCompoundTagAt(0)));
+        assertEquals(0, turned.getInteger("dx"));
+        assertEquals(12, turned.getInteger("dy"));
+        assertEquals(2, turned.getInteger("dz"));
+        NBTTagCompound flipped = voidQuarry();
+        CoordinateLinks.transform(rules, flipped, 'y', 30, 20, 10);
+        assertArrayEquals(new int[] {2, 3, 20, 9}, area(flipped));
+        assertEquals(7, flipped.getInteger("lowerYBound"));
+        assertEquals(18, flipped.getInteger("upperYBound"));
+        assertEquals(18, flipped.getInteger("dy"));
+        NBTTagCompound tilted = voidQuarry();
+        NBTTagCompound before = (NBTTagCompound) tilted.copy();
+        CoordinateLinks.transform(rules, tilted, 'X', 30, 20, 10);
+        assertEquals(before, tilted);
+    }
+
+    @Test public void smartPumpRestartsItsScanWhenPlacedElsewhereButNotWhenSaved() {
+        List<CoordinateLinks.Spec> rules = CoordinateLinks.rulesFor(EXCESS + "TileEntitySmartPump");
+        NBTTagCompound tag = new NBTTagCompound();
+        tag.setInteger(CoordinateLinks.MARKER, 0);
+        tag.setInteger("x", 3); tag.setInteger("y", 60); tag.setInteger("z", 3);
+        tag.setInteger("chunkX", 6); tag.setInteger("chunkZ", -2); tag.setInteger("currentY", 41);
+        tag.setByte("xInChunk", (byte) 7); tag.setByte("zInChunk", (byte) 9); tag.setByte("currentChunk", (byte) 4);
+        tag.setBoolean("finished", true);
+        NBTTagCompound unmoved = (NBTTagCompound) tag.copy();
+        CoordinateLinks.shift(rules, unmoved, 0, 0, 0);
+        assertEquals(41, unmoved.getInteger("currentY"));
+        CoordinateLinks.paste(rules, tag, 108, 60, 3, 0);
+        assertEquals(Integer.MIN_VALUE, tag.getInteger("currentY"));
+        assertEquals(0, tag.getByte("xInChunk"));
+        assertEquals(0, tag.getByte("zInChunk"));
+        assertEquals(0, tag.getByte("currentChunk"));
+        assertFalse(tag.getBoolean("finished"));
+    }
 }

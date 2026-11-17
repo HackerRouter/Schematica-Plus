@@ -49,6 +49,7 @@ public final class CoordinateLinks {
         final boolean arrays;
         final boolean relative;
         final boolean turns;
+        final char machine;
 
         Spec(String path, String x, String y, String z, boolean box, String dimension, boolean list) {
             this(path, x, y, z, box, dimension, list, false);
@@ -59,12 +60,17 @@ public final class CoordinateLinks {
             this.arrays = arrays;
             this.relative = false;
             this.turns = false;
+            this.machine = 0;
         }
 
         private Spec(Spec base, boolean relative, boolean turns) {
+            this(base, relative, turns, (char) 0);
+        }
+
+        private Spec(Spec base, boolean relative, boolean turns, char machine) {
             this.path = base.path; this.x = base.x; this.y = base.y; this.z = base.z; this.box = base.box;
             this.dimension = base.dimension; this.list = base.list; this.arrays = base.arrays; this.relative = relative;
-            this.turns = turns;
+            this.turns = turns; this.machine = machine;
         }
     }
 
@@ -171,6 +177,9 @@ public final class CoordinateLinks {
         add(galaxia + "TileStationBase", new Spec("airlocks", "x", "y", "z", false, null, true), new Spec("plugs", "x", "y", "z", false, null, true));
         add(galaxia + "TileStation", new Spec("attachments", "x", "y", "z", false, null, true));
         add(galaxia + "TileEntityAirlock", new Spec("stationControllers", "x", "y", "z", false, null, true));
+        String excess = "com.fouristhenumber.utilitiesinexcess.common.tileentities.";
+        add(excess + "TileEntityVoidQuarry", new Spec(point("", "dx", "dy", "dz", null), false, false, 'q'));
+        add(excess + "TileEntitySmartPump", new Spec(point("", "chunkX", "currentY", "chunkZ", null), false, false, 'p'));
         add("remoteio.common.tile.TileRemoteInterface", point("position", "x", "y", "z", "dimension"), quarterTurns("axisY"));
     }
 
@@ -218,7 +227,9 @@ public final class CoordinateLinks {
         if (specs.isEmpty()) return;
         int dimension = tile.hasWorldObj() && tile.getWorldObj().provider != null ? tile.getWorldObj().provider.dimensionId : 0;
         tag.setInteger(MARKER, dimension);
-        apply(specs, tag, p -> new double[] {p[0] - ox, p[1] - oy, p[2] - oz}, (char) 0);
+        List<Spec> captured = new ArrayList<>();
+        for (Spec spec : specs) if (spec.machine != 'p') captured.add(spec);
+        apply(captured, tag, p -> new double[] {p[0] - ox, p[1] - oy, p[2] - oz}, (char) 0);
     }
 
     /** Moves the links of a schematic tile whose x/y/z moves by (dx, dy, dz). */
@@ -291,6 +302,14 @@ public final class CoordinateLinks {
         int dimension = root.getInteger(MARKER);
         double[] origin = operation == 0 ? null : mapping.map(new double[] {0, 0, 0});
         for (Spec spec : specs) {
+            if (spec.machine == 'q') {
+                quarry(root, mapping, operation);
+                continue;
+            }
+            if (spec.machine == 'p') {
+                restartPump(root);
+                continue;
+            }
             if (spec.turns) {
                 if ((operation == 'x' || operation == 'z') && root.hasKey(spec.y)) root.setInteger(spec.y, (4 - (root.getInteger(spec.y) & 3)) & 3);
                 continue;
@@ -333,6 +352,53 @@ public final class CoordinateLinks {
                 if (!list) break;
             }
         }
+    }
+
+    static void restartPump(NBTTagCompound tag) {
+        if (!tag.hasKey("currentY")) return;
+        tag.setInteger("currentY", Integer.MIN_VALUE);
+        tag.setByte("xInChunk", (byte) 0);
+        tag.setByte("zInChunk", (byte) 0);
+        tag.setByte("currentChunk", (byte) 0);
+        tag.setBoolean("finished", false);
+    }
+
+    private static boolean area(NBTTagCompound holder, Mapping mapping) {
+        if (!holder.hasKey("area", 10)) return false;
+        NBTTagCompound area = holder.getCompoundTag("area");
+        double[] a = mapping.map(new double[] {area.getInteger("lowX"), 0, area.getInteger("lowZ")});
+        double[] b = mapping.map(new double[] {area.getInteger("highX"), 0, area.getInteger("highZ")});
+        area.setInteger("lowX", (int) Math.round(Math.min(a[0], b[0])));
+        area.setInteger("lowZ", (int) Math.round(Math.min(a[2], b[2])));
+        area.setInteger("highX", (int) Math.round(Math.max(a[0], b[0])));
+        area.setInteger("highZ", (int) Math.round(Math.max(a[2], b[2])));
+        return true;
+    }
+
+    private static void quarry(NBTTagCompound tag, Mapping mapping, char operation) {
+        if (!tag.hasKey("area", 10) || operation == 'X' || operation == 'Z') return;
+        if (operation != 'y') {
+            area(tag, mapping);
+            NBTTagList next = tag.getTagList("nextAreas", 10);
+            for (int i = 0; i < next.tagCount(); i++) area(next.getCompoundTagAt(i), mapping);
+        }
+        if (tag.hasKey("lowerYBound") && tag.hasKey("upperYBound")) {
+            double low = mapping.map(new double[] {0, tag.getInteger("lowerYBound"), 0})[1];
+            double high = mapping.map(new double[] {0, tag.getInteger("upperYBound"), 0})[1];
+            tag.setInteger("lowerYBound", (int) Math.round(Math.min(low, high)));
+            tag.setInteger("upperYBound", (int) Math.round(Math.max(low, high)));
+        }
+        if (operation == 0) {
+            double[] cursor = mapping.map(new double[] {tag.getInteger("dx"), tag.getInteger("dy"), tag.getInteger("dz")});
+            tag.setInteger("dx", (int) Math.round(cursor[0]));
+            tag.setInteger("dy", (int) Math.round(cursor[1]));
+            tag.setInteger("dz", (int) Math.round(cursor[2]));
+            return;
+        }
+        NBTTagCompound area = tag.getCompoundTag("area");
+        tag.setInteger("dx", area.getInteger("lowX"));
+        tag.setInteger("dy", tag.getInteger("upperYBound"));
+        tag.setInteger("dz", area.getInteger("lowZ"));
     }
 
     private static void vector(NBTTagCompound root, Spec spec, Mapping mapping, double[] origin) {
