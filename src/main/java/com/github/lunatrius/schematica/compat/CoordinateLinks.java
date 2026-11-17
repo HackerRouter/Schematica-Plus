@@ -47,6 +47,7 @@ public final class CoordinateLinks {
 
         /** x and z are int arrays holding the minimum and maximum corner. */
         final boolean arrays;
+        final boolean relative;
 
         Spec(String path, String x, String y, String z, boolean box, String dimension, boolean list) {
             this(path, x, y, z, box, dimension, list, false);
@@ -55,6 +56,12 @@ public final class CoordinateLinks {
         Spec(String path, String x, String y, String z, boolean box, String dimension, boolean list, boolean arrays) {
             this.path = path; this.x = x; this.y = y; this.z = z; this.box = box; this.dimension = dimension; this.list = list;
             this.arrays = arrays;
+            this.relative = false;
+        }
+
+        private Spec(Spec base, boolean relative) {
+            this.path = base.path; this.x = base.x; this.y = base.y; this.z = base.z; this.box = base.box;
+            this.dimension = base.dimension; this.list = base.list; this.arrays = base.arrays; this.relative = relative;
         }
     }
 
@@ -154,6 +161,9 @@ public final class CoordinateLinks {
         add("com.jaquadro.minecraft.storagedrawers.block.tile.TileEntitySlave", point("Controller", "x", "y", "z", null));
         // Extra Utilities energy nodes: the receivers they found
         add("com.rwtema.extrautils.tileentity.transfernodes.TileEntityTransferNodeEnergy", point("", "cx%d", "cy%d", "cz%d", null));
+        for (String tile : new String[] {"TileAccessHatch", "TileFluidPort", "TileReactorChamber", "TileRedstonePort", "TileThermalSensor"}) {
+            add("com.recursive_pineapple.nuclear_horizons.reactors.tile." + tile, offset("", "reactorRelX", "reactorRelY", "reactorRelZ"));
+        }
     }
 
     private CoordinateLinks() {}
@@ -162,6 +172,10 @@ public final class CoordinateLinks {
 
     private static Spec point(String path, String x, String y, String z, String dimension) {
         return new Spec(path, x, y, z, false, dimension);
+    }
+
+    private static Spec offset(String path, String x, String y, String z) {
+        return new Spec(point(path, x, y, z, null), true);
     }
 
     private static void add(String type, Spec... specs) {
@@ -263,7 +277,12 @@ public final class CoordinateLinks {
     private static void apply(List<Spec> specs, NBTTagCompound root, Mapping mapping, char operation, int destination) {
         boolean vertical = operation != 0 && "XZy".indexOf(operation) >= 0, tilting = operation == 'X' || operation == 'Z';
         int dimension = root.getInteger(MARKER);
+        double[] origin = operation == 0 ? null : mapping.map(new double[] {0, 0, 0});
         for (Spec spec : specs) {
+            if (spec.relative) {
+                if (operation != 0) vector(root, spec, mapping, origin);
+                continue;
+            }
             if (spec.list) {
                 positions(root, spec, mapping, dimension, destination);
                 continue;
@@ -298,6 +317,15 @@ public final class CoordinateLinks {
                 if (!list) break;
             }
         }
+    }
+
+    private static void vector(NBTTagCompound root, Spec spec, Mapping mapping, double[] origin) {
+        NBTTagCompound tag = spec.path.isEmpty() ? root : root.hasKey(spec.path, 10) ? root.getCompoundTag(spec.path) : null;
+        if (tag == null || !tag.hasKey(spec.x) || !tag.hasKey(spec.y) || !tag.hasKey(spec.z)) return;
+        double[] moved = mapping.map(new double[] {number(tag, spec.x), number(tag, spec.y), number(tag, spec.z)});
+        put(tag, spec.x, moved[0] - origin[0]);
+        put(tag, spec.y, moved[1] - origin[1]);
+        put(tag, spec.z, moved[2] - origin[2]);
     }
 
     private static void positions(NBTTagCompound root, Spec spec, Mapping mapping, int dimension, int destination) {

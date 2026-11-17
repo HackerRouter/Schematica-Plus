@@ -342,4 +342,46 @@ public class CoordinateLinksTest {
         assertEquals(5, slave.getCompoundTag("Controller").getInteger("z"));
         assertEquals(1, drain.getInteger("yCenter"));
     }
+
+    private static NBTTagCompound reactorPart(int rx, int ry, int rz) {
+        NBTTagCompound tag = new NBTTagCompound();
+        tag.setInteger(CoordinateLinks.MARKER, 0);
+        tag.setInteger("x", 4); tag.setInteger("y", 2); tag.setInteger("z", 1);
+        tag.setInteger("reactorRelX", rx); tag.setInteger("reactorRelY", ry); tag.setInteger("reactorRelZ", rz);
+        return tag;
+    }
+
+    private static int[] rel(NBTTagCompound tag) {
+        return new int[] {tag.getInteger("reactorRelX"), tag.getInteger("reactorRelY"), tag.getInteger("reactorRelZ")};
+    }
+
+    @Test public void nuclearHorizonsReactorOffsetsSurviveMovesAndPastes() {
+        String[] tiles = {"TileAccessHatch", "TileFluidPort", "TileReactorChamber", "TileRedstonePort", "TileThermalSensor"};
+        for (String tile : tiles) {
+            List<CoordinateLinks.Spec> rules = CoordinateLinks.rulesFor("com.recursive_pineapple.nuclear_horizons.reactors.tile." + tile);
+            assertFalse(tile, rules.isEmpty());
+            NBTTagCompound tag = reactorPart(-1, 0, 2);
+            CoordinateLinks.shift(rules, tag, 7, -3, 11);
+            assertArrayEquals(tile, new int[] {-1, 0, 2}, rel(tag));
+            CoordinateLinks.paste(rules, tag, 120, 64, -30, 0);
+            assertArrayEquals(tile, new int[] {-1, 0, 2}, rel(tag));
+            assertFalse(CoordinateLinks.local(tag));
+        }
+    }
+
+    @Test public void nuclearHorizonsReactorOffsetsTurnAsVectors() {
+        List<CoordinateLinks.Spec> rules = CoordinateLinks.rulesFor("com.recursive_pineapple.nuclear_horizons.reactors.tile.TileAccessHatch");
+        NBTTagCompound turned = reactorPart(-1, 0, 2);
+        CoordinateLinks.transform(rules, turned, 'Y', 9, 5, 7);
+        assertArrayEquals(new int[] {-2, 0, -1}, rel(turned));
+        NBTTagCompound mirrored = reactorPart(-1, 0, 2);
+        CoordinateLinks.transform(rules, mirrored, 'x', 9, 5, 7);
+        assertArrayEquals(new int[] {1, 0, 2}, rel(mirrored));
+        NBTTagCompound tilted = reactorPart(0, 1, 0);
+        CoordinateLinks.transform(rules, tilted, 'X', 9, 5, 7);
+        assertArrayEquals(new int[] {0, 0, -1}, rel(tilted));
+        NBTTagCompound unlinked = reactorPart(0, 0, 0);
+        CoordinateLinks.transform(rules, unlinked, 'Y', 9, 5, 7);
+        assertArrayEquals(new int[] {0, 0, 0}, rel(unlinked));
+    }
 }

@@ -69,6 +69,16 @@ facade material. Network inventories and installed upgrades are not building
 materials. This material counting does not add automatic AE2 part assembly to
 the printer.
 
+## Recent GTNH mod links
+
+These rules were added from source inspection of the pinned upstream commits
+below. They have unit coverage of the saved NBT only and have not yet been
+verified in a native game session.
+
+| Mod and commit | Handled state |
+| --- | --- |
+| NuclearHorizons `0229c627` | `reactorRelX/Y/Z` of access hatches, fluid ports, chambers, redstone ports and thermal sensors stay unchanged on moves and pastes and turn as vectors on rotations and mirrors. |
+
 ## Native NBT and standard tile updates
 
 The generic path preserves canonical tile NBT and, where implemented, the S35
