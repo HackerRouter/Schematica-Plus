@@ -31,6 +31,7 @@ import net.minecraft.world.World;
 import com.github.lunatrius.schematica.api.ISchematic;
 import com.github.lunatrius.schematica.api.SchematicRegion;
 import com.github.lunatrius.schematica.compat.CoordinateLinks;
+import com.github.lunatrius.schematica.compat.LiquidLogged;
 import com.github.lunatrius.schematica.nbt.ForgeMultipart;
 import com.github.lunatrius.schematica.nbt.NBTHelper;
 import com.github.lunatrius.schematica.nbt.TileEntitySnapshots;
@@ -41,6 +42,7 @@ import com.github.lunatrius.schematica.util.MessageType;
 import com.github.lunatrius.schematica.util.PlayerMessage;
 import com.github.lunatrius.schematica.util.SchematicLimits;
 import com.github.lunatrius.schematica.world.storage.RegionMask;
+import com.github.lunatrius.schematica.world.storage.SchematicFluids;
 
 import cpw.mods.fml.common.registry.GameData;
 
@@ -64,6 +66,8 @@ public final class WorldEditJob extends WorldEditTask {
     public static volatile String setblockCommand = "setblock";
     public static volatile String summonCommand = "summon";
     private final Map<Integer, NBTTagCompound> tiles = new HashMap<>();
+    private final Map<Integer, String> fluids = new HashMap<>();
+    private final List<Integer> pendingFluids = new ArrayList<>();
     private final List<NBTTagCompound> entities = new ArrayList<>();
     private final BitSet placed = new BitSet();
     private final BitSet failedBlocks = new BitSet();
@@ -126,6 +130,13 @@ public final class WorldEditJob extends WorldEditTask {
             int sx = i % width, sz = i / width % length, sy = i / width / length;
             blocks[i] = (short) GameData.getBlockRegistry().getId(source.getBlock(sx, sy, sz));
             metadata[i] = (short) source.getBlockMetadata(sx, sy, sz);
+        }
+        for (Map.Entry<Long, String> entry : source.getStoredFluids().entrySet()) {
+            long key = entry.getKey();
+            int fx = SchematicFluids.x(key), fy = SchematicFluids.y(key), fz = SchematicFluids.z(key);
+            if (fx >= width || fy >= height || fz >= length || !source.containsBlock(fx, fy, fz)) continue;
+            if (bounds != null && !inside(bounds, fx, fy, fz)) continue;
+            fluids.put(fx + width * (fz + length * fy), entry.getValue());
         }
         if (blockNBT) {
             for (TileEntity tile : source.getTileEntities()) {
@@ -268,6 +279,16 @@ public final class WorldEditJob extends WorldEditTask {
             tileList.appendTag(tile);
         }
         tag.setTag("tiles", tileList);
+        if (!fluids.isEmpty()) {
+            NBTTagList fluidList = new NBTTagList();
+            for (Map.Entry<Integer, String> entry : fluids.entrySet()) {
+                NBTTagCompound fluid = new NBTTagCompound();
+                fluid.setInteger("index", entry.getKey());
+                fluid.setString("FluidName", entry.getValue());
+                fluidList.appendTag(fluid);
+            }
+            tag.setTag("fluids", fluidList);
+        }
         NBTTagList entityList = new NBTTagList();
         for (NBTTagCompound entity : entities) entityList.appendTag(entity);
         tag.setTag("entities", entityList);
@@ -337,6 +358,15 @@ public final class WorldEditJob extends WorldEditTask {
             int index = tile.getInteger("index");
             if (index < 0 || index >= job.volume || !tile.hasKey("data", 10)) throw new IllegalArgumentException("Invalid tile entry");
             job.tiles.put(index, tile.getCompoundTag("data"));
+        }
+        NBTTagList fluidList = tag.getTagList("fluids", 10);
+        if (kind != Kind.PASTE && fluidList.tagCount() > 0) throw new IllegalArgumentException("Fluid data outside a paste");
+        for (int i = 0; i < fluidList.tagCount(); i++) {
+            NBTTagCompound fluid = fluidList.getCompoundTagAt(i);
+            int index = fluid.getInteger("index");
+            String name = fluid.getString("FluidName");
+            if (index < 0 || index >= job.volume || name.isEmpty()) throw new IllegalArgumentException("Invalid fluid entry");
+            job.fluids.put(index, name);
         }
         NBTTagList entityList = tag.getTagList("entities", 10);
         if (kind != Kind.PASTE && entityList.tagCount() > 0) throw new IllegalArgumentException("Entities outside a paste");
@@ -411,6 +441,21 @@ public final class WorldEditJob extends WorldEditTask {
     public void flushBlockChanges(WorldServer world) {
         if (silentPlacement != null) silentPlacement.flush(world, (wx, wy, wz, error) ->
             recordBlockFailure(wx - x + width * (wz - z + length * (wy - y)), error));
+        storeFluids(world);
+    }
+
+    public int storedFluidCount() { return fluids.size(); }
+
+    private void storeFluids(WorldServer world) {
+        for (int index : pendingFluids) {
+            if (failedBlocks.get(index)) continue;
+            int wx = x + index % width, wz = z + index / width % length, wy = y + index / width / length;
+            String fluid = fluids.get(index);
+            if (LiquidLogged.store(world, wx, wy, wz, fluid) || fluid == null) continue;
+            String present = LiquidLogged.fluid(world, wx, wy, wz);
+            if (!fluid.equals(present)) recordBlockFailure(index, new MessageException("schematica.message.edit.fluid_failed", wx, wy, wz, fluid));
+        }
+        pendingFluids.clear();
     }
 
     public int failedBlockCount() { return failedBlocks.cardinality(); }
@@ -647,6 +692,10 @@ public final class WorldEditJob extends WorldEditTask {
                     tile.markDirty();
                     ForgeMultipart.onPlaced(world, tile);
                 }
+            }
+            if (kind == Kind.PASTE && LiquidLogged.present()) {
+                pendingFluids.add(index);
+                if (silentPlacement == null) storeFluids(world);
             }
             placed.set(index);
             blockCount++;

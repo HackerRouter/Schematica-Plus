@@ -15,6 +15,7 @@ import net.minecraftforge.common.util.ForgeDirection;
 import com.github.lunatrius.schematica.nbt.NBTHelper;
 import com.github.lunatrius.schematica.reference.Reference;
 import com.github.lunatrius.schematica.compat.CubicChunks;
+import com.github.lunatrius.schematica.compat.LiquidLogged;
 
 /** The world being saved; block entities come from the server world when there is one (full inventories). */
 public final class WorldCaptureSource implements CaptureSource {
@@ -28,6 +29,10 @@ public final class WorldCaptureSource implements CaptureSource {
     @Override public Block block(int x, int y, int z) { return world.getBlock(x, y, z); }
 
     @Override public int meta(int x, int y, int z) { return world.getBlockMetadata(x, y, z); }
+
+    @Override public String fluid(int x, int y, int z) {
+        return LiquidLogged.fluid(serverWorld != null ? serverWorld : world, x, y, z);
+    }
 
     @Override
     public TileEntity tile(int x, int y, int z, int offsetX, int offsetY, int offsetZ) throws Exception {

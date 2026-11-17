@@ -30,6 +30,7 @@ import com.github.lunatrius.schematica.util.SchematicLimits;
 import com.github.lunatrius.schematica.world.storage.MultiRegionSchematic;
 import com.github.lunatrius.schematica.world.storage.Schematic;
 import com.github.lunatrius.schematica.world.storage.SchematicCopies;
+import com.github.lunatrius.schematica.world.storage.SchematicFluids;
 
 import cpw.mods.fml.common.registry.FMLControlledNamespacedRegistry;
 import cpw.mods.fml.common.registry.GameData;
@@ -80,6 +81,7 @@ public class SchematicAlpha extends SchematicFormat {
         for (int i = 0; i < tileEntitiesList.tagCount(); i++) {
             SchematicImport.tile(schematic, tileEntitiesList.getCompoundTagAt(i));
         }
+        SchematicFluids.read(tagCompound, schematic);
 
         NBTTagList entitiesList = tagCompound.getTagList(Names.NBT.ENTITIES, Constants.NBT.TAG_COMPOUND);
         for (int i = 0; i < entitiesList.tagCount(); i++) {
@@ -283,6 +285,7 @@ public class SchematicAlpha extends SchematicFormat {
         if (highMetadata) tagCompound.setByteArray(DATA_HIGH, metadataHigh);
         tagCompound.setTag(Names.NBT.ENTITIES, entityList);
         tagCompound.setTag(Names.NBT.TILE_ENTITIES, tileEntitiesList);
+        SchematicFluids.write(tagCompound, schematic);
         tagCompound.setTag(Names.NBT.MAPPING_SCHEMATICA, nbtMapping);
         ItemIdMaps.writeMapping(tagCompound, ItemIdMaps.CURRENT);
         NBTTagList regionEntries = regionEntries(schematic, backupWorld, includeNBT, includeEntities);

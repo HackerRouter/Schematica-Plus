@@ -2,6 +2,7 @@ package com.github.lunatrius.schematica.api;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
@@ -18,6 +19,12 @@ public interface ISchematic {
     default SchematicOrigin getOrigin() { return SchematicOrigin.ZERO; }
 
     default ISchematic getRegionSchematic(String name) { return null; }
+
+    default String getStoredFluid(int x, int y, int z) { return null; }
+
+    default boolean setStoredFluid(int x, int y, int z, String fluid) { return false; }
+
+    default Map<Long, String> getStoredFluids() { return Collections.emptyMap(); }
 
     default List<SchematicRegion> getRegions() {
         return Collections.emptyList();

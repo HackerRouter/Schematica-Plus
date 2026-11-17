@@ -3,7 +3,9 @@ package com.github.lunatrius.schematica.world.storage;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 import net.minecraft.block.Block;
@@ -42,6 +44,7 @@ public class Schematic implements ISchematic {
     private final short[][][] metadata;
     private final List<TileEntity> tileEntities = new ArrayList<>();
     private final List<Entity> entities = new ArrayList<>();
+    private final Map<Long, String> fluids = new LinkedHashMap<>();
     private final int width;
     private final int height;
     private final int length;
@@ -60,6 +63,7 @@ public class Schematic implements ISchematic {
         this.mask = checked;
         tileEntities.removeIf(tile -> !containsBlock(tile.xCoord, tile.yCoord, tile.zCoord));
         entities.removeIf(entity -> !containsBlock((int) Math.floor(entity.posX), (int) Math.floor(entity.posY), (int) Math.floor(entity.posZ)));
+        fluids.keySet().removeIf(key -> !containsBlock(SchematicFluids.x(key), SchematicFluids.y(key), SchematicFluids.z(key)));
     }
 
     public void setEmpty() {
@@ -67,6 +71,7 @@ public class Schematic implements ISchematic {
         mask = new BitSet();
         tileEntities.clear();
         entities.clear();
+        fluids.clear();
     }
 
     @Override public boolean containsBlock(int x, int y, int z) {
@@ -114,6 +119,19 @@ public class Schematic implements ISchematic {
         setBlockMetadata(x, y, z, metadata);
         return true;
     }
+
+    @Override public String getStoredFluid(int x, int y, int z) {
+        return isValid(x, y, z) ? fluids.get(SchematicFluids.key(x, y, z)) : null;
+    }
+
+    @Override public boolean setStoredFluid(int x, int y, int z, String fluid) {
+        if (!isValid(x, y, z)) return false;
+        if (fluid == null || fluid.isEmpty()) fluids.remove(SchematicFluids.key(x, y, z));
+        else fluids.put(SchematicFluids.key(x, y, z), fluid);
+        return true;
+    }
+
+    @Override public Map<Long, String> getStoredFluids() { return Collections.unmodifiableMap(fluids); }
 
     @Override
     public TileEntity getTileEntity(final int x, final int y, final int z) {

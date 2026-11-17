@@ -12,6 +12,7 @@ import com.github.lunatrius.schematica.api.SchematicOrigin;
 import com.github.lunatrius.schematica.api.SchematicRegion;
 import com.github.lunatrius.schematica.client.gui.placement.PlacementTransform;
 import com.github.lunatrius.schematica.world.storage.SchematicCopies;
+import com.github.lunatrius.schematica.world.storage.SchematicFluids;
 import com.github.lunatrius.schematica.util.SchematicLimits;
 import com.github.lunatrius.schematica.world.storage.Schematic;
 
@@ -88,6 +89,7 @@ final class RegionComposer {
             TileEntity copy = SchematicCopies.tile(tile, box.minX, box.minY, box.minZ);
             result.setTileEntity(copy.xCoord, copy.yCoord, copy.zCoord, copy);
         }
+        SchematicFluids.copyBox(source, result, box.minX, box.minY, box.minZ, box.maxX, box.maxY, box.maxZ);
         if (!region.ignoreEntities) for (Entity entity : source.getEntities()) {
             int x = (int) Math.floor(entity.posX), y = (int) Math.floor(entity.posY), z = (int) Math.floor(entity.posZ);
             for (SubRegionPlacements.Region owner : placements.regions()) if (owner.box.contains(x, y, z)) {

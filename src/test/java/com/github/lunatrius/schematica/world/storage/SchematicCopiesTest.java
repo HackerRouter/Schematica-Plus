@@ -30,6 +30,7 @@ public class SchematicCopiesTest {
                         case "setBlock": values[(int) args[0]][(int) args[1]][(int) args[2]] = (int) args[4]; return true;
                         case "getTileEntities": return tiles;
                         case "getEntities": return Collections.emptyList();
+                        case "getStoredFluids": return Collections.emptyMap();
                         default: throw new UnsupportedOperationException(method.getName());
                     }
                 });

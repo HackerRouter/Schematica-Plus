@@ -7,6 +7,7 @@ import net.minecraft.block.Block;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagList;
 import net.minecraft.tileentity.TileEntity;
 
 import com.github.lunatrius.schematica.api.ISchematic;
@@ -35,6 +36,7 @@ public class MessageDownloadChunk implements IMessage, IMessageHandler<MessageDo
     public short[][][] metadata;
     public List<TileEntity> tileEntities;
     public List<Entity> entities;
+    public NBTTagList fluids = new NBTTagList();
 
     public MessageDownloadChunk() {}
 
@@ -66,6 +68,15 @@ public class MessageDownloadChunk implements IMessage, IMessageHandler<MessageDo
                     if (tileEntity != null) {
                         this.tileEntities.add(tileEntity);
                     }
+                    final String fluid = schematic.getStoredFluid(baseX + x, baseY + y, baseZ + z);
+                    if (fluid != null) {
+                        NBTTagCompound entry = new NBTTagCompound();
+                        entry.setByte("x", (byte) x);
+                        entry.setByte("y", (byte) y);
+                        entry.setByte("z", (byte) z);
+                        entry.setString("FluidName", fluid);
+                        this.fluids.appendTag(entry);
+                    }
                 }
             }
         }
@@ -88,6 +99,13 @@ public class MessageDownloadChunk implements IMessage, IMessageHandler<MessageDo
             schematic.setTileEntity(tileEntity.xCoord, tileEntity.yCoord, tileEntity.zCoord, tileEntity);
         }
         for (Entity entity : this.entities) schematic.addEntity(entity);
+        for (int i = 0; i < this.fluids.tagCount(); i++) {
+            NBTTagCompound entry = this.fluids.getCompoundTagAt(i);
+            int x = entry.getByte("x"), y = entry.getByte("y"), z = entry.getByte("z");
+            if (x < 0 || y < 0 || z < 0 || x >= Constants.SchematicChunk.WIDTH || y >= Constants.SchematicChunk.HEIGHT
+                || z >= Constants.SchematicChunk.LENGTH) continue;
+            schematic.setStoredFluid(this.baseX + x, this.baseY + y, this.baseZ + z, entry.getString("FluidName"));
+        }
     }
 
     @Override
@@ -125,6 +143,10 @@ public class MessageDownloadChunk implements IMessage, IMessageHandler<MessageDo
                 }
             }
         }
+        if (buf.isReadable() && buf.readBoolean()) {
+            final NBTTagCompound stored = ByteBufUtils.readTag(buf);
+            this.fluids = stored == null ? new NBTTagList() : stored.getTagList("Fluids", 10);
+        }
     }
 
     @Override
@@ -159,6 +181,12 @@ public class MessageDownloadChunk implements IMessage, IMessageHandler<MessageDo
                     }
                 }
             }
+        }
+        buf.writeBoolean(this.fluids.tagCount() > 0);
+        if (this.fluids.tagCount() > 0) {
+            final NBTTagCompound stored = new NBTTagCompound();
+            stored.setTag("Fluids", this.fluids);
+            ByteBufUtils.writeTag(buf, stored);
         }
     }
 

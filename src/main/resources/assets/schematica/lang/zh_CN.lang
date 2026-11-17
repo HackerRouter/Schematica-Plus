@@ -371,6 +371,7 @@ schematica.message.edit.remote_lost=与服务器的连接已改变，编辑已�
 schematica.message.edit.tile_failed=无法在 %s, %s, %s 恢复方块实体（方块：%s；NBT ID：%s）。
 schematica.message.edit.tile_factory_failed=位于 %s, %s, %s 的方块（%s）无法创建默认方块实体。
 schematica.message.edit.block_failed=无法在 %s, %s, %s 放置方块（%s）。请检查目标区域及该方块的放置条件。
+schematica.message.edit.fluid_failed=无法恢复 %s, %s, %s 处方块中存储的流体（%s）。LiquidLogged 只能在 Y 0 到 255 之间、且能容纳流体的方块中存储流体。
 schematica.message.edit.cell_failed=位于 %s, %s, %s 的位置发生错误：%s。详情请查看日志。
 schematica.message.edit.command_failed=位于 %s, %s, %s 的位置命令失败：%s
 schematica.message.edit.entity_failed=无法粘贴 NBT ID 为 %s 的实体。

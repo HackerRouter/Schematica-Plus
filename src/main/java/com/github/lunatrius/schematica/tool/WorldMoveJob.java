@@ -18,8 +18,10 @@ import net.minecraft.world.World;
 
 import com.github.lunatrius.schematica.api.SchematicRegion;
 import com.github.lunatrius.schematica.compat.CoordinateLinks;
+import com.github.lunatrius.schematica.compat.LiquidLogged;
 import com.github.lunatrius.schematica.nbt.ForgeMultipart;
 import com.github.lunatrius.schematica.nbt.NBTHelper;
+import com.github.lunatrius.schematica.reference.Reference;
 import com.github.lunatrius.schematica.task.TaskRegistry;
 import com.github.lunatrius.schematica.util.SchematicLimits;
 import com.github.lunatrius.schematica.world.storage.RegionMask;
@@ -32,6 +34,7 @@ public final class WorldMoveJob extends WorldEditTask {
     private final BlockMoveTransaction<Cell> transaction;
     private final SilentBlockPlacement writer = new SilentBlockPlacement();
     private final List<Entity> entities = new ArrayList<>();
+    private final List<Object[]> pendingFluids = new ArrayList<>();
     private boolean capturedEntities;
     private boolean worldValidated;
 
@@ -44,7 +47,7 @@ public final class WorldMoveJob extends WorldEditTask {
         SchematicLimits.coordinateBounds(x, y, z, (long) selection.maxX + dx, (long) selection.maxY + dy, (long) selection.maxZ + dz);
         int width = selection.maxX - selection.minX + 1, height = selection.maxY - selection.minY + 1, length = selection.maxZ - selection.minZ + 1;
         mask = RegionMask.create(selection.localRegions, width, height, length);
-        transaction = new BlockMoveTransaction<>(selection.minX, selection.minY, selection.minZ, width, height, length, dx, dy, dz, mask, new Cell(Blocks.air, 0, null, null));
+        transaction = new BlockMoveTransaction<>(selection.minX, selection.minY, selection.minZ, width, height, length, dx, dy, dz, mask, new Cell(Blocks.air, 0, null, null, null));
     }
     @Override public boolean step(WorldServer world) {
         if (!worldValidated) { validate(world); worldValidated = true; }
@@ -54,10 +57,11 @@ public final class WorldMoveJob extends WorldEditTask {
                 Block block = world.getBlock(x, y, z); int meta = world.getBlockMetadata(x, y, z);
                 TileEntity tile = world.getTileEntity(x, y, z);
                 if (block.hasTileEntity(meta) && tile == null) throw new IllegalArgumentException("Missing tile entity at " + x + ", " + y + ", " + z);
-                return new Cell(block, meta, tile == null ? null : NBTHelper.writeTileEntityToCompound(tile), tile);
+                return new Cell(block, meta, tile == null ? null : NBTHelper.writeTileEntityToCompound(tile), tile, LiquidLogged.fluid(world, x, y, z));
             }
             @Override public void write(int x, int y, int z, Cell cell) {
                 writer.setBlock(world, x, y, z, cell.block, cell.meta);
+                if (LiquidLogged.present()) pendingFluids.add(new Object[] {x, y, z, cell.fluid});
                 if (cell.tag != null) {
                     NBTTagCompound tag = (NBTTagCompound) cell.tag.copy();
                     boolean restoring = transaction.phase() == BlockMoveTransaction.Phase.RESTORE_SOURCE || transaction.phase() == BlockMoveTransaction.Phase.RESTORE_TARGET;
@@ -103,7 +107,17 @@ public final class WorldMoveJob extends WorldEditTask {
         int width = selection.maxX - selection.minX + 1, length = selection.maxZ - selection.minZ + 1;
         return x >= 0 && x < width && y >= 0 && y <= selection.maxY - selection.minY && z >= 0 && z < length && mask.get(x + width * (z + length * y));
     }
-    @Override public void flushBlockChanges(WorldServer world) { writer.flush(world); }
+    @Override public void flushBlockChanges(WorldServer world) {
+        writer.flush(world);
+        for (Object[] fluid : pendingFluids) {
+            int fx = (Integer) fluid[0], fy = (Integer) fluid[1], fz = (Integer) fluid[2];
+            String name = (String) fluid[3];
+            if (!LiquidLogged.store(world, fx, fy, fz, name) && name != null) {
+                Reference.logger.warn("Could not restore the stored fluid {} at {} {} {}", name, fx, fy, fz);
+            }
+        }
+        pendingFluids.clear();
+    }
     @Override public TaskRegistry.Kind taskKind() { return TaskRegistry.Kind.MOVE; }
     @Override public boolean needsRollback() { return transaction.mutated() && transaction.phase() != BlockMoveTransaction.Phase.DONE; }
     @Override public RuntimeException failure() { return transaction.failure(); }
@@ -116,6 +130,9 @@ public final class WorldMoveJob extends WorldEditTask {
         final int meta;
         final NBTTagCompound tag;
         final TileEntity original;
-        Cell(Block block, int meta, NBTTagCompound tag, TileEntity original) { this.block = block; this.meta = meta; this.tag = tag; this.original = original; }
+        final String fluid;
+        Cell(Block block, int meta, NBTTagCompound tag, TileEntity original, String fluid) {
+            this.block = block; this.meta = meta; this.tag = tag; this.original = original; this.fluid = fluid;
+        }
     }
 }

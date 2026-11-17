@@ -21,6 +21,8 @@ public interface CaptureSource {
 
     int meta(int x, int y, int z);
 
+    default String fluid(int x, int y, int z) { return null; }
+
     /** A copy of the block entity at the position, moved by minus the offset, or null. */
     TileEntity tile(int x, int y, int z, int offsetX, int offsetY, int offsetZ) throws Exception;
 

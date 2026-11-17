@@ -30,6 +30,8 @@ import net.minecraft.world.WorldType;
 import net.minecraft.world.biome.BiomeGenBase;
 import net.minecraft.world.chunk.IChunkProvider;
 import net.minecraftforge.common.util.ForgeDirection;
+import net.minecraftforge.fluids.Fluid;
+import net.minecraftforge.fluids.FluidRegistry;
 
 import com.github.lunatrius.schematica.api.ISchematic;
 import com.github.lunatrius.schematica.api.SchematicOrigin;
@@ -49,6 +51,7 @@ import com.github.lunatrius.schematica.world.chunk.ChunkProviderSchematic;
 import com.github.lunatrius.schematica.world.schematic.BlockMetaTransform;
 import com.github.lunatrius.schematica.world.storage.SaveHandlerSchematic;
 import com.github.lunatrius.schematica.world.storage.Schematic;
+import com.github.lunatrius.schematica.world.storage.SchematicFluids;
 import com.github.lunatrius.schematica.world.storage.SchematicCopies;
 
 import com.google.gson.JsonObject;
@@ -352,6 +355,12 @@ public class SchematicWorld extends World {
         }
 
         return this.schematic.getBlock(x, y, z);
+    }
+
+    public Fluid liquidlogged$getFluid(int x, int y, int z) {
+        if (tracingRenderedBlocks && !isBlockRendered(x, y, z)) return null;
+        String name = this.schematic.getStoredFluid(x, y, z);
+        return name == null ? null : FluidRegistry.getFluid(name);
     }
 
     @Override
@@ -699,6 +708,7 @@ public class SchematicWorld extends World {
                         .getBlockMetadata(tileEntity.xCoord, tileEntity.yCoord, tileEntity.zCoord);
                     schematicFlipped.setTileEntity(tileEntity.xCoord, tileEntity.yCoord, tileEntity.zCoord, tileEntity);
                 }
+                SchematicFluids.transform(this.schematic, schematicFlipped, 'x');
                 break;
             case SOUTH: {
                 for (int y = 0; y < height; y++) {
@@ -716,6 +726,7 @@ public class SchematicWorld extends World {
                         .getBlockMetadata(tileEntity.xCoord, tileEntity.yCoord, tileEntity.zCoord);
                     schematicFlipped.setTileEntity(tileEntity.xCoord, tileEntity.yCoord, tileEntity.zCoord, tileEntity);
                 }
+                SchematicFluids.transform(this.schematic, schematicFlipped, 'z');
                 break;
             }
             case UP:
@@ -734,6 +745,7 @@ public class SchematicWorld extends World {
                         .getBlockMetadata(tileEntity.xCoord, tileEntity.yCoord, tileEntity.zCoord);
                     schematicFlipped.setTileEntity(tileEntity.xCoord, tileEntity.yCoord, tileEntity.zCoord, tileEntity);
                 }
+                SchematicFluids.transform(this.schematic, schematicFlipped, 'y');
                 break;
             default:
                 Reference.logger.debug("Incorrect direction given to flip function!");
@@ -772,6 +784,7 @@ public class SchematicWorld extends World {
                         .getBlockMetadata(tileEntity.xCoord, tileEntity.yCoord, tileEntity.zCoord);
                     schematicRotated.setTileEntity(tileEntity.xCoord, tileEntity.yCoord, tileEntity.zCoord, tileEntity);
                 }
+                SchematicFluids.transform(this.schematic, schematicRotated, 'X');
 
                 this.schematic = schematicRotated;
 
@@ -801,6 +814,7 @@ public class SchematicWorld extends World {
 
                     schematicRotated.setTileEntity(tileEntity.xCoord, tileEntity.yCoord, tileEntity.zCoord, tileEntity);
                 }
+                SchematicFluids.transform(this.schematic, schematicRotated, 'Y');
 
                 this.schematic = schematicRotated;
 
@@ -827,6 +841,7 @@ public class SchematicWorld extends World {
                         .getBlockMetadata(tileEntity.xCoord, tileEntity.yCoord, tileEntity.zCoord);
                     schematicRotated.setTileEntity(tileEntity.xCoord, tileEntity.yCoord, tileEntity.zCoord, tileEntity);
                 }
+                SchematicFluids.transform(this.schematic, schematicRotated, 'Z');
 
                 this.schematic = schematicRotated;
 

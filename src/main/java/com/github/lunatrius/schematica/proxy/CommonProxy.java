@@ -232,6 +232,7 @@ public abstract class CommonProxy {
                         final Block block = source.block(x, y, z);
                         final int metadata = source.meta(x, y, z);
                         final boolean success = schematic.setBlock(localX, localY, localZ, block, metadata);
+                        if (success) schematic.setStoredFluid(localX, localY, localZ, source.fluid(x, y, z));
 
                         if (success && block.hasTileEntity(metadata)) {
                             try {

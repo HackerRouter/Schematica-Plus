@@ -46,6 +46,7 @@ public final class SchematicCopies {
             TileEntity copy = tile(tile, box.minX, box.minY, box.minZ);
             part.setTileEntity(copy.xCoord, copy.yCoord, copy.zCoord, copy);
         }
+        SchematicFluids.copyBox(source, part, box.minX, box.minY, box.minZ, box.maxX, box.maxY, box.maxZ);
         for (Entity entity : source.getEntities()) {
             if (box.contains((int) Math.floor(entity.posX), (int) Math.floor(entity.posY), (int) Math.floor(entity.posZ))) {
                 part.addEntity(entity(entity, box.minX, box.minY, box.minZ));
@@ -67,6 +68,8 @@ public final class SchematicCopies {
             TileEntity copy = tile(tile, -dx, -dy, -dz);
             target.setTileEntity(copy.xCoord, copy.yCoord, copy.zCoord, copy);
         }
+        SchematicFluids.clearBox(target, dx, dy, dz, dx + source.getWidth() - 1, dy + source.getHeight() - 1, dz + source.getLength() - 1);
+        SchematicFluids.copy(source, target, dx, dy, dz);
         if (entities) for (Entity entity : source.getEntities()) target.addEntity(entity(entity, -dx, -dy, -dz));
     }
 

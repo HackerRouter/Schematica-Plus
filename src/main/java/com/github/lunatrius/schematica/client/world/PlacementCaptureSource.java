@@ -53,6 +53,13 @@ public final class PlacementCaptureSource implements CaptureSource {
     }
 
     @Override
+    public String fluid(int x, int y, int z) {
+        SchematicWorld placement = owner(x, y, z);
+        return placement == null ? null
+            : placement.getSchematic().getStoredFluid(x - placement.position.x, y - placement.position.y, z - placement.position.z);
+    }
+
+    @Override
     public TileEntity tile(int x, int y, int z, int offsetX, int offsetY, int offsetZ) throws Exception {
         SchematicWorld placement = owner(x, y, z);
         if (placement == null) return null;
