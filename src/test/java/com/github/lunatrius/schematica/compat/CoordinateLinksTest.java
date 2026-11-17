@@ -431,4 +431,45 @@ public class CoordinateLinksTest {
         CoordinateLinks.transform(rules, straight, 'x', 4, 3, 2);
         assertEquals(0, straight.getInteger("axisY"));
     }
+
+    private static NBTTagList blockPositions(int[]... positions) {
+        NBTTagList list = new NBTTagList();
+        for (int[] position : positions) {
+            NBTTagCompound entry = new NBTTagCompound();
+            entry.setInteger("x", position[0]); entry.setInteger("y", position[1]); entry.setInteger("z", position[2]);
+            list.appendTag(entry);
+        }
+        return list;
+    }
+
+    private static int[] blockPosition(NBTTagCompound tag, String key, int index) {
+        NBTTagCompound entry = tag.getTagList(key, Constants.NBT.TAG_COMPOUND).getCompoundTagAt(index);
+        return new int[] {entry.getInteger("x"), entry.getInteger("y"), entry.getInteger("z")};
+    }
+
+    @Test public void galaxiaStationLinksMoveAndTurnWithTheStation() {
+        String station = "com.gtnewhorizons.galaxia.registry.celestial.station.";
+        List<CoordinateLinks.Spec> rules = new java.util.ArrayList<>(CoordinateLinks.rulesFor(station + "TileStationBase"));
+        rules.addAll(CoordinateLinks.rulesFor(station + "TileStation"));
+        NBTTagCompound tag = new NBTTagCompound();
+        tag.setInteger(CoordinateLinks.MARKER, 0);
+        tag.setInteger("x", 0); tag.setInteger("y", 0); tag.setInteger("z", 0);
+        tag.setTag("airlocks", blockPositions(new int[] {2, 1, 0}, new int[] {0, 1, 3}));
+        tag.setTag("plugs", blockPositions(new int[] {1, 0, 1}));
+        tag.setTag("attachments", blockPositions(new int[] {3, 2, 3}));
+        CoordinateLinks.transform(rules, tag, 'Y', 4, 3, 4);
+        assertArrayEquals(new int[] {3, 1, 2}, blockPosition(tag, "airlocks", 0));
+        assertArrayEquals(new int[] {0, 1, 0}, blockPosition(tag, "airlocks", 1));
+        assertArrayEquals(new int[] {2, 0, 1}, blockPosition(tag, "plugs", 0));
+        assertArrayEquals(new int[] {0, 2, 3}, blockPosition(tag, "attachments", 0));
+        CoordinateLinks.paste(rules, tag, 100, 80, -50, 0);
+        assertArrayEquals(new int[] {103, 81, -48}, blockPosition(tag, "airlocks", 0));
+        assertArrayEquals(new int[] {100, 82, -47}, blockPosition(tag, "attachments", 0));
+        NBTTagCompound airlock = new NBTTagCompound();
+        airlock.setInteger(CoordinateLinks.MARKER, 0);
+        airlock.setInteger("x", 2); airlock.setInteger("y", 1); airlock.setInteger("z", 0);
+        airlock.setTag("stationControllers", blockPositions(new int[] {0, 0, 0}));
+        CoordinateLinks.paste(CoordinateLinks.rulesFor(station + "TileEntityAirlock"), airlock, 12, 41, 10, 0);
+        assertArrayEquals(new int[] {10, 40, 10}, blockPosition(airlock, "stationControllers", 0));
+    }
 }

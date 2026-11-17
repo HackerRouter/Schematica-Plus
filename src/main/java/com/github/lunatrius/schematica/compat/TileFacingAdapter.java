@@ -27,7 +27,7 @@ import com.github.lunatrius.schematica.world.schematic.BlockMetaTransform;
  * back. Blocks handled here are not also turned through their Block.rotateBlock.
  */
 final class TileFacingAdapter implements ISchematicVisualAdapter {
-    enum Kind { ORDINAL, NAME, SIDE_KEYS, SIDE_ARRAY, MASK, HORIZONTAL, ROTATION16, OFFSET, ORDINAL_ARRAY, NAMED_SIDES, YAW, SIDE_TURN, HORIZONTAL1, ARC_LAMP, PANEL, NAME_KEYS }
+    enum Kind { ORDINAL, NAME, SIDE_KEYS, SIDE_ARRAY, MASK, HORIZONTAL, ROTATION16, OFFSET, ORDINAL_ARRAY, NAMED_SIDES, YAW, SIDE_TURN, HORIZONTAL1, ARC_LAMP, PANEL, NAME_KEYS, EXTENDED_INDEX }
 
     static final class Rule {
         final Kind kind;
@@ -199,6 +199,7 @@ final class TileFacingAdapter implements ISchematicVisualAdapter {
         // Draconic teleporter stands: the placer's head yaw in degrees
         add("com.brandon3055.draconicevolution.common.tileentities.TileTeleporterStand", new Rule(Kind.YAW, "Rotation", ALL));
         // OpenComputers: yaw is horizontal, pitch UP, DOWN or NORTH (level); tilting is not representable
+        add("com.gtnewhorizons.galaxia.registry.block.GalaxiaMultiblockBase", new Rule(Kind.EXTENDED_INDEX, "facing", ALL), ordinal("placedFacing"));
         add("li.cil.oc.common.tileentity.traits.Rotatable", new Rule(Kind.ORDINAL, "oc:yaw", "Yxz"), new Rule(Kind.ORDINAL, "oc:pitch", "y"));
     }
 
@@ -269,6 +270,14 @@ final class TileFacingAdapter implements ISchematicVisualAdapter {
                     int turned = SchematicTransform.direction(operation, ForgeDirection.getOrientation(value)).ordinal();
                     data.setTag(key, tag instanceof NBTTagByte ? new NBTTagByte((byte) turned)
                         : tag instanceof NBTTagShort ? new NBTTagShort((short) turned) : new NBTTagInt(turned));
+                    break;
+                }
+                case EXTENDED_INDEX: {
+                    if (!data.hasKey(key, 99)) break;
+                    try {
+                        Integer turned = StructureLibFacing.transformIndex(data.getInteger(key), operation, false, true);
+                        if (turned != null) data.setInteger(key, turned);
+                    } catch (ReflectiveOperationException | RuntimeException ignored) {}
                     break;
                 }
                 case NAME:

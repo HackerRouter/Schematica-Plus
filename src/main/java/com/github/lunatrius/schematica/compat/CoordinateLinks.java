@@ -167,6 +167,10 @@ public final class CoordinateLinks {
         for (String tile : new String[] {"TileAccessHatch", "TileFluidPort", "TileReactorChamber", "TileRedstonePort", "TileThermalSensor"}) {
             add("com.recursive_pineapple.nuclear_horizons.reactors.tile." + tile, offset("", "reactorRelX", "reactorRelY", "reactorRelZ"));
         }
+        String galaxia = "com.gtnewhorizons.galaxia.registry.celestial.station.";
+        add(galaxia + "TileStationBase", new Spec("airlocks", "x", "y", "z", false, null, true), new Spec("plugs", "x", "y", "z", false, null, true));
+        add(galaxia + "TileStation", new Spec("attachments", "x", "y", "z", false, null, true));
+        add(galaxia + "TileEntityAirlock", new Spec("stationControllers", "x", "y", "z", false, null, true));
         add("remoteio.common.tile.TileRemoteInterface", point("position", "x", "y", "z", "dimension"), quarterTurns("axisY"));
     }
 

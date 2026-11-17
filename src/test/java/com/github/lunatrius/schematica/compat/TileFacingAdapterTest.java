@@ -299,4 +299,13 @@ public class TileFacingAdapterTest {
         turned("tconstruct.smeltery.logic.CastingChannelLogic", channel, "X");
         assertEquals("NORTH", channel.getCompoundTag("subTank_EAST").getString("side"));
     }
+
+    @Test public void galaxiaExtendedFacingIndexIsLeftAloneWithoutStructureLib() {
+        NBTTagCompound tag = new NBTTagCompound();
+        tag.setInteger("facing", 7);
+        tag.setInteger("placedFacing", 2);
+        TileFacingAdapter.apply(TileFacingAdapter.rulesFor("com.gtnewhorizons.galaxia.registry.block.GalaxiaMultiblockBase"), tag, 'Y');
+        assertEquals(7, tag.getInteger("facing"));
+        assertEquals(5, tag.getInteger("placedFacing"));
+    }
 }

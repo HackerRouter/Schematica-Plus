@@ -68,4 +68,19 @@ final class StructureLibFacing {
         return new int[] {((ForgeDirection) extendedFacing.getClass().getMethod("getDirection").invoke(extendedFacing)).ordinal(),
             (Integer) rotation.getClass().getMethod("getIndex").invoke(rotation), (Integer) flip.getClass().getMethod("getIndex").invoke(flip)};
     }
+
+    static Integer transformIndex(int index, char op, boolean allowVerticalFlip, boolean allowFlip) throws ReflectiveOperationException {
+        Class<?> facing;
+        try {
+            facing = Class.forName(PACKAGE + "ExtendedFacing");
+        } catch (ClassNotFoundException | LinkageError e) {
+            return null;
+        }
+        Object[] values = (Object[]) facing.getField("VALUES").get(null);
+        if (index < 0 || index >= values.length) return null;
+        int[] current = triple(facing.getMethod("byIndex", int.class).invoke(null, index));
+        int[] turned = transform(ForgeDirection.getOrientation(current[0]), current[1], current[2], op, allowVerticalFlip, allowFlip);
+        if (turned == null) return null;
+        return (Integer) facing.getMethod("getIndex").invoke(of(turned));
+    }
 }
