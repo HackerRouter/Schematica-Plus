@@ -384,4 +384,51 @@ public class CoordinateLinksTest {
         CoordinateLinks.transform(rules, unlinked, 'Y', 9, 5, 7);
         assertArrayEquals(new int[] {0, 0, 0}, rel(unlinked));
     }
+
+    private static NBTTagCompound remoteInterface(int dimension, int turns) {
+        NBTTagCompound tag = new NBTTagCompound(), position = new NBTTagCompound();
+        tag.setInteger(CoordinateLinks.MARKER, 0);
+        tag.setInteger("x", 1); tag.setInteger("y", 1); tag.setInteger("z", 1);
+        position.setInteger("dimension", dimension);
+        position.setInteger("x", 3); position.setInteger("y", 2); position.setInteger("z", 0);
+        tag.setTag("position", position);
+        tag.setInteger("axisY", turns);
+        return tag;
+    }
+
+    @Test public void remoteInterfaceTargetsFollowPastesWithinTheirDimension() {
+        List<CoordinateLinks.Spec> rules = CoordinateLinks.rulesFor("remoteio.common.tile.TileRemoteInterface");
+        NBTTagCompound local = remoteInterface(0, 1);
+        CoordinateLinks.paste(rules, local, 101, 65, 201, 7);
+        NBTTagCompound position = local.getCompoundTag("position");
+        assertEquals(103, position.getInteger("x"));
+        assertEquals(66, position.getInteger("y"));
+        assertEquals(200, position.getInteger("z"));
+        assertEquals(7, position.getInteger("dimension"));
+        assertEquals(1, local.getInteger("axisY"));
+        NBTTagCompound foreign = remoteInterface(-1, 1);
+        CoordinateLinks.paste(rules, foreign, 101, 65, 201, 7);
+        assertEquals(3, foreign.getCompoundTag("position").getInteger("x"));
+        assertEquals(-1, foreign.getCompoundTag("position").getInteger("dimension"));
+    }
+
+    @Test public void remoteInterfaceTurnsAreKeptOnRotationsAndReversedOnHorizontalMirrors() {
+        List<CoordinateLinks.Spec> rules = CoordinateLinks.rulesFor("remoteio.common.tile.TileRemoteInterface");
+        NBTTagCompound turned = remoteInterface(0, 1);
+        CoordinateLinks.transform(rules, turned, 'Y', 4, 3, 2);
+        assertEquals(1, turned.getInteger("axisY"));
+        assertEquals(1, turned.getCompoundTag("position").getInteger("x"));
+        assertEquals(3, turned.getCompoundTag("position").getInteger("z"));
+        for (char mirror : new char[] {'x', 'z'}) {
+            NBTTagCompound mirrored = remoteInterface(0, 1);
+            CoordinateLinks.transform(rules, mirrored, mirror, 4, 3, 2);
+            assertEquals(3, mirrored.getInteger("axisY"));
+        }
+        NBTTagCompound flipped = remoteInterface(0, 2);
+        CoordinateLinks.transform(rules, flipped, 'y', 4, 3, 2);
+        assertEquals(2, flipped.getInteger("axisY"));
+        NBTTagCompound straight = remoteInterface(0, 0);
+        CoordinateLinks.transform(rules, straight, 'x', 4, 3, 2);
+        assertEquals(0, straight.getInteger("axisY"));
+    }
 }

@@ -48,6 +48,7 @@ public final class CoordinateLinks {
         /** x and z are int arrays holding the minimum and maximum corner. */
         final boolean arrays;
         final boolean relative;
+        final boolean turns;
 
         Spec(String path, String x, String y, String z, boolean box, String dimension, boolean list) {
             this(path, x, y, z, box, dimension, list, false);
@@ -57,11 +58,13 @@ public final class CoordinateLinks {
             this.path = path; this.x = x; this.y = y; this.z = z; this.box = box; this.dimension = dimension; this.list = list;
             this.arrays = arrays;
             this.relative = false;
+            this.turns = false;
         }
 
-        private Spec(Spec base, boolean relative) {
+        private Spec(Spec base, boolean relative, boolean turns) {
             this.path = base.path; this.x = base.x; this.y = base.y; this.z = base.z; this.box = base.box;
             this.dimension = base.dimension; this.list = base.list; this.arrays = base.arrays; this.relative = relative;
+            this.turns = turns;
         }
     }
 
@@ -164,6 +167,7 @@ public final class CoordinateLinks {
         for (String tile : new String[] {"TileAccessHatch", "TileFluidPort", "TileReactorChamber", "TileRedstonePort", "TileThermalSensor"}) {
             add("com.recursive_pineapple.nuclear_horizons.reactors.tile." + tile, offset("", "reactorRelX", "reactorRelY", "reactorRelZ"));
         }
+        add("remoteio.common.tile.TileRemoteInterface", point("position", "x", "y", "z", "dimension"), quarterTurns("axisY"));
     }
 
     private CoordinateLinks() {}
@@ -175,7 +179,11 @@ public final class CoordinateLinks {
     }
 
     private static Spec offset(String path, String x, String y, String z) {
-        return new Spec(point(path, x, y, z, null), true);
+        return new Spec(point(path, x, y, z, null), true, false);
+    }
+
+    private static Spec quarterTurns(String key) {
+        return new Spec(point("", null, key, null, null), false, true);
     }
 
     private static void add(String type, Spec... specs) {
@@ -279,6 +287,10 @@ public final class CoordinateLinks {
         int dimension = root.getInteger(MARKER);
         double[] origin = operation == 0 ? null : mapping.map(new double[] {0, 0, 0});
         for (Spec spec : specs) {
+            if (spec.turns) {
+                if ((operation == 'x' || operation == 'z') && root.hasKey(spec.y)) root.setInteger(spec.y, (4 - (root.getInteger(spec.y) & 3)) & 3);
+                continue;
+            }
             if (spec.relative) {
                 if (operation != 0) vector(root, spec, mapping, origin);
                 continue;

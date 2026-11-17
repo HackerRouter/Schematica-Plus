@@ -78,6 +78,7 @@ verified in a native game session.
 | Mod and commit | Handled state |
 | --- | --- |
 | NuclearHorizons `0229c627` | `reactorRelX/Y/Z` of access hatches, fluid ports, chambers, redstone ports and thermal sensors stay unchanged on moves and pastes and turn as vectors on rotations and mirrors. |
+| RemoteIO `c90e11eb` | The remote interface's `position` target follows moves and pastes when it is in the source dimension; targets in other dimensions are kept. `axisY` is kept on rotations and vertical mirrors and reversed on X/Z mirrors, which matches a target moved with the interface. For a target left outside the selection, the face mapping is not adjusted and must be rotated in game. |
 
 ## Native NBT and standard tile updates
 
