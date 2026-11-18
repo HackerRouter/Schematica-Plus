@@ -51,9 +51,12 @@ public final class SharedPlacements {
 
     private SharedPlacements() {}
 
+    private static final long AWAITING_NANOS = 10L * 60 * 1_000_000_000L;
+
     private static final class Awaiting {
         final UUID player;
         final SharedPlacement placement;
+        final long created = System.nanoTime();
 
         Awaiting(UUID player, SharedPlacement placement) { this.player = player; this.placement = placement; }
     }
@@ -214,6 +217,8 @@ public final class SharedPlacements {
                 return;
             case CANCEL:
                 if (current != null && id.equals(modifiers.get(current.id))) modifiers.remove(current.id);
+                Awaiting waiting = awaiting.get(message.id);
+                if (waiting != null && waiting.player.equals(id)) awaiting.remove(message.id);
                 return;
             default:
         }
@@ -283,6 +288,10 @@ public final class SharedPlacements {
         });
     }
 
+    synchronized void expireAwaiting(long now) {
+        awaiting.values().removeIf(entry -> now - entry.created > AWAITING_NANOS);
+    }
+
     public synchronized void forget(EntityPlayer player) {
         awaiting.values().removeIf(entry -> entry.player.equals(player.getUniqueID()));
         modifiers.values().removeIf(player.getUniqueID()::equals);
@@ -291,6 +300,7 @@ public final class SharedPlacements {
     @SubscribeEvent
     public void onServerTick(TickEvent.ServerTickEvent event) {
         if (event.phase != TickEvent.Phase.END) return;
+        expireAwaiting(System.nanoTime());
         for (int i = 0; i < 64; i++) {
             Runnable task = tasks.poll();
             if (task == null) return;

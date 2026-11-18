@@ -56,6 +56,7 @@ public final class CloudClient {
     private static final class Pending {
         final Consumer<byte[]> data;
         final Runnable success;
+        Runnable failed;
         SliceAssembler slices;
         int ticks;
 
@@ -147,22 +148,37 @@ public final class CloudClient {
     }
 
     public void upload(File local, CloudPath target) {
-        jobs.add(new Job(local, target));
+        upload(local, target, null);
+    }
+
+    /** Queues a file upload; failed runs on the client thread when reading, sending or storing it fails. */
+    public void upload(File local, CloudPath target, Runnable failed) {
+        jobs.add(new Job(local, null, target, failed));
+    }
+
+    /** Queues an upload of encoded contents that exist only in memory. */
+    public void upload(byte[] contents, CloudPath target, Runnable failed) {
+        jobs.add(new Job(null, contents.clone(), target, failed));
     }
 
     private static final class Job {
         final File local;
+        final byte[] contents;
         final CloudPath target;
+        final Runnable failed;
 
-        Job(File local, CloudPath target) { this.local = local; this.target = target; }
+        Job(File local, byte[] contents, CloudPath target, Runnable failed) {
+            this.local = local; this.contents = contents; this.target = target; this.failed = failed;
+        }
     }
 
     private void start(Job job) {
         byte[] bytes;
         try {
-            bytes = Files.readAllBytes(job.local.toPath());
+            bytes = job.contents != null ? job.contents : Files.readAllBytes(job.local.toPath());
         } catch (IOException e) {
             InfoUtils.showGuiOrInGameMessage(MessageType.ERROR, "schematica.message.cloud.upload_failed", job.local.getName());
+            if (job.failed != null) job.failed.run();
             return;
         }
         int id = open(null, () -> {
@@ -172,6 +188,7 @@ public final class CloudClient {
                 Reference.logger.warn("Could not keep a copy of the uploaded schematic", e);
             }
         });
+        pending.get(id).failed = job.failed;
         int size = MessageCloudUpload.CHUNK_SIZE;
         int count = Math.max(1, (bytes.length + size - 1) / size);
         for (int index = 0; index < count; index++) {
@@ -217,7 +234,9 @@ public final class CloudClient {
         if (request == null || request.data != null) return;
         pending.remove(message.id);
         uploading.removeIf(slice -> slice.id == message.id);
-        if (message.type == MessageType.SUCCESS && request.success != null) request.success.run();
+        if (message.type == MessageType.SUCCESS) {
+            if (request.success != null) request.success.run();
+        } else if (request.failed != null) request.failed.run();
     }
 
     public void clear() {
@@ -225,8 +244,10 @@ public final class CloudClient {
             Pending request = iterator.next();
             iterator.remove();
             if (request.data != null) request.data.accept(null);
+            else if (request.failed != null) request.failed.run();
         }
         uploading.clear();
+        for (Job job : jobs) if (job.failed != null) job.failed.run();
         jobs.clear();
         catalog = null;
         requested = false;
@@ -244,7 +265,10 @@ public final class CloudClient {
             if (waiting || ++entry.getValue().ticks < TIMEOUT_TICKS) continue;
             iterator.remove();
             if (entry.getValue().data != null) entry.getValue().data.accept(null);
-            else InfoUtils.showGuiOrInGameMessage(MessageType.ERROR, "schematica.message.cloud.timed_out");
+            else {
+                InfoUtils.showGuiOrInGameMessage(MessageType.ERROR, "schematica.message.cloud.timed_out");
+                if (entry.getValue().failed != null) entry.getValue().failed.run();
+            }
         }
     }
 }

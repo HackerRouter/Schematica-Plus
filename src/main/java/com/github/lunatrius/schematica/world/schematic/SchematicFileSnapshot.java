@@ -94,6 +94,8 @@ public final class SchematicFileSnapshot {
     }
     public int size() { return bytes.length; }
 
+    public byte[] bytes() { return bytes.clone(); }
+
     public NBTTagCompound readNBT() throws IOException {
         return LitematicaNBTReader.readFromStream(new ByteArrayInputStream(bytes));
     }

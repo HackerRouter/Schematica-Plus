@@ -26,6 +26,7 @@ import com.github.lunatrius.schematica.client.world.SchematicWorld;
 import com.github.lunatrius.schematica.client.world.SharedWorlds;
 import com.github.lunatrius.schematica.cloud.CloudFile;
 import com.github.lunatrius.schematica.cloud.CloudPath;
+import com.github.lunatrius.schematica.cloud.CloudStorage;
 import com.github.lunatrius.schematica.cloud.SharedPlacement;
 import com.github.lunatrius.schematica.handler.ConfigurationHandler;
 import com.github.lunatrius.schematica.network.PacketHandler;
@@ -33,12 +34,14 @@ import com.github.lunatrius.schematica.network.message.MessageSharedRequest;
 import com.github.lunatrius.schematica.network.message.MessageSharedUpdate;
 import com.github.lunatrius.schematica.reference.Reference;
 import com.github.lunatrius.schematica.util.MessageType;
+import com.github.lunatrius.schematica.world.schematic.SchematicFileSnapshot;
 
 public final class SharedPlacementsClient {
     public static final SharedPlacementsClient INSTANCE = new SharedPlacementsClient();
 
     private final Map<UUID, SharedPlacement> placements = new LinkedHashMap<>();
     private final Map<UUID, SchematicWorld> sharing = new HashMap<>();
+    private final Map<UUID, byte[]> editedContents = new HashMap<>();
     private final Set<UUID> downloading = new HashSet<>();
     private final Set<UUID> dismissed = new HashSet<>();
     private final Set<UUID> modifying = new HashSet<>();
@@ -99,6 +102,7 @@ public final class SharedPlacementsClient {
                 for (SharedPlacement placement : placements()) unload(placement.id, false);
                 placements.clear();
                 sharing.clear();
+                editedContents.clear();
                 return;
             case ADD:
                 SharedPlacement placement;
@@ -109,6 +113,7 @@ public final class SharedPlacementsClient {
                     return;
                 }
                 SharedPlacement previous = placements.put(placement.id, placement);
+                editedContents.remove(placement.id);
                 SchematicWorld own = sharing.remove(placement.id);
                 if (own != null && Placements.loaded.contains(own)) {
                     own.sharedId = placement.id;
@@ -131,12 +136,19 @@ public final class SharedPlacementsClient {
                 return;
             case UPLOAD:
                 SchematicWorld source = sharing.get(message.id);
-                if (source == null || !Placements.loaded.contains(source)) return;
+                if (source == null || !Placements.loaded.contains(source)) {
+                    shareFailed(message.id);
+                    return;
+                }
                 try {
                     SharedPlacement requested = SharedPlacement.read(message.placement);
-                    CloudClient.INSTANCE.upload(Placements.LIBRARY.sourceOf(source).file(), requested.file());
+                    UUID id = message.id;
+                    byte[] edited = editedContents.remove(id);
+                    if (edited != null) CloudClient.INSTANCE.upload(edited, requested.file(), () -> shareFailed(id));
+                    else CloudClient.INSTANCE.upload(Placements.LIBRARY.sourceOf(source).file(), requested.file(), () -> shareFailed(id));
                 } catch (RuntimeException e) {
                     Reference.logger.warn("Could not send the file of a shared placement", e);
+                    shareFailed(message.id);
                 }
                 return;
             case ACCEPT:
@@ -150,7 +162,8 @@ public final class SharedPlacementsClient {
                 InfoUtils.showGuiOrInGameMessage(MessageType.SUCCESS, "syncmatica.success.modification_accepted");
                 return;
             case DENY:
-                if (sharing.remove(message.id) != null) return;
+                editedContents.remove(message.id);
+                if (sharing.remove(message.id) != null) { revision++; return; }
                 modifying.remove(message.id);
                 InfoUtils.showGuiOrInGameMessage(MessageType.ERROR, "syncmatica.error.modification_deny");
                 SchematicWorld denied = loaded(message.id);
@@ -169,15 +182,18 @@ public final class SharedPlacementsClient {
             InfoUtils.showGuiOrInGameMessage(MessageType.ERROR, "syncmatica.error.invalid_file");
             return;
         }
-        if (source.data().unsaved()) {
-            InfoUtils.showGuiOrInGameMessage(MessageType.ERROR, "schematica.message.shared.unsaved", file.getName());
-            return;
-        }
         UUID id = UUID.randomUUID();
         SharedPlacement placement;
+        byte[] edited = null;
         try {
             String name = world.name.isEmpty() ? file.getName() : world.name.length() > 128 ? world.name.substring(0, 128) : world.name;
-            placement = SharedWorlds.capture(world, id, name, file.getName(), CloudCache.hash(file), file.length(), dimension());
+            if (source.data().modified()) {
+                String stem = file.getName().replaceAll("(?i)\\.(schematic|litematic|schemplus|nbt|schem)$", "");
+                edited = SchematicFileSnapshot.capture(source.data().editable(), stem, author()).bytes();
+                placement = SharedWorlds.capture(world, id, name, stem + ".schemplus", CloudStorage.hash(edited), edited.length, dimension());
+            } else {
+                placement = SharedWorlds.capture(world, id, name, file.getName(), CloudCache.hash(file), file.length(), dimension());
+            }
             placement.validate();
         } catch (IOException | RuntimeException e) {
             Reference.logger.warn("Could not share {}", file, e);
@@ -185,7 +201,23 @@ public final class SharedPlacementsClient {
             return;
         }
         sharing.put(id, world);
+        if (edited != null) editedContents.put(id, edited);
         PacketHandler.INSTANCE.sendToServer(new MessageSharedRequest(MessageSharedRequest.Operation.SHARE, id, placement.write()));
+    }
+
+    private static String author() {
+        Minecraft mc = Minecraft.getMinecraft();
+        return mc.thePlayer != null ? mc.thePlayer.getCommandSenderName() : mc.getSession().getUsername();
+    }
+
+    /** A share that will not complete: the placement can be shared again and the server stops waiting for its file. */
+    private void shareFailed(UUID id) {
+        editedContents.remove(id);
+        if (sharing.remove(id) == null) return;
+        revision++;
+        if (Minecraft.getMinecraft().getNetHandler() != null) {
+            PacketHandler.INSTANCE.sendToServer(new MessageSharedRequest(MessageSharedRequest.Operation.CANCEL, id, null));
+        }
     }
 
     public void remove(UUID id) {
@@ -296,6 +328,7 @@ public final class SharedPlacementsClient {
     public void clear() {
         placements.clear();
         sharing.clear();
+        editedContents.clear();
         downloading.clear();
         dismissed.clear();
         modifying.clear();
