@@ -2354,3 +2354,7 @@ The desktop production planner launches outside Minecraft. There is no Forge co-
 ### Prism
 
 This is a Sponge plugin. Server rollback semantics belong to the Sponge deployment; a stock Forge 1.7.10 client cannot load this entry point. [Prism.java at c2fbbf8cbf](https://github.com/GTNewHorizons/Prism/blob/c2fbbf8cbf6fa9acbc9054a3c4dfcd64dc56c415/src/main/java/com/helion3/prism/Prism.java)
+
+### spark
+
+The repository contains a dedicated Forge 1.7.10 profiler module. Select the matching artifact. Its build target alone does not verify runtime coexistence. [build.gradle at 7e1fe4231d](https://github.com/GTNewHorizons/spark/blob/7e1fe4231d3b098f08ee9ebb68a551016e345a73/spark-forge1710/build.gradle)
