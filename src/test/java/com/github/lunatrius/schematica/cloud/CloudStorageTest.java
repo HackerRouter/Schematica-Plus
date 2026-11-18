@@ -42,6 +42,18 @@ public class CloudStorageTest {
         return null;
     }
 
+    @Test public void createdFoldersStayWithinTheListedDepth() throws IOException {
+        CloudPath path = CloudPath.root(CloudPath.PRIVATE);
+        for (int i = 1; i < CloudPath.MAX_DEPTH; i++) {
+            path = path.child("d" + i);
+            storage.createDirectory(path, alice, "Alice");
+        }
+        CloudPath deepest = path;
+        assertTrue(storage.catalog(alice, 0, false, false, false).directories.contains(deepest));
+        CloudPath tooDeep = deepest.child("last");
+        assertEquals("schematica.message.cloud.invalid_name", failure(() -> storage.createDirectory(tooDeep, alice, "Alice")));
+    }
+
     @Test public void storesPrivateAndPublicFilesWithOwnersAndQuota() throws IOException {
         storage.write(CloudPath.parse("private/a.schematic"), alice, "Alice", bytes(100), 1000);
         storage.write(CloudPath.parse("public/Shared/b.litematic"), alice, "Alice", bytes(200), 1000);

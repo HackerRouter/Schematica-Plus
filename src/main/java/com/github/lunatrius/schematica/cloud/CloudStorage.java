@@ -233,7 +233,7 @@ public final class CloudStorage {
 
     public synchronized void createDirectory(CloudPath path, UUID player, String playerName) throws IOException {
         if (CloudPath.SHARED.equals(path.scope)) throw new MessageException("schematica.message.cloud.no_permission");
-        if (path.isRoot()) throw new MessageException("schematica.message.cloud.invalid_name", path.name());
+        if (path.isRoot() || path.parts().size() >= CloudPath.MAX_DEPTH) throw new MessageException("schematica.message.cloud.invalid_name", path.name());
         File target = file(path, player);
         if (target.exists()) throw new MessageException("schematica.message.cloud.exists", path.name());
         parent(path, player, playerName);
