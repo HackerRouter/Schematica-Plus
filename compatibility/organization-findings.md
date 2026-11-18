@@ -334,6 +334,7 @@ Source [9af0e3a4d5](https://github.com/GTNewHorizons/BlockLimiter/tree/9af0e3a4d
 Source [a0851c029e](https://github.com/GTNewHorizons/BlockRenderer6343/tree/a0851c029e2e5a6db89eeab0ac8c38f3f7fc7767) · 33 tracked Java, Scala or Kotlin files outside test/example directories.
 
 - No direct match in the listed checks. Mod entry point: [BlockRenderer6343](https://github.com/GTNewHorizons/BlockRenderer6343/blob/a0851c029e2e5a6db89eeab0ac8c38f3f7fc7767/src/main/java/blockrenderer6343/BlockRenderer6343.java#L17). Indirect effects from dependencies, injection, configuration and server rules remain open.
+- [MultiblockHandler](https://github.com/GTNewHorizons/BlockRenderer6343/blob/a0851c029e2e5a6db89eeab0ac8c38f3f7fc7767/src/main/java/blockrenderer6343/integration/nei/MultiblockHandler.java#L41) uses `TemplateRecipeHandler`. The identified integration concerns the item or information UI.
 
 ### BloodArsenal
 
