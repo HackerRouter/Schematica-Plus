@@ -815,3 +815,9 @@ Source [ce9d90d663](https://github.com/GTNewHorizons/ForgeRelocationFMP/tree/ce9
 Source [81be9e9402](https://github.com/GTNewHorizons/Foundation/tree/81be9e940236560eb694b26d3d969beb7a8b992a) · 26 tracked Java, Scala or Kotlin files outside test/example directories.
 
 - Check world or renderer transformation alongside the schematic world and render pipeline. 1 source file(s) contain matching declarations, including [MixinChunk.Chunk](https://github.com/GTNewHorizons/Foundation/blob/81be9e940236560eb694b26d3d969beb7a8b992a/src/main/java/com/gtnewhorizons/foundation/mixins/early/client/MixinChunk.java#L21).
+
+### Freecam
+
+Source [977b0f87cb](https://github.com/GTNewHorizons/Freecam/tree/977b0f87cbcf2ddb8ac30d961d944943935b43ce) · 23 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- Check world or renderer transformation alongside the schematic world and render pipeline. 1 source file(s) contain matching declarations, including [MixinEntityRenderer.EntityRenderer](https://github.com/GTNewHorizons/Freecam/blob/977b0f87cbcf2ddb8ac30d961d944943935b43ce/src/main/java/com/caedis/freecam/mixins/early/minecraft/MixinEntityRenderer.java#L24).
