@@ -21,6 +21,12 @@ public class TextAreaModelTest {
         assertEquals(2, model.lineOf(14));
     }
 
+    @Test public void pixelsLeftOfTheTextMapToTheLineStart() {
+        TextAreaModel model = model("hello\nworld", 40);
+        assertEquals(0, model.positionAt(0, -1));
+        assertEquals(6, model.positionAt(1, -4));
+    }
+
     @Test public void longWordsBreakAnywhere() {
         TextAreaModel model = model("abcdefghij", 4);
         assertEquals(3, model.lines().size());

@@ -127,6 +127,7 @@ public final class TextAreaModel {
         for (int position = line.start; position <= line.end; position++) {
             int width = measure.applyAsInt(text.substring(line.start, position));
             if (width > pixel) {
+                if (position == line.start) return position;
                 int previous = measure.applyAsInt(text.substring(line.start, position - 1));
                 return pixel - previous < width - pixel ? position - 1 : position;
             }
