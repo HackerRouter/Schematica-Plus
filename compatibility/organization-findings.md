@@ -803,3 +803,9 @@ Source [0bfcd5cd98](https://github.com/GTNewHorizons/ForgeRelocation/tree/0bfcd5
 
 - Check preview rendering against `RendererSchematicChunk`. 2 source file(s) contain matching declarations, including [frame.renderWorldBlock](https://github.com/GTNewHorizons/ForgeRelocation/blob/0bfcd5cd98ba67a7cea3af3d727f4e2ed1a04f66/src/main/scala/mrtjp/mcframes/frame.scala#L171).
 - Check printer placement against `SchematicPrinter`. 3 source file(s) contain matching declarations, including [IFramePlacement.onItemUse](https://github.com/GTNewHorizons/ForgeRelocation/blob/0bfcd5cd98ba67a7cea3af3d727f4e2ed1a04f66/src/main/scala/mrtjp/mcframes/api/IFramePlacement.java#L33).
+
+### ForgeRelocationFMP
+
+Source [ce9d90d663](https://github.com/GTNewHorizons/ForgeRelocationFMP/tree/ce9d90d663e6bf2ca245d9d559e4ce218a3af707) · 3 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- Check printer placement against `SchematicPrinter`. 1 source file(s) contain matching declarations, including [framefmp.onItemUse](https://github.com/GTNewHorizons/ForgeRelocationFMP/blob/ce9d90d663e6bf2ca245d9d559e4ce218a3af707/src/main/scala/mrtjp/relocationfmp/framefmp.scala#L155).
