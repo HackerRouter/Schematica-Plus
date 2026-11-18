@@ -524,3 +524,10 @@ Source [6bf2bd408c](https://github.com/GTNewHorizons/CookingForBlockheads/tree/6
 Source [92cc4fd905](https://github.com/GTNewHorizons/CoreTweaks/tree/92cc4fd905fba09abf7823d7b34e9941d7ae1b4b) · 102 tracked Java, Scala or Kotlin files outside test/example directories.
 
 - Check world or renderer transformation alongside the schematic world and render pipeline. 10 source file(s) contain matching declarations, including [MixinRenderGlobal.RenderGlobal](https://github.com/GTNewHorizons/CoreTweaks/blob/92cc4fd905fba09abf7823d7b34e9941d7ae1b4b/src/main/java/makamys/coretweaks/mixin/bugfix/displaylistdelete/MixinRenderGlobal.java#L10).
+
+### CosmeticArmorReworked
+
+Source [7adf5a2147](https://github.com/GTNewHorizons/CosmeticArmorReworked/tree/7adf5a2147ebb662fa9ca63dfe84d13517c7c49d) · 21 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- Check tile serialization against `TileNBTCompat`. 1 source file(s) contain matching declarations, including [InventoryCosArmor.readFromNBT](https://github.com/GTNewHorizons/CosmeticArmorReworked/blob/7adf5a2147ebb662fa9ca63dfe84d13517c7c49d/src/main/java/lain/mods/cos/inventory/InventoryCosArmor.java#L108).
+- [InventoryCosArmor.readFromNBT](https://github.com/GTNewHorizons/CosmeticArmorReworked/blob/7adf5a2147ebb662fa9ca63dfe84d13517c7c49d/src/main/java/lain/mods/cos/inventory/InventoryCosArmor.java#L108) accesses `CosArmor.Inventory.Size`, `CosArmor.Inventory`, `Slot`, `isSkinArmor`. Compare those fields after capture, transform and restore.
