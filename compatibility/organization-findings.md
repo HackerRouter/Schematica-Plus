@@ -907,3 +907,9 @@ Source [98c96af60b](https://github.com/GTNewHorizons/GT5-Unofficial/tree/98c96af
 - [BWTileEntityContainer.onBlockPlacedBy](https://github.com/GTNewHorizons/GT5-Unofficial/blob/98c96af60bf2897654af05d038c82b3b66c105a8/src/main/java/bartworks/common/blocks/BWTileEntityContainer.java#L103) depends on placement orientation. Exercise the printer with a rotated schematic.
 - [TileEntityHeatedWaterPump.writeToNBT](https://github.com/GTNewHorizons/GT5-Unofficial/blob/98c96af60bf2897654af05d038c82b3b66c105a8/src/main/java/bartworks/common/tileentities/classic/TileEntityHeatedWaterPump.java#L71) accesses `ItemStack`, `FluidStack`, `fuel`, `maxfuel`. Compare those fields after capture, transform and restore.
 - [GTProxy.onPlayerInteraction](https://github.com/GTNewHorizons/GT5-Unofficial/blob/98c96af60bf2897654af05d038c82b3b66c105a8/src/main/java/gregtech/common/GTProxy.java#L1086) can cancel the interaction. Verify the printer on a server with the handler enabled.
+
+### GTNH-Credits
+
+Source [2b8e5dcf17](https://github.com/GTNewHorizons/GTNH-Credits/tree/2b8e5dcf17ad7fd50a55179380bc506cc04d3867) · 172 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- No direct match in the listed checks. Mod entry point: [GTNHCredits](https://github.com/GTNewHorizons/GTNH-Credits/blob/2b8e5dcf17ad7fd50a55179380bc506cc04d3867/src/main/java/net/noiraude/gtnhcredits/GTNHCredits.java#L10). Indirect effects from dependencies, injection, configuration and server rules remain open.
