@@ -2148,3 +2148,13 @@ Source [f7aeade3ff](https://github.com/GTNewHorizons/VendingMachine/tree/f7aeade
 - Check interaction events against `SchematicPrinter`. 1 source file(s) contain matching declarations, including [ClientEventHandler.onPlayerInteract](https://github.com/GTNewHorizons/VendingMachine/blob/f7aeade3ffffec9d946d683d9c30647f85fe7411/src/main/java/com/cubefury/vendingmachine/handlers/ClientEventHandler.java#L32).
 - [ClientEventHandler.onPlayerInteract](https://github.com/GTNewHorizons/VendingMachine/blob/f7aeade3ffffec9d946d683d9c30647f85fe7411/src/main/java/com/cubefury/vendingmachine/handlers/ClientEventHandler.java#L32) can cancel the interaction. Verify the printer on a server with the handler enabled.
 - [BqCondition.readFromNBT](https://github.com/GTNewHorizons/VendingMachine/blob/f7aeade3ffffec9d946d683d9c30647f85fe7411/src/main/java/com/cubefury/vendingmachine/integration/betterquesting/BqCondition.java#L39) accesses `quest`. Compare those fields after capture, transform and restore.
+
+### VillageNames
+
+Source [543dd275f8](https://github.com/GTNewHorizons/VillageNames/tree/543dd275f8daebfae71166dc9abc46ef9355691f) · 171 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- Check tile serialization against `TileNBTCompat`. 5 source file(s) contain matching declarations, including [TileEntityBanner.writeToNBT](https://github.com/GTNewHorizons/VillageNames/blob/543dd275f8daebfae71166dc9abc46ef9355691f/src/main/java/astrotibs/villagenames/banner/TileEntityBanner.java#L60).
+- Check preview rendering against `RendererSchematicChunk`. 1 source file(s) contain matching declarations, including [RenderGlazedTerracotta.renderWorldBlock](https://github.com/GTNewHorizons/VillageNames/blob/543dd275f8daebfae71166dc9abc46ef9355691f/src/main/java/astrotibs/villagenames/block/color/RenderGlazedTerracotta.java#L36).
+- Check printer placement against `SchematicPrinter`. 4 source file(s) contain matching declarations, including [BlockConcrete.onBlockPlacedBy](https://github.com/GTNewHorizons/VillageNames/blob/543dd275f8daebfae71166dc9abc46ef9355691f/src/main/java/astrotibs/villagenames/block/color/BlockConcrete.java#L87).
+- [TileEntityBanner.writeToNBT](https://github.com/GTNewHorizons/VillageNames/blob/543dd275f8daebfae71166dc9abc46ef9355691f/src/main/java/astrotibs/villagenames/banner/TileEntityBanner.java#L60) accesses `Base`, `IsStanding`, `Patterns`. Compare those fields after capture, transform and restore.
+- [BlockGlazedTerracotta.onBlockPlacedBy](https://github.com/GTNewHorizons/VillageNames/blob/543dd275f8daebfae71166dc9abc46ef9355691f/src/main/java/astrotibs/villagenames/block/color/BlockGlazedTerracotta.java#L124) depends on placement orientation. Exercise the printer with a rotated schematic.
