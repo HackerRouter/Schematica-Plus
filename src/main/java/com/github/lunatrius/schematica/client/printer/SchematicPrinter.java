@@ -467,7 +467,7 @@ public class SchematicPrinter {
         if (block == realBlock && metadata == realMetadata) {
             return !PrinterReach.remote(wx, wy, wz) && !skipped(block) && FluidPrinter.fillHolder(this.minecraft,
                 schematic.getSchematic().getStoredFluid(x, y, z), wx, wy, wz,
-                bucket -> !isBlacklisted(block, bucket) && swapToItem(player.inventory, bucket, true, true));
+                bucket -> swapToItem(player.inventory, bucket, true, true));
         }
 
         if (FluidPrinter.isFluid(block)) {
