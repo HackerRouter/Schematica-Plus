@@ -1092,3 +1092,9 @@ Source [14c9a4351e](https://github.com/GTNewHorizons/Jabba/tree/14c9a4351e240b57
 - Check printer placement against `SchematicPrinter`. 1 source file(s) contain matching declarations, including [BlockBarrel.onBlockPlacedBy](https://github.com/GTNewHorizons/Jabba/blob/14c9a4351e240b57b99862031820e5ae186695d4/src/main/java/mcp/mobius/betterbarrels/common/blocks/BlockBarrel.java#L82).
 - [BSpaceStorageHandler.writeToNBT](https://github.com/GTNewHorizons/Jabba/blob/14c9a4351e240b57b99862031820e5ae186695d4/src/main/java/mcp/mobius/betterbarrels/bspace/BSpaceStorageHandler.java#L235) accesses `version`, `maxBarrelID`, `barrelCoords`, `storages`. Compare those fields after capture, transform and restore.
 - [BlockBarrelRenderer.renderWorldBlock](https://github.com/GTNewHorizons/Jabba/blob/14c9a4351e240b57b99862031820e5ae186695d4/src/main/java/mcp/mobius/betterbarrels/client/render/BlockBarrelRenderer.java#L50) queries tile data while rendering. Preview a populated tile after saving and reopening its schematic.
+
+### JarJar
+
+Source [8b02e4ed5c](https://github.com/GTNewHorizons/JarJar/tree/8b02e4ed5c0a5368c5c1e795febb604e7fe8a850) · 35 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- No direct match in the listed checks. Mod entry point: [JarJar](https://github.com/GTNewHorizons/JarJar/blob/8b02e4ed5c0a5368c5c1e795febb604e7fe8a850/src/main/java/com/mitchej123/jarjar/JarJar.java#L12). Indirect effects from dependencies, injection, configuration and server rules remain open.
