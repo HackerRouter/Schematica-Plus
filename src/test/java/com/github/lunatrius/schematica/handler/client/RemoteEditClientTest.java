@@ -40,4 +40,22 @@ public class RemoteEditClientTest {
             } finally { buffer.release(); }
         }
     }
+
+    @Test public void stepsThatNeedFullSuccessStopOnPartialResults() throws Exception {
+        for (MessageEditStatus.State state : new MessageEditStatus.State[] {MessageEditStatus.State.PARTIAL, MessageEditStatus.State.FINISHED}) {
+            Constructor<RemoteEditClient> constructor = RemoteEditClient.class.getDeclaredConstructor();
+            constructor.setAccessible(true);
+            RemoteEditClient client = constructor.newInstance();
+            WorldEditJob job = new WorldEditJob(UUID.randomUUID(), 0, WorldEditJob.Kind.PASTE,
+                0, 64, 0, 1, 1, 1, null, 0, null, 0);
+            job.requireFinished = true;
+            AtomicInteger callbacks = new AtomicInteger();
+            client.submit(job, null, callbacks::incrementAndGet);
+            Field id = RemoteEditClient.class.getDeclaredField("id");
+            id.setAccessible(true);
+            client.status(new MessageEditStatus(id.getLong(client), state));
+            assertEquals(state == MessageEditStatus.State.FINISHED ? 1 : 0, callbacks.get());
+            assertFalse(client.busy());
+        }
+    }
 }

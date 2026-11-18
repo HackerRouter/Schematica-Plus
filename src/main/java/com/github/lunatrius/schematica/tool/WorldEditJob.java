@@ -67,6 +67,7 @@ public final class WorldEditJob extends WorldEditTask {
     public static volatile String setblockCommand = "setblock";
     public static volatile String summonCommand = "summon";
     private final Map<Integer, NBTTagCompound> tiles = new HashMap<>();
+    public boolean requireFinished;
     private final Map<Integer, String> fluids = new HashMap<>();
     private final List<Integer> pendingFluids = new ArrayList<>();
     private final List<NBTTagCompound> entities = new ArrayList<>();

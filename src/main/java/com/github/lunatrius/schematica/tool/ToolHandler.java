@@ -186,9 +186,14 @@ public class ToolHandler {
         InfoUtils.showGuiOrInGameMessage(MessageType.INFO, "litematica.message.scheduled_task_added");
     }
 
+    private static WorldEditJob required(WorldEditJob job, Runnable onSuccess) {
+        job.requireFinished = onSuccess != null;
+        return job;
+    }
+
     private static void continueWith(WorldEditJob job, Runnable next) {
         if (next != null) job.completion = outcome -> {
-            if (outcome.completed()) Minecraft.getMinecraft().func_152344_a(next);
+            if (job.requireFinished ? outcome == WorldEditTask.Outcome.FINISHED : outcome.completed()) Minecraft.getMinecraft().func_152344_a(next);
         };
     }
 
@@ -254,14 +259,14 @@ public class ToolHandler {
 
     /** Pastes a placement, as pastePlacementToWorld. */
     public static boolean paste(EntityPlayer player, SchematicWorld placement, Runnable onSuccess) {
-        return request(player, TaskRegistry.Kind.PASTE, p -> submit(p, pasteJob(p, placement), onSuccess));
+        return request(player, TaskRegistry.Kind.PASTE, p -> submit(p, required(pasteJob(p, placement), onSuccess), onSuccess));
     }
 
     /** Project replacement confirms any command-mode data omission before clearing the old area. */
     public static boolean pasteAfterClearing(EntityPlayer player, SchematicWorld placement,
         List<SchematicRegion> boxes, Runnable onSuccess) {
         return request(player, TaskRegistry.Kind.PASTE, p -> {
-            WorldEditJob job = pasteJob(p, placement);
+            WorldEditJob job = required(pasteJob(p, placement), onSuccess);
             List<SchematicRegion> clear = new ArrayList<>(boxes);
             Runnable start = () -> deleteBoxes(p, clear, () -> request(p, TaskRegistry.Kind.PASTE, current -> submit(current, job, onSuccess)));
             MinecraftServer server = Minecraft.getMinecraft().getIntegratedServer();
@@ -276,7 +281,7 @@ public class ToolHandler {
     public static boolean deleteBoxes(EntityPlayer player, List<SchematicRegion> boxes, Runnable onSuccess) {
         return request(player, TaskRegistry.Kind.DELETE,
             p -> {
-                WorldEditJob job = areaJob(p, WorldEditJob.Kind.FILL, boxes, Blocks.air, 0, null, 0);
+                WorldEditJob job = required(areaJob(p, WorldEditJob.Kind.FILL, boxes, Blocks.air, 0, null, 0), onSuccess);
                 job.removeEntitiesIn(boxes);
                 submit(p, job, onSuccess);
             });
@@ -295,6 +300,7 @@ public class ToolHandler {
                 placement.getWidth(), placement.getHeight(), placement.getLength(), Blocks.air, 0, null, 0);
             job.capture(placement.getSchematic(), false, false);
             job.deletion = mode;
+            required(job, onSuccess);
             job.restrict((x, y, z) -> CubicChunks.containsY(p.worldObj, y) && RenderLayerSettings.RANGE.contains(x, y, z));
             job.removeEntitiesIn(clampToLayers(placement.enabledRegionBounds()));
             submit(p, job, onSuccess);

@@ -35,6 +35,7 @@ public final class RemoteEditClient {
     private TaskRegistry.Task task;
     private World world;
     private Runnable onSuccess;
+    private boolean requireFinished;
     private boolean accepted, cancelSent;
 
     private RemoteEditClient() {}
@@ -57,6 +58,7 @@ public final class RemoteEditClient {
         count = Math.max(1, (bytes.length + MessageEditUpload.CHUNK_SIZE - 1) / MessageEditUpload.CHUNK_SIZE);
         world = targetWorld;
         this.onSuccess = onSuccess;
+        requireFinished = job.requireFinished;
         accepted = cancelSent = false;
         task = TaskRegistry.INSTANCE.start(job.player, job.dimension, job.taskKind(), TaskRegistry.Backend.SERVER, job.x + ", " + job.y + ", " + job.z);
         task.update(TaskRegistry.Stage.UPLOAD, 0, bytes.length, 0, 0);
@@ -111,7 +113,7 @@ public final class RemoteEditClient {
                 break;
             case FINISHED:
             case PARTIAL: {
-                Runnable done = cancelSent ? null : onSuccess;
+                Runnable done = cancelSent || requireFinished && status.state == MessageEditStatus.State.PARTIAL ? null : onSuccess;
                 end();
                 if (done != null) done.run();
                 break;
