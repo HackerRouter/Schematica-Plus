@@ -3854,9 +3854,7 @@ Automated tests cover the logic below only where noted; none of these steps were
 
 - LiquidLogged paste (server): store water in a non-tile block, save it, then paste over the same block
   and metadata without water: the water appears. Paste a dry copy over the wet block: the water is gone.
-- LiquidLogged with CubicChunks: move a wet block from Y 255 to Y 256. The move completes, the block is
-  at Y 256 without water and a warning reports one dropped fluid. Move it back below 256 from a wet
-  source inside 0-255: the water moves with it. Interrupt a move: rollback restores the water.
+- LiquidLogged with CubicChunks: move a wet block from Y 255 to Y 256. Verify the move fails before either position changes and the source retains its fluid.
 - Rebuild a wet block into a different block and save `.schemplus`: the file has no stored fluid there.
 - Windows: game on one drive, schematic directory on another; hover a downloaded server schematic: the
   tooltip shows the absolute path instead of failing (`FileUtils.displayPath` has a headless test).
