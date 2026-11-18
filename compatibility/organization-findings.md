@@ -567,3 +567,9 @@ Source [327b7f886d](https://github.com/GTNewHorizons/Custom-Main-Menu/tree/327b7
 Source [d9eefaaab5](https://github.com/GTNewHorizons/Darkerer/tree/d9eefaaab5de427637f87cc7b9650657b0902a55) · 10 tracked Java, Scala or Kotlin files outside test/example directories.
 
 - Check world or renderer transformation alongside the schematic world and render pipeline. 2 source file(s) contain matching declarations, including [MixinEntityRenderer.EntityRenderer](https://github.com/GTNewHorizons/Darkerer/blob/d9eefaaab5de427637f87cc7b9650657b0902a55/src/main/java/glowredman/darkerer/mixins/MixinEntityRenderer.java#L21).
+
+### Dashboard
+
+Source [078f9e3b87](https://github.com/GTNewHorizons/Dashboard/tree/078f9e3b871713cd0faeeeabd6127573f3db8d21) · 80 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- Check world or renderer transformation alongside the schematic world and render pipeline. 1 source file(s) contain matching declarations, including [MixinEntityRenderer_Camera.EntityRenderer](https://github.com/GTNewHorizons/Dashboard/blob/078f9e3b871713cd0faeeeabd6127573f3db8d21/src/main/java/com/gtnewhorizons/dashboard/mixins/early/MixinEntityRenderer_Camera.java#L15).
