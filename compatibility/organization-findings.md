@@ -1392,3 +1392,9 @@ Source [dcacd08964](https://github.com/GTNewHorizons/NoHotbarNeeded/tree/dcacd08
 Source [5c15126bf5](https://github.com/GTNewHorizons/NotEnoughCharacters/tree/5c15126bf5fbcdbc8060423858d6b0c46e3a3fbc) · 16 tracked Java, Scala or Kotlin files outside test/example directories.
 
 - No direct match in the listed checks. Mod entry point: [NotEnoughCharacters](https://github.com/GTNewHorizons/NotEnoughCharacters/blob/5c15126bf5fbcdbc8060423858d6b0c46e3a3fbc/src/main/java/net/moecraft/nechar/NotEnoughCharacters.java#L18). Indirect effects from dependencies, injection, configuration and server rules remain open.
+
+### NotEnoughEnergistics
+
+Source [130483def6](https://github.com/GTNewHorizons/NotEnoughEnergistics/tree/130483def6d297ff51062968777f9f568a4a65cf) · 64 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- No direct match in the listed checks. Mod entry point: [NotEnoughEnergistics](https://github.com/GTNewHorizons/NotEnoughEnergistics/blob/130483def6d297ff51062968777f9f568a4a65cf/src/main/java/com/github/vfyjxf/nee/NotEnoughEnergistics.java#L24). Indirect effects from dependencies, injection, configuration and server rules remain open.
