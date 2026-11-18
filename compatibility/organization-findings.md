@@ -456,3 +456,9 @@ Source [46445985f8](https://github.com/GTNewHorizons/ChiselTones/tree/46445985f8
 Source [3936db9468](https://github.com/GTNewHorizons/ChromaticTooltips/tree/3936db9468104c99e78a9461b4c3af52d2f790a4) · 95 tracked Java, Scala or Kotlin files outside test/example directories.
 
 - No direct match in the listed checks. Mod entry point: [ChromaticTooltips](https://github.com/GTNewHorizons/ChromaticTooltips/blob/3936db9468104c99e78a9461b4c3af52d2f790a4/src/main/java/com/slprime/chromatictooltips/ChromaticTooltips.java#L13). Indirect effects from dependencies, injection, configuration and server rules remain open.
+
+### ChromaticTooltipsCompat
+
+Source [4e51e114f7](https://github.com/GTNewHorizons/ChromaticTooltipsCompat/tree/4e51e114f7a51e8fb0ab9a36322bf00be9a94eb3) · 88 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- No direct match in the listed checks. Mod entry point: [ChromaticTooltipsCompat](https://github.com/GTNewHorizons/ChromaticTooltipsCompat/blob/4e51e114f7a51e8fb0ab9a36322bf00be9a94eb3/src/main/java/com/slprime/chromatictooltipscompat/ChromaticTooltipsCompat.java#L13). Indirect effects from dependencies, injection, configuration and server rules remain open.
