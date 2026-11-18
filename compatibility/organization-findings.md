@@ -711,6 +711,7 @@ Source [2e122a4f1f](https://github.com/GTNewHorizons/EnderZoo/tree/2e122a4f1fa4e
 Source [c51008127d](https://github.com/GTNewHorizons/EnhancedLootBags/tree/c51008127dfe6cf1865800bb4528f73aba0bd179) · 20 tracked Java, Scala or Kotlin files outside test/example directories.
 
 - No direct match in the listed checks. Mod entry point: [EnhancedLootBags](https://github.com/GTNewHorizons/EnhancedLootBags/blob/c51008127dfe6cf1865800bb4528f73aba0bd179/src/main/java/eu/usrv/enhancedlootbags/EnhancedLootBags.java#L38). Indirect effects from dependencies, injection, configuration and server rules remain open.
+- [LootBagRecipeHandler](https://github.com/GTNewHorizons/EnhancedLootBags/blob/c51008127dfe6cf1865800bb4528f73aba0bd179/src/main/java/eu/usrv/enhancedlootbags/integration/nei/LootBagRecipeHandler.java#L33) uses `TemplateRecipeHandler`. The identified integration concerns the item or information UI.
 
 ### Et-Futurum-Requiem
 
