@@ -1706,3 +1706,11 @@ Source [a37568d39f](https://github.com/GTNewHorizons/SC2/tree/a37568d39f89d17566
 - Check printer placement against `SchematicPrinter`. 2 source file(s) contain matching declarations, including [ItemCarts.onItemUse](https://github.com/GTNewHorizons/SC2/blob/a37568d39f89d17566fecf89b69c6a278d70ce65/src/main/java/vswe/stevescarts/Items/ItemCarts.java#L46).
 - [MinecartModular.writeToNBT](https://github.com/GTNewHorizons/SC2/blob/a37568d39f89d17566fecf89b69c6a278d70ce65/src/main/java/vswe/stevescarts/Carts/MinecartModular.java#L1292) accesses `cartName`, `pushX`, `pushZ`, `temppushX`. Compare those fields after capture, transform and restore.
 - [RendererUpgrade.renderWorldBlock](https://github.com/GTNewHorizons/SC2/blob/a37568d39f89d17566fecf89b69c6a278d70ce65/src/main/java/vswe/stevescarts/Renders/RendererUpgrade.java#L32) queries tile data while rendering. Preview a populated tile after saving and reopening its schematic.
+
+### Schematica
+
+Source [35ee9d60b3](https://github.com/GTNewHorizons/Schematica/tree/35ee9d60b30aef58a5fda9e1f3cc442e94b95a98) · 80 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- Class-path overlap candidate in 68 source files, including [com.github.lunatrius.schematica.FileFilterSchematic](https://github.com/GTNewHorizons/Schematica/blob/35ee9d60b30aef58a5fda9e1f3cc442e94b95a98/src/main/java/com/github/lunatrius/schematica/FileFilterSchematic.java#L1). Check which classes each release JAR actually ships before installing both.
+- Existing Plus lookup in `Reference` names [com.github.lunatrius.schematica.client.gui.GuiFactory](https://github.com/GTNewHorizons/Schematica/blob/35ee9d60b30aef58a5fda9e1f3cc442e94b95a98/src/main/java/com/github/lunatrius/schematica/client/gui/GuiFactory.java#L1) (4 matching upstream source names). Check reflected members and client state with the deployed versions.
+- Both projects use the com.github.lunatrius.schematica namespace. Their distinct mod IDs do not isolate classes in the Forge class loader. Plus documents a startup rejection for simultaneous installation in its installation guide.
