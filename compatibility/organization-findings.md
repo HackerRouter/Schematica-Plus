@@ -2252,6 +2252,7 @@ Source [fcbd3c0e70](https://github.com/GTNewHorizons/WAWLA/tree/fcbd3c0e70a59389
 Source [acd292a6bf](https://github.com/GTNewHorizons/WDMla/tree/acd292a6bf6f4b06c02f055e8abe8bbfe26880b1) · 348 tracked Java, Scala or Kotlin files outside test/example directories.
 
 - No direct match in the listed checks. Mod entry point: [WDMla](https://github.com/GTNewHorizons/WDMla/blob/acd292a6bf6f4b06c02f055e8abe8bbfe26880b1/src/main/java/com/gtnewhorizons/wdmla/WDMla.java#L24). Indirect effects from dependencies, injection, configuration and server rules remain open.
+- [DecoratorRenderer](https://github.com/GTNewHorizons/WDMla/blob/acd292a6bf6f4b06c02f055e8abe8bbfe26880b1/src/main/java/mcp/mobius/waila/overlay/DecoratorRenderer.java#L37) accepts `RenderWorldLastEvent`. Exercise the schematic overlay and hotkeys while the corresponding client feature is enabled.
 
 ### WirelessCraftingTerminal
 
