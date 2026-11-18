@@ -501,3 +501,9 @@ Source [f217c6f000](https://github.com/GTNewHorizons/Computronics/tree/f217c6f00
 - Check interaction events against `SchematicPrinter`. 1 source file(s) contain matching declarations, including [SwarmProvider.onPlayerInteract](https://github.com/GTNewHorizons/Computronics/blob/f217c6f0003ee2b6a910b29f7f7ffc185927633d/src/main/java/pl/asie/computronics/integration/forestry/nanomachines/SwarmProvider.java#L122).
 - [AudioCableRender.renderWorldBlock](https://github.com/GTNewHorizons/Computronics/blob/f217c6f0003ee2b6a910b29f7f7ffc185927633d/src/main/java/pl/asie/computronics/client/AudioCableRender.java#L62) queries tile data while rendering. Preview a populated tile after saving and reopening its schematic.
 - [ActionParameterLampColor.writeToNBT](https://github.com/GTNewHorizons/Computronics/blob/f217c6f0003ee2b6a910b29f7f7ffc185927633d/src/main/java/pl/asie/computronics/integration/buildcraft/statements/parameters/ActionParameterLampColor.java#L107) accesses `size`, `color`. Compare those fields after capture, transform and restore.
+
+### Controlling
+
+Source [1a27d4494f](https://github.com/GTNewHorizons/Controlling/tree/1a27d4494f363bf1b775b950e4d659c333c79fba) · 17 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- No direct match in the listed checks. Mod entry point: [Controlling](https://github.com/GTNewHorizons/Controlling/blob/1a27d4494f363bf1b775b950e4d659c333c79fba/src/main/java/com/blamejared/controlling/Controlling.java#L14). Indirect effects from dependencies, injection, configuration and server rules remain open.
