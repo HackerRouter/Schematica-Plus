@@ -462,3 +462,9 @@ Source [3936db9468](https://github.com/GTNewHorizons/ChromaticTooltips/tree/3936
 Source [4e51e114f7](https://github.com/GTNewHorizons/ChromaticTooltipsCompat/tree/4e51e114f7a51e8fb0ab9a36322bf00be9a94eb3) · 88 tracked Java, Scala or Kotlin files outside test/example directories.
 
 - No direct match in the listed checks. Mod entry point: [ChromaticTooltipsCompat](https://github.com/GTNewHorizons/ChromaticTooltipsCompat/blob/4e51e114f7a51e8fb0ab9a36322bf00be9a94eb3/src/main/java/com/slprime/chromatictooltipscompat/ChromaticTooltipsCompat.java#L13). Indirect effects from dependencies, injection, configuration and server rules remain open.
+
+### ChunkAPI
+
+Source [199251b75d](https://github.com/GTNewHorizons/ChunkAPI/tree/199251b75d41c23ae5085bb32e39a3380efe7c7a) · 47 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- Check world or renderer transformation alongside the schematic world and render pipeline. 1 source file(s) contain matching declarations, including [ChunkMixin.Chunk](https://github.com/GTNewHorizons/ChunkAPI/blob/199251b75d41c23ae5085bb32e39a3380efe7c7a/src/main/java/com/falsepattern/chunk/internal/mixin/mixins/client/vanilla/ChunkMixin.java#L42).
