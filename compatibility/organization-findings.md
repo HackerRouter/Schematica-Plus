@@ -994,3 +994,11 @@ Source [ec66e0b0da](https://github.com/GTNewHorizons/Hodgepodge/tree/ec66e0b0da3
 Source [96935151c0](https://github.com/GTNewHorizons/HoloInventory/tree/96935151c0db960b7e2c26d7e067c09cb7ad7631) · 35 tracked Java, Scala or Kotlin files outside test/example directories.
 
 - Check tile serialization against `TileNBTCompat`. 1 source file(s) contain matching declarations, including [Coord.writeToNBT](https://github.com/GTNewHorizons/HoloInventory/blob/96935151c0db960b7e2c26d7e067c09cb7ad7631/src/main/java/net/dries007/holoInventory/util/Coord.java#L55).
+
+### Horizon-QA
+
+Source [e05abc05be](https://github.com/GTNewHorizons/Horizon-QA/tree/e05abc05be88e9072c7ed298e4ae81c158213515) · 162 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- Check printer placement against `SchematicPrinter`. 1 source file(s) contain matching declarations, including [ItemHorizonWand.onItemUse](https://github.com/GTNewHorizons/Horizon-QA/blob/e05abc05be88e9072c7ed298e4ae81c158213515/src/main/java/com/gtnewhorizons/horizonqa/item/ItemHorizonWand.java#L60).
+- Check interaction events against `SchematicPrinter`. 1 source file(s) contain matching declarations, including [SelectionBoxRenderer.onPlayerInteract](https://github.com/GTNewHorizons/Horizon-QA/blob/e05abc05be88e9072c7ed298e4ae81c158213515/src/main/java/com/gtnewhorizons/horizonqa/visual/SelectionBoxRenderer.java#L14).
+- [SelectionBoxRenderer.onPlayerInteract](https://github.com/GTNewHorizons/Horizon-QA/blob/e05abc05be88e9072c7ed298e4ae81c158213515/src/main/java/com/gtnewhorizons/horizonqa/visual/SelectionBoxRenderer.java#L14) can cancel the interaction. Verify the printer on a server with the handler enabled.
