@@ -237,3 +237,9 @@ Source [d402315bdb](https://github.com/GTNewHorizons/bdlib/tree/d402315bdb52a70a
 - Check preview rendering against `RendererSchematicChunk`. 3 source file(s) contain matching declarations, including [CoverRenderer.renderWorldBlock](https://github.com/GTNewHorizons/bdlib/blob/d402315bdb52a70af1b343c2b192cb8c1b420bbe/src/main/scala/net/bdew/lib/covers/CoverRenderer.scala#L29).
 - Check material picking against `BlockToItemStack`. 1 source file(s) contain matching declarations, including [KeepData.getPickBlock](https://github.com/GTNewHorizons/bdlib/blob/d402315bdb52a70af1b343c2b192cb8c1b420bbe/src/main/scala/net/bdew/lib/block/KeepData.scala#L80).
 - Check printer placement against `SchematicPrinter`. 3 source file(s) contain matching declarations, including [KeepData.placeBlockAt](https://github.com/GTNewHorizons/bdlib/blob/d402315bdb52a70af1b343c2b192cb8c1b420bbe/src/main/scala/net/bdew/lib/block/KeepData.scala#L147).
+
+### BeeBetterAtBees-GTNH
+
+Source [8f9f5b8686](https://github.com/GTNewHorizons/BeeBetterAtBees-GTNH/tree/8f9f5b868698c4cb51d0e2a731084b8887da1ad7) · 18 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- No direct match in the listed checks. Mod entry point: [BeeBetterAtBees](https://github.com/GTNewHorizons/BeeBetterAtBees-GTNH/blob/8f9f5b868698c4cb51d0e2a731084b8887da1ad7/src/main/java/hellfirepvp/beebetteratbees/common/BeeBetterAtBees.java#L17). Indirect effects from dependencies, injection, configuration and server rules remain open.
