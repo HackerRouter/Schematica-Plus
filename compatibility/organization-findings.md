@@ -247,6 +247,7 @@ Source [d402315bdb](https://github.com/GTNewHorizons/bdlib/tree/d402315bdb52a70a
 Source [8f9f5b8686](https://github.com/GTNewHorizons/BeeBetterAtBees-GTNH/tree/8f9f5b868698c4cb51d0e2a731084b8887da1ad7) · 18 tracked Java, Scala or Kotlin files outside test/example directories.
 
 - No direct match in the listed checks. Mod entry point: [BeeBetterAtBees](https://github.com/GTNewHorizons/BeeBetterAtBees-GTNH/blob/8f9f5b868698c4cb51d0e2a731084b8887da1ad7/src/main/java/hellfirepvp/beebetteratbees/common/BeeBetterAtBees.java#L17). Indirect effects from dependencies, injection, configuration and server rules remain open.
+- [NEIBBABConfig](https://github.com/GTNewHorizons/BeeBetterAtBees-GTNH/blob/8f9f5b868698c4cb51d0e2a731084b8887da1ad7/src/main/java/hellfirepvp/beebetteratbees/client/NEIBBABConfig.java#L13) uses `IConfigureNEI`. The identified integration concerns the item or information UI.
 
 ### BetterAchievements
 
