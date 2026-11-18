@@ -86,7 +86,7 @@ public class TickHandler {
                     && range.mode() != RenderLayerRange.Mode.LAYER_RANGE) {
                     EntityLivingBase camera = this.minecraft.renderViewEntity;
                     double coordinate = range.axis() == RenderLayerRange.Axis.X ? camera.posX
-                        : range.axis() == RenderLayerRange.Axis.Y ? camera.posY : camera.posZ;
+                        : range.axis() == RenderLayerRange.Axis.Y ? camera.posY - camera.yOffset : camera.posZ;
                     int position = MathHelper.floor_double(coordinate);
                     if (range.value(false) != position) range.setValue(false, position);
                 }
