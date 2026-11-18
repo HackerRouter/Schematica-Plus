@@ -1300,3 +1300,15 @@ Source [b71446a0d4](https://github.com/GTNewHorizons/MyTown2/tree/b71446a0d4fc5e
 
 - Check printer placement against `SchematicPrinter`. 3 source file(s) contain matching declarations, including [PlotSelectionTool.onItemUse](https://github.com/GTNewHorizons/MyTown2/blob/b71446a0d4fc5e0b57e212b58ea8ad5dc8ac4bdf/src/main/java/mytown/entities/tools/PlotSelectionTool.java#L46).
 - Check interaction events against `SchematicPrinter`. 1 source file(s) contain matching declarations, including [ProtectionHandlers.onBlockPlacement](https://github.com/GTNewHorizons/MyTown2/blob/b71446a0d4fc5e0b57e212b58ea8ad5dc8ac4bdf/src/main/java/mytown/protection/ProtectionHandlers.java#L145).
+
+### Natura
+
+Source [f84ee064e2](https://github.com/GTNewHorizons/Natura/tree/f84ee064e22b4e92d172d89612c7d9339171d172) · 195 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- Existing Plus lookup in `TileFacingAdapter` names [mods.natura.blocks.tech.NetherrackFurnaceLogic](https://github.com/GTNewHorizons/Natura/blob/f84ee064e22b4e92d172d89612c7d9339171d172/src/main/java/mods/natura/blocks/tech/NetherrackFurnaceLogic.java#L1) (3 matching upstream source names). Check reflected members and client state with the deployed versions.
+- Check tile serialization against `TileNBTCompat`. 1 source file(s) contain matching declarations, including [NetherrackFurnaceLogic.readFromNBT](https://github.com/GTNewHorizons/Natura/blob/f84ee064e22b4e92d172d89612c7d9339171d172/src/main/java/mods/natura/blocks/tech/NetherrackFurnaceLogic.java#L130).
+- Check preview rendering against `RendererSchematicChunk`. 6 source file(s) contain matching declarations, including [BerryRender.renderWorldBlock](https://github.com/GTNewHorizons/Natura/blob/f84ee064e22b4e92d172d89612c7d9339171d172/src/main/java/mods/natura/client/BerryRender.java#L16).
+- Check material picking against `BlockToItemStack`. 1 source file(s) contain matching declarations, including [NDoor.getPickBlock](https://github.com/GTNewHorizons/Natura/blob/f84ee064e22b4e92d172d89612c7d9339171d172/src/main/java/mods/natura/blocks/trees/NDoor.java#L118).
+- Check printer placement against `SchematicPrinter`. 15 source file(s) contain matching declarations, including [ThornVines.onBlockPlaced](https://github.com/GTNewHorizons/Natura/blob/f84ee064e22b4e92d172d89612c7d9339171d172/src/main/java/mods/natura/blocks/crops/ThornVines.java#L60).
+- [NetherPistonBase.onBlockPlacedBy](https://github.com/GTNewHorizons/Natura/blob/f84ee064e22b4e92d172d89612c7d9339171d172/src/main/java/mods/natura/blocks/tech/NetherPistonBase.java#L112) depends on placement orientation. Exercise the printer with a rotated schematic.
+- [NetherrackFurnaceLogic.readFromNBT](https://github.com/GTNewHorizons/Natura/blob/f84ee064e22b4e92d172d89612c7d9339171d172/src/main/java/mods/natura/blocks/tech/NetherrackFurnaceLogic.java#L130) accesses `Items`, `Slot`, `BurnTime`, `CookTime`. Compare those fields after capture, transform and restore.
