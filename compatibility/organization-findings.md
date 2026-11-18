@@ -1664,6 +1664,7 @@ Source [75f2ffce84](https://github.com/GTNewHorizons/RandomBoubles/tree/75f2ffce
 Source [8b062a446f](https://github.com/GTNewHorizons/Realistic-Terrain-Generation/tree/8b062a446f1f002ec6ab132d8f8a6f9c30af13a2) · 1915 tracked Java, Scala or Kotlin files outside test/example directories.
 
 - No direct match in the listed checks. Mod entry point: [RTG](https://github.com/GTNewHorizons/Realistic-Terrain-Generation/blob/8b062a446f1f002ec6ab132d8f8a6f9c30af13a2/src/main/java/rtg/RTG.java#L50). Indirect effects from dependencies, injection, configuration and server rules remain open.
+- [WorldGenBlob](https://github.com/GTNewHorizons/Realistic-Terrain-Generation/blob/8b062a446f1f002ec6ab132d8f8a6f9c30af13a2/src/main/java/rtg/world/gen/feature/WorldGenBlob.java#L15) uses `WorldGenerator`. Use existing generated terrain to compare capture and paste.
 
 ### Realistic-World-Gen
 
