@@ -4,6 +4,8 @@ import java.io.File;
 import java.util.Locale;
 import java.util.function.BooleanSupplier;
 
+import net.minecraft.client.Minecraft;
+
 import com.github.lunatrius.schematica.client.selection.AreaSelectionLibrary.Area;
 import com.github.lunatrius.schematica.handler.ConfigurationHandler;
 import com.github.lunatrius.schematica.internal.lunatriuscore.util.vector.Vector3i;
@@ -105,12 +107,22 @@ public final class AreaSelections {
     /** DataManager.getAreaSelectionsBaseDirectory: per world or server (without the dimension), or shared. */
     static File directory(String key) {
         if (!ConfigurationHandler.areaSelectionsPerWorld) return PlusDataFiles.file("area_selections");
+        return directory(PlusDataFiles.file("area_selections_per_world"), key, new File(Minecraft.getMinecraft().mcDataDir, "saves"));
+    }
+
+    /** Servers get their own prefix so that a save and a server of one name keep separate files. */
+    static File directory(File base, String key, File saves) {
         String world = key.contains("|") ? key.substring(0, key.lastIndexOf('|')) : key;
+        boolean server = world.startsWith("server:");
         if (world.startsWith("save:")) world = world.substring(5);
-        else if (world.startsWith("server:")) world = world.substring(7);
+        else if (server) world = world.substring(7);
         String name = AreaSelectionLibrary.safeFileName(world);
-        return new File(new File(PlusDataFiles.file("area_selections_per_world"),
-            name.isEmpty() ? "_" : name), "area_selections");
+        if (name.isEmpty()) name = "_";
+        File shared = new File(new File(base, name), "area_selections");
+        if (!server) return shared;
+        File own = new File(new File(base, "server_" + name), "area_selections");
+        boolean legacy = !own.exists() && shared.isDirectory() && !new File(saves, world).isDirectory();
+        return legacy ? shared : own;
     }
 
     /** The selection files' directory of the current world, or null without a world. */
