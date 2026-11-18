@@ -16,7 +16,9 @@ import net.minecraft.nbt.NBTTagList;
 import net.minecraft.tileentity.TileEntity;
 
 import com.github.lunatrius.schematica.api.ISchematic;
+import com.github.lunatrius.schematica.api.SchematicRegion;
 import com.github.lunatrius.schematica.nbt.NBTHelper;
+import com.github.lunatrius.schematica.world.storage.Schematic;
 
 import cpw.mods.fml.common.registry.GameData;
 import org.junit.BeforeClass;
@@ -121,6 +123,20 @@ public class SchematicFilesTest {
         assertEquals(1, blocks.getCompoundTagAt(0).getInteger("state"));
         assertEquals(0, blocks.getCompoundTagAt(1).getInteger("state"));
         assertSame(block, SchematicLitematica.legacyMapping(palette.getCompoundTagAt(1), null).block);
+    }
+
+    @Test public void sparseStructuresKeepTheirGaps() throws Exception {
+        Schematic sparse = new Schematic(null, 3, 1, 1);
+        sparse.setBlock(0, 0, 0, block, 0);
+        sparse.setBlock(2, 0, 0, block, 0);
+        sparse.setRegions(Arrays.asList(new SchematicRegion("a", 0, 0, 0, 0, 0, 0), new SchematicRegion("b", 2, 0, 0, 2, 0, 0)));
+        NBTTagCompound tag = VanillaStructure.encode(sparse, null, true, true, "");
+        assertEquals(2, tag.getTagList("blocks", 10).tagCount());
+        ISchematic read = new VanillaStructure().readFromNBT(tag);
+        assertTrue(read.containsBlock(0, 0, 0));
+        assertFalse(read.containsBlock(1, 0, 0));
+        assertTrue(read.containsBlock(2, 0, 0));
+        assertEquals(2, VanillaStructure.encode(read, null, true, true, "").getTagList("blocks", 10).tagCount());
     }
 
     private static List<TileEntity> visualChest() {

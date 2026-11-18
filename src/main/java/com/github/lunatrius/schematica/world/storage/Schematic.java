@@ -66,6 +66,14 @@ public class Schematic implements ISchematic {
         fluids.keySet().removeIf(key -> !containsBlock(SchematicFluids.x(key), SchematicFluids.y(key), SchematicFluids.z(key)));
     }
 
+    /** Limits the schematic to the listed cells, as a structure template that leaves positions out. */
+    public void setPresent(BitSet present) {
+        regions = Collections.emptyList();
+        mask = (BitSet) present.clone();
+        tileEntities.removeIf(tile -> !containsBlock(tile.xCoord, tile.yCoord, tile.zCoord));
+        fluids.keySet().removeIf(key -> !containsBlock(SchematicFluids.x(key), SchematicFluids.y(key), SchematicFluids.z(key)));
+    }
+
     public void setEmpty() {
         regions = Collections.emptyList();
         mask = new BitSet();

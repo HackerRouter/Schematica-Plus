@@ -2,6 +2,7 @@
 // Litematica VanillaStructure / structure export, adapted for 1.7.10 by HackerRouter, 2026.
 package com.github.lunatrius.schematica.world.schematic;
 
+import java.util.BitSet;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -64,6 +65,7 @@ public final class VanillaStructure extends SchematicFormat {
         }
         Schematic schematic = new Schematic(new ItemStack(Blocks.grass), size[0], size[1], size[2]);
         NBTTagList blocks = tag.getTagList("blocks", NBT.TAG_COMPOUND);
+        BitSet present = new BitSet();
         for (int i = 0; i < blocks.tagCount(); i++) {
             NBTTagCompound block = blocks.getCompoundTagAt(i);
             int[] pos = ints(block, "pos");
@@ -72,6 +74,7 @@ public final class VanillaStructure extends SchematicFormat {
                 || pos[0] >= size[0] || pos[1] >= size[1] || pos[2] >= size[2]) {
                 throw new IllegalArgumentException("Invalid structure block");
             }
+            present.set(pos[0] + size[0] * (pos[2] + size[2] * pos[1]));
             BlockMapping mapping = palette[state];
             if (mapping.block == Blocks.air) continue;
             schematic.setBlock(pos[0], pos[1], pos[2], mapping.block, mapping.metadata);
@@ -113,6 +116,7 @@ public final class VanillaStructure extends SchematicFormat {
                 Reference.logger.debug("Skipped a structure entity", e);
             }
         }
+        if (present.cardinality() < (long) size[0] * size[1] * size[2]) schematic.setPresent(present);
         return schematic;
     }
 
