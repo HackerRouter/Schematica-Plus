@@ -83,6 +83,24 @@ public class SchematicFluidsTest {
         assertFalse(empty.hasKey(SchematicFluids.NBT));
     }
 
+    @Test public void vanillaStructurePreservesStoredFluids() {
+        Schematic source = sample();
+        NBTTagCompound tag = VanillaStructure.encode(source, null, false, false, "");
+        assertEquals(source.getStoredFluids(), new VanillaStructure().readFromNBT(tag).getStoredFluids());
+    }
+
+    @Test public void litematicStoresRegionLocalFluidCoordinates() throws Exception {
+        Schematic source = sample();
+        source.setRegions(Collections.singletonList(new SchematicRegion("Part", 1, 1, 0, 3, 2, 1)));
+        LitematicExport.Document document = LitematicExport.encode(source, null, false, false, "Test", "", 1L);
+        java.io.ByteArrayOutputStream bytes = new java.io.ByteArrayOutputStream();
+        LitematicaNBTWriter.writeCompressed(document.root, document.longArrays, bytes);
+        ISchematic read = new SchematicLitematica().readFromNBT(LitematicaNBTReader.readFromStream(
+            new java.io.ByteArrayInputStream(bytes.toByteArray())));
+        assertEquals("water", read.getRegionSchematic("Part").getStoredFluid(0, 1, 0));
+        assertEquals(1, read.getStoredFluids().size());
+    }
+
     @Test public void regionsDropFluidsOutsideThem() {
         Schematic schematic = sample();
         schematic.setRegions(Collections.singletonList(new SchematicRegion("Box", 0, 0, 0, 1, 2, 1)));

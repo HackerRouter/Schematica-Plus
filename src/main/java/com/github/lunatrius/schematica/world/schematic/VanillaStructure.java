@@ -21,6 +21,7 @@ import net.minecraft.world.World;
 import net.minecraftforge.common.util.Constants.NBT;
 
 import com.github.lunatrius.schematica.api.ISchematic;
+import com.github.lunatrius.schematica.world.storage.SchematicFluids;
 import com.github.lunatrius.schematica.compat.BlockMapping;
 import com.github.lunatrius.schematica.compat.BlockStateTranslator;
 import com.github.lunatrius.schematica.compat.EntityTranslator;
@@ -117,6 +118,7 @@ public final class VanillaStructure extends SchematicFormat {
             }
         }
         if (present.cardinality() < (long) size[0] * size[1] * size[2]) schematic.setPresent(present);
+        SchematicFluids.read(tag, schematic);
         return schematic;
     }
 
@@ -205,6 +207,7 @@ public final class VanillaStructure extends SchematicFormat {
         tag.setTag("size", intList(width, height, length));
         tag.setTag("palette", palette);
         tag.setTag("blocks", blocks);
+        SchematicFluids.write(tag, schematic);
         tag.setTag("entities", entities);
         return tag;
     }

@@ -12,6 +12,7 @@ import net.minecraft.world.World;
 import net.minecraftforge.common.util.Constants.NBT;
 
 import com.github.lunatrius.schematica.api.ISchematic;
+import com.github.lunatrius.schematica.world.storage.SchematicFluids;
 import com.github.lunatrius.schematica.api.SchematicOrigin;
 import com.github.lunatrius.schematica.compat.BlockMapping;
 import com.github.lunatrius.schematica.compat.BlockStateTranslator;
@@ -95,6 +96,7 @@ public final class SpongeSchematic extends SchematicFormat {
         NBTTagList entities = tag.getTagList("Entities", NBT.TAG_COMPOUND);
         int[] min = version == 3 ? new int[3] : ints(tag, "Offset");
         for (int i = 0; i < entities.tagCount(); i++) readEntity(schematic, entities.getCompoundTagAt(i), version == 3, min, tag.getInteger("DataVersion"));
+        SchematicFluids.read(tag, schematic);
         return schematic;
     }
 

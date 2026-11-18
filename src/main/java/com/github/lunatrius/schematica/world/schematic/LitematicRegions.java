@@ -55,7 +55,7 @@ final class LitematicRegions {
         final SchematicOrigin origin;
         final int width, height, length;
         final NBTTagList palette;
-        private final NBTTagCompound data;
+        final NBTTagCompound data;
         private final int version;
         private final LitematicBitArray blocks;
 

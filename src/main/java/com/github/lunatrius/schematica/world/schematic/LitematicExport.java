@@ -19,6 +19,7 @@ import net.minecraft.world.World;
 import net.minecraftforge.common.util.Constants.NBT;
 
 import com.github.lunatrius.schematica.api.ISchematic;
+import com.github.lunatrius.schematica.world.storage.SchematicFluids;
 import com.github.lunatrius.schematica.api.SchematicOrigin;
 import com.github.lunatrius.schematica.api.SchematicRegion;
 import com.github.lunatrius.schematica.nbt.NBTHelper;
@@ -81,6 +82,7 @@ public final class LitematicExport {
             region.setTag("PendingBlockTicks", new NBTTagList());
             region.setTag("Position", vector(box.minX - origin.x, box.minY - origin.y, box.minZ - origin.z));
             region.setTag("Size", vector(width, height, length));
+            SchematicFluids.write(region, part == null ? schematic : part, part == null ? box : null);
             regions.setTag(box.name, region);
             volume += (long) width * height * length;
             minX = Math.min(minX, box.minX); minY = Math.min(minY, box.minY); minZ = Math.min(minZ, box.minZ);

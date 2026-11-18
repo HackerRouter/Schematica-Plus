@@ -8,6 +8,7 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagList;
 
 import com.github.lunatrius.schematica.api.ISchematic;
+import com.github.lunatrius.schematica.api.SchematicRegion;
 import com.github.lunatrius.schematica.util.SchematicTransform;
 
 public final class SchematicFluids {
@@ -61,18 +62,24 @@ public final class SchematicFluids {
     }
 
     public static void write(NBTTagCompound tag, ISchematic schematic) {
+        write(tag, schematic, null);
+    }
+
+    public static void write(NBTTagCompound tag, ISchematic schematic, SchematicRegion region) {
         if (schematic.getStoredFluids().isEmpty()) return;
         NBTTagList list = new NBTTagList();
         for (Map.Entry<Long, String> entry : schematic.getStoredFluids().entrySet()) {
             NBTTagCompound fluid = new NBTTagCompound();
             long key = entry.getKey();
-            fluid.setInteger("x", x(key));
-            fluid.setInteger("y", y(key));
-            fluid.setInteger("z", z(key));
+            int x = x(key), y = y(key), z = z(key);
+            if (region != null && !region.contains(x, y, z)) continue;
+            fluid.setInteger("x", region == null ? x : x - region.minX);
+            fluid.setInteger("y", region == null ? y : y - region.minY);
+            fluid.setInteger("z", region == null ? z : z - region.minZ);
             fluid.setString("FluidName", entry.getValue());
             list.appendTag(fluid);
         }
-        tag.setTag(NBT, list);
+        if (list.tagCount() > 0) tag.setTag(NBT, list);
     }
 
     public static void read(NBTTagCompound tag, ISchematic schematic) {

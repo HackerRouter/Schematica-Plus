@@ -20,6 +20,7 @@ import net.minecraft.world.World;
 import net.minecraftforge.common.util.Constants;
 
 import com.github.lunatrius.schematica.api.ISchematic;
+import com.github.lunatrius.schematica.world.storage.SchematicFluids;
 import com.github.lunatrius.schematica.api.SchematicOrigin;
 import com.github.lunatrius.schematica.api.SchematicRegion;
 import com.github.lunatrius.schematica.compat.BlockMapping;
@@ -65,6 +66,7 @@ public class SchematicLitematica extends SchematicFormat {
             Schematic part = new Schematic(schematic.getIcon(), region.width, region.height, region.length);
             part.setOrigin(region.origin);
             readRegion(region, part, translator, legacy, root.getInteger("MinecraftDataVersion"));
+            SchematicFluids.read(region.data, part);
             schematic.addRegion(region.box.offset(-min.x, -min.y, -min.z), part);
         }
         return schematic;
