@@ -31,6 +31,17 @@ public class CustomMaterialListFileTest {
         CustomMaterialListFile.parseJson("{\"name\":\"x\",\"items\":[]}", "x.json");
     }
 
+    @Test public void itemsDifferingOnlyInNbtStaySeparate() throws IOException {
+        String json = CustomMaterialListFile.toJson("Facades", Arrays.asList(
+            new CustomMaterialListFile.Item("mod:facade", 0, 1, "{texture:\"stone\"}"),
+            new CustomMaterialListFile.Item("mod:facade", 0, 1, "{texture:\"glass\"}")));
+        CustomMaterialListFile list = CustomMaterialListFile.parseJson(json, "f.json");
+        assertEquals(2, list.items.size());
+        assertEquals("{texture:\"stone\"}", list.items.get(0).nbt);
+        assertEquals("{texture:\"glass\"}", list.items.get(1).nbt);
+        assertEquals(1, list.items.get(0).count);
+    }
+
     @Test public void writesWhatItReads() throws IOException {
         String json = CustomMaterialListFile.toJson("A", Arrays.asList(new CustomMaterialListFile.Item("minecraft:wool", 3, 7),
             new CustomMaterialListFile.Item("minecraft:stone", 0, 2)));

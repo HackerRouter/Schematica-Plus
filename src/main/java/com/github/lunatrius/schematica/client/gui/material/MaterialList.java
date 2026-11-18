@@ -13,6 +13,7 @@ import java.util.Objects;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.WorldClient;
+import net.minecraft.item.ItemStack;
 
 import com.github.lunatrius.schematica.SchematicaPlus;
 import com.github.lunatrius.schematica.api.SchematicRegion;
@@ -105,8 +106,10 @@ public final class MaterialList {
     public List<CustomMaterialListFile.Item> customItems() {
         List<CustomMaterialListFile.Item> items = new ArrayList<>();
         for (MaterialListModel.Entry<MaterialItemKey> entry : model.entries()) {
-            Object id = GameData.getItemRegistry().getNameForObject(entry.key.stack().getItem());
-            if (id != null) items.add(new CustomMaterialListFile.Item(id.toString(), entry.key.stack().getItemDamage(), entry.total));
+            ItemStack stack = entry.key.stack();
+            Object id = GameData.getItemRegistry().getNameForObject(stack.getItem());
+            if (id != null) items.add(new CustomMaterialListFile.Item(id.toString(), stack.getItemDamage(), entry.total,
+                stack.hasTagCompound() ? stack.getTagCompound().toString() : null));
         }
         return items;
     }

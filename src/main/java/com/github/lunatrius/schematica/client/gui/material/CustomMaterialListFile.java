@@ -31,8 +31,12 @@ public final class CustomMaterialListFile {
     public static final class Item {
         public final String id;
         public final int damage, count;
-        public Item(String id, int damage, int count) { this.id = id; this.damage = damage; this.count = count; }
-        String key() { return id + "@" + damage; }
+        public final String nbt;
+        public Item(String id, int damage, int count) { this(id, damage, count, null); }
+        public Item(String id, int damage, int count, String nbt) {
+            this.id = id; this.damage = damage; this.count = count; this.nbt = nbt == null || nbt.isEmpty() ? null : nbt;
+        }
+        String key() { return id + "@" + damage + (nbt == null ? "" : "#" + nbt); }
     }
 
     public final String name;
@@ -66,7 +70,8 @@ public final class CustomMaterialListFile {
             try {
                 JsonObject object = entry.getAsJsonObject();
                 if (!object.has("id") || !object.has("count")) continue;
-                add(items, object.get("id").getAsString(), object.has("damage") ? object.get("damage").getAsInt() : -1, object.get("count").getAsInt());
+                add(items, object.get("id").getAsString(), object.has("damage") ? object.get("damage").getAsInt() : -1, object.get("count").getAsInt(),
+                    object.has("nbt") ? object.get("nbt").getAsString() : null);
             } catch (RuntimeException ignored) {
                 // skipped like upstream's invalid entries
             }
@@ -84,7 +89,7 @@ public final class CustomMaterialListFile {
             String[] parts = line.split("\\s+");
             if (parts.length != 2) continue;
             try {
-                add(items, parts[0], -1, Integer.parseInt(parts[1]));
+                add(items, parts[0], -1, Integer.parseInt(parts[1]), null);
             } catch (NumberFormatException ignored) {
                 // skipped like upstream's invalid lines
             }
@@ -93,7 +98,7 @@ public final class CustomMaterialListFile {
         return new CustomMaterialListFile(fallbackName, new ArrayList<>(items.values()));
     }
 
-    private static void add(Map<String, Item> items, String id, int damage, int count) {
+    private static void add(Map<String, Item> items, String id, int damage, int count, String nbt) {
         if (count <= 0 || id == null) return;
         int at = id.lastIndexOf('@');
         if (at > 0) {
@@ -102,12 +107,13 @@ public final class CustomMaterialListFile {
         }
         if (!id.contains(":")) id = "minecraft:" + id;
         if (id.indexOf(':') == id.length() - 1) return;
-        Item item = new Item(id, Math.max(0, damage), count);
+        Item item = new Item(id, Math.max(0, damage), count, nbt);
         Item previous = items.get(item.key());
-        items.put(item.key(), previous == null ? item : new Item(id, item.damage, (int) Math.min(Integer.MAX_VALUE, (long) previous.count + count)));
+        items.put(item.key(), previous == null ? item
+            : new Item(id, item.damage, (int) Math.min(Integer.MAX_VALUE, (long) previous.count + count), item.nbt));
     }
 
-    /** MaterialListCustom.toJsonFile; the damage is written only when it is not 0. */
+    /** MaterialListCustom.toJsonFile; the damage is written only when it is not 0, the item NBT only when there is one. */
     public static String toJson(String name, List<Item> items) {
         JsonObject root = new JsonObject();
         root.addProperty("name", name);
@@ -117,6 +123,7 @@ public final class CustomMaterialListFile {
             object.addProperty("id", item.id);
             if (item.damage != 0) object.addProperty("damage", item.damage);
             object.addProperty("count", item.count);
+            if (item.nbt != null) object.addProperty("nbt", item.nbt);
             array.add(object);
         }
         root.add("items", array);

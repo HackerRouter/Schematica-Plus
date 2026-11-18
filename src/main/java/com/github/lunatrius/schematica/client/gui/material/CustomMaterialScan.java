@@ -10,6 +10,10 @@ import java.util.Map;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.JsonToNBT;
+import net.minecraft.nbt.NBTBase;
+import net.minecraft.nbt.NBTException;
+import net.minecraft.nbt.NBTTagCompound;
 
 import cpw.mods.fml.common.registry.GameData;
 
@@ -23,7 +27,17 @@ final class CustomMaterialScan implements MaterialScanner {
         for (CustomMaterialListFile.Item item : items) {
             Object object = GameData.getItemRegistry().containsKey(item.id) ? GameData.getItemRegistry().getObject(item.id) : null;
             if (!(object instanceof Item)) { skipped++; continue; }
-            MaterialItemKey key = new MaterialItemKey(new ItemStack((Item) object, 1, item.damage));
+            ItemStack stack = new ItemStack((Item) object, 1, item.damage);
+            if (item.nbt != null) {
+                try {
+                    NBTBase tag = JsonToNBT.func_150315_a(item.nbt);
+                    if (tag instanceof NBTTagCompound) stack.setTagCompound((NBTTagCompound) tag);
+                } catch (NBTException e) {
+                    skipped++;
+                    continue;
+                }
+            }
+            MaterialItemKey key = new MaterialItemKey(stack);
             counts.computeIfAbsent(key, ignored -> new long[1])[0] += item.count;
         }
         for (Map.Entry<MaterialItemKey, long[]> counted : counts.entrySet()) {
