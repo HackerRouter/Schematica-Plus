@@ -913,3 +913,9 @@ Source [98c96af60b](https://github.com/GTNewHorizons/GT5-Unofficial/tree/98c96af
 Source [2b8e5dcf17](https://github.com/GTNewHorizons/GTNH-Credits/tree/2b8e5dcf17ad7fd50a55179380bc506cc04d3867) · 172 tracked Java, Scala or Kotlin files outside test/example directories.
 
 - No direct match in the listed checks. Mod entry point: [GTNHCredits](https://github.com/GTNewHorizons/GTNH-Credits/blob/2b8e5dcf17ad7fd50a55179380bc506cc04d3867/src/main/java/net/noiraude/gtnhcredits/GTNHCredits.java#L10). Indirect effects from dependencies, injection, configuration and server rules remain open.
+
+### GTNH-TC-Wands
+
+Source [0d7c8efad8](https://github.com/GTNewHorizons/GTNH-TC-Wands/tree/0d7c8efad864d91ac6443e9c1d443d48640b9070) · 18 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- No direct match in the listed checks. Mod entry point: [TCWandsMod](https://github.com/GTNewHorizons/GTNH-TC-Wands/blob/0d7c8efad864d91ac6443e9c1d443d48640b9070/src/main/java/com/gtnewhorizons/tcwands/TCWandsMod.java#L12). Indirect effects from dependencies, injection, configuration and server rules remain open.
