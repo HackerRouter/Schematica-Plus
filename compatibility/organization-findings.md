@@ -1293,3 +1293,10 @@ Source [cc00bddde0](https://github.com/GTNewHorizons/MyEssentials-Core/tree/cc00
 Source [6318dd9912](https://github.com/GTNewHorizons/MyPermissions/tree/6318dd99129ad429d22bb66588cb3ac3ff6db370) · 33 tracked Java, Scala or Kotlin files outside test/example directories.
 
 - No direct match in the listed checks. Mod entry point: [MyPermissions](https://github.com/GTNewHorizons/MyPermissions/blob/6318dd99129ad429d22bb66588cb3ac3ff6db370/src/main/java/mypermissions/MyPermissions.java#L23). Indirect effects from dependencies, injection, configuration and server rules remain open.
+
+### MyTown2
+
+Source [b71446a0d4](https://github.com/GTNewHorizons/MyTown2/tree/b71446a0d4fc5e0b57e212b58ea8ad5dc8ac4bdf) · 87 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- Check printer placement against `SchematicPrinter`. 3 source file(s) contain matching declarations, including [PlotSelectionTool.onItemUse](https://github.com/GTNewHorizons/MyTown2/blob/b71446a0d4fc5e0b57e212b58ea8ad5dc8ac4bdf/src/main/java/mytown/entities/tools/PlotSelectionTool.java#L46).
+- Check interaction events against `SchematicPrinter`. 1 source file(s) contain matching declarations, including [ProtectionHandlers.onBlockPlacement](https://github.com/GTNewHorizons/MyTown2/blob/b71446a0d4fc5e0b57e212b58ea8ad5dc8ac4bdf/src/main/java/mytown/protection/ProtectionHandlers.java#L145).
