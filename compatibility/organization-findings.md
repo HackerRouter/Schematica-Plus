@@ -2334,3 +2334,7 @@ A core optimization mod can change the runtime independently of placed block typ
 ### gtnh-nightly-updater
 
 External pack updater. Changes to the selected pack can change dependency versions. The updater itself runs outside the Forge client. [Main.java at ef5cd20a6f](https://github.com/GTNewHorizons/gtnh-nightly-updater/blob/ef5cd20a6f53e857f48e8479ab100cd350479bcf/src/main/java/GTNHNightlyUpdater/Main.java)
+
+### GTSU
+
+TileEntityGTSU defines energy, tier, redstoneMode and active NBT fields. Compare these values after server-side capture and paste. [TileEntityGTSU.java at a8df273b75](https://github.com/GTNewHorizons/GTSU/blob/a8df273b7518fb43d237799aafd7ec1b5363db27/src/main/java/eu/usrv/gtsu/tileentity/TileEntityGTSU.java)
