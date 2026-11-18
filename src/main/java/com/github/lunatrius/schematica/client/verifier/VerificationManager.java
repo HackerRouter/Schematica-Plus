@@ -55,7 +55,7 @@ public final class VerificationManager {
     public Collection<Session> sessions() { return Collections.unmodifiableCollection(sessions.values()); }
     public Session overlay(Minecraft mc) {
         Session selected = sessions.get(Placements.selected);
-        return selected != null && selected.scan != null && selected.valid(mc) ? selected : null;
+        return selected != null && selected.scan != null && !selected.placement.otherWorld && selected.valid(mc) ? selected : null;
     }
 
     public void clear() {
@@ -80,6 +80,7 @@ public final class VerificationManager {
                 iterator.remove();
                 continue;
             }
+            if (session.placement.otherWorld) continue;
             if (session.scan != null && !session.valid(mc)) {
                 session.reset();
                 session.notice = "schematica.ui.verifier.changed";
@@ -87,7 +88,8 @@ public final class VerificationManager {
             if (session.scan != null) changes.apply(session.scan);
             if (session.task != null && session.task.progress().cancelling) session.pause();
         }
-        List<Session> pending = new ArrayList<>(sessions.values());
+        List<Session> pending = new ArrayList<>();
+        for (Session session : sessions.values()) if (!session.placement.otherWorld) pending.add(session);
         long deadline = System.nanoTime() + 4_000_000L;
         for (int i = 0; i < pending.size(); i++) pending.get(Math.floorMod(next + i, pending.size())).step(mc, deadline);
         next = pending.isEmpty() ? 0 : Math.floorMod(next + 1, pending.size());
@@ -96,7 +98,7 @@ public final class VerificationManager {
             Vec3 camera = mc.renderViewEntity.getPosition(1);
             long markerDeadline = System.nanoTime() + 1_000_000L;
             for (Session session : sessions.values()) {
-                if (session.scan == null || session != overlay && !(session.hud && session.valid(mc))) continue;
+                if (session.scan == null || session.placement.otherWorld || session != overlay && !(session.hud && session.valid(mc))) continue;
                 session.markers.update(session.scan, (int) Math.floor(camera.xCoord), (int) Math.floor(camera.yCoord), (int) Math.floor(camera.zCoord),
                     VerifierOverlaySettings.maxPositions, 16384, markerDeadline);
             }
@@ -128,7 +130,7 @@ public final class VerificationManager {
         public boolean running() { return running; }
         public boolean layers() { return layers; }
         /** Whether the verifier HUD lines of this session are shown: a started, still valid verification with its HUD on. */
-        public boolean showsHud(Minecraft mc) { return hud && scan != null && valid(mc); }
+        public boolean showsHud(Minecraft mc) { return hud && scan != null && !placement.otherWorld && valid(mc); }
         public String notice() { return notice; }
         public boolean available(Minecraft mc) {
             return mc.theWorld != null && mc.thePlayer != null && placement.isEnabled() && Placements.loaded.contains(placement);
