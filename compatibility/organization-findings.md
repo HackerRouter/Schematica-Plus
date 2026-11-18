@@ -47,3 +47,9 @@ Source [4e734bb6ab](https://github.com/GTNewHorizons/AFSU/tree/4e734bb6ab4cd3dc1
 - Check printer placement against `SchematicPrinter`. 1 source file(s) contain matching declarations, including [AFSUBlock.onBlockPlacedBy](https://github.com/GTNewHorizons/AFSU/blob/4e734bb6ab4cd3dc12bf86806f10513abd35f5ff/src/main/java/xbony2/afsu/blocks/AFSUBlock.java#L184).
 - [AFSUBlock.onBlockPlacedBy](https://github.com/GTNewHorizons/AFSU/blob/4e734bb6ab4cd3dc12bf86806f10513abd35f5ff/src/main/java/xbony2/afsu/blocks/AFSUBlock.java#L184) depends on placement orientation. Exercise the printer with a rotated schematic.
 - AFSUBlock.onBlockPlacedBy restores energy from the held stack and chooses facing from the placing entity. A matching item alone cannot establish that the printed facing matches the schematic.
+
+### AkashicTome
+
+Source [da141abd9a](https://github.com/GTNewHorizons/AkashicTome/tree/da141abd9a385dad3a8608b15cd020c2685b76cd) · 20 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- Check printer placement against `SchematicPrinter`. 1 source file(s) contain matching declarations, including [ItemTome.onItemUse](https://github.com/GTNewHorizons/AkashicTome/blob/da141abd9a385dad3a8608b15cd020c2685b76cd/src/main/java/vazkii/akashictome/ItemTome.java#L31).
