@@ -169,6 +169,10 @@ public final class SharedPlacementsClient {
             InfoUtils.showGuiOrInGameMessage(MessageType.ERROR, "syncmatica.error.invalid_file");
             return;
         }
+        if (source.data().unsaved()) {
+            InfoUtils.showGuiOrInGameMessage(MessageType.ERROR, "schematica.message.shared.unsaved", file.getName());
+            return;
+        }
         UUID id = UUID.randomUUID();
         SharedPlacement placement;
         try {
