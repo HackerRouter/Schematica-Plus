@@ -946,3 +946,9 @@ Source [fcc5c9b444](https://github.com/GTNewHorizons/GTNHLib/tree/fcc5c9b444359f
 - Check preview rendering against `RendererSchematicChunk`. 1 source file(s) contain matching declarations, including [ModelISBRH.renderWorldBlock](https://github.com/GTNewHorizons/GTNHLib/blob/fcc5c9b444359fb2ffcb6c4d86d4458c46118220/src/main/java/com/gtnewhorizon/gtnhlib/client/model/ModelISBRH.java#L81).
 - Check world or renderer transformation alongside the schematic world and render pipeline. 10 source file(s) contain matching declarations, including [EntityRendererAccessor.EntityRenderer](https://github.com/GTNewHorizons/GTNHLib/blob/fcc5c9b444359fb2ffcb6c4d86d4458c46118220/src/main/java/com/gtnewhorizon/gtnhlib/mixins/early/EntityRendererAccessor.java#L8).
 - [MixinEnhancedInfusionRecipe.writeToNBT](https://github.com/GTNewHorizons/GTNHLib/blob/fcc5c9b444359fb2ffcb6c4d86d4458c46118220/src/main/java/com/gtnewhorizon/gtnhlib/mixins/late/MixinEnhancedInfusionRecipe.java#L81) accesses `input`, `output`, `nullOutput`, `strict`. Compare those fields after capture, transform and restore.
+
+### Guide-API
+
+Source [877662ac37](https://github.com/GTNewHorizons/Guide-API/tree/877662ac37b76ec0bf57169ab51f0c0c8728cea5) · 75 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- Check printer placement against `SchematicPrinter`. 1 source file(s) contain matching declarations, including [ItemGuideBook.onItemUse](https://github.com/GTNewHorizons/Guide-API/blob/877662ac37b76ec0bf57169ab51f0c0c8728cea5/src/main/java/amerifrance/guideapi/items/ItemGuideBook.java#L58).
