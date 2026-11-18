@@ -26,6 +26,7 @@ import com.github.lunatrius.schematica.client.renderer.hud.StatusInfoHud;
 import com.github.lunatrius.schematica.client.util.InfoUtils;
 import com.github.lunatrius.schematica.handler.ConfigurationHandler;
 import com.github.lunatrius.schematica.handler.VisualSettings;
+import com.github.lunatrius.schematica.handler.client.SharedPlacementsClient;
 import com.github.lunatrius.schematica.handler.client.WorldHandler;
 import com.github.lunatrius.schematica.reference.Reference;
 import com.github.lunatrius.schematica.util.MessageType;
@@ -80,6 +81,7 @@ public final class Placements {
 
     public static void remove(SchematicWorld world) {
         if (!LIBRARY.remove(world)) return;
+        SharedPlacementsClient.INSTANCE.removed(world);
         RendererSchematicGlobal.INSTANCE.removeRendererSchematicChunks(world);
         if (selected == world) select(loaded.isEmpty() ? null : loaded.get(0));
         WorldHandler.INSTANCE.saveSession();
@@ -87,6 +89,7 @@ public final class Placements {
 
     public static void unloadSource(SchematicLibrary.Source<SchematicSourceData> source) {
         for (SchematicWorld world : LIBRARY.unload(source)) {
+            SharedPlacementsClient.INSTANCE.removed(world);
             RendererSchematicGlobal.INSTANCE.removeRendererSchematicChunks(world);
         }
         if (selected != null && !loaded.contains(selected)) {

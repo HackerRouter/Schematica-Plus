@@ -95,10 +95,10 @@ public final class SharedPlacementsClient {
         revision++;
         switch (message.operation) {
             case CLEAR:
+                modifying.clear();
                 for (SharedPlacement placement : placements()) unload(placement.id, false);
                 placements.clear();
                 sharing.clear();
-                modifying.clear();
                 return;
             case ADD:
                 SharedPlacement placement;
@@ -238,8 +238,8 @@ public final class SharedPlacementsClient {
 
     private void reload(SharedPlacement placement, SchematicWorld world) {
         boolean selected = Placements.selected == world;
-        Placements.remove(world);
         modifying.remove(placement.id);
+        Placements.remove(world);
         try {
             SchematicLibrary.Source<SchematicSourceData> source = Placements.loadSource(CloudCache.cached(file(placement))
                 ? CloudCache.file(placement.file()) : Placements.LIBRARY.sourceOf(world).file());
@@ -255,9 +255,7 @@ public final class SharedPlacementsClient {
         if (dismiss) dismissed.add(id);
         SchematicWorld world = loaded(id);
         if (world != null) Placements.remove(world);
-        if (modifying.remove(id) && dismiss) {
-            PacketHandler.INSTANCE.sendToServer(new MessageSharedRequest(MessageSharedRequest.Operation.CANCEL, id, null));
-        }
+        if (modifying.remove(id)) cancelModification(id);
         revision++;
     }
 
@@ -274,8 +272,19 @@ public final class SharedPlacementsClient {
             SharedWorlds.capture(world, placement).write()));
     }
 
+    /** A placement left the loaded list by any route; a modification it held is given back to the server. */
+    public void removed(SchematicWorld world) {
+        if (world.sharedId != null && modifying.remove(world.sharedId)) cancelModification(world.sharedId);
+    }
+
+    private static void cancelModification(UUID id) {
+        if (Minecraft.getMinecraft().getNetHandler() == null) return;
+        PacketHandler.INSTANCE.sendToServer(new MessageSharedRequest(MessageSharedRequest.Operation.CANCEL, id, null));
+    }
+
     public void worldChanged() {
         downloading.clear();
+        for (UUID id : modifying) cancelModification(id);
         modifying.clear();
         revision++;
         if (!ConfigurationHandler.sharedPlacementsAutoLoad) return;
