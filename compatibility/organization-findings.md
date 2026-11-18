@@ -1153,3 +1153,9 @@ Source [e657b5fe45](https://github.com/GTNewHorizons/LootGames/tree/e657b5fe45b7
 - Check tile serialization against `TileNBTCompat`. 2 source file(s) contain matching declarations, including [LegacyGameOfLightTile.readFromNBT](https://github.com/GTNewHorizons/LootGames/blob/e657b5fe45b7f41e84358c9d993f49bb373c6e16/src/main/java/eu/usrv/legacylootgames/gol/tiles/LegacyGameOfLightTile.java#L164).
 - Check preview rendering against `RendererSchematicChunk`. 3 source file(s) contain matching declarations, including [SudokuRenderer.renderTileEntityAt](https://github.com/GTNewHorizons/LootGames/blob/e657b5fe45b7f41e84358c9d993f49bb373c6e16/src/main/java/ru/timeconqueror/lootgames/client/render/SudokuRenderer.java#L67).
 - Check interaction events against `SchematicPrinter`. 1 source file(s) contain matching declarations, including [CommonEventHandler.onPlayerInteract](https://github.com/GTNewHorizons/LootGames/blob/e657b5fe45b7f41e84358c9d993f49bb373c6e16/src/main/java/ru/timeconqueror/timecore/api/common/CommonEventHandler.java#L13).
+
+### LunatriusCore
+
+Source [a4f311761f](https://github.com/GTNewHorizons/LunatriusCore/tree/a4f311761f219f0de3d2cdb73abf18419a02e3ca) · 28 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- No direct match in the listed checks. Mod entry point: [LunatriusCore](https://github.com/GTNewHorizons/LunatriusCore/blob/a4f311761f219f0de3d2cdb73abf18419a02e3ca/src/main/java/com/github/lunatrius/core/LunatriusCore.java#L18). Indirect effects from dependencies, injection, configuration and server rules remain open.
