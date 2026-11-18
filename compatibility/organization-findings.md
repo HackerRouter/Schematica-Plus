@@ -1330,3 +1330,9 @@ Source [788b66357d](https://github.com/GTNewHorizons/Navigator/tree/788b66357db8
 Source [87a13c2884](https://github.com/GTNewHorizons/nei-custom-diagram/tree/87a13c2884238248fc5497612f5d1ca508f3db53) · 111 tracked Java, Scala or Kotlin files outside test/example directories.
 
 - No direct match in the listed checks. Mod entry point: [NeiCustomDiagram](https://github.com/GTNewHorizons/nei-custom-diagram/blob/87a13c2884238248fc5497612f5d1ca508f3db53/src/main/java/com/github/dcysteine/neicustomdiagram/main/NeiCustomDiagram.java#L20). Indirect effects from dependencies, injection, configuration and server rules remain open.
+
+### NEI-Integration
+
+Source [1e88b70767](https://github.com/GTNewHorizons/NEI-Integration/tree/1e88b70767d8eef8330d9f16d57ad7ca02de9505) · 63 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- No direct match in the listed checks. Mod entry point: [NEIIntegration](https://github.com/GTNewHorizons/NEI-Integration/blob/1e88b70767d8eef8330d9f16d57ad7ca02de9505/src/main/java/tonius/neiintegration/NEIIntegration.java#L15). Indirect effects from dependencies, injection, configuration and server rules remain open.
