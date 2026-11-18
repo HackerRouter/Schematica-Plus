@@ -86,6 +86,7 @@ Source [2ecec40599](https://github.com/GTNewHorizons/AMDIForge/tree/2ecec405991e
 Source [94f014b667](https://github.com/GTNewHorizons/AmidstGTNH/tree/94f014b66777fb228c8eef329759f35495da9760) · 89 tracked Java, Scala or Kotlin files outside test/example directories.
 
 - No direct match in the listed checks. Mod entry point: [ForgeAmidst](https://github.com/GTNewHorizons/AmidstGTNH/blob/94f014b66777fb228c8eef329759f35495da9760/src/main/java/sedridor/forgeamidst/ForgeAmidst.java#L44). Indirect effects from dependencies, injection, configuration and server rules remain open.
+- [MapViewer](https://github.com/GTNewHorizons/AmidstGTNH/blob/94f014b66777fb228c8eef329759f35495da9760/src/main/java/sedridor/amidst/project/MapViewer.java#L280) accepts `MouseEvent`. Exercise the schematic overlay and hotkeys while the corresponding client feature is enabled.
 
 ### amunra
 
