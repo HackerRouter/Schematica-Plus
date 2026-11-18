@@ -1639,3 +1639,10 @@ Source [75f2ffce84](https://github.com/GTNewHorizons/RandomBoubles/tree/75f2ffce
 Source [8b062a446f](https://github.com/GTNewHorizons/Realistic-Terrain-Generation/tree/8b062a446f1f002ec6ab132d8f8a6f9c30af13a2) · 1915 tracked Java, Scala or Kotlin files outside test/example directories.
 
 - No direct match in the listed checks. Mod entry point: [RTG](https://github.com/GTNewHorizons/Realistic-Terrain-Generation/blob/8b062a446f1f002ec6ab132d8f8a6f9c30af13a2/src/main/java/rtg/RTG.java#L50). Indirect effects from dependencies, injection, configuration and server rules remain open.
+
+### Realistic-World-Gen
+
+Source [66b92f3805](https://github.com/GTNewHorizons/Realistic-World-Gen/tree/66b92f380597f16cb3cf75d418786e823a0fc13f) · 172 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- Check tile serialization against `TileNBTCompat`. 1 source file(s) contain matching declarations, including [RwgWorldSavedData.readFromNBT](https://github.com/GTNewHorizons/Realistic-World-Gen/blob/66b92f380597f16cb3cf75d418786e823a0fc13f/src/main/java/rwg/world/RwgWorldSavedData.java#L33).
+- [RwgWorldSavedData.readFromNBT](https://github.com/GTNewHorizons/Realistic-World-Gen/blob/66b92f380597f16cb3cf75d418786e823a0fc13f/src/main/java/rwg/world/RwgWorldSavedData.java#L33) accesses `noiseImplementation`, `biomeListVersion`. Compare those fields after capture, transform and restore.
