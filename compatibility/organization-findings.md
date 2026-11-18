@@ -1002,3 +1002,11 @@ Source [e05abc05be](https://github.com/GTNewHorizons/Horizon-QA/tree/e05abc05be8
 - Check printer placement against `SchematicPrinter`. 1 source file(s) contain matching declarations, including [ItemHorizonWand.onItemUse](https://github.com/GTNewHorizons/Horizon-QA/blob/e05abc05be88e9072c7ed298e4ae81c158213515/src/main/java/com/gtnewhorizons/horizonqa/item/ItemHorizonWand.java#L60).
 - Check interaction events against `SchematicPrinter`. 1 source file(s) contain matching declarations, including [SelectionBoxRenderer.onPlayerInteract](https://github.com/GTNewHorizons/Horizon-QA/blob/e05abc05be88e9072c7ed298e4ae81c158213515/src/main/java/com/gtnewhorizons/horizonqa/visual/SelectionBoxRenderer.java#L14).
 - [SelectionBoxRenderer.onPlayerInteract](https://github.com/GTNewHorizons/Horizon-QA/blob/e05abc05be88e9072c7ed298e4ae81c158213515/src/main/java/com/gtnewhorizons/horizonqa/visual/SelectionBoxRenderer.java#L14) can cancel the interaction. Verify the printer on a server with the handler enabled.
+
+### HydroEnergy
+
+Source [62ccae6f38](https://github.com/GTNewHorizons/HydroEnergy/tree/62ccae6f384f55792dfd1154a26624798a9297a9) · 61 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- Check tile serialization against `TileNBTCompat`. 1 source file(s) contain matching declarations, including [HEServer.readFromNBT](https://github.com/GTNewHorizons/HydroEnergy/blob/62ccae6f384f55792dfd1154a26624798a9297a9/src/main/java/com/sinthoras/hydroenergy/server/HEServer.java#L49).
+- Check preview rendering against `RendererSchematicChunk`. 1 source file(s) contain matching declarations, including [HEWaterRenderer.renderWorldBlock](https://github.com/GTNewHorizons/HydroEnergy/blob/62ccae6f384f55792dfd1154a26624798a9297a9/src/main/java/com/sinthoras/hydroenergy/client/renderer/HEWaterRenderer.java#L43).
+- Check world or renderer transformation alongside the schematic world and render pipeline. 5 source file(s) contain matching declarations, including [ChunkClientMixin.Chunk](https://github.com/GTNewHorizons/HydroEnergy/blob/62ccae6f384f55792dfd1154a26624798a9297a9/src/main/java/com/sinthoras/hydroenergy/mixins/early/ChunkClientMixin.java#L12).
