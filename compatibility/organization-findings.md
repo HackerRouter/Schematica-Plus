@@ -1733,3 +1733,9 @@ Source [dddfc3f085](https://github.com/GTNewHorizons/SGCraft/tree/dddfc3f0850d99
 - Check material picking against `BlockToItemStack`. 1 source file(s) contain matching declarations, including [BaseBlock.getPickBlock](https://github.com/GTNewHorizons/SGCraft/blob/dddfc3f0850d99616310ea195f0e5e7957ba1386/src/main/java/gcewing/sg/blocks/base/BaseBlock.java#L642).
 - Check printer placement against `SchematicPrinter`. 7 source file(s) contain matching declarations, including [DHDBlock.onBlockPlacedBy](https://github.com/GTNewHorizons/SGCraft/blob/dddfc3f0850d99616310ea195f0e5e7957ba1386/src/main/java/gcewing/sg/blocks/DHDBlock.java#L75).
 - [SGDimensionMap.readFromNBT](https://github.com/GTNewHorizons/SGCraft/blob/dddfc3f0850d99616310ea195f0e5e7957ba1386/src/main/java/gcewing/sg/SGDimensionMap.java#L100) accesses `dimensions`. Compare those fields after capture, transform and restore.
+
+### Share-Where-I-am
+
+Source [c1b7451de7](https://github.com/GTNewHorizons/Share-Where-I-am/tree/c1b7451de76772dce25a3e33c0137904951ccf26) · 35 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- No direct match in the listed checks. Mod entry point: [ShareWhereIAm](https://github.com/GTNewHorizons/Share-Where-I-am/blob/c1b7451de76772dce25a3e33c0137904951ccf26/src/main/java/com/muxiu1997/sharewhereiam/ShareWhereIAm.java#L11). Indirect effects from dependencies, injection, configuration and server rules remain open.
