@@ -405,3 +405,9 @@ Source [62543a7926](https://github.com/GTNewHorizons/BuildCraftCompat/tree/62543
 
 - Check tile serialization against `TileNBTCompat`. 2 source file(s) contain matching declarations, including [PipeItemsPropolis.readFromNBT](https://github.com/GTNewHorizons/BuildCraftCompat/blob/62543a79265c0f37a10dd188272b0a566496c9c4/src/main/java/buildcraft/compat/forestry/pipes/PipeItemsPropolis.java#L37).
 - [PipeLogicPropolis.readFromNBT](https://github.com/GTNewHorizons/BuildCraftCompat/blob/62543a79265c0f37a10dd188272b0a566496c9c4/src/main/java/buildcraft/compat/forestry/pipes/PipeLogicPropolis.java#L39) accesses `TypeFilter`, `GenomeFilterS`. Compare those fields after capture, transform and restore.
+
+### BuildCraftOilTweak
+
+Source [150d0013e1](https://github.com/GTNewHorizons/BuildCraftOilTweak/tree/150d0013e1d6dae7514772219b50b64424941f48) · 13 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- No direct match in the listed checks. Mod entry point: [BuildCraftOilTweak](https://github.com/GTNewHorizons/BuildCraftOilTweak/blob/150d0013e1d6dae7514772219b50b64424941f48/src/main/java/buildcraft/oiltweak/BuildCraftOilTweak.java#L23). Indirect effects from dependencies, injection, configuration and server rules remain open.
