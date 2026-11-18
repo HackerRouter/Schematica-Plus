@@ -1,7 +1,7 @@
 # Schematica Plus: development handoff
 
 Current guide, reviewed 2026-10-25. Runtime baseline: Minecraft 1.7.10 / Forge
-10.13.4.1614, release `1.0.0-beta.4`, with subsequent fixes on `master`.
+10.13.4.1614, release `1.0.0-beta.5`, with subsequent fixes on `master`.
 Support targets: GTNH **2.8.4** and **2.9.0-RC-2**, using each pack's native
 mod versions. Named combinations of individually installed mods are also checked
 in TESTING's selective-mod migration section. See [README](README.md) for usage, [TESTING](TESTING.md) for regression
@@ -147,6 +147,7 @@ Current behavior/translation references:
 
 | Project | Version | Revision |
 | --- | --- | --- |
+| DONE | 2026-11-18 | Prepare the `1.0.0-beta.5` release metadata in README; the release tag supplies the generated mod version, `mcmod.info` value and runtime JAR name. It includes the 2026-11-18 audit fixes recorded below. |
 | IMPLEMENTED_HEADLESS | 2026-11-18 | Complete the partial audit fixes: selection folders to the path length limit, legacy server selection directories moved to `server_<name>`, field merge of selection files changed outside the game, two-phase selection renames and save failure messages; project browser lists only projects; favorites dropped on delete; source save names take the target extension; deepest server folders listed; edit locks returned on every unload and dimension change; edited working copies shared and failed share uploads cleared on both sides; edited sources kept in memory when a download replaces their file; combined material recounts; skipped grid copies reported; verification paused for other-world placements; moves drop unstorable LiquidLogged fluids with a warning. Build and 807 tests pass; manual steps are in TESTING. |
 | IMPLEMENTED_HEADLESS | 2026-11-18 | Fix the fourth batch of audit findings: grid copies ending before the loaded area, vertical-section refresh and layer-only grid pastes (`client/world/GridPlacements`, `tool/ToolHandler`); verification of loaded upper cubes while lower ones are unloaded (`client/verifier/VerificationScan`); Sponge `.schem` lookup for server list actions and source copies; default source save names without the original extension; item NBT in custom material list files; no placement boxes for placements marked as another world. Build and 804 tests pass; no game client or server was started. |
 | IMPLEMENTED_HEADLESS | 2026-11-18 | Fix the third batch of audit findings: sparse vanilla `.nbt` structures keep their gaps (`world/schematic/VanillaStructure`); deletion by placement needs an enabled sub-region; saves and servers of one name keep separate per-world selection directories, with legacy server directories reused; externally changed selection files, removed name collisions and long multibyte names in `client/selection/AreaSelectionStore`; the layer set-here hotkey and single-layer follow use the panel's bounds and feet height. Build and 801 tests pass; no game client was started. |

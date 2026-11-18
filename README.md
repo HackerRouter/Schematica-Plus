@@ -1,6 +1,6 @@
 # Schematica Plus
 
-**Beta.4** (`1.0.0-beta.4`) for **Minecraft 1.7.10 / Forge 10.13.4.1614**.
+**Beta.5** (`1.0.0-beta.5`) for **Minecraft 1.7.10 / Forge 10.13.4.1614**.
 
 ## TL;DR:
 

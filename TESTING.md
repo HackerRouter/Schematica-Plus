@@ -3600,9 +3600,20 @@ and Nether/End remain untested.
 Build, main/test Checkstyle and a fresh run of all 603 tests passed with no
 failures, errors or skips; no production code changed.
 
-### Release 1.0.0-beta.4 verification
+### Release 1.0.0-beta.5 verification
 
 The current release uses the Git tag as the version source for generated
+`SchematicaVersion.VERSION`, `mcmod.info` and the runtime JAR name. Run
+`./gradlew build` and `LC_ALL=C.UTF-8 ./gradlew test`, then repeat the build
+on tag `1.0.0-beta.5` and check `schematica_plus-1.0.0-beta.5.jar`.
+Push the tag to trigger `.github/workflows/release-tags.yml`; its verification
+job must pass before the runtime JAR is published as a GitHub prerelease.
+The 2026-11-18 audit fixes in this release were checked by automated tests
+only; their game steps are under "Audit follow-ups needing a real game".
+
+### Release 1.0.0-beta.4 verification
+
+The release uses the Git tag as the version source for generated
 `SchematicaVersion.VERSION`, `mcmod.info` and the runtime JAR name. Run
 `./gradlew build` and `LC_ALL=C.UTF-8 ./gradlew test`, then repeat the build
 on tag `1.0.0-beta.4` and check `schematica_plus-1.0.0-beta.4.jar`.
