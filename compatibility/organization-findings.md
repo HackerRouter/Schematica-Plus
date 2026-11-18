@@ -1864,3 +1864,11 @@ Source [f448da1aaf](https://github.com/GTNewHorizons/supernova/tree/f448da1aaf8f
 Source [9c79cb1e7a](https://github.com/GTNewHorizons/supersolarpanels/tree/9c79cb1e7a4265fe4db5ca4539f83c1dca1a5988) · 23 tracked Java, Scala or Kotlin files outside test/example directories.
 
 - No direct match in the listed checks. Mod entry point: [MainSSP](https://github.com/GTNewHorizons/supersolarpanels/blob/9c79cb1e7a4265fe4db5ca4539f83c1dca1a5988/src/main/java/com/supsolpans/MainSSP.java#L38). Indirect effects from dependencies, injection, configuration and server rules remain open.
+
+### Tainted-Magic
+
+Source [887979a92f](https://github.com/GTNewHorizons/Tainted-Magic/tree/887979a92fac36bfe4deda30908872cddaa91a91) · 68 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- Check material picking against `BlockToItemStack`. 1 source file(s) contain matching declarations, including [BlockWarpwoodLeaves.getPickBlock](https://github.com/GTNewHorizons/Tainted-Magic/blob/887979a92fac36bfe4deda30908872cddaa91a91/src/main/java/taintedmagic/common/blocks/BlockWarpwoodLeaves.java#L139).
+- Check printer placement against `SchematicPrinter`. 1 source file(s) contain matching declarations, including [ItemShadowmetalHoe.onItemUse](https://github.com/GTNewHorizons/Tainted-Magic/blob/887979a92fac36bfe4deda30908872cddaa91a91/src/main/java/taintedmagic/common/items/tools/ItemShadowmetalHoe.java#L34).
+- [BlockWarpwoodLeaves.getPickBlock](https://github.com/GTNewHorizons/Tainted-Magic/blob/887979a92fac36bfe4deda30908872cddaa91a91/src/main/java/taintedmagic/common/blocks/BlockWarpwoodLeaves.java#L139) queries world state when selecting an item. Compare the materials list against the placed variant.
