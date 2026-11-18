@@ -2216,3 +2216,10 @@ Source [fcbd3c0e70](https://github.com/GTNewHorizons/WAWLA/tree/fcbd3c0e70a59389
 Source [acd292a6bf](https://github.com/GTNewHorizons/WDMla/tree/acd292a6bf6f4b06c02f055e8abe8bbfe26880b1) · 348 tracked Java, Scala or Kotlin files outside test/example directories.
 
 - No direct match in the listed checks. Mod entry point: [WDMla](https://github.com/GTNewHorizons/WDMla/blob/acd292a6bf6f4b06c02f055e8abe8bbfe26880b1/src/main/java/com/gtnewhorizons/wdmla/WDMla.java#L24). Indirect effects from dependencies, injection, configuration and server rules remain open.
+
+### WirelessCraftingTerminal
+
+Source [3415dc0b50](https://github.com/GTNewHorizons/WirelessCraftingTerminal/tree/3415dc0b50506885e2aebd83a8c9116cdbe27787) · 96 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- Check tile serialization against `TileNBTCompat`. 6 source file(s) contain matching declarations, including [ContainerWirelessCraftingTerminal.writeToNBT](https://github.com/GTNewHorizons/WirelessCraftingTerminal/blob/3415dc0b50506885e2aebd83a8c9116cdbe27787/src/main/java/net/p455w0rd/wirelesscraftingterminal/common/container/ContainerWirelessCraftingTerminal.java#L314).
+- [WCTInventoryBooster.readFromNBT](https://github.com/GTNewHorizons/WirelessCraftingTerminal/blob/3415dc0b50506885e2aebd83a8c9116cdbe27787/src/main/java/net/p455w0rd/wirelesscraftingterminal/common/inventory/WCTInventoryBooster.java#L103) accesses `Slot`. Compare those fields after capture, transform and restore.
