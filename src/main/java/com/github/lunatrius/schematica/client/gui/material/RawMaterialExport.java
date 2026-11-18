@@ -146,13 +146,14 @@ public final class RawMaterialExport {
             Map<String, Long> results = new LinkedHashMap<>();
             results.put(root.item, (long) root.count);
             boolean first = true;
+            Set<String> counted = new HashSet<>();
             for (Node leaf : leaves) {
                 boolean carry = first && (previous == null || !sameSteps(previous, steps));
                 result.flat.add(new Raw(leaf.item, leaf.count, carry ? steps : new ArrayList<Step>(), results));
                 first = false;
                 Raw old = combined.get(leaf.item);
                 Map<String, Long> merged = new LinkedHashMap<>(old == null ? new LinkedHashMap<String, Long>() : old.results);
-                merged.merge(root.item, (long) root.count, Long::sum);
+                if (counted.add(leaf.item)) merged.merge(root.item, (long) root.count, Long::sum);
                 combined.put(leaf.item, new Raw(leaf.item, (old == null ? 0 : old.total) + leaf.count, new ArrayList<Step>(), merged));
             }
             previous = steps;
