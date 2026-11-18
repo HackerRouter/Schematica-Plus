@@ -1345,3 +1345,9 @@ Source [96555f62d7](https://github.com/GTNewHorizons/Nei-Recipe-Panels/tree/9655
 - Check preview rendering against `RendererSchematicChunk`. 1 source file(s) contain matching declarations, including [RecipePanelRenderer.renderTileEntityAt](https://github.com/GTNewHorizons/Nei-Recipe-Panels/blob/96555f62d7dd6fb95220d1c8103f0cd223bc8390/src/main/java/com/gtnewhorizons/neirecipepanel/client/render/RecipePanelRenderer.java#L27).
 - Check material picking against `BlockToItemStack`. 1 source file(s) contain matching declarations, including [RecipePanelBlock.getPickBlock](https://github.com/GTNewHorizons/Nei-Recipe-Panels/blob/96555f62d7dd6fb95220d1c8103f0cd223bc8390/src/main/java/com/gtnewhorizons/neirecipepanel/block/RecipePanelBlock.java#L143).
 - Check printer placement against `SchematicPrinter`. 1 source file(s) contain matching declarations, including [ItemRecipePanel.onItemUse](https://github.com/GTNewHorizons/Nei-Recipe-Panels/blob/96555f62d7dd6fb95220d1c8103f0cd223bc8390/src/main/java/com/gtnewhorizons/neirecipepanel/item/ItemRecipePanel.java#L75).
+
+### neiaddons
+
+Source [cd4b95fc9a](https://github.com/GTNewHorizons/neiaddons/tree/cd4b95fc9a8f6952c6d872caca134a9e7e6d74dd) · 60 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- No direct match in the listed checks. Mod entry point: [NEIAddons](https://github.com/GTNewHorizons/neiaddons/blob/cd4b95fc9a8f6952c6d872caca134a9e7e6d74dd/src/main/scala/net/bdew/neiaddons/NEIAddons.java#L28). Indirect effects from dependencies, injection, configuration and server rules remain open.
