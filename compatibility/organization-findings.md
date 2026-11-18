@@ -1686,6 +1686,7 @@ Source [3daa59d2ce](https://github.com/GTNewHorizons/Realistic-World-Gen-2/tree/
 Source [1a9919e335](https://github.com/GTNewHorizons/RecEx/tree/1a9919e33554927ad0c318c44071df7e9053320f) · 21 tracked Java, Scala or Kotlin files outside test/example directories.
 
 - No direct match in the listed checks. Mod entry point: [RecipeExporterMod](https://github.com/GTNewHorizons/RecEx/blob/1a9919e33554927ad0c318c44071df7e9053320f/src/main/java/com/bigbass/recex/RecipeExporterMod.java#L15). Indirect effects from dependencies, injection, configuration and server rules remain open.
+- [KeyInputEventHandler](https://github.com/GTNewHorizons/RecEx/blob/1a9919e33554927ad0c318c44071df7e9053320f/src/main/java/com/bigbass/recex/listeners/KeyInputEventHandler.java#L20) accepts `KeyInputEvent`. Exercise the schematic overlay and hotkeys while the corresponding client feature is enabled.
 
 ### RegionLib
 
