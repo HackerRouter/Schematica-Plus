@@ -2017,3 +2017,9 @@ Source [a280d38d92](https://github.com/GTNewHorizons/The-Aether-GTNH/tree/a280d3
 - [AetherEventHandler.checkBlockBannedEvent](https://github.com/GTNewHorizons/The-Aether-GTNH/blob/a280d38d92ad1fda69d95b1d9c48dc1f0727e82e/src/main/java/com/gildedgames/the_aether/AetherEventHandler.java#L58) can cancel the interaction. Verify the printer on a server with the handler enabled.
 - [InventoryAccessories.readFromNBT](https://github.com/GTNewHorizons/The-Aether-GTNH/blob/a280d38d92ad1fda69d95b1d9c48dc1f0727e82e/src/main/java/com/gildedgames/the_aether/inventory/InventoryAccessories.java#L329) accesses `Slot`. Compare those fields after capture, transform and restore.
 - [ItemAetherPortalFrame.onItemUse](https://github.com/GTNewHorizons/The-Aether-GTNH/blob/a280d38d92ad1fda69d95b1d9c48dc1f0727e82e/src/main/java/com/gildedgames/the_aether/items/ItemAetherPortalFrame.java#L20) depends on placement orientation. Exercise the printer with a rotated schematic.
+
+### TiC-Tooltips
+
+Source [1d4d5c579c](https://github.com/GTNewHorizons/TiC-Tooltips/tree/1d4d5c579c3a67a81d4d35f44951059cb4ac287d) · 15 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- No direct match in the listed checks. Mod entry point: [ModTiCTooltips](https://github.com/GTNewHorizons/TiC-Tooltips/blob/1d4d5c579c3a67a81d4d35f44951059cb4ac287d/src/main/java/squeek/tictooltips/ModTiCTooltips.java#L22). Indirect effects from dependencies, injection, configuration and server rules remain open.
