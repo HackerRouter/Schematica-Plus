@@ -1846,3 +1846,9 @@ Source [9cf56091e6](https://github.com/GTNewHorizons/StructureCompat/tree/9cf560
 Source [1b401232b3](https://github.com/GTNewHorizons/StructureLib/tree/1b401232b3e64d799d59cbfec0ccc1ccfcf37d62) · 94 tracked Java, Scala or Kotlin files outside test/example directories.
 
 - Check world or renderer transformation alongside the schematic world and render pipeline. 1 source file(s) contain matching declarations, including [MixinWorld.World](https://github.com/GTNewHorizons/StructureLib/blob/1b401232b3e64d799d59cbfec0ccc1ccfcf37d62/src/main/java/com/gtnewhorizon/structurelib/mixins/early/blockChangeNotifier/MixinWorld.java#L18).
+
+### Super-TiC
+
+Source [f1115d4521](https://github.com/GTNewHorizons/Super-TiC/tree/f1115d452152ad0424432bb79ff6c80fd03c18e9) · 10 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- No direct match in the listed checks. Mod entry point: [SuperTic](https://github.com/GTNewHorizons/Super-TiC/blob/f1115d452152ad0424432bb79ff6c80fd03c18e9/src/main/java/com/Zoko061602/SuperTic/SuperTic.java#L19). Indirect effects from dependencies, injection, configuration and server rules remain open.
