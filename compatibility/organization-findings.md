@@ -784,3 +784,15 @@ Source [a17580e04d](https://github.com/GTNewHorizons/ForestryMC/tree/a17580e04d4
 Source [97e3937690](https://github.com/GTNewHorizons/Forgelin/tree/97e3937690bf1ee71786e587b988ac4195fc3f2d) · 7 tracked Java, Scala or Kotlin files outside test/example directories.
 
 - No direct match in the listed checks. Mod entry point: [Forgelin](https://github.com/GTNewHorizons/Forgelin/blob/97e3937690bf1ee71786e587b988ac4195fc3f2d/src/main/kotlin/net/shadowfacts/forgelin/Forgelin.kt#L11). Indirect effects from dependencies, injection, configuration and server rules remain open.
+
+### ForgeMultipart
+
+Source [3b181eb231](https://github.com/GTNewHorizons/ForgeMultipart/tree/3b181eb231a68ee578c53aa72b276ca5c8e29366) · 243 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- Existing Plus lookup in `ForgeMultipart` names [codechicken.microblock.MicroMaterialRegistry](https://github.com/GTNewHorizons/ForgeMultipart/blob/3b181eb231a68ee578c53aa72b276ca5c8e29366/src/main/scala/codechicken/microblock/MicroMaterialRegistry.java#L1) (7 matching upstream source names). Check reflected members and client state with the deployed versions.
+- Check tile serialization against `TileNBTCompat`. 2 source file(s) contain matching declarations, including [TileMultipart.writeToNBT](https://github.com/GTNewHorizons/ForgeMultipart/blob/3b181eb231a68ee578c53aa72b276ca5c8e29366/src/main/scala/codechicken/multipart/TileMultipart.java#L759).
+- Check preview rendering against `RendererSchematicChunk`. 3 source file(s) contain matching declarations, including [ISBRHPart.renderWorldBlock](https://github.com/GTNewHorizons/ForgeMultipart/blob/3b181eb231a68ee578c53aa72b276ca5c8e29366/src/main/scala/codechicken/multipart/ISBRHPart.java#L8).
+- Check material picking against `BlockToItemStack`. 1 source file(s) contain matching declarations, including [BlockMultipart.getPickBlock](https://github.com/GTNewHorizons/ForgeMultipart/blob/3b181eb231a68ee578c53aa72b276ca5c8e29366/src/main/scala/codechicken/multipart/BlockMultipart.java#L277).
+- Check printer placement against `SchematicPrinter`. 4 source file(s) contain matching declarations, including [ItemMicroPart.onItemUse](https://github.com/GTNewHorizons/ForgeMultipart/blob/3b181eb231a68ee578c53aa72b276ca5c8e29366/src/main/scala/codechicken/microblock/ItemMicroPart.java#L60).
+- Check world or renderer transformation alongside the schematic world and render pipeline. 1 source file(s) contain matching declarations, including [MixinRenderGlobal.RenderGlobal](https://github.com/GTNewHorizons/ForgeMultipart/blob/3b181eb231a68ee578c53aa72b276ca5c8e29366/src/mixin/java/codechicken/multipart/mixin/early/MixinRenderGlobal.java#L22).
+- [TileMultipart.writeToNBT](https://github.com/GTNewHorizons/ForgeMultipart/blob/3b181eb231a68ee578c53aa72b276ca5c8e29366/src/main/scala/codechicken/multipart/TileMultipart.java#L759) accesses `id`, `parts`. Compare those fields after capture, transform and restore.
