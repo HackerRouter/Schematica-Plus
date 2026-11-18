@@ -50,6 +50,22 @@ public class SchematicFilesTest {
         add.invoke(Block.blockRegistry, 4061, name, block, new BitSet());
     }
 
+    @Test public void filesReopenWithTheirHostBlockAndStoredFluid() throws Exception {
+        Schematic source = new Schematic(null, 3, 2, 1);
+        source.setBlock(2, 1, 0, block, 9);
+        source.setStoredFluid(2, 1, 0, "water");
+        for (String extension : new String[] {".litematic", ".nbt", ".schem"}) {
+            File target = temporary.newFile("holder" + extension);
+            LitematicExport.Document encoded = SchematicFormat.encode(target, source, null, false, false, "");
+            if (extension.equals(".litematic")) SchematicFileWriter.write(target, encoded);
+            else SchematicFileWriter.write(target, encoded.root);
+            ISchematic read = SchematicFormat.readFromFile(target);
+            assertSame(extension, block, read.getBlock(2, 1, 0));
+            assertEquals(extension, 9, read.getBlockMetadata(2, 1, 0));
+            assertEquals(extension, source.getStoredFluids(), read.getStoredFluids());
+        }
+    }
+
     private File litematic(String name) throws Exception {
         LitematicExport.Document document = new LitematicExport.Document();
         NBTTagCompound metadata = new NBTTagCompound(), regions = new NBTTagCompound(), region = new NBTTagCompound();
