@@ -2158,3 +2158,11 @@ Source [543dd275f8](https://github.com/GTNewHorizons/VillageNames/tree/543dd275f
 - Check printer placement against `SchematicPrinter`. 4 source file(s) contain matching declarations, including [BlockConcrete.onBlockPlacedBy](https://github.com/GTNewHorizons/VillageNames/blob/543dd275f8daebfae71166dc9abc46ef9355691f/src/main/java/astrotibs/villagenames/block/color/BlockConcrete.java#L87).
 - [TileEntityBanner.writeToNBT](https://github.com/GTNewHorizons/VillageNames/blob/543dd275f8daebfae71166dc9abc46ef9355691f/src/main/java/astrotibs/villagenames/banner/TileEntityBanner.java#L60) accesses `Base`, `IsStanding`, `Patterns`. Compare those fields after capture, transform and restore.
 - [BlockGlazedTerracotta.onBlockPlacedBy](https://github.com/GTNewHorizons/VillageNames/blob/543dd275f8daebfae71166dc9abc46ef9355691f/src/main/java/astrotibs/villagenames/block/color/BlockGlazedTerracotta.java#L124) depends on placement orientation. Exercise the printer with a rotated schematic.
+
+### Viridium
+
+Source [fb341a4c6b](https://github.com/GTNewHorizons/Viridium/tree/fb341a4c6b29a041f68f958348defd64c41cd07d) · 101 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- Check preview rendering against `RendererSchematicChunk`. 6 source file(s) contain matching declarations, including [BushBlockRenderer.renderWorldBlock](https://github.com/GTNewHorizons/Viridium/blob/fb341a4c6b29a041f68f958348defd64c41cd07d/src/main/java/net/junedev/viridium/client/renderers/blocks/BushBlockRenderer.java#L53).
+- Check printer placement against `SchematicPrinter`. 2 source file(s) contain matching declarations, including [SmallLogBlock.onBlockPlaced](https://github.com/GTNewHorizons/Viridium/blob/fb341a4c6b29a041f68f958348defd64c41cd07d/src/main/java/net/junedev/viridium/blocks/SmallLogBlock.java#L289).
+- Check world or renderer transformation alongside the schematic world and render pipeline. 1 source file(s) contain matching declarations, including [MixinRenderBlocks_WaterTint.RenderBlocks](https://github.com/GTNewHorizons/Viridium/blob/fb341a4c6b29a041f68f958348defd64c41cd07d/src/main/java/net/junedev/viridium/mixin/mixins/early/minecraft/MixinRenderBlocks_WaterTint.java#L15).
