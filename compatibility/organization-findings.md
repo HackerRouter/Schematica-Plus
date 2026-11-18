@@ -981,3 +981,10 @@ Source [b1ca4b5108](https://github.com/GTNewHorizons/Hardcore-Ender-Expansion/tr
 Source [bd0603fd84](https://github.com/GTNewHorizons/HelpFixer/tree/bd0603fd84fe7e2a017b9919c28437ff3e9a2b69) · 1 tracked Java, Scala or Kotlin files outside test/example directories.
 
 - No direct match in the listed checks. Mod entry point: [HelpFixer](https://github.com/GTNewHorizons/HelpFixer/blob/bd0603fd84fe7e2a017b9919c28437ff3e9a2b69/src/main/java/com/matthewprenger/helpfixer/HelpFixer.java#L23). Indirect effects from dependencies, injection, configuration and server rules remain open.
+
+### Hodgepodge
+
+Source [ec66e0b0da](https://github.com/GTNewHorizons/Hodgepodge/tree/ec66e0b0da39c8beca641022b8db4283f50e8f57) · 767 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- Check printer placement against `SchematicPrinter`. 2 source file(s) contain matching declarations, including [MixinTileAnchorPassive.onBlockPlacedBy](https://github.com/GTNewHorizons/Hodgepodge/blob/ec66e0b0da39c8beca641022b8db4283f50e8f57/src/main/java/com/mitchej123/hodgepodge/mixins/late/railcraft/MixinTileAnchorPassive.java#L17).
+- Check world or renderer transformation alongside the schematic world and render pipeline. 37 source file(s) contain matching declarations, including [MixinRenderGlobal.RenderGlobal](https://github.com/GTNewHorizons/Hodgepodge/blob/ec66e0b0da39c8beca641022b8db4283f50e8f57/src/main/java/com/mitchej123/hodgepodge/mixins/early/debug/MixinRenderGlobal.java#L29).
