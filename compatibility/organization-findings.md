@@ -561,3 +561,9 @@ Source [9d2c673e72](https://github.com/GTNewHorizons/CubicChunks1710/tree/9d2c67
 Source [327b7f886d](https://github.com/GTNewHorizons/Custom-Main-Menu/tree/327b7f886d97d82f8f102fddfd61e408f68efd23) · 52 tracked Java, Scala or Kotlin files outside test/example directories.
 
 - No direct match in the listed checks. Mod entry point: [CustomMainMenu](https://github.com/GTNewHorizons/Custom-Main-Menu/blob/327b7f886d97d82f8f102fddfd61e408f68efd23/src/main/java/lumien/custommainmenu/CustomMainMenu.java#L22). Indirect effects from dependencies, injection, configuration and server rules remain open.
+
+### Darkerer
+
+Source [d9eefaaab5](https://github.com/GTNewHorizons/Darkerer/tree/d9eefaaab5de427637f87cc7b9650657b0902a55) · 10 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- Check world or renderer transformation alongside the schematic world and render pipeline. 2 source file(s) contain matching declarations, including [MixinEntityRenderer.EntityRenderer](https://github.com/GTNewHorizons/Darkerer/blob/d9eefaaab5de427637f87cc7b9650657b0902a55/src/main/java/glowredman/darkerer/mixins/MixinEntityRenderer.java#L21).
