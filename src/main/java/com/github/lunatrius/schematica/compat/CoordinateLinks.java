@@ -262,6 +262,15 @@ public final class CoordinateLinks {
         if (!local(tag)) return tag;
         int dx = x - tag.getInteger("x"), dy = y - tag.getInteger("y"), dz = z - tag.getInteger("z");
         apply(specs, tag, p -> new double[] {p[0] + dx, p[1] + dy, p[2] + dz}, (char) 0, dimension);
+        for (Spec spec : specs) {
+            if (spec.machine != 'q') continue;
+            NBTTagList next = tag.getTagList("nextAreas", 10);
+            for (int i = 0; i < next.tagCount(); i++) {
+                if (next.getCompoundTagAt(i).hasKey("SchematicaQuarryY")) {
+                    throw new IllegalArgumentException("The rotated quarry areas require different height ranges");
+                }
+            }
+        }
         tag.removeTag(MARKER);
         return tag;
     }
@@ -383,30 +392,31 @@ public final class CoordinateLinks {
         tag.setBoolean("finished", false);
     }
 
-    private static boolean area(NBTTagCompound holder, Mapping mapping) {
-        if (!holder.hasKey("area", 10)) return false;
+    private static int[] quarryArea(NBTTagCompound holder, Mapping mapping, int lowY, int highY) {
         NBTTagCompound area = holder.getCompoundTag("area");
-        double[] a = mapping.map(new double[] {area.getInteger("lowX"), 0, area.getInteger("lowZ")});
-        double[] b = mapping.map(new double[] {area.getInteger("highX"), 0, area.getInteger("highZ")});
-        area.setInteger("lowX", (int) Math.round(Math.min(a[0], b[0])));
-        area.setInteger("lowZ", (int) Math.round(Math.min(a[2], b[2])));
-        area.setInteger("highX", (int) Math.round(Math.max(a[0], b[0])));
-        area.setInteger("highZ", (int) Math.round(Math.max(a[2], b[2])));
-        return true;
+        double[] a = mapping.map(new double[] {area.getInteger("lowX"), lowY, area.getInteger("lowZ")});
+        double[] b = mapping.map(new double[] {area.getInteger("highX"), highY, area.getInteger("highZ")});
+        area.setInteger("lowX", (int) Math.min(a[0], b[0]));
+        area.setInteger("lowZ", (int) Math.min(a[2], b[2]));
+        area.setInteger("highX", (int) Math.max(a[0], b[0]));
+        area.setInteger("highZ", (int) Math.max(a[2], b[2]));
+        return new int[] {(int) Math.min(a[1], b[1]), (int) Math.max(a[1], b[1])};
     }
 
     private static void quarry(NBTTagCompound tag, Mapping mapping, char operation) {
-        if (!tag.hasKey("area", 10) || operation == 'X' || operation == 'Z') return;
-        if (operation != 'y') {
-            area(tag, mapping);
-            NBTTagList next = tag.getTagList("nextAreas", 10);
-            for (int i = 0; i < next.tagCount(); i++) area(next.getCompoundTagAt(i), mapping);
-        }
-        if (tag.hasKey("lowerYBound") && tag.hasKey("upperYBound")) {
-            double low = mapping.map(new double[] {0, tag.getInteger("lowerYBound"), 0})[1];
-            double high = mapping.map(new double[] {0, tag.getInteger("upperYBound"), 0})[1];
-            tag.setInteger("lowerYBound", (int) Math.round(Math.min(low, high)));
-            tag.setInteger("upperYBound", (int) Math.round(Math.max(low, high)));
+        if (!tag.hasKey("area", 10) || !tag.hasKey("lowerYBound") || !tag.hasKey("upperYBound")) return;
+        int low = tag.getInteger("lowerYBound"), high = tag.getInteger("upperYBound");
+        int[] bounds = quarryArea(tag, mapping, low, high);
+        tag.setInteger("lowerYBound", bounds[0]);
+        tag.setInteger("upperYBound", bounds[1]);
+        NBTTagList next = tag.getTagList("nextAreas", 10);
+        for (int i = 0; i < next.tagCount(); i++) {
+            NBTTagCompound holder = next.getCompoundTagAt(i);
+            if (!holder.hasKey("area", 10)) continue;
+            int[] saved = holder.getIntArray("SchematicaQuarryY");
+            int[] turned = quarryArea(holder, mapping, saved.length == 2 ? saved[0] : low, saved.length == 2 ? saved[1] : high);
+            if (java.util.Arrays.equals(turned, bounds)) holder.removeTag("SchematicaQuarryY");
+            else holder.setIntArray("SchematicaQuarryY", turned);
         }
         if (operation == 0) {
             double[] cursor = mapping.map(new double[] {tag.getInteger("dx"), tag.getInteger("dy"), tag.getInteger("dz")});

@@ -548,9 +548,15 @@ public class CoordinateLinksTest {
         assertEquals(18, flipped.getInteger("upperYBound"));
         assertEquals(18, flipped.getInteger("dy"));
         NBTTagCompound tilted = voidQuarry();
-        NBTTagCompound before = (NBTTagCompound) tilted.copy();
+
         CoordinateLinks.transform(rules, tilted, 'X', 30, 20, 10);
-        assertEquals(before, tilted);
+        assertArrayEquals(new int[] {2, 7, 20, 18}, area(tilted));
+        assertEquals(3, tilted.getInteger("lowerYBound"));
+        assertEquals(9, tilted.getInteger("upperYBound"));
+        assertArrayEquals(new int[] {3, 4}, tilted.getTagList("nextAreas", 10).getCompoundTagAt(0).getIntArray("SchematicaQuarryY"));
+        org.junit.Assert.assertThrows(IllegalArgumentException.class, () -> CoordinateLinks.paste(rules, tilted, 0, 10, 0, 0));
+        CoordinateLinks.transform(rules, tilted, 'X', 30, 10, 20);
+        assertFalse(tilted.getTagList("nextAreas", 10).getCompoundTagAt(0).hasKey("SchematicaQuarryY"));
     }
 
     @Test public void smartPumpRestartsItsScanWhenPlacedElsewhereButNotWhenSaved() {

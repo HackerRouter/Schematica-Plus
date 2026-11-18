@@ -667,7 +667,7 @@ public final class WorldEditJob extends WorldEditTask {
         }
         NBTTagCompound pasteTile = kind == Kind.PASTE ? tiles.get(index) : null;
         if (pasteTile != null) {
-            pasteTile = (NBTTagCompound) pasteTile.copy();
+            pasteTile = CoordinateLinks.paste((NBTTagCompound) pasteTile.copy(), wx, wy, wz, world.provider.dimensionId);
             CoordinateLinks.prepareStationCopy(pasteTile, player);
         }
         boolean written = false;
@@ -688,7 +688,6 @@ public final class WorldEditJob extends WorldEditTask {
                 NBTTagCompound tag = pasteTile;
                 TileEntity tile;
                 if (tag != null) {
-                    tag = CoordinateLinks.paste(tag, wx, wy, wz, world.provider.dimensionId);
                     tag.setInteger("x", wx); tag.setInteger("y", wy); tag.setInteger("z", wz);
                     tile = "savedMultipart".equals(tag.getString("id"))
                         ? ForgeMultipart.createFromNBT(tag, false) : TileEntity.createAndLoadEntity(tag);
