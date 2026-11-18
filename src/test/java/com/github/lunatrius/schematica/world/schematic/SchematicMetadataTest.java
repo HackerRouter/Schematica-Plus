@@ -1,11 +1,14 @@
 package com.github.lunatrius.schematica.world.schematic;
 
 import java.io.File;
+import java.lang.reflect.Method;
 import java.nio.file.Files;
 import java.util.Arrays;
+import java.util.BitSet;
 import java.util.Collections;
 
 import net.minecraft.block.Block;
+import net.minecraft.block.material.Material;
 import net.minecraft.nbt.NBTTagCompound;
 
 import com.github.lunatrius.schematica.api.ISchematic;
@@ -36,6 +39,16 @@ public class SchematicMetadataTest {
     @BeforeClass public static void setup() throws Exception {
         SchematicFilesTest.register();
         block = GameData.getBlockRegistry().getObject("test:files_block");
+    }
+
+    private static Block other() throws Exception {
+        String name = "test:metadata_other_block";
+        if (!GameData.getBlockRegistry().containsKey(name)) {
+            Method add = Block.blockRegistry.getClass().getDeclaredMethod("add", int.class, String.class, Object.class, BitSet.class);
+            add.setAccessible(true);
+            add.invoke(Block.blockRegistry, 4062, name, new Block(Material.rock) {}, new BitSet());
+        }
+        return GameData.getBlockRegistry().getObject(name);
     }
 
     private Schematic sample() {
@@ -158,6 +171,22 @@ public class SchematicMetadataTest {
             assertEquals(ext, 3, SchematicFormat.readFromFile(saved).getBlockMetadata(1, 0, 0));
             assertFalse(source.unsaved());
         }
+    }
+
+    @Test public void replacedBlocksDropTheOldStoredFluid() throws Exception {
+        Schematic schematic = sample();
+        schematic.setStoredFluid(1, 0, 0, "water");
+        schematic.setStoredFluid(0, 0, 0, "lava");
+        File file = save("fluid.schemplus", schematic);
+        SchematicSourceData source = SchematicSourceData.read(file);
+        Schematic contents = source.editable();
+        String region = SchematicCopies.independent(contents) ? contents.getRegions().get(0).name : null;
+        SourceEditor.apply(source, Collections.singletonMap(new SourceEditor.Cell(region, 1, 0, 0), new CellState(other(), 0, null)));
+        SourceEditor.apply(source, Collections.singletonMap(new SourceEditor.Cell(region, 0, 0, 0), new CellState(block, 2, null)));
+        ISchematic edited = region == null ? source.editable() : source.editable().getRegionSchematic(region);
+        assertNull(edited.getStoredFluid(1, 0, 0));
+        assertEquals("lava", edited.getStoredFluid(0, 0, 0));
+        assertNull(source.editable().getStoredFluid(1, 0, 0));
     }
 
     @Test public void loadedSnapshotMetadataEditsKeepUnknownLongArrays() throws Exception {

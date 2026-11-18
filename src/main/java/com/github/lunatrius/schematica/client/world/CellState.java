@@ -73,6 +73,7 @@ public final class CellState {
     public void write(ISchematic target, int x, int y, int z) {
         Block previous = target.getBlock(x, y, z);
         if (!target.setBlock(x, y, z, block, meta)) return;
+        if (previous != block) target.setStoredFluid(x, y, z, null);
         if (tile != null) {
             TileEntity copy = SchematicCopies.tile(tile, -x, -y, -z);
             target.setTileEntity(x, y, z, copy);
