@@ -107,6 +107,15 @@ public class RawMaterialExportTest {
         assertTrue(simplified.has("RawItem") && simplified.has("TotalEstimate") && simplified.getAsJsonArray("Steps").size() == 0);
     }
 
+    @Test public void missingOnlyExportsCountWhatIsStillToCollect() {
+        MaterialListModel<String> model = new MaterialListModel<>();
+        MaterialListModel.Entry<String> entry = new MaterialListModel.Entry<>("stone", "Stone", "minecraft:stone", 100, 4, 0, 0);
+        entry.available = 3;
+        model.setEntries(Collections.singletonList(entry));
+        assertEquals(1, RawMaterialExport.count(model, entry, true));
+        assertEquals(100, RawMaterialExport.count(model, entry, false));
+    }
+
     @Test public void packsNuggetsIntoIngotsBeforeBlocks() {
         RecipeIndex index = new RecipeIndex();
         index.add(RecipeIndex.Type.SHAPED, "mod:ingot", 1, slots("mod:nugget", "mod:nugget", "mod:nugget", "mod:nugget", "mod:nugget",

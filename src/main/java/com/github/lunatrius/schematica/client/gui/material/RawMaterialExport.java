@@ -271,13 +271,15 @@ public final class RawMaterialExport {
 
     /**
      * Writes raw_material_list_recipe_details (when enabled), raw_material_list_recipe_steps and raw_material_list_simplified;
-     * returns the written files, or nothing when there are no materials. Counts are the total counts, as in the original.
+     * returns the written files, or nothing when there are no materials. Missing-only exports count what is still to collect.
      */
     public static List<Path> write(Path directory, MaterialListModel<MaterialItemKey> model, boolean missingOnly, boolean craftingOnly,
         boolean details, RecipeIndex index) throws IOException {
         Map<String, Integer> materials = new LinkedHashMap<>();
         for (MaterialListModel.Entry<MaterialItemKey> entry : missingOnly ? model.missingOnly() : model.entries()) {
-            materials.merge(RecipeIndex.id(entry.key.stack()), entry.total, (a, b) -> (int) Math.min(Integer.MAX_VALUE, (long) a + b));
+            long count = count(model, entry, missingOnly);
+            if (count <= 0) continue;
+            materials.merge(RecipeIndex.id(entry.key.stack()), (int) Math.min(Integer.MAX_VALUE, count), (a, b) -> (int) Math.min(Integer.MAX_VALUE, (long) a + b));
         }
         List<Path> files = new ArrayList<>();
         if (materials.isEmpty()) return files;
@@ -288,6 +290,10 @@ public final class RawMaterialExport {
         files.add(write(directory.resolve("raw_material_list_recipe_steps" + suffix + ".json"), rawJson(result.flat)));
         files.add(write(directory.resolve("raw_material_list_simplified" + suffix + ".json"), rawJson(result.combined)));
         return files;
+    }
+
+    static <T> long count(MaterialListModel<T> model, MaterialListModel.Entry<T> entry, boolean missingOnly) {
+        return missingOnly ? Math.max(0, model.missing(entry) - entry.available) : entry.total;
     }
 
     private static Path write(Path file, JsonElement json) throws IOException {
