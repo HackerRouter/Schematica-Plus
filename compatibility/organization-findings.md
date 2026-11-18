@@ -1466,3 +1466,13 @@ Source [fa609d073b](https://github.com/GTNewHorizons/OpenBlocks/tree/fa609d073b3
 - [BlockCanvasRenderer.renderWorldBlock](https://github.com/GTNewHorizons/OpenBlocks/blob/fa609d073b315ec1efbae56facb5e88fa255fa4c/src/main/java/openblocks/client/renderer/block/BlockCanvasRenderer.java#L32) queries tile data while rendering. Preview a populated tile after saving and reopening its schematic.
 - [HeightMapData.readFromNBT](https://github.com/GTNewHorizons/OpenBlocks/blob/fa609d073b315ec1efbae56facb5e88fa255fa4c/src/main/java/openblocks/common/HeightMapData.java#L21) accesses `Alpha`. Compare those fields after capture, transform and restore.
 - [BlockTank.getPickBlock](https://github.com/GTNewHorizons/OpenBlocks/blob/fa609d073b315ec1efbae56facb5e88fa255fa4c/src/main/java/openblocks/common/block/BlockTank.java#L70) queries world state when selecting an item. Compare the materials list against the placed variant.
+
+### OpenComputers
+
+Source [a313175a3c](https://github.com/GTNewHorizons/OpenComputers/tree/a313175a3cbf47f8642dd77838a2d4a56842677c) · 1108 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- Existing Plus lookup in `TileFacingAdapter` names [li.cil.oc.common.tileentity.traits.Rotatable](https://github.com/GTNewHorizons/OpenComputers/blob/a313175a3cbf47f8642dd77838a2d4a56842677c/src/main/scala/li/cil/oc/common/tileentity/traits/Rotatable.scala#L1) (1 matching upstream source names). Check reflected members and client state with the deployed versions.
+- Check tile serialization against `TileNBTCompat`. 8 source file(s) contain matching declarations, including [TileEntityEnvironment.readFromNBT](https://github.com/GTNewHorizons/OpenComputers/blob/a313175a3cbf47f8642dd77838a2d4a56842677c/src/main/java/li/cil/oc/api/prefab/TileEntityEnvironment.java#L130).
+- Check preview rendering against `RendererSchematicChunk`. 10 source file(s) contain matching declarations, including [BlockRenderer.renderWorldBlock](https://github.com/GTNewHorizons/OpenComputers/blob/a313175a3cbf47f8642dd77838a2d4a56842677c/src/main/scala/li/cil/oc/client/renderer/block/BlockRenderer.scala#L89).
+- Check material picking against `BlockToItemStack`. 6 source file(s) contain matching declarations, including [Cable.getPickBlock](https://github.com/GTNewHorizons/OpenComputers/blob/a313175a3cbf47f8642dd77838a2d4a56842677c/src/main/scala/li/cil/oc/common/block/Cable.scala#L67).
+- Check printer placement against `SchematicPrinter`. 12 source file(s) contain matching declarations, including [Item.placeBlockAt](https://github.com/GTNewHorizons/OpenComputers/blob/a313175a3cbf47f8642dd77838a2d4a56842677c/src/main/scala/li/cil/oc/common/block/Item.scala#L89).
