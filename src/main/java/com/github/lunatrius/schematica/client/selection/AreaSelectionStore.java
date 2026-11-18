@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.Reader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -239,24 +240,43 @@ public final class AreaSelectionStore {
         for (String folder : library.folders()) Files.createDirectories(new File(directory, folder).toPath());
         syncWithDisk();
         Map<Area, String> targets = targets();
+        Set<String> leaving = new HashSet<>();
+        for (Map.Entry<Area, String> entry : paths.entrySet()) {
+            String target = targets.get(entry.getKey());
+            if (target == null || !target.equalsIgnoreCase(entry.getValue())) leaving.add(entry.getValue().toLowerCase(Locale.ROOT));
+        }
         for (Map.Entry<Area, String> entry : targets.entrySet()) {
-            Area area = entry.getKey();
-            String target = entry.getValue(), json = text(AreaSelectionLibrary.toFile(area));
-            String old = paths.get(area);
-            if (target.equals(old) && json.equals(written.get(area))) continue;
-            File output = new File(directory, target);
-            if (!target.equalsIgnoreCase(old) && output.exists()) throw new IOException("Area selection file already exists: " + target);
-            FileUtils.writeUtf8Atomically(output, json);
-            if (old != null && !old.equalsIgnoreCase(target)) Files.deleteIfExists(new File(directory, old).toPath());
-            paths.put(area, target);
-            written.put(area, json);
-            disk.put(area, json);
+            String target = entry.getValue(), old = paths.get(entry.getKey());
+            if (target.equalsIgnoreCase(old) || leaving.contains(target.toLowerCase(Locale.ROOT))) continue;
+            if (new File(directory, target).exists()) throw new IOException("Area selection file already exists: " + target);
         }
         for (Area area : new ArrayList<>(paths.keySet())) {
             if (targets.containsKey(area)) continue;
             Files.deleteIfExists(new File(directory, paths.remove(area)).toPath());
             written.remove(area);
             disk.remove(area);
+        }
+        Map<Area, File> moved = new IdentityHashMap<>();
+        for (Map.Entry<Area, String> entry : targets.entrySet()) {
+            String old = paths.get(entry.getKey());
+            if (old == null || old.equalsIgnoreCase(entry.getValue())) continue;
+            File source = new File(directory, old);
+            if (!source.isFile()) continue;
+            File temporary = File.createTempFile(".selection-", ".tmp", source.getParentFile());
+            Files.move(source.toPath(), temporary.toPath(), StandardCopyOption.REPLACE_EXISTING);
+            moved.put(entry.getKey(), temporary);
+        }
+        for (Map.Entry<Area, String> entry : targets.entrySet()) {
+            Area area = entry.getKey();
+            String target = entry.getValue(), json = text(AreaSelectionLibrary.toFile(area));
+            String old = paths.get(area);
+            if (target.equals(old) && json.equals(written.get(area))) continue;
+            FileUtils.writeUtf8Atomically(new File(directory, target), json);
+            File temporary = moved.remove(area);
+            if (temporary != null) Files.deleteIfExists(temporary.toPath());
+            paths.put(area, target);
+            written.put(area, json);
+            disk.put(area, json);
         }
         Area selected = library.normalSelection();
         JsonObject data = library.stateJson(selected == null ? null : targets.get(selected));

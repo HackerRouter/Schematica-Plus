@@ -31,10 +31,12 @@ import com.github.lunatrius.schematica.client.gui.framework.UiWidget;
 import com.github.lunatrius.schematica.client.selection.AreaSelectionLibrary;
 import com.github.lunatrius.schematica.client.selection.AreaSelectionLibrary.Area;
 import com.github.lunatrius.schematica.client.selection.AreaSelections;
+import com.github.lunatrius.schematica.client.util.InfoUtils;
 import com.github.lunatrius.schematica.client.world.Placements;
 import com.github.lunatrius.schematica.client.world.SchematicWorld;
 import com.github.lunatrius.schematica.internal.lunatriuscore.util.vector.Vector3i;
 import com.github.lunatrius.schematica.compat.CubicChunks;
+import com.github.lunatrius.schematica.util.MessageType;
 
 import org.lwjgl.input.Keyboard;
 
@@ -140,9 +142,9 @@ public final class GuiAreaSelectionManager extends UiScreen {
             if (!available()) return UiTranslations.format("schematica.ui.area.context");
             try {
                 library.createFolder(library.targetFolder(), name);
-                AreaSelections.saveCurrent();
+                boolean saved = AreaSelections.saveCurrent();
                 refresh();
-                return null;
+                return saved ? null : UiTranslations.format("schematica.ui.area.persistence_failed");
             } catch (AreaSelectionLibrary.NameConflictException e) {
                 return UiTranslations.format("malilib.message.error.file_or_directory_already_exists", name);
             } catch (IllegalArgumentException e) {
@@ -281,7 +283,9 @@ public final class GuiAreaSelectionManager extends UiScreen {
                     AreaSelections.capture();
                     library.remove(area);
                     AreaSelections.apply();
-                    AreaSelections.saveCurrent();
+                    if (!AreaSelections.saveCurrent()) {
+                        InfoUtils.showGuiOrInGameMessage(MessageType.ERROR, "schematica.ui.area.persistence_failed");
+                    }
                     refresh();
                 }
             }));

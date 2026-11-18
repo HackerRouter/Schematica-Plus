@@ -50,6 +50,22 @@ public class AreaSelectionStoreTest {
         assertTrue(found);
     }
 
+    @Test public void aRenameMayTakeTheFileAnotherRenameFreesInTheSameSave() throws Exception {
+        AreaSelectionStore store = new AreaSelectionStore(settings(), areas("swap"), "swap|0");
+        Area a = store.library().create("a", new Vector3i(), new Vector3i());
+        Area b = store.library().create("b", new Vector3i(1, 0, 0), new Vector3i(1, 0, 0));
+        store.save();
+        store.library().rename(a, "c");
+        store.library().rename(b, "a");
+        store.save();
+        assertTrue(new File(areas("swap"), "a.json").isFile());
+        assertTrue(new File(areas("swap"), "c.json").isFile());
+        assertFalse(new File(areas("swap"), "b.json").exists());
+        assertEquals(1, read(new File(areas("swap"), "a.json")).getAsJsonArray("boxes").get(0).getAsJsonObject()
+            .getAsJsonArray("pos1").get(0).getAsInt());
+        assertEquals(0, temporary.getRoot().toPath().resolve("swap").toFile().list((dir, name) -> name.endsWith(".tmp")).length);
+    }
+
     @Test public void removingOneOfTwoNamesSharingAFileSavesAndKeepsTheOther() throws Exception {
         AreaSelectionStore store = new AreaSelectionStore(settings(), areas("names"), "names|0");
         Area first = store.library().create("A:B", new Vector3i(), new Vector3i());
