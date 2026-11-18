@@ -1548,6 +1548,7 @@ Source [49063f36c2](https://github.com/GTNewHorizons/OpenSecurity/tree/49063f36c
 Source [7776b35d82](https://github.com/GTNewHorizons/Opis/tree/7776b35d82f26328d6a46527c27469480ef78d93) · 243 tracked Java, Scala or Kotlin files outside test/example directories.
 
 - No direct match in the listed checks. Mod entry point: [modOpis](https://github.com/GTNewHorizons/Opis/blob/7776b35d82f26328d6a46527c27469480ef78d93/src/main/java/mcp/mobius/opis/modOpis.java#L74). Indirect effects from dependencies, injection, configuration and server rules remain open.
+- [BlockDebug](https://github.com/GTNewHorizons/Opis/blob/7776b35d82f26328d6a46527c27469480ef78d93/src/main/java/mcp/mobius/opis/tools/BlockDebug.java#L8) inherits from `BlockContainer`. Include inherited tile state when comparing a saved structure with its paste.
 
 ### OverloadedArmorBar
 
