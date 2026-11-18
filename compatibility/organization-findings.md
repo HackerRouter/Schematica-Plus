@@ -1886,3 +1886,9 @@ Source [dd41488159](https://github.com/GTNewHorizons/TC4Tweaks/tree/dd41488159d5
 
 - Check tile serialization against `TileNBTCompat`. 1 source file(s) contain matching declarations, including [SavedLinkHandler.writeToNBT](https://github.com/GTNewHorizons/TC4Tweaks/blob/dd41488159d507518b1617ae1858e4f7e490f63a/src/main/java/net/glease/tc4tweak/modules/visrelay/SavedLinkHandler.java#L134).
 - [SavedLinkHandler.writeToNBT](https://github.com/GTNewHorizons/TC4Tweaks/blob/dd41488159d507518b1617ae1858e4f7e490f63a/src/main/java/net/glease/tc4tweak/modules/visrelay/SavedLinkHandler.java#L134) accesses `Link`. Compare those fields after capture, transform and restore.
+
+### TCNodeTracker
+
+Source [d552b90a16](https://github.com/GTNewHorizons/TCNodeTracker/tree/d552b90a16f863319cd0bd9e10bf23c7d25e7219) · 24 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- Check interaction events against `SchematicPrinter`. 1 source file(s) contain matching declarations, including [RightClickEvent.playerRightClick](https://github.com/GTNewHorizons/TCNodeTracker/blob/d552b90a16f863319cd0bd9e10bf23c7d25e7219/src/main/java/com/dyonovan/tcnodetracker/events/RightClickEvent.java#L25).
