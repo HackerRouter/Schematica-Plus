@@ -599,3 +599,14 @@ Source [70c9c88b0c](https://github.com/GTNewHorizons/DefaultServerList/tree/70c9
 Source [d9e5e36d95](https://github.com/GTNewHorizons/DefaultWorldGenerator/tree/d9e5e36d95fbfc0e82dbad20b85453a38ad1ca8e) · 8 tracked Java, Scala or Kotlin files outside test/example directories.
 
 - No direct match in the listed checks. Mod entry point: [DefaultWorldGenerator](https://github.com/GTNewHorizons/DefaultWorldGenerator/blob/d9e5e36d95fbfc0e82dbad20b85453a38ad1ca8e/src/main/java/com/fireball1725/defaultworldgenerator/DefaultWorldGenerator.java#L16). Indirect effects from dependencies, injection, configuration and server rules remain open.
+
+### Display-Panels
+
+Source [f94737c548](https://github.com/GTNewHorizons/Display-Panels/tree/f94737c5488a1e9579d88ba051c0d79ee36e945f) · 213 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- Existing Plus lookup in `CoordinateLinks` names [shedar.mods.ic2.nuclearcontrol.tileentities.TileEntityInfoPanel](https://github.com/GTNewHorizons/Display-Panels/blob/f94737c5488a1e9579d88ba051c0d79ee36e945f/src/main/java/shedar/mods/ic2/nuclearcontrol/tileentities/TileEntityInfoPanel.java#L1) (4 matching upstream source names). Check reflected members and client state with the deployed versions.
+- Check tile serialization against `TileNBTCompat`. 13 source file(s) contain matching declarations, including [InventoryItem.readFromNBT](https://github.com/GTNewHorizons/Display-Panels/blob/f94737c5488a1e9579d88ba051c0d79ee36e945f/src/main/java/shedar/mods/ic2/nuclearcontrol/InventoryItem.java#L121).
+- Check preview rendering against `RendererSchematicChunk`. 4 source file(s) contain matching declarations, including [MainBlockRenderer.renderWorldBlock](https://github.com/GTNewHorizons/Display-Panels/blob/f94737c5488a1e9579d88ba051c0d79ee36e945f/src/main/java/shedar/mods/ic2/nuclearcontrol/renderers/MainBlockRenderer.java#L70).
+- Check printer placement against `SchematicPrinter`. 2 source file(s) contain matching declarations, including [BlockNuclearControlMain.onBlockPlaced](https://github.com/GTNewHorizons/Display-Panels/blob/f94737c5488a1e9579d88ba051c0d79ee36e945f/src/main/java/shedar/mods/ic2/nuclearcontrol/blocks/BlockNuclearControlMain.java#L135).
+- [InventoryItem.readFromNBT](https://github.com/GTNewHorizons/Display-Panels/blob/f94737c5488a1e9579d88ba051c0d79ee36e945f/src/main/java/shedar/mods/ic2/nuclearcontrol/InventoryItem.java#L121) accesses `ItemInventory`, `Slot`. Compare those fields after capture, transform and restore.
+- [MainBlockRenderer.renderWorldBlock](https://github.com/GTNewHorizons/Display-Panels/blob/f94737c5488a1e9579d88ba051c0d79ee36e945f/src/main/java/shedar/mods/ic2/nuclearcontrol/renderers/MainBlockRenderer.java#L70) queries tile data while rendering. Preview a populated tile after saving and reopening its schematic.
