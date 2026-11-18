@@ -37,6 +37,22 @@ public class AreaSelectionStoreTest {
     private File settings() { return new File(temporary.getRoot(), "AreaSelection.json"); }
     private File areas(String world) { return new File(temporary.getRoot(), world); }
 
+    @Test public void selectionFilesChangedOutsideTheGameAreNotOverwritten() throws Exception {
+        AreaSelectionStore store = new AreaSelectionStore(settings(), areas("sync"), "sync|0");
+        store.save();
+        File file = new File(areas("sync"), "Unnamed.json");
+        JsonObject external = read(file);
+        external.addProperty("external", true);
+        write(file, external.toString());
+        Area area = store.library().selected();
+        store.library().setGuide(area, !area.guide());
+        try {
+            store.save();
+            fail("An externally changed selection file was overwritten");
+        } catch (IOException expected) {}
+        assertTrue(read(file).has("external"));
+    }
+
     @Test public void savesAndServersOfOneNameUseSeparateDirectories() throws Exception {
         File base = new File(temporary.getRoot(), "per_world"), saves = new File(temporary.getRoot(), "saves");
         File legacy = AreaSelections.directory(base, "save:localhost|dimension:0", saves);

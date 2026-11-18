@@ -36,6 +36,7 @@ public final class AreaSelectionStore {
     private final AreaSelectionLibrary library;
     private final Map<Area, String> paths = new IdentityHashMap<>();
     private final Map<Area, String> written = new IdentityHashMap<>();
+    private final Map<Area, String> disk = new IdentityHashMap<>();
     private JsonElement previous;
 
     public AreaSelectionStore(File file, File directory, String key) throws IOException {
@@ -81,11 +82,13 @@ public final class AreaSelectionStore {
                 }
                 load(entry, path, depth + 1, byPath);
             } else if (name.toLowerCase(Locale.ROOT).endsWith(".json") && entry.length() <= 4L * 1024 * 1024) {
-                try (Reader reader = Files.newBufferedReader(entry.toPath(), StandardCharsets.UTF_8)) {
-                    JsonObject json = new JsonParser().parse(reader).getAsJsonObject();
+                try {
+                    String content = new String(Files.readAllBytes(entry.toPath()), StandardCharsets.UTF_8);
+                    JsonObject json = new JsonParser().parse(content).getAsJsonObject();
                     Area area = library.addFromFile(json, relative, name.substring(0, name.length() - 5));
                     paths.put(area, path);
                     written.put(area, text(AreaSelectionLibrary.toFile(area)));
+                    disk.put(area, content);
                     byPath.put(path, area);
                 } catch (IOException | RuntimeException e) {
                     Reference.logger.warn("Skipped the area selection file {}", entry, e);
@@ -116,12 +119,26 @@ public final class AreaSelectionStore {
         return targets;
     }
 
+    private void unchangedOnDisk(String path, String expected) throws IOException {
+        File file = new File(directory, path);
+        if (!file.isFile() || expected == null) return;
+        String actual = new String(Files.readAllBytes(file.toPath()), StandardCharsets.UTF_8);
+        if (!actual.equals(expected)) throw new IOException("Area selection file changed on disk; preserving it: " + path);
+    }
+
     public void save() throws IOException {
         JsonObject sessions = read();
         if (!Objects.equals(previous, sessions.get(key))) throw new IOException("Area selections changed on disk; preserving the file");
         Files.createDirectories(directory.toPath());
         for (String folder : library.folders()) Files.createDirectories(new File(directory, folder).toPath());
         Map<Area, String> targets = targets();
+        for (Map.Entry<Area, String> entry : targets.entrySet()) {
+            Area area = entry.getKey();
+            String old = paths.get(area);
+            if (old == null || entry.getValue().equals(old) && text(AreaSelectionLibrary.toFile(area)).equals(written.get(area))) continue;
+            unchangedOnDisk(old, disk.get(area));
+        }
+        for (Area area : paths.keySet()) if (!targets.containsKey(area)) unchangedOnDisk(paths.get(area), disk.get(area));
         for (Map.Entry<Area, String> entry : targets.entrySet()) {
             Area area = entry.getKey();
             String target = entry.getValue(), json = text(AreaSelectionLibrary.toFile(area));
@@ -133,11 +150,13 @@ public final class AreaSelectionStore {
             if (old != null && !old.equalsIgnoreCase(target)) Files.deleteIfExists(new File(directory, old).toPath());
             paths.put(area, target);
             written.put(area, json);
+            disk.put(area, json);
         }
         for (Area area : new ArrayList<>(paths.keySet())) {
             if (targets.containsKey(area)) continue;
             Files.deleteIfExists(new File(directory, paths.remove(area)).toPath());
             written.remove(area);
+            disk.remove(area);
         }
         Area selected = library.normalSelection();
         JsonObject data = library.stateJson(selected == null ? null : targets.get(selected));
