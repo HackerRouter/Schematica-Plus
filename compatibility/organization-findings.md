@@ -450,3 +450,9 @@ Source [a431e2a65c](https://github.com/GTNewHorizons/Chisel/tree/a431e2a65cf41f6
 Source [46445985f8](https://github.com/GTNewHorizons/ChiselTones/tree/46445985f8987c92fa897746c500d31739671b4b) · 3 tracked Java, Scala or Kotlin files outside test/example directories.
 
 - No direct match in the listed checks. Mod entry point: [ChiselTones](https://github.com/GTNewHorizons/ChiselTones/blob/46445985f8987c92fa897746c500d31739671b4b/src/main/java/tehnut/chiseltones/ChiselTones.java#L15). Indirect effects from dependencies, injection, configuration and server rules remain open.
+
+### ChromaticTooltips
+
+Source [3936db9468](https://github.com/GTNewHorizons/ChromaticTooltips/tree/3936db9468104c99e78a9461b4c3af52d2f790a4) · 95 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- No direct match in the listed checks. Mod entry point: [ChromaticTooltips](https://github.com/GTNewHorizons/ChromaticTooltips/blob/3936db9468104c99e78a9461b4c3af52d2f790a4/src/main/java/com/slprime/chromatictooltips/ChromaticTooltips.java#L13). Indirect effects from dependencies, injection, configuration and server rules remain open.
