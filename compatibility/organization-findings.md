@@ -1165,3 +1165,12 @@ Source [a4f311761f](https://github.com/GTNewHorizons/LunatriusCore/tree/a4f31176
 Source [b2545808e6](https://github.com/GTNewHorizons/lwjgl3ify/tree/b2545808e6e6a50f8b7f84a0388532a9d4076f61) · 676 tracked Java, Scala or Kotlin files outside test/example directories.
 
 - Check world or renderer transformation alongside the schematic world and render pipeline. 1 source file(s) contain matching declarations, including [MixinEntityRenderer.EntityRenderer](https://github.com/GTNewHorizons/lwjgl3ify/blob/b2545808e6e6a50f8b7f84a0388532a9d4076f61/src/main/java/me/eigenraven/lwjgl3ify/mixins/early/game/MixinEntityRenderer.java#L16).
+
+### MagicBees
+
+Source [d635a7a406](https://github.com/GTNewHorizons/MagicBees/tree/d635a7a4069cea443234b36c3872953dc23f5e5c) · 170 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- Check tile serialization against `TileNBTCompat`. 10 source file(s) contain matching declarations, including [MagicApiaryInventory.writeToNBT](https://github.com/GTNewHorizons/MagicBees/blob/d635a7a4069cea443234b36c3872953dc23f5e5c/src/main/java/magicbees/bees/MagicApiaryInventory.java#L147).
+- Check preview rendering against `RendererSchematicChunk`. 2 source file(s) contain matching declarations, including [RendererEffectJar.renderTileEntityAt](https://github.com/GTNewHorizons/MagicBees/blob/d635a7a4069cea443234b36c3872953dc23f5e5c/src/main/java/magicbees/client/render/RendererEffectJar.java#L19).
+- Check material picking against `BlockToItemStack`. 1 source file(s) contain matching declarations, including [BlockHive.getPickBlock](https://github.com/GTNewHorizons/MagicBees/blob/d635a7a4069cea443234b36c3872953dc23f5e5c/src/main/java/magicbees/block/BlockHive.java#L85).
+- [MagicApiaryInventory.writeToNBT](https://github.com/GTNewHorizons/MagicBees/blob/d635a7a4069cea443234b36c3872953dc23f5e5c/src/main/java/magicbees/bees/MagicApiaryInventory.java#L147) accesses `Slot`, `Items`. Compare those fields after capture, transform and restore.
