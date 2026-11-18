@@ -46,6 +46,13 @@ public class SchematicProjectTest {
         assertEquals("house_00002.schemplus", project.nextFileName());
     }
 
+    @Test public void versionFileNamesNeverContainTheIconSeparator() throws Exception {
+        SchematicProject project = SchematicProject.create(temporary.getRoot(), "stone;tower", new Vector3i());
+        assertEquals("stone_tower_00001.schemplus", project.nextFileName());
+        Files.write(new File(temporary.getRoot(), "stone_tower_00001.schemplus").toPath(), new byte[0]);
+        assertEquals("stone_tower_00002.schemplus", project.nextFileName());
+    }
+
     @Test public void committedVersionsAreCheckedOutAndBlockConcurrentSaves() {
         SchematicProject project = project();
         project.beginSave();

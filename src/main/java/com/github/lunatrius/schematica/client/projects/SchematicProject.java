@@ -179,11 +179,12 @@ public final class SchematicProject {
     }
 
     String nextFileName() {
+        String stem = name.replace(';', '_');
         for (int version = 1; version < 10_000_000; version++) {
-            String file = name + "_" + String.format("%05d", version) + FILE_EXTENSION;
+            String file = stem + "_" + String.format("%05d", version) + FILE_EXTENSION;
             if (!new File(directory, file).exists()) return file;
         }
-        return name + "_error";
+        return stem + "_error";
     }
 
     /** checkCanSaveOrPrintError: null when a new version can be saved, else the error key. */
