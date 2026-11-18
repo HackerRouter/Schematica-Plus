@@ -1520,3 +1520,9 @@ Source [49063f36c2](https://github.com/GTNewHorizons/OpenSecurity/tree/49063f36c
 - Check printer placement against `SchematicPrinter`. 8 source file(s) contain matching declarations, including [BlockDoorController.onBlockPlacedBy](https://github.com/GTNewHorizons/OpenSecurity/blob/49063f36c2770bac38a0b0f9eaa1105ff811f814/src/main/java/pcl/opensecurity/blocks/BlockDoorController.java#L40).
 - [BlockKVM.onBlockPlacedBy](https://github.com/GTNewHorizons/OpenSecurity/blob/49063f36c2770bac38a0b0f9eaa1105ff811f814/src/main/java/pcl/opensecurity/blocks/BlockKVM.java#L46) depends on placement orientation. Exercise the printer with a rotated schematic.
 - [TileEntityBiometricReader.readFromNBT](https://github.com/GTNewHorizons/OpenSecurity/blob/49063f36c2770bac38a0b0f9eaa1105ff811f814/src/main/java/pcl/opensecurity/tileentity/TileEntityBiometricReader.java#L64) accesses `eventName`. Compare those fields after capture, transform and restore.
+
+### Opis
+
+Source [7776b35d82](https://github.com/GTNewHorizons/Opis/tree/7776b35d82f26328d6a46527c27469480ef78d93) · 243 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- No direct match in the listed checks. Mod entry point: [modOpis](https://github.com/GTNewHorizons/Opis/blob/7776b35d82f26328d6a46527c27469480ef78d93/src/main/java/mcp/mobius/opis/modOpis.java#L74). Indirect effects from dependencies, injection, configuration and server rules remain open.
