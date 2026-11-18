@@ -4,7 +4,9 @@ package com.github.lunatrius.schematica.client.gui.projects;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 
 import net.minecraft.client.gui.GuiScreen;
 
@@ -23,6 +25,7 @@ import com.github.lunatrius.schematica.util.MessageType;
 public final class GuiSchematicProjectsBrowser extends GuiSchematicBrowser {
     private UiButton manager, create, load, delete, close;
     private SchematicProject selected;
+    private final Map<File, long[]> projectFiles = new HashMap<>();
 
     public GuiSchematicProjectsBrowser(GuiScreen parent) {
         super(parent, UiTranslations.format("litematica.gui.title.schematic_projects_browser"), false);
@@ -31,6 +34,22 @@ public final class GuiSchematicProjectsBrowser extends GuiSchematicBrowser {
     @Override
     protected SchematicBrowserModel createModel() throws IOException {
         return new SchematicBrowserModel(ConfigurationHandler.schematicDirectory, name -> name.toLowerCase(Locale.ROOT).endsWith(".json"));
+    }
+
+    @Override
+    protected boolean accept(SchematicBrowserModel.Entry entry) {
+        return super.accept(entry) && (entry.directory || projectFile(entry.file));
+    }
+
+    /** Whether a JSON file reads as a project; the answer is kept until the file's size or time changes. */
+    private boolean projectFile(File file) {
+        long length = file.length(), modified = file.lastModified();
+        long[] known = projectFiles.get(file);
+        if (known == null || known[0] != length || known[1] != modified) {
+            known = new long[] {length, modified, SchematicProjects.load(file, false) != null ? 1 : 0};
+            projectFiles.put(file, known);
+        }
+        return known[2] == 1;
     }
 
     @Override
