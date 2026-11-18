@@ -747,3 +747,13 @@ Source [e43ace4e05](https://github.com/GTNewHorizons/Fether/tree/e43ace4e05fc254
 Source [296f29ae76](https://github.com/GTNewHorizons/FindIt/tree/296f29ae764cfcb56ae87338766b4d7f65bda21e) · 32 tracked Java, Scala or Kotlin files outside test/example directories.
 
 - No direct match in the listed checks. Mod entry point: [FindIt](https://github.com/GTNewHorizons/FindIt/blob/296f29ae764cfcb56ae87338766b4d7f65bda21e/src/main/java/com/gtnh/findit/FindIt.java#L29). Indirect effects from dependencies, injection, configuration and server rules remain open.
+
+### FloodLights
+
+Source [75693f4e0b](https://github.com/GTNewHorizons/FloodLights/tree/75693f4e0b89fd4798acf814a70139cfe3318d56) · 81 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- Existing Plus lookup in `BlockMetaTransform` names [de.keridos.floodlights.block.BlockFL](https://github.com/GTNewHorizons/FloodLights/blob/75693f4e0b89fd4798acf814a70139cfe3318d56/src/main/java/de/keridos/floodlights/block/BlockFL.java#L1) (2 matching upstream source names). Check reflected members and client state with the deployed versions.
+- Check tile serialization against `TileNBTCompat`. 3 source file(s) contain matching declarations, including [TileEnergyHandler.readFromNBT](https://github.com/GTNewHorizons/FloodLights/blob/75693f4e0b89fd4798acf814a70139cfe3318d56/src/main/java/cofh/api/energy/TileEnergyHandler.java#L18).
+- Check preview rendering against `RendererSchematicChunk`. 4 source file(s) contain matching declarations, including [RotatableBlockRenderer.renderWorldBlock](https://github.com/GTNewHorizons/FloodLights/blob/75693f4e0b89fd4798acf814a70139cfe3318d56/src/main/java/de/keridos/floodlights/client/render/block/RotatableBlockRenderer.java#L89).
+- Check printer placement against `SchematicPrinter`. 3 source file(s) contain matching declarations, including [BlockFL.onBlockPlacedBy](https://github.com/GTNewHorizons/FloodLights/blob/75693f4e0b89fd4798acf814a70139cfe3318d56/src/main/java/de/keridos/floodlights/block/BlockFL.java#L122).
+- [RotatableBlockRenderer.renderWorldBlock](https://github.com/GTNewHorizons/FloodLights/blob/75693f4e0b89fd4798acf814a70139cfe3318d56/src/main/java/de/keridos/floodlights/client/render/block/RotatableBlockRenderer.java#L89) queries tile data while rendering. Preview a populated tile after saving and reopening its schematic.
