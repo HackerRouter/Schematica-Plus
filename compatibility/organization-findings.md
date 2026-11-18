@@ -1542,3 +1542,9 @@ Source [e3c3a2e1a4](https://github.com/GTNewHorizons/PersonalSpace/tree/e3c3a2e1
 - Check material picking against `BlockToItemStack`. 1 source file(s) contain matching declarations, including [PortalBlock.getPickBlock](https://github.com/GTNewHorizons/PersonalSpace/blob/e3c3a2e1a4f759c3a64eb2392992f73e0b1335a1/src/main/java/me/eigenraven/personalspace/block/PortalBlock.java#L134).
 - Check printer placement against `SchematicPrinter`. 2 source file(s) contain matching declarations, including [PortalBlock.onBlockPlacedBy](https://github.com/GTNewHorizons/PersonalSpace/blob/e3c3a2e1a4f759c3a64eb2392992f73e0b1335a1/src/main/java/me/eigenraven/personalspace/block/PortalBlock.java#L85).
 - [PortalTileEntity.readFromNBT](https://github.com/GTNewHorizons/PersonalSpace/blob/e3c3a2e1a4f759c3a64eb2392992f73e0b1335a1/src/main/java/me/eigenraven/personalspace/block/PortalTileEntity.java#L70) accesses `isReturnPortal`, `remoteDimensionId`, `remotePos`, `remoteDir`. Compare those fields after capture, transform and restore.
+
+### PlanNH
+
+Source [45a0d1efca](https://github.com/GTNewHorizons/PlanNH/tree/45a0d1efca52b946ae1cc1139f8b2e852fb44e6c) · 273 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- No direct match in the listed checks. Mod entry point: [PlanNH](https://github.com/GTNewHorizons/PlanNH/blob/45a0d1efca52b946ae1cc1139f8b2e852fb44e6c/src/main/java/com/sbancuz/plannh/PlanNH.java#L14). Indirect effects from dependencies, injection, configuration and server rules remain open.
