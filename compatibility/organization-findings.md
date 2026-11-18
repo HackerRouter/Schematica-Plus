@@ -879,3 +879,10 @@ Source [23d31c7bfe](https://github.com/GTNewHorizons/gendustry/tree/23d31c7bfe53
 
 - Check tile serialization against `TileNBTCompat`. 1 source file(s) contain matching declarations, including [GeneSampleInfo.writeToNBT](https://github.com/GTNewHorizons/gendustry/blob/23d31c7bfe53ceff470390ef5507de404d85c954/src/main/scala/net/bdew/gendustry/forestry/GeneSampleInfo.scala#L23).
 - Check printer placement against `SchematicPrinter`. 3 source file(s) contain matching declarations, including [HiveSpawnDebugger.onItemUse](https://github.com/GTNewHorizons/gendustry/blob/23d31c7bfe53ceff470390ef5507de404d85c954/src/main/scala/net/bdew/gendustry/items/HiveSpawnDebugger.scala#L63).
+
+### Gravitation-Suite-Neo
+
+Source [2d726ceb2c](https://github.com/GTNewHorizons/Gravitation-Suite-Neo/tree/2d726ceb2ca81b0b014c12338c05f21f8bb62f6e) · 65 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- Check tile serialization against `TileNBTCompat`. 2 source file(s) contain matching declarations, including [EntityPlasmaBallMKII.writeToNBT](https://github.com/GTNewHorizons/Gravitation-Suite-Neo/blob/2d726ceb2ca81b0b014c12338c05f21f8bb62f6e/src/main/java/com/gtnewhorizons/gravisuiteneo/common/EntityPlasmaBallMKII.java#L108).
+- [EntityPlasmaBallMKII.writeToNBT](https://github.com/GTNewHorizons/Gravitation-Suite-Neo/blob/2d726ceb2ca81b0b014c12338c05f21f8bb62f6e/src/main/java/com/gtnewhorizons/gravisuiteneo/common/EntityPlasmaBallMKII.java#L108) accesses `charge`. Compare those fields after capture, transform and restore.
