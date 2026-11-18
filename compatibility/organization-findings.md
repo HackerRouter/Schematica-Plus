@@ -1488,3 +1488,12 @@ Source [3889667370](https://github.com/GTNewHorizons/OpenModsLib/tree/3889667370
 - Check printer placement against `SchematicPrinter`. 8 source file(s) contain matching declarations, including [IPlaceAwareTile.onBlockPlacedBy](https://github.com/GTNewHorizons/OpenModsLib/blob/38896673704952abff874cbe4e52369ffdaa43ee/src/main/java/openmods/api/IPlaceAwareTile.java#L12).
 - [OpenBlock.getPickBlock](https://github.com/GTNewHorizons/OpenModsLib/blob/38896673704952abff874cbe4e52369ffdaa43ee/src/main/java/openmods/block/OpenBlock.java#L238) queries world state when selecting an item. Compare the materials list against the placed variant.
 - [SyncableUUID.writeToNBT](https://github.com/GTNewHorizons/OpenModsLib/blob/38896673704952abff874cbe4e52369ffdaa43ee/src/main/java/openmods/sync/SyncableUUID.java#L42) accesses `MSB`, `LSB`. Compare those fields after capture, transform and restore.
+
+### OpenModularTurrets
+
+Source [2f1ea3ba1b](https://github.com/GTNewHorizons/OpenModularTurrets/tree/2f1ea3ba1ba8fc35a07e7a4fcb10002aedbd493e) · 272 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- Check tile serialization against `TileNBTCompat`. 5 source file(s) contain matching declarations, including [LeverTileEntity.writeToNBT](https://github.com/GTNewHorizons/OpenModularTurrets/blob/2f1ea3ba1ba8fc35a07e7a4fcb10002aedbd493e/src/main/java/openmodularturrets/tileentity/LeverTileEntity.java#L53).
+- Check preview rendering against `RendererSchematicChunk`. 21 source file(s) contain matching declarations, including [DisposableItemTurretRenderer.renderTileEntityAt](https://github.com/GTNewHorizons/OpenModularTurrets/blob/2f1ea3ba1ba8fc35a07e7a4fcb10002aedbd493e/src/main/java/openmodularturrets/client/render/renderers/blockitem/DisposableItemTurretRenderer.java#L38).
+- Check printer placement against `SchematicPrinter`. 2 source file(s) contain matching declarations, including [LeverBlock.onBlockPlacedBy](https://github.com/GTNewHorizons/OpenModularTurrets/blob/2f1ea3ba1ba8fc35a07e7a4fcb10002aedbd493e/src/main/java/openmodularturrets/blocks/misc/LeverBlock.java#L58).
+- [AbstractInvExpander.writeToNBT](https://github.com/GTNewHorizons/OpenModularTurrets/blob/2f1ea3ba1ba8fc35a07e7a4fcb10002aedbd493e/src/main/java/openmodularturrets/tileentity/expander/AbstractInvExpander.java#L41) accesses `Slot`, `Inventory`. Compare those fields after capture, transform and restore.
