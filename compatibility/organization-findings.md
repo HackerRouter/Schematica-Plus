@@ -1810,3 +1810,13 @@ Source [7a21e03de8](https://github.com/GTNewHorizons/Steve-s-Factory-Manager/tre
 - [BlockCableCluster.getPickBlock](https://github.com/GTNewHorizons/Steve-s-Factory-Manager/blob/7a21e03de878f1ba35091c285cf62d88ba5f0b2d/src/main/java/vswe/stevesfactory/blocks/BlockCableCluster.java#L86) queries world state when selecting an item. Compare the materials list against the placed variant.
 - [RenderCamouflage.renderWorldBlock](https://github.com/GTNewHorizons/Steve-s-Factory-Manager/blob/7a21e03de878f1ba35091c285cf62d88ba5f0b2d/src/main/java/vswe/stevesfactory/blocks/RenderCamouflage.java#L69) queries tile data while rendering. Preview a populated tile after saving and reopening its schematic.
 - [TileEntityClusterElement.writeToNBT](https://github.com/GTNewHorizons/Steve-s-Factory-Manager/blob/7a21e03de878f1ba35091c285cf62d88ba5f0b2d/src/main/java/vswe/stevesfactory/blocks/TileEntityClusterElement.java#L49) accesses `MetaData`. Compare those fields after capture, transform and restore.
+
+### StevesAddons
+
+Source [02b600c728](https://github.com/GTNewHorizons/StevesAddons/tree/02b600c7286c445802bd32586015b6cb29e2a1c9) · 77 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- Existing Plus lookup in `VisualAdapters` names [stevesaddons.tileentities.TileEntityRFNode](https://github.com/GTNewHorizons/StevesAddons/blob/02b600c7286c445802bd32586015b6cb29e2a1c9/src/main/java/stevesaddons/tileentities/TileEntityRFNode.java#L1) (1 matching upstream source names). Check reflected members and client state with the deployed versions.
+- Check tile serialization against `TileNBTCompat`. 5 source file(s) contain matching declarations, including [ComponentMenuDelayed.readFromNBT](https://github.com/GTNewHorizons/StevesAddons/blob/02b600c7286c445802bd32586015b6cb29e2a1c9/src/main/java/stevesaddons/components/ComponentMenuDelayed.java#L132).
+- Check interaction events against `SchematicPrinter`. 1 source file(s) contain matching declarations, including [EventHandler.playerInteract](https://github.com/GTNewHorizons/StevesAddons/blob/02b600c7286c445802bd32586015b6cb29e2a1c9/src/main/java/stevesaddons/naming/EventHandler.java#L60).
+- [ComponentMenuRFCondition.readFromNBT](https://github.com/GTNewHorizons/StevesAddons/blob/02b600c7286c445802bd32586015b6cb29e2a1c9/src/main/java/stevesaddons/components/ComponentMenuRFCondition.java#L133) accesses `textBox`, `Inverted`. Compare those fields after capture, transform and restore.
+- [EventHandler.playerInteract](https://github.com/GTNewHorizons/StevesAddons/blob/02b600c7286c445802bd32586015b6cb29e2a1c9/src/main/java/stevesaddons/naming/EventHandler.java#L60) can cancel the interaction. Verify the printer on a server with the handler enabled.
