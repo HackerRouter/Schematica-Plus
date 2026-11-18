@@ -2306,3 +2306,11 @@ Source [83c0a8b8d8](https://github.com/GTNewHorizons/Yamcl/tree/83c0a8b8d89add9e
 Source [9c60568315](https://github.com/GTNewHorizons/Ztones-Unofficial/tree/9c6056831534d7f419957a4d01c2a80c7fa53351) · 31 tracked Java, Scala or Kotlin files outside test/example directories.
 
 - Check printer placement against `SchematicPrinter`. 4 source file(s) contain matching declarations, including [FlatLampBlock.onBlockPlaced](https://github.com/GTNewHorizons/Ztones-Unofficial/blob/9c6056831534d7f419957a4d01c2a80c7fa53351/src/main/java/oneeyemaker/ztones/blocks/FlatLampBlock.java#L93).
+
+## Candidates outside the activity window
+
+These entries use remote default-branch source inspection. The activity cutoff applies to local checkouts.
+
+### AngelicaCompat
+
+An Extra Utilities connected-texture renderer is patched. Compare a joined surface and an exposed edge in the preview with Angelica active. [MixinRenderBlockConnectedTextures.java at 8a7ef890e3](https://github.com/GTNewHorizons/AngelicaCompat/blob/8a7ef890e3c8131acfcd21493e14fc7b88033903/src/main/java/com/gtnewhorizons/angelicacompat/mixins/late/client/extrautils/MixinRenderBlockConnectedTextures.java)
