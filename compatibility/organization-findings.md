@@ -1906,3 +1906,9 @@ Source [5f78b1fd56](https://github.com/GTNewHorizons/Tempora/tree/5f78b1fd5655ed
 Source [9521448234](https://github.com/GTNewHorizons/TerrainHorizons/tree/95214482343a7f2f7a28ba41e72ae37a665615ef) · 48 tracked Java, Scala or Kotlin files outside test/example directories.
 
 - No direct match in the listed checks. Mod entry point: [TerrainHorizons](https://github.com/GTNewHorizons/TerrainHorizons/blob/95214482343a7f2f7a28ba41e72ae37a665615ef/src/main/java/com/gtnewhorizons/terrainhorizons/TerrainHorizons.java#L15). Indirect effects from dependencies, injection, configuration and server rules remain open.
+
+### thaumcraft-research-tweaks
+
+Source [43f05c89c5](https://github.com/GTNewHorizons/thaumcraft-research-tweaks/tree/43f05c89c59bc914ce5f7b0080258cdfd3bc0477) · 95 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- No direct match in the listed checks. Mod entry point: [ThaumcraftResearchTweaks](https://github.com/GTNewHorizons/thaumcraft-research-tweaks/blob/43f05c89c59bc914ce5f7b0080258cdfd3bc0477/src/main/kotlin/elan/tweaks/thaumcraft/research/frontend/integration/ThaumcraftResearchTweaks.kt#L15). Indirect effects from dependencies, injection, configuration and server rules remain open.
