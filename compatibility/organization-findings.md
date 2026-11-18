@@ -256,3 +256,9 @@ Source [975080753b](https://github.com/GTNewHorizons/BetterBuildersWands/tree/97
 
 - Check material picking against `BlockToItemStack`. 1 source file(s) contain matching declarations, including [BlockShim.getPickBlock](https://github.com/GTNewHorizons/BetterBuildersWands/blob/975080753b4dfd90738be0cd642629d329737f86/src/main/java/portablejim/bbw/shims/BlockShim.java#L13).
 - Check printer placement against `SchematicPrinter`. 1 source file(s) contain matching declarations, including [ItemBasicWand.onItemUse](https://github.com/GTNewHorizons/BetterBuildersWands/blob/975080753b4dfd90738be0cd642629d329737f86/src/main/java/portablejim/bbw/core/items/ItemBasicWand.java#L49).
+
+### BetterCrashes
+
+Source [fb6f8d5734](https://github.com/GTNewHorizons/BetterCrashes/tree/fb6f8d5734f45d4ce338948c23f49fe38b66d80b) · 18 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- No direct match in the listed checks. Mod entry point: [BetterCrashes](https://github.com/GTNewHorizons/BetterCrashes/blob/fb6f8d5734f45d4ce338948c23f49fe38b66d80b/src/main/java/vfyjxf/bettercrashes/BetterCrashes.java#L11). Indirect effects from dependencies, injection, configuration and server rules remain open.
