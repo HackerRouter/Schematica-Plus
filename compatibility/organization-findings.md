@@ -1110,3 +1110,11 @@ Source [2e194152cb](https://github.com/GTNewHorizons/journeymap-legacy/tree/2e19
 Source [72f9da2e37](https://github.com/GTNewHorizons/JustEnoughCalculation/tree/72f9da2e371f68b7323cc2dfc9a15c5900c6169c) · 105 tracked Java, Scala or Kotlin files outside test/example directories.
 
 - No direct match in the listed checks. Mod entry point: [JustEnoughCalculation](https://github.com/GTNewHorizons/JustEnoughCalculation/blob/72f9da2e371f68b7323cc2dfc9a15c5900c6169c/src/main/java/me/towdium/jecalculation/JustEnoughCalculation.java#L25). Indirect effects from dependencies, injection, configuration and server rules remain open.
+
+### LiquidLogged
+
+Source [007b33b431](https://github.com/GTNewHorizons/LiquidLogged/tree/007b33b43121cf2ca26f453e47c4ff6b9b73f7ee) · 63 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- Existing Plus lookup in `LiquidLogged` names [com.gtnewhorizons.liquidlogged.api.LiquidLoggedAPI](https://github.com/GTNewHorizons/LiquidLogged/blob/007b33b43121cf2ca26f453e47c4ff6b9b73f7ee/src/main/java/com/gtnewhorizons/liquidlogged/api/LiquidLoggedAPI.java#L1) (1 matching upstream source names). Check reflected members and client state with the deployed versions.
+- Check world or renderer transformation alongside the schematic world and render pipeline. 8 source file(s) contain matching declarations, including [AccessorChunk.Chunk](https://github.com/GTNewHorizons/LiquidLogged/blob/007b33b43121cf2ca26f453e47c4ff6b9b73f7ee/src/main/java/com/gtnewhorizons/liquidlogged/mixins/early/minecraft/AccessorChunk.java#L9).
+- The public static getFluid(IBlockAccess, int, int, int) and setFluid(World, int, int, int, Fluid) declarations match the Plus lookup. Plus limits stored fluid capture to Y 0–255.
