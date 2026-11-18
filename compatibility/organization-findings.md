@@ -2322,3 +2322,7 @@ The build depends on Forge 1.16.5-36.2.22. This revision is outside the Minecraf
 ### CraftGuide
 
 The recipe browser registers its own interface. Check recipe-view and schematic hotkeys together; this entry point supplies no schematic block-state adapter. [CraftGuide.java at 5eff174f12](https://github.com/GTNewHorizons/CraftGuide/blob/5eff174f12c545a9260274537be22f3af0512700/src/main/java/uristqwerty/CraftGuide/CraftGuide.java)
+
+### DeveloperCapes
+
+The library manages player cape resources. No schematic block-state exchange was identified in its entry point. [DevCapes.java at 106ccd3103](https://github.com/GTNewHorizons/DeveloperCapes/blob/106ccd31030a8ad40c1a8c036de88889b877cf98/src/main/java/com/jadarstudios/developercapes/DevCapes.java)
