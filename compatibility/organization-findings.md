@@ -581,3 +581,9 @@ Source [0c892a333f](https://github.com/GTNewHorizons/Databack/tree/0c892a333fbe7
 - Check tile serialization against `TileNBTCompat`. 1 source file(s) contain matching declarations, including [ChunkSetData.readFromNBT](https://github.com/GTNewHorizons/Databack/blob/0c892a333fbe77ca2b88b272b4b68ce3bc71ab83/src/main/java/databack/common/worldgen/feature/population/ChunkSetData.java#L47).
 - Check world or renderer transformation alongside the schematic world and render pipeline. 2 source file(s) contain matching declarations, including [MixinWorld_Ext.World](https://github.com/GTNewHorizons/Databack/blob/0c892a333fbe77ca2b88b272b4b68ce3bc71ab83/src/main/java/databack/mixins/early/MixinWorld_Ext.java#L12).
 - [ChunkSetData.readFromNBT](https://github.com/GTNewHorizons/Databack/blob/0c892a333fbe77ca2b88b272b4b68ce3bc71ab83/src/main/java/databack/common/worldgen/feature/population/ChunkSetData.java#L47) accesses `chunks`. Compare those fields after capture, transform and restore.
+
+### Default-Configs
+
+Source [2c6b8d49a6](https://github.com/GTNewHorizons/Default-Configs/tree/2c6b8d49a6b0b26188ee2eb45cbebc9e5d907f47) · 9 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- No direct match in the listed checks. Mod entry point: [DefaultKeys](https://github.com/GTNewHorizons/Default-Configs/blob/2c6b8d49a6b0b26188ee2eb45cbebc9e5d907f47/src/main/java/net/blay09/mods/defaultkeys/DefaultKeys.java#L12). Indirect effects from dependencies, injection, configuration and server rules remain open.
