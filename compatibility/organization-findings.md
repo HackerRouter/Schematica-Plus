@@ -1879,3 +1879,10 @@ Source [d7f28a805d](https://github.com/GTNewHorizons/TaskNH/tree/d7f28a805d2e9c3
 
 - Check tile serialization against `TileNBTCompat`. 1 source file(s) contain matching declarations, including [TaskNHWorldData.readFromNBT](https://github.com/GTNewHorizons/TaskNH/blob/d7f28a805d2e9c3aceb059d93e1233ea6cdb2658/src/main/java/com/eldrinn/tasknh/storage/TaskNHWorldData.java#L145).
 - [TaskNHWorldData.readFromNBT](https://github.com/GTNewHorizons/TaskNH/blob/d7f28a805d2e9c3aceb059d93e1233ea6cdb2658/src/main/java/com/eldrinn/tasknh/storage/TaskNHWorldData.java#L145) accesses `worldIdMost`, `worldIdLeast`, `perTeamTasks`, `teamIdMost`. Compare those fields after capture, transform and restore.
+
+### TC4Tweaks
+
+Source [dd41488159](https://github.com/GTNewHorizons/TC4Tweaks/tree/dd41488159d507518b1617ae1858e4f7e490f63a) · 122 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- Check tile serialization against `TileNBTCompat`. 1 source file(s) contain matching declarations, including [SavedLinkHandler.writeToNBT](https://github.com/GTNewHorizons/TC4Tweaks/blob/dd41488159d507518b1617ae1858e4f7e490f63a/src/main/java/net/glease/tc4tweak/modules/visrelay/SavedLinkHandler.java#L134).
+- [SavedLinkHandler.writeToNBT](https://github.com/GTNewHorizons/TC4Tweaks/blob/dd41488159d507518b1617ae1858e4f7e490f63a/src/main/java/net/glease/tc4tweak/modules/visrelay/SavedLinkHandler.java#L134) accesses `Link`. Compare those fields after capture, transform and restore.
