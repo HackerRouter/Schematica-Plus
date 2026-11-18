@@ -243,3 +243,9 @@ Source [d402315bdb](https://github.com/GTNewHorizons/bdlib/tree/d402315bdb52a70a
 Source [8f9f5b8686](https://github.com/GTNewHorizons/BeeBetterAtBees-GTNH/tree/8f9f5b868698c4cb51d0e2a731084b8887da1ad7) · 18 tracked Java, Scala or Kotlin files outside test/example directories.
 
 - No direct match in the listed checks. Mod entry point: [BeeBetterAtBees](https://github.com/GTNewHorizons/BeeBetterAtBees-GTNH/blob/8f9f5b868698c4cb51d0e2a731084b8887da1ad7/src/main/java/hellfirepvp/beebetteratbees/common/BeeBetterAtBees.java#L17). Indirect effects from dependencies, injection, configuration and server rules remain open.
+
+### BetterAchievements
+
+Source [aee6d9850a](https://github.com/GTNewHorizons/BetterAchievements/tree/aee6d9850a016ae8612c682400bbd285de3d6335) · 41 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- No direct match in the listed checks. Mod entry point: [BetterAchievementsDemo](https://github.com/GTNewHorizons/BetterAchievements/blob/aee6d9850a016ae8612c682400bbd285de3d6335/src/demo/java/betterachievementsdemo/BetterAchievementsDemo.java#L16). Indirect effects from dependencies, injection, configuration and server rules remain open.
