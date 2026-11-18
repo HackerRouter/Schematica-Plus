@@ -48,7 +48,7 @@ final class CloudNode {
             }
             return nodes;
         }
-        TreeMap<String, CloudNode> directories = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+        TreeMap<String, CloudNode> directories = new TreeMap<>(String.CASE_INSENSITIVE_ORDER.thenComparing(Comparator.naturalOrder()));
         for (CloudPath path : catalog.directories) {
             if (path.isRoot() || !Objects.equals(path.parent(), directory)) continue;
             directories.put(path.name(), new CloudNode(Type.DIRECTORY, path, null, count(catalog, path)));
