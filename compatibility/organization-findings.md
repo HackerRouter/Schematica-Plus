@@ -1312,3 +1312,9 @@ Source [f84ee064e2](https://github.com/GTNewHorizons/Natura/tree/f84ee064e22b4e9
 - Check printer placement against `SchematicPrinter`. 15 source file(s) contain matching declarations, including [ThornVines.onBlockPlaced](https://github.com/GTNewHorizons/Natura/blob/f84ee064e22b4e92d172d89612c7d9339171d172/src/main/java/mods/natura/blocks/crops/ThornVines.java#L60).
 - [NetherPistonBase.onBlockPlacedBy](https://github.com/GTNewHorizons/Natura/blob/f84ee064e22b4e92d172d89612c7d9339171d172/src/main/java/mods/natura/blocks/tech/NetherPistonBase.java#L112) depends on placement orientation. Exercise the printer with a rotated schematic.
 - [NetherrackFurnaceLogic.readFromNBT](https://github.com/GTNewHorizons/Natura/blob/f84ee064e22b4e92d172d89612c7d9339171d172/src/main/java/mods/natura/blocks/tech/NetherrackFurnaceLogic.java#L130) accesses `Items`, `Slot`, `BurnTime`, `CookTime`. Compare those fields after capture, transform and restore.
+
+### NaturesCompass
+
+Source [babf1615c7](https://github.com/GTNewHorizons/NaturesCompass/tree/babf1615c7cdf37630da4790b5c4221dfa17784d) · 34 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- No direct match in the listed checks. Mod entry point: [NaturesCompass](https://github.com/GTNewHorizons/NaturesCompass/blob/babf1615c7cdf37630da4790b5c4221dfa17784d/src/main/java/com/chaosthedude/naturescompass/NaturesCompass.java#L31). Indirect effects from dependencies, injection, configuration and server rules remain open.
