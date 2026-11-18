@@ -2046,3 +2046,9 @@ Source [356f6eea7e](https://github.com/GTNewHorizons/TinkersConstruct/tree/356f6
 - [ArmorExtended.readFromNBT](https://github.com/GTNewHorizons/TinkersConstruct/blob/356f6eea7e0b5b93d5ac7d9e9bd3ec8fb45f08c7/src/main/java/tconstruct/armor/player/ArmorExtended.java#L192) accesses `Inventory`, `Slot`. Compare those fields after capture, transform and restore.
 - [BlockRenderCastingChannel.renderWorldBlock](https://github.com/GTNewHorizons/TinkersConstruct/blob/356f6eea7e0b5b93d5ac7d9e9bd3ec8fb45f08c7/src/main/java/tconstruct/smeltery/model/BlockRenderCastingChannel.java#L42) queries tile data while rendering. Preview a populated tile after saving and reopening its schematic.
 - [BattlesignBlock.onBlockPlacedBy](https://github.com/GTNewHorizons/TinkersConstruct/blob/356f6eea7e0b5b93d5ac7d9e9bd3ec8fb45f08c7/src/main/java/tconstruct/tools/blocks/BattlesignBlock.java#L49) depends on placement orientation. Exercise the printer with a rotated schematic.
+
+### TinkersGregworks
+
+Source [a2bd1bd2ad](https://github.com/GTNewHorizons/TinkersGregworks/tree/a2bd1bd2ad040b945ecf7b088be26dc75ef7f925) · 48 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- Check printer placement against `SchematicPrinter`. 1 source file(s) contain matching declarations, including [Mattock.onItemUse](https://github.com/GTNewHorizons/TinkersGregworks/blob/a2bd1bd2ad040b945ecf7b088be26dc75ef7f925/unused/tools/Mattock.java#L116).
