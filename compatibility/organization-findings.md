@@ -1660,3 +1660,9 @@ Source [3daa59d2ce](https://github.com/GTNewHorizons/Realistic-World-Gen-2/tree/
 Source [1a9919e335](https://github.com/GTNewHorizons/RecEx/tree/1a9919e33554927ad0c318c44071df7e9053320f) · 21 tracked Java, Scala or Kotlin files outside test/example directories.
 
 - No direct match in the listed checks. Mod entry point: [RecipeExporterMod](https://github.com/GTNewHorizons/RecEx/blob/1a9919e33554927ad0c318c44071df7e9053320f/src/main/java/com/bigbass/recex/RecipeExporterMod.java#L15). Indirect effects from dependencies, injection, configuration and server rules remain open.
+
+### RegionLib
+
+Source [08005c8e73](https://github.com/GTNewHorizons/RegionLib/tree/08005c8e734a7fef531637e593a1778a6f2a02db) · 42 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- No direct match in the listed checks. Mod entry point: [RegionLib](https://github.com/GTNewHorizons/RegionLib/blob/08005c8e734a7fef531637e593a1778a6f2a02db/src/main/java/cubicchunks/regionlib/RegionLib.java#L13). Indirect effects from dependencies, injection, configuration and server rules remain open.
