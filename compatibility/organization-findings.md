@@ -1872,3 +1872,10 @@ Source [887979a92f](https://github.com/GTNewHorizons/Tainted-Magic/tree/887979a9
 - Check material picking against `BlockToItemStack`. 1 source file(s) contain matching declarations, including [BlockWarpwoodLeaves.getPickBlock](https://github.com/GTNewHorizons/Tainted-Magic/blob/887979a92fac36bfe4deda30908872cddaa91a91/src/main/java/taintedmagic/common/blocks/BlockWarpwoodLeaves.java#L139).
 - Check printer placement against `SchematicPrinter`. 1 source file(s) contain matching declarations, including [ItemShadowmetalHoe.onItemUse](https://github.com/GTNewHorizons/Tainted-Magic/blob/887979a92fac36bfe4deda30908872cddaa91a91/src/main/java/taintedmagic/common/items/tools/ItemShadowmetalHoe.java#L34).
 - [BlockWarpwoodLeaves.getPickBlock](https://github.com/GTNewHorizons/Tainted-Magic/blob/887979a92fac36bfe4deda30908872cddaa91a91/src/main/java/taintedmagic/common/blocks/BlockWarpwoodLeaves.java#L139) queries world state when selecting an item. Compare the materials list against the placed variant.
+
+### TaskNH
+
+Source [d7f28a805d](https://github.com/GTNewHorizons/TaskNH/tree/d7f28a805d2e9c3aceb059d93e1233ea6cdb2658) · 59 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- Check tile serialization against `TileNBTCompat`. 1 source file(s) contain matching declarations, including [TaskNHWorldData.readFromNBT](https://github.com/GTNewHorizons/TaskNH/blob/d7f28a805d2e9c3aceb059d93e1233ea6cdb2658/src/main/java/com/eldrinn/tasknh/storage/TaskNHWorldData.java#L145).
+- [TaskNHWorldData.readFromNBT](https://github.com/GTNewHorizons/TaskNH/blob/d7f28a805d2e9c3aceb059d93e1233ea6cdb2658/src/main/java/com/eldrinn/tasknh/storage/TaskNHWorldData.java#L145) accesses `worldIdMost`, `worldIdLeast`, `perTeamTasks`, `teamIdMost`. Compare those fields after capture, transform and restore.
