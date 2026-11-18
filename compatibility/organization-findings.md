@@ -177,3 +177,9 @@ Source [ff2a24d96f](https://github.com/GTNewHorizons/AsieLib/tree/ff2a24d96f3ef4
 - Check preview rendering against `RendererSchematicChunk`. 1 source file(s) contain matching declarations, including [BlockBaseRender.renderWorldBlock](https://github.com/GTNewHorizons/AsieLib/blob/ff2a24d96f3ef4d9fe85f3da2939796e081222e7/src/main/java/pl/asie/lib/client/BlockBaseRender.java#L84).
 - Check printer placement against `SchematicPrinter`. 1 source file(s) contain matching declarations, including [BlockBase.onBlockPlacedBy](https://github.com/GTNewHorizons/AsieLib/blob/ff2a24d96f3ef4d9fe85f3da2939796e081222e7/src/main/java/pl/asie/lib/block/BlockBase.java#L241).
 - [TileEntityBase.readFromNBT](https://github.com/GTNewHorizons/AsieLib/blob/ff2a24d96f3ef4d9fe85f3da2939796e081222e7/src/main/java/pl/asie/lib/block/TileEntityBase.java#L58) accesses `old_redstone`. Compare those fields after capture, transform and restore.
+
+### AspectRecipeIndex
+
+Source [315f8c7e74](https://github.com/GTNewHorizons/AspectRecipeIndex/tree/315f8c7e746d209655f1e6a2f0a97790d424dfea) · 29 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- No direct match in the listed checks. Mod entry point: [AspectRecipeIndex](https://github.com/GTNewHorizons/AspectRecipeIndex/blob/315f8c7e746d209655f1e6a2f0a97790d424dfea/src/main/java/com/gtnewhorizons/aspectrecipeindex/AspectRecipeIndex.java#L17). Indirect effects from dependencies, injection, configuration and server rules remain open.
