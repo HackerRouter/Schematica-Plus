@@ -52,6 +52,23 @@ public final class CloudCache {
         }
     }
 
+    public static boolean verified(CloudFile file) {
+        File local = file(file.path);
+        if (!local.isFile() || local.length() != file.size) return false;
+        try {
+            return rehash(local).equals(file.hash);
+        } catch (IOException e) {
+            return false;
+        }
+    }
+
+    public static synchronized String rehash(File file) throws IOException {
+        long size = file.length(), modified = file.lastModified();
+        String hash = CloudStorage.hash(file);
+        HASHES.put(file.getAbsolutePath(), new Hashed(size, modified, hash));
+        return hash;
+    }
+
     public static synchronized String hash(File file) throws IOException {
         String key = file.getAbsolutePath();
         Hashed known = HASHES.get(key);

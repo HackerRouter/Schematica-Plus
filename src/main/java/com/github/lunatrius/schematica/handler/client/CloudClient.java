@@ -98,7 +98,7 @@ public final class CloudClient {
 
     public void fetch(CloudFile file, Consumer<File> done) {
         File target = CloudCache.file(file.path);
-        if (CloudCache.cached(file)) {
+        if (CloudCache.verified(file)) {
             done.accept(target);
             return;
         }
