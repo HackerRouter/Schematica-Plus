@@ -1745,3 +1745,12 @@ Source [c1b7451de7](https://github.com/GTNewHorizons/Share-Where-I-am/tree/c1b74
 Source [8370a51d34](https://github.com/GTNewHorizons/SharedProspecting/tree/8370a51d344595e0925de947e7f8047234af76a5) · 23 tracked Java, Scala or Kotlin files outside test/example directories.
 
 - No direct match in the listed checks. Mod entry point: [SharedProspectingMod](https://github.com/GTNewHorizons/SharedProspecting/blob/8370a51d344595e0925de947e7f8047234af76a5/src/main/java/com/rune580/sharedprospecting/SharedProspectingMod.java#L14). Indirect effects from dependencies, injection, configuration and server rules remain open.
+
+### SignPosts
+
+Source [b2cfe3bb5a](https://github.com/GTNewHorizons/SignPosts/tree/b2cfe3bb5a4d0b6e97c1f5b8129187c0e0c28214) · 21 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- Check tile serialization against `TileNBTCompat`. 2 source file(s) contain matching declarations, including [SignPostTileEntity.writeToNBT](https://github.com/GTNewHorizons/SignPosts/blob/b2cfe3bb5a4d0b6e97c1f5b8129187c0e0c28214/src/main/java/harceroi/mc/signposts/block/SignPostTileEntity.java#L28).
+- Check preview rendering against `RendererSchematicChunk`. 1 source file(s) contain matching declarations, including [SignPostRenderer.renderTileEntityAt](https://github.com/GTNewHorizons/SignPosts/blob/b2cfe3bb5a4d0b6e97c1f5b8129187c0e0c28214/src/main/java/harceroi/mc/signposts/block/SignPostRenderer.java#L20).
+- Check printer placement against `SchematicPrinter`. 2 source file(s) contain matching declarations, including [SignPostBlock.onBlockPlaced](https://github.com/GTNewHorizons/SignPosts/blob/b2cfe3bb5a4d0b6e97c1f5b8129187c0e0c28214/src/main/java/harceroi/mc/signposts/block/SignPostBlock.java#L82).
+- [SignPostTileEntity.writeToNBT](https://github.com/GTNewHorizons/SignPosts/blob/b2cfe3bb5a4d0b6e97c1f5b8129187c0e0c28214/src/main/java/harceroi/mc/signposts/block/SignPostTileEntity.java#L28) accesses `isBottom`, `jumpX`, `jumpY`, `jumpZ`. Compare those fields after capture, transform and restore.
