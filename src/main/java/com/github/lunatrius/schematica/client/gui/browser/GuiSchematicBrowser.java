@@ -297,6 +297,7 @@ public abstract class GuiSchematicBrowser extends UiScreen {
                 Placements.LIBRARY.checkRename(source, new File(entry.file.getParentFile(), name));
                 File target = browser.rename(entry, name);
                 Placements.sourceRenamed(source, target);
+                UiState.renamed(source, target);
                 selectResult(target);
                 return null;
             } catch (IOException e) {

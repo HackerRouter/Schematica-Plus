@@ -128,6 +128,18 @@ public final class UiState {
         setPaths("recent_schematics", paths);
     }
 
+    /** Points favorites and recent entries of a renamed file at its new name. */
+    public static synchronized void renamed(File from, File to) {
+        String source = canonical(from), target = canonical(to);
+        for (String key : new String[] {"favorite_schematics", "recent_schematics"}) {
+            List<String> paths = paths(key);
+            if (!paths.contains(source)) continue;
+            paths.remove(target);
+            paths.set(paths.indexOf(source), target);
+            setPaths(key, paths);
+        }
+    }
+
     public static String toolMode(String world) { return world == null ? null : entry("operation_mode", world); }
 
     public static void setToolMode(String world, String mode) { setEntry("operation_mode", world, mode); }

@@ -134,6 +134,19 @@ public class SchematicBrowserInteractionTest {
         assertFalse(UiState.favorite(schematic));
     }
 
+    @Test public void renamedFilesKeepTheirFavoriteAndRecentEntries() throws Exception {
+        UiState.toggleFavorite(schematic);
+        UiState.addRecent(schematic);
+        File renamed = new File(schematic.getParentFile(), "renamed-" + schematic.getName());
+        assertTrue(schematic.renameTo(renamed));
+        UiState.renamed(schematic, renamed);
+        assertTrue(UiState.favorite(renamed));
+        assertFalse(UiState.favorite(schematic));
+        assertTrue(renamed.renameTo(schematic));
+        UiState.renamed(renamed, schematic);
+        assertTrue(UiState.favorite(schematic));
+    }
+
     @Test public void removingFavoriteUpdatesTheCollectionImmediately() throws Exception {
         UiState.toggleFavorite(schematic);
         Browser screen = new Browser();
