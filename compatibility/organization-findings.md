@@ -1767,3 +1767,9 @@ Source [12c1b5deb9](https://github.com/GTNewHorizons/SleepingBags/tree/12c1b5deb
 
 - Check preview rendering against `RendererSchematicChunk`. 1 source file(s) contain matching declarations, including [BlockRenderer.renderWorldBlock](https://github.com/GTNewHorizons/SleepingBags/blob/12c1b5deb9c3c80a61721b13b4661baebbc7ed73/src/main/java/ru/npo6ka/sleepingbag/BlockRenderer.java#L34).
 - Check printer placement against `SchematicPrinter`. 1 source file(s) contain matching declarations, including [ItemSleepingBag.onItemUse](https://github.com/GTNewHorizons/SleepingBags/blob/12c1b5deb9c3c80a61721b13b4661baebbc7ed73/src/main/java/ru/npo6ka/sleepingbag/items/ItemSleepingBag.java#L45).
+
+### SpecialAI
+
+Source [5135234c73](https://github.com/GTNewHorizons/SpecialAI/tree/5135234c73f97bc92bc67bd64eb1dca86136085a) · 31 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- No direct match in the listed checks. Mod entry point: [_SpecialAI](https://github.com/GTNewHorizons/SpecialAI/blob/5135234c73f97bc92bc67bd64eb1dca86136085a/src/main/java/toast/specialAI/_SpecialAI.java#L15). Indirect effects from dependencies, injection, configuration and server rules remain open.
