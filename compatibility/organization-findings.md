@@ -1454,3 +1454,15 @@ Source [35a455fd0c](https://github.com/GTNewHorizons/OCGlasses/tree/35a455fd0cee
 Source [1a4b448e83](https://github.com/GTNewHorizons/Offscreen/tree/1a4b448e83ad1947d59bbfa2957f958c3dac59ae) · 62 tracked Java, Scala or Kotlin files outside test/example directories.
 
 - Check world or renderer transformation alongside the schematic world and render pipeline. 1 source file(s) contain matching declarations, including [EntityRendererFocus.EntityRenderer](https://github.com/GTNewHorizons/Offscreen/blob/1a4b448e83ad1947d59bbfa2957f958c3dac59ae/src/main/java/com/sbancuz/offscreen/mixins/early/EntityRendererFocus.java#L12).
+
+### OpenBlocks
+
+Source [fa609d073b](https://github.com/GTNewHorizons/OpenBlocks/tree/fa609d073b315ec1efbae56facb5e88fa255fa4c) · 381 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- Check tile serialization against `TileNBTCompat`. 21 source file(s) contain matching declarations, including [HeightMapData.readFromNBT](https://github.com/GTNewHorizons/OpenBlocks/blob/fa609d073b315ec1efbae56facb5e88fa255fa4c/src/main/java/openblocks/common/HeightMapData.java#L21).
+- Check preview rendering against `RendererSchematicChunk`. 30 source file(s) contain matching declarations, including [BlockCanvasRenderer.renderWorldBlock](https://github.com/GTNewHorizons/OpenBlocks/blob/fa609d073b315ec1efbae56facb5e88fa255fa4c/src/main/java/openblocks/client/renderer/block/BlockCanvasRenderer.java#L32).
+- Check material picking against `BlockToItemStack`. 5 source file(s) contain matching declarations, including [BlockTank.getPickBlock](https://github.com/GTNewHorizons/OpenBlocks/blob/fa609d073b315ec1efbae56facb5e88fa255fa4c/src/main/java/openblocks/common/block/BlockTank.java#L70).
+- Check printer placement against `SchematicPrinter`. 18 source file(s) contain matching declarations, including [BlockGuide.onItemUse](https://github.com/GTNewHorizons/OpenBlocks/blob/fa609d073b315ec1efbae56facb5e88fa255fa4c/src/main/java/openblocks/common/block/BlockGuide.java#L268).
+- [BlockCanvasRenderer.renderWorldBlock](https://github.com/GTNewHorizons/OpenBlocks/blob/fa609d073b315ec1efbae56facb5e88fa255fa4c/src/main/java/openblocks/client/renderer/block/BlockCanvasRenderer.java#L32) queries tile data while rendering. Preview a populated tile after saving and reopening its schematic.
+- [HeightMapData.readFromNBT](https://github.com/GTNewHorizons/OpenBlocks/blob/fa609d073b315ec1efbae56facb5e88fa255fa4c/src/main/java/openblocks/common/HeightMapData.java#L21) accesses `Alpha`. Compare those fields after capture, transform and restore.
+- [BlockTank.getPickBlock](https://github.com/GTNewHorizons/OpenBlocks/blob/fa609d073b315ec1efbae56facb5e88fa255fa4c/src/main/java/openblocks/common/block/BlockTank.java#L70) queries world state when selecting an item. Compare the materials list against the placed variant.
