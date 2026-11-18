@@ -796,3 +796,10 @@ Source [3b181eb231](https://github.com/GTNewHorizons/ForgeMultipart/tree/3b181eb
 - Check printer placement against `SchematicPrinter`. 4 source file(s) contain matching declarations, including [ItemMicroPart.onItemUse](https://github.com/GTNewHorizons/ForgeMultipart/blob/3b181eb231a68ee578c53aa72b276ca5c8e29366/src/main/scala/codechicken/microblock/ItemMicroPart.java#L60).
 - Check world or renderer transformation alongside the schematic world and render pipeline. 1 source file(s) contain matching declarations, including [MixinRenderGlobal.RenderGlobal](https://github.com/GTNewHorizons/ForgeMultipart/blob/3b181eb231a68ee578c53aa72b276ca5c8e29366/src/mixin/java/codechicken/multipart/mixin/early/MixinRenderGlobal.java#L22).
 - [TileMultipart.writeToNBT](https://github.com/GTNewHorizons/ForgeMultipart/blob/3b181eb231a68ee578c53aa72b276ca5c8e29366/src/main/scala/codechicken/multipart/TileMultipart.java#L759) accesses `id`, `parts`. Compare those fields after capture, transform and restore.
+
+### ForgeRelocation
+
+Source [0bfcd5cd98](https://github.com/GTNewHorizons/ForgeRelocation/tree/0bfcd5cd98ba67a7cea3af3d727f4e2ed1a04f66) · 33 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- Check preview rendering against `RendererSchematicChunk`. 2 source file(s) contain matching declarations, including [frame.renderWorldBlock](https://github.com/GTNewHorizons/ForgeRelocation/blob/0bfcd5cd98ba67a7cea3af3d727f4e2ed1a04f66/src/main/scala/mrtjp/mcframes/frame.scala#L171).
+- Check printer placement against `SchematicPrinter`. 3 source file(s) contain matching declarations, including [IFramePlacement.onItemUse](https://github.com/GTNewHorizons/ForgeRelocation/blob/0bfcd5cd98ba67a7cea3af3d727f4e2ed1a04f66/src/main/scala/mrtjp/mcframes/api/IFramePlacement.java#L33).
