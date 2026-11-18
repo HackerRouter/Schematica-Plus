@@ -1560,3 +1560,11 @@ Source [5a2a3849db](https://github.com/GTNewHorizons/Player-API/tree/5a2a3849dba
 Source [bdd8977182](https://github.com/GTNewHorizons/Postea/tree/bdd8977182c57d0920769bcf85d26f92519e7e8c) · 39 tracked Java, Scala or Kotlin files outside test/example directories.
 
 - Check world or renderer transformation alongside the schematic world and render pipeline. 1 source file(s) contain matching declarations, including [MixinChunk.Chunk](https://github.com/GTNewHorizons/Postea/blob/bdd8977182c57d0920769bcf85d26f92519e7e8c/src/main/java/com/gtnewhorizons/postea/mixins/early/MixinChunk.java#L10).
+
+### ProjectBlue
+
+Source [a2678a26af](https://github.com/GTNewHorizons/ProjectBlue/tree/a2678a26af80a2ad580aae032030ede3df0ad3b4) · 60 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- Check tile serialization against `TileNBTCompat`. 1 source file(s) contain matching declarations, including [BaseTileEntity.readFromNBT](https://github.com/GTNewHorizons/ProjectBlue/blob/a2678a26af80a2ad580aae032030ede3df0ad3b4/src/main/scala/gcewing/projectblue/BaseTileEntity.java#L56).
+- Check preview rendering against `RendererSchematicChunk`. 1 source file(s) contain matching declarations, including [BaseBlockRenderer.renderWorldBlock](https://github.com/GTNewHorizons/ProjectBlue/blob/a2678a26af80a2ad580aae032030ede3df0ad3b4/src/main/scala/gcewing/projectblue/BaseBlockRenderer.java#L65).
+- Check printer placement against `SchematicPrinter`. 1 source file(s) contain matching declarations, including [ItemMultiPartJ.onItemUse](https://github.com/GTNewHorizons/ProjectBlue/blob/a2678a26af80a2ad580aae032030ede3df0ad3b4/src/main/scala/gcewing/projectblue/ItemMultiPartJ.java#L35).
