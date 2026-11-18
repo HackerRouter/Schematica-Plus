@@ -1386,3 +1386,9 @@ Source [298f678ad9](https://github.com/GTNewHorizons/Nodal-Mechanics/tree/298f67
 Source [dcacd08964](https://github.com/GTNewHorizons/NoHotbarNeeded/tree/dcacd08964eb6386bd7383a5e47fecee5ab692a4) · 8 tracked Java, Scala or Kotlin files outside test/example directories.
 
 - No direct match in the listed checks. Mod entry point: [NoHotbarNeeded](https://github.com/GTNewHorizons/NoHotbarNeeded/blob/dcacd08964eb6386bd7383a5e47fecee5ab692a4/src/main/java/net/xonich/mc/nohotbarneeded/NoHotbarNeeded.java#L9). Indirect effects from dependencies, injection, configuration and server rules remain open.
+
+### NotEnoughCharacters
+
+Source [5c15126bf5](https://github.com/GTNewHorizons/NotEnoughCharacters/tree/5c15126bf5fbcdbc8060423858d6b0c46e3a3fbc) · 16 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- No direct match in the listed checks. Mod entry point: [NotEnoughCharacters](https://github.com/GTNewHorizons/NotEnoughCharacters/blob/5c15126bf5fbcdbc8060423858d6b0c46e3a3fbc/src/main/java/net/moecraft/nechar/NotEnoughCharacters.java#L18). Indirect effects from dependencies, injection, configuration and server rules remain open.
