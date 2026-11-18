@@ -1858,3 +1858,9 @@ Source [f1115d4521](https://github.com/GTNewHorizons/Super-TiC/tree/f1115d452152
 Source [f448da1aaf](https://github.com/GTNewHorizons/supernova/tree/f448da1aaf8f9f786405b586fb9934cdabf6c273) · 100 tracked Java, Scala or Kotlin files outside test/example directories.
 
 - Check world or renderer transformation alongside the schematic world and render pipeline. 5 source file(s) contain matching declarations, including [MixinChunk.Chunk](https://github.com/GTNewHorizons/supernova/blob/f448da1aaf8f9f786405b586fb9934cdabf6c273/src/main/java/com/mitchej123/supernova/mixin/early/engine/MixinChunk.java#L30).
+
+### supersolarpanels
+
+Source [9c79cb1e7a](https://github.com/GTNewHorizons/supersolarpanels/tree/9c79cb1e7a4265fe4db5ca4539f83c1dca1a5988) · 23 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- No direct match in the listed checks. Mod entry point: [MainSSP](https://github.com/GTNewHorizons/supersolarpanels/blob/9c79cb1e7a4265fe4db5ca4539f83c1dca1a5988/src/main/java/com/supsolpans/MainSSP.java#L38). Indirect effects from dependencies, injection, configuration and server rules remain open.
