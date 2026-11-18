@@ -645,6 +645,7 @@ Source [04c232f7cf](https://github.com/GTNewHorizons/Draconic-Evolution/tree/04c
 Source [3d699ff99f](https://github.com/GTNewHorizons/DummyCore/tree/3d699ff99f956f4cef56055d800a216343e82d79) · 58 tracked Java, Scala or Kotlin files outside test/example directories.
 
 - No direct match in the listed checks. Mod entry point: [CoreInitialiser](https://github.com/GTNewHorizons/DummyCore/blob/3d699ff99f956f4cef56055d800a216343e82d79/src/main/java/DummyCore/Core/CoreInitialiser.java#L36). Indirect effects from dependencies, injection, configuration and server rules remain open.
+- [BlocksRegistry](https://github.com/GTNewHorizons/DummyCore/blob/3d699ff99f956f4cef56055d800a216343e82d79/src/main/java/DummyCore/Blocks/BlocksRegistry.java#L39) calls `GameRegistry.registerBlock`. Include the registered block variants in capture, preview and material comparisons.
 
 ### DuraDisplay
 
