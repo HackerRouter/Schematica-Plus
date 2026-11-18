@@ -2326,3 +2326,7 @@ The recipe browser registers its own interface. Check recipe-view and schematic 
 ### DeveloperCapes
 
 The library manages player cape resources. No schematic block-state exchange was identified in its entry point. [DevCapes.java at 106ccd3103](https://github.com/GTNewHorizons/DeveloperCapes/blob/106ccd31030a8ad40c1a8c036de88889b877cf98/src/main/java/com/jadarstudios/developercapes/DevCapes.java)
+
+### FoamFix17
+
+A core optimization mod can change the runtime independently of placed block types. Check the installed transformer configuration when investigating rendering or loading differences. [FoamFixMod.java at 4db865617b](https://github.com/GTNewHorizons/FoamFix17/blob/4db865617beae6d95ca9ab191874ee3bfff7bbce/src/main/java/pl/asie/foamfix/FoamFixMod.java)
