@@ -520,6 +520,28 @@ public final class AreaSelectionLibrary {
         return area;
     }
 
+    /** Replaces the contents of a selection with those of a selection file, keeping its identity, ID and folder. */
+    public void replaceFromFile(Area area, JsonObject data) {
+        require(area);
+        AreaSelectionLibrary scratch = new AreaSelectionLibrary();
+        Area read = scratch.addFromFile(data, area.folder, area.name);
+        String name = data.has("name") ? uniqueName(validName(data.get("name").getAsString()), area, area.folder) : area.name;
+        area.name = name;
+        area.boxes.clear();
+        area.boxes.addAll(read.boxes);
+        area.selectedBox = read.selectedBox;
+        area.manualOrigin = read.manualOrigin;
+        area.guide = read.guide;
+        area.originSelected = read.originSelected;
+        area.corner = read.corner;
+        area.extra = read.extra;
+    }
+
+    /** A selection file in the form toFile writes it, read through a scratch library. */
+    public static JsonObject normalizedFile(JsonObject data, String folder, String fallbackName) {
+        return toFile(new AreaSelectionLibrary().addFromFile(data, folder, fallbackName));
+    }
+
     public static AreaSelectionLibrary fromJson(JsonObject data) {
         AreaSelectionLibrary library = new AreaSelectionLibrary();
         if (data == null) {

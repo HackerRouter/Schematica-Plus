@@ -7,8 +7,10 @@ import java.nio.file.Files;
 
 import com.github.lunatrius.schematica.client.selection.AreaSelectionLibrary.Area;
 import com.github.lunatrius.schematica.internal.lunatriuscore.util.vector.Vector3i;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.google.gson.JsonPrimitive;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -65,20 +67,43 @@ public class AreaSelectionStoreTest {
         assertEquals(1, named);
     }
 
-    @Test public void selectionFilesChangedOutsideTheGameAreNotOverwritten() throws Exception {
+    private static void moveFirstCorner(File file, int x) throws IOException {
+        JsonObject data = new JsonParser().parse(new String(Files.readAllBytes(file.toPath()), StandardCharsets.UTF_8)).getAsJsonObject();
+        JsonObject box = data.getAsJsonArray("boxes").get(0).getAsJsonObject();
+        JsonArray old = box.getAsJsonArray("pos1"), pos = new JsonArray();
+        pos.add(new JsonPrimitive(x));
+        pos.add(old.get(1));
+        pos.add(old.get(2));
+        box.add("pos1", pos);
+        Files.write(file.toPath(), data.toString().getBytes(StandardCharsets.UTF_8));
+    }
+
+    @Test public void externalChangesAreTakenInAndMergedWithLocalChanges() throws Exception {
         AreaSelectionStore store = new AreaSelectionStore(settings(), areas("sync"), "sync|0");
         store.save();
         File file = new File(areas("sync"), "Unnamed.json");
-        JsonObject external = read(file);
-        external.addProperty("external", true);
-        write(file, external.toString());
         Area area = store.library().selected();
-        store.library().setGuide(area, !area.guide());
-        try {
-            store.save();
-            fail("An externally changed selection file was overwritten");
-        } catch (IOException expected) {}
-        assertTrue(read(file).has("external"));
+        boolean guide = area.guide();
+        moveFirstCorner(file, 77);
+        store.library().setGuide(area, !guide);
+        store.save();
+        assertEquals(77, area.boxes().get(0).first().x);
+        assertEquals(!guide, area.guide());
+        assertTrue(store.conflicts().isEmpty());
+        AreaSelectionStore reopened = new AreaSelectionStore(settings(), areas("sync"), "sync|0");
+        assertEquals(77, reopened.library().selected().boxes().get(0).first().x);
+        assertEquals(!guide, reopened.library().selected().guide());
+
+        moveFirstCorner(file, 5);
+        store.library().setPoints(area, new Vector3i(9, 0, 0), area.second());
+        store.save();
+        assertEquals(5, area.boxes().get(0).first().x);
+        assertEquals(1, store.conflicts().size());
+
+        assertTrue(file.delete());
+        store.save();
+        assertFalse(store.library().areas().contains(area));
+        assertFalse(file.exists());
     }
 
     @Test public void savesAndServersOfOneNameUseSeparateDirectories() throws Exception {

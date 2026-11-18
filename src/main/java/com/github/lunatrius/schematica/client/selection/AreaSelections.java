@@ -7,9 +7,11 @@ import java.util.function.BooleanSupplier;
 import net.minecraft.client.Minecraft;
 
 import com.github.lunatrius.schematica.client.selection.AreaSelectionLibrary.Area;
+import com.github.lunatrius.schematica.client.util.InfoUtils;
 import com.github.lunatrius.schematica.handler.ConfigurationHandler;
 import com.github.lunatrius.schematica.internal.lunatriuscore.util.vector.Vector3i;
 import com.github.lunatrius.schematica.reference.Reference;
+import com.github.lunatrius.schematica.util.MessageType;
 import com.github.lunatrius.schematica.util.PlusDataFiles;
 
 public final class AreaSelections {
@@ -146,6 +148,10 @@ public final class AreaSelections {
             capture();
             store.save();
             saveFailed = false;
+            if (store.synced()) apply();
+            if (!store.conflicts().isEmpty()) {
+                InfoUtils.showGuiOrInGameMessage(MessageType.WARNING, "schematica.ui.area.merged_external", String.join(", ", store.conflicts()));
+            }
             return true;
         } catch (Exception e) {
             saveFailed = true;

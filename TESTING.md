@@ -1745,6 +1745,9 @@ compare with a server that does not have the mod and with each server option off
   file. Copy a Litematica area selection .json into the folder (F5 not needed after reopening): it loads
   with its boxes, current box and origin. Copy a Plus file into Litematica's area_selections: it loads.
 - areaSelectionsPerWorld off: all worlds share schematics/area_selections after reconnecting.
+- With a selection loaded, edit its JSON in another editor (move a corner), then toggle its guide in the
+  game and save: both changes survive. Change the same corner in both places: the file value wins and a
+  warning names the selection. Delete the file outside the game: the unchanged selection disappears.
 - Create a selection in a singleplayer save named `localhost`, then join a server at `localhost`:
   the server lists none of the save's selections and uses `server_localhost/area_selections`; deleting
   there leaves the save's selections intact. A server directory written before this change moves to

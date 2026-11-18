@@ -7,9 +7,12 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
@@ -38,6 +41,8 @@ public final class AreaSelectionStore {
     private final Map<Area, String> paths = new IdentityHashMap<>();
     private final Map<Area, String> written = new IdentityHashMap<>();
     private final Map<Area, String> disk = new IdentityHashMap<>();
+    private final List<String> conflicts = new ArrayList<>();
+    private boolean synced;
     private JsonElement previous;
 
     public AreaSelectionStore(File file, File directory, String key) throws IOException {
@@ -140,11 +145,91 @@ public final class AreaSelectionStore {
         return base.isEmpty() ? "selection" : base;
     }
 
-    private void unchangedOnDisk(String path, String expected) throws IOException {
-        File file = new File(directory, path);
-        if (!file.isFile() || expected == null) return;
-        String actual = new String(Files.readAllBytes(file.toPath()), StandardCharsets.UTF_8);
-        if (!actual.equals(expected)) throw new IOException("Area selection file changed on disk; preserving it: " + path);
+    /** The selections whose files changed outside the game in both places during the last save; the file values won. */
+    public List<String> conflicts() { return Collections.unmodifiableList(conflicts); }
+
+    /** Whether the last save took in changes made outside the game. */
+    public boolean synced() { return synced; }
+
+    /**
+     * Takes in selection files changed outside the game since they were read: a selection unchanged here takes the
+     * file, one changed in both places is merged by field with the file winning conflicts, a deleted file removes an
+     * unchanged selection and a file changed after its selection was removed brings it back.
+     */
+    private void syncWithDisk() throws IOException {
+        conflicts.clear();
+        synced = false;
+        Set<Area> current = new HashSet<>(library.areas());
+        for (Area area : new ArrayList<>(paths.keySet())) {
+            String path = paths.get(area);
+            File stored = new File(directory, path);
+            String expected = disk.get(area);
+            String actual = stored.isFile() ? new String(Files.readAllBytes(stored.toPath()), StandardCharsets.UTF_8) : null;
+            if (Objects.equals(actual, expected)) continue;
+            synced = true;
+            boolean present = current.contains(area);
+            boolean local = present && !text(AreaSelectionLibrary.toFile(area)).equals(written.get(area));
+            if (actual == null) {
+                if (present && !local) library.remove(area);
+                if (present && local) conflicts.add(area.name());
+                paths.remove(area);
+                written.remove(area);
+                disk.remove(area);
+                continue;
+            }
+            String folder = AreaSelectionLibrary.parentFolder(path);
+            String fallback = stored.getName().substring(0, stored.getName().length() - 5);
+            JsonObject remote;
+            try {
+                remote = AreaSelectionLibrary.normalizedFile(new JsonParser().parse(actual).getAsJsonObject(), folder, fallback);
+            } catch (RuntimeException e) {
+                throw new IOException("Area selection file changed on disk and is unreadable; preserving it: " + path, e);
+            }
+            if (!present) {
+                Area restored = library.addFromFile(remote, folder, fallback);
+                conflicts.add(restored.name());
+                paths.remove(area);
+                written.remove(area);
+                disk.remove(area);
+                paths.put(restored, path);
+                written.put(restored, text(AreaSelectionLibrary.toFile(restored)));
+                disk.put(restored, actual);
+                continue;
+            }
+            JsonObject merged = remote;
+            if (local) {
+                boolean[] conflict = {false};
+                merged = merge(new JsonParser().parse(written.get(area)).getAsJsonObject(), AreaSelectionLibrary.toFile(area), remote, conflict);
+                if (conflict[0]) conflicts.add(area.name());
+            }
+            library.replaceFromFile(area, merged);
+            String normalized = text(AreaSelectionLibrary.toFile(area));
+            written.put(area, local ? text(remote) : normalized);
+            disk.put(area, actual);
+        }
+    }
+
+    private static JsonObject merge(JsonObject base, JsonObject local, JsonObject remote, boolean[] conflict) {
+        JsonObject result = new JsonObject();
+        Set<String> keys = new LinkedHashSet<>();
+        for (Map.Entry<String, JsonElement> entry : remote.entrySet()) keys.add(entry.getKey());
+        for (Map.Entry<String, JsonElement> entry : local.entrySet()) keys.add(entry.getKey());
+        for (String key : keys) {
+            JsonElement b = base.get(key), l = local.get(key), r = remote.get(key);
+            JsonElement chosen;
+            if ("schematica_plus".equals(key) && l != null && r != null && l.isJsonObject() && r.isJsonObject()) {
+                JsonObject plus = merge(b != null && b.isJsonObject() ? b.getAsJsonObject() : new JsonObject(), l.getAsJsonObject(), r.getAsJsonObject(), conflict);
+                if (l.getAsJsonObject().has("id")) plus.add("id", l.getAsJsonObject().get("id"));
+                chosen = plus;
+            } else if (Objects.equals(l, b)) chosen = r;
+            else if (Objects.equals(r, b) || Objects.equals(r, l)) chosen = l;
+            else {
+                chosen = r;
+                conflict[0] = true;
+            }
+            if (chosen != null) result.add(key, chosen);
+        }
+        return result;
     }
 
     public void save() throws IOException {
@@ -152,14 +237,8 @@ public final class AreaSelectionStore {
         if (!Objects.equals(previous, sessions.get(key))) throw new IOException("Area selections changed on disk; preserving the file");
         Files.createDirectories(directory.toPath());
         for (String folder : library.folders()) Files.createDirectories(new File(directory, folder).toPath());
+        syncWithDisk();
         Map<Area, String> targets = targets();
-        for (Map.Entry<Area, String> entry : targets.entrySet()) {
-            Area area = entry.getKey();
-            String old = paths.get(area);
-            if (old == null || entry.getValue().equals(old) && text(AreaSelectionLibrary.toFile(area)).equals(written.get(area))) continue;
-            unchangedOnDisk(old, disk.get(area));
-        }
-        for (Area area : paths.keySet()) if (!targets.containsKey(area)) unchangedOnDisk(paths.get(area), disk.get(area));
         for (Map.Entry<Area, String> entry : targets.entrySet()) {
             Area area = entry.getKey();
             String target = entry.getValue(), json = text(AreaSelectionLibrary.toFile(area));

@@ -305,6 +305,7 @@ schematica.ui.source.save_failed=Save failed. Check the name, original extension
 schematica.ui.source.unloaded=This source is no longer loaded.
 
 schematica.ui.area.persistence_failed=Could not read or save area selections. Existing disk data is preserved; check the log. In-memory changes may not survive leaving this world.
+schematica.ui.area.merged_external=These selections were also changed outside the game; the file values were kept where both changed: %s
 schematica.ui.area.context=This selection session is unavailable. Reopen the area browser in the current world.
 schematica.ui.area.invalid=Use a unique, non-empty name of at most 200 characters and coordinates within the 1.7.10 world limits. The selection must still belong to this session.
 schematica.ui.area.extended=Subregions or an origin offset require .schemplus. Choosing .schematic automatically saves a .schemplus file to preserve them.
