@@ -988,3 +988,9 @@ Source [ec66e0b0da](https://github.com/GTNewHorizons/Hodgepodge/tree/ec66e0b0da3
 
 - Check printer placement against `SchematicPrinter`. 2 source file(s) contain matching declarations, including [MixinTileAnchorPassive.onBlockPlacedBy](https://github.com/GTNewHorizons/Hodgepodge/blob/ec66e0b0da39c8beca641022b8db4283f50e8f57/src/main/java/com/mitchej123/hodgepodge/mixins/late/railcraft/MixinTileAnchorPassive.java#L17).
 - Check world or renderer transformation alongside the schematic world and render pipeline. 37 source file(s) contain matching declarations, including [MixinRenderGlobal.RenderGlobal](https://github.com/GTNewHorizons/Hodgepodge/blob/ec66e0b0da39c8beca641022b8db4283f50e8f57/src/main/java/com/mitchej123/hodgepodge/mixins/early/debug/MixinRenderGlobal.java#L29).
+
+### HoloInventory
+
+Source [96935151c0](https://github.com/GTNewHorizons/HoloInventory/tree/96935151c0db960b7e2c26d7e067c09cb7ad7631) · 35 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- Check tile serialization against `TileNBTCompat`. 1 source file(s) contain matching declarations, including [Coord.writeToNBT](https://github.com/GTNewHorizons/HoloInventory/blob/96935151c0db960b7e2c26d7e067c09cb7ad7631/src/main/java/net/dries007/holoInventory/util/Coord.java#L55).
