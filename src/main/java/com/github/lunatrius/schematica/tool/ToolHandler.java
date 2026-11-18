@@ -295,6 +295,7 @@ public class ToolHandler {
     public static boolean deleteByPlacement(EntityPlayer player, SchematicWorld placement, PlacementDeletionMode mode, Runnable onSuccess) {
         return request(player, TaskRegistry.Kind.DELETE, p -> {
             if (placement == null) throw new MessageException("litematica.message.error.no_placement_selected");
+            if (!placement.hasEnabledRegions()) throw new MessageException("schematica.ui.placement.no_regions");
             WorldEditJob job = new WorldEditJob(p.getUniqueID(), p.dimension, WorldEditJob.Kind.DELETE_PLACEMENT,
                 placement.position.x, placement.position.y, placement.position.z,
                 placement.getWidth(), placement.getHeight(), placement.getLength(), Blocks.air, 0, null, 0);
