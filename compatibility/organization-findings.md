@@ -1627,3 +1627,9 @@ Source [58c7ca0d84](https://github.com/GTNewHorizons/Random-Things/tree/58c7ca0d
 - Check world or renderer transformation alongside the schematic world and render pipeline. 5 source file(s) contain matching declarations, including [MixinEntityRenderer.EntityRenderer](https://github.com/GTNewHorizons/Random-Things/blob/58c7ca0d84e319ff4a7079a418c7f7ae5781aa74/src/main/java/lumien/randomthings/Mixins/early/MixinEntityRenderer.java#L11).
 - [BlockEnergyDistributor.onBlockPlacedBy](https://github.com/GTNewHorizons/Random-Things/blob/58c7ca0d84e319ff4a7079a418c7f7ae5781aa74/src/main/java/lumien/randomthings/Blocks/EnergyDistributors/BlockEnergyDistributor.java#L49) depends on placement orientation. Exercise the printer with a rotated schematic.
 - [ServerBloodmoonHandler.readFromNBT](https://github.com/GTNewHorizons/Random-Things/blob/58c7ca0d84e319ff4a7079a418c7f7ae5781aa74/src/main/java/lumien/randomthings/Handler/Bloodmoon/ServerBloodmoonHandler.java#L136) accesses `bloodMoon`, `forceBloodMoon`, `activeBloodMoons`, `forceBloodMoonDims`. Compare those fields after capture, transform and restore.
+
+### RandomBoubles
+
+Source [75f2ffce84](https://github.com/GTNewHorizons/RandomBoubles/tree/75f2ffce848996124bbfbde94159a9b10d512ee9) · 16 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- No direct match in the listed checks. Mod entry point: [RandomBoubles](https://github.com/GTNewHorizons/RandomBoubles/blob/75f2ffce848996124bbfbde94159a9b10d512ee9/src/main/java/com/gtnewhorizon/randomboubles/RandomBoubles.java#L18). Indirect effects from dependencies, injection, configuration and server rules remain open.
