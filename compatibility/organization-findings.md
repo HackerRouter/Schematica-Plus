@@ -2261,3 +2261,9 @@ Source [7afd08377a](https://github.com/GTNewHorizons/worldedit-gtnh/tree/7afd083
 Source [83c0a8b8d8](https://github.com/GTNewHorizons/Yamcl/tree/83c0a8b8d89add9efa04c59d70df563b86973185) · 80 tracked Java, Scala or Kotlin files outside test/example directories.
 
 - No direct match in the listed checks. Mod entry point: [YAMCore](https://github.com/GTNewHorizons/Yamcl/blob/83c0a8b8d89add9efa04c59d70df563b86973185/src/main/java/eu/usrv/yamcore/YAMCore.java#L25). Indirect effects from dependencies, injection, configuration and server rules remain open.
+
+### Ztones-Unofficial
+
+Source [9c60568315](https://github.com/GTNewHorizons/Ztones-Unofficial/tree/9c6056831534d7f419957a4d01c2a80c7fa53351) · 31 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- Check printer placement against `SchematicPrinter`. 4 source file(s) contain matching declarations, including [FlatLampBlock.onBlockPlaced](https://github.com/GTNewHorizons/Ztones-Unofficial/blob/9c6056831534d7f419957a4d01c2a80c7fa53351/src/main/java/oneeyemaker/ztones/blocks/FlatLampBlock.java#L93).
