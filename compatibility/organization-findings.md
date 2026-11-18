@@ -507,3 +507,14 @@ Source [f217c6f000](https://github.com/GTNewHorizons/Computronics/tree/f217c6f00
 Source [1a27d4494f](https://github.com/GTNewHorizons/Controlling/tree/1a27d4494f363bf1b775b950e4d659c333c79fba) · 17 tracked Java, Scala or Kotlin files outside test/example directories.
 
 - No direct match in the listed checks. Mod entry point: [Controlling](https://github.com/GTNewHorizons/Controlling/blob/1a27d4494f363bf1b775b950e4d659c333c79fba/src/main/java/com/blamejared/controlling/Controlling.java#L14). Indirect effects from dependencies, injection, configuration and server rules remain open.
+
+### CookingForBlockheads
+
+Source [6bf2bd408c](https://github.com/GTNewHorizons/CookingForBlockheads/tree/6bf2bd408c522225ee92864ce9c03b724c5fd416) · 142 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- Existing Plus lookup in `BlockMetaTransform` names [net.blay09.mods.cookingforblockheads.block.BlockBaseKitchen](https://github.com/GTNewHorizons/CookingForBlockheads/blob/6bf2bd408c522225ee92864ce9c03b724c5fd416/src/main/java/net/blay09/mods/cookingforblockheads/block/BlockBaseKitchen.java#L1) (1 matching upstream source names). Check reflected members and client state with the deployed versions.
+- Check tile serialization against `TileNBTCompat`. 8 source file(s) contain matching declarations, including [BaseKitchenTileWithInventory.readFromNBT](https://github.com/GTNewHorizons/CookingForBlockheads/blob/6bf2bd408c522225ee92864ce9c03b724c5fd416/src/main/java/net/blay09/mods/cookingforblockheads/tile/BaseKitchenTileWithInventory.java#L65).
+- Check preview rendering against `RendererSchematicChunk`. 20 source file(s) contain matching declarations, including [CabinetBlockRenderer.renderWorldBlock](https://github.com/GTNewHorizons/CookingForBlockheads/blob/6bf2bd408c522225ee92864ce9c03b724c5fd416/src/main/java/net/blay09/mods/cookingforblockheads/client/render/block/CabinetBlockRenderer.java#L23).
+- Check printer placement against `SchematicPrinter`. 8 source file(s) contain matching declarations, including [BlockCookingTable.onBlockPlacedBy](https://github.com/GTNewHorizons/CookingForBlockheads/blob/6bf2bd408c522225ee92864ce9c03b724c5fd416/src/main/java/net/blay09/mods/cookingforblockheads/block/BlockCookingTable.java#L41).
+- [BlockCookingTable.onBlockPlacedBy](https://github.com/GTNewHorizons/CookingForBlockheads/blob/6bf2bd408c522225ee92864ce9c03b724c5fd416/src/main/java/net/blay09/mods/cookingforblockheads/block/BlockCookingTable.java#L41) depends on placement orientation. Exercise the printer with a rotated schematic.
+- [BaseKitchenTileWithInventory.readFromNBT](https://github.com/GTNewHorizons/CookingForBlockheads/blob/6bf2bd408c522225ee92864ce9c03b724c5fd416/src/main/java/net/blay09/mods/cookingforblockheads/tile/BaseKitchenTileWithInventory.java#L65) accesses `Items`, `Slot`, `Color`, `IsFlipped`. Compare those fields after capture, transform and restore.
