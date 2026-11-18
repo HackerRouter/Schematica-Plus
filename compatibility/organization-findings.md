@@ -316,3 +316,9 @@ Source [29d8fed2a3](https://github.com/GTNewHorizons/Binnie/tree/29d8fed2a3cb935
 Source [83a52ccb9c](https://github.com/GTNewHorizons/BiomeBridge/tree/83a52ccb9c15f1e9a23161bbab585d9e56742659) · 2 tracked Java, Scala or Kotlin files outside test/example directories.
 
 - No direct match in the listed checks. Mod entry point: [BiomeBridge](https://github.com/GTNewHorizons/BiomeBridge/blob/83a52ccb9c15f1e9a23161bbab585d9e56742659/src/main/java/glowredman/biomebridge/BiomeBridge.java#L11). Indirect effects from dependencies, injection, configuration and server rules remain open.
+
+### BlockLimiter
+
+Source [9af0e3a4d5](https://github.com/GTNewHorizons/BlockLimiter/tree/9af0e3a4d51b3c1f4b61945da13203541bc17178) · 8 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- No direct match in the listed checks. Mod entry point: [BlockLimiter](https://github.com/GTNewHorizons/BlockLimiter/blob/9af0e3a4d51b3c1f4b61945da13203541bc17178/src/main/java/com/github/namikon/blocklimiter/BlockLimiter.java#L19). Indirect effects from dependencies, injection, configuration and server rules remain open.
