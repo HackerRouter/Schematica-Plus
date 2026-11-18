@@ -1633,3 +1633,9 @@ Source [58c7ca0d84](https://github.com/GTNewHorizons/Random-Things/tree/58c7ca0d
 Source [75f2ffce84](https://github.com/GTNewHorizons/RandomBoubles/tree/75f2ffce848996124bbfbde94159a9b10d512ee9) · 16 tracked Java, Scala or Kotlin files outside test/example directories.
 
 - No direct match in the listed checks. Mod entry point: [RandomBoubles](https://github.com/GTNewHorizons/RandomBoubles/blob/75f2ffce848996124bbfbde94159a9b10d512ee9/src/main/java/com/gtnewhorizon/randomboubles/RandomBoubles.java#L18). Indirect effects from dependencies, injection, configuration and server rules remain open.
+
+### Realistic-Terrain-Generation
+
+Source [8b062a446f](https://github.com/GTNewHorizons/Realistic-Terrain-Generation/tree/8b062a446f1f002ec6ab132d8f8a6f9c30af13a2) · 1915 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- No direct match in the listed checks. Mod entry point: [RTG](https://github.com/GTNewHorizons/Realistic-Terrain-Generation/blob/8b062a446f1f002ec6ab132d8f8a6f9c30af13a2/src/main/java/rtg/RTG.java#L50). Indirect effects from dependencies, injection, configuration and server rules remain open.
