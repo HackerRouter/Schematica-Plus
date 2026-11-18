@@ -1714,6 +1714,7 @@ Source [c90e11eb0e](https://github.com/GTNewHorizons/RemoteIO/tree/c90e11eb0eafa
 Source [d842737a6f](https://github.com/GTNewHorizons/Roguelike-Dungeons/tree/d842737a6f57c2eb3dbf72f6f8edff303af32c7e) · 296 tracked Java, Scala or Kotlin files outside test/example directories.
 
 - No direct match in the listed checks. Mod entry point: [Roguelike](https://github.com/GTNewHorizons/Roguelike-Dungeons/blob/d842737a6f57c2eb3dbf72f6f8edff303af32c7e/src/main/java/greymerk/roguelike/Roguelike.java#L18). Indirect effects from dependencies, injection, configuration and server rules remain open.
+- [DungeonGenerator](https://github.com/GTNewHorizons/Roguelike-Dungeons/blob/d842737a6f57c2eb3dbf72f6f8edff303af32c7e/src/main/java/greymerk/roguelike/DungeonGenerator.java#L10) uses `IWorldGenerator`. Use existing generated terrain to compare capture and paste.
 
 ### Salis-Arcana
 
