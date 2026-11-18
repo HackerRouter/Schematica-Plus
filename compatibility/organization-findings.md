@@ -2023,3 +2023,13 @@ Source [a280d38d92](https://github.com/GTNewHorizons/The-Aether-GTNH/tree/a280d3
 Source [1d4d5c579c](https://github.com/GTNewHorizons/TiC-Tooltips/tree/1d4d5c579c3a67a81d4d35f44951059cb4ac287d) · 15 tracked Java, Scala or Kotlin files outside test/example directories.
 
 - No direct match in the listed checks. Mod entry point: [ModTiCTooltips](https://github.com/GTNewHorizons/TiC-Tooltips/blob/1d4d5c579c3a67a81d4d35f44951059cb4ac287d/src/main/java/squeek/tictooltips/ModTiCTooltips.java#L22). Indirect effects from dependencies, injection, configuration and server rules remain open.
+
+### Tinkers-Defense
+
+Source [baf21ff433](https://github.com/GTNewHorizons/Tinkers-Defense/tree/baf21ff433b6f28145c6604875a924305fec5dc4) · 36 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- Existing Plus lookup in `BlockMetaTransform` names [gmail.Lance5057.blocks.CrestMount](https://github.com/GTNewHorizons/Tinkers-Defense/blob/baf21ff433b6f28145c6604875a924305fec5dc4/src/main/java/gmail/Lance5057/blocks/CrestMount.java#L1) (1 matching upstream source names). Check reflected members and client state with the deployed versions.
+- Check tile serialization against `TileNBTCompat`. 1 source file(s) contain matching declarations, including [TileEntity_CrestMount.writeToNBT](https://github.com/GTNewHorizons/Tinkers-Defense/blob/baf21ff433b6f28145c6604875a924305fec5dc4/src/main/java/gmail/Lance5057/tileentities/TileEntity_CrestMount.java#L134).
+- Check preview rendering against `RendererSchematicChunk`. 3 source file(s) contain matching declarations, including [Renderer_ArmorAnvil.renderTileEntityAt](https://github.com/GTNewHorizons/Tinkers-Defense/blob/baf21ff433b6f28145c6604875a924305fec5dc4/src/main/java/gmail/Lance5057/models/Renderer_ArmorAnvil.java#L20).
+- Check printer placement against `SchematicPrinter`. 2 source file(s) contain matching declarations, including [CrestMount.onBlockPlaced](https://github.com/GTNewHorizons/Tinkers-Defense/blob/baf21ff433b6f28145c6604875a924305fec5dc4/src/main/java/gmail/Lance5057/blocks/CrestMount.java#L123).
+- [TileEntity_CrestMount.writeToNBT](https://github.com/GTNewHorizons/Tinkers-Defense/blob/baf21ff433b6f28145c6604875a924305fec5dc4/src/main/java/gmail/Lance5057/tileentities/TileEntity_CrestMount.java#L134) accesses `flip_1`, `flip_2`, `flip_3`, `flip_4`. Compare those fields after capture, transform and restore.
