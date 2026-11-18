@@ -757,3 +757,13 @@ Source [75693f4e0b](https://github.com/GTNewHorizons/FloodLights/tree/75693f4e0b
 - Check preview rendering against `RendererSchematicChunk`. 4 source file(s) contain matching declarations, including [RotatableBlockRenderer.renderWorldBlock](https://github.com/GTNewHorizons/FloodLights/blob/75693f4e0b89fd4798acf814a70139cfe3318d56/src/main/java/de/keridos/floodlights/client/render/block/RotatableBlockRenderer.java#L89).
 - Check printer placement against `SchematicPrinter`. 3 source file(s) contain matching declarations, including [BlockFL.onBlockPlacedBy](https://github.com/GTNewHorizons/FloodLights/blob/75693f4e0b89fd4798acf814a70139cfe3318d56/src/main/java/de/keridos/floodlights/block/BlockFL.java#L122).
 - [RotatableBlockRenderer.renderWorldBlock](https://github.com/GTNewHorizons/FloodLights/blob/75693f4e0b89fd4798acf814a70139cfe3318d56/src/main/java/de/keridos/floodlights/client/render/block/RotatableBlockRenderer.java#L89) queries tile data while rendering. Preview a populated tile after saving and reopening its schematic.
+
+### ForbiddenMagic
+
+Source [7bae526481](https://github.com/GTNewHorizons/ForbiddenMagic/tree/7bae5264813ab44bce76b5d41fe44e468ab869bb) · 153 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- Check tile serialization against `TileNBTCompat`. 3 source file(s) contain matching declarations, including [AMVector3.writeToNBT](https://github.com/GTNewHorizons/ForbiddenMagic/blob/7bae5264813ab44bce76b5d41fe44e468ab869bb/src/api/java/am2/api/math/AMVector3.java#L202).
+- Check preview rendering against `RendererSchematicChunk`. 1 source file(s) contain matching declarations, including [TileEntityWrathCageRenderer.renderTileEntityAt](https://github.com/GTNewHorizons/ForbiddenMagic/blob/7bae5264813ab44bce76b5d41fe44e468ab869bb/src/main/java/fox/spiteful/forbidden/client/TileEntityWrathCageRenderer.java#L56).
+- Check material picking against `BlockToItemStack`. 2 source file(s) contain matching declarations, including [BlockArcaneCake.getPickBlock](https://github.com/GTNewHorizons/ForbiddenMagic/blob/7bae5264813ab44bce76b5d41fe44e468ab869bb/src/main/java/fox/spiteful/forbidden/blocks/BlockArcaneCake.java#L194).
+- Check printer placement against `SchematicPrinter`. 3 source file(s) contain matching declarations, including [BlockRoseBush.onBlockPlacedBy](https://github.com/GTNewHorizons/ForbiddenMagic/blob/7bae5264813ab44bce76b5d41fe44e468ab869bb/src/main/java/fox/spiteful/forbidden/blocks/BlockRoseBush.java#L112).
+- [AMVector3.writeToNBT](https://github.com/GTNewHorizons/ForbiddenMagic/blob/7bae5264813ab44bce76b5d41fe44e468ab869bb/src/api/java/am2/api/math/AMVector3.java#L202) accesses `Vec3_x`, `Vec3_y`, `Vec3_z`. Compare those fields after capture, transform and restore.
