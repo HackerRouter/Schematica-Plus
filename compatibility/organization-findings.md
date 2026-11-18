@@ -1568,3 +1568,11 @@ Source [a2678a26af](https://github.com/GTNewHorizons/ProjectBlue/tree/a2678a26af
 - Check tile serialization against `TileNBTCompat`. 1 source file(s) contain matching declarations, including [BaseTileEntity.readFromNBT](https://github.com/GTNewHorizons/ProjectBlue/blob/a2678a26af80a2ad580aae032030ede3df0ad3b4/src/main/scala/gcewing/projectblue/BaseTileEntity.java#L56).
 - Check preview rendering against `RendererSchematicChunk`. 1 source file(s) contain matching declarations, including [BaseBlockRenderer.renderWorldBlock](https://github.com/GTNewHorizons/ProjectBlue/blob/a2678a26af80a2ad580aae032030ede3df0ad3b4/src/main/scala/gcewing/projectblue/BaseBlockRenderer.java#L65).
 - Check printer placement against `SchematicPrinter`. 1 source file(s) contain matching declarations, including [ItemMultiPartJ.onItemUse](https://github.com/GTNewHorizons/ProjectBlue/blob/a2678a26af80a2ad580aae032030ede3df0ad3b4/src/main/scala/gcewing/projectblue/ItemMultiPartJ.java#L35).
+
+### ProjectRed
+
+Source [50ae9866a9](https://github.com/GTNewHorizons/ProjectRed/tree/50ae9866a93557366bb42cfa4a36bf8863076dae) · 220 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- Check tile serialization against `TileNBTCompat`. 1 source file(s) contain matching declarations, including [blocks.readFromNBT](https://github.com/GTNewHorizons/ProjectRed/blob/50ae9866a93557366bb42cfa4a36bf8863076dae/src/main/scala/mrtjp/projectred/illumination/blocks.scala#L537).
+- Check preview rendering against `RendererSchematicChunk`. 4 source file(s) contain matching declarations, including [TileBarrel.renderTileEntityAt](https://github.com/GTNewHorizons/ProjectRed/blob/50ae9866a93557366bb42cfa4a36bf8863076dae/src/main/scala/mrtjp/projectred/exploration/TileBarrel.scala#L345).
+- Check printer placement against `SchematicPrinter`. 9 source file(s) contain matching declarations, including [connectabletiles.onBlockPlaced](https://github.com/GTNewHorizons/ProjectRed/blob/50ae9866a93557366bb42cfa4a36bf8863076dae/src/main/scala/mrtjp/projectred/core/connectabletiles.scala#L224).
