@@ -398,3 +398,10 @@ Source [898116026e](https://github.com/GTNewHorizons/BuildCraft/tree/898116026e9
 - [Position.writeToNBT](https://github.com/GTNewHorizons/BuildCraft/blob/898116026e949887dca4024cde080cc6851a1503/src/main/java/buildcraft/api/core/Position.java#L136) accesses `i`, `j`, `k`, `orientation`. Compare those fields after capture, transform and restore.
 - [BlockTankPlacementHandler.onTankPlace](https://github.com/GTNewHorizons/BuildCraft/blob/898116026e949887dca4024cde080cc6851a1503/src/main/java/buildcraft/factory/BlockTankPlacementHandler.java#L13) can cancel the interaction. Verify the printer on a server with the handler enabled.
 - [PipeRendererWorld.renderWorldBlock](https://github.com/GTNewHorizons/BuildCraft/blob/898116026e949887dca4024cde080cc6851a1503/src/main/java/buildcraft/transport/render/PipeRendererWorld.java#L233) queries tile data while rendering. Preview a populated tile after saving and reopening its schematic.
+
+### BuildCraftCompat
+
+Source [62543a7926](https://github.com/GTNewHorizons/BuildCraftCompat/tree/62543a79265c0f37a10dd188272b0a566496c9c4) · 143 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- Check tile serialization against `TileNBTCompat`. 2 source file(s) contain matching declarations, including [PipeItemsPropolis.readFromNBT](https://github.com/GTNewHorizons/BuildCraftCompat/blob/62543a79265c0f37a10dd188272b0a566496c9c4/src/main/java/buildcraft/compat/forestry/pipes/PipeItemsPropolis.java#L37).
+- [PipeLogicPropolis.readFromNBT](https://github.com/GTNewHorizons/BuildCraftCompat/blob/62543a79265c0f37a10dd188272b0a566496c9c4/src/main/java/buildcraft/compat/forestry/pipes/PipeLogicPropolis.java#L39) accesses `TypeFilter`, `GenomeFilterS`. Compare those fields after capture, transform and restore.
