@@ -328,3 +328,14 @@ Source [9af0e3a4d5](https://github.com/GTNewHorizons/BlockLimiter/tree/9af0e3a4d
 Source [a0851c029e](https://github.com/GTNewHorizons/BlockRenderer6343/tree/a0851c029e2e5a6db89eeab0ac8c38f3f7fc7767) · 33 tracked Java, Scala or Kotlin files outside test/example directories.
 
 - No direct match in the listed checks. Mod entry point: [BlockRenderer6343](https://github.com/GTNewHorizons/BlockRenderer6343/blob/a0851c029e2e5a6db89eeab0ac8c38f3f7fc7767/src/main/java/blockrenderer6343/BlockRenderer6343.java#L17). Indirect effects from dependencies, injection, configuration and server rules remain open.
+
+### BloodArsenal
+
+Source [d8a4a11bcb](https://github.com/GTNewHorizons/BloodArsenal/tree/d8a4a11bcb3383b92ed6d918b204f97b00f46993) · 136 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- Check tile serialization against `TileNBTCompat`. 5 source file(s) contain matching declarations, including [InventoryAugmentedHolding.readFromNBT](https://github.com/GTNewHorizons/BloodArsenal/blob/d8a4a11bcb3383b92ed6d918b204f97b00f46993/src/main/java/com/arc/bloodarsenal/common/items/sigil/holding/InventoryAugmentedHolding.java#L159).
+- Check preview rendering against `RendererSchematicChunk`. 2 source file(s) contain matching declarations, including [TileLifeInfuserRenderer.renderTileEntityAt](https://github.com/GTNewHorizons/BloodArsenal/blob/d8a4a11bcb3383b92ed6d918b204f97b00f46993/src/main/java/com/arc/bloodarsenal/client/renderer/block/TileLifeInfuserRenderer.java#L38).
+- Check material picking against `BlockToItemStack`. 3 source file(s) contain matching declarations, including [BlockBloodCake.getPickBlock](https://github.com/GTNewHorizons/BloodArsenal/blob/d8a4a11bcb3383b92ed6d918b204f97b00f46993/src/main/java/com/arc/bloodarsenal/common/block/BlockBloodCake.java#L181).
+- Check printer placement against `SchematicPrinter`. 5 source file(s) contain matching declarations, including [BlockCompactedMRS.onBlockPlacedBy](https://github.com/GTNewHorizons/BloodArsenal/blob/d8a4a11bcb3383b92ed6d918b204f97b00f46993/src/main/java/com/arc/bloodarsenal/common/block/BlockCompactedMRS.java#L75).
+- [BlockCompactedMRS.getPickBlock](https://github.com/GTNewHorizons/BloodArsenal/blob/d8a4a11bcb3383b92ed6d918b204f97b00f46993/src/main/java/com/arc/bloodarsenal/common/block/BlockCompactedMRS.java#L163) queries world state when selecting an item. Compare the materials list against the placed variant.
+- [InventoryAugmentedHolding.readFromNBT](https://github.com/GTNewHorizons/BloodArsenal/blob/d8a4a11bcb3383b92ed6d918b204f97b00f46993/src/main/java/com/arc/bloodarsenal/common/items/sigil/holding/InventoryAugmentedHolding.java#L159) accesses `Slot`. Compare those fields after capture, transform and restore.
