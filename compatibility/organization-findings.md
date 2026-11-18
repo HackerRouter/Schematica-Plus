@@ -372,3 +372,9 @@ Source [172d79e04a](https://github.com/GTNewHorizons/Botanic-horizons/tree/172d7
 - Existing Plus lookup in `TileFacingAdapter` names [net.fuzzycraft.botanichorizons.addons.tileentity.AutomationTileEntity](https://github.com/GTNewHorizons/Botanic-horizons/blob/172d79e04a42dd51fa4a234ba042c2c460d6bedc/src/main/java/net/fuzzycraft/botanichorizons/addons/tileentity/AutomationTileEntity.java#L1) (1 matching upstream source names). Check reflected members and client state with the deployed versions.
 - Check tile serialization against `TileNBTCompat`. 1 source file(s) contain matching declarations, including [AutomationTileEntity.writeToNBT](https://github.com/GTNewHorizons/Botanic-horizons/blob/172d79e04a42dd51fa4a234ba042c2c460d6bedc/src/main/java/net/fuzzycraft/botanichorizons/addons/tileentity/AutomationTileEntity.java#L151).
 - Check printer placement against `SchematicPrinter`. 4 source file(s) contain matching declarations, including [BlockAdvancedAlchemyPool.onBlockPlacedBy](https://github.com/GTNewHorizons/Botanic-horizons/blob/172d79e04a42dd51fa4a234ba042c2c460d6bedc/src/main/java/net/fuzzycraft/botanichorizons/addons/block/BlockAdvancedAlchemyPool.java#L74).
+
+### BQ3-Thermos-patch
+
+Source [1be8dbf860](https://github.com/GTNewHorizons/BQ3-Thermos-patch/tree/1be8dbf8602569fd406534104486f83b926e9d26) · 2 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- No direct match in the listed checks. Indirect effects from dependencies, injection, configuration and server rules remain open.
