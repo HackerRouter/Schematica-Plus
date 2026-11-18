@@ -1441,3 +1441,10 @@ Source [c42ac73dde](https://github.com/GTNewHorizons/Nutrition/tree/c42ac73dde3c
 Source [f38b03312a](https://github.com/GTNewHorizons/oauth/tree/f38b03312aedff1bd72c5c2bb373a3d2e0b77a4f) · 7 tracked Java, Scala or Kotlin files outside test/example directories.
 
 - No direct match in the listed checks. Mod entry point: [OAuth](https://github.com/GTNewHorizons/oauth/blob/f38b03312aedff1bd72c5c2bb373a3d2e0b77a4f/src/main/java/com/sintinium/oauth/OAuth.java#L8). Indirect effects from dependencies, injection, configuration and server rules remain open.
+
+### OCGlasses
+
+Source [35a455fd0c](https://github.com/GTNewHorizons/OCGlasses/tree/35a455fd0ceed1f9e1b9573a32c4e0caf5525633) · 98 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- Check tile serialization against `TileNBTCompat`. 2 source file(s) contain matching declarations, including [Widget.writeToNBT](https://github.com/GTNewHorizons/OCGlasses/blob/35a455fd0ceed1f9e1b9573a32c4e0caf5525633/src/main/java/com/bymarcin/openglasses/surface/Widget.java#L34).
+- [OpenGlassesTerminalTileEntity.writeToNBT](https://github.com/GTNewHorizons/OCGlasses/blob/35a455fd0ceed1f9e1b9573a32c4e0caf5525633/src/main/java/com/bymarcin/openglasses/tileentity/OpenGlassesTerminalTileEntity.java#L330) accesses `currID`, `listSize`, `widgetType`, `ID`. Compare those fields after capture, transform and restore.
