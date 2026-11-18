@@ -50,7 +50,7 @@ public final class GuiSchematicProjectsBrowser extends GuiSchematicBrowser {
 
     private boolean projectFileSelected() {
         SchematicBrowserModel.Entry entry = selection();
-        return entry != null && !entry.directory && entry.name().toLowerCase(Locale.ROOT).endsWith(".json");
+        return entry != null && !entry.directory && entry.name().toLowerCase(Locale.ROOT).endsWith(".json") && selected != null;
     }
 
     @Override

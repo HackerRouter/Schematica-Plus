@@ -90,6 +90,10 @@ public final class SchematicProjects {
     }
 
     public static boolean open(File file) {
+        if (load(file, false) == null) {
+            InfoUtils.showGuiOrInGameMessage(MessageType.ERROR, "litematica.error.schematic_projects.failed_to_load_project");
+            return false;
+        }
         close();
         current = load(file, true);
         if (current == null) {
