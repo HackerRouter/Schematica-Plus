@@ -1892,3 +1892,11 @@ Source [dd41488159](https://github.com/GTNewHorizons/TC4Tweaks/tree/dd41488159d5
 Source [d552b90a16](https://github.com/GTNewHorizons/TCNodeTracker/tree/d552b90a16f863319cd0bd9e10bf23c7d25e7219) · 24 tracked Java, Scala or Kotlin files outside test/example directories.
 
 - Check interaction events against `SchematicPrinter`. 1 source file(s) contain matching declarations, including [RightClickEvent.playerRightClick](https://github.com/GTNewHorizons/TCNodeTracker/blob/d552b90a16f863319cd0bd9e10bf23c7d25e7219/src/main/java/com/dyonovan/tcnodetracker/events/RightClickEvent.java#L25).
+
+### Tempora
+
+Source [5f78b1fd56](https://github.com/GTNewHorizons/Tempora/tree/5f78b1fd5655ed2aae2e1adf9ed94d17e79d3ac3) · 217 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- Check tile serialization against `TileNBTCompat`. 1 source file(s) contain matching declarations, including [TemporaRegionRegistry.readFromNBT](https://github.com/GTNewHorizons/Tempora/blob/5f78b1fd5655ed2aae2e1adf9ed94d17e79d3ac3/src/main/java/com/colen/tempora/regions/TemporaRegionRegistry.java#L238).
+- Check world or renderer transformation alongside the schematic world and render pipeline. 2 source file(s) contain matching declarations, including [MixinChunk.Chunk](https://github.com/GTNewHorizons/Tempora/blob/5f78b1fd5655ed2aae2e1adf9ed94d17e79d3ac3/src/main/java/com/colen/tempora/mixins/MixinChunk.java#L17).
+- [TemporaRegionRegistry.readFromNBT](https://github.com/GTNewHorizons/Tempora/blob/5f78b1fd5655ed2aae2e1adf9ed94d17e79d3ac3/src/main/java/com/colen/tempora/regions/TemporaRegionRegistry.java#L238) accesses `regions`. Compare those fields after capture, transform and restore.
