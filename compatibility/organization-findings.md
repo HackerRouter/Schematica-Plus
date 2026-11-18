@@ -518,3 +518,9 @@ Source [6bf2bd408c](https://github.com/GTNewHorizons/CookingForBlockheads/tree/6
 - Check printer placement against `SchematicPrinter`. 8 source file(s) contain matching declarations, including [BlockCookingTable.onBlockPlacedBy](https://github.com/GTNewHorizons/CookingForBlockheads/blob/6bf2bd408c522225ee92864ce9c03b724c5fd416/src/main/java/net/blay09/mods/cookingforblockheads/block/BlockCookingTable.java#L41).
 - [BlockCookingTable.onBlockPlacedBy](https://github.com/GTNewHorizons/CookingForBlockheads/blob/6bf2bd408c522225ee92864ce9c03b724c5fd416/src/main/java/net/blay09/mods/cookingforblockheads/block/BlockCookingTable.java#L41) depends on placement orientation. Exercise the printer with a rotated schematic.
 - [BaseKitchenTileWithInventory.readFromNBT](https://github.com/GTNewHorizons/CookingForBlockheads/blob/6bf2bd408c522225ee92864ce9c03b724c5fd416/src/main/java/net/blay09/mods/cookingforblockheads/tile/BaseKitchenTileWithInventory.java#L65) accesses `Items`, `Slot`, `Color`, `IsFlipped`. Compare those fields after capture, transform and restore.
+
+### CoreTweaks
+
+Source [92cc4fd905](https://github.com/GTNewHorizons/CoreTweaks/tree/92cc4fd905fba09abf7823d7b34e9941d7ae1b4b) · 102 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- Check world or renderer transformation alongside the schematic world and render pipeline. 10 source file(s) contain matching declarations, including [MixinRenderGlobal.RenderGlobal](https://github.com/GTNewHorizons/CoreTweaks/blob/92cc4fd905fba09abf7823d7b34e9941d7ae1b4b/src/main/java/makamys/coretweaks/mixin/bugfix/displaylistdelete/MixinRenderGlobal.java#L10).
