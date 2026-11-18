@@ -2100,3 +2100,9 @@ Source [6e194e1b84](https://github.com/GTNewHorizons/twilightforest/tree/6e194e1
 - [TFMazeMapData.readFromNBT](https://github.com/GTNewHorizons/twilightforest/blob/6e194e1b84db4f665c2199bb65b869d605cb9c8a/src/main/java/twilightforest/TFMazeMapData.java#L18) accesses `yCenter`. Compare those fields after capture, transform and restore.
 - [BlockTFHedge.getPickBlock](https://github.com/GTNewHorizons/twilightforest/blob/6e194e1b84db4f665c2199bb65b869d605cb9c8a/src/main/java/twilightforest/block/BlockTFHedge.java#L303) queries world state when selecting an item. Compare the materials list against the placed variant.
 - [BlockTFNagastone2.onBlockPlacedBy](https://github.com/GTNewHorizons/twilightforest/blob/6e194e1b84db4f665c2199bb65b869d605cb9c8a/src/main/java/twilightforest/block/BlockTFNagastone2.java#L125) depends on placement orientation. Exercise the printer with a rotated schematic.
+
+### TX-Loader
+
+Source [24c7d54c57](https://github.com/GTNewHorizons/TX-Loader/tree/24c7d54c5792beabd0dc3832ec5fece28f277d77) · 13 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- No direct match in the listed checks. Indirect effects from dependencies, injection, configuration and server rules remain open.
