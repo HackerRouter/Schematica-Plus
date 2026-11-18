@@ -2338,3 +2338,7 @@ External pack updater. Changes to the selected pack can change dependency versio
 ### GTSU
 
 TileEntityGTSU defines energy, tier, redstoneMode and active NBT fields. Compare these values after server-side capture and paste. [TileEntityGTSU.java at a8df273b75](https://github.com/GTNewHorizons/GTSU/blob/a8df273b7518fb43d237799aafd7ec1b5363db27/src/main/java/eu/usrv/gtsu/tileentity/TileEntityGTSU.java)
+
+### HeadlessNH
+
+The headless client patches rendering. Use a rendering-enabled client for visual acceptance. [EntityRendererMixin.java at 4eea6e6cfc](https://github.com/GTNewHorizons/HeadlessNH/blob/4eea6e6cfc095f690d18b1ef5aaf2bbe6f3ab07d/src/main/java/net/sxmaa/headlessnh/mixins/early/EntityRendererMixin.java)
