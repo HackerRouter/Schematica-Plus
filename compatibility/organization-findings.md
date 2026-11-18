@@ -1074,3 +1074,10 @@ Source [7d8dd0389e](https://github.com/GTNewHorizons/IronChestMinecarts/tree/7d8
 Source [8baf79a9bd](https://github.com/GTNewHorizons/IronTankMinecarts/tree/8baf79a9bd968fa0005e6d8686624c7d141d3209) · 16 tracked Java, Scala or Kotlin files outside test/example directories.
 
 - Check printer placement against `SchematicPrinter`. 1 source file(s) contain matching declarations, including [ItemMinecartIronTank.onItemUse](https://github.com/GTNewHorizons/IronTankMinecarts/blob/8baf79a9bd968fa0005e6d8686624c7d141d3209/src/main/java/secondderivative/irontankminecarts/minecarts/ItemMinecartIronTank.java#L21).
+
+### Irontanks
+
+Source [4f0ff12f01](https://github.com/GTNewHorizons/Irontanks/tree/4f0ff12f01689ca2dd3bca7c0d7bf0ce01f27b3f) · 19 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- Check tile serialization against `TileNBTCompat`. 1 source file(s) contain matching declarations, including [TileIronTank.readFromNBT](https://github.com/GTNewHorizons/Irontanks/blob/4f0ff12f01689ca2dd3bca7c0d7bf0ce01f27b3f/src/main/java/com/indemnity83/irontank/tile/TileIronTank.java#L24).
+- [TileIronTank.readFromNBT](https://github.com/GTNewHorizons/Irontanks/blob/4f0ff12f01689ca2dd3bca7c0d7bf0ce01f27b3f/src/main/java/com/indemnity83/irontank/tile/TileIronTank.java#L24) accesses `type`. Compare those fields after capture, transform and restore.
