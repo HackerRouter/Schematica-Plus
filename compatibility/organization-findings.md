@@ -1532,3 +1532,13 @@ Source [7776b35d82](https://github.com/GTNewHorizons/Opis/tree/7776b35d82f26328d
 Source [444b077fae](https://github.com/GTNewHorizons/OverloadedArmorBar/tree/444b077fae58e809cf90c4adfb1122f126a9b566) · 5 tracked Java, Scala or Kotlin files outside test/example directories.
 
 - No direct match in the listed checks. Mod entry point: [OverloadedArmorBar](https://github.com/GTNewHorizons/OverloadedArmorBar/blob/444b077fae58e809cf90c4adfb1122f126a9b566/src/main/java/locusway/overloadedarmorbar/OverloadedArmorBar.java#L11). Indirect effects from dependencies, injection, configuration and server rules remain open.
+
+### PersonalSpace
+
+Source [e3c3a2e1a4](https://github.com/GTNewHorizons/PersonalSpace/tree/e3c3a2e1a4f759c3a64eb2392992f73e0b1335a1) · 30 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- Check tile serialization against `TileNBTCompat`. 1 source file(s) contain matching declarations, including [PortalTileEntity.readFromNBT](https://github.com/GTNewHorizons/PersonalSpace/blob/e3c3a2e1a4f759c3a64eb2392992f73e0b1335a1/src/main/java/me/eigenraven/personalspace/block/PortalTileEntity.java#L70).
+- Check preview rendering against `RendererSchematicChunk`. 1 source file(s) contain matching declarations, including [RenderPortal.renderTileEntityAt](https://github.com/GTNewHorizons/PersonalSpace/blob/e3c3a2e1a4f759c3a64eb2392992f73e0b1335a1/src/main/java/me/eigenraven/personalspace/block/RenderPortal.java#L18).
+- Check material picking against `BlockToItemStack`. 1 source file(s) contain matching declarations, including [PortalBlock.getPickBlock](https://github.com/GTNewHorizons/PersonalSpace/blob/e3c3a2e1a4f759c3a64eb2392992f73e0b1335a1/src/main/java/me/eigenraven/personalspace/block/PortalBlock.java#L134).
+- Check printer placement against `SchematicPrinter`. 2 source file(s) contain matching declarations, including [PortalBlock.onBlockPlacedBy](https://github.com/GTNewHorizons/PersonalSpace/blob/e3c3a2e1a4f759c3a64eb2392992f73e0b1335a1/src/main/java/me/eigenraven/personalspace/block/PortalBlock.java#L85).
+- [PortalTileEntity.readFromNBT](https://github.com/GTNewHorizons/PersonalSpace/blob/e3c3a2e1a4f759c3a64eb2392992f73e0b1335a1/src/main/java/me/eigenraven/personalspace/block/PortalTileEntity.java#L70) accesses `isReturnPortal`, `remoteDimensionId`, `remotePos`, `remoteDir`. Compare those fields after capture, transform and restore.
