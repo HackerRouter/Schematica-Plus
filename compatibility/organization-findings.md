@@ -1526,3 +1526,9 @@ Source [49063f36c2](https://github.com/GTNewHorizons/OpenSecurity/tree/49063f36c
 Source [7776b35d82](https://github.com/GTNewHorizons/Opis/tree/7776b35d82f26328d6a46527c27469480ef78d93) · 243 tracked Java, Scala or Kotlin files outside test/example directories.
 
 - No direct match in the listed checks. Mod entry point: [modOpis](https://github.com/GTNewHorizons/Opis/blob/7776b35d82f26328d6a46527c27469480ef78d93/src/main/java/mcp/mobius/opis/modOpis.java#L74). Indirect effects from dependencies, injection, configuration and server rules remain open.
+
+### OverloadedArmorBar
+
+Source [444b077fae](https://github.com/GTNewHorizons/OverloadedArmorBar/tree/444b077fae58e809cf90c4adfb1122f126a9b566) · 5 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- No direct match in the listed checks. Mod entry point: [OverloadedArmorBar](https://github.com/GTNewHorizons/OverloadedArmorBar/blob/444b077fae58e809cf90c4adfb1122f126a9b566/src/main/java/locusway/overloadedarmorbar/OverloadedArmorBar.java#L11). Indirect effects from dependencies, injection, configuration and server rules remain open.
