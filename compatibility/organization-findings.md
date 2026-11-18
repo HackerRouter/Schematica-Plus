@@ -228,3 +228,12 @@ Source [d5bab15bfa](https://github.com/GTNewHorizons/Battlegear2-for-Backhand/tr
 Source [2a49984830](https://github.com/GTNewHorizons/Baubles-Expanded/tree/2a499848304d6df9222c8b642d38ecd2a2affaae) · 33 tracked Java, Scala or Kotlin files outside test/example directories.
 
 - No direct match in the listed checks. Mod entry point: [Baubles](https://github.com/GTNewHorizons/Baubles-Expanded/blob/2a499848304d6df9222c8b642d38ecd2a2affaae/src/main/java/baubles/common/Baubles.java#L29). Indirect effects from dependencies, injection, configuration and server rules remain open.
+
+### bdlib
+
+Source [d402315bdb](https://github.com/GTNewHorizons/bdlib/tree/d402315bdb52a70af1b343c2b192cb8c1b420bbe) · 209 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- Check tile serialization against `TileNBTCompat`. 2 source file(s) contain matching declarations, including [BlockRef.writeToNBT](https://github.com/GTNewHorizons/bdlib/blob/d402315bdb52a70af1b343c2b192cb8c1b420bbe/src/main/scala/net/bdew/lib/block/BlockRef.scala#L55).
+- Check preview rendering against `RendererSchematicChunk`. 3 source file(s) contain matching declarations, including [CoverRenderer.renderWorldBlock](https://github.com/GTNewHorizons/bdlib/blob/d402315bdb52a70af1b343c2b192cb8c1b420bbe/src/main/scala/net/bdew/lib/covers/CoverRenderer.scala#L29).
+- Check material picking against `BlockToItemStack`. 1 source file(s) contain matching declarations, including [KeepData.getPickBlock](https://github.com/GTNewHorizons/bdlib/blob/d402315bdb52a70af1b343c2b192cb8c1b420bbe/src/main/scala/net/bdew/lib/block/KeepData.scala#L80).
+- Check printer placement against `SchematicPrinter`. 3 source file(s) contain matching declarations, including [KeepData.placeBlockAt](https://github.com/GTNewHorizons/bdlib/blob/d402315bdb52a70af1b343c2b192cb8c1b420bbe/src/main/scala/net/bdew/lib/block/KeepData.scala#L147).
