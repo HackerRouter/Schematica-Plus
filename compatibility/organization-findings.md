@@ -1324,3 +1324,9 @@ Source [babf1615c7](https://github.com/GTNewHorizons/NaturesCompass/tree/babf161
 Source [788b66357d](https://github.com/GTNewHorizons/Navigator/tree/788b66357db8fb6953322a76ce12b43ded133e83) · 73 tracked Java, Scala or Kotlin files outside test/example directories.
 
 - No direct match in the listed checks. Mod entry point: [Navigator](https://github.com/GTNewHorizons/Navigator/blob/788b66357db8fb6953322a76ce12b43ded133e83/src/main/java/com/gtnewhorizons/navigator/Navigator.java#L12). Indirect effects from dependencies, injection, configuration and server rules remain open.
+
+### nei-custom-diagram
+
+Source [87a13c2884](https://github.com/GTNewHorizons/nei-custom-diagram/tree/87a13c2884238248fc5497612f5d1ca508f3db53) · 111 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- No direct match in the listed checks. Mod entry point: [NeiCustomDiagram](https://github.com/GTNewHorizons/nei-custom-diagram/blob/87a13c2884238248fc5497612f5d1ca508f3db53/src/main/java/com/github/dcysteine/neicustomdiagram/main/NeiCustomDiagram.java#L20). Indirect effects from dependencies, injection, configuration and server rules remain open.
