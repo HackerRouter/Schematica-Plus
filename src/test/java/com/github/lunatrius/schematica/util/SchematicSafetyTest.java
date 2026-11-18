@@ -35,6 +35,13 @@ public class SchematicSafetyTest {
         SchematicLimits.worldBounds(-1, 0, -1, 0, 255, 0);
     }
 
+    @Test public void displayPathsOutsideTheGameDirectoryStayAbsolute() throws IOException {
+        File game = temporary.newFolder("game"), outside = temporary.newFolder("blueprints");
+        assertEquals("schematics/a.schemplus", FileUtils.displayPath(game.toPath(), new File(game, "schematics/a.schemplus").toPath()));
+        File elsewhere = new File(outside, "a.schemplus");
+        assertEquals(elsewhere.getAbsolutePath().replace('\\', '/'), FileUtils.displayPath(game.toPath(), elsewhere.toPath()));
+    }
+
     @Test public void findsEitherFormatAndHonorsExplicitDownloadNames() throws IOException {
         File directory = temporary.newFolder();
         File extended = new File(directory, "建筑.schemplus");

@@ -29,6 +29,12 @@ public class FileUtils {
         }
     }
 
+    /** A path relative to base when it lies inside, else the absolute path, such as on another Windows drive. */
+    public static String displayPath(Path base, Path target) {
+        Path from = base.toAbsolutePath(), to = target.toAbsolutePath();
+        return (to.startsWith(from) ? from.relativize(to) : to).toString().replace('\\', '/');
+    }
+
     public static boolean isReservedName(String name) {
         return name.split("\\.", 2)[0].toUpperCase(Locale.ROOT).matches("CON|PRN|AUX|NUL|COM[1-9¹²³]|LPT[1-9¹²³]");
     }
