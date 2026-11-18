@@ -1104,3 +1104,9 @@ Source [8b02e4ed5c](https://github.com/GTNewHorizons/JarJar/tree/8b02e4ed5c0a536
 Source [2e194152cb](https://github.com/GTNewHorizons/journeymap-legacy/tree/2e194152cbcb3f376d09becd203d4c53daf7e9ab) · 298 tracked Java, Scala or Kotlin files outside test/example directories.
 
 - Check tile serialization against `TileNBTCompat`. 1 source file(s) contain matching declarations, including [NBTWorldSaveDataHandler.readFromNBT](https://github.com/GTNewHorizons/journeymap-legacy/blob/2e194152cbcb3f376d09becd203d4c53daf7e9ab/src/main/java/journeymap/server/nbt/NBTWorldSaveDataHandler.java#L27).
+
+### JustEnoughCalculation
+
+Source [72f9da2e37](https://github.com/GTNewHorizons/JustEnoughCalculation/tree/72f9da2e371f68b7323cc2dfc9a15c5900c6169c) · 105 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- No direct match in the listed checks. Mod entry point: [JustEnoughCalculation](https://github.com/GTNewHorizons/JustEnoughCalculation/blob/72f9da2e371f68b7323cc2dfc9a15c5900c6169c/src/main/java/me/towdium/jecalculation/JustEnoughCalculation.java#L25). Indirect effects from dependencies, injection, configuration and server rules remain open.
