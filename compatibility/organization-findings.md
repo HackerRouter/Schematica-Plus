@@ -183,3 +183,15 @@ Source [ff2a24d96f](https://github.com/GTNewHorizons/AsieLib/tree/ff2a24d96f3ef4
 Source [315f8c7e74](https://github.com/GTNewHorizons/AspectRecipeIndex/tree/315f8c7e746d209655f1e6a2f0a97790d424dfea) · 29 tracked Java, Scala or Kotlin files outside test/example directories.
 
 - No direct match in the listed checks. Mod entry point: [AspectRecipeIndex](https://github.com/GTNewHorizons/AspectRecipeIndex/blob/315f8c7e746d209655f1e6a2f0a97790d424dfea/src/main/java/com/gtnewhorizons/aspectrecipeindex/AspectRecipeIndex.java#L17). Indirect effects from dependencies, injection, configuration and server rules remain open.
+
+### Avaritia
+
+Source [9412321283](https://github.com/GTNewHorizons/Avaritia/tree/9412321283e471f4cd399ced8cba8e8438b80583) · 146 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- Existing Plus lookup in `BlockMetaTransform` names [fox.spiteful.avaritia.blocks.BlockMatterClusterOpener](https://github.com/GTNewHorizons/Avaritia/blob/9412321283e471f4cd399ced8cba8e8438b80583/src/main/java/fox/spiteful/avaritia/blocks/BlockMatterClusterOpener.java#L1) (4 matching upstream source names). Check reflected members and client state with the deployed versions.
+- Check tile serialization against `TileNBTCompat`. 3 source file(s) contain matching declarations, including [InfiniteFoxes.writeToNBT](https://github.com/GTNewHorizons/Avaritia/blob/9412321283e471f4cd399ced8cba8e8438b80583/src/main/java/fox/spiteful/avaritia/compat/tails/InfiniteFoxes.java#L123).
+- Check preview rendering against `RendererSchematicChunk`. 2 source file(s) contain matching declarations, including [RenderInfinitato.renderWorldBlock](https://github.com/GTNewHorizons/Avaritia/blob/9412321283e471f4cd399ced8cba8e8438b80583/src/main/java/fox/spiteful/avaritia/compat/botania/RenderInfinitato.java#L32).
+- Check printer placement against `SchematicPrinter`. 4 source file(s) contain matching declarations, including [BlockCompressor.onBlockPlacedBy](https://github.com/GTNewHorizons/Avaritia/blob/9412321283e471f4cd399ced8cba8e8438b80583/src/main/java/fox/spiteful/avaritia/blocks/BlockCompressor.java#L78).
+- Check interaction events against `SchematicPrinter`. 2 source file(s) contain matching declarations, including [LudicrousEvents.onPlayerMine](https://github.com/GTNewHorizons/Avaritia/blob/9412321283e471f4cd399ced8cba8e8438b80583/src/main/java/fox/spiteful/avaritia/LudicrousEvents.java#L44).
+- [BlockCompressor.onBlockPlacedBy](https://github.com/GTNewHorizons/Avaritia/blob/9412321283e471f4cd399ced8cba8e8438b80583/src/main/java/fox/spiteful/avaritia/blocks/BlockCompressor.java#L78) depends on placement orientation. Exercise the printer with a rotated schematic.
+- [TileMatterClusterOpener.writeToNBT](https://github.com/GTNewHorizons/Avaritia/blob/9412321283e471f4cd399ced8cba8e8438b80583/src/main/java/fox/spiteful/avaritia/tile/TileMatterClusterOpener.java#L118) accesses `clusterInput`, `itemOutput`, `fluidOutput`. Compare those fields after capture, transform and restore.
