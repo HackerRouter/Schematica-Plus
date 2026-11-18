@@ -1380,3 +1380,9 @@ Source [240cd0b1aa](https://github.com/GTNewHorizons/NewHorizonsCoreMod/tree/240
 Source [298f678ad9](https://github.com/GTNewHorizons/Nodal-Mechanics/tree/298f678ad946329fa9f22b0a12d51654a3522792) · 11 tracked Java, Scala or Kotlin files outside test/example directories.
 
 - No direct match in the listed checks. Mod entry point: [NodalMechanics](https://github.com/GTNewHorizons/Nodal-Mechanics/blob/298f678ad946329fa9f22b0a12d51654a3522792/src/main/java/shukaro/nodalmechanics/NodalMechanics.java#L19). Indirect effects from dependencies, injection, configuration and server rules remain open.
+
+### NoHotbarNeeded
+
+Source [dcacd08964](https://github.com/GTNewHorizons/NoHotbarNeeded/tree/dcacd08964eb6386bd7383a5e47fecee5ab692a4) · 8 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- No direct match in the listed checks. Mod entry point: [NoHotbarNeeded](https://github.com/GTNewHorizons/NoHotbarNeeded/blob/dcacd08964eb6386bd7383a5e47fecee5ab692a4/src/main/java/net/xonich/mc/nohotbarneeded/NoHotbarNeeded.java#L9). Indirect effects from dependencies, injection, configuration and server rules remain open.
