@@ -2064,3 +2064,9 @@ Source [e6164aef1a](https://github.com/GTNewHorizons/TinkersMechworks/tree/e6164
 - Check printer placement against `SchematicPrinter`. 9 source file(s) contain matching declarations, including [FilterBlock.onBlockPlaced](https://github.com/GTNewHorizons/TinkersMechworks/blob/e6164aef1a7bbe084285e8909a1d936aed2a8595/src/main/java/tmechworks/blocks/FilterBlock.java#L159).
 - [AdvancedDrawbridgeLogic.readFromNBT](https://github.com/GTNewHorizons/TinkersMechworks/blob/e6164aef1a7bbe084285e8909a1d936aed2a8595/src/main/java/tmechworks/blocks/logic/AdvancedDrawbridgeLogic.java#L511) accesses `Active`, `Working`, `Extension`, `Camo`. Compare those fields after capture, transform and restore.
 - [SignalBusRender.renderWorldBlock](https://github.com/GTNewHorizons/TinkersMechworks/blob/e6164aef1a7bbe084285e8909a1d936aed2a8595/src/main/java/tmechworks/client/block/SignalBusRender.java#L34) queries tile data while rendering. Preview a populated tile after saving and reopening its schematic.
+
+### TooMuchLoot
+
+Source [18132426b3](https://github.com/GTNewHorizons/TooMuchLoot/tree/18132426b3e6d595193ec916471f31cc63b214dc) · 9 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- No direct match in the listed checks. Mod entry point: [TooMuchLoot](https://github.com/GTNewHorizons/TooMuchLoot/blob/18132426b3e6d595193ec916471f31cc63b214dc/src/main/java/dmillerw/tml/TooMuchLoot.java#L24). Indirect effects from dependencies, injection, configuration and server rules remain open.
