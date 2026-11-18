@@ -1052,6 +1052,7 @@ Source [b52b7bd473](https://github.com/GTNewHorizons/Infernal-Mobs/tree/b52b7bd4
 Source [f29c35cee0](https://github.com/GTNewHorizons/InfoHUD/tree/f29c35cee079233413b78e8680473551a0d3b1bd) · 61 tracked Java, Scala or Kotlin files outside test/example directories.
 
 - No direct match in the listed checks. Mod entry point: [InfoHUD](https://github.com/GTNewHorizons/InfoHUD/blob/f29c35cee079233413b78e8680473551a0d3b1bd/src/main/java/com/gtnewhorizons/infohud/InfoHUD.java#L13). Indirect effects from dependencies, injection, configuration and server rules remain open.
+- [KeyBindHandler](https://github.com/GTNewHorizons/InfoHUD/blob/f29c35cee079233413b78e8680473551a0d3b1bd/src/main/java/com/gtnewhorizons/infohud/keybinds/KeyBindHandler.java#L28) accepts `KeyInputEvent`. Exercise the schematic overlay and hotkeys while the corresponding client feature is enabled.
 
 ### InGame-Info-XML
 
