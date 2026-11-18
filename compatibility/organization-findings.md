@@ -2070,3 +2070,9 @@ Source [e6164aef1a](https://github.com/GTNewHorizons/TinkersMechworks/tree/e6164
 Source [18132426b3](https://github.com/GTNewHorizons/TooMuchLoot/tree/18132426b3e6d595193ec916471f31cc63b214dc) · 9 tracked Java, Scala or Kotlin files outside test/example directories.
 
 - No direct match in the listed checks. Mod entry point: [TooMuchLoot](https://github.com/GTNewHorizons/TooMuchLoot/blob/18132426b3e6d595193ec916471f31cc63b214dc/src/main/java/dmillerw/tml/TooMuchLoot.java#L24). Indirect effects from dependencies, injection, configuration and server rules remain open.
+
+### ToroHealth
+
+Source [c0a4c2e636](https://github.com/GTNewHorizons/ToroHealth/tree/c0a4c2e63645b59c94551fdd3b7571fadfdd39da) · 9 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- No direct match in the listed checks. Mod entry point: [ToroHealthMod](https://github.com/GTNewHorizons/ToroHealth/blob/c0a4c2e63645b59c94551fdd3b7571fadfdd39da/src/main/java/net/torocraft/torohealthmod/ToroHealthMod.java#L12). Indirect effects from dependencies, injection, configuration and server rules remain open.
