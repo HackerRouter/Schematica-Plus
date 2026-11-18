@@ -1554,3 +1554,9 @@ Source [45a0d1efca](https://github.com/GTNewHorizons/PlanNH/tree/45a0d1efca52b94
 Source [5a2a3849db](https://github.com/GTNewHorizons/Player-API/tree/5a2a3849dba3f5eefee075931bfcaddaefc5fff7) · 19 tracked Java, Scala or Kotlin files outside test/example directories.
 
 - No direct match in the listed checks. Indirect effects from dependencies, injection, configuration and server rules remain open.
+
+### Postea
+
+Source [bdd8977182](https://github.com/GTNewHorizons/Postea/tree/bdd8977182c57d0920769bcf85d26f92519e7e8c) · 39 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- Check world or renderer transformation alongside the schematic world and render pipeline. 1 source file(s) contain matching declarations, including [MixinChunk.Chunk](https://github.com/GTNewHorizons/Postea/blob/bdd8977182c57d0920769bcf85d26f92519e7e8c/src/main/java/com/gtnewhorizons/postea/mixins/early/MixinChunk.java#L10).
