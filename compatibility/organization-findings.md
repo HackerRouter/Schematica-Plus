@@ -1098,3 +1098,9 @@ Source [14c9a4351e](https://github.com/GTNewHorizons/Jabba/tree/14c9a4351e240b57
 Source [8b02e4ed5c](https://github.com/GTNewHorizons/JarJar/tree/8b02e4ed5c0a5368c5c1e795febb604e7fe8a850) · 35 tracked Java, Scala or Kotlin files outside test/example directories.
 
 - No direct match in the listed checks. Mod entry point: [JarJar](https://github.com/GTNewHorizons/JarJar/blob/8b02e4ed5c0a5368c5c1e795febb604e7fe8a850/src/main/java/com/mitchej123/jarjar/JarJar.java#L12). Indirect effects from dependencies, injection, configuration and server rules remain open.
+
+### journeymap-legacy
+
+Source [2e194152cb](https://github.com/GTNewHorizons/journeymap-legacy/tree/2e194152cbcb3f376d09becd203d4c53daf7e9ab) · 298 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- Check tile serialization against `TileNBTCompat`. 1 source file(s) contain matching declarations, including [NBTWorldSaveDataHandler.readFromNBT](https://github.com/GTNewHorizons/journeymap-legacy/blob/2e194152cbcb3f376d09becd203d4c53daf7e9ab/src/main/java/journeymap/server/nbt/NBTWorldSaveDataHandler.java#L27).
