@@ -1739,3 +1739,9 @@ Source [dddfc3f085](https://github.com/GTNewHorizons/SGCraft/tree/dddfc3f0850d99
 Source [c1b7451de7](https://github.com/GTNewHorizons/Share-Where-I-am/tree/c1b7451de76772dce25a3e33c0137904951ccf26) · 35 tracked Java, Scala or Kotlin files outside test/example directories.
 
 - No direct match in the listed checks. Mod entry point: [ShareWhereIAm](https://github.com/GTNewHorizons/Share-Where-I-am/blob/c1b7451de76772dce25a3e33c0137904951ccf26/src/main/java/com/muxiu1997/sharewhereiam/ShareWhereIAm.java#L11). Indirect effects from dependencies, injection, configuration and server rules remain open.
+
+### SharedProspecting
+
+Source [8370a51d34](https://github.com/GTNewHorizons/SharedProspecting/tree/8370a51d344595e0925de947e7f8047234af76a5) · 23 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- No direct match in the listed checks. Mod entry point: [SharedProspectingMod](https://github.com/GTNewHorizons/SharedProspecting/blob/8370a51d344595e0925de947e7f8047234af76a5/src/main/java/com/rune580/sharedprospecting/SharedProspectingMod.java#L14). Indirect effects from dependencies, injection, configuration and server rules remain open.
