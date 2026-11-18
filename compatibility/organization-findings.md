@@ -1773,3 +1773,10 @@ Source [12c1b5deb9](https://github.com/GTNewHorizons/SleepingBags/tree/12c1b5deb
 Source [5135234c73](https://github.com/GTNewHorizons/SpecialAI/tree/5135234c73f97bc92bc67bd64eb1dca86136085a) · 31 tracked Java, Scala or Kotlin files outside test/example directories.
 
 - No direct match in the listed checks. Mod entry point: [_SpecialAI](https://github.com/GTNewHorizons/SpecialAI/blob/5135234c73f97bc92bc67bd64eb1dca86136085a/src/main/java/toast/specialAI/_SpecialAI.java#L15). Indirect effects from dependencies, injection, configuration and server rules remain open.
+
+### SpecialMobs
+
+Source [a23cfc1dc8](https://github.com/GTNewHorizons/SpecialMobs/tree/a23cfc1dc861ef96bbf49231f9f7a6d44a57b1ce) · 149 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- Check tile serialization against `TileNBTCompat`. 1 source file(s) contain matching declarations, including [SpecialMobData.writeToNBT](https://github.com/GTNewHorizons/SpecialMobs/blob/a23cfc1dc861ef96bbf49231f9f7a6d44a57b1ce/src/main/java/toast/specialMobs/entity/SpecialMobData.java#L331).
+- [SpecialMobData.writeToNBT](https://github.com/GTNewHorizons/SpecialMobs/blob/a23cfc1dc861ef96bbf49231f9f7a6d44a57b1ce/src/main/java/toast/specialMobs/entity/SpecialMobData.java#L331) accesses `SMScale`, `SMRegen`, `SMRegenTick`, `SMTex`. Compare those fields after capture, transform and restore.
