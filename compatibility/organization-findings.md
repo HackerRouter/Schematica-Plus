@@ -1318,3 +1318,9 @@ Source [f84ee064e2](https://github.com/GTNewHorizons/Natura/tree/f84ee064e22b4e9
 Source [babf1615c7](https://github.com/GTNewHorizons/NaturesCompass/tree/babf1615c7cdf37630da4790b5c4221dfa17784d) · 34 tracked Java, Scala or Kotlin files outside test/example directories.
 
 - No direct match in the listed checks. Mod entry point: [NaturesCompass](https://github.com/GTNewHorizons/NaturesCompass/blob/babf1615c7cdf37630da4790b5c4221dfa17784d/src/main/java/com/chaosthedude/naturescompass/NaturesCompass.java#L31). Indirect effects from dependencies, injection, configuration and server rules remain open.
+
+### Navigator
+
+Source [788b66357d](https://github.com/GTNewHorizons/Navigator/tree/788b66357db8fb6953322a76ce12b43ded133e83) · 73 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- No direct match in the listed checks. Mod entry point: [Navigator](https://github.com/GTNewHorizons/Navigator/blob/788b66357db8fb6953322a76ce12b43ded133e83/src/main/java/com/gtnewhorizons/navigator/Navigator.java#L12). Indirect effects from dependencies, injection, configuration and server rules remain open.
