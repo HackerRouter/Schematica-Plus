@@ -720,3 +720,9 @@ Source [bd47fafc55](https://github.com/GTNewHorizons/Et-Futurum-Requiem/tree/bd4
 - [BlockColoredWaterCauldronRenderer.renderWorldBlock](https://github.com/GTNewHorizons/Et-Futurum-Requiem/blob/bd47fafc554825dd510981ffd4e8a488f5cf8ca7/src/main/java/ganymedes01/etfuturum/client/renderer/block/BlockColoredWaterCauldronRenderer.java#L22) queries tile data while rendering. Preview a populated tile after saving and reopening its schematic.
 - [DebugTestItem.onLeftClick](https://github.com/GTNewHorizons/Et-Futurum-Requiem/blob/bd47fafc554825dd510981ffd4e8a488f5cf8ca7/src/main/java/ganymedes01/etfuturum/items/DebugTestItem.java#L68) can cancel the interaction. Verify the printer on a server with the handler enabled.
 - [TileEntityBanner.writeToNBT](https://github.com/GTNewHorizons/Et-Futurum-Requiem/blob/bd47fafc554825dd510981ffd4e8a488f5cf8ca7/src/main/java/ganymedes01/etfuturum/tileentities/TileEntityBanner.java#L55) accesses `Base`, `IsStanding`, `Patterns`. Compare those fields after capture, transform and restore.
+
+### Eternal-Singularity
+
+Source [a6e9185f18](https://github.com/GTNewHorizons/Eternal-Singularity/tree/a6e9185f180b8898927193a2afc340d4d8642b7f) · 8 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- No direct match in the listed checks. Mod entry point: [EternalSingularityMod](https://github.com/GTNewHorizons/Eternal-Singularity/blob/a6e9185f180b8898927193a2afc340d4d8642b7f/src/main/java/singulariteam/eternalsingularity/EternalSingularityMod.java#L25). Indirect effects from dependencies, injection, configuration and server rules remain open.
