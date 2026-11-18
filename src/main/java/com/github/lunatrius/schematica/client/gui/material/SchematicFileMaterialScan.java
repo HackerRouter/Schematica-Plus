@@ -12,6 +12,7 @@ import net.minecraft.block.Block;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 
+import com.github.lunatrius.schematica.api.ISchematic;
 import com.github.lunatrius.schematica.api.SchematicRegion;
 import com.github.lunatrius.schematica.client.world.SchematicWorld;
 import com.github.lunatrius.schematica.reference.Reference;
@@ -20,28 +21,54 @@ import cpw.mods.fml.common.registry.GameData;
 
 /** Counts the items of a schematic that is not placed; everything counts as missing, as upstream does. */
 public final class SchematicFileMaterialScan implements MaterialScanner {
-    private final SchematicWorld schematic;
     private final EntityPlayer player;
-    private final List<SchematicRegion> regions;
+    private final List<Part> parts = new ArrayList<>();
     private final Map<MaterialItemKey, int[]> counts = new LinkedHashMap<>();
-    private final int width, length;
     private final long volume;
-    private long cursor;
+    private int part;
+    private long cursor, offset;
     private int skipped;
 
-    /** regions: the sub-regions to count, or all of the schematic when empty. */
-    public SchematicFileMaterialScan(SchematicWorld schematic, Collection<SchematicRegion> regions, EntityPlayer player) {
-        this.schematic = schematic;
-        this.player = player;
-        this.regions = new ArrayList<>(regions);
-        width = schematic.getWidth();
-        length = schematic.getLength();
-        volume = (long) width * length * schematic.getHeight();
+    private static final class Part {
+        final SchematicWorld world;
+        final List<SchematicRegion> regions;
+        final int width, length;
+        final long volume;
+
+        Part(SchematicWorld world, List<SchematicRegion> regions) {
+            this.world = world;
+            this.regions = regions;
+            width = world.getWidth();
+            length = world.getLength();
+            volume = (long) width * length * world.getHeight();
+        }
+
+        boolean selected(int x, int y, int z) {
+            if (!world.getSchematic().containsBlock(x, y, z)) return false;
+            if (regions.isEmpty()) return true;
+            for (SchematicRegion region : regions) if (region.contains(x, y, z)) return true;
+            return false;
+        }
     }
 
-    @Override public boolean done() { return cursor >= volume; }
+    /** regions: the sub-regions to count, or all of the schematic when empty; regions with own contents are read alone. */
+    public SchematicFileMaterialScan(SchematicWorld schematic, Collection<SchematicRegion> regions, EntityPlayer player) {
+        this.player = player;
+        List<SchematicRegion> composed = new ArrayList<>();
+        for (SchematicRegion region : regions) {
+            ISchematic contents = schematic.getSchematic().getRegionSchematic(region.name);
+            if (contents != null) parts.add(new Part(new SchematicWorld(contents), new ArrayList<>()));
+            else composed.add(region);
+        }
+        if (regions.isEmpty() || !composed.isEmpty()) parts.add(0, new Part(schematic, composed));
+        long total = 0;
+        for (Part counted : parts) total += counted.volume;
+        volume = total;
+    }
 
-    @Override public int percent() { return volume == 0 ? 100 : (int) (cursor * 100 / volume); }
+    @Override public boolean done() { return offset + cursor >= volume; }
+
+    @Override public int percent() { return volume == 0 ? 100 : (int) ((offset + cursor) * 100 / volume); }
 
     @Override public int skipped() { return skipped; }
 
@@ -50,21 +77,22 @@ public final class SchematicFileMaterialScan implements MaterialScanner {
         long deadline = System.nanoTime() + 4_000_000L;
         int processed = 0;
         while (!done() && processed++ < 4096) {
+            Part current = parts.get(part);
+            if (cursor >= current.volume) {
+                offset += current.volume;
+                cursor = 0;
+                part++;
+                continue;
+            }
             long index = cursor++;
-            int x = (int) (index % width), z = (int) (index / width % length), y = (int) (index / ((long) width * length));
-            if (selected(x, y, z)) collect(x, y, z);
+            int x = (int) (index % current.width), z = (int) (index / current.width % current.length);
+            int y = (int) (index / ((long) current.width * current.length));
+            if (current.selected(x, y, z)) collect(current.world, x, y, z);
             if (System.nanoTime() >= deadline) break;
         }
     }
 
-    private boolean selected(int x, int y, int z) {
-        if (!schematic.getSchematic().containsBlock(x, y, z)) return false;
-        if (regions.isEmpty()) return true;
-        for (SchematicRegion region : regions) if (region.contains(x, y, z)) return true;
-        return false;
-    }
-
-    private void collect(int x, int y, int z) {
+    private void collect(SchematicWorld schematic, int x, int y, int z) {
         try {
             if (schematic.isAirBlock(x, y, z)) return;
             Block block = schematic.getBlock(x, y, z);
