@@ -3,7 +3,7 @@ package com.github.lunatrius.schematica.client.world;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -45,7 +45,17 @@ public final class Placements {
         thread.setDaemon(true);
         return thread;
     });
-    private static final Set<File> READING = Collections.synchronizedSet(new HashSet<>());
+    private static final Map<File, List<Waiter>> READING = new HashMap<>();
+
+    private static final class Waiter {
+        final Consumer<SchematicLibrary.Source<SchematicSourceData>> loaded;
+        final Consumer<Exception> failed;
+
+        Waiter(Consumer<SchematicLibrary.Source<SchematicSourceData>> loaded, Consumer<Exception> failed) {
+            this.loaded = loaded;
+            this.failed = failed;
+        }
+    }
 
     private Placements() {}
 
@@ -100,7 +110,8 @@ public final class Placements {
 
     /**
      * Reads and parses a file on a worker thread so that the game keeps running, then decodes and adds it on the client
-     * thread and passes it on; false when the file is already being read. A file loaded before is passed on right away.
+     * thread and passes it on; false when the file is already being read, in which case the callbacks wait for that read.
+     * A file loaded before is passed on right away.
      */
     public static boolean loadSourceAsync(File file, Consumer<SchematicLibrary.Source<SchematicSourceData>> onLoaded,
         Consumer<Exception> failed) throws IOException {
@@ -110,7 +121,18 @@ public final class Placements {
             onLoaded.accept(existing);
             return true;
         }
-        if (!READING.add(canonical)) return false;
+        List<Waiter> waiting;
+        synchronized (READING) {
+            waiting = READING.get(canonical);
+            if (waiting != null) {
+                waiting.add(new Waiter(onLoaded, failed));
+                return false;
+            }
+            waiting = new ArrayList<>();
+            waiting.add(new Waiter(onLoaded, failed));
+            READING.put(canonical, waiting);
+        }
+        List<Waiter> waiters = waiting;
         Minecraft mc = Minecraft.getMinecraft();
         World world = mc.theWorld;
         SOURCE_READER.execute(() -> {
@@ -124,15 +146,28 @@ public final class Placements {
             SchematicSourceData.Prepared prepared = data;
             Exception problem = error;
             mc.func_152344_a(() -> {
-                READING.remove(canonical);
-                if (problem != null) { failed.accept(problem); return; }
+                synchronized (READING) {
+                    READING.remove(canonical);
+                }
+                if (problem != null) {
+                    for (Waiter waiter : waiters) waiter.failed.accept(problem);
+                    return;
+                }
                 if (mc.theWorld != world) return;
+                SchematicLibrary.Source<SchematicSourceData> source;
                 try {
-                    SchematicLibrary.Source<SchematicSourceData> source = LIBRARY.add(canonical, SchematicSourceData.of(prepared));
+                    source = LIBRARY.add(canonical, SchematicSourceData.of(prepared));
                     reportUnknownBlocks(source);
-                    onLoaded.accept(source);
                 } catch (IOException | RuntimeException e) {
-                    failed.accept(e);
+                    for (Waiter waiter : waiters) waiter.failed.accept(e);
+                    return;
+                }
+                for (Waiter waiter : waiters) {
+                    try {
+                        waiter.loaded.accept(source);
+                    } catch (RuntimeException e) {
+                        waiter.failed.accept(e);
+                    }
                 }
             });
         });
