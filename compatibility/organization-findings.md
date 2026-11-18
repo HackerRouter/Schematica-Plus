@@ -1336,3 +1336,12 @@ Source [87a13c2884](https://github.com/GTNewHorizons/nei-custom-diagram/tree/87a
 Source [1e88b70767](https://github.com/GTNewHorizons/NEI-Integration/tree/1e88b70767d8eef8330d9f16d57ad7ca02de9505) · 63 tracked Java, Scala or Kotlin files outside test/example directories.
 
 - No direct match in the listed checks. Mod entry point: [NEIIntegration](https://github.com/GTNewHorizons/NEI-Integration/blob/1e88b70767d8eef8330d9f16d57ad7ca02de9505/src/main/java/tonius/neiintegration/NEIIntegration.java#L15). Indirect effects from dependencies, injection, configuration and server rules remain open.
+
+### Nei-Recipe-Panels
+
+Source [96555f62d7](https://github.com/GTNewHorizons/Nei-Recipe-Panels/tree/96555f62d7dd6fb95220d1c8103f0cd223bc8390) · 40 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- Check tile serialization against `TileNBTCompat`. 1 source file(s) contain matching declarations, including [RecipePanelTile.readFromNBT](https://github.com/GTNewHorizons/Nei-Recipe-Panels/blob/96555f62d7dd6fb95220d1c8103f0cd223bc8390/src/main/java/com/gtnewhorizons/neirecipepanel/block/RecipePanelTile.java#L76).
+- Check preview rendering against `RendererSchematicChunk`. 1 source file(s) contain matching declarations, including [RecipePanelRenderer.renderTileEntityAt](https://github.com/GTNewHorizons/Nei-Recipe-Panels/blob/96555f62d7dd6fb95220d1c8103f0cd223bc8390/src/main/java/com/gtnewhorizons/neirecipepanel/client/render/RecipePanelRenderer.java#L27).
+- Check material picking against `BlockToItemStack`. 1 source file(s) contain matching declarations, including [RecipePanelBlock.getPickBlock](https://github.com/GTNewHorizons/Nei-Recipe-Panels/blob/96555f62d7dd6fb95220d1c8103f0cd223bc8390/src/main/java/com/gtnewhorizons/neirecipepanel/block/RecipePanelBlock.java#L143).
+- Check printer placement against `SchematicPrinter`. 1 source file(s) contain matching declarations, including [ItemRecipePanel.onItemUse](https://github.com/GTNewHorizons/Nei-Recipe-Panels/blob/96555f62d7dd6fb95220d1c8103f0cd223bc8390/src/main/java/com/gtnewhorizons/neirecipepanel/item/ItemRecipePanel.java#L75).
