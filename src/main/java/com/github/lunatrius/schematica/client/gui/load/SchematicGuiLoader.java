@@ -84,7 +84,7 @@ public final class SchematicGuiLoader {
 
     private static void moveToLookTarget(Minecraft minecraft, SchematicWorld schematic) {
         EntityPlayer player = minecraft.thePlayer;
-        Vec3 eye = Vec3.createVectorHelper(player.posX, player.posY + player.getEyeHeight(), player.posZ);
+        Vec3 eye = Vec3.createVectorHelper(player.posX, player.posY + player.getEyeHeight() - player.getDefaultEyeHeight(), player.posZ);
         Vec3 look = player.getLookVec();
         Vec3 end = eye.addVector(look.xCoord * 256, look.yCoord * 256, look.zCoord * 256);
         MovingObjectPosition target = player.worldObj.rayTraceBlocks(eye, end);
