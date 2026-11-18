@@ -274,3 +274,11 @@ Source [1d8747fed6](https://github.com/GTNewHorizons/BetterLoadingScreen/tree/1d
 Source [4950a4700a](https://github.com/GTNewHorizons/BetterP2P/tree/4950a4700aa1d9f804f34d6daf584219e7656778) · 45 tracked Java, Scala or Kotlin files outside test/example directories.
 
 - Check printer placement against `SchematicPrinter`. 1 source file(s) contain matching declarations, including [ItemAdvancedMemoryCard.onItemUse](https://github.com/GTNewHorizons/BetterP2P/blob/4950a4700aa1d9f804f34d6daf584219e7656778/src/main/java/com/projecturanus/betterp2p/item/ItemAdvancedMemoryCard.kt#L58).
+
+### BetterQuesting
+
+Source [23507243db](https://github.com/GTNewHorizons/BetterQuesting/tree/23507243db7a58a71b1651a4d63442b8ea3f583b) · 523 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- Check tile serialization against `TileNBTCompat`. 45 source file(s) contain matching declarations, including [RewardPlaceholder.readFromNBT](https://github.com/GTNewHorizons/BetterQuesting/blob/23507243db7a58a71b1651a4d63442b8ea3f583b/src/main/java/betterquesting/api/placeholders/rewards/RewardPlaceholder.java#L36).
+- Check printer placement against `SchematicPrinter`. 4 source file(s) contain matching declarations, including [BlockObservationStation.onBlockPlacedBy](https://github.com/GTNewHorizons/BetterQuesting/blob/23507243db7a58a71b1651a4d63442b8ea3f583b/src/main/java/betterquesting/blocks/BlockObservationStation.java#L36).
+- [RewardPlaceholder.readFromNBT](https://github.com/GTNewHorizons/BetterQuesting/blob/23507243db7a58a71b1651a4d63442b8ea3f583b/src/main/java/betterquesting/api/placeholders/rewards/RewardPlaceholder.java#L36) accesses `orig_data`. Compare those fields after capture, transform and restore.
