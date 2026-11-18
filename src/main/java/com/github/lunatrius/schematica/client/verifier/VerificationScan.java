@@ -224,7 +224,12 @@ public final class VerificationScan {
             if (part.end > part.start) { captured.add(part); held.add(active); }
             if (active.cursor == active.end) {
                 active.section = Integer.MIN_VALUE;
-                if (active.sections.isEmpty()) active = null;
+                if (active.sections.isEmpty() && active.waiting.isEmpty()) active = null;
+            } else if (Boolean.FALSE.equals(loaded) && !active.sections.isEmpty()) {
+                active.waiting.add(active.section);
+                active.section = Integer.MIN_VALUE;
+                if (!held.contains(active)) pending.add(active);
+                active = null;
             } else {
                 if (!held.contains(active)) pending.add(active);
                 active = null;
@@ -280,7 +285,7 @@ public final class VerificationScan {
 
     private void releaseCaptured() {
         for (Work work : held) {
-            if (work.section != Integer.MIN_VALUE || !work.sections.isEmpty()) pending.add(work);
+            if (work.section != Integer.MIN_VALUE || !work.sections.isEmpty() || !work.waiting.isEmpty()) pending.add(work);
             else work.queued = false;
         }
         active = null; inFlight = null; captured.clear(); held.clear();
@@ -460,6 +465,7 @@ public final class VerificationScan {
         final int chunkX, chunkZ, minX, minZ, width, length, volume;
         int cursor, end, errors, section = Integer.MIN_VALUE;
         final TreeSet<Integer> sections = new TreeSet<>();
+        final TreeSet<Integer> waiting = new TreeSet<>();
         long version;
         boolean queued = true;
         Work(int cx, int cz) {
@@ -473,6 +479,10 @@ public final class VerificationScan {
         }
 
         void beginSection() {
+            if (sections.isEmpty()) {
+                sections.addAll(waiting);
+                waiting.clear();
+            }
             if (sections.isEmpty()) return;
             section = sections.pollFirst();
             cursor = width * length * (Math.max(bounds[1], (section << 4) - y) - bounds[1]);

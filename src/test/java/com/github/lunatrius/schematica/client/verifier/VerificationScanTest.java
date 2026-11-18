@@ -67,6 +67,22 @@ public class VerificationScanTest {
         assertEquals(2, scan.checked());
     }
 
+    @Test public void loadedUpperCubesAreCheckedWhileTheLowerOneIsMissing() {
+        VerificationScan scan = new VerificationScan(0, 0, 0, 1, 32, 1, new int[] {0, 0, 0, 1, 32, 1});
+        Set<Integer> loaded = new HashSet<>();
+        loaded.add(1);
+        Reader reader = new Reader() {
+            @Override public boolean loaded(int x, int y, int z) { return loaded.contains(y); }
+        };
+        for (int i = 0; i < 10; i++) scan.step(reader, 100, Long.MAX_VALUE);
+        assertEquals(16, scan.checked());
+        assertFalse(scan.done());
+        loaded.clear();
+        loaded.add(0);
+        finish(scan, reader);
+        assertEquals(32, scan.checked());
+    }
+
     @Test public void classifiesAllFiveResultsWithoutCountingAirAsCorrectOrAsMaterial() {
         VerificationScan scan = line(6);
         finish(scan, new Reader() {
