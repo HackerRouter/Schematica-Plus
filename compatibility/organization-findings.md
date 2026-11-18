@@ -79,6 +79,7 @@ Source [2ecec40599](https://github.com/GTNewHorizons/AMDIForge/tree/2ecec405991e
 
 - Check tile serialization against `TileNBTCompat`. 1 source file(s) contain matching declarations, including [GraveNBT.readFromNBT](https://github.com/GTNewHorizons/AMDIForge/blob/2ecec405991ed72a6676e35b1c9fdbf67151d00a/src/main/java/eu/usrv/amdiforge/core/graveIO/GraveNBT.java#L108).
 - [GraveNBT.readFromNBT](https://github.com/GTNewHorizons/AMDIForge/blob/2ecec405991ed72a6676e35b1c9fdbf67151d00a/src/main/java/eu/usrv/amdiforge/core/graveIO/GraveNBT.java#L108) accesses `size`, `Items`, `id`, `Count`. Compare those fields after capture, transform and restore.
+- [GraveNBT](https://github.com/GTNewHorizons/AMDIForge/blob/2ecec405991ed72a6676e35b1c9fdbf67151d00a/src/main/java/eu/usrv/amdiforge/core/graveIO/GraveNBT.java#L29) — GraveNBT is a data helper. A matching NBT method name here does not establish a tile capture path.
 
 ### AmidstGTNH
 
