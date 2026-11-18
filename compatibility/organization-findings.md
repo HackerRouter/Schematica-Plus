@@ -1973,3 +1973,12 @@ Source [b924b39c31](https://github.com/GTNewHorizons/ThaumicHorizons/tree/b924b3
 - Check printer placement against `SchematicPrinter`. 9 source file(s) contain matching declarations, including [BlockNodeMonitor.onBlockPlaced](https://github.com/GTNewHorizons/ThaumicHorizons/blob/b924b39c31145fd9eb99213fc06a92d46f820906/src/main/java/com/kentington/thaumichorizons/common/blocks/BlockNodeMonitor.java#L72).
 - [BlockVatRender.renderWorldBlock](https://github.com/GTNewHorizons/ThaumicHorizons/blob/b924b39c31145fd9eb99213fc06a92d46f820906/src/main/java/com/kentington/thaumichorizons/client/renderer/block/BlockVatRender.java#L25) queries tile data while rendering. Preview a populated tile after saving and reopening its schematic.
 - [TileVat.readFromNBT](https://github.com/GTNewHorizons/ThaumicHorizons/blob/b924b39c31145fd9eb99213fc06a92d46f820906/src/main/java/com/kentington/thaumichorizons/common/tiles/TileVat.java#L1433) accesses `recipein`, `item`, `rotype`, `recipeout`. Compare those fields after capture, transform and restore.
+
+### ThaumicInsurgence
+
+Source [4a913339f1](https://github.com/GTNewHorizons/ThaumicInsurgence/tree/4a913339f15f5c63711aaffd4fa19d8f5a477cf4) · 57 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- Check tile serialization against `TileNBTCompat`. 3 source file(s) contain matching declarations, including [ChunkCoords.writeToNBT](https://github.com/GTNewHorizons/ThaumicInsurgence/blob/4a913339f15f5c63711aaffd4fa19d8f5a477cf4/src/main/java/thaumicinsurgence/main/utils/ChunkCoords.java#L65).
+- Check preview rendering against `RendererSchematicChunk`. 6 source file(s) contain matching declarations, including [BlockAlphaPedestalRenderer.renderWorldBlock](https://github.com/GTNewHorizons/ThaumicInsurgence/blob/4a913339f15f5c63711aaffd4fa19d8f5a477cf4/src/main/java/thaumicinsurgence/renderers/blockrenderers/BlockAlphaPedestalRenderer.java#L59).
+- Check printer placement against `SchematicPrinter`. 1 source file(s) contain matching declarations, including [ItemResource.onItemUse](https://github.com/GTNewHorizons/ThaumicInsurgence/blob/4a913339f15f5c63711aaffd4fa19d8f5a477cf4/src/main/java/thaumicinsurgence/item/ItemResource.java#L158).
+- [ChunkCoords.writeToNBT](https://github.com/GTNewHorizons/ThaumicInsurgence/blob/4a913339f15f5c63711aaffd4fa19d8f5a477cf4/src/main/java/thaumicinsurgence/main/utils/ChunkCoords.java#L65) accesses `dim`, `xPos`, `yPos`, `zPos`. Compare those fields after capture, transform and restore.
