@@ -1225,3 +1225,9 @@ Source [0430295ad9](https://github.com/GTNewHorizons/Minecraft-Backpack-Mod/tree
 Source [191e068da0](https://github.com/GTNewHorizons/minecraft-prometheus-exporter/tree/191e068da0311cfe58f1c0adf60ec4df6e672d8a) · 16 tracked Java, Scala or Kotlin files outside test/example directories.
 
 - No direct match in the listed checks. Mod entry point: [PrometheusExporterMod](https://github.com/GTNewHorizons/minecraft-prometheus-exporter/blob/191e068da0311cfe58f1c0adf60ec4df6e672d8a/src/main/java/com/github/cpburnz/minecraft_prometheus_exporter/PrometheusExporterMod.java#L42). Indirect effects from dependencies, injection, configuration and server rules remain open.
+
+### Minetweaker-Gregtech-5-Addon
+
+Source [032eb9f5b0](https://github.com/GTNewHorizons/Minetweaker-Gregtech-5-Addon/tree/032eb9f5b0c2cfdde41b2a130540c4cbceb62483) · 67 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- No direct match in the listed checks. Mod entry point: [GTTweaker](https://github.com/GTNewHorizons/Minetweaker-Gregtech-5-Addon/blob/032eb9f5b0c2cfdde41b2a130540c4cbceb62483/src/main/java/gttweaker/GTTweaker.java#L74). Indirect effects from dependencies, injection, configuration and server rules remain open.
