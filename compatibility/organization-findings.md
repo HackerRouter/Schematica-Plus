@@ -310,3 +310,9 @@ Source [29d8fed2a3](https://github.com/GTNewHorizons/Binnie/tree/29d8fed2a3cb935
 - [BlockMetadata.getPickBlock](https://github.com/GTNewHorizons/Binnie/blob/29d8fed2a3cb9358a6bab09c60afda3c98ff4936/src/main/java/binnie/core/block/BlockMetadata.java#L121) queries world state when selecting an item. Compare the materials list against the placed variant.
 - [ItemETDoor.onItemUse](https://github.com/GTNewHorizons/Binnie/blob/29d8fed2a3cb9358a6bab09c60afda3c98ff4936/src/main/java/binnie/extratrees/block/ItemETDoor.java#L75) depends on placement orientation. Exercise the printer with a rotated schematic.
 - [FenceRenderer.renderWorldBlock](https://github.com/GTNewHorizons/Binnie/blob/29d8fed2a3cb9358a6bab09c60afda3c98ff4936/src/main/java/binnie/extratrees/block/decor/FenceRenderer.java#L141) queries tile data while rendering. Preview a populated tile after saving and reopening its schematic.
+
+### BiomeBridge
+
+Source [83a52ccb9c](https://github.com/GTNewHorizons/BiomeBridge/tree/83a52ccb9c15f1e9a23161bbab585d9e56742659) · 2 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- No direct match in the listed checks. Mod entry point: [BiomeBridge](https://github.com/GTNewHorizons/BiomeBridge/blob/83a52ccb9c15f1e9a23161bbab585d9e56742659/src/main/java/glowredman/biomebridge/BiomeBridge.java#L11). Indirect effects from dependencies, injection, configuration and server rules remain open.
