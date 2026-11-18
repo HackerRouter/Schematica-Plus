@@ -59,7 +59,7 @@ public final class GridPlacements {
     private final Map<SchematicWorld, Map<Long, SchematicWorld>> copies = new IdentityHashMap<>();
     private final Map<SchematicWorld, Signature> signatures = new IdentityHashMap<>();
     private final List<SchematicWorld> all = new ArrayList<>();
-    private int lastChunkX = Integer.MIN_VALUE, lastChunkZ = Integer.MIN_VALUE, lastRenderDistance;
+    private int lastChunkX = Integer.MIN_VALUE, lastChunkY = Integer.MIN_VALUE, lastChunkZ = Integer.MIN_VALUE, lastRenderDistance;
 
     private GridPlacements() {}
 
@@ -131,9 +131,11 @@ public final class GridPlacements {
             if (placement.grid.isEnabled() || copies.containsKey(placement)) bases.add(placement);
         }
         for (SchematicWorld base : new ArrayList<>(copies.keySet())) if (!bases.contains(base)) remove(base);
-        int chunkX = (int) Math.floor(mc.thePlayer.posX) >> 4, chunkZ = (int) Math.floor(mc.thePlayer.posZ) >> 4;
-        boolean moved = chunkX != lastChunkX || chunkZ != lastChunkZ || mc.gameSettings.renderDistanceChunks != lastRenderDistance;
-        lastChunkX = chunkX; lastChunkZ = chunkZ; lastRenderDistance = mc.gameSettings.renderDistanceChunks;
+        int chunkX = (int) Math.floor(mc.thePlayer.posX) >> 4, chunkY = (int) Math.floor(mc.thePlayer.posY) >> 4;
+        int chunkZ = (int) Math.floor(mc.thePlayer.posZ) >> 4;
+        boolean moved = chunkX != lastChunkX || chunkY != lastChunkY || chunkZ != lastChunkZ
+            || mc.gameSettings.renderDistanceChunks != lastRenderDistance;
+        lastChunkX = chunkX; lastChunkY = chunkY; lastChunkZ = chunkZ; lastRenderDistance = mc.gameSettings.renderDistanceChunks;
         int[] area = loadedArea(mc);
         for (SchematicWorld base : bases) {
             Signature now = new Signature(base);
@@ -202,6 +204,6 @@ public final class GridPlacements {
     public void clear() {
         for (SchematicWorld base : new ArrayList<>(copies.keySet())) remove(base);
         signatures.clear();
-        lastChunkX = lastChunkZ = Integer.MIN_VALUE;
+        lastChunkX = lastChunkY = lastChunkZ = Integer.MIN_VALUE;
     }
 }
