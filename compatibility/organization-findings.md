@@ -872,3 +872,10 @@ Source [08bdb4109b](https://github.com/GTNewHorizons/Galaxia/tree/08bdb4109bad9e
 - [GalaxiaTeamData.writeToNBT](https://github.com/GTNewHorizons/Galaxia/blob/08bdb4109bad9ef92a13ddbcd80b8d04fe3efa85/src/main/java/com/gtnewhorizons/galaxia/compat/teams/GalaxiaTeamData.java#L30) accesses `permActions`, `permRoles`, `mergedTeamIds`. Compare those fields after capture, transform and restore.
 - [AndroidControl.interact](https://github.com/GTNewHorizons/Galaxia/blob/08bdb4109bad9ef92a13ddbcd80b8d04fe3efa85/src/main/java/com/gtnewhorizons/galaxia/registry/android/AndroidControl.java#L864) can cancel the interaction. Verify the printer on a server with the handler enabled.
 - [BlockBodyStation.onBlockPlacedBy](https://github.com/GTNewHorizons/Galaxia/blob/08bdb4109bad9ef92a13ddbcd80b8d04fe3efa85/src/main/java/com/gtnewhorizons/galaxia/registry/block/special/BlockBodyStation.java#L76) depends on placement orientation. Exercise the printer with a rotated schematic.
+
+### gendustry
+
+Source [23d31c7bfe](https://github.com/GTNewHorizons/gendustry/tree/23d31c7bfe53ceff470390ef5507de404d85c954) · 190 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- Check tile serialization against `TileNBTCompat`. 1 source file(s) contain matching declarations, including [GeneSampleInfo.writeToNBT](https://github.com/GTNewHorizons/gendustry/blob/23d31c7bfe53ceff470390ef5507de404d85c954/src/main/scala/net/bdew/gendustry/forestry/GeneSampleInfo.scala#L23).
+- Check printer placement against `SchematicPrinter`. 3 source file(s) contain matching declarations, including [HiveSpawnDebugger.onItemUse](https://github.com/GTNewHorizons/gendustry/blob/23d31c7bfe53ceff470390ef5507de404d85c954/src/main/scala/net/bdew/gendustry/items/HiveSpawnDebugger.scala#L63).
