@@ -351,6 +351,7 @@ schematica.message.cloud.published=已将 %s 添加到公共文件夹
 schematica.message.cloud.created_directory=已创建文件夹 %s
 schematica.message.cloud.downloaded=已下载 %s
 schematica.message.cloud.download_failed=无法下载 %s
+schematica.message.cloud.kept_edited=已下载更新的 %s；你未保存的编辑仍以 %s 的名称保留在内存中
 schematica.message.cloud.upload_failed=无法上传 %s
 schematica.message.cloud.busy=另一个上传仍在进行中
 schematica.message.cloud.disabled=服务器不允许存储原理图

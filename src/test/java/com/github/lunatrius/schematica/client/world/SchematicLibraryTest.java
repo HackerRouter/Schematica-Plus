@@ -92,6 +92,22 @@ public class SchematicLibraryTest {
         assertSame(source, library.sourceOf(changes.get(one)));
     }
 
+    @Test public void detachedSourcesKeepTheirPlacementsAndLetTheFileLoadAgain() throws IOException {
+        SchematicLibrary<byte[], byte[]> library = library();
+        File file = source("a.schematic", 1);
+        SchematicLibrary.Source<byte[]> edited = library.load(file);
+        byte[] placement = library.create(edited, (data, previous) -> data.clone());
+        Files.write(file.toPath(), new byte[] {2});
+        library.detach(edited, new File(temporary.getRoot(), "a (edited).schematic"));
+        assertTrue(edited.memory());
+        assertSame(edited, library.sourceOf(placement));
+        assertNull(library.find(file));
+        SchematicLibrary.Source<byte[]> fresh = library.load(file);
+        assertNotSame(edited, fresh);
+        assertEquals(2, fresh.data()[0]);
+        assertEquals(1, edited.data()[0]);
+    }
+
     @Test public void missingReloadSourcePreservesPlacementsAndRenamePreservesOwnership() throws IOException {
         SchematicLibrary<byte[], byte[]> library = library();
         File old = source("a.schematic", 3).getCanonicalFile();

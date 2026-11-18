@@ -311,6 +311,17 @@ public final class Placements {
         WorldHandler.INSTANCE.saveSession();
     }
 
+    /** Keeps an edited source in memory under a label; its file is read anew the next time it is loaded. */
+    public static void detachSource(SchematicLibrary.Source<SchematicSourceData> source, File label) {
+        LIBRARY.detach(source, label);
+        for (SchematicWorld world : loaded) {
+            if (LIBRARY.sourceOf(world) != source) continue;
+            world.sourceDirectory = label.getParentFile();
+            world.sourceFilename = label.getName();
+        }
+        WorldHandler.INSTANCE.saveSession();
+    }
+
     public static void sourceRenamed(File previous, File next) throws IOException {
         LIBRARY.renamed(previous, next);
         for (SchematicWorld world : loaded) {

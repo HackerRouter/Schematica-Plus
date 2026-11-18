@@ -351,6 +351,7 @@ schematica.message.cloud.published=Added %s to the public folder
 schematica.message.cloud.created_directory=Created folder %s
 schematica.message.cloud.downloaded=Downloaded %s
 schematica.message.cloud.download_failed=Could not download %s
+schematica.message.cloud.kept_edited=A newer %s was downloaded; your unsaved edits stay loaded as %s
 schematica.message.cloud.upload_failed=Could not upload %s
 schematica.message.cloud.busy=Another upload is still running
 schematica.message.cloud.disabled=The server does not allow schematic storage

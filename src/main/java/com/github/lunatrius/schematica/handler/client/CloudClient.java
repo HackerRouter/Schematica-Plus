@@ -129,7 +129,15 @@ public final class CloudClient {
     private static void refreshLoaded(File target) {
         try {
             SchematicLibrary.Source<SchematicSourceData> source = Placements.LIBRARY.find(target);
-            if (source != null && !source.memory() && !source.data().unsaved()) Placements.reloadSource(source);
+            if (source == null || source.memory()) return;
+            if (!source.data().unsaved()) {
+                Placements.reloadSource(source);
+                return;
+            }
+            String name = target.getName(), extension = name.substring(name.lastIndexOf('.'));
+            File label = new File(target.getParentFile(), name.substring(0, name.length() - extension.length()) + " (edited)" + extension);
+            Placements.detachSource(source, label);
+            InfoUtils.showGuiOrInGameMessage(MessageType.WARNING, "schematica.message.cloud.kept_edited", name, label.getName());
         } catch (IOException | RuntimeException e) {
             Reference.logger.warn("Could not reload the downloaded schematic {}", target, e);
         }

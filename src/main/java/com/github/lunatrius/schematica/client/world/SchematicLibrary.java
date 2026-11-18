@@ -120,6 +120,13 @@ public final class SchematicLibrary<D, P> {
         return removed;
     }
 
+    /** Keeps a source only in memory under another name, so that its file can be loaded again as a new source. */
+    public void detach(Source<D> source, File label) {
+        require(source);
+        source.memory = true;
+        source.file = label.getAbsoluteFile();
+    }
+
     public void renamed(File previous, File next) throws IOException {
         checkRename(previous, next);
         File canonical = next.getCanonicalFile();
