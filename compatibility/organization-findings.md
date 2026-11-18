@@ -1590,3 +1590,13 @@ Source [e6fcb92786](https://github.com/GTNewHorizons/pVnRT/tree/e6fcb92786e8f602
 - Check printer placement against `SchematicPrinter`. 1 source file(s) contain matching declarations, including [BlockFan.onBlockPlacedBy](https://github.com/GTNewHorizons/pVnRT/blob/e6fcb92786e8f6028833ae2b7b3cec5fafedc555/src/main/java/pvnrt/block/BlockFan.java#L58).
 - Check world or renderer transformation alongside the schematic world and render pipeline. 1 source file(s) contain matching declarations, including [MixinWorld.World](https://github.com/GTNewHorizons/pVnRT/blob/e6fcb92786e8f6028833ae2b7b3cec5fafedc555/src/mixin/java/pvnrt/mixin/mixins/early/MixinWorld.java#L19).
 - [BlockFan.onBlockPlacedBy](https://github.com/GTNewHorizons/pVnRT/blob/e6fcb92786e8f6028833ae2b7b3cec5fafedc555/src/main/java/pvnrt/block/BlockFan.java#L58) depends on placement orientation. Exercise the printer with a rotated schematic.
+
+### QmunityLib
+
+Source [0f1ee7939d](https://github.com/GTNewHorizons/QmunityLib/tree/0f1ee7939db2d6a3545d378185fd7188ca449caf) · 133 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- Check tile serialization against `TileNBTCompat`. 5 source file(s) contain matching declarations, including [ShiftingBuffer.writeToNBT](https://github.com/GTNewHorizons/QmunityLib/blob/0f1ee7939db2d6a3545d378185fd7188ca449caf/src/main/java/uk/co/qmunity/lib/misc/ShiftingBuffer.java#L54).
+- Check preview rendering against `RendererSchematicChunk`. 1 source file(s) contain matching declarations, including [RenderMultipart.renderTileEntityAt](https://github.com/GTNewHorizons/QmunityLib/blob/0f1ee7939db2d6a3545d378185fd7188ca449caf/src/main/java/uk/co/qmunity/lib/client/renderer/RenderMultipart.java#L33).
+- Check material picking against `BlockToItemStack`. 1 source file(s) contain matching declarations, including [BlockMultipart.getPickBlock](https://github.com/GTNewHorizons/QmunityLib/blob/0f1ee7939db2d6a3545d378185fd7188ca449caf/src/main/java/uk/co/qmunity/lib/block/BlockMultipart.java#L262).
+- Check printer placement against `SchematicPrinter`. 2 source file(s) contain matching declarations, including [BlockTileBase.onBlockPlacedBy](https://github.com/GTNewHorizons/QmunityLib/blob/0f1ee7939db2d6a3545d378185fd7188ca449caf/src/main/java/uk/co/qmunity/lib/block/BlockTileBase.java#L174).
+- [TileBase.readFromNBT](https://github.com/GTNewHorizons/QmunityLib/blob/0f1ee7939db2d6a3545d378185fd7188ca449caf/src/main/java/uk/co/qmunity/lib/tile/TileBase.java#L47) accesses `isRedstonePowered`. Compare those fields after capture, transform and restore.
