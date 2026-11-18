@@ -726,3 +726,11 @@ Source [bd47fafc55](https://github.com/GTNewHorizons/Et-Futurum-Requiem/tree/bd4
 Source [a6e9185f18](https://github.com/GTNewHorizons/Eternal-Singularity/tree/a6e9185f180b8898927193a2afc340d4d8642b7f) · 8 tracked Java, Scala or Kotlin files outside test/example directories.
 
 - No direct match in the listed checks. Mod entry point: [EternalSingularityMod](https://github.com/GTNewHorizons/Eternal-Singularity/blob/a6e9185f180b8898927193a2afc340d4d8642b7f/src/main/java/singulariteam/eternalsingularity/EternalSingularityMod.java#L25). Indirect effects from dependencies, injection, configuration and server rules remain open.
+
+### FarmingForEngineers
+
+Source [8580636021](https://github.com/GTNewHorizons/FarmingForEngineers/tree/8580636021109bf8142537ecc825f9a0faa6d97f) · 55 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- Check preview rendering against `RendererSchematicChunk`. 2 source file(s) contain matching declarations, including [MarketBlockRenderer.renderWorldBlock](https://github.com/GTNewHorizons/FarmingForEngineers/blob/8580636021109bf8142537ecc825f9a0faa6d97f/src/main/java/com/guigs44/farmingforengineers/client/render/block/MarketBlockRenderer.java#L29).
+- Check printer placement against `SchematicPrinter`. 1 source file(s) contain matching declarations, including [BlockMarket.onBlockPlacedBy](https://github.com/GTNewHorizons/FarmingForEngineers/blob/8580636021109bf8142537ecc825f9a0faa6d97f/src/main/java/com/guigs44/farmingforengineers/block/BlockMarket.java#L75).
+- [BlockMarket.onBlockPlacedBy](https://github.com/GTNewHorizons/FarmingForEngineers/blob/8580636021109bf8142537ecc825f9a0faa6d97f/src/main/java/com/guigs44/farmingforengineers/block/BlockMarket.java#L75) depends on placement orientation. Exercise the printer with a rotated schematic.
