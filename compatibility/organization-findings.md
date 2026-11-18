@@ -1238,3 +1238,11 @@ Source [21174e0cd0](https://github.com/GTNewHorizons/Mobs-Info/tree/21174e0cd031
 
 - Check tile serialization against `TileNBTCompat`. 1 source file(s) contain matching declarations, including [PlayerDataManager.readFromNBT](https://github.com/GTNewHorizons/Mobs-Info/blob/21174e0cd0310843706de770a7854737b5b32b84/src/main/java/com/kuba6000/mobsinfo/savedata/PlayerDataManager.java#L55).
 - [PlayerDataManager.readFromNBT](https://github.com/GTNewHorizons/Mobs-Info/blob/21174e0cd0310843706de770a7854737b5b32b84/src/main/java/com/kuba6000/mobsinfo/savedata/PlayerDataManager.java#L55) accesses `players`, `uuid`, `data`. Compare those fields after capture, transform and restore.
+
+### ModernMarkings
+
+Source [cfba350bbd](https://github.com/GTNewHorizons/ModernMarkings/tree/cfba350bbd200a9e23b8a8bd9e18eb33d67e801b) · 13 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- Check preview rendering against `RendererSchematicChunk`. 2 source file(s) contain matching declarations, including [MarkingFloorRenderer.renderWorldBlock](https://github.com/GTNewHorizons/ModernMarkings/blob/cfba350bbd200a9e23b8a8bd9e18eb33d67e801b/src/main/java/modernmarkings/renderer/MarkingFloorRenderer.java#L56).
+- Check printer placement against `SchematicPrinter`. 2 source file(s) contain matching declarations, including [MarkingFloor.onBlockPlacedBy](https://github.com/GTNewHorizons/ModernMarkings/blob/cfba350bbd200a9e23b8a8bd9e18eb33d67e801b/src/main/java/modernmarkings/blocks/MarkingFloor.java#L41).
+- [MarkingFloor.onBlockPlacedBy](https://github.com/GTNewHorizons/ModernMarkings/blob/cfba350bbd200a9e23b8a8bd9e18eb33d67e801b/src/main/java/modernmarkings/blocks/MarkingFloor.java#L41) depends on placement orientation. Exercise the printer with a rotated schematic.
