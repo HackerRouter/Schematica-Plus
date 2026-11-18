@@ -1435,3 +1435,9 @@ Source [0229c627f1](https://github.com/GTNewHorizons/NuclearHorizons/tree/0229c6
 Source [c42ac73dde](https://github.com/GTNewHorizons/Nutrition/tree/c42ac73dde3c179f2d47db72738a53e16188c5e3) · 41 tracked Java, Scala or Kotlin files outside test/example directories.
 
 - Check interaction events against `SchematicPrinter`. 1 source file(s) contain matching declarations, including [EventAllowOvereating.rightClickBlock](https://github.com/GTNewHorizons/Nutrition/blob/c42ac73dde3c179f2d47db72738a53e16188c5e3/src/main/java/ca/wescook/nutrition/events/EventAllowOvereating.java#L17).
+
+### oauth
+
+Source [f38b03312a](https://github.com/GTNewHorizons/oauth/tree/f38b03312aedff1bd72c5c2bb373a3d2e0b77a4f) · 7 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- No direct match in the listed checks. Mod entry point: [OAuth](https://github.com/GTNewHorizons/oauth/blob/f38b03312aedff1bd72c5c2bb373a3d2e0b77a4f/src/main/java/com/sintinium/oauth/OAuth.java#L8). Indirect effects from dependencies, injection, configuration and server rules remain open.
