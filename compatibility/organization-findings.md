@@ -1768,6 +1768,7 @@ Source [dddfc3f085](https://github.com/GTNewHorizons/SGCraft/tree/dddfc3f0850d99
 Source [c1b7451de7](https://github.com/GTNewHorizons/Share-Where-I-am/tree/c1b7451de76772dce25a3e33c0137904951ccf26) · 35 tracked Java, Scala or Kotlin files outside test/example directories.
 
 - No direct match in the listed checks. Mod entry point: [ShareWhereIAm](https://github.com/GTNewHorizons/Share-Where-I-am/blob/c1b7451de76772dce25a3e33c0137904951ccf26/src/main/java/com/muxiu1997/sharewhereiam/ShareWhereIAm.java#L11). Indirect effects from dependencies, injection, configuration and server rules remain open.
+- [EventHandler](https://github.com/GTNewHorizons/Share-Where-I-am/blob/c1b7451de76772dce25a3e33c0137904951ccf26/src/main/java/com/muxiu1997/sharewhereiam/event/EventHandler.java#L40) accepts `KeyInputEvent`. Exercise the schematic overlay and hotkeys while the corresponding client feature is enabled.
 
 ### SharedProspecting
 
