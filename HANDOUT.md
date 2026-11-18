@@ -147,6 +147,7 @@ Current behavior/translation references:
 
 | Project | Version | Revision |
 | --- | --- | --- |
+| IMPLEMENTED_HEADLESS | 2026-11-18 | Fix the second batch of audit findings: partial results stop project paste steps (`tool/ToolHandler`, `handler/client/RemoteEditClient`); text-area padding clicks; shared placement lock release, refused shares, concurrent reads of one file and unsaved-edit sharing; reloading replaced downloads; per-region material counts and content-revision recounts; raw material missing counts, multiplier, result totals, ingredient alternatives and unique export names in `client/gui/material/RawMaterialExport`. Build and 796 tests pass; no game client or server was started. |
 | IMPLEMENTED_HEADLESS | 2026-11-18 | Fix the first batch of audit findings: VCS file names with `;`, paste clearing of the previous version, pending saves after close, failed version switches, project browser filtering and write-failure reporting in `client/projects`; LiquidLogged paste/move/rebuild fluid handling in `tool` and `client/world/CellState`; selection folder depth, Shift-at-load, look-target eye height, cloud cache paths, case-distinct folders, folder depth and rehashing; out-of-tree schematic directories in `handler/ConfigurationHandler`; favorites after rename. Build and 790 tests pass; no game client was started. |
 | Litematica | 26.1.2-0.27.12 | `ef055f72a0f3d0c75b6491504be18172d7c4f926` |
 | MaLiLib | 26.1.2-0.28.11 | `977ca3b75281248c1be5210839a9f1584e334f52` |
