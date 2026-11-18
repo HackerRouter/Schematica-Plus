@@ -444,3 +444,9 @@ Source [a431e2a65c](https://github.com/GTNewHorizons/Chisel/tree/a431e2a65cf41f6
 - [BlockCarvableBeacon.getPickBlock](https://github.com/GTNewHorizons/Chisel/blob/a431e2a65cf41f6e8341801b94d6ca9400e7d60b/src/main/java/team/chisel/block/BlockCarvableBeacon.java#L68) queries world state when selecting an item. Compare the materials list against the placed variant.
 - [BlockCarvableStairs.onBlockPlacedBy](https://github.com/GTNewHorizons/Chisel/blob/a431e2a65cf41f6e8341801b94d6ca9400e7d60b/src/main/java/team/chisel/block/BlockCarvableStairs.java#L64) depends on placement orientation. Exercise the printer with a rotated schematic.
 - [TileEntityAutoChisel.readFromNBT](https://github.com/GTNewHorizons/Chisel/blob/a431e2a65cf41f6e8341801b94d6ca9400e7d60b/src/main/java/team/chisel/block/tileentity/TileEntityAutoChisel.java#L110) accesses `Items`, `Slot`, `CustomName`. Compare those fields after capture, transform and restore.
+
+### ChiselTones
+
+Source [46445985f8](https://github.com/GTNewHorizons/ChiselTones/tree/46445985f8987c92fa897746c500d31739671b4b) · 3 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- No direct match in the listed checks. Mod entry point: [ChiselTones](https://github.com/GTNewHorizons/ChiselTones/blob/46445985f8987c92fa897746c500d31739671b4b/src/main/java/tehnut/chiseltones/ChiselTones.java#L15). Indirect effects from dependencies, injection, configuration and server rules remain open.
