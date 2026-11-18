@@ -69,8 +69,12 @@ public class RawMaterialExportTest {
         assertEquals("minecraft:string", wool.requirements.get(0).item);
         assertEquals(8, wool.requirements.get(0).count);
         RawMaterialExport.Node a = RawMaterialExport.resolve(index, "mod:a", 1);
-        assertTrue(a.requirements.get(0).requirements.get(0).leaf());
-        assertEquals("mod:c", a.requirements.get(0).requirements.get(0).item);
+        RawMaterialExport.Node c = a.requirements.get(0).requirements.get(0);
+        assertEquals("mod:c", c.item);
+        assertEquals("mod:x", c.requirements.get(0).item);
+        assertTrue(c.requirements.get(0).leaf());
+        index.add(RecipeIndex.Type.SHAPED, "mod:loop", 1, slots("mod:loop"));
+        assertTrue(RawMaterialExport.resolve(index, "mod:loop", 1).leaf());
     }
 
     @Test public void writesStepsOnTheFirstRawMaterialAndPacksTheSimplifiedList() {
@@ -105,6 +109,15 @@ public class RawMaterialExportTest {
             .getAsJsonObject("RemainingMaterials").get("Type").getAsString());
         JsonObject simplified = RawMaterialExport.rawJson(result.combined).getAsJsonArray().get(0).getAsJsonObject();
         assertTrue(simplified.has("RawItem") && simplified.has("TotalEstimate") && simplified.getAsJsonArray("Steps").size() == 0);
+    }
+
+    @Test public void alternativeIngredientsAvoidListingTheResultAsRaw() {
+        RecipeIndex index = new RecipeIndex();
+        index.add(RecipeIndex.Type.SHAPED, "mod:result", 1, slots("mod:base|mod:result"));
+        RawMaterialExport.Node result = RawMaterialExport.resolve(index, "mod:result", 2);
+        assertFalse(result.leaf());
+        assertEquals("mod:base", result.requirements.get(0).item);
+        assertEquals(2, result.requirements.get(0).count);
     }
 
     @Test public void branchesSharingARawMaterialCountTheirResultOnce() {

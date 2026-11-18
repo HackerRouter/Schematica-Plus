@@ -107,9 +107,13 @@ public final class RawMaterialExport {
         int crafts = (int) Math.min(Integer.MAX_VALUE, ((long) count + recipe.outputCount - 1) / recipe.outputCount);
         Map<String, Integer> needs = new LinkedHashMap<>();
         for (List<String> slot : recipe.ingredients) {
+            String chosen = null;
+            for (String alternative : slot) {
+                if (!alternative.equals(item) && !ancestors.contains(alternative)) { chosen = alternative; break; }
+            }
             // Stop a looping state; ie Redstone Dust -> Redstone Block -> Redstone Dust
-            for (String alternative : slot) if (alternative.equals(item) || ancestors.contains(alternative)) return new Node(item, count, null, false);
-            needs.merge(slot.get(0), crafts, (a, b) -> (int) Math.min(Integer.MAX_VALUE, (long) a + b));
+            if (chosen == null) return new Node(item, count, null, false);
+            needs.merge(chosen, crafts, (a, b) -> (int) Math.min(Integer.MAX_VALUE, (long) a + b));
         }
         int matching = 0;
         for (RecipeIndex.Recipe other : recipes) if (other.crafting() == recipe.crafting()) matching++;
