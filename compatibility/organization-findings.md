@@ -185,6 +185,7 @@ Source [ff2a24d96f](https://github.com/GTNewHorizons/AsieLib/tree/ff2a24d96f3ef4
 Source [315f8c7e74](https://github.com/GTNewHorizons/AspectRecipeIndex/tree/315f8c7e746d209655f1e6a2f0a97790d424dfea) · 29 tracked Java, Scala or Kotlin files outside test/example directories.
 
 - No direct match in the listed checks. Mod entry point: [AspectRecipeIndex](https://github.com/GTNewHorizons/AspectRecipeIndex/blob/315f8c7e746d209655f1e6a2f0a97790d424dfea/src/main/java/com/gtnewhorizons/aspectrecipeindex/AspectRecipeIndex.java#L17). Indirect effects from dependencies, injection, configuration and server rules remain open.
+- [NEIConfig](https://github.com/GTNewHorizons/AspectRecipeIndex/blob/315f8c7e746d209655f1e6a2f0a97790d424dfea/src/main/java/com/gtnewhorizons/aspectrecipeindex/nei/NEIConfig.java#L14) uses `IConfigureNEI`. The identified integration concerns the item or information UI.
 
 ### Avaritia
 
