@@ -2190,3 +2190,9 @@ Source [49880886a8](https://github.com/GTNewHorizons/WailaHarvestability/tree/49
 Source [8383b408f5](https://github.com/GTNewHorizons/WAILAPlugins/tree/8383b408f5bb269da390dc464b5351c6791535e3) · 17 tracked Java, Scala or Kotlin files outside test/example directories.
 
 - No direct match in the listed checks. Mod entry point: [WailaPlugins](https://github.com/GTNewHorizons/WAILAPlugins/blob/8383b408f5bb269da390dc464b5351c6791535e3/src/main/java/tterrag/wailaplugins/WailaPlugins.java#L20). Indirect effects from dependencies, injection, configuration and server rules remain open.
+
+### WanionLib
+
+Source [cdb955e49a](https://github.com/GTNewHorizons/WanionLib/tree/cdb955e49ab4891b13bc8db9cca27849accd82f0) · 23 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- No direct match in the listed checks. Mod entry point: [WanionLib](https://github.com/GTNewHorizons/WanionLib/blob/cdb955e49ab4891b13bc8db9cca27849accd82f0/src/main/java/wanion/lib/WanionLib.java#L26). Indirect effects from dependencies, injection, configuration and server rules remain open.
