@@ -114,6 +114,8 @@ public class RawMaterialExportTest {
         model.setEntries(Collections.singletonList(entry));
         assertEquals(1, RawMaterialExport.count(model, entry, true));
         assertEquals(100, RawMaterialExport.count(model, entry, false));
+        model.setMultiplier(3);
+        assertEquals(300, RawMaterialExport.count(model, entry, false));
     }
 
     @Test public void packsNuggetsIntoIngotsBeforeBlocks() {

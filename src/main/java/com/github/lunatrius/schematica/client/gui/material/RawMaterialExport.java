@@ -293,7 +293,7 @@ public final class RawMaterialExport {
     }
 
     static <T> long count(MaterialListModel<T> model, MaterialListModel.Entry<T> entry, boolean missingOnly) {
-        return missingOnly ? Math.max(0, model.missing(entry) - entry.available) : entry.total;
+        return missingOnly ? Math.max(0, model.missing(entry) - entry.available) : model.total(entry);
     }
 
     private static Path write(Path file, JsonElement json) throws IOException {
