@@ -58,6 +58,7 @@ public class MultipartItemsTest {
         assertFalse(MultipartItems.describe(a).matches(MultipartItems.describe(b)));
         b.state.setByte("orient", (byte) 0);
         b.state.setByte("shape", (byte) 1);
+        assertTrue(MultipartItems.describe(a).placeableAs(MultipartItems.describe(b)));
         assertFalse(MultipartItems.describe(a).matches(MultipartItems.describe(b)));
         assertFalse(MultipartItems.describe(a).matches(MultipartItems.describe(new NativePart(1, 0))));
     }

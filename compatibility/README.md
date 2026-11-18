@@ -164,8 +164,7 @@ match the schematic's mounting side and gate rotation. Materials count each part
 including multiple parts in one cell. OR gates and red-alloy wires were checked in
 GTNH 2.8.4 and 2.9.0-RC-2; client-only installation was also checked against a
 2.8.4 dedicated server without Plus. The inventory and backing block are required
-in survival. Gate settings that require a screwdriver remain manual; this does
-not restore arbitrary NBT or promise automatic printer support for every part.
+in survival. The printer and Easy Place can adjust gate orientation and shape using a usable screwdriver in the inventory. Each click targets the ray-traced native part and costs normal tool durability. Gate-specific GUI settings and other multipart item families require separate support.
 
 ## Backhand and inventory input
 

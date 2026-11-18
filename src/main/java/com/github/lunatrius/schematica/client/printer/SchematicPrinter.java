@@ -8,6 +8,7 @@ import java.util.function.Predicate;
 
 import com.github.lunatrius.schematica.compat.LiquidLogged;
 import com.github.lunatrius.schematica.compat.AE2Items;
+import com.github.lunatrius.schematica.compat.MultipartItems;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockFalling;
 import net.minecraft.block.BlockLiquid;
@@ -349,7 +350,8 @@ public class SchematicPrinter {
             if (block == real && meta == realMeta) {
                 String fluid = placement.getSchematic().getStoredFluid(lx, ly, lz);
                 if ((fluid == null || LiquidLogged.fluid(world, x, y, z) != null)
-                    && !AE2Items.supports(placement.getTileEntity(lx, ly, lz))) continue;
+                    && !(block.hasTileEntity(meta) && (AE2Items.supports(placement.getTileEntity(lx, ly, lz))
+                        || MultipartItems.supports(placement.getTileEntity(lx, ly, lz))))) continue;
             } else if (BlockGroups.tolerated(block, meta, real, realMeta)) continue;
             candidates.add(new PrinterBuildOrder.Candidate(x, y, z, layers ? PrinterBuildOrder.tier(block) : 0, placement));
         }
@@ -471,6 +473,12 @@ public class SchematicPrinter {
         if (block.hasTileEntity(metadata) && AE2Items.supports(schematic.getTileEntity(x, y, z))) {
             return !skipped(block) && !PrinterReach.remote(wx, wy, wz) && CablePlacement.place(minecraft,
                 schematic.getTileEntity(x, y, z), wx, wy, wz, stack -> !isBlacklisted(block, stack) && swapToItem(player.inventory, stack, true, true));
+        }
+        if (block.hasTileEntity(metadata) && MultipartItems.supports(schematic.getTileEntity(x, y, z))
+            && (world.isAirBlock(wx, wy, wz) || MultipartItems.supports(world.getTileEntity(wx, wy, wz)))) {
+            if (!skipped(block) && !PrinterReach.remote(wx, wy, wz)
+                && EasyPlace.multipart(player, world, schematic.getTileEntity(x, y, z), wx, wy, wz) == EasyPlace.Result.SUCCESS) return true;
+            if (!world.isAirBlock(wx, wy, wz)) return false;
         }
         if (block == realBlock && metadata == realMetadata) {
             return !PrinterReach.remote(wx, wy, wz) && !skipped(block) && FluidPrinter.fillHolder(this.minecraft,

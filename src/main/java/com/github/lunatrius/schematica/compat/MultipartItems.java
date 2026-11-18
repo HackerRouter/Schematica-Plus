@@ -32,6 +32,16 @@ public final class MultipartItems {
             return matches(other, false);
         }
 
+        public boolean sameGateMount(Part other) {
+            return other != null && state.hasKey("shape") && other.state.hasKey("shape")
+                && state.hasKey("orient") && other.state.hasKey("orient") && matches(other, true)
+                && (state.getByte("orient") & 252) == (other.state.getByte("orient") & 252);
+        }
+
+        public boolean placeableAs(Part candidate) {
+            return matches(candidate) || sameGateMount(candidate) && state.getByte("orient") == candidate.state.getByte("orient");
+        }
+
         private boolean matches(Part other, boolean ignoreOrientation) {
             return other != null && type.equals(other.type) && sameItem(stack, other.stack)
                 && (ignoreOrientation || sameOrientation(state, other.state));
