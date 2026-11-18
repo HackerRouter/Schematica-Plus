@@ -2,6 +2,7 @@ package com.github.lunatrius.schematica.handler;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.ArrayDeque;
 import java.util.HashSet;
 import java.util.Queue;
@@ -262,16 +263,16 @@ public class ConfigurationHandler {
         schematicDirectory = new File(property.getString());
         try {
             schematicDirectory = schematicDirectory.getCanonicalFile();
-            final String schematicPath = schematicDirectory.getAbsolutePath();
-            final String dataPath = SchematicaPlus.proxy.getDataDirectory().getAbsolutePath();
-            if (schematicPath.contains(dataPath)) {
-                property.set(schematicPath.substring(dataPath.length()).replace("\\", "/").replaceAll("^/+", ""));
-            } else {
-                property.set(schematicPath.replace("\\", "/"));
-            }
+            property.set(configuredDirectory(schematicDirectory, SchematicaPlus.proxy.getDataDirectory()));
         } catch (IOException e) {
             Reference.logger.warn("Could not canonize path!", e);
         }
+    }
+
+    static String configuredDirectory(File directory, File data) throws IOException {
+        Path path = directory.getCanonicalFile().toPath(), base = data.getCanonicalFile().toPath();
+        if (path.startsWith(base) && !path.equals(base)) return base.relativize(path).toString().replace("\\", "/");
+        return path.toString().replace("\\", "/");
     }
 
     private static void loadPrinter(ConfigReader printer) {
