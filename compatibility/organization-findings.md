@@ -1895,6 +1895,7 @@ Source [f448da1aaf](https://github.com/GTNewHorizons/supernova/tree/f448da1aaf8f
 Source [9c79cb1e7a](https://github.com/GTNewHorizons/supersolarpanels/tree/9c79cb1e7a4265fe4db5ca4539f83c1dca1a5988) · 23 tracked Java, Scala or Kotlin files outside test/example directories.
 
 - No direct match in the listed checks. Mod entry point: [MainSSP](https://github.com/GTNewHorizons/supersolarpanels/blob/9c79cb1e7a4265fe4db5ca4539f83c1dca1a5988/src/main/java/com/supsolpans/MainSSP.java#L38). Indirect effects from dependencies, injection, configuration and server rules remain open.
+- [AbstractSSP](https://github.com/GTNewHorizons/supersolarpanels/blob/9c79cb1e7a4265fe4db5ca4539f83c1dca1a5988/src/main/java/com/supsolpans/blocks/AbstractSSP.java#L6) inherits from `BlockContainer`. Include inherited tile state when comparing a saved structure with its paste.
 
 ### Tainted-Magic
 
