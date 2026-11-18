@@ -886,3 +886,9 @@ Source [2d726ceb2c](https://github.com/GTNewHorizons/Gravitation-Suite-Neo/tree/
 
 - Check tile serialization against `TileNBTCompat`. 2 source file(s) contain matching declarations, including [EntityPlasmaBallMKII.writeToNBT](https://github.com/GTNewHorizons/Gravitation-Suite-Neo/blob/2d726ceb2ca81b0b014c12338c05f21f8bb62f6e/src/main/java/com/gtnewhorizons/gravisuiteneo/common/EntityPlasmaBallMKII.java#L108).
 - [EntityPlasmaBallMKII.writeToNBT](https://github.com/GTNewHorizons/Gravitation-Suite-Neo/blob/2d726ceb2ca81b0b014c12338c05f21f8bb62f6e/src/main/java/com/gtnewhorizons/gravisuiteneo/common/EntityPlasmaBallMKII.java#L108) accesses `charge`. Compare those fields after capture, transform and restore.
+
+### GregoryTweaksForCrafting
+
+Source [12b3eeebe7](https://github.com/GTNewHorizons/GregoryTweaksForCrafting/tree/12b3eeebe7d4ac1a0fc6edaa2e079f3ea9a0c4bf) · 43 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- No direct match in the listed checks. Mod entry point: [CraftingTweaks](https://github.com/GTNewHorizons/GregoryTweaksForCrafting/blob/12b3eeebe7d4ac1a0fc6edaa2e079f3ea9a0c4bf/src/main/java/net/blay09/mods/craftingtweaks/CraftingTweaks.java#L39). Indirect effects from dependencies, injection, configuration and server rules remain open.
