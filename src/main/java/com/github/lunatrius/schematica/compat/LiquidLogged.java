@@ -12,7 +12,7 @@ import com.github.lunatrius.schematica.reference.Reference;
 public final class LiquidLogged {
     private static final String API = "com.gtnewhorizons.liquidlogged.api.LiquidLoggedAPI";
     public static final int MIN_Y = 0, MAX_Y = 255;
-    private static Method get, set;
+    private static Method get, set, canHold;
     private static boolean resolved;
 
     private LiquidLogged() {}
@@ -33,6 +33,16 @@ public final class LiquidLogged {
     }
 
     public static boolean present() { return resolve(); }
+
+    public static boolean canFill(World world, int x, int y, int z, Fluid fluid) {
+        if (!resolve() || fluid == null || !storable(x, y, z)) return false;
+        try {
+            if (canHold == null) canHold = set.getDeclaringClass().getMethod("canHold", World.class, int.class, int.class, int.class, Fluid.class);
+            return Boolean.TRUE.equals(canHold.invoke(null, world, x, y, z, fluid));
+        } catch (ReflectiveOperationException | RuntimeException error) {
+            return false;
+        }
+    }
 
     public static boolean storable(int x, int y, int z) { return y >= MIN_Y && y <= MAX_Y; }
 

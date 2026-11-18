@@ -104,7 +104,12 @@ public final class EasyPlace {
         }
         Block real = world.getBlock(x, y, z);
         int realMeta = world.getBlockMetadata(x, y, z);
-        if (block == real && meta == realMeta) return Result.FAIL;
+        if (block == real && meta == realMeta) {
+            if (!FluidPrinter.fillHolder(mc, schematic.getSchematic().getStoredFluid(lx, ly, lz), x, y, z,
+                bucket -> pick(player, () -> SchematicPrinter.INSTANCE.swapToItem(player.inventory, bucket, true, true)))) return Result.FAIL;
+            cache(x, y, z);
+            return Result.SUCCESS;
+        }
         SchematicPrinter printer = SchematicPrinter.INSTANCE;
         int[] tool = ToolUse.click(world, block, real, x, y, z);
         if (tool != null) {

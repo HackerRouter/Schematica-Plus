@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Predicate;
 
+import com.github.lunatrius.schematica.compat.LiquidLogged;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockFalling;
 import net.minecraft.block.BlockLiquid;
@@ -342,7 +343,10 @@ public class SchematicPrinter {
             Block block = placement.getBlock(lx, ly, lz);
             Block real = world.getBlock(x, y, z);
             int meta = placement.getBlockMetadata(lx, ly, lz), realMeta = world.getBlockMetadata(x, y, z);
-            if (block == real && meta == realMeta || BlockGroups.tolerated(block, meta, real, realMeta)) continue;
+            if (block == real && meta == realMeta) {
+                String fluid = placement.getSchematic().getStoredFluid(lx, ly, lz);
+                if (fluid == null || LiquidLogged.fluid(world, x, y, z) != null) continue;
+            } else if (BlockGroups.tolerated(block, meta, real, realMeta)) continue;
             candidates.add(new PrinterBuildOrder.Candidate(x, y, z, layers ? PrinterBuildOrder.tier(block) : 0, placement));
         }
         if (layers) candidates.sort(PrinterBuildOrder.order(eyeX, eyeY, eyeZ, feetY, ConfigurationHandler.printerYAxisReverse));
@@ -461,7 +465,9 @@ public class SchematicPrinter {
         final int realMetadata = world.getBlockMetadata(wx, wy, wz);
 
         if (block == realBlock && metadata == realMetadata) {
-            return false;
+            return !PrinterReach.remote(wx, wy, wz) && !skipped(block) && FluidPrinter.fillHolder(this.minecraft,
+                schematic.getSchematic().getStoredFluid(x, y, z), wx, wy, wz,
+                bucket -> !isBlacklisted(block, bucket) && swapToItem(player.inventory, bucket, true, true));
         }
 
         if (FluidPrinter.isFluid(block)) {

@@ -8,6 +8,7 @@ import net.minecraft.block.BlockLiquid;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.entity.EntityClientPlayerMP;
 import net.minecraft.init.Blocks;
+import net.minecraft.item.ItemBucket;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.play.client.C03PacketPlayer.C05PacketPlayerLook;
 import net.minecraft.util.MovingObjectPosition;
@@ -24,6 +25,7 @@ import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.IFluidBlock;
 import net.minecraftforge.fluids.IFluidContainerItem;
 import com.github.lunatrius.schematica.client.printer.FluidContainerSupport.Use;
+import com.github.lunatrius.schematica.compat.LiquidLogged;
 
 final class FluidPrinter {
     private FluidPrinter() {}
@@ -83,6 +85,40 @@ final class FluidPrinter {
             }
         }
         return containers;
+    }
+
+    static boolean fillHolder(Minecraft minecraft, String name, int x, int y, int z, Predicate<ItemStack> selectContainer) {
+        if (name == null) return false;
+        Fluid fluid = FluidRegistry.getFluid(name);
+        World world = minecraft.theWorld;
+        if (!LiquidLogged.canFill(world, x, y, z, fluid) || LiquidLogged.fluid(world, x, y, z) != null) return false;
+        EntityClientPlayerMP player = minecraft.thePlayer;
+        double eyeY = player.posY + player.getEyeHeight() - player.getDefaultEyeHeight();
+        Vec3 eye = Vec3.createVectorHelper(player.posX, eyeY, player.posZ);
+        Vec3 center = Vec3.createVectorHelper(x + 0.5, y + 0.5, z + 0.5);
+        double reach = Math.min(5.0, minecraft.playerController.getBlockReachDistance());
+        MovingObjectPosition hit = world.func_147447_a(eye, center, false, true, false);
+        if (hit == null || hit.typeOfHit != MovingObjectPosition.MovingObjectType.BLOCK || hit.blockX != x
+            || hit.blockY != y || hit.blockZ != z || eye.distanceTo(hit.hitVec) > reach) return false;
+        PlacementAim aim = new PlacementAim(center.xCoord - eye.xCoord, center.yCoord - eye.yCoord, center.zCoord - eye.zCoord);
+        for (ItemStack bucket : findContainers(player, new FluidStack(fluid, FluidContainerRegistry.BUCKET_VOLUME))) {
+            if (bucket.getItem().getClass() != ItemBucket.class || !selectContainer.test(bucket)) continue;
+            if (ForgeEventFactory.onPlayerInteract(player, Action.RIGHT_CLICK_AIR, 0, 0, 0, -1, world).isCanceled()) return false;
+            float yaw = player.rotationYaw, pitch = player.rotationPitch;
+            try {
+                player.rotationYaw = aim.yaw;
+                player.rotationPitch = aim.pitch;
+                player.sendQueue.addToSendQueue(new C05PacketPlayerLook(aim.yaw, aim.pitch, player.onGround));
+                minecraft.playerController.sendUseItem(player, world, player.getCurrentEquippedItem());
+                player.swingItem();
+                return true;
+            } finally {
+                player.rotationYaw = yaw;
+                player.rotationPitch = pitch;
+                player.sendQueue.addToSendQueue(new C05PacketPlayerLook(yaw, pitch, player.onGround));
+            }
+        }
+        return false;
     }
 
     static boolean place(Minecraft minecraft, FluidStack fluid, int x, int y, int z,
