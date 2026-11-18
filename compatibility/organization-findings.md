@@ -937,3 +937,12 @@ Source [ff9ec54231](https://github.com/GTNewHorizons/GTNH-Web-Map-Client/tree/ff
 Source [f7c13a83a7](https://github.com/GTNewHorizons/GTNHExtLib/tree/f7c13a83a747f876440c63fa0736bc09af84a219) · 3 tracked Java, Scala or Kotlin files outside test/example directories.
 
 - No direct match in the listed checks. Mod entry point: [GTNHExtLib](https://github.com/GTNewHorizons/GTNHExtLib/blob/f7c13a83a747f876440c63fa0736bc09af84a219/src/main/java/com/gtnewhorizons/gtnhextlib/GTNHExtLib.java#L5). Indirect effects from dependencies, injection, configuration and server rules remain open.
+
+### GTNHLib
+
+Source [fcc5c9b444](https://github.com/GTNewHorizons/GTNHLib/tree/fcc5c9b444359fb2ffcb6c4d86d4458c46118220) · 529 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- Check tile serialization against `TileNBTCompat`. 2 source file(s) contain matching declarations, including [MixinEnhancedInfusionRecipe.writeToNBT](https://github.com/GTNewHorizons/GTNHLib/blob/fcc5c9b444359fb2ffcb6c4d86d4458c46118220/src/main/java/com/gtnewhorizon/gtnhlib/mixins/late/MixinEnhancedInfusionRecipe.java#L81).
+- Check preview rendering against `RendererSchematicChunk`. 1 source file(s) contain matching declarations, including [ModelISBRH.renderWorldBlock](https://github.com/GTNewHorizons/GTNHLib/blob/fcc5c9b444359fb2ffcb6c4d86d4458c46118220/src/main/java/com/gtnewhorizon/gtnhlib/client/model/ModelISBRH.java#L81).
+- Check world or renderer transformation alongside the schematic world and render pipeline. 10 source file(s) contain matching declarations, including [EntityRendererAccessor.EntityRenderer](https://github.com/GTNewHorizons/GTNHLib/blob/fcc5c9b444359fb2ffcb6c4d86d4458c46118220/src/main/java/com/gtnewhorizon/gtnhlib/mixins/early/EntityRendererAccessor.java#L8).
+- [MixinEnhancedInfusionRecipe.writeToNBT](https://github.com/GTNewHorizons/GTNHLib/blob/fcc5c9b444359fb2ffcb6c4d86d4458c46118220/src/main/java/com/gtnewhorizon/gtnhlib/mixins/late/MixinEnhancedInfusionRecipe.java#L81) accesses `input`, `output`, `nullOutput`, `strict`. Compare those fields after capture, transform and restore.
