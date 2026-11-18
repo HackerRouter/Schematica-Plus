@@ -1068,3 +1068,9 @@ Source [b3c67de096](https://github.com/GTNewHorizons/ironchest/tree/b3c67de09677
 Source [7d8dd0389e](https://github.com/GTNewHorizons/IronChestMinecarts/tree/7d8dd0389ed639ff3179901e754a0b1793437bde) · 15 tracked Java, Scala or Kotlin files outside test/example directories.
 
 - Check printer placement against `SchematicPrinter`. 1 source file(s) contain matching declarations, including [ItemMinecartIronChest.onItemUse](https://github.com/GTNewHorizons/IronChestMinecarts/blob/7d8dd0389ed639ff3179901e754a0b1793437bde/src/main/java/ganymedes01/ironchestminecarts/minecarts/ItemMinecartIronChest.java#L23).
+
+### IronTankMinecarts
+
+Source [8baf79a9bd](https://github.com/GTNewHorizons/IronTankMinecarts/tree/8baf79a9bd968fa0005e6d8686624c7d141d3209) · 16 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- Check printer placement against `SchematicPrinter`. 1 source file(s) contain matching declarations, including [ItemMinecartIronTank.onItemUse](https://github.com/GTNewHorizons/IronTankMinecarts/blob/8baf79a9bd968fa0005e6d8686624c7d141d3209/src/main/java/secondderivative/irontankminecarts/minecarts/ItemMinecartIronTank.java#L21).
