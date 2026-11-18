@@ -734,3 +734,10 @@ Source [8580636021](https://github.com/GTNewHorizons/FarmingForEngineers/tree/85
 - Check preview rendering against `RendererSchematicChunk`. 2 source file(s) contain matching declarations, including [MarketBlockRenderer.renderWorldBlock](https://github.com/GTNewHorizons/FarmingForEngineers/blob/8580636021109bf8142537ecc825f9a0faa6d97f/src/main/java/com/guigs44/farmingforengineers/client/render/block/MarketBlockRenderer.java#L29).
 - Check printer placement against `SchematicPrinter`. 1 source file(s) contain matching declarations, including [BlockMarket.onBlockPlacedBy](https://github.com/GTNewHorizons/FarmingForEngineers/blob/8580636021109bf8142537ecc825f9a0faa6d97f/src/main/java/com/guigs44/farmingforengineers/block/BlockMarket.java#L75).
 - [BlockMarket.onBlockPlacedBy](https://github.com/GTNewHorizons/FarmingForEngineers/blob/8580636021109bf8142537ecc825f9a0faa6d97f/src/main/java/com/guigs44/farmingforengineers/block/BlockMarket.java#L75) depends on placement orientation. Exercise the printer with a rotated schematic.
+
+### Fether
+
+Source [e43ace4e05](https://github.com/GTNewHorizons/Fether/tree/e43ace4e05fc254c9f58b622db789724ea47c190) · 32 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- Check printer placement against `SchematicPrinter`. 1 source file(s) contain matching declarations, including [ItemNetherBed.onItemUse](https://github.com/GTNewHorizons/Fether/blob/e43ace4e05fc254c9f58b622db789724ea47c190/src/main/java/glowredman/fether/items/ItemNetherBed.java#L15).
+- [ItemNetherBed.onItemUse](https://github.com/GTNewHorizons/Fether/blob/e43ace4e05fc254c9f58b622db789724ea47c190/src/main/java/glowredman/fether/items/ItemNetherBed.java#L15) depends on placement orientation. Exercise the printer with a rotated schematic.
