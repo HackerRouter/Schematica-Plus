@@ -88,10 +88,15 @@ public class AreaSelectionStoreTest {
         assertEquals(new File(new File(base, "server_localhost"), "area_selections"),
             AreaSelections.directory(base, "server:localhost|dimension:0", saves));
         assertTrue(legacy.mkdirs());
-        assertEquals(legacy, AreaSelections.directory(base, "server:localhost|dimension:0", saves));
+        write(new File(legacy, "Old.json"), "{}");
+        File moved = AreaSelections.directory(base, "server:localhost|dimension:0", saves);
+        assertEquals(new File(new File(base, "server_localhost"), "area_selections"), moved);
+        assertTrue(new File(moved, "Old.json").isFile());
+        assertFalse(legacy.exists());
+        assertTrue(legacy.mkdirs());
         assertTrue(new File(saves, "localhost").mkdirs());
-        assertEquals(new File(new File(base, "server_localhost"), "area_selections"),
-            AreaSelections.directory(base, "server:localhost|dimension:0", saves));
+        assertEquals(moved, AreaSelections.directory(base, "server:localhost|dimension:0", saves));
+        assertTrue(legacy.isDirectory());
     }
 
     @Test public void everyCreatableFolderDepthIsReadBack() throws Exception {

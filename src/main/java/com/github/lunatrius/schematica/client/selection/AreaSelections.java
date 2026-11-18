@@ -110,7 +110,10 @@ public final class AreaSelections {
         return directory(PlusDataFiles.file("area_selections_per_world"), key, new File(Minecraft.getMinecraft().mcDataDir, "saves"));
     }
 
-    /** Servers get their own prefix so that a save and a server of one name keep separate files. */
+    /**
+     * Servers get their own prefix so that a save and a server of one name keep separate files; a server directory
+     * written before the prefix moves to it when no save of that name exists.
+     */
     static File directory(File base, String key, File saves) {
         String world = key.contains("|") ? key.substring(0, key.lastIndexOf('|')) : key;
         boolean server = world.startsWith("server:");
@@ -121,8 +124,12 @@ public final class AreaSelections {
         File shared = new File(new File(base, name), "area_selections");
         if (!server) return shared;
         File own = new File(new File(base, "server_" + name), "area_selections");
-        boolean legacy = !own.exists() && shared.isDirectory() && !new File(saves, world).isDirectory();
-        return legacy ? shared : own;
+        boolean legacy = !own.getParentFile().exists() && shared.isDirectory() && !new File(saves, world).isDirectory();
+        if (legacy && !shared.getParentFile().renameTo(own.getParentFile())) {
+            Reference.logger.warn("Could not move the area selections of server {} to {}", world, own);
+            return shared;
+        }
+        return own;
     }
 
     /** The selection files' directory of the current world, or null without a world. */

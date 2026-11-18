@@ -1747,8 +1747,9 @@ compare with a server that does not have the mod and with each server option off
 - areaSelectionsPerWorld off: all worlds share schematics/area_selections after reconnecting.
 - Create a selection in a singleplayer save named `localhost`, then join a server at `localhost`:
   the server lists none of the save's selections and uses `server_localhost/area_selections`; deleting
-  there leaves the save's selections intact. A server directory written before this change is still
-  used when no save of that name exists.
+  there leaves the save's selections intact. A server directory written before this change moves to
+  `server_<name>` on the first join when no save of that name exists; a save created later with that
+  name starts empty.
 - Schematic projects still keep their own selections (the manager stays disabled in project mode).
 
 
