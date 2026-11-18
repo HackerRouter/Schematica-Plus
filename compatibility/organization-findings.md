@@ -1852,3 +1852,9 @@ Source [1b401232b3](https://github.com/GTNewHorizons/StructureLib/tree/1b401232b
 Source [f1115d4521](https://github.com/GTNewHorizons/Super-TiC/tree/f1115d452152ad0424432bb79ff6c80fd03c18e9) · 10 tracked Java, Scala or Kotlin files outside test/example directories.
 
 - No direct match in the listed checks. Mod entry point: [SuperTic](https://github.com/GTNewHorizons/Super-TiC/blob/f1115d452152ad0424432bb79ff6c80fd03c18e9/src/main/java/com/Zoko061602/SuperTic/SuperTic.java#L19). Indirect effects from dependencies, injection, configuration and server rules remain open.
+
+### supernova
+
+Source [f448da1aaf](https://github.com/GTNewHorizons/supernova/tree/f448da1aaf8f9f786405b586fb9934cdabf6c273) · 100 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- Check world or renderer transformation alongside the schematic world and render pipeline. 5 source file(s) contain matching declarations, including [MixinChunk.Chunk](https://github.com/GTNewHorizons/supernova/blob/f448da1aaf8f9f786405b586fb9934cdabf6c273/src/main/java/com/mitchej123/supernova/mixin/early/engine/MixinChunk.java#L30).
