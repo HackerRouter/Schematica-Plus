@@ -277,6 +277,26 @@ public final class CoordinateLinks {
         }
     }
 
+    public static void prepareStationCopy(NBTTagCompound tag, java.util.UUID player) {
+        if (Reflect.type(typeOf(tag.getString("id")), "com.gtnewhorizons.galaxia.registry.celestial.station.TileStation") == null) return;
+        try {
+            Class<?> teams = Class.forName("com.gtnewhorizons.galaxia.compat.teams.GTTeamsCompat");
+            java.util.UUID team = (java.util.UUID) teams.getMethod("getTeam", java.util.UUID.class).invoke(null, player);
+            resetStation(tag, team);
+        } catch (ReflectiveOperationException | LinkageError error) {
+            throw new IllegalStateException("Could not resolve the station owner's team", error);
+        }
+    }
+
+    static void resetStation(NBTTagCompound tag, java.util.UUID team) {
+        for (String key : new String[] {"backingStationMost", "backingStationLeast", "controllerFlag", "structureValid",
+            "proximityBlocked", "ownerMost", "ownerLeast"}) tag.removeTag(key);
+        if (team != null) {
+            tag.setLong("ownerMost", team.getMostSignificantBits());
+            tag.setLong("ownerLeast", team.getLeastSignificantBits());
+        }
+    }
+
     private static Class<?> typeOf(String id) {
         try {
             if (idToClass == null) idToClass = ReflectionHelper.getPrivateValue(TileEntity.class, null, "nameToClassMap", "field_145855_i");

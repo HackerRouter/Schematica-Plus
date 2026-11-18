@@ -665,6 +665,11 @@ public final class WorldEditJob extends WorldEditTask {
             }
             return false;
         }
+        NBTTagCompound pasteTile = kind == Kind.PASTE ? tiles.get(index) : null;
+        if (pasteTile != null) {
+            pasteTile = (NBTTagCompound) pasteTile.copy();
+            CoordinateLinks.prepareStationCopy(pasteTile, player);
+        }
         boolean written = false;
         if (silentPlacement != null) {
             silentPlacement.setBlock(world, wx, wy, wz, block, meta);
@@ -680,10 +685,10 @@ public final class WorldEditJob extends WorldEditTask {
         }
         if (restoreMetadata(world, wx, wy, wz, block, meta)) {
             if (kind == Kind.PASTE && block.hasTileEntity(meta)) {
-                NBTTagCompound tag = tiles.get(index);
+                NBTTagCompound tag = pasteTile;
                 TileEntity tile;
                 if (tag != null) {
-                    tag = CoordinateLinks.paste((NBTTagCompound) tag.copy(), wx, wy, wz, world.provider.dimensionId);
+                    tag = CoordinateLinks.paste(tag, wx, wy, wz, world.provider.dimensionId);
                     tag.setInteger("x", wx); tag.setInteger("y", wy); tag.setInteger("z", wz);
                     tile = "savedMultipart".equals(tag.getString("id"))
                         ? ForgeMultipart.createFromNBT(tag, false) : TileEntity.createAndLoadEntity(tag);

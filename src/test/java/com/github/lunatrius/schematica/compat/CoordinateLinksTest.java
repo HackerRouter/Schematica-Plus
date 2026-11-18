@@ -473,6 +473,26 @@ public class CoordinateLinksTest {
         assertArrayEquals(new int[] {10, 40, 10}, blockPosition(airlock, "stationControllers", 0));
     }
 
+    @Test public void stationCopiesFormWithANewAssetAndThePastingTeam() {
+        NBTTagCompound data = new NBTTagCompound();
+        data.setLong("backingStationMost", 42);
+        data.setLong("backingStationLeast", 7);
+        data.setByte("controllerFlag", (byte) 1);
+        data.setBoolean("structureValid", true);
+        data.setInteger("facing", 3);
+        CoordinateLinks.resetStation(data, new java.util.UUID(5, 11));
+        assertFalse(data.hasKey("backingStationMost"));
+        assertFalse(data.hasKey("backingStationLeast"));
+        assertFalse(data.hasKey("controllerFlag"));
+        assertFalse(data.getBoolean("structureValid"));
+        assertEquals(5, data.getLong("ownerMost"));
+        assertEquals(11, data.getLong("ownerLeast"));
+        assertEquals(3, data.getInteger("facing"));
+        CoordinateLinks.resetStation(data, null);
+        assertFalse(data.hasKey("ownerMost"));
+        assertFalse(data.hasKey("ownerLeast"));
+    }
+
     private static NBTTagCompound quarryArea(int lowX, int lowZ, int highX, int highZ) {
         NBTTagCompound holder = new NBTTagCompound(), area = new NBTTagCompound();
         area.setInteger("lowX", lowX); area.setInteger("lowZ", lowZ); area.setInteger("highX", highX); area.setInteger("highZ", highZ);
