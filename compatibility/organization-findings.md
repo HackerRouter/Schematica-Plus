@@ -741,3 +741,9 @@ Source [e43ace4e05](https://github.com/GTNewHorizons/Fether/tree/e43ace4e05fc254
 
 - Check printer placement against `SchematicPrinter`. 1 source file(s) contain matching declarations, including [ItemNetherBed.onItemUse](https://github.com/GTNewHorizons/Fether/blob/e43ace4e05fc254c9f58b622db789724ea47c190/src/main/java/glowredman/fether/items/ItemNetherBed.java#L15).
 - [ItemNetherBed.onItemUse](https://github.com/GTNewHorizons/Fether/blob/e43ace4e05fc254c9f58b622db789724ea47c190/src/main/java/glowredman/fether/items/ItemNetherBed.java#L15) depends on placement orientation. Exercise the printer with a rotated schematic.
+
+### FindIt
+
+Source [296f29ae76](https://github.com/GTNewHorizons/FindIt/tree/296f29ae764cfcb56ae87338766b4d7f65bda21e) · 32 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- No direct match in the listed checks. Mod entry point: [FindIt](https://github.com/GTNewHorizons/FindIt/blob/296f29ae764cfcb56ae87338766b4d7f65bda21e/src/main/java/com/gtnh/findit/FindIt.java#L29). Indirect effects from dependencies, injection, configuration and server rules remain open.
