@@ -222,3 +222,9 @@ Source [d5bab15bfa](https://github.com/GTNewHorizons/Battlegear2-for-Backhand/tr
 - Check interaction events against `SchematicPrinter`. 1 source file(s) contain matching declarations, including [BattlemodeHookContainerClass.playerInteract](https://github.com/GTNewHorizons/Battlegear2-for-Backhand/blob/d5bab15bfa8a467afb751cdfe2e0d2ada119429a/src/main/java/mods/battlegear2/BattlemodeHookContainerClass.java#L80).
 - [BattlemodeHookContainerClass.playerInteract](https://github.com/GTNewHorizons/Battlegear2-for-Backhand/blob/d5bab15bfa8a467afb751cdfe2e0d2ada119429a/src/main/java/mods/battlegear2/BattlemodeHookContainerClass.java#L80) can cancel the interaction. Verify the printer on a server with the handler enabled.
 - [TileEntityFlagPole.readFromNBT](https://github.com/GTNewHorizons/Battlegear2-for-Backhand/blob/d5bab15bfa8a467afb751cdfe2e0d2ada119429a/src/main/java/mods/battlegear2/heraldry/TileEntityFlagPole.java#L67) accesses `orientation`, `flag`, `hasUpdate`. Compare those fields after capture, transform and restore.
+
+### Baubles-Expanded
+
+Source [2a49984830](https://github.com/GTNewHorizons/Baubles-Expanded/tree/2a499848304d6df9222c8b642d38ecd2a2affaae) · 33 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- No direct match in the listed checks. Mod entry point: [Baubles](https://github.com/GTNewHorizons/Baubles-Expanded/blob/2a499848304d6df9222c8b642d38ecd2a2affaae/src/main/java/baubles/common/Baubles.java#L29). Indirect effects from dependencies, injection, configuration and server rules remain open.
