@@ -1264,3 +1264,9 @@ Source [8d2a2c47a9](https://github.com/GTNewHorizons/ModularUI/tree/8d2a2c47a9e3
 Source [7e777df4a4](https://github.com/GTNewHorizons/ModularUI2/tree/7e777df4a4f0adb77dc1a1e7e5f803fffbf42f0d) · 631 tracked Java, Scala or Kotlin files outside test/example directories.
 
 - No direct match in the listed checks. Mod entry point: [ModularUI](https://github.com/GTNewHorizons/ModularUI2/blob/7e777df4a4f0adb77dc1a1e7e5f803fffbf42f0d/src/main/java/com/cleanroommc/modularui/ModularUI.java#L18). Indirect effects from dependencies, injection, configuration and server rules remain open.
+
+### MouseTweaks
+
+Source [1a2e3b95e4](https://github.com/GTNewHorizons/MouseTweaks/tree/1a2e3b95e4d2b83d22791e17c40a225df16f61cb) · 17 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- No direct match in the listed checks. Mod entry point: [MouseTweaksForge](https://github.com/GTNewHorizons/MouseTweaks/blob/1a2e3b95e4d2b83d22791e17c40a225df16f61cb/src/main/java/yalter/mousetweaks/loaders/MouseTweaksForge.java#L17). Indirect effects from dependencies, injection, configuration and server rules remain open.
