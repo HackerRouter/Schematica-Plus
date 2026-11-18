@@ -1045,3 +1045,9 @@ Source [f29c35cee0](https://github.com/GTNewHorizons/InfoHUD/tree/f29c35cee07923
 Source [b555c63084](https://github.com/GTNewHorizons/InGame-Info-XML/tree/b555c63084d17036b97cf106b6d32b9ca24353db) · 73 tracked Java, Scala or Kotlin files outside test/example directories.
 
 - No direct match in the listed checks. Mod entry point: [InGameInfoXML](https://github.com/GTNewHorizons/InGame-Info-XML/blob/b555c63084d17036b97cf106b6d32b9ca24353db/src/main/java/com/github/lunatrius/ingameinfo/InGameInfoXML.java#L21). Indirect effects from dependencies, injection, configuration and server rules remain open.
+
+### InventoryBogoSorter
+
+Source [1e75ea6971](https://github.com/GTNewHorizons/InventoryBogoSorter/tree/1e75ea6971c644e8ca048c12aa38b7c2e701fb42) · 148 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- Existing Plus lookup in `InventoryClickCompat` names [com.cleanroommc.bogosorter.ShortcutHandler](https://github.com/GTNewHorizons/InventoryBogoSorter/blob/1e75ea6971c644e8ca048c12aa38b7c2e701fb42/src/main/java/com/cleanroommc/bogosorter/ShortcutHandler.java#L1) (1 matching upstream source names). Check reflected members and client state with the deployed versions.
