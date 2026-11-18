@@ -1714,3 +1714,11 @@ Source [35ee9d60b3](https://github.com/GTNewHorizons/Schematica/tree/35ee9d60b30
 - Class-path overlap candidate in 68 source files, including [com.github.lunatrius.schematica.FileFilterSchematic](https://github.com/GTNewHorizons/Schematica/blob/35ee9d60b30aef58a5fda9e1f3cc442e94b95a98/src/main/java/com/github/lunatrius/schematica/FileFilterSchematic.java#L1). Check which classes each release JAR actually ships before installing both.
 - Existing Plus lookup in `Reference` names [com.github.lunatrius.schematica.client.gui.GuiFactory](https://github.com/GTNewHorizons/Schematica/blob/35ee9d60b30aef58a5fda9e1f3cc442e94b95a98/src/main/java/com/github/lunatrius/schematica/client/gui/GuiFactory.java#L1) (4 matching upstream source names). Check reflected members and client state with the deployed versions.
 - Both projects use the com.github.lunatrius.schematica namespace. Their distinct mod IDs do not isolate classes in the Forge class loader. Plus documents a startup rejection for simultaneous installation in its installation guide.
+
+### ServerUtilities
+
+Source [83ff98e50d](https://github.com/GTNewHorizons/ServerUtilities/tree/83ff98e50d9b658dbed1a17a05fce4a8ee58e11b) · 616 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- Check tile serialization against `TileNBTCompat`. 18 source file(s) contain matching declarations, including [ConfigBoolean.writeToNBT](https://github.com/GTNewHorizons/ServerUtilities/blob/83ff98e50d9b658dbed1a17a05fce4a8ee58e11b/src/main/java/serverutils/lib/config/ConfigBoolean.java#L119).
+- Check world or renderer transformation alongside the schematic world and render pipeline. 2 source file(s) contain matching declarations, including [MixinWorldServer_SleepPercentage.WorldServer](https://github.com/GTNewHorizons/ServerUtilities/blob/83ff98e50d9b658dbed1a17a05fce4a8ee58e11b/src/mixins/java/serverutils/mixins/early/minecraft/MixinWorldServer_SleepPercentage.java#L40).
+- Check interaction events against `SchematicPrinter`. 1 source file(s) contain matching declarations, including [ServerUtilitiesPlayerEventHandler.onBlockPlaceLog](https://github.com/GTNewHorizons/ServerUtilities/blob/83ff98e50d9b658dbed1a17a05fce4a8ee58e11b/src/main/java/serverutils/handlers/ServerUtilitiesPlayerEventHandler.java#L227).
