@@ -1412,6 +1412,7 @@ Source [dcacd08964](https://github.com/GTNewHorizons/NoHotbarNeeded/tree/dcacd08
 Source [5c15126bf5](https://github.com/GTNewHorizons/NotEnoughCharacters/tree/5c15126bf5fbcdbc8060423858d6b0c46e3a3fbc) · 16 tracked Java, Scala or Kotlin files outside test/example directories.
 
 - No direct match in the listed checks. Mod entry point: [NotEnoughCharacters](https://github.com/GTNewHorizons/NotEnoughCharacters/blob/5c15126bf5fbcdbc8060423858d6b0c46e3a3fbc/src/main/java/net/moecraft/nechar/NotEnoughCharacters.java#L18). Indirect effects from dependencies, injection, configuration and server rules remain open.
+- [NEINecharConfig](https://github.com/GTNewHorizons/NotEnoughCharacters/blob/5c15126bf5fbcdbc8060423858d6b0c46e3a3fbc/src/main/java/net/moecraft/nechar/NEINecharConfig.java#L16) uses `IConfigureNEI`. The identified integration concerns the item or information UI.
 
 ### NotEnoughEnergistics
 
