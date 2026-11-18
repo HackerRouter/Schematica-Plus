@@ -2076,3 +2076,13 @@ Source [18132426b3](https://github.com/GTNewHorizons/TooMuchLoot/tree/18132426b3
 Source [c0a4c2e636](https://github.com/GTNewHorizons/ToroHealth/tree/c0a4c2e63645b59c94551fdd3b7571fadfdd39da) · 9 tracked Java, Scala or Kotlin files outside test/example directories.
 
 - No direct match in the listed checks. Mod entry point: [ToroHealthMod](https://github.com/GTNewHorizons/ToroHealth/blob/c0a4c2e63645b59c94551fdd3b7571fadfdd39da/src/main/java/net/torocraft/torohealthmod/ToroHealthMod.java#L12). Indirect effects from dependencies, injection, configuration and server rules remain open.
+
+### Translocators
+
+Source [08f4a4b7f1](https://github.com/GTNewHorizons/Translocators/tree/08f4a4b7f11827b6f2eb1111031a157f7c20be47) · 20 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- Existing Plus lookup in `CodeChickenVisualAdapter` names [codechicken.translocator.TileCraftingGrid](https://github.com/GTNewHorizons/Translocators/blob/08f4a4b7f11827b6f2eb1111031a157f7c20be47/src/main/java/codechicken/translocator/TileCraftingGrid.java#L1) (2 matching upstream source names). Check reflected members and client state with the deployed versions.
+- Check tile serialization against `TileNBTCompat`. 3 source file(s) contain matching declarations, including [TileCraftingGrid.writeToNBT](https://github.com/GTNewHorizons/Translocators/blob/08f4a4b7f11827b6f2eb1111031a157f7c20be47/src/main/java/codechicken/translocator/TileCraftingGrid.java#L28).
+- Check preview rendering against `RendererSchematicChunk`. 2 source file(s) contain matching declarations, including [TileCraftingGridRenderer.renderTileEntityAt](https://github.com/GTNewHorizons/Translocators/blob/08f4a4b7f11827b6f2eb1111031a157f7c20be47/src/main/java/codechicken/translocator/TileCraftingGridRenderer.java#L22).
+- Check printer placement against `SchematicPrinter`. 2 source file(s) contain matching declarations, including [BlockCraftingGrid.onBlockPlacedBy](https://github.com/GTNewHorizons/Translocators/blob/08f4a4b7f11827b6f2eb1111031a157f7c20be47/src/main/java/codechicken/translocator/BlockCraftingGrid.java#L186).
+- [TileCraftingGrid.writeToNBT](https://github.com/GTNewHorizons/Translocators/blob/08f4a4b7f11827b6f2eb1111031a157f7c20be47/src/main/java/codechicken/translocator/TileCraftingGrid.java#L28) accesses `items`, `timeout`. Compare those fields after capture, transform and restore.
