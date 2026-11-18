@@ -1051,3 +1051,14 @@ Source [b555c63084](https://github.com/GTNewHorizons/InGame-Info-XML/tree/b555c6
 Source [1e75ea6971](https://github.com/GTNewHorizons/InventoryBogoSorter/tree/1e75ea6971c644e8ca048c12aa38b7c2e701fb42) · 148 tracked Java, Scala or Kotlin files outside test/example directories.
 
 - Existing Plus lookup in `InventoryClickCompat` names [com.cleanroommc.bogosorter.ShortcutHandler](https://github.com/GTNewHorizons/InventoryBogoSorter/blob/1e75ea6971c644e8ca048c12aa38b7c2e701fb42/src/main/java/com/cleanroommc/bogosorter/ShortcutHandler.java#L1) (1 matching upstream source names). Check reflected members and client state with the deployed versions.
+
+### ironchest
+
+Source [b3c67de096](https://github.com/GTNewHorizons/ironchest/tree/b3c67de09677979c491be2caeaea8ce31c327ea5) · 29 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- Existing Plus lookup in `VisualAdapters` names [cpw.mods.ironchest.TileEntityCrystalChest](https://github.com/GTNewHorizons/ironchest/blob/b3c67de09677979c491be2caeaea8ce31c327ea5/src/main/java/cpw/mods/ironchest/TileEntityCrystalChest.java#L1) (2 matching upstream source names). Check reflected members and client state with the deployed versions.
+- Check tile serialization against `TileNBTCompat`. 1 source file(s) contain matching declarations, including [TileEntityIronChest.readFromNBT](https://github.com/GTNewHorizons/ironchest/blob/b3c67de09677979c491be2caeaea8ce31c327ea5/src/main/java/cpw/mods/ironchest/TileEntityIronChest.java#L176).
+- Check preview rendering against `RendererSchematicChunk`. 1 source file(s) contain matching declarations, including [TileEntityIronChestRenderer.renderTileEntityAt](https://github.com/GTNewHorizons/ironchest/blob/b3c67de09677979c491be2caeaea8ce31c327ea5/src/main/java/cpw/mods/ironchest/client/TileEntityIronChestRenderer.java#L181).
+- Check printer placement against `SchematicPrinter`. 1 source file(s) contain matching declarations, including [BlockIronChest.onBlockPlacedBy](https://github.com/GTNewHorizons/ironchest/blob/b3c67de09677979c491be2caeaea8ce31c327ea5/src/main/java/cpw/mods/ironchest/BlockIronChest.java#L141).
+- [BlockIronChest.onBlockPlacedBy](https://github.com/GTNewHorizons/ironchest/blob/b3c67de09677979c491be2caeaea8ce31c327ea5/src/main/java/cpw/mods/ironchest/BlockIronChest.java#L141) depends on placement orientation. Exercise the printer with a rotated schematic.
+- [TileEntityIronChest.readFromNBT](https://github.com/GTNewHorizons/ironchest/blob/b3c67de09677979c491be2caeaea8ce31c327ea5/src/main/java/cpw/mods/ironchest/TileEntityIronChest.java#L176) accesses `Items`, `Slot`, `facing`. Compare those fields after capture, transform and restore.
