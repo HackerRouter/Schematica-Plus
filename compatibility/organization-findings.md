@@ -2196,3 +2196,11 @@ Source [8383b408f5](https://github.com/GTNewHorizons/WAILAPlugins/tree/8383b408f
 Source [cdb955e49a](https://github.com/GTNewHorizons/WanionLib/tree/cdb955e49ab4891b13bc8db9cca27849accd82f0) · 23 tracked Java, Scala or Kotlin files outside test/example directories.
 
 - No direct match in the listed checks. Mod entry point: [WanionLib](https://github.com/GTNewHorizons/WanionLib/blob/cdb955e49ab4891b13bc8db9cca27849accd82f0/src/main/java/wanion/lib/WanionLib.java#L26). Indirect effects from dependencies, injection, configuration and server rules remain open.
+
+### WarpTheory
+
+Source [5b607f8a0c](https://github.com/GTNewHorizons/WarpTheory/tree/5b607f8a0c3024c648e9e58157b545d09e1b4c6c) · 105 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- Check tile serialization against `TileNBTCompat`. 1 source file(s) contain matching declarations, including [TileEntityVanish.writeToNBT](https://github.com/GTNewHorizons/WarpTheory/blob/5b607f8a0c3024c648e9e58157b545d09e1b4c6c/src/main/java/shukaro/warptheory/tile/TileEntityVanish.java#L44).
+- Check material picking against `BlockToItemStack`. 1 source file(s) contain matching declarations, including [BlockVanish.getPickBlock](https://github.com/GTNewHorizons/WarpTheory/blob/5b607f8a0c3024c648e9e58157b545d09e1b4c6c/src/main/java/shukaro/warptheory/block/BlockVanish.java#L55).
+- [TileEntityVanish.writeToNBT](https://github.com/GTNewHorizons/WarpTheory/blob/5b607f8a0c3024c648e9e58157b545d09e1b4c6c/src/main/java/shukaro/warptheory/tile/TileEntityVanish.java#L44) accesses `oldName`, `oldMeta`, `oldTag`, `returnTime`. Compare those fields after capture, transform and restore.
