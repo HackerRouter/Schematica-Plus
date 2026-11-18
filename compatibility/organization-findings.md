@@ -697,3 +697,9 @@ Source [780054ab6a](https://github.com/GTNewHorizons/EnderStorage/tree/780054ab6
 Source [2e122a4f1f](https://github.com/GTNewHorizons/EnderZoo/tree/2e122a4f1fa4e3dfd0c88143e68066fd38fed580) · 82 tracked Java, Scala or Kotlin files outside test/example directories.
 
 - Check printer placement against `SchematicPrinter`. 1 source file(s) contain matching declarations, including [ItemSpawnEgg.onItemUse](https://github.com/GTNewHorizons/EnderZoo/blob/2e122a4f1fa4e3dfd0c88143e68066fd38fed580/src/main/java/crazypants/enderzoo/item/ItemSpawnEgg.java#L89).
+
+### EnhancedLootBags
+
+Source [c51008127d](https://github.com/GTNewHorizons/EnhancedLootBags/tree/c51008127dfe6cf1865800bb4528f73aba0bd179) · 20 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- No direct match in the listed checks. Mod entry point: [EnhancedLootBags](https://github.com/GTNewHorizons/EnhancedLootBags/blob/c51008127dfe6cf1865800bb4528f73aba0bd179/src/main/java/eu/usrv/enhancedlootbags/EnhancedLootBags.java#L38). Indirect effects from dependencies, injection, configuration and server rules remain open.
