@@ -821,3 +821,9 @@ Source [81be9e9402](https://github.com/GTNewHorizons/Foundation/tree/81be9e94023
 Source [977b0f87cb](https://github.com/GTNewHorizons/Freecam/tree/977b0f87cbcf2ddb8ac30d961d944943935b43ce) · 23 tracked Java, Scala or Kotlin files outside test/example directories.
 
 - Check world or renderer transformation alongside the schematic world and render pipeline. 1 source file(s) contain matching declarations, including [MixinEntityRenderer.EntityRenderer](https://github.com/GTNewHorizons/Freecam/blob/977b0f87cbcf2ddb8ac30d961d944943935b43ce/src/main/java/com/caedis/freecam/mixins/early/minecraft/MixinEntityRenderer.java#L24).
+
+### Fullscreen-Windowed-Minecraft
+
+Source [56ab7787a2](https://github.com/GTNewHorizons/Fullscreen-Windowed-Minecraft/tree/56ab7787a2b499789165fc3263234c8cb9cf2a90) · 12 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- No direct match in the listed checks. Mod entry point: [FullscreenWindowed](https://github.com/GTNewHorizons/Fullscreen-Windowed-Minecraft/blob/56ab7787a2b499789165fc3263234c8cb9cf2a90/src/main/java/com/hancinworld/fw/FullscreenWindowed.java#L33). Indirect effects from dependencies, injection, configuration and server rules remain open.
