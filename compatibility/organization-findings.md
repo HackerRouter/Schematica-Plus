@@ -1548,3 +1548,9 @@ Source [e3c3a2e1a4](https://github.com/GTNewHorizons/PersonalSpace/tree/e3c3a2e1
 Source [45a0d1efca](https://github.com/GTNewHorizons/PlanNH/tree/45a0d1efca52b946ae1cc1139f8b2e852fb44e6c) · 273 tracked Java, Scala or Kotlin files outside test/example directories.
 
 - No direct match in the listed checks. Mod entry point: [PlanNH](https://github.com/GTNewHorizons/PlanNH/blob/45a0d1efca52b946ae1cc1139f8b2e852fb44e6c/src/main/java/com/sbancuz/plannh/PlanNH.java#L14). Indirect effects from dependencies, injection, configuration and server rules remain open.
+
+### Player-API
+
+Source [5a2a3849db](https://github.com/GTNewHorizons/Player-API/tree/5a2a3849dba3f5eefee075931bfcaddaefc5fff7) · 19 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- No direct match in the listed checks. Indirect effects from dependencies, injection, configuration and server rules remain open.
