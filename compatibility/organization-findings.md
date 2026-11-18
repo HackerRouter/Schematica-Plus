@@ -423,3 +423,10 @@ Source [4dda8ff4d6](https://github.com/GTNewHorizons/CarpentersBlocks/tree/4dda8
 - [BlockCarpentersGate.onBlockPlacedBy](https://github.com/GTNewHorizons/CarpentersBlocks/blob/4dda8ff4d6f90403670e95d46aef0a571c79b057/src/main/java/com/carpentersblocks/block/BlockCarpentersGate.java#L188) depends on placement orientation. Exercise the printer with a rotated schematic.
 - [BlockHandlerBase.renderWorldBlock](https://github.com/GTNewHorizons/CarpentersBlocks/blob/4dda8ff4d6f90403670e95d46aef0a571c79b057/src/main/java/com/carpentersblocks/renderer/BlockHandlerBase.java#L122) queries tile data while rendering. Preview a populated tile after saving and reopening its schematic.
 - [TECarpentersSafe.readFromNBT](https://github.com/GTNewHorizons/CarpentersBlocks/blob/4dda8ff4d6f90403670e95d46aef0a571c79b057/src/main/java/com/carpentersblocks/tileentity/TECarpentersSafe.java#L136) accesses `inventorySize`. Compare those fields after capture, transform and restore.
+
+### Celeritas
+
+Source [b2a70f7f28](https://github.com/GTNewHorizons/Celeritas/tree/b2a70f7f28638eb3124a337584567fa72e00452a) · 1409 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- Existing Plus lookup in `GeometrySupport` names [net.irisshaders.iris.api.v0.IrisApi](https://github.com/GTNewHorizons/Celeritas/blob/b2a70f7f28638eb3124a337584567fa72e00452a/modern/src/main/shaders_java/net/irisshaders/iris/api/v0/IrisApi.java#L1) (1 matching upstream source names). Check reflected members and client state with the deployed versions.
+- Check world or renderer transformation alongside the schematic world and render pipeline. 9 source file(s) contain matching declarations, including [ChunkAccessor.Chunk](https://github.com/GTNewHorizons/Celeritas/blob/b2a70f7f28638eb3124a337584567fa72e00452a/forge122/src/main/java/org/taumc/celeritas/mixin/core/terrain/ChunkAccessor.java#L7).
