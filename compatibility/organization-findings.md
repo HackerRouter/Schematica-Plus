@@ -2106,3 +2106,9 @@ Source [6e194e1b84](https://github.com/GTNewHorizons/twilightforest/tree/6e194e1
 Source [24c7d54c57](https://github.com/GTNewHorizons/TX-Loader/tree/24c7d54c5792beabd0dc3832ec5fece28f277d77) · 13 tracked Java, Scala or Kotlin files outside test/example directories.
 
 - No direct match in the listed checks. Indirect effects from dependencies, injection, configuration and server rules remain open.
+
+### UniMixins
+
+Source [56a008ce92](https://github.com/GTNewHorizons/UniMixins/tree/56a008ce92dd1314a498a588835500236cdf299c) · 87 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- No direct match in the listed checks. Mod entry point: [AllModule](https://github.com/GTNewHorizons/UniMixins/blob/56a008ce92dd1314a498a588835500236cdf299c/module-all/src/main/java/io/github/legacymoddingmc/unimixins/all/AllModule.java#L8). Indirect effects from dependencies, injection, configuration and server rules remain open.
