@@ -364,3 +364,11 @@ Source [d0f9c2c9e6](https://github.com/GTNewHorizons/Botania/tree/d0f9c2c9e659e0
 - [BlockAltGrass.getPickBlock](https://github.com/GTNewHorizons/Botania/blob/d0f9c2c9e659e0340eb8c9c3e7801c04e497c3e9/src/main/java/vazkii/botania/common/block/BlockAltGrass.java#L110) queries world state when selecting an item. Compare the materials list against the placed variant.
 - [BlockAvatar.onBlockPlacedBy](https://github.com/GTNewHorizons/Botania/blob/d0f9c2c9e659e0340eb8c9c3e7801c04e497c3e9/src/main/java/vazkii/botania/common/block/BlockAvatar.java#L132) depends on placement orientation. Exercise the printer with a rotated schematic.
 - [InventoryHelper.readFromNBT](https://github.com/GTNewHorizons/Botania/blob/d0f9c2c9e659e0340eb8c9c3e7801c04e497c3e9/src/main/java/vazkii/botania/common/core/helper/InventoryHelper.java#L310) accesses `size`, `Items`, `Slot`. Compare those fields after capture, transform and restore.
+
+### Botanic-horizons
+
+Source [172d79e04a](https://github.com/GTNewHorizons/Botanic-horizons/tree/172d79e04a42dd51fa4a234ba042c2c460d6bedc) · 71 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- Existing Plus lookup in `TileFacingAdapter` names [net.fuzzycraft.botanichorizons.addons.tileentity.AutomationTileEntity](https://github.com/GTNewHorizons/Botanic-horizons/blob/172d79e04a42dd51fa4a234ba042c2c460d6bedc/src/main/java/net/fuzzycraft/botanichorizons/addons/tileentity/AutomationTileEntity.java#L1) (1 matching upstream source names). Check reflected members and client state with the deployed versions.
+- Check tile serialization against `TileNBTCompat`. 1 source file(s) contain matching declarations, including [AutomationTileEntity.writeToNBT](https://github.com/GTNewHorizons/Botanic-horizons/blob/172d79e04a42dd51fa4a234ba042c2c460d6bedc/src/main/java/net/fuzzycraft/botanichorizons/addons/tileentity/AutomationTileEntity.java#L151).
+- Check printer placement against `SchematicPrinter`. 4 source file(s) contain matching declarations, including [BlockAdvancedAlchemyPool.onBlockPlacedBy](https://github.com/GTNewHorizons/Botanic-horizons/blob/172d79e04a42dd51fa4a234ba042c2c460d6bedc/src/main/java/net/fuzzycraft/botanichorizons/addons/block/BlockAdvancedAlchemyPool.java#L74).
