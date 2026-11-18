@@ -2346,3 +2346,7 @@ The headless client patches rendering. Use a rendering-enabled client for visual
 ### MyTown2-Client
 
 This client companion registers a town interface. Placement permissions require a separate check on a server running MyTown2. [MyTownClient.java at 771d0baab5](https://github.com/GTNewHorizons/MyTown2-Client/blob/771d0baab5871981d5ca086727f7ce07e05cd403/src/main/java/mytown/client/MyTownClient.java)
+
+### NotEnoughProduction
+
+The desktop production planner launches outside Minecraft. There is no Forge co-loading requirement for this launcher. [Lwjgl3Launcher.java at 321b337a4e](https://github.com/GTNewHorizons/NotEnoughProduction/blob/321b337a4eb16dfff2587db42897da722fe40632/lwjgl3/src/main/java/com/bigbass/nep/lwjgl3/Lwjgl3Launcher.java)
