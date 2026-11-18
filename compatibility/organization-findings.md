@@ -531,3 +531,9 @@ Source [7adf5a2147](https://github.com/GTNewHorizons/CosmeticArmorReworked/tree/
 
 - Check tile serialization against `TileNBTCompat`. 1 source file(s) contain matching declarations, including [InventoryCosArmor.readFromNBT](https://github.com/GTNewHorizons/CosmeticArmorReworked/blob/7adf5a2147ebb662fa9ca63dfe84d13517c7c49d/src/main/java/lain/mods/cos/inventory/InventoryCosArmor.java#L108).
 - [InventoryCosArmor.readFromNBT](https://github.com/GTNewHorizons/CosmeticArmorReworked/blob/7adf5a2147ebb662fa9ca63dfe84d13517c7c49d/src/main/java/lain/mods/cos/inventory/InventoryCosArmor.java#L108) accesses `CosArmor.Inventory.Size`, `CosArmor.Inventory`, `Slot`, `isSkinArmor`. Compare those fields after capture, transform and restore.
+
+### CraftTweaker
+
+Source [f0ae935d58](https://github.com/GTNewHorizons/CraftTweaker/tree/f0ae935d582fe9725d3e8eaaf7819b96f0a94c3a) · 286 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- Check interaction events against `SchematicPrinter`. 1 source file(s) contain matching declarations, including [ForgeEventHandler.onPlayerInteract](https://github.com/GTNewHorizons/CraftTweaker/blob/f0ae935d582fe9725d3e8eaaf7819b96f0a94c3a/src/main/java/minetweaker/mc1710/ForgeEventHandler.java#L38).
