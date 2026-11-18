@@ -2204,3 +2204,9 @@ Source [5b607f8a0c](https://github.com/GTNewHorizons/WarpTheory/tree/5b607f8a0c3
 - Check tile serialization against `TileNBTCompat`. 1 source file(s) contain matching declarations, including [TileEntityVanish.writeToNBT](https://github.com/GTNewHorizons/WarpTheory/blob/5b607f8a0c3024c648e9e58157b545d09e1b4c6c/src/main/java/shukaro/warptheory/tile/TileEntityVanish.java#L44).
 - Check material picking against `BlockToItemStack`. 1 source file(s) contain matching declarations, including [BlockVanish.getPickBlock](https://github.com/GTNewHorizons/WarpTheory/blob/5b607f8a0c3024c648e9e58157b545d09e1b4c6c/src/main/java/shukaro/warptheory/block/BlockVanish.java#L55).
 - [TileEntityVanish.writeToNBT](https://github.com/GTNewHorizons/WarpTheory/blob/5b607f8a0c3024c648e9e58157b545d09e1b4c6c/src/main/java/shukaro/warptheory/tile/TileEntityVanish.java#L44) accesses `oldName`, `oldMeta`, `oldTag`, `returnTime`. Compare those fields after capture, transform and restore.
+
+### WAWLA
+
+Source [fcbd3c0e70](https://github.com/GTNewHorizons/WAWLA/tree/fcbd3c0e70a59389d9013d6e629a2ed3a295f719) · 18 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- No direct match in the listed checks. Mod entry point: [Wawla](https://github.com/GTNewHorizons/WAWLA/blob/fcbd3c0e70a59389d9013d6e629a2ed3a295f719/src/main/java/net/darkhax/wawla/Wawla.java#L14). Indirect effects from dependencies, injection, configuration and server rules remain open.
