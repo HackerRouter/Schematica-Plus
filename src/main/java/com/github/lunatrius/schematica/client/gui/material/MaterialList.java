@@ -200,6 +200,7 @@ public final class MaterialList {
                 values.add(placement.position.x); values.add(placement.position.y); values.add(placement.position.z);
                 values.add(placement.transformOperations.hashCode());
                 values.add(renderLayers && placement.isRenderingLayer ? placement.renderingLayer : -1);
+                values.add(placement.contentRevision());
             }
             int[] result = new int[values.size()];
             for (int i = 0; i < result.length; i++) result[i] = values.get(i);
