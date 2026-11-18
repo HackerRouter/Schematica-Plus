@@ -16,9 +16,9 @@ public class AccuratePlacementClientTest {
 
     @Test public void handshakeDoesNotSkipClientOrientationForUnsupportedBlocks() {
         CommonProxy previous = SchematicaPlus.proxy;
+        SchematicaPlus.proxy = new ServerProxy();
         String protocol = ConfigurationHandler.easyPlaceProtocolVersion;
         try {
-            SchematicaPlus.proxy = new ServerProxy();
             SchematicaPlus.proxy.supportsAccuratePlacement = true;
             ConfigurationHandler.easyPlaceProtocolVersion = "auto";
             assertTrue(AccuratePlacementClient.active(new Stairs()));
