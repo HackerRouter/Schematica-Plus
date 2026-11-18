@@ -86,7 +86,7 @@ final class BoxRenderer {
     }
 
     private void placementBoxes(SchematicWorld placement, float expand, float blockBox) {
-        if (!placement.isEnabled()) return;
+        if (!placement.isEnabled() || placement.otherWorld) return;
         boolean current = placement == Placements.selected;
         float[] color = rgb(boxColor(placement));
         SubRegionPlacements regions = placement.subregions();
