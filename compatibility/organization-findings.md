@@ -2166,3 +2166,9 @@ Source [fb341a4c6b](https://github.com/GTNewHorizons/Viridium/tree/fb341a4c6b29a
 - Check preview rendering against `RendererSchematicChunk`. 6 source file(s) contain matching declarations, including [BushBlockRenderer.renderWorldBlock](https://github.com/GTNewHorizons/Viridium/blob/fb341a4c6b29a041f68f958348defd64c41cd07d/src/main/java/net/junedev/viridium/client/renderers/blocks/BushBlockRenderer.java#L53).
 - Check printer placement against `SchematicPrinter`. 2 source file(s) contain matching declarations, including [SmallLogBlock.onBlockPlaced](https://github.com/GTNewHorizons/Viridium/blob/fb341a4c6b29a041f68f958348defd64c41cd07d/src/main/java/net/junedev/viridium/blocks/SmallLogBlock.java#L289).
 - Check world or renderer transformation alongside the schematic world and render pipeline. 1 source file(s) contain matching declarations, including [MixinRenderBlocks_WaterTint.RenderBlocks](https://github.com/GTNewHorizons/Viridium/blob/fb341a4c6b29a041f68f958348defd64c41cd07d/src/main/java/net/junedev/viridium/mixin/mixins/early/minecraft/MixinRenderBlocks_WaterTint.java#L15).
+
+### VisualProspecting
+
+Source [3a1590536e](https://github.com/GTNewHorizons/VisualProspecting/tree/3a1590536e5e72906e6066dcc79f4f2a7a2d4dfe) · 79 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- Check tile serialization against `TileNBTCompat`. 2 source file(s) contain matching declarations, including [WorldIdHandler.readFromNBT](https://github.com/GTNewHorizons/VisualProspecting/blob/3a1590536e5e72906e6066dcc79f4f2a7a2d4dfe/src/main/java/com/sinthoras/visualprospecting/database/WorldIdHandler.java#L35).
