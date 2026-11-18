@@ -2266,6 +2266,7 @@ Source [3415dc0b50](https://github.com/GTNewHorizons/WirelessCraftingTerminal/tr
 Source [b7b3fe7588](https://github.com/GTNewHorizons/WirelessRedstone-CBE/tree/b7b3fe758805f0eb0c8c50e6435c2a3a9e51105d) · 74 tracked Java, Scala or Kotlin files outside test/example directories.
 
 - No direct match in the listed checks. Mod entry point: [WirelessRedstoneAddons](https://github.com/GTNewHorizons/WirelessRedstone-CBE/blob/b7b3fe758805f0eb0c8c50e6435c2a3a9e51105d/src/main/java/codechicken/wirelessredstone/addons/WirelessRedstoneAddons.java#L15). Indirect effects from dependencies, injection, configuration and server rules remain open.
+- [WRCoreEventHandler](https://github.com/GTNewHorizons/WirelessRedstone-CBE/blob/b7b3fe758805f0eb0c8c50e6435c2a3a9e51105d/src/main/java/codechicken/wirelessredstone/core/WRCoreEventHandler.java#L69) accepts `RenderWorldLastEvent`. Exercise the schematic overlay and hotkeys while the corresponding client feature is enabled.
 
 ### WitcheryExtras
 
