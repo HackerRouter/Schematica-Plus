@@ -468,3 +468,9 @@ Source [4e51e114f7](https://github.com/GTNewHorizons/ChromaticTooltipsCompat/tre
 Source [199251b75d](https://github.com/GTNewHorizons/ChunkAPI/tree/199251b75d41c23ae5085bb32e39a3380efe7c7a) · 47 tracked Java, Scala or Kotlin files outside test/example directories.
 
 - Check world or renderer transformation alongside the schematic world and render pipeline. 1 source file(s) contain matching declarations, including [ChunkMixin.Chunk](https://github.com/GTNewHorizons/ChunkAPI/blob/199251b75d41c23ae5085bb32e39a3380efe7c7a/src/main/java/com/falsepattern/chunk/internal/mixin/mixins/client/vanilla/ChunkMixin.java#L42).
+
+### Climate-Control
+
+Source [3ade14a9fe](https://github.com/GTNewHorizons/Climate-Control/tree/3ade14a9fef34d1335510afb0e14efff866e1290) · 176 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- Check tile serialization against `TileNBTCompat`. 1 source file(s) contain matching declarations, including [Savee.readFromNBT](https://github.com/GTNewHorizons/Climate-Control/blob/3ade14a9fef34d1335510afb0e14efff866e1290/src/main/java/climateControl/utils/Savee.java#L107).
