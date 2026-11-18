@@ -2248,3 +2248,10 @@ Source [148ca08ec6](https://github.com/GTNewHorizons/WitchingGadgets/tree/148ca0
 - [BlockRenderStoneDevice.renderWorldBlock](https://github.com/GTNewHorizons/WitchingGadgets/blob/148ca08ec600a07cac72459a44f596a5e28f9bc2/src/main/java/witchinggadgets/client/render/BlockRenderStoneDevice.java#L46) queries tile data while rendering. Preview a populated tile after saving and reopening its schematic.
 - [BlockWGMetalDevice.onBlockPlacedBy](https://github.com/GTNewHorizons/WitchingGadgets/blob/148ca08ec600a07cac72459a44f596a5e28f9bc2/src/main/java/witchinggadgets/common/blocks/BlockWGMetalDevice.java#L153) depends on placement orientation. Exercise the printer with a rotated schematic.
 - [EventHandler.onPlayerInteract](https://github.com/GTNewHorizons/WitchingGadgets/blob/148ca08ec600a07cac72459a44f596a5e28f9bc2/src/main/java/witchinggadgets/common/util/handler/EventHandler.java#L166) can cancel the interaction. Verify the printer on a server with the handler enabled.
+
+### worldedit-gtnh
+
+Source [7afd08377a](https://github.com/GTNewHorizons/worldedit-gtnh/tree/7afd08377aedd1325f5c9e620383294003cc6421) · 544 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- Check interaction events against `SchematicPrinter`. 1 source file(s) contain matching declarations, including [ForgeWorldEdit.onPlayerInteract](https://github.com/GTNewHorizons/worldedit-gtnh/blob/7afd08377aedd1325f5c9e620383294003cc6421/src/main/java/com/sk89q/worldedit/forge/ForgeWorldEdit.java#L287).
+- [ForgeWorldEdit.onPlayerInteract](https://github.com/GTNewHorizons/worldedit-gtnh/blob/7afd08377aedd1325f5c9e620383294003cc6421/src/main/java/com/sk89q/worldedit/forge/ForgeWorldEdit.java#L287) can cancel the interaction. Verify the printer on a server with the handler enabled.
