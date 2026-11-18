@@ -587,3 +587,9 @@ Source [0c892a333f](https://github.com/GTNewHorizons/Databack/tree/0c892a333fbe7
 Source [2c6b8d49a6](https://github.com/GTNewHorizons/Default-Configs/tree/2c6b8d49a6b0b26188ee2eb45cbebc9e5d907f47) · 9 tracked Java, Scala or Kotlin files outside test/example directories.
 
 - No direct match in the listed checks. Mod entry point: [DefaultKeys](https://github.com/GTNewHorizons/Default-Configs/blob/2c6b8d49a6b0b26188ee2eb45cbebc9e5d907f47/src/main/java/net/blay09/mods/defaultkeys/DefaultKeys.java#L12). Indirect effects from dependencies, injection, configuration and server rules remain open.
+
+### DefaultServerList
+
+Source [70c9c88b0c](https://github.com/GTNewHorizons/DefaultServerList/tree/70c9c88b0c7faa20633ffec10fec340626e36e76) · 4 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- No direct match in the listed checks. Indirect effects from dependencies, injection, configuration and server rules remain open.
