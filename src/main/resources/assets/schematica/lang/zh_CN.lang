@@ -380,6 +380,7 @@ schematica.message.edit.no_changes=没有进行任何改动。
 schematica.message.edit.placement_deleted=已删除 %s 个方块
 schematica.message.edit.placement_delete_failed=删除任务失败
 schematica.message.projects.no_previous_paste=没有已知的上次粘贴版本，跳过删除
+schematica.message.projects.save_failed=无法写入项目文件 %s
 schematica.key.printerWorkingSwitch=打印机 - 工作开关
 schematica.key.printerWorkingSwitch.comment=开启或关闭打印机。安装了 Schematica Plus 的服务器可以禁止打印（printerEnabled）。
 schematica.printer.name=打印机

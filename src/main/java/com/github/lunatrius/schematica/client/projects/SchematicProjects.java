@@ -79,14 +79,16 @@ public final class SchematicProjects {
         });
     }
 
-    public static void create(File directory, String name) {
-        close();
+    public static boolean create(File directory, String name) {
         EntityPlayer player = mc().thePlayer;
         Vector3i origin = player == null ? new Vector3i() : new Vector3i(MathHelper.floor_double(player.posX),
             MathHelper.floor_double(player.boundingBox.minY), MathHelper.floor_double(player.posZ));
-        current = SchematicProject.create(directory, name, origin);
-        current.saveToFile();
+        SchematicProject project = SchematicProject.create(directory, name, origin);
+        if (!project.saveToFile()) return false;
+        close();
+        current = project;
         syncSelections();
+        return true;
     }
 
     public static boolean open(File file) {
@@ -195,7 +197,11 @@ public final class SchematicProjects {
                     return;
                 }
                 SchematicVersion version = target.addVersion(name, file.getName(), description, offset, System.currentTimeMillis(), active);
-                target.saveToFile();
+                if (!target.saveToFile()) {
+                    InfoUtils.showGuiOrInGameMessage(MessageType.ERROR, "schematica.message.projects.save_failed", target.projectFile().getName());
+                    if (active && mc().currentScreen instanceof GuiSchematicProjectManager) ((GuiSchematicProjectManager) mc().currentScreen).versionsChanged();
+                    return;
+                }
                 InfoUtils.showGuiOrInGameMessage(MessageType.SUCCESS, "litematica.message.schematic_projects.version_saved", version.version, version.name);
                 if (active && mc().currentScreen instanceof GuiSchematicProjectManager) ((GuiSchematicProjectManager) mc().currentScreen).versionsChanged();
             });

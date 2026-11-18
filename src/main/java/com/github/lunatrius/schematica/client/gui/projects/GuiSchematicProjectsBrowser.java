@@ -85,7 +85,9 @@ public final class GuiSchematicProjectsBrowser extends GuiSchematicBrowser {
             if (new File(directory, name + ".json").exists()) {
                 return UiTranslations.format("litematica.error.schematic_projects.project_already_exists", name);
             }
-            SchematicProjects.create(directory, name);
+            if (!SchematicProjects.create(directory, name)) {
+                return UiTranslations.format("schematica.message.projects.save_failed", name + ".json");
+            }
             refreshFiles();
             addMessage(MessageType.SUCCESS, "litematica.message.schematic_projects.project_created", name);
             return null;

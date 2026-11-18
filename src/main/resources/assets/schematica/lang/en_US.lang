@@ -380,6 +380,7 @@ schematica.message.edit.no_changes=No changes were made.
 schematica.message.edit.placement_deleted=Deleted %s blocks
 schematica.message.edit.placement_delete_failed=Deletion task failed
 schematica.message.projects.no_previous_paste=No previous pasted version known, skipping delete
+schematica.message.projects.save_failed=Could not write the project file %s
 schematica.key.printerWorkingSwitch=printerWorkingSwitch
 schematica.key.printerWorkingSwitch.comment=Turn the printer on or off. Servers with Schematica Plus can forbid printing (printerEnabled).
 schematica.printer.name=Printer
