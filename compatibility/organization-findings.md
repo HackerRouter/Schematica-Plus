@@ -975,3 +975,9 @@ Source [b1ca4b5108](https://github.com/GTNewHorizons/Hardcore-Ender-Expansion/tr
 - [BlockEndermanHead.onBlockPlacedBy](https://github.com/GTNewHorizons/Hardcore-Ender-Expansion/blob/b1ca4b5108db8d7163f8d25490c3ae4a31918c1d/src/main/java/chylex/hee/block/BlockEndermanHead.java#L75) depends on placement orientation. Exercise the printer with a rotated schematic.
 - [BlockEssenceAltar.getPickBlock](https://github.com/GTNewHorizons/Hardcore-Ender-Expansion/blob/b1ca4b5108db8d7163f8d25490c3ae4a31918c1d/src/main/java/chylex/hee/block/BlockEssenceAltar.java#L81) queries world state when selecting an item. Compare the materials list against the placed variant.
 - [DragonAchievementManager.readFromNBT](https://github.com/GTNewHorizons/Hardcore-Ender-Expansion/blob/b1ca4b5108db8d7163f8d25490c3ae4a31918c1d/src/main/java/chylex/hee/entity/boss/dragon/managers/DragonAchievementManager.java#L93) accesses `___timer`. Compare those fields after capture, transform and restore.
+
+### HelpFixer
+
+Source [bd0603fd84](https://github.com/GTNewHorizons/HelpFixer/tree/bd0603fd84fe7e2a017b9919c28437ff3e9a2b69) · 1 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- No direct match in the listed checks. Mod entry point: [HelpFixer](https://github.com/GTNewHorizons/HelpFixer/blob/bd0603fd84fe7e2a017b9919c28437ff3e9a2b69/src/main/java/com/matthewprenger/helpfixer/HelpFixer.java#L23). Indirect effects from dependencies, injection, configuration and server rules remain open.
