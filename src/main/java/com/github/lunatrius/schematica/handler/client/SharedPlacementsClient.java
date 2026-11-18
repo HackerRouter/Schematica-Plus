@@ -250,7 +250,9 @@ public final class SharedPlacementsClient {
         if (dismiss) dismissed.add(id);
         SchematicWorld world = loaded(id);
         if (world != null) Placements.remove(world);
-        modifying.remove(id);
+        if (modifying.remove(id) && dismiss) {
+            PacketHandler.INSTANCE.sendToServer(new MessageSharedRequest(MessageSharedRequest.Operation.CANCEL, id, null));
+        }
         revision++;
     }
 
