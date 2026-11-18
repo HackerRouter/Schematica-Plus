@@ -2223,3 +2223,9 @@ Source [3415dc0b50](https://github.com/GTNewHorizons/WirelessCraftingTerminal/tr
 
 - Check tile serialization against `TileNBTCompat`. 6 source file(s) contain matching declarations, including [ContainerWirelessCraftingTerminal.writeToNBT](https://github.com/GTNewHorizons/WirelessCraftingTerminal/blob/3415dc0b50506885e2aebd83a8c9116cdbe27787/src/main/java/net/p455w0rd/wirelesscraftingterminal/common/container/ContainerWirelessCraftingTerminal.java#L314).
 - [WCTInventoryBooster.readFromNBT](https://github.com/GTNewHorizons/WirelessCraftingTerminal/blob/3415dc0b50506885e2aebd83a8c9116cdbe27787/src/main/java/net/p455w0rd/wirelesscraftingterminal/common/inventory/WCTInventoryBooster.java#L103) accesses `Slot`. Compare those fields after capture, transform and restore.
+
+### WirelessRedstone-CBE
+
+Source [b7b3fe7588](https://github.com/GTNewHorizons/WirelessRedstone-CBE/tree/b7b3fe758805f0eb0c8c50e6435c2a3a9e51105d) · 74 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- No direct match in the listed checks. Mod entry point: [WirelessRedstoneAddons](https://github.com/GTNewHorizons/WirelessRedstone-CBE/blob/b7b3fe758805f0eb0c8c50e6435c2a3a9e51105d/src/main/java/codechicken/wirelessredstone/addons/WirelessRedstoneAddons.java#L15). Indirect effects from dependencies, injection, configuration and server rules remain open.
