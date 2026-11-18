@@ -1045,6 +1045,7 @@ Source [3e94b249d4](https://github.com/GTNewHorizons/IguanaTweaksTConstruct/tree
 Source [b52b7bd473](https://github.com/GTNewHorizons/Infernal-Mobs/tree/b52b7bd47311f640bca30ec117a4c32d26641c64) · 44 tracked Java, Scala or Kotlin files outside test/example directories.
 
 - No direct match in the listed checks. Mod entry point: [InfernalMobsCore](https://github.com/GTNewHorizons/Infernal-Mobs/blob/b52b7bd47311f640bca30ec117a4c32d26641c64/src/main/java/atomicstryker/infernalmobs/common/InfernalMobsCore.java#L93). Indirect effects from dependencies, injection, configuration and server rules remain open.
+- [RendererBossGlow](https://github.com/GTNewHorizons/Infernal-Mobs/blob/b52b7bd47311f640bca30ec117a4c32d26641c64/src/main/java/atomicstryker/infernalmobs/client/RendererBossGlow.java#L20) accepts `RenderWorldLastEvent`. Exercise the schematic overlay and hotkeys while the corresponding client feature is enabled.
 
 ### InfoHUD
 
