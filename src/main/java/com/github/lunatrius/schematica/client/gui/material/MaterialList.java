@@ -55,6 +55,7 @@ public final class MaterialList {
     private long layerRevision;
     private Object source;
     private boolean placementEnabled;
+    private int contentRevision;
     private List<String> transforms = Collections.emptyList();
     private int revision;
     private int ticks;
@@ -220,7 +221,7 @@ public final class MaterialList {
         if (renderLayers && layerRevision != RenderLayerSettings.RANGE.revision()) return true;
         if (area != null || kind == Kind.COMBINED) return !Arrays.equals(geometry, geometry());
         return placementEnabled != schematic.isEnabled() || !Arrays.equals(geometry, geometry()) || source != schematic.getSchematic()
-            || !transforms.equals(schematic.transformOperations);
+            || !transforms.equals(schematic.transformOperations) || contentRevision != schematic.contentRevision();
     }
 
     /** reCreateMaterialList: starts a new count; the old entries are dropped. */
@@ -257,6 +258,7 @@ public final class MaterialList {
         } else {
             source = schematic.getSchematic();
             placementEnabled = schematic.isEnabled();
+            contentRevision = schematic.contentRevision();
             transforms = new ArrayList<>(schematic.transformOperations);
             scan = new MaterialScan(schematic, openedWorld, mc.thePlayer, renderLayers);
         }
