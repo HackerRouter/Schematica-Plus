@@ -17,6 +17,9 @@ import net.minecraft.nbt.NBTTagCompound;
 import com.github.lunatrius.schematica.SchematicaPlus;
 import com.github.lunatrius.schematica.client.cloud.CloudCache;
 import com.github.lunatrius.schematica.client.util.InfoUtils;
+import com.github.lunatrius.schematica.client.world.Placements;
+import com.github.lunatrius.schematica.client.world.SchematicLibrary;
+import com.github.lunatrius.schematica.client.world.SchematicSourceData;
 import com.github.lunatrius.schematica.cloud.CloudCatalog;
 import com.github.lunatrius.schematica.cloud.CloudFile;
 import com.github.lunatrius.schematica.cloud.CloudPath;
@@ -112,6 +115,7 @@ public final class CloudClient {
                 if (!CloudStorage.hash(bytes).equals(file.hash)) throw new IOException("The downloaded file does not match");
                 write(target, bytes);
                 saved = target;
+                refreshLoaded(target);
                 revision++;
             } catch (IOException | RuntimeException e) {
                 Reference.logger.warn("Could not store the downloaded schematic {}", file.path, e);
@@ -119,6 +123,15 @@ public final class CloudClient {
             }
             done.accept(saved);
         }, null);
+    }
+
+    private static void refreshLoaded(File target) {
+        try {
+            SchematicLibrary.Source<SchematicSourceData> source = Placements.LIBRARY.find(target);
+            if (source != null && !source.memory() && !source.data().unsaved()) Placements.reloadSource(source);
+        } catch (IOException | RuntimeException e) {
+            Reference.logger.warn("Could not reload the downloaded schematic {}", target, e);
+        }
     }
 
     static void write(File target, byte[] bytes) throws IOException {
