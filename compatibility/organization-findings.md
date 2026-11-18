@@ -1190,3 +1190,12 @@ Source [084e8818be](https://github.com/GTNewHorizons/MalisisDoors/tree/084e8818b
 - [BlockMixer.onBlockPlacedBy](https://github.com/GTNewHorizons/MalisisDoors/blob/084e8818be08e30d6b4b23e10b7f1607ff32d707/src/main/java/net/malisis/doors/block/BlockMixer.java#L69) depends on placement orientation. Exercise the printer with a rotated schematic.
 - [MixedBlock.getPickBlock](https://github.com/GTNewHorizons/MalisisDoors/blob/084e8818be08e30d6b4b23e10b7f1607ff32d707/src/main/java/net/malisis/doors/block/MixedBlock.java#L89) queries world state when selecting an item. Compare the materials list against the placed variant.
 - [DoorEventHandlerClient.onClientInteract](https://github.com/GTNewHorizons/MalisisDoors/blob/084e8818be08e30d6b4b23e10b7f1607ff32d707/src/main/java/net/malisis/doors/event/DoorEventHandlerClient.java#L52) can cancel the interaction. Verify the printer on a server with the handler enabled.
+
+### Mantle
+
+Source [b5157be91e](https://github.com/GTNewHorizons/Mantle/tree/b5157be91e303cd0d7022078ea27bace20eb1eb5) · 89 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- Existing Plus lookup in `CoordinateLinks` names [mantle.blocks.abstracts.MultiServantLogic](https://github.com/GTNewHorizons/Mantle/blob/b5157be91e303cd0d7022078ea27bace20eb1eb5/src/main/java/mantle/blocks/abstracts/MultiServantLogic.java#L1) (1 matching upstream source names). Check reflected members and client state with the deployed versions.
+- Check tile serialization against `TileNBTCompat`. 3 source file(s) contain matching declarations, including [ExpandableInventoryLogic.readFromNBT](https://github.com/GTNewHorizons/Mantle/blob/b5157be91e303cd0d7022078ea27bace20eb1eb5/src/main/java/mantle/blocks/abstracts/ExpandableInventoryLogic.java#L96).
+- Check printer placement against `SchematicPrinter`. 2 source file(s) contain matching declarations, including [InventoryBlock.onBlockPlaced](https://github.com/GTNewHorizons/Mantle/blob/b5157be91e303cd0d7022078ea27bace20eb1eb5/src/main/java/mantle/blocks/abstracts/InventoryBlock.java#L114).
+- [ExpandableInventoryLogic.readFromNBT](https://github.com/GTNewHorizons/Mantle/blob/b5157be91e303cd0d7022078ea27bace20eb1eb5/src/main/java/mantle/blocks/abstracts/ExpandableInventoryLogic.java#L96) accesses `InvName`, `Items`, `Slot`. Compare those fields after capture, transform and restore.
