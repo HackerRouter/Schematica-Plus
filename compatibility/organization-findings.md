@@ -108,3 +108,9 @@ Source [996fb54cb0](https://github.com/GTNewHorizons/Angelica/tree/996fb54cb05e2
 - Check preview rendering against `RendererSchematicChunk`. 5 source file(s) contain matching declarations, including [ClipPlaneTestRenderer.renderTileEntityAt](https://github.com/GTNewHorizons/Angelica/blob/996fb54cb05e256ea6039f4e2c8457a221a179b7/src/main/java/com/gtnewhorizons/angelica/rendering/ClipPlaneTestRenderer.java#L28).
 - Check printer placement against `SchematicPrinter`. 1 source file(s) contain matching declarations, including [BlockTest.onBlockPlaced](https://github.com/GTNewHorizons/Angelica/blob/996fb54cb05e256ea6039f4e2c8457a221a179b7/src/main/java/com/gtnewhorizons/angelica/common/BlockTest.java#L29).
 - Check world or renderer transformation alongside the schematic world and render pipeline. 59 source file(s) contain matching declarations, including [MixinEntityRenderer.EntityRenderer](https://github.com/GTNewHorizons/Angelica/blob/996fb54cb05e256ea6039f4e2c8457a221a179b7/src/mixin/java/com/gtnewhorizons/angelica/mixins/early/angelica/MixinEntityRenderer.java#L25).
+
+### AngerMod
+
+Source [c43058ffce](https://github.com/GTNewHorizons/AngerMod/tree/c43058ffce4ddc54d1139f8e88e83fba376ccfcb) · 13 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- Check interaction events against `SchematicPrinter`. 1 source file(s) contain matching declarations, including [PlayerSpawnProtection.onInteractEvent](https://github.com/GTNewHorizons/AngerMod/blob/c43058ffce4ddc54d1139f8e88e83fba376ccfcb/src/main/java/com/github/namikon/angermod/events/PlayerSpawnProtection.java#L152).
