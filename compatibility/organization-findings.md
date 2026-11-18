@@ -378,3 +378,9 @@ Source [172d79e04a](https://github.com/GTNewHorizons/Botanic-horizons/tree/172d7
 Source [1be8dbf860](https://github.com/GTNewHorizons/BQ3-Thermos-patch/tree/1be8dbf8602569fd406534104486f83b926e9d26) · 2 tracked Java, Scala or Kotlin files outside test/example directories.
 
 - No direct match in the listed checks. Indirect effects from dependencies, injection, configuration and server rules remain open.
+
+### BugTorch
+
+Source [a0fd8d779f](https://github.com/GTNewHorizons/BugTorch/tree/a0fd8d779f443d439300e32f5ad76c79ff37f8dd) · 108 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- Check world or renderer transformation alongside the schematic world and render pipeline. 3 source file(s) contain matching declarations, including [MixinWorld.World](https://github.com/GTNewHorizons/BugTorch/blob/a0fd8d779f443d439300e32f5ad76c79ff37f8dd/src/main/java/jss/bugtorch/mixins/early/minecraft/fastrandom/MixinWorld.java#L10).
