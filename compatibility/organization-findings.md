@@ -1760,3 +1760,10 @@ Source [b2cfe3bb5a](https://github.com/GTNewHorizons/SignPosts/tree/b2cfe3bb5a4d
 Source [066deb7d9e](https://github.com/GTNewHorizons/SimpleSkinBackport/tree/066deb7d9e38ff046d391a7979742de9aacde753) · 45 tracked Java, Scala or Kotlin files outside test/example directories.
 
 - No direct match in the listed checks. Mod entry point: [SimpleSkinBackport](https://github.com/GTNewHorizons/SimpleSkinBackport/blob/066deb7d9e38ff046d391a7979742de9aacde753/src/main/java/roadhog360/simpleskinbackport/SimpleSkinBackport.java#L17). Indirect effects from dependencies, injection, configuration and server rules remain open.
+
+### SleepingBags
+
+Source [12c1b5deb9](https://github.com/GTNewHorizons/SleepingBags/tree/12c1b5deb9c3c80a61721b13b4661baebbc7ed73) · 12 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- Check preview rendering against `RendererSchematicChunk`. 1 source file(s) contain matching declarations, including [BlockRenderer.renderWorldBlock](https://github.com/GTNewHorizons/SleepingBags/blob/12c1b5deb9c3c80a61721b13b4661baebbc7ed73/src/main/java/ru/npo6ka/sleepingbag/BlockRenderer.java#L34).
+- Check printer placement against `SchematicPrinter`. 1 source file(s) contain matching declarations, including [ItemSleepingBag.onItemUse](https://github.com/GTNewHorizons/SleepingBags/blob/12c1b5deb9c3c80a61721b13b4661baebbc7ed73/src/main/java/ru/npo6ka/sleepingbag/items/ItemSleepingBag.java#L45).
