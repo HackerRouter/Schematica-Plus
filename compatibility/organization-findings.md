@@ -2350,3 +2350,7 @@ This client companion registers a town interface. Placement permissions require 
 ### NotEnoughProduction
 
 The desktop production planner launches outside Minecraft. There is no Forge co-loading requirement for this launcher. [Lwjgl3Launcher.java at 321b337a4e](https://github.com/GTNewHorizons/NotEnoughProduction/blob/321b337a4eb16dfff2587db42897da722fe40632/lwjgl3/src/main/java/com/bigbass/nep/lwjgl3/Lwjgl3Launcher.java)
+
+### Prism
+
+This is a Sponge plugin. Server rollback semantics belong to the Sponge deployment; a stock Forge 1.7.10 client cannot load this entry point. [Prism.java at c2fbbf8cbf](https://github.com/GTNewHorizons/Prism/blob/c2fbbf8cbf6fa9acbc9054a3c4dfcd64dc56c415/src/main/java/com/helion3/prism/Prism.java)
