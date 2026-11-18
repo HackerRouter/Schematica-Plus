@@ -1404,3 +1404,10 @@ Source [130483def6](https://github.com/GTNewHorizons/NotEnoughEnergistics/tree/1
 Source [b80765bfc8](https://github.com/GTNewHorizons/NotEnoughIds/tree/b80765bfc817499711da0e1fb04f01d1141b3179) · 43 tracked Java, Scala or Kotlin files outside test/example directories.
 
 - Check world or renderer transformation alongside the schematic world and render pipeline. 4 source file(s) contain matching declarations, including [MixinWorld.World](https://github.com/GTNewHorizons/NotEnoughIds/blob/b80765bfc817499711da0e1fb04f01d1141b3179/src/main/java/com/gtnewhorizons/neid/mixins/early/minecraft/MixinWorld.java#L11).
+
+### NotEnoughItems
+
+Source [6b7e465306](https://github.com/GTNewHorizons/NotEnoughItems/tree/6b7e465306810ad11d2413214077237798be13a7) · 303 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- Existing Plus lookup in `NeiBridge` names [codechicken.nei.bookmark.BookmarkGrid](https://github.com/GTNewHorizons/NotEnoughItems/blob/6b7e465306810ad11d2413214077237798be13a7/src/main/java/codechicken/nei/bookmark/BookmarkGrid.java#L1) (1 matching upstream source names). Check reflected members and client state with the deployed versions.
+- Check printer placement against `SchematicPrinter`. 1 source file(s) contain matching declarations, including [ItemMobSpawner.onItemUse](https://github.com/GTNewHorizons/NotEnoughItems/blob/6b7e465306810ad11d2413214077237798be13a7/src/main/java/codechicken/nei/ItemMobSpawner.java#L67).
