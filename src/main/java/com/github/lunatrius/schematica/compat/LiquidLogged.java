@@ -34,6 +34,8 @@ public final class LiquidLogged {
 
     public static boolean present() { return resolve(); }
 
+    public static boolean storable(int x, int y, int z) { return y >= MIN_Y && y <= MAX_Y; }
+
     public static String fluid(IBlockAccess world, int x, int y, int z) {
         if (world == null || y < MIN_Y || y > MAX_Y || !resolve()) return null;
         try {

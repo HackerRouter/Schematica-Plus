@@ -57,7 +57,11 @@ public final class WorldMoveJob extends WorldEditTask {
                 Block block = world.getBlock(x, y, z); int meta = world.getBlockMetadata(x, y, z);
                 TileEntity tile = world.getTileEntity(x, y, z);
                 if (block.hasTileEntity(meta) && tile == null) throw new IllegalArgumentException("Missing tile entity at " + x + ", " + y + ", " + z);
-                return new Cell(block, meta, tile == null ? null : NBTHelper.writeTileEntityToCompound(tile), tile, LiquidLogged.fluid(world, x, y, z));
+                String fluid = LiquidLogged.fluid(world, x, y, z);
+                if (fluid != null && inSource(x, y, z) && !LiquidLogged.storable(x + dx, y + dy, z + dz)) {
+                    throw new IllegalArgumentException("Cannot store the fluid " + fluid + " moved from " + x + ", " + y + ", " + z);
+                }
+                return new Cell(block, meta, tile == null ? null : NBTHelper.writeTileEntityToCompound(tile), tile, fluid);
             }
             @Override public void write(int x, int y, int z, Cell cell) {
                 writer.setBlock(world, x, y, z, cell.block, cell.meta);
@@ -100,6 +104,12 @@ public final class WorldMoveJob extends WorldEditTask {
     @Override public void validate(World world) {
         SchematicLimits.worldBounds(world, selection.minX, selection.minY, selection.minZ, selection.maxX, selection.maxY, selection.maxZ);
         SchematicLimits.worldBounds(world, x, y, z, (long) selection.maxX + dx, (long) selection.maxY + dy, (long) selection.maxZ + dz);
+    }
+
+    private boolean inSource(int wx, int wy, int wz) {
+        int x = wx - selection.minX, y = wy - selection.minY, z = wz - selection.minZ;
+        int width = selection.maxX - selection.minX + 1, length = selection.maxZ - selection.minZ + 1;
+        return x >= 0 && x < width && y >= 0 && y <= selection.maxY - selection.minY && z >= 0 && z < length && mask.get(x + width * (z + length * y));
     }
 
     private boolean contains(Entity entity) {
