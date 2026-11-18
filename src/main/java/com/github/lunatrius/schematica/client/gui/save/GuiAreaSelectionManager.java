@@ -171,9 +171,9 @@ public final class GuiAreaSelectionManager extends UiScreen {
                 AreaSelections.capture();
                 action.accept(name);
                 AreaSelections.apply();
-                AreaSelections.saveCurrent();
+                boolean saved = AreaSelections.saveCurrent();
                 refresh();
-                return null;
+                return saved ? null : UiTranslations.format("schematica.ui.area.persistence_failed");
             } catch (IllegalArgumentException | ArithmeticException e) {
                 return error(e);
             }

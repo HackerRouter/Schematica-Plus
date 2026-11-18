@@ -128,8 +128,15 @@ public final class AreaSelectionStore {
 
     private static String prefix(Area area) { return area.folder().isEmpty() ? "" : area.folder() + "/"; }
 
+    private static final int MAX_NAME_BYTES = 200;
+
     private static String base(Area area) {
         String base = AreaSelectionLibrary.safeFileName(area.name());
+        int end = base.length();
+        while (end > 0 && base.substring(0, end).getBytes(StandardCharsets.UTF_8).length > MAX_NAME_BYTES) {
+            end = Character.isLowSurrogate(base.charAt(end - 1)) && end > 1 ? end - 2 : end - 1;
+        }
+        base = base.substring(0, end).trim();
         return base.isEmpty() ? "selection" : base;
     }
 

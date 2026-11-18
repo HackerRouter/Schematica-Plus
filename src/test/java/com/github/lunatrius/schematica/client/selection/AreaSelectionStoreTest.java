@@ -37,6 +37,17 @@ public class AreaSelectionStoreTest {
     private File settings() { return new File(temporary.getRoot(), "AreaSelection.json"); }
     private File areas(String world) { return new File(temporary.getRoot(), world); }
 
+    @Test public void longMultibyteNamesStillFitAFileName() throws Exception {
+        AreaSelectionStore store = new AreaSelectionStore(settings(), areas("long"), "long|0");
+        StringBuilder name = new StringBuilder();
+        for (int i = 0; i < 90; i++) name.append('\u697c');
+        store.library().create(name.toString(), new Vector3i(), new Vector3i());
+        store.save();
+        boolean found = false;
+        for (Area area : new AreaSelectionStore(settings(), areas("long"), "long|0").library().areas()) found |= area.name().equals(name.toString());
+        assertTrue(found);
+    }
+
     @Test public void removingOneOfTwoNamesSharingAFileSavesAndKeepsTheOther() throws Exception {
         AreaSelectionStore store = new AreaSelectionStore(settings(), areas("names"), "names|0");
         Area first = store.library().create("A:B", new Vector3i(), new Vector3i());
