@@ -1900,3 +1900,9 @@ Source [5f78b1fd56](https://github.com/GTNewHorizons/Tempora/tree/5f78b1fd5655ed
 - Check tile serialization against `TileNBTCompat`. 1 source file(s) contain matching declarations, including [TemporaRegionRegistry.readFromNBT](https://github.com/GTNewHorizons/Tempora/blob/5f78b1fd5655ed2aae2e1adf9ed94d17e79d3ac3/src/main/java/com/colen/tempora/regions/TemporaRegionRegistry.java#L238).
 - Check world or renderer transformation alongside the schematic world and render pipeline. 2 source file(s) contain matching declarations, including [MixinChunk.Chunk](https://github.com/GTNewHorizons/Tempora/blob/5f78b1fd5655ed2aae2e1adf9ed94d17e79d3ac3/src/main/java/com/colen/tempora/mixins/MixinChunk.java#L17).
 - [TemporaRegionRegistry.readFromNBT](https://github.com/GTNewHorizons/Tempora/blob/5f78b1fd5655ed2aae2e1adf9ed94d17e79d3ac3/src/main/java/com/colen/tempora/regions/TemporaRegionRegistry.java#L238) accesses `regions`. Compare those fields after capture, transform and restore.
+
+### TerrainHorizons
+
+Source [9521448234](https://github.com/GTNewHorizons/TerrainHorizons/tree/95214482343a7f2f7a28ba41e72ae37a665615ef) · 48 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- No direct match in the listed checks. Mod entry point: [TerrainHorizons](https://github.com/GTNewHorizons/TerrainHorizons/blob/95214482343a7f2f7a28ba41e72ae37a665615ef/src/main/java/com/gtnewhorizons/terrainhorizons/TerrainHorizons.java#L15). Indirect effects from dependencies, injection, configuration and server rules remain open.
