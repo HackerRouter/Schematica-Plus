@@ -1199,3 +1199,10 @@ Source [b5157be91e](https://github.com/GTNewHorizons/Mantle/tree/b5157be91e303cd
 - Check tile serialization against `TileNBTCompat`. 3 source file(s) contain matching declarations, including [ExpandableInventoryLogic.readFromNBT](https://github.com/GTNewHorizons/Mantle/blob/b5157be91e303cd0d7022078ea27bace20eb1eb5/src/main/java/mantle/blocks/abstracts/ExpandableInventoryLogic.java#L96).
 - Check printer placement against `SchematicPrinter`. 2 source file(s) contain matching declarations, including [InventoryBlock.onBlockPlaced](https://github.com/GTNewHorizons/Mantle/blob/b5157be91e303cd0d7022078ea27bace20eb1eb5/src/main/java/mantle/blocks/abstracts/InventoryBlock.java#L114).
 - [ExpandableInventoryLogic.readFromNBT](https://github.com/GTNewHorizons/Mantle/blob/b5157be91e303cd0d7022078ea27bace20eb1eb5/src/main/java/mantle/blocks/abstracts/ExpandableInventoryLogic.java#L96) accesses `InvName`, `Items`, `Slot`. Compare those fields after capture, transform and restore.
+
+### MaterialLib
+
+Source [21f2e4f33c](https://github.com/GTNewHorizons/MaterialLib/tree/21f2e4f33cc3e5e358c69771cda6db30410108c6) · 90 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- Check preview rendering against `RendererSchematicChunk`. 1 source file(s) contain matching declarations, including [ShapeBlockRenderingHandler.renderWorldBlock](https://github.com/GTNewHorizons/MaterialLib/blob/21f2e4f33cc3e5e358c69771cda6db30410108c6/src/main/java/com/ruling_0/materiallib/api/ShapeBlockRenderingHandler.java#L122).
+- Check printer placement against `SchematicPrinter`. 2 source file(s) contain matching declarations, including [ItemUseCallback.onItemUse](https://github.com/GTNewHorizons/MaterialLib/blob/21f2e4f33cc3e5e358c69771cda6db30410108c6/src/main/java/com/ruling_0/materiallib/api/ItemUseCallback.java#L13).
