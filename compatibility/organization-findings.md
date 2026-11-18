@@ -655,3 +655,13 @@ Source [3d90755aea](https://github.com/GTNewHorizons/Electro-Magic-Tools/tree/3d
 - Check interaction events against `SchematicPrinter`. 1 source file(s) contain matching declarations, including [EMTEventHandler.createCloud](https://github.com/GTNewHorizons/Electro-Magic-Tools/blob/3d90755aea0cf5bb32e500d0d36726590f38258f/src/main/java/emt/util/EMTEventHandler.java#L81).
 - [BlockBaseContainer.onBlockPlacedBy](https://github.com/GTNewHorizons/Electro-Magic-Tools/blob/3d90755aea0cf5bb32e500d0d36726590f38258f/src/main/java/emt/block/BlockBaseContainer.java#L123) depends on placement orientation. Exercise the printer with a rotated schematic.
 - [TileEntityEMT.readFromNBT](https://github.com/GTNewHorizons/Electro-Magic-Tools/blob/3d90755aea0cf5bb32e500d0d36726590f38258f/src/main/java/emt/tile/TileEntityEMT.java#L14) accesses `facing`, `isOn`. Compare those fields after capture, transform and restore.
+
+### EnderCore
+
+Source [3763a06c5e](https://github.com/GTNewHorizons/EnderCore/tree/3763a06c5ee5ea658f399559c4249932e7f9eb60) · 169 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- Check tile serialization against `TileNBTCompat`. 2 source file(s) contain matching declarations, including [TileEntityEnder.readFromNBT](https://github.com/GTNewHorizons/EnderCore/blob/3763a06c5ee5ea658f399559c4249932e7f9eb60/src/main/java/com/enderio/core/common/TileEntityEnder.java#L82).
+- Check preview rendering against `RendererSchematicChunk`. 4 source file(s) contain matching declarations, including [DirectionalModelRenderer.renderTileEntityAt](https://github.com/GTNewHorizons/EnderCore/blob/3763a06c5ee5ea658f399559c4249932e7f9eb60/src/main/java/com/enderio/core/client/render/DirectionalModelRenderer.java#L98).
+- Check material picking against `BlockToItemStack`. 1 source file(s) contain matching declarations, including [BlockEnder.getPickBlock](https://github.com/GTNewHorizons/EnderCore/blob/3763a06c5ee5ea658f399559c4249932e7f9eb60/src/main/java/com/enderio/core/common/BlockEnder.java#L141).
+- Check interaction events against `SchematicPrinter`. 1 source file(s) contain matching declarations, including [RightClickCropHandler.handleCropRightClick](https://github.com/GTNewHorizons/EnderCore/blob/3763a06c5ee5ea658f399559c4249932e7f9eb60/src/main/java/com/enderio/core/common/handlers/RightClickCropHandler.java#L65).
+- [RightClickCropHandler.handleCropRightClick](https://github.com/GTNewHorizons/EnderCore/blob/3763a06c5ee5ea658f399559c4249932e7f9eb60/src/main/java/com/enderio/core/common/handlers/RightClickCropHandler.java#L65) can cancel the interaction. Verify the printer on a server with the handler enabled.
