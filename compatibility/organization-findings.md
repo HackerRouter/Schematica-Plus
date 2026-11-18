@@ -1231,3 +1231,10 @@ Source [191e068da0](https://github.com/GTNewHorizons/minecraft-prometheus-export
 Source [032eb9f5b0](https://github.com/GTNewHorizons/Minetweaker-Gregtech-5-Addon/tree/032eb9f5b0c2cfdde41b2a130540c4cbceb62483) · 67 tracked Java, Scala or Kotlin files outside test/example directories.
 
 - No direct match in the listed checks. Mod entry point: [GTTweaker](https://github.com/GTNewHorizons/Minetweaker-Gregtech-5-Addon/blob/032eb9f5b0c2cfdde41b2a130540c4cbceb62483/src/main/java/gttweaker/GTTweaker.java#L74). Indirect effects from dependencies, injection, configuration and server rules remain open.
+
+### Mobs-Info
+
+Source [21174e0cd0](https://github.com/GTNewHorizons/Mobs-Info/tree/21174e0cd0310843706de770a7854737b5b32b84) · 128 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- Check tile serialization against `TileNBTCompat`. 1 source file(s) contain matching declarations, including [PlayerDataManager.readFromNBT](https://github.com/GTNewHorizons/Mobs-Info/blob/21174e0cd0310843706de770a7854737b5b32b84/src/main/java/com/kuba6000/mobsinfo/savedata/PlayerDataManager.java#L55).
+- [PlayerDataManager.readFromNBT](https://github.com/GTNewHorizons/Mobs-Info/blob/21174e0cd0310843706de770a7854737b5b32b84/src/main/java/com/kuba6000/mobsinfo/savedata/PlayerDataManager.java#L55) accesses `players`, `uuid`, `data`. Compare those fields after capture, transform and restore.
