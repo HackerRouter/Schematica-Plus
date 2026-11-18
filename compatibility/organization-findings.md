@@ -2210,3 +2210,9 @@ Source [5b607f8a0c](https://github.com/GTNewHorizons/WarpTheory/tree/5b607f8a0c3
 Source [fcbd3c0e70](https://github.com/GTNewHorizons/WAWLA/tree/fcbd3c0e70a59389d9013d6e629a2ed3a295f719) · 18 tracked Java, Scala or Kotlin files outside test/example directories.
 
 - No direct match in the listed checks. Mod entry point: [Wawla](https://github.com/GTNewHorizons/WAWLA/blob/fcbd3c0e70a59389d9013d6e629a2ed3a295f719/src/main/java/net/darkhax/wawla/Wawla.java#L14). Indirect effects from dependencies, injection, configuration and server rules remain open.
+
+### WDMla
+
+Source [acd292a6bf](https://github.com/GTNewHorizons/WDMla/tree/acd292a6bf6f4b06c02f055e8abe8bbfe26880b1) · 348 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- No direct match in the listed checks. Mod entry point: [WDMla](https://github.com/GTNewHorizons/WDMla/blob/acd292a6bf6f4b06c02f055e8abe8bbfe26880b1/src/main/java/com/gtnewhorizons/wdmla/WDMla.java#L24). Indirect effects from dependencies, injection, configuration and server rules remain open.
