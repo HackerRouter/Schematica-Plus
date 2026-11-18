@@ -952,3 +952,12 @@ Source [fcc5c9b444](https://github.com/GTNewHorizons/GTNHLib/tree/fcc5c9b444359f
 Source [877662ac37](https://github.com/GTNewHorizons/Guide-API/tree/877662ac37b76ec0bf57169ab51f0c0c8728cea5) · 75 tracked Java, Scala or Kotlin files outside test/example directories.
 
 - Check printer placement against `SchematicPrinter`. 1 source file(s) contain matching declarations, including [ItemGuideBook.onItemUse](https://github.com/GTNewHorizons/Guide-API/blob/877662ac37b76ec0bf57169ab51f0c0c8728cea5/src/main/java/amerifrance/guideapi/items/ItemGuideBook.java#L58).
+
+### GuideNH
+
+Source [8bdffd5e94](https://github.com/GTNewHorizons/GuideNH/tree/8bdffd5e94bed3c089d1fcadbe8706e3bb789643) · 1503 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- Check tile serialization against `TileNBTCompat`. 1 source file(s) contain matching declarations, including [GuidebookScenePreviewPlayerEntity.readFromNBT](https://github.com/GTNewHorizons/GuideNH/blob/8bdffd5e94bed3c089d1fcadbe8706e3bb789643/src/main/java/com/hfstudio/guidenh/guide/internal/scene/GuidebookScenePreviewPlayerEntity.java#L49).
+- Check preview rendering against `RendererSchematicChunk`. 1 source file(s) contain matching declarations, including [ForgeMultipartHelpers.renderWorldBlock](https://github.com/GTNewHorizons/GuideNH/blob/8bdffd5e94bed3c089d1fcadbe8706e3bb789643/src/main/java/com/hfstudio/guidenh/integration/forgemultipart/ForgeMultipartHelpers.java#L120).
+- Check world or renderer transformation alongside the schematic world and render pipeline. 1 source file(s) contain matching declarations, including [MixinTessellatorSceneExportCapture.Tessellator](https://github.com/GTNewHorizons/GuideNH/blob/8bdffd5e94bed3c089d1fcadbe8706e3bb789643/src/main/java/com/hfstudio/guidenh/mixins/early/minecraft/MixinTessellatorSceneExportCapture.java#L16).
+- [GuidebookScenePreviewPlayerEntity.readFromNBT](https://github.com/GTNewHorizons/GuideNH/blob/8bdffd5e94bed3c089d1fcadbe8706e3bb789643/src/main/java/com/hfstudio/guidenh/guide/internal/scene/GuidebookScenePreviewPlayerEntity.java#L49) accesses `Pos`, `Motion`, `Rotation`, `FallDistance`. Compare those fields after capture, transform and restore.
