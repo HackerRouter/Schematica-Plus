@@ -2229,3 +2229,9 @@ Source [3415dc0b50](https://github.com/GTNewHorizons/WirelessCraftingTerminal/tr
 Source [b7b3fe7588](https://github.com/GTNewHorizons/WirelessRedstone-CBE/tree/b7b3fe758805f0eb0c8c50e6435c2a3a9e51105d) · 74 tracked Java, Scala or Kotlin files outside test/example directories.
 
 - No direct match in the listed checks. Mod entry point: [WirelessRedstoneAddons](https://github.com/GTNewHorizons/WirelessRedstone-CBE/blob/b7b3fe758805f0eb0c8c50e6435c2a3a9e51105d/src/main/java/codechicken/wirelessredstone/addons/WirelessRedstoneAddons.java#L15). Indirect effects from dependencies, injection, configuration and server rules remain open.
+
+### WitcheryExtras
+
+Source [b603920182](https://github.com/GTNewHorizons/WitcheryExtras/tree/b603920182323cf2be389bd62dbdff1fd39bb8ac) · 59 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- Check world or renderer transformation alongside the schematic world and render pipeline. 1 source file(s) contain matching declarations, including [EntityRendererMixin.EntityRenderer](https://github.com/GTNewHorizons/WitcheryExtras/blob/b603920182323cf2be389bd62dbdff1fd39bb8ac/src/main/java/alkalus/main/mixins/early/minecraft/EntityRendererMixin.java#L14).
