@@ -120,3 +120,9 @@ Source [c43058ffce](https://github.com/GTNewHorizons/AngerMod/tree/c43058ffce4dd
 Source [2e3cb5417e](https://github.com/GTNewHorizons/AntiqueAtlas/tree/2e3cb5417e15d41bf55d28a1201cb3c3035c95e4) · 104 tracked Java, Scala or Kotlin files outside test/example directories.
 
 - Check tile serialization against `TileNBTCompat`. 5 source file(s) contain matching declarations, including [AtlasData.readFromNBT](https://github.com/GTNewHorizons/AntiqueAtlas/blob/2e3cb5417e15d41bf55d28a1201cb3c3035c95e4/src/main/java/hunternif/mc/atlas/core/AtlasData.java#L52).
+
+### AppleCore
+
+Source [238a465948](https://github.com/GTNewHorizons/AppleCore/tree/238a4659486471b05a1179435cfeee9b7fc14c28) · 75 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- Check printer placement against `SchematicPrinter`. 1 source file(s) contain matching declarations, including [EatingSpeedModifier.onItemUse](https://github.com/GTNewHorizons/AppleCore/blob/238a4659486471b05a1179435cfeee9b7fc14c28/AppleCoreExample/EatingSpeedModifier.java#L13).
