@@ -85,3 +85,16 @@ Source [2ecec40599](https://github.com/GTNewHorizons/AMDIForge/tree/2ecec405991e
 Source [94f014b667](https://github.com/GTNewHorizons/AmidstGTNH/tree/94f014b66777fb228c8eef329759f35495da9760) · 89 tracked Java, Scala or Kotlin files outside test/example directories.
 
 - No direct match in the listed checks. Mod entry point: [ForgeAmidst](https://github.com/GTNewHorizons/AmidstGTNH/blob/94f014b66777fb228c8eef329759f35495da9760/src/main/java/sedridor/forgeamidst/ForgeAmidst.java#L44). Indirect effects from dependencies, injection, configuration and server rules remain open.
+
+### amunra
+
+Source [4dcf15f568](https://github.com/GTNewHorizons/amunra/tree/4dcf15f568a84473f987657b2285d63a0e4cbe32) · 302 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- Existing Plus lookup in `BlockMetaTransform` names [de.katzenpapst.amunra.block.BlockARChest](https://github.com/GTNewHorizons/amunra/blob/4dcf15f568a84473f987657b2285d63a0e4cbe32/src/main/java/de/katzenpapst/amunra/block/BlockARChest.java#L1) (3 matching upstream source names). Check reflected members and client state with the deployed versions.
+- Check tile serialization against `TileNBTCompat`. 17 source file(s) contain matching declarations, including [NbtHelper.writeToNBT](https://github.com/GTNewHorizons/amunra/blob/4dcf15f568a84473f987657b2285d63a0e4cbe32/src/main/java/de/katzenpapst/amunra/helper/NbtHelper.java#L16).
+- Check preview rendering against `RendererSchematicChunk`. 11 source file(s) contain matching declarations, including [BlockRendererARChest.renderWorldBlock](https://github.com/GTNewHorizons/amunra/blob/4dcf15f568a84473f987657b2285d63a0e4cbe32/src/main/java/de/katzenpapst/amunra/client/renderer/BlockRendererARChest.java#L28).
+- Check material picking against `BlockToItemStack`. 10 source file(s) contain matching declarations, including [BlockBasicMeta.getPickBlock](https://github.com/GTNewHorizons/amunra/blob/4dcf15f568a84473f987657b2285d63a0e4cbe32/src/main/java/de/katzenpapst/amunra/block/BlockBasicMeta.java#L245).
+- Check printer placement against `SchematicPrinter`. 12 source file(s) contain matching declarations, including [BlockARChest.onBlockPlacedBy](https://github.com/GTNewHorizons/amunra/blob/4dcf15f568a84473f987657b2285d63a0e4cbe32/src/main/java/de/katzenpapst/amunra/block/BlockARChest.java#L172).
+- [BlockARChest.onBlockPlacedBy](https://github.com/GTNewHorizons/amunra/blob/4dcf15f568a84473f987657b2285d63a0e4cbe32/src/main/java/de/katzenpapst/amunra/block/BlockARChest.java#L172) depends on placement orientation. Exercise the printer with a rotated schematic.
+- [BlockBasicMeta.getPickBlock](https://github.com/GTNewHorizons/amunra/blob/4dcf15f568a84473f987657b2285d63a0e4cbe32/src/main/java/de/katzenpapst/amunra/block/BlockBasicMeta.java#L245) queries world state when selecting an item. Compare the materials list against the placed variant.
+- [NbtHelper.writeToNBT](https://github.com/GTNewHorizons/amunra/blob/4dcf15f568a84473f987657b2285d63a0e4cbe32/src/main/java/de/katzenpapst/amunra/helper/NbtHelper.java#L16) accesses `minX`, `minY`, `minZ`, `maxX`. Compare those fields after capture, transform and restore.
