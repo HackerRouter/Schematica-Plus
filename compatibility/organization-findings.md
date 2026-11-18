@@ -411,3 +411,15 @@ Source [62543a7926](https://github.com/GTNewHorizons/BuildCraftCompat/tree/62543
 Source [150d0013e1](https://github.com/GTNewHorizons/BuildCraftOilTweak/tree/150d0013e1d6dae7514772219b50b64424941f48) · 13 tracked Java, Scala or Kotlin files outside test/example directories.
 
 - No direct match in the listed checks. Mod entry point: [BuildCraftOilTweak](https://github.com/GTNewHorizons/BuildCraftOilTweak/blob/150d0013e1d6dae7514772219b50b64424941f48/src/main/java/buildcraft/oiltweak/BuildCraftOilTweak.java#L23). Indirect effects from dependencies, injection, configuration and server rules remain open.
+
+### CarpentersBlocks
+
+Source [4dda8ff4d6](https://github.com/GTNewHorizons/CarpentersBlocks/tree/4dda8ff4d6f90403670e95d46aef0a571c79b057) · 140 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- Existing Plus lookup in `CarpentersVisualAdapter` names [com.carpentersblocks.tileentity.TEBase](https://github.com/GTNewHorizons/CarpentersBlocks/blob/4dda8ff4d6f90403670e95d46aef0a571c79b057/src/main/java/com/carpentersblocks/tileentity/TEBase.java#L1) (1 matching upstream source names). Check reflected members and client state with the deployed versions.
+- Check tile serialization against `TileNBTCompat`. 2 source file(s) contain matching declarations, including [TEBase.readFromNBT](https://github.com/GTNewHorizons/CarpentersBlocks/blob/4dda8ff4d6f90403670e95d46aef0a571c79b057/src/main/java/com/carpentersblocks/tileentity/TEBase.java#L75).
+- Check preview rendering against `RendererSchematicChunk`. 1 source file(s) contain matching declarations, including [BlockHandlerBase.renderWorldBlock](https://github.com/GTNewHorizons/CarpentersBlocks/blob/4dda8ff4d6f90403670e95d46aef0a571c79b057/src/main/java/com/carpentersblocks/renderer/BlockHandlerBase.java#L122).
+- Check printer placement against `SchematicPrinter`. 17 source file(s) contain matching declarations, including [BlockCarpentersBarrier.onBlockPlacedBy](https://github.com/GTNewHorizons/CarpentersBlocks/blob/4dda8ff4d6f90403670e95d46aef0a571c79b057/src/main/java/com/carpentersblocks/block/BlockCarpentersBarrier.java#L79).
+- [BlockCarpentersGate.onBlockPlacedBy](https://github.com/GTNewHorizons/CarpentersBlocks/blob/4dda8ff4d6f90403670e95d46aef0a571c79b057/src/main/java/com/carpentersblocks/block/BlockCarpentersGate.java#L188) depends on placement orientation. Exercise the printer with a rotated schematic.
+- [BlockHandlerBase.renderWorldBlock](https://github.com/GTNewHorizons/CarpentersBlocks/blob/4dda8ff4d6f90403670e95d46aef0a571c79b057/src/main/java/com/carpentersblocks/renderer/BlockHandlerBase.java#L122) queries tile data while rendering. Preview a populated tile after saving and reopening its schematic.
+- [TECarpentersSafe.readFromNBT](https://github.com/GTNewHorizons/CarpentersBlocks/blob/4dda8ff4d6f90403670e95d46aef0a571c79b057/src/main/java/com/carpentersblocks/tileentity/TECarpentersSafe.java#L136) accesses `inventorySize`. Compare those fields after capture, transform and restore.
