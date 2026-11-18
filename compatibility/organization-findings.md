@@ -1681,3 +1681,9 @@ Source [c90e11eb0e](https://github.com/GTNewHorizons/RemoteIO/tree/c90e11eb0eafa
 - [BlockRemoteInterface.getPickBlock](https://github.com/GTNewHorizons/RemoteIO/blob/c90e11eb0eafa1f83ae41f2b39bd8b256521a11c/src/main/java/remoteio/common/block/BlockRemoteInterface.java#L103) queries world state when selecting an item. Compare the materials list against the placed variant.
 - [PlayerEventHandler.onPlayerInteract](https://github.com/GTNewHorizons/RemoteIO/blob/c90e11eb0eafa1f83ae41f2b39bd8b256521a11c/src/main/java/remoteio/common/core/handler/PlayerEventHandler.java#L16) can cancel the interaction. Verify the printer on a server with the handler enabled.
 - [InventoryNBT.readFromNBT](https://github.com/GTNewHorizons/RemoteIO/blob/c90e11eb0eafa1f83ae41f2b39bd8b256521a11c/src/main/java/remoteio/common/inventory/InventoryNBT.java#L38) accesses `Slot`. Compare those fields after capture, transform and restore.
+
+### Roguelike-Dungeons
+
+Source [d842737a6f](https://github.com/GTNewHorizons/Roguelike-Dungeons/tree/d842737a6f57c2eb3dbf72f6f8edff303af32c7e) · 296 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- No direct match in the listed checks. Mod entry point: [Roguelike](https://github.com/GTNewHorizons/Roguelike-Dungeons/blob/d842737a6f57c2eb3dbf72f6f8edff303af32c7e/src/main/java/greymerk/roguelike/Roguelike.java#L18). Indirect effects from dependencies, injection, configuration and server rules remain open.
