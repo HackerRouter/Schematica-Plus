@@ -1219,3 +1219,9 @@ Source [0430295ad9](https://github.com/GTNewHorizons/Minecraft-Backpack-Mod/tree
 
 - Check tile serialization against `TileNBTCompat`. 7 source file(s) contain matching declarations, including [ISaveableInventory.readFromNBT](https://github.com/GTNewHorizons/Minecraft-Backpack-Mod/blob/0430295ad9a8dbe92187f910316e62e1ba273f88/src/main/java/de/eydamos/backpack/inventory/ISaveableInventory.java#L7).
 - Check printer placement against `SchematicPrinter`. 1 source file(s) contain matching declarations, including [ItemBackpackBase.onItemUse](https://github.com/GTNewHorizons/Minecraft-Backpack-Mod/blob/0430295ad9a8dbe92187f910316e62e1ba273f88/src/main/java/de/eydamos/backpack/item/ItemBackpackBase.java#L82).
+
+### minecraft-prometheus-exporter
+
+Source [191e068da0](https://github.com/GTNewHorizons/minecraft-prometheus-exporter/tree/191e068da0311cfe58f1c0adf60ec4df6e672d8a) · 16 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- No direct match in the listed checks. Mod entry point: [PrometheusExporterMod](https://github.com/GTNewHorizons/minecraft-prometheus-exporter/blob/191e068da0311cfe58f1c0adf60ec4df6e672d8a/src/main/java/com/github/cpburnz/minecraft_prometheus_exporter/PrometheusExporterMod.java#L42). Indirect effects from dependencies, injection, configuration and server rules remain open.
