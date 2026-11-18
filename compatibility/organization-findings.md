@@ -72,3 +72,10 @@ Source [5c1a32cce3](https://github.com/GTNewHorizons/Amazing-Trophies/tree/5c1a3
 - Check printer placement against `SchematicPrinter`. 1 source file(s) contain matching declarations, including [ItemBlockTrophy.placeBlockAt](https://github.com/GTNewHorizons/Amazing-Trophies/blob/5c1a32cce3c6e7bea27fa8224c418b7c4bc4462f/src/main/java/glowredman/amazingtrophies/trophy/ItemBlockTrophy.java#L85).
 - [BlockTrophy.getPickBlock](https://github.com/GTNewHorizons/Amazing-Trophies/blob/5c1a32cce3c6e7bea27fa8224c418b7c4bc4462f/src/main/java/glowredman/amazingtrophies/trophy/BlockTrophy.java#L56) queries world state when selecting an item. Compare the materials list against the placed variant.
 - [ItemBlockTrophy.placeBlockAt](https://github.com/GTNewHorizons/Amazing-Trophies/blob/5c1a32cce3c6e7bea27fa8224c418b7c4bc4462f/src/main/java/glowredman/amazingtrophies/trophy/ItemBlockTrophy.java#L85) depends on placement orientation. Exercise the printer with a rotated schematic.
+
+### AMDIForge
+
+Source [2ecec40599](https://github.com/GTNewHorizons/AMDIForge/tree/2ecec405991ed72a6676e35b1c9fdbf67151d00a) · 22 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- Check tile serialization against `TileNBTCompat`. 1 source file(s) contain matching declarations, including [GraveNBT.readFromNBT](https://github.com/GTNewHorizons/AMDIForge/blob/2ecec405991ed72a6676e35b1c9fdbf67151d00a/src/main/java/eu/usrv/amdiforge/core/graveIO/GraveNBT.java#L108).
+- [GraveNBT.readFromNBT](https://github.com/GTNewHorizons/AMDIForge/blob/2ecec405991ed72a6676e35b1c9fdbf67151d00a/src/main/java/eu/usrv/amdiforge/core/graveIO/GraveNBT.java#L108) accesses `size`, `Items`, `id`, `Count`. Compare those fields after capture, transform and restore.
