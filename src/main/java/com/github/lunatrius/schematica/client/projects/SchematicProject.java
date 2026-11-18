@@ -135,26 +135,35 @@ public final class SchematicProject {
     }
 
     boolean switchVersion(int version, boolean createPlacement) {
-        if (version == currentVersionId || version < 0 || version >= versions.size()) return false;
+        if (version < 0 || version >= versions.size()) return false;
+        if (version == currentVersionId && (!createPlacement || lastCheckedOutVersion == version)) return false;
+        int previous = currentVersionId;
         currentVersionId = version;
+        if (createPlacement && !createAndAddPlacement()) {
+            currentVersionId = previous;
+            return false;
+        }
         dirty = true;
-        if (createPlacement) createAndAddPlacement();
         return true;
     }
 
     boolean switchVersion(SchematicVersion version, boolean createPlacement) {
         int index = versions.indexOf(version);
-        return index >= 0 && version != currentVersion() && switchVersion(index, createPlacement);
+        return index >= 0 && switchVersion(index, createPlacement);
     }
 
-    private void createAndAddPlacement() {
+    private boolean createAndAddPlacement() {
         SchematicVersion version = currentVersion();
-        if (version == null || currentVersionId == lastCheckedOutVersion) return;
-        removeCurrentPlacement();
+        if (version == null) return false;
+        if (currentVersionId == lastCheckedOutVersion) return true;
         String fileName = version.fileName;
         if (!SchematicBrowserModel.supported(fileName)) fileName += FILE_EXTENSION;
-        currentPlacement = SchematicProjects.place(new File(directory, fileName), version.name, placementOrigin(version));
+        SchematicWorld placement = SchematicProjects.place(new File(directory, fileName), version.name, placementOrigin(version));
+        if (placement == null) return false;
+        removeCurrentPlacement();
+        currentPlacement = placement;
         lastCheckedOutVersion = currentVersionId;
+        return true;
     }
 
     void removeCurrentPlacement() {
@@ -277,7 +286,7 @@ public final class SchematicProject {
         int id = project.versions.size() - 1;
         int stored = data.get("current_version_id").getAsInt();
         if (stored >= 0 && stored < project.versions.size()) id = stored;
-        project.switchVersion(id, createPlacement);
+        if (!project.switchVersion(id, createPlacement)) project.currentVersionId = id;
         project.dirty = false;
         return project;
     }

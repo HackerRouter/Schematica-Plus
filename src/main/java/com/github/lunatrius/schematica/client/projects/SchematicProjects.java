@@ -7,8 +7,10 @@ import java.io.IOException;
 import java.io.Reader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
@@ -47,7 +49,7 @@ import com.google.gson.JsonParser;
 public final class SchematicProjects {
     private static final long MAX_FILE_SIZE = 16L * 1024 * 1024;
     private static SchematicProject current;
-    private static SchematicLibrary.Source<SchematicSourceData> ownedSource;
+    private static final Set<SchematicLibrary.Source<SchematicSourceData>> ownedSources = new HashSet<>();
 
     private SchematicProjects() {}
 
@@ -121,7 +123,7 @@ public final class SchematicProjects {
     /** Forgets the project without touching placements, as the world's state is being discarded. */
     public static void clear() {
         current = null;
-        ownedSource = null;
+        ownedSources.clear();
     }
 
     public static void save() {
@@ -298,7 +300,7 @@ public final class SchematicProjects {
                 if (source.file().getCanonicalFile().equals(file.getCanonicalFile())) loaded = true;
             }
             SchematicLibrary.Source<SchematicSourceData> source = Placements.loadSource(file);
-            ownedSource = loaded ? null : source;
+            if (!loaded) ownedSources.add(source);
             SchematicWorld world = Placements.create(source);
             world.name = name;
             world.projectVersion = true;
@@ -319,8 +321,7 @@ public final class SchematicProjects {
         Placements.remove(world);
         boolean used = false;
         for (SchematicWorld other : Placements.loaded) if (Placements.LIBRARY.sourceOf(other) == source) used = true;
-        if (source != null && source == ownedSource && !used) Placements.unloadSource(source);
-        if (source == ownedSource) ownedSource = null;
+        if (source != null && !used && ownedSources.remove(source)) Placements.unloadSource(source);
     }
 
     static void moveTo(SchematicWorld world, Vector3i origin) {

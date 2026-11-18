@@ -109,6 +109,7 @@ public final class GuiSchematicProjectManager extends UiScreen {
         shown = project.currentVersion();
         int index = versions.entries().indexOf(shown);
         if (index >= 0) versions.select(index);
+        else versions.clearSelection();
     }
 
     private List<String> hover(SchematicVersion version) {
@@ -153,7 +154,7 @@ public final class GuiSchematicProjectManager extends UiScreen {
         }
         SchematicVersion selected = versions.selected();
         if (selected != null && selected != shown) {
-            SchematicProjects.switchVersion(selected);
+            if (!SchematicProjects.switchVersion(selected)) selectCurrent();
             shown = project.currentVersion();
         } else if (project.currentVersion() != shown) {
             selectCurrent();

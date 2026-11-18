@@ -94,6 +94,10 @@ public final class UiListModel<T> {
         if (index >= 0 && index < filtered.size()) selected = filtered.get(index);
     }
 
+    public void clearSelection() {
+        selected = null;
+    }
+
     public void moveSelection(int delta) {
         int current = selectedIndex();
         select(Math.max(0, Math.min(filtered.size() - 1, current < 0 ? 0 : current + delta)));
