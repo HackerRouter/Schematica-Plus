@@ -34,6 +34,10 @@ public class FileUtils {
     }
 
     public static File resolveSchematicFile(File directory, String filename) throws IOException {
+        return resolve(directory, filename, false);
+    }
+
+    private static File resolve(File directory, String filename, boolean readable) throws IOException {
         if (directory == null || filename == null || filename.isEmpty() || filename.equals(".")
             || filename.equals("..") || filename.indexOf('/') >= 0 || filename.indexOf('\\') >= 0
             || filename.indexOf(':') >= 0 || filename.indexOf('\0') >= 0 || isReservedName(filename)) {
@@ -41,7 +45,7 @@ public class FileUtils {
         }
         String lowerName = filename.toLowerCase(Locale.ROOT);
         if (!lowerName.endsWith(".schematic") && !lowerName.endsWith(".schemplus") && !lowerName.endsWith(".litematic")
-            && !lowerName.endsWith(".nbt")) {
+            && !lowerName.endsWith(".nbt") && !(readable && lowerName.endsWith(".schem"))) {
             throw new IOException("Unsupported schematic output extension");
         }
         File file = new File(directory, filename).getCanonicalFile();
@@ -54,8 +58,9 @@ public class FileUtils {
     public static File findSchematicFile(File directory, String name, boolean preferExtended) throws IOException {
         if (name == null) throw new IOException("Invalid schematic filename");
         String lower = name.toLowerCase(Locale.ROOT);
-        if (lower.endsWith(".schematic") || lower.endsWith(".schemplus") || lower.endsWith(".litematic") || lower.endsWith(".nbt")) {
-            return resolveSchematicFile(directory, name);
+        if (lower.endsWith(".schematic") || lower.endsWith(".schemplus") || lower.endsWith(".litematic") || lower.endsWith(".nbt")
+            || lower.endsWith(".schem")) {
+            return resolve(directory, name, true);
         }
         File preferred = resolveSchematicFile(directory, name + (preferExtended ? ".schemplus" : ".schematic"));
         if (preferred.isFile()) return preferred;

@@ -44,6 +44,9 @@ public class SchematicSafetyTest {
         Files.createFile(standard.toPath());
         assertEquals(standard.getCanonicalFile(), FileUtils.findSchematicFile(directory, "建筑", false));
         assertEquals(extended.getCanonicalFile(), FileUtils.findSchematicFile(directory, "建筑", true));
+        File sponge = new File(directory, "Tower.schem");
+        Files.createFile(sponge.toPath());
+        assertEquals(sponge.getCanonicalFile(), FileUtils.findSchematicFile(directory, "Tower.schem", false));
         assertEquals(extended.getCanonicalFile(), FileUtils.findSchematicFile(directory, "建筑.schemplus", false));
         assertEquals(standard.getCanonicalFile(), FileUtils.findSchematicFile(directory, "建筑.schematic", true));
         for (String extension : new String[] {".litematic", ".nbt"}) {
