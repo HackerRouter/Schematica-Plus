@@ -2318,3 +2318,7 @@ An Extra Utilities connected-texture renderer is patched. Compare a joined surfa
 ### AstralSorcery
 
 The build depends on Forge 1.16.5-36.2.22. This revision is outside the Minecraft 1.7.10 target. [build.gradle at fb4fb12fcc](https://github.com/GTNewHorizons/AstralSorcery/blob/fb4fb12fccf9bd68d22434dda4efd0b319265bbe/build.gradle)
+
+### CraftGuide
+
+The recipe browser registers its own interface. Check recipe-view and schematic hotkeys together; this entry point supplies no schematic block-state adapter. [CraftGuide.java at 5eff174f12](https://github.com/GTNewHorizons/CraftGuide/blob/5eff174f12c545a9260274537be22f3af0512700/src/main/java/uristqwerty/CraftGuide/CraftGuide.java)
