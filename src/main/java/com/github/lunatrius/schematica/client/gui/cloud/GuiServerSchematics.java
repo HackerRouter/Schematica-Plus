@@ -3,6 +3,7 @@ package com.github.lunatrius.schematica.client.gui.cloud;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -157,7 +158,8 @@ public final class GuiServerSchematics extends UiScreen {
     }
 
     private String relative(File file) {
-        return mc.mcDataDir.toPath().toAbsolutePath().relativize(file.toPath().toAbsolutePath()).toString().replace('\\', '/');
+        Path base = mc.mcDataDir.toPath().toAbsolutePath(), target = file.toPath().toAbsolutePath();
+        return (target.startsWith(base) ? base.relativize(target) : target).toString().replace('\\', '/');
     }
 
     @Override
