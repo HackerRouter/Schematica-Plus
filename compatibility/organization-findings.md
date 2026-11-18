@@ -537,3 +537,11 @@ Source [7adf5a2147](https://github.com/GTNewHorizons/CosmeticArmorReworked/tree/
 Source [f0ae935d58](https://github.com/GTNewHorizons/CraftTweaker/tree/f0ae935d582fe9725d3e8eaaf7819b96f0a94c3a) · 286 tracked Java, Scala or Kotlin files outside test/example directories.
 
 - Check interaction events against `SchematicPrinter`. 1 source file(s) contain matching declarations, including [ForgeEventHandler.onPlayerInteract](https://github.com/GTNewHorizons/CraftTweaker/blob/f0ae935d582fe9725d3e8eaaf7819b96f0a94c3a/src/main/java/minetweaker/mc1710/ForgeEventHandler.java#L38).
+
+### CropsNH
+
+Source [629909b7ec](https://github.com/GTNewHorizons/CropsNH/tree/629909b7ec14ffcf178a409f7f614a39a2c71f7c) · 416 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- Check tile serialization against `TileNBTCompat`. 2 source file(s) contain matching declarations, including [TileEntityCropSticks.writeToNBT](https://github.com/GTNewHorizons/CropsNH/blob/629909b7ec14ffcf178a409f7f614a39a2c71f7c/src/main/java/com/gtnewhorizon/cropsnh/tileentity/TileEntityCropSticks.java#L719).
+- Check preview rendering against `RendererSchematicChunk`. 1 source file(s) contain matching declarations, including [RenderBlockBase.renderTileEntityAt](https://github.com/GTNewHorizons/CropsNH/blob/629909b7ec14ffcf178a409f7f614a39a2c71f7c/src/main/java/com/gtnewhorizon/cropsnh/renderers/blocks/RenderBlockBase.java#L98).
+- Check printer placement against `SchematicPrinter`. 2 source file(s) contain matching declarations, including [ItemCropSticks.placeBlockAt](https://github.com/GTNewHorizons/CropsNH/blob/629909b7ec14ffcf178a409f7f614a39a2c71f7c/src/main/java/com/gtnewhorizon/cropsnh/items/blocks/ItemCropSticks.java#L32).
