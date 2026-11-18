@@ -2184,3 +2184,9 @@ Source [3604bc53cb](https://github.com/GTNewHorizons/waila/tree/3604bc53cb5835f8
 Source [49880886a8](https://github.com/GTNewHorizons/WailaHarvestability/tree/49880886a8837bd20eb34b45c381ffa3a6e17e93) · 14 tracked Java, Scala or Kotlin files outside test/example directories.
 
 - No direct match in the listed checks. Mod entry point: [ModWailaHarvestability](https://github.com/GTNewHorizons/WailaHarvestability/blob/49880886a8837bd20eb34b45c381ffa3a6e17e93/src/main/java/squeek/wailaharvestability/ModWailaHarvestability.java#L16). Indirect effects from dependencies, injection, configuration and server rules remain open.
+
+### WAILAPlugins
+
+Source [8383b408f5](https://github.com/GTNewHorizons/WAILAPlugins/tree/8383b408f5bb269da390dc464b5351c6791535e3) · 17 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- No direct match in the listed checks. Mod entry point: [WailaPlugins](https://github.com/GTNewHorizons/WAILAPlugins/blob/8383b408f5bb269da390dc464b5351c6791535e3/src/main/java/tterrag/wailaplugins/WailaPlugins.java#L20). Indirect effects from dependencies, injection, configuration and server rules remain open.
