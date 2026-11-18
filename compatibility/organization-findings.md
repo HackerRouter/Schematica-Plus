@@ -1840,3 +1840,9 @@ Source [b7113542a9](https://github.com/GTNewHorizons/StorageDrawers/tree/b711354
 Source [9cf56091e6](https://github.com/GTNewHorizons/StructureCompat/tree/9cf56091e681c8b80b7683ea72c6d12d84eeceef) · 18 tracked Java, Scala or Kotlin files outside test/example directories.
 
 - No direct match in the listed checks. Mod entry point: [StructureCompat](https://github.com/GTNewHorizons/StructureCompat/blob/9cf56091e681c8b80b7683ea72c6d12d84eeceef/src/main/java/net/glease/structurecompat/StructureCompat.java#L21). Indirect effects from dependencies, injection, configuration and server rules remain open.
+
+### StructureLib
+
+Source [1b401232b3](https://github.com/GTNewHorizons/StructureLib/tree/1b401232b3e64d799d59cbfec0ccc1ccfcf37d62) · 94 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- Check world or renderer transformation alongside the schematic world and render pipeline. 1 source file(s) contain matching declarations, including [MixinWorld.World](https://github.com/GTNewHorizons/StructureLib/blob/1b401232b3e64d799d59cbfec0ccc1ccfcf37d62/src/main/java/com/gtnewhorizon/structurelib/mixins/early/blockChangeNotifier/MixinWorld.java#L18).
