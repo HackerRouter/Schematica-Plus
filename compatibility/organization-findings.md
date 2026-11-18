@@ -205,3 +205,9 @@ Source [9cda711b4d](https://github.com/GTNewHorizons/Avaritiaddons/tree/9cda711b
 - Check printer placement against `SchematicPrinter`. 2 source file(s) contain matching declarations, including [BlockAvaritiaddonsChest.onBlockPlacedBy](https://github.com/GTNewHorizons/Avaritiaddons/blob/9cda711b4db004cd84d3c0406b6e7d30f50eb161/src/main/java/wanion/avaritiaddons/block/chest/BlockAvaritiaddonsChest.java#L57).
 - [BlockAvaritiaddonsChest.onBlockPlacedBy](https://github.com/GTNewHorizons/Avaritiaddons/blob/9cda711b4db004cd84d3c0406b6e7d30f50eb161/src/main/java/wanion/avaritiaddons/block/chest/BlockAvaritiaddonsChest.java#L57) depends on placement orientation. Exercise the printer with a rotated schematic.
 - [TileEntityAvaritiaddonsChest.readFromNBT](https://github.com/GTNewHorizons/Avaritiaddons/blob/9cda711b4db004cd84d3c0406b6e7d30f50eb161/src/main/java/wanion/avaritiaddons/block/chest/TileEntityAvaritiaddonsChest.java#L85) accesses `FacingSide`. Compare those fields after capture, transform and restore.
+
+### Backhand
+
+Source [c332a5053b](https://github.com/GTNewHorizons/Backhand/tree/c332a5053b655975f803e53928de26f5b613b4a0) · 72 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- Check world or renderer transformation alongside the schematic world and render pipeline. 3 source file(s) contain matching declarations, including [MixinEntityRenderer.EntityRenderer](https://github.com/GTNewHorizons/Backhand/blob/c332a5053b655975f803e53928de26f5b613b4a0/src/main/java/xonin/backhand/mixins/early/minecraft/MixinEntityRenderer.java#L14).
