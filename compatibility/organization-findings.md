@@ -1212,3 +1212,10 @@ Source [21f2e4f33c](https://github.com/GTNewHorizons/MaterialLib/tree/21f2e4f33c
 Source [9b3c113ff7](https://github.com/GTNewHorizons/MatterManipulator/tree/9b3c113ff7a418ce2d3ad5d7c728c26bdaf3949f) · 133 tracked Java, Scala or Kotlin files outside test/example directories.
 
 - Check world or renderer transformation alongside the schematic world and render pipeline. 1 source file(s) contain matching declarations, including [MixinWorldDropCapturing.World](https://github.com/GTNewHorizons/MatterManipulator/blob/9b3c113ff7a418ce2d3ad5d7c728c26bdaf3949f/src/mixin/java/com/recursive_pineapple/matter_manipulator/mixin/mixins/early/MixinWorldDropCapturing.java#L19).
+
+### Minecraft-Backpack-Mod
+
+Source [0430295ad9](https://github.com/GTNewHorizons/Minecraft-Backpack-Mod/tree/0430295ad9a8dbe92187f910316e62e1ba273f88) · 100 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- Check tile serialization against `TileNBTCompat`. 7 source file(s) contain matching declarations, including [ISaveableInventory.readFromNBT](https://github.com/GTNewHorizons/Minecraft-Backpack-Mod/blob/0430295ad9a8dbe92187f910316e62e1ba273f88/src/main/java/de/eydamos/backpack/inventory/ISaveableInventory.java#L7).
+- Check printer placement against `SchematicPrinter`. 1 source file(s) contain matching declarations, including [ItemBackpackBase.onItemUse](https://github.com/GTNewHorizons/Minecraft-Backpack-Mod/blob/0430295ad9a8dbe92187f910316e62e1ba273f88/src/main/java/de/eydamos/backpack/item/ItemBackpackBase.java#L82).
