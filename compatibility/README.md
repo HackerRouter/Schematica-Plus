@@ -78,8 +78,7 @@ streams so crafted inventory items and placed facades compare equally.
 Partial builds are matched by item, mounting side and panel spin. Ignoring block
 state relaxes side/spin comparisons but still requires every item and the correct
 facade material. Network inventories and installed upgrades are not building
-materials. This material counting does not add automatic AE2 part assembly to
-the printer.
+materials. The printer and Easy Place assemble missing parts through native item interactions within reach. They prioritize the center cable, leave occupied slots intact and require a reachable matching face for facade placement.
 
 ## Recent GTNH mod links
 

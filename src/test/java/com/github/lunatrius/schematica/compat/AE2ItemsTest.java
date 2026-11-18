@@ -106,6 +106,15 @@ public class AE2ItemsTest {
         assertTrue(AE2Items.missing(expected, actual, true).isEmpty());
     }
 
+    @Test public void assemblyStartsWithTheCableAndLeavesOccupiedSlotsAlone() throws Exception {
+        Host template = new Host().add(ForgeDirection.UP, 1).add(ForgeDirection.UNKNOWN, 0);
+        template.facades.faces.put(ForgeDirection.UP, new Facade("stone"));
+        assertEquals(ForgeDirection.UNKNOWN, AE2Items.additions(template, null).get(0).side);
+        Host occupied = new Host().add(ForgeDirection.UP, 9).add(ForgeDirection.UNKNOWN, 0);
+        assertEquals(1, AE2Items.additions(template, occupied).size());
+        assertTrue(AE2Items.additions(template, occupied).get(0).facade);
+    }
+
     @Test public void unknownPartsCannotSilentlyProducePartialCounts() throws Exception {
         Host host = new Host().add(ForgeDirection.UNKNOWN, 0);
         host.parts.put(ForgeDirection.NORTH, new NativePart(1) {

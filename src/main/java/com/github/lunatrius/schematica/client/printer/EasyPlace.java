@@ -99,6 +99,12 @@ public final class EasyPlace {
         MultiBlockPlacement.Kind kind = MultiBlockPlacement.kind(block);
         if (kind != null) return multiBlock(player, world, schematic, lx, ly, lz, x, y, z, block, meta, kind);
         if (cached(x, y, z) || System.nanoTime() - lastPickTime < 1_000_000L * ConfigurationHandler.easyPlaceSwapInterval) return Result.FAIL;
+        if (com.github.lunatrius.schematica.compat.AE2Items.supports(schematic.getTileEntity(lx, ly, lz))) {
+            if (!CablePlacement.place(mc, schematic.getTileEntity(lx, ly, lz), x, y, z,
+                stack -> pick(player, () -> PickBlockSlots.pickToHand(mc, stack, true)))) return Result.FAIL;
+            cache(x, y, z);
+            return Result.SUCCESS;
+        }
         if (MultipartItems.supports(schematic.getTileEntity(lx, ly, lz))) {
             return multipart(player, world, schematic.getTileEntity(lx, ly, lz), x, y, z);
         }

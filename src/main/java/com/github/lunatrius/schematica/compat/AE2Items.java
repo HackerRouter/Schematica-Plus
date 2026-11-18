@@ -33,11 +33,11 @@ public final class AE2Items {
         return tag;
     }
 
-    private static final class Entry {
-        final ItemStack stack;
-        final ForgeDirection side;
-        final int spin;
-        final boolean facade;
+    public static final class Entry {
+        public final ItemStack stack;
+        public final ForgeDirection side;
+        public final int spin;
+        public final boolean facade;
 
         Entry(ItemStack stack, ForgeDirection side, int spin, boolean facade) throws ReflectiveOperationException {
             if (stack == null || stack.getItem() == null) throw new ReflectiveOperationException("AE2 part has no build item");
@@ -75,6 +75,19 @@ public final class AE2Items {
             if (facade != null) result.add(new Entry((ItemStack) Reflect.call(facade, "getItemStack"), side, 0, true));
         }
         return result;
+    }
+
+    public static List<Entry> additions(TileEntity template, TileEntity host) throws ReflectiveOperationException {
+        List<Entry> existing = entries(host);
+        List<Entry> additions = entries(template);
+        additions.removeIf(wanted -> existing.stream().anyMatch(actual -> actual.side == wanted.side && actual.facade == wanted.facade));
+        additions.sort(java.util.Comparator.comparingInt(entry -> entry.side == ForgeDirection.UNKNOWN ? 0 : entry.facade ? 2 : 1));
+        return additions;
+    }
+
+    public static boolean canAdd(TileEntity host, Entry entry, ForgeDirection face) throws ReflectiveOperationException {
+        return host == null ? !entry.facade : supports(host) && Boolean.TRUE.equals(Reflect.call(host, "canAddPart",
+            new Class<?>[] {ItemStack.class, ForgeDirection.class}, entry.stack, face));
     }
 
     public static ItemStack[] items(TileEntity tile) throws ReflectiveOperationException {

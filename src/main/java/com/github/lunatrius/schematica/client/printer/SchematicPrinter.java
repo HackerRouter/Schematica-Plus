@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.function.Predicate;
 
 import com.github.lunatrius.schematica.compat.LiquidLogged;
+import com.github.lunatrius.schematica.compat.AE2Items;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockFalling;
 import net.minecraft.block.BlockLiquid;
@@ -185,6 +186,8 @@ public class SchematicPrinter {
     private boolean startBreak(World world, SchematicWorld schematic, int wx, int wy, int wz) {
         boolean creative = this.minecraft.playerController.isInCreativeMode();
         Block real = world.getBlock(wx, wy, wz);
+        int lx = wx - schematic.position.x, ly = wy - schematic.position.y, lz = wz - schematic.position.z;
+        if (real == schematic.getBlock(lx, ly, lz) && world.getBlockMetadata(wx, wy, wz) == schematic.getBlockMetadata(lx, ly, lz)) return false;
         boolean destroy = ConfigurationHandler.destroyBlocks && (PrinterReach.assisted() || !creative)
             && !real.isAir(world, wx, wy, wz)
             && (creative || !FluidPrinter.isFluid(real) && real.getBlockHardness(world, wx, wy, wz) >= 0);
@@ -345,7 +348,8 @@ public class SchematicPrinter {
             int meta = placement.getBlockMetadata(lx, ly, lz), realMeta = world.getBlockMetadata(x, y, z);
             if (block == real && meta == realMeta) {
                 String fluid = placement.getSchematic().getStoredFluid(lx, ly, lz);
-                if (fluid == null || LiquidLogged.fluid(world, x, y, z) != null) continue;
+                if ((fluid == null || LiquidLogged.fluid(world, x, y, z) != null)
+                    && !AE2Items.supports(placement.getTileEntity(lx, ly, lz))) continue;
             } else if (BlockGroups.tolerated(block, meta, real, realMeta)) continue;
             candidates.add(new PrinterBuildOrder.Candidate(x, y, z, layers ? PrinterBuildOrder.tier(block) : 0, placement));
         }
@@ -464,6 +468,10 @@ public class SchematicPrinter {
         final int metadata = schematic.getBlockMetadata(x, y, z);
         final int realMetadata = world.getBlockMetadata(wx, wy, wz);
 
+        if (block.hasTileEntity(metadata) && AE2Items.supports(schematic.getTileEntity(x, y, z))) {
+            return !skipped(block) && !PrinterReach.remote(wx, wy, wz) && CablePlacement.place(minecraft,
+                schematic.getTileEntity(x, y, z), wx, wy, wz, stack -> !isBlacklisted(block, stack) && swapToItem(player.inventory, stack, true, true));
+        }
         if (block == realBlock && metadata == realMetadata) {
             return !PrinterReach.remote(wx, wy, wz) && !skipped(block) && FluidPrinter.fillHolder(this.minecraft,
                 schematic.getSchematic().getStoredFluid(x, y, z), wx, wy, wz,
