@@ -249,3 +249,10 @@ Source [8f9f5b8686](https://github.com/GTNewHorizons/BeeBetterAtBees-GTNH/tree/8
 Source [aee6d9850a](https://github.com/GTNewHorizons/BetterAchievements/tree/aee6d9850a016ae8612c682400bbd285de3d6335) · 41 tracked Java, Scala or Kotlin files outside test/example directories.
 
 - No direct match in the listed checks. Mod entry point: [BetterAchievementsDemo](https://github.com/GTNewHorizons/BetterAchievements/blob/aee6d9850a016ae8612c682400bbd285de3d6335/src/demo/java/betterachievementsdemo/BetterAchievementsDemo.java#L16). Indirect effects from dependencies, injection, configuration and server rules remain open.
+
+### BetterBuildersWands
+
+Source [975080753b](https://github.com/GTNewHorizons/BetterBuildersWands/tree/975080753b4dfd90738be0cd642629d329737f86) · 38 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- Check material picking against `BlockToItemStack`. 1 source file(s) contain matching declarations, including [BlockShim.getPickBlock](https://github.com/GTNewHorizons/BetterBuildersWands/blob/975080753b4dfd90738be0cd642629d329737f86/src/main/java/portablejim/bbw/shims/BlockShim.java#L13).
+- Check printer placement against `SchematicPrinter`. 1 source file(s) contain matching declarations, including [ItemBasicWand.onItemUse](https://github.com/GTNewHorizons/BetterBuildersWands/blob/975080753b4dfd90738be0cd642629d329737f86/src/main/java/portablejim/bbw/core/items/ItemBasicWand.java#L49).
