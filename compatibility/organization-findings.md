@@ -931,3 +931,9 @@ Source [a989a30670](https://github.com/GTNewHorizons/GTNH-Web-Map/tree/a989a3067
 Source [ff9ec54231](https://github.com/GTNewHorizons/GTNH-Web-Map-Client/tree/ff9ec54231781e4f1caa5b32481ee81a3106f640) · 17 tracked Java, Scala or Kotlin files outside test/example directories.
 
 - No direct match in the listed checks. Mod entry point: [GwmClientMod](https://github.com/GTNewHorizons/GTNH-Web-Map-Client/blob/ff9ec54231781e4f1caa5b32481ee81a3106f640/src/main/java/com/gtnewhorizons/gwmclient/GwmClientMod.java#L17). Indirect effects from dependencies, injection, configuration and server rules remain open.
+
+### GTNHExtLib
+
+Source [f7c13a83a7](https://github.com/GTNewHorizons/GTNHExtLib/tree/f7c13a83a747f876440c63fa0736bc09af84a219) · 3 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- No direct match in the listed checks. Mod entry point: [GTNHExtLib](https://github.com/GTNewHorizons/GTNHExtLib/blob/f7c13a83a747f876440c63fa0736bc09af84a219/src/main/java/com/gtnewhorizons/gtnhextlib/GTNHExtLib.java#L5). Indirect effects from dependencies, injection, configuration and server rules remain open.
