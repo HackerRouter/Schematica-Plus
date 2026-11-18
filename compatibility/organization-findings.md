@@ -1274,6 +1274,7 @@ Source [3665efa137](https://github.com/GTNewHorizons/ModTweaker/tree/3665efa1375
 Source [8d2a2c47a9](https://github.com/GTNewHorizons/ModularUI/tree/8d2a2c47a9e3105ead800d1d1d34ab5a1ff1cfbb) · 142 tracked Java, Scala or Kotlin files outside test/example directories.
 
 - No direct match in the listed checks. Mod entry point: [ModularUI](https://github.com/GTNewHorizons/ModularUI/blob/8d2a2c47a9e3105ead800d1d1d34ab5a1ff1cfbb/src/main/java/com/gtnewhorizons/modularui/ModularUI.java#L31). Indirect effects from dependencies, injection, configuration and server rules remain open.
+- [CommonProxy](https://github.com/GTNewHorizons/ModularUI/blob/8d2a2c47a9e3105ead800d1d1d34ab5a1ff1cfbb/src/main/java/com/gtnewhorizons/modularui/CommonProxy.java#L29) calls `GameRegistry.registerBlock`. Include the registered block variants in capture, preview and material comparisons.
 
 ### ModularUI2
 
