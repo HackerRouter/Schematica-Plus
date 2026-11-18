@@ -1,0 +1,17 @@
+# Active repository compatibility screen
+
+Static triage against Schematica Plus `0002f57` for the [organization inventory](organization-screen.md). Each entry links to the default-branch revision actually inspected. Counts refer to files with at least one matching declaration. Source file names and package declarations are used for class lookup and collision candidates. Shaded sources, inheritance, renamed methods, binary-only implementations and bytecode patches can change the result. A match identifies a path to exercise and does not establish a runtime pass or failure.
+
+The checks follow Plus tile NBT capture, Forge block and tile rendering, material picking, right-click placement, interaction event handlers, and mixins targeting selected world, player-controller and renderer classes. Existing optional integrations are cross-referenced by literal class name. The target pack runtime observations are recorded in [TESTING.md](../TESTING.md).
+
+### Advanced-Botany
+
+Source [79196942e3](https://github.com/GTNewHorizons/Advanced-Botany/tree/79196942e3468c433bc7e6204c1607088807992b) · 160 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- Check tile serialization against `TileNBTCompat`. 1 source file(s) contain matching declarations, including [TileManaCharger.readFromNBT](https://github.com/GTNewHorizons/Advanced-Botany/blob/79196942e3468c433bc7e6204c1607088807992b/src/main/java/ab/common/block/tile/TileManaCharger.java#L236).
+- Check preview rendering against `RendererSchematicChunk`. 15 source file(s) contain matching declarations, including [RenderBlockABSpreader.renderWorldBlock](https://github.com/GTNewHorizons/Advanced-Botany/blob/79196942e3468c433bc7e6204c1607088807992b/src/main/java/ab/client/render/block/RenderBlockABSpreader.java#L26).
+- Check material picking against `BlockToItemStack`. 1 source file(s) contain matching declarations, including [BlockLebethronWood.getPickBlock](https://github.com/GTNewHorizons/Advanced-Botany/blob/79196942e3468c433bc7e6204c1607088807992b/src/main/java/ab/common/block/BlockLebethronWood.java#L121).
+- Check printer placement against `SchematicPrinter`. 6 source file(s) contain matching declarations, including [BlockABSpreader.onBlockPlacedBy](https://github.com/GTNewHorizons/Advanced-Botany/blob/79196942e3468c433bc7e6204c1607088807992b/src/main/java/ab/common/block/BlockABSpreader.java#L45).
+- [BlockABSpreader.onBlockPlacedBy](https://github.com/GTNewHorizons/Advanced-Botany/blob/79196942e3468c433bc7e6204c1607088807992b/src/main/java/ab/common/block/BlockABSpreader.java#L45) depends on placement orientation. Exercise the printer with a rotated schematic.
+- [BlockLebethronWood.getPickBlock](https://github.com/GTNewHorizons/Advanced-Botany/blob/79196942e3468c433bc7e6204c1607088807992b/src/main/java/ab/common/block/BlockLebethronWood.java#L121) queries world state when selecting an item. Compare the materials list against the placed variant.
+- [TileManaCharger.readFromNBT](https://github.com/GTNewHorizons/Advanced-Botany/blob/79196942e3468c433bc7e6204c1607088807992b/src/main/java/ab/common/block/tile/TileManaCharger.java#L236) accesses `requestUpdate`. Compare those fields after capture, transform and restore.
