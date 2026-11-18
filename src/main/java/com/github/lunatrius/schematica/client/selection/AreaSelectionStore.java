@@ -30,7 +30,7 @@ import com.google.gson.JsonParser;
  * area_selections(_per_world); the world's modes, simple selection and selected file stay in the settings file.
  */
 public final class AreaSelectionStore {
-    private static final int MAX_DEPTH = 8;
+    private static final int MAX_DEPTH = AreaSelectionLibrary.MAX_FOLDER_DEPTH;
     private final File file, directory;
     private final String key;
     private final AreaSelectionLibrary library;

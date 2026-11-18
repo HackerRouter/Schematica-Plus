@@ -89,12 +89,16 @@ public final class AreaSelectionLibrary {
         return slash < 0 ? "" : folder.substring(0, slash);
     }
 
+    public static final int MAX_FOLDER_DEPTH = 8;
+
     /** A folder path of file-name-safe segments, without '.' or '..'. */
     public static String validFolder(String folder) {
         if (folder == null || folder.isEmpty()) return "";
         if (folder.length() > 400) throw new IllegalArgumentException("Invalid folder");
+        String[] segments = folder.split("/");
+        if (segments.length > MAX_FOLDER_DEPTH) throw new IllegalArgumentException("Folder nesting is too deep");
         StringBuilder result = new StringBuilder();
-        for (String segment : folder.split("/")) {
+        for (String segment : segments) {
             String name = segment.trim();
             if (name.isEmpty() || name.equals(".") || name.equals("..") || !name.equals(safeFileName(name))) throw new IllegalArgumentException("Invalid folder");
             if (result.length() > 0) result.append('/');

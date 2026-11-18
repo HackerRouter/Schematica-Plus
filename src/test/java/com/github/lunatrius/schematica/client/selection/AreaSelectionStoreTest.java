@@ -37,6 +37,25 @@ public class AreaSelectionStoreTest {
     private File settings() { return new File(temporary.getRoot(), "AreaSelection.json"); }
     private File areas(String world) { return new File(temporary.getRoot(), world); }
 
+    @Test public void everyCreatableFolderDepthIsReadBack() throws Exception {
+        AreaSelectionStore store = new AreaSelectionStore(settings(), areas("deep"), "deep|0");
+        String folder = "";
+        for (int i = 0; i < AreaSelectionLibrary.MAX_FOLDER_DEPTH; i++) folder = store.library().createFolder(folder, "d" + i);
+        String deepest = folder;
+        try {
+            store.library().createFolder(deepest, "too_deep");
+            fail("A folder below the readable depth was created");
+        } catch (IllegalArgumentException expected) {}
+        store.library().setTargetFolder(deepest);
+        store.library().create("tower", new Vector3i(), new Vector3i());
+        store.save();
+        boolean found = false;
+        for (Area area : new AreaSelectionStore(settings(), areas("deep"), "deep|0").library().areas()) {
+            found |= area.name().equals("tower") && area.folder().equals(deepest);
+        }
+        assertTrue(found);
+    }
+
     @Test public void multipleBoxesAndExplicitBoxDeselectionPersistAcrossSessions() throws Exception {
         AreaSelectionStore store = new AreaSelectionStore(settings(), areas("world"), "world|0");
         Area area = store.library().selected();
