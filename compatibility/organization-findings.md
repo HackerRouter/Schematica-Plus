@@ -1010,3 +1010,11 @@ Source [62ccae6f38](https://github.com/GTNewHorizons/HydroEnergy/tree/62ccae6f38
 - Check tile serialization against `TileNBTCompat`. 1 source file(s) contain matching declarations, including [HEServer.readFromNBT](https://github.com/GTNewHorizons/HydroEnergy/blob/62ccae6f384f55792dfd1154a26624798a9297a9/src/main/java/com/sinthoras/hydroenergy/server/HEServer.java#L49).
 - Check preview rendering against `RendererSchematicChunk`. 1 source file(s) contain matching declarations, including [HEWaterRenderer.renderWorldBlock](https://github.com/GTNewHorizons/HydroEnergy/blob/62ccae6f384f55792dfd1154a26624798a9297a9/src/main/java/com/sinthoras/hydroenergy/client/renderer/HEWaterRenderer.java#L43).
 - Check world or renderer transformation alongside the schematic world and render pipeline. 5 source file(s) contain matching declarations, including [ChunkClientMixin.Chunk](https://github.com/GTNewHorizons/HydroEnergy/blob/62ccae6f384f55792dfd1154a26624798a9297a9/src/main/java/com/sinthoras/hydroenergy/mixins/early/ChunkClientMixin.java#L12).
+
+### IFU
+
+Source [48ddad516b](https://github.com/GTNewHorizons/IFU/tree/48ddad516bb891edb4a229c255614651e70b0204) · 19 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- Check tile serialization against `TileNBTCompat`. 1 source file(s) contain matching declarations, including [InventoryOreFinder.writeToNBT](https://github.com/GTNewHorizons/IFU/blob/48ddad516bb891edb4a229c255614651e70b0204/src/main/java/com/encraft/dz/inventory/InventoryOreFinder.java#L110).
+- Check printer placement against `SchematicPrinter`. 1 source file(s) contain matching declarations, including [ItemOreFinderTool.onItemUse](https://github.com/GTNewHorizons/IFU/blob/48ddad516bb891edb4a229c255614651e70b0204/src/main/java/com/encraft/dz/items/ItemOreFinderTool.java#L193).
+- [InventoryOreFinder.writeToNBT](https://github.com/GTNewHorizons/IFU/blob/48ddad516bb891edb4a229c255614651e70b0204/src/main/java/com/encraft/dz/inventory/InventoryOreFinder.java#L110) accesses `Slot`. Compare those fields after capture, transform and restore.
