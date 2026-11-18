@@ -1258,3 +1258,9 @@ Source [3665efa137](https://github.com/GTNewHorizons/ModTweaker/tree/3665efa1375
 Source [8d2a2c47a9](https://github.com/GTNewHorizons/ModularUI/tree/8d2a2c47a9e3105ead800d1d1d34ab5a1ff1cfbb) · 142 tracked Java, Scala or Kotlin files outside test/example directories.
 
 - No direct match in the listed checks. Mod entry point: [ModularUI](https://github.com/GTNewHorizons/ModularUI/blob/8d2a2c47a9e3105ead800d1d1d34ab5a1ff1cfbb/src/main/java/com/gtnewhorizons/modularui/ModularUI.java#L31). Indirect effects from dependencies, injection, configuration and server rules remain open.
+
+### ModularUI2
+
+Source [7e777df4a4](https://github.com/GTNewHorizons/ModularUI2/tree/7e777df4a4f0adb77dc1a1e7e5f803fffbf42f0d) · 631 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- No direct match in the listed checks. Mod entry point: [ModularUI](https://github.com/GTNewHorizons/ModularUI2/blob/7e777df4a4f0adb77dc1a1e7e5f803fffbf42f0d/src/main/java/com/cleanroommc/modularui/ModularUI.java#L18). Indirect effects from dependencies, injection, configuration and server rules remain open.
