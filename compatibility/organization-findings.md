@@ -1252,3 +1252,9 @@ Source [cfba350bbd](https://github.com/GTNewHorizons/ModernMarkings/tree/cfba350
 Source [3665efa137](https://github.com/GTNewHorizons/ModTweaker/tree/3665efa137504aef3f68ed129aa07703cca6075b) · 237 tracked Java, Scala or Kotlin files outside test/example directories.
 
 - No direct match in the listed checks. Mod entry point: [ModTweaker2](https://github.com/GTNewHorizons/ModTweaker/blob/3665efa137504aef3f68ed129aa07703cca6075b/src/main/java/modtweaker2/ModTweaker2.java#L46). Indirect effects from dependencies, injection, configuration and server rules remain open.
+
+### ModularUI
+
+Source [8d2a2c47a9](https://github.com/GTNewHorizons/ModularUI/tree/8d2a2c47a9e3105ead800d1d1d34ab5a1ff1cfbb) · 142 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- No direct match in the listed checks. Mod entry point: [ModularUI](https://github.com/GTNewHorizons/ModularUI/blob/8d2a2c47a9e3105ead800d1d1d34ab5a1ff1cfbb/src/main/java/com/gtnewhorizons/modularui/ModularUI.java#L31). Indirect effects from dependencies, injection, configuration and server rules remain open.
