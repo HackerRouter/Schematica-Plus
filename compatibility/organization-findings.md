@@ -1790,6 +1790,7 @@ Source [b2cfe3bb5a](https://github.com/GTNewHorizons/SignPosts/tree/b2cfe3bb5a4d
 Source [066deb7d9e](https://github.com/GTNewHorizons/SimpleSkinBackport/tree/066deb7d9e38ff046d391a7979742de9aacde753) · 45 tracked Java, Scala or Kotlin files outside test/example directories.
 
 - No direct match in the listed checks. Mod entry point: [SimpleSkinBackport](https://github.com/GTNewHorizons/SimpleSkinBackport/blob/066deb7d9e38ff046d391a7979742de9aacde753/src/main/java/roadhog360/simpleskinbackport/SimpleSkinBackport.java#L17). Indirect effects from dependencies, injection, configuration and server rules remain open.
+- [MixinRenderTileSkullOverride](https://github.com/GTNewHorizons/SimpleSkinBackport/blob/066deb7d9e38ff046d391a7979742de9aacde753/src/main/java/roadhog360/simpleskinbackport/mixins/late/botania/MixinRenderTileSkullOverride.java#L17) inherits from `TileEntitySkullRenderer`. Include inherited tile state when comparing a saved structure with its paste.
 
 ### SleepingBags
 
