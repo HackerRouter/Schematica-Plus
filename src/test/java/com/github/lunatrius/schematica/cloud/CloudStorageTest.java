@@ -52,6 +52,15 @@ public class CloudStorageTest {
         assertTrue(storage.catalog(alice, 0, false, false, false).directories.contains(deepest));
         CloudPath tooDeep = deepest.child("last");
         assertEquals("schematica.message.cloud.invalid_name", failure(() -> storage.createDirectory(tooDeep, alice, "Alice")));
+        CloudPath listed = null;
+        for (CloudPath directory : storage.catalog(alice, 0, false, false, false).directories) if (directory.parts().size() == CloudPath.MAX_DEPTH) listed = directory;
+        assertNull(listed);
+        assertTrue(storage.file(deepest, alice).isDirectory());
+        assertTrue(new File(storage.file(deepest, alice), "last").mkdir());
+        for (CloudPath directory : storage.catalog(alice, 0, false, false, false).directories) if (directory.parts().size() == CloudPath.MAX_DEPTH) listed = directory;
+        assertEquals(tooDeep, listed);
+        storage.delete(tooDeep, alice, false);
+        assertFalse(new File(storage.file(deepest, alice), "last").exists());
     }
 
     @Test public void storesPrivateAndPublicFilesWithOwnersAndQuota() throws IOException {

@@ -114,9 +114,8 @@ public final class CloudStorage {
             if (!CloudPath.validName(child.getName()) || Files.isSymbolicLink(child.toPath())) continue;
             CloudPath next = path.child(child.getName());
             if (child.isDirectory()) {
-                if (next.parts().size() >= CloudPath.MAX_DEPTH) continue;
                 directories.add(next);
-                scan(child, next, owners, directories, files);
+                if (next.parts().size() < CloudPath.MAX_DEPTH) scan(child, next, owners, directories, files);
             } else if (child.isFile() && CloudPath.schematicName(child.getName())) {
                 Owner owner = CloudPath.PUBLIC.equals(next.scope) ? owners.get(next.relative()) : null;
                 files.add(describe(child, next).withOwner(owner == null ? "" : owner.name));
