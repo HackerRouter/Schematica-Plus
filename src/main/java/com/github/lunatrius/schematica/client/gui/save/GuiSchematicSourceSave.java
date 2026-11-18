@@ -37,7 +37,7 @@ public final class GuiSchematicSourceSave extends GuiSchematicBrowser {
 
     @Override protected void createActions() {
         name = root.add(new UiTextField(fontRendererObj, 210, text -> {}));
-        name.setText(source.name());
+        name.setText(source.name().replaceAll("(?i)\\.(schematic|litematic|schemplus|nbt|schem)$", ""));
         save = addButton("litematica.gui.button.save_to_file", this::save);
         save.setTooltip(UiTranslations.format("litematica.gui.label.schematic_save.hover_info.hold_shift_to_overwrite"));
         format = root.add(new UiLabel(() -> source.data().saveExtension()));
