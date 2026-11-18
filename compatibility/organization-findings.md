@@ -1363,3 +1363,14 @@ Source [dba624e097](https://github.com/GTNewHorizons/nesql-exporter/tree/dba624e
 Source [836a60dc6b](https://github.com/GTNewHorizons/NetherPortalFix/tree/836a60dc6bd6e61463f4c986b2901914f57ded4a) · 2 tracked Java, Scala or Kotlin files outside test/example directories.
 
 - No direct match in the listed checks. Mod entry point: [NetherPortalFix](https://github.com/GTNewHorizons/NetherPortalFix/blob/836a60dc6bd6e61463f4c986b2901914f57ded4a/src/main/java/net/blay09/mods/netherportalfix/NetherPortalFix.java#L11). Indirect effects from dependencies, injection, configuration and server rules remain open.
+
+### NewHorizonsCoreMod
+
+Source [240cd0b1aa](https://github.com/GTNewHorizons/NewHorizonsCoreMod/tree/240cd0b1aadfd8020e68f5fb987083096083e6f1) · 310 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- Existing Plus lookup in `TileFacingAdapter` names [com.dreammaster.modbabychest.TileEntityBabyChest](https://github.com/GTNewHorizons/NewHorizonsCoreMod/blob/240cd0b1aadfd8020e68f5fb987083096083e6f1/src/main/java/com/dreammaster/modbabychest/TileEntityBabyChest.java#L1) (1 matching upstream source names). Check reflected members and client state with the deployed versions.
+- Check tile serialization against `TileNBTCompat`. 1 source file(s) contain matching declarations, including [TileEntityBabyChest.readFromNBT](https://github.com/GTNewHorizons/NewHorizonsCoreMod/blob/240cd0b1aadfd8020e68f5fb987083096083e6f1/src/main/java/com/dreammaster/modbabychest/TileEntityBabyChest.java#L91).
+- Check preview rendering against `RendererSchematicChunk`. 1 source file(s) contain matching declarations, including [RenderBabyChest.renderTileEntityAt](https://github.com/GTNewHorizons/NewHorizonsCoreMod/blob/240cd0b1aadfd8020e68f5fb987083096083e6f1/src/main/java/com/dreammaster/modbabychest/RenderBabyChest.java#L19).
+- Check printer placement against `SchematicPrinter`. 1 source file(s) contain matching declarations, including [BlockBabyChest.onBlockPlacedBy](https://github.com/GTNewHorizons/NewHorizonsCoreMod/blob/240cd0b1aadfd8020e68f5fb987083096083e6f1/src/main/java/com/dreammaster/modbabychest/BlockBabyChest.java#L151).
+- [BlockBabyChest.onBlockPlacedBy](https://github.com/GTNewHorizons/NewHorizonsCoreMod/blob/240cd0b1aadfd8020e68f5fb987083096083e6f1/src/main/java/com/dreammaster/modbabychest/BlockBabyChest.java#L151) depends on placement orientation. Exercise the printer with a rotated schematic.
+- [TileEntityBabyChest.readFromNBT](https://github.com/GTNewHorizons/NewHorizonsCoreMod/blob/240cd0b1aadfd8020e68f5fb987083096083e6f1/src/main/java/com/dreammaster/modbabychest/TileEntityBabyChest.java#L91) accesses `Items`, `Slot`, `facing`. Compare those fields after capture, transform and restore.
