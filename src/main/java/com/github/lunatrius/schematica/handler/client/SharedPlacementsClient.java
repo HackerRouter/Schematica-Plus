@@ -150,6 +150,7 @@ public final class SharedPlacementsClient {
                 InfoUtils.showGuiOrInGameMessage(MessageType.SUCCESS, "syncmatica.success.modification_accepted");
                 return;
             case DENY:
+                if (sharing.remove(message.id) != null) return;
                 modifying.remove(message.id);
                 InfoUtils.showGuiOrInGameMessage(MessageType.ERROR, "syncmatica.error.modification_deny");
                 SchematicWorld denied = loaded(message.id);

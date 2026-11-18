@@ -227,7 +227,8 @@ public final class SharedPlacements {
     }
 
     private void deny(EntityPlayerMP player, MessageSharedRequest message) {
-        if (message.operation == MessageSharedRequest.Operation.MODIFY || message.operation == MessageSharedRequest.Operation.FINISH) {
+        if (message.operation == MessageSharedRequest.Operation.MODIFY || message.operation == MessageSharedRequest.Operation.FINISH
+            || message.operation == MessageSharedRequest.Operation.SHARE) {
             PacketHandler.INSTANCE.sendTo(new MessageSharedUpdate(MessageSharedUpdate.Operation.DENY, message.id, null), player);
         }
     }
@@ -238,6 +239,7 @@ public final class SharedPlacements {
             placement = SharedPlacement.read(message.placement).owned(player.getUniqueID(), player.getCommandSenderName());
         } catch (IllegalArgumentException e) {
             message(player, MessageType.ERROR, "syncmatica.error.invalid_file");
+            deny(player, message);
             return;
         }
         int owned = 0;
@@ -245,10 +247,12 @@ public final class SharedPlacements {
         int limit = ConfigurationHandler.sharedPlacementsPerPlayer;
         if (placements.containsKey(placement.id) || awaiting.containsKey(placement.id) || placements.size() >= MAX_PLACEMENTS || limit > 0 && owned >= limit) {
             message(player, MessageType.ERROR, "schematica.message.shared.limit", limit);
+            deny(player, message);
             return;
         }
         if (placement.size > ServerCloud.maxUpload()) {
             message(player, MessageType.ERROR, "schematica.message.cloud.too_large", placement.fileName, FileUtils.humanReadableByteCount(ServerCloud.maxUpload()));
+            deny(player, message);
             return;
         }
         if (ServerCloud.INSTANCE.storage().file(placement.file(), null).isFile()) {
