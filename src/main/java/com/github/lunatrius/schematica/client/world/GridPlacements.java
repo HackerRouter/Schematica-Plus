@@ -93,7 +93,7 @@ public final class GridPlacements {
         }
         int[] min = new int[3], max = new int[3];
         for (int i = 0; i < 3; i++) {
-            min[i] = (int) Math.floorDiv(intersect[i] - baseBox[i], (long) size[i]);
+            min[i] = (int) -Math.floorDiv(baseBox[i + 3] - intersect[i], (long) size[i]);
             max[i] = (int) Math.floorDiv(intersect[i + 3] - baseBox[i], (long) size[i]);
             min[i] = Math.max(min[i], -negative[i]);
             max[i] = Math.min(max[i], positive[i]);

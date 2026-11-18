@@ -58,8 +58,16 @@ public class GridPlacementsTest {
         assertTrue(all.contains("-1,0,-1"));
         assertTrue(all.contains("2,0,2"));
         assertFalse(all.contains("3,0,0"));
-        Set<String> near = keys(GridPlacements.points(base, grid(10, 1, 2), new int[] {-5, 0, -5, 5, 255, 5}));
+        Set<String> near = keys(GridPlacements.points(base, grid(10, 1, 2), new int[] {-8, 0, -8, 5, 255, 5}));
         assertEquals(new HashSet<>(Arrays.asList("-1,0,-1", "-1,0,0", "0,0,-1")), near);
+        assertTrue(GridPlacements.points(base, grid(10, 1, 2), new int[] {-5, 0, -5, 5, 255, 5}).isEmpty());
         assertTrue(GridPlacements.points(base, new GridSettings(), new int[] {-1000, 0, -1000, 1000, 255, 1000}).isEmpty());
+    }
+
+    @Test public void copiesOutsideTheLoadedAreaAreLeftOut() {
+        int[] base = {0, 64, 0, 3, 64, 3};
+        GridSettings grid = grid(10, 0, 4);
+        Set<String> points = keys(GridPlacements.points(base, grid, new int[] {16, 0, 0, 47, 255, 3}));
+        assertEquals(new HashSet<>(Arrays.asList("2,0,0", "3,0,0", "4,0,0")), points);
     }
 }
