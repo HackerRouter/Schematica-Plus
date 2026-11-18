@@ -1370,6 +1370,7 @@ Source [96555f62d7](https://github.com/GTNewHorizons/Nei-Recipe-Panels/tree/9655
 Source [cd4b95fc9a](https://github.com/GTNewHorizons/neiaddons/tree/cd4b95fc9a8f6952c6d872caca134a9e7e6d74dd) · 60 tracked Java, Scala or Kotlin files outside test/example directories.
 
 - No direct match in the listed checks. Mod entry point: [NEIAddons](https://github.com/GTNewHorizons/neiaddons/blob/cd4b95fc9a8f6952c6d872caca134a9e7e6d74dd/src/main/scala/net/bdew/neiaddons/NEIAddons.java#L28). Indirect effects from dependencies, injection, configuration and server rules remain open.
+- [BarrelHandler](https://github.com/GTNewHorizons/neiaddons/blob/cd4b95fc9a8f6952c6d872caca134a9e7e6d74dd/src/main/scala/net/bdew/neiaddons/exnihilo/waila/BarrelHandler.java#L26) uses `IWailaDataProvider`. The identified integration concerns the item or information UI.
 
 ### nesql-exporter
 
