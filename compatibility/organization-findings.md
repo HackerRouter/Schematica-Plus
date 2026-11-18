@@ -1982,3 +1982,11 @@ Source [4a913339f1](https://github.com/GTNewHorizons/ThaumicInsurgence/tree/4a91
 - Check preview rendering against `RendererSchematicChunk`. 6 source file(s) contain matching declarations, including [BlockAlphaPedestalRenderer.renderWorldBlock](https://github.com/GTNewHorizons/ThaumicInsurgence/blob/4a913339f15f5c63711aaffd4fa19d8f5a477cf4/src/main/java/thaumicinsurgence/renderers/blockrenderers/BlockAlphaPedestalRenderer.java#L59).
 - Check printer placement against `SchematicPrinter`. 1 source file(s) contain matching declarations, including [ItemResource.onItemUse](https://github.com/GTNewHorizons/ThaumicInsurgence/blob/4a913339f15f5c63711aaffd4fa19d8f5a477cf4/src/main/java/thaumicinsurgence/item/ItemResource.java#L158).
 - [ChunkCoords.writeToNBT](https://github.com/GTNewHorizons/ThaumicInsurgence/blob/4a913339f15f5c63711aaffd4fa19d8f5a477cf4/src/main/java/thaumicinsurgence/main/utils/ChunkCoords.java#L65) accesses `dim`, `xPos`, `yPos`, `zPos`. Compare those fields after capture, transform and restore.
+
+### ThaumicMachina
+
+Source [6a86e0cc3d](https://github.com/GTNewHorizons/ThaumicMachina/tree/6a86e0cc3dba196ddf394907f7196a680a4e1b7d) · 65 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- Check tile serialization against `TileNBTCompat`. 1 source file(s) contain matching declarations, including [TileNodeTransmodifier.readFromNBT](https://github.com/GTNewHorizons/ThaumicMachina/blob/6a86e0cc3dba196ddf394907f7196a680a4e1b7d/src/main/java/jcm2606/thaumicmachina/tile/TileNodeTransmodifier.java#L88).
+- Check preview rendering against `RendererSchematicChunk`. 3 source file(s) contain matching declarations, including [RenderMetaphysical.renderTileEntityAt](https://github.com/GTNewHorizons/ThaumicMachina/blob/6a86e0cc3dba196ddf394907f7196a680a4e1b7d/src/main/java/jcm2606/thaumicmachina/client/render/tile/RenderMetaphysical.java#L18).
+- Check interaction events against `SchematicPrinter`. 1 source file(s) contain matching declarations, including [PlayerEventHandler.onPlayerInteract](https://github.com/GTNewHorizons/ThaumicMachina/blob/6a86e0cc3dba196ddf394907f7196a680a4e1b7d/src/main/java/jcm2606/thaumicmachina/core/event/PlayerEventHandler.java#L36).
