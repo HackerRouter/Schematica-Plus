@@ -181,16 +181,17 @@ public final class SchematicProjects {
         boolean queued;
         try {
             queued = SchematicaPlus.proxy.saveSchematic(mc().thePlayer, project.directory(), fileName, mc().theWorld, area.snapshot(), file -> {
-                if (project != current) return;
+                SchematicProject target = current != null && current != project && sameFile(current, project) ? current : project;
+                boolean active = target == current;
                 if (file == null) {
-                    project.saveFailed();
+                    target.saveFailed();
                     InfoUtils.showGuiOrInGameMessage(MessageType.ERROR, "litematica.message.error.schematic_save_failed", fileName);
                     return;
                 }
-                SchematicVersion version = project.addVersion(name, file.getName(), description, offset, System.currentTimeMillis(), true);
-                project.saveToFile();
+                SchematicVersion version = target.addVersion(name, file.getName(), description, offset, System.currentTimeMillis(), active);
+                target.saveToFile();
                 InfoUtils.showGuiOrInGameMessage(MessageType.SUCCESS, "litematica.message.schematic_projects.version_saved", version.version, version.name);
-                if (mc().currentScreen instanceof GuiSchematicProjectManager) ((GuiSchematicProjectManager) mc().currentScreen).versionsChanged();
+                if (active && mc().currentScreen instanceof GuiSchematicProjectManager) ((GuiSchematicProjectManager) mc().currentScreen).versionsChanged();
             });
         } catch (IllegalArgumentException | ArithmeticException e) {
             queued = false;
@@ -202,6 +203,14 @@ public final class SchematicProjects {
         project.beginSave();
         project.saveToFile();
         return true;
+    }
+
+    private static boolean sameFile(SchematicProject a, SchematicProject b) {
+        try {
+            return a.projectFile().getCanonicalFile().equals(b.projectFile().getCanonicalFile());
+        } catch (IOException e) {
+            return a.projectFile().getAbsoluteFile().equals(b.projectFile().getAbsoluteFile());
+        }
     }
 
     /**
