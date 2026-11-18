@@ -111,7 +111,16 @@ public class ToolHandler {
             InfoUtils.showGuiOrInGameMessage(MessageType.WARNING, "schematica.message.grid_paste.grid_disabled");
         }
         List<WorldEditJob> jobs = new ArrayList<>();
-        for (SchematicWorld placement : placements) jobs.add(pasteJob(player, placement));
+        MessageException outside = null;
+        for (SchematicWorld placement : placements) {
+            try {
+                jobs.add(pasteJob(player, placement));
+            } catch (MessageException e) {
+                if (!ConfigurationHandler.pasteRenderLayersOnly || !"schematica.message.paste.outside_layers".equals(e.key())) throw e;
+                outside = e;
+            }
+        }
+        if (jobs.isEmpty() && outside != null) throw outside;
         submitAll(player, jobs, 0);
     }
 
