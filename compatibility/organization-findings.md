@@ -474,3 +474,9 @@ Source [199251b75d](https://github.com/GTNewHorizons/ChunkAPI/tree/199251b75d41c
 Source [3ade14a9fe](https://github.com/GTNewHorizons/Climate-Control/tree/3ade14a9fef34d1335510afb0e14efff866e1290) · 176 tracked Java, Scala or Kotlin files outside test/example directories.
 
 - Check tile serialization against `TileNBTCompat`. 1 source file(s) contain matching declarations, including [Savee.readFromNBT](https://github.com/GTNewHorizons/Climate-Control/blob/3ade14a9fef34d1335510afb0e14efff866e1290/src/main/java/climateControl/utils/Savee.java#L107).
+
+### CodeChickenCore
+
+Source [fd7d5c269f](https://github.com/GTNewHorizons/CodeChickenCore/tree/fd7d5c269f91a1a1bcd7a46a16636358b90a129c) · 176 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- Existing Plus lookup in `VisualStreams` names [codechicken.lib.data.MCDataInput](https://github.com/GTNewHorizons/CodeChickenCore/blob/fd7d5c269f91a1a1bcd7a46a16636358b90a129c/src/main/java/codechicken/lib/data/MCDataInput.java#L1) (5 matching upstream source names). Check reflected members and client state with the deployed versions.
