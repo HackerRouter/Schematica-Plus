@@ -289,12 +289,23 @@ public final class RawMaterialExport {
         List<Path> files = new ArrayList<>();
         if (materials.isEmpty()) return files;
         Result result = export(index, materials);
-        String suffix = (missingOnly ? "_missing_only" : "") + "_" + new SimpleDateFormat("yyyy-MM-dd_HH.mm.ss").format(new Date());
+        String base = (missingOnly ? "_missing_only" : "") + "_" + new SimpleDateFormat("yyyy-MM-dd_HH.mm.ss").format(new Date());
         Files.createDirectories(directory);
+        String suffix = unusedSuffix(directory, base);
         if (details) files.add(write(directory.resolve("raw_material_list_recipe_details" + suffix + ".json"), detailsJson(result)));
         files.add(write(directory.resolve("raw_material_list_recipe_steps" + suffix + ".json"), rawJson(result.flat)));
         files.add(write(directory.resolve("raw_material_list_simplified" + suffix + ".json"), rawJson(result.combined)));
         return files;
+    }
+
+    static String unusedSuffix(Path directory, String base) {
+        String[] names = {"raw_material_list_recipe_details", "raw_material_list_recipe_steps", "raw_material_list_simplified"};
+        for (int number = 1; ; number++) {
+            String suffix = number == 1 ? base : base + "_" + number;
+            boolean used = false;
+            for (String name : names) used |= Files.exists(directory.resolve(name + suffix + ".json"));
+            if (!used) return suffix;
+        }
     }
 
     static <T> long count(MaterialListModel<T> model, MaterialListModel.Entry<T> entry, boolean missingOnly) {

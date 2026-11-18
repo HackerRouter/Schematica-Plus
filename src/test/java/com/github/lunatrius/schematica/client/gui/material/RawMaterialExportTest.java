@@ -1,5 +1,7 @@
 package com.github.lunatrius.schematica.client.gui.material;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -9,11 +11,15 @@ import java.util.Map;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
 import static org.junit.Assert.*;
 
 public class RawMaterialExportTest {
+    @Rule public TemporaryFolder temporary = new TemporaryFolder();
+
     private static List<List<String>> slots(String... items) {
         List<List<String>> slots = new ArrayList<>();
         for (String item : items) slots.add(Arrays.asList(item.split("\\|")));
@@ -109,6 +115,13 @@ public class RawMaterialExportTest {
             .getAsJsonObject("RemainingMaterials").get("Type").getAsString());
         JsonObject simplified = RawMaterialExport.rawJson(result.combined).getAsJsonArray().get(0).getAsJsonObject();
         assertTrue(simplified.has("RawItem") && simplified.has("TotalEstimate") && simplified.getAsJsonArray("Steps").size() == 0);
+    }
+
+    @Test public void exportsInTheSameSecondGetDistinctNames() throws Exception {
+        Path directory = temporary.getRoot().toPath();
+        assertEquals("_t", RawMaterialExport.unusedSuffix(directory, "_t"));
+        Files.write(directory.resolve("raw_material_list_simplified_t.json"), new byte[0]);
+        assertEquals("_t_2", RawMaterialExport.unusedSuffix(directory, "_t"));
     }
 
     @Test public void alternativeIngredientsAvoidListingTheResultAsRaw() {
