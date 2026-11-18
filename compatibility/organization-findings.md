@@ -691,3 +691,9 @@ Source [780054ab6a](https://github.com/GTNewHorizons/EnderStorage/tree/780054ab6
 - Check printer placement against `SchematicPrinter`. 3 source file(s) contain matching declarations, including [BlockEnderStorage.onBlockPlacedBy](https://github.com/GTNewHorizons/EnderStorage/blob/780054ab6af449e56c2f1927310514b42aff61c6/src/main/java/codechicken/enderstorage/common/BlockEnderStorage.java#L171).
 - [BlockEnderStorage.getPickBlock](https://github.com/GTNewHorizons/EnderStorage/blob/780054ab6af449e56c2f1927310514b42aff61c6/src/main/java/codechicken/enderstorage/common/BlockEnderStorage.java#L68) queries world state when selecting an item. Compare the materials list against the placed variant.
 - [TileFrequencyOwner.readFromNBT](https://github.com/GTNewHorizons/EnderStorage/blob/780054ab6af449e56c2f1927310514b42aff61c6/src/main/java/codechicken/enderstorage/common/TileFrequencyOwner.java#L61) accesses `freq`, `owner`. Compare those fields after capture, transform and restore.
+
+### EnderZoo
+
+Source [2e122a4f1f](https://github.com/GTNewHorizons/EnderZoo/tree/2e122a4f1fa4e3dfd0c88143e68066fd38fed580) · 82 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- Check printer placement against `SchematicPrinter`. 1 source file(s) contain matching declarations, including [ItemSpawnEgg.onItemUse](https://github.com/GTNewHorizons/EnderZoo/blob/2e122a4f1fa4e3dfd0c88143e68066fd38fed580/src/main/java/crazypants/enderzoo/item/ItemSpawnEgg.java#L89).
