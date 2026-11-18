@@ -1033,3 +1033,9 @@ Source [3e94b249d4](https://github.com/GTNewHorizons/IguanaTweaksTConstruct/tree
 Source [b52b7bd473](https://github.com/GTNewHorizons/Infernal-Mobs/tree/b52b7bd47311f640bca30ec117a4c32d26641c64) · 44 tracked Java, Scala or Kotlin files outside test/example directories.
 
 - No direct match in the listed checks. Mod entry point: [InfernalMobsCore](https://github.com/GTNewHorizons/Infernal-Mobs/blob/b52b7bd47311f640bca30ec117a4c32d26641c64/src/main/java/atomicstryker/infernalmobs/common/InfernalMobsCore.java#L93). Indirect effects from dependencies, injection, configuration and server rules remain open.
+
+### InfoHUD
+
+Source [f29c35cee0](https://github.com/GTNewHorizons/InfoHUD/tree/f29c35cee079233413b78e8680473551a0d3b1bd) · 61 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- No direct match in the listed checks. Mod entry point: [InfoHUD](https://github.com/GTNewHorizons/InfoHUD/blob/f29c35cee079233413b78e8680473551a0d3b1bd/src/main/java/com/gtnewhorizons/infohud/InfoHUD.java#L13). Indirect effects from dependencies, injection, configuration and server rules remain open.
