@@ -610,3 +610,10 @@ Source [f94737c548](https://github.com/GTNewHorizons/Display-Panels/tree/f94737c
 - Check printer placement against `SchematicPrinter`. 2 source file(s) contain matching declarations, including [BlockNuclearControlMain.onBlockPlaced](https://github.com/GTNewHorizons/Display-Panels/blob/f94737c5488a1e9579d88ba051c0d79ee36e945f/src/main/java/shedar/mods/ic2/nuclearcontrol/blocks/BlockNuclearControlMain.java#L135).
 - [InventoryItem.readFromNBT](https://github.com/GTNewHorizons/Display-Panels/blob/f94737c5488a1e9579d88ba051c0d79ee36e945f/src/main/java/shedar/mods/ic2/nuclearcontrol/InventoryItem.java#L121) accesses `ItemInventory`, `Slot`. Compare those fields after capture, transform and restore.
 - [MainBlockRenderer.renderWorldBlock](https://github.com/GTNewHorizons/Display-Panels/blob/f94737c5488a1e9579d88ba051c0d79ee36e945f/src/main/java/shedar/mods/ic2/nuclearcontrol/renderers/MainBlockRenderer.java#L70) queries tile data while rendering. Preview a populated tile after saving and reopening its schematic.
+
+### DistantHorizons
+
+Source [b287f8388b](https://github.com/GTNewHorizons/DistantHorizons/tree/b287f8388b60714b76156266d344cc9d9baef7ea) · 885 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- Check world or renderer transformation alongside the schematic world and render pipeline. 6 source file(s) contain matching declarations, including [MixinEntityRenderer.EntityRenderer](https://github.com/GTNewHorizons/DistantHorizons/blob/b287f8388b60714b76156266d344cc9d9baef7ea/dh/forge112/src/main/java/com/seibel/distanthorizons/forge112/mixins/client/MixinEntityRenderer.java#L40).
+- Check interaction events against `SchematicPrinter`. 5 source file(s) contain matching declarations, including [ForgeClientProxy.rightClickBlockEvent](https://github.com/GTNewHorizons/DistantHorizons/blob/b287f8388b60714b76156266d344cc9d9baef7ea/dh/forge/src/main/java/com/seibel/distanthorizons/forge/ForgeClientProxy.java#L114).
