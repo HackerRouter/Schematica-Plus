@@ -1018,3 +1018,12 @@ Source [48ddad516b](https://github.com/GTNewHorizons/IFU/tree/48ddad516bb891edb4
 - Check tile serialization against `TileNBTCompat`. 1 source file(s) contain matching declarations, including [InventoryOreFinder.writeToNBT](https://github.com/GTNewHorizons/IFU/blob/48ddad516bb891edb4a229c255614651e70b0204/src/main/java/com/encraft/dz/inventory/InventoryOreFinder.java#L110).
 - Check printer placement against `SchematicPrinter`. 1 source file(s) contain matching declarations, including [ItemOreFinderTool.onItemUse](https://github.com/GTNewHorizons/IFU/blob/48ddad516bb891edb4a229c255614651e70b0204/src/main/java/com/encraft/dz/items/ItemOreFinderTool.java#L193).
 - [InventoryOreFinder.writeToNBT](https://github.com/GTNewHorizons/IFU/blob/48ddad516bb891edb4a229c255614651e70b0204/src/main/java/com/encraft/dz/inventory/InventoryOreFinder.java#L110) accesses `Slot`. Compare those fields after capture, transform and restore.
+
+### IguanaTweaksTConstruct
+
+Source [3e94b249d4](https://github.com/GTNewHorizons/IguanaTweaksTConstruct/tree/3e94b249d40a9cbbde90436d203ec206cc3cb663) · 101 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- Check preview rendering against `RendererSchematicChunk`. 1 source file(s) contain matching declarations, including [IguanaTileEntitySkullRenderer.renderTileEntityAt](https://github.com/GTNewHorizons/IguanaTweaksTConstruct/blob/3e94b249d40a9cbbde90436d203ec206cc3cb663/src/main/java/iguanaman/iguanatweakstconstruct/mobheads/renderers/IguanaTileEntitySkullRenderer.java#L56).
+- Check printer placement against `SchematicPrinter`. 1 source file(s) contain matching declarations, including [IguanaSkull.onItemUse](https://github.com/GTNewHorizons/IguanaTweaksTConstruct/blob/3e94b249d40a9cbbde90436d203ec206cc3cb663/src/main/java/iguanaman/iguanatweakstconstruct/mobheads/items/IguanaSkull.java#L118).
+- Check interaction events against `SchematicPrinter`. 1 source file(s) contain matching declarations, including [ClayBucketHandler.onRightClickBlock](https://github.com/GTNewHorizons/IguanaTweaksTConstruct/blob/3e94b249d40a9cbbde90436d203ec206cc3cb663/src/main/java/iguanaman/iguanatweakstconstruct/claybuckets/ClayBucketHandler.java#L45).
+- [IguanaSkull.onItemUse](https://github.com/GTNewHorizons/IguanaTweaksTConstruct/blob/3e94b249d40a9cbbde90436d203ec206cc3cb663/src/main/java/iguanaman/iguanatweakstconstruct/mobheads/items/IguanaSkull.java#L118) depends on placement orientation. Exercise the printer with a rotated schematic.
