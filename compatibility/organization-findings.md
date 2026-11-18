@@ -2172,3 +2172,9 @@ Source [fb341a4c6b](https://github.com/GTNewHorizons/Viridium/tree/fb341a4c6b29a
 Source [3a1590536e](https://github.com/GTNewHorizons/VisualProspecting/tree/3a1590536e5e72906e6066dcc79f4f2a7a2d4dfe) · 79 tracked Java, Scala or Kotlin files outside test/example directories.
 
 - Check tile serialization against `TileNBTCompat`. 2 source file(s) contain matching declarations, including [WorldIdHandler.readFromNBT](https://github.com/GTNewHorizons/VisualProspecting/blob/3a1590536e5e72906e6066dcc79f4f2a7a2d4dfe/src/main/java/com/sinthoras/visualprospecting/database/WorldIdHandler.java#L35).
+
+### waila
+
+Source [3604bc53cb](https://github.com/GTNewHorizons/waila/tree/3604bc53cb5835f8a00df1ecefd10c43ec5542da) · 179 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- No direct match in the listed checks. Mod entry point: [Waila](https://github.com/GTNewHorizons/waila/blob/3604bc53cb5835f8a00df1ecefd10c43ec5542da/src/main/java/mcp/mobius/waila/Waila.java#L38). Indirect effects from dependencies, injection, configuration and server rules remain open.
