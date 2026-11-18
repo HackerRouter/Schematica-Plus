@@ -24,10 +24,10 @@ public final class GuiSchematicManager extends GuiSchematicBrowser {
     private final int[] choices = {0, 1, 0};
     private static final String[][] OPTIONS = {
         {"edit_type.rename_schematic", "edit_type.change_author", "edit_type.set_preview", "edit_type.change_description", "edit_type.remove_preview"},
-        {"export_type.schematic", "export_type.litematic_v4", "export_type.vanilla", "export_type.schemplus"},
+        {"export_type.schematic", "export_type.litematic_v4", "export_type.vanilla", "export_type.schemplus", "export_type.sponge"},
         {"file_op_type.rename", "file_op_type.copy", "file_op_type.delete"}
     };
-    private static final String[] EXPORT_EXTENSIONS = {".schematic", ".litematic", ".nbt", ".schemplus"};
+    private static final String[] EXPORT_EXTENSIONS = {".schematic", ".litematic", ".nbt", ".schemplus", ".schem"};
 
     public GuiSchematicManager(GuiScreen parent) {
         super(parent, UiTranslations.format("litematica.gui.title.schematic_manager"), false);
@@ -164,7 +164,7 @@ public final class GuiSchematicManager extends GuiSchematicBrowser {
     private String optionKey(int type) {
         String option = OPTIONS[type][choices[type]];
         return (option.equals("export_type.litematic_v4") || option.equals("export_type.schemplus")
-            || option.equals("edit_type.change_description") || option.equals("edit_type.remove_preview") ? "schematica.ui.files." : "litematica.gui.label.schematic_manager.") + option;
+            || option.equals("export_type.sponge") || option.equals("edit_type.change_description") || option.equals("edit_type.remove_preview") ? "schematica.ui.files." : "litematica.gui.label.schematic_manager.") + option;
     }
 
     private void updateVisibility() {

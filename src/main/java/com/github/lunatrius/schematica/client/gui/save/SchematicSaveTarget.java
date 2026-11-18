@@ -11,7 +11,7 @@ public final class SchematicSaveTarget {
 
     private SchematicSaveTarget() {}
 
-    public static final String[] FORMATS = {".schematic", ".schemplus", ".litematic"};
+    public static final String[] FORMATS = {".schematic", ".schemplus", ".litematic", ".schem"};
 
     public static String filename(String input, boolean extended) {
         return filename(input, extended ? ".schemplus" : ".schematic");

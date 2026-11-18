@@ -23,7 +23,7 @@ import com.github.lunatrius.schematica.util.SchematicLimits;
 import com.github.lunatrius.schematica.world.storage.Schematic;
 
 /**
- * Import only. Blocks are modern block state strings with varint palette indices (x + z * width + y * width * length);
+ * Blocks are modern block state strings with varint palette indices (x + z * width + y * width * length);
  * version 3 nests everything in "Schematic" and block entity / entity data in "Data". The WorldEdit origin (where the
  * copy was made from) becomes the schematic origin.
  */
@@ -64,7 +64,14 @@ public final class SpongeSchematic extends SchematicFormat {
             int index = paletteTag.getInteger((String) key);
             if (states[index] != null) throw new IllegalArgumentException("Duplicate Sponge palette index");
             states[index] = (String) key;
-            palette[index] = translator.translate((String) key);
+            if (tag.getInteger("DataVersion") == LitematicExport.DATA_VERSION) {
+                NBTTagCompound legacy = LegacyBlockStates.tag(states[index]);
+                NBTTagCompound properties = legacy.getCompoundTag("Properties");
+                if (properties.hasKey("schematica_meta")) {
+                    legacy.setInteger(LitematicExport.META_KEY, Integer.parseInt(properties.getString("schematica_meta")));
+                }
+                palette[index] = SchematicLitematica.legacyMapping(legacy, translator);
+            } else palette[index] = translator.translate((String) key);
         }
 
         Schematic schematic = new Schematic(new ItemStack(Blocks.grass), width, height, length);
@@ -176,7 +183,66 @@ public final class SpongeSchematic extends SchematicFormat {
 
     @Override
     public boolean writeToNBT(NBTTagCompound tagCompound, ISchematic schematic, World backupWorld) {
-        return false;
+        encode(tagCompound, schematic, backupWorld, SchematicFormat.saveNBT, SchematicFormat.saveEntities);
+        return true;
     }
 
+    static void encode(NBTTagCompound tag, ISchematic schematic, World backupWorld, boolean includeNBT, boolean includeEntities) {
+        int width = schematic.getWidth(), height = schematic.getHeight(), length = schematic.getLength();
+        tag.setInteger("Version", 2);
+        tag.setInteger("DataVersion", LitematicExport.DATA_VERSION);
+        tag.setShort("Width", (short) width);
+        tag.setShort("Height", (short) height);
+        tag.setShort("Length", (short) length);
+        tag.setIntArray("Offset", new int[3]);
+        NBTTagCompound metadata = new NBTTagCompound();
+        SchematicOrigin origin = schematic.getOrigin();
+        metadata.setInteger("WEOffsetX", -origin.x);
+        metadata.setInteger("WEOffsetY", -origin.y);
+        metadata.setInteger("WEOffsetZ", -origin.z);
+        tag.setTag("Metadata", metadata);
+        NBTTagCompound palette = new NBTTagCompound();
+        java.util.Map<Long, Integer> indices = new java.util.HashMap<>();
+        java.io.ByteArrayOutputStream data = new java.io.ByteArrayOutputStream();
+        for (int y = 0; y < height; y++) for (int z = 0; z < length; z++) for (int x = 0; x < width; x++) {
+            Block block = schematic.containsBlock(x, y, z) ? schematic.getBlock(x, y, z) : null;
+            int meta = block == null ? 0 : schematic.getBlockMetadata(x, y, z);
+            long key = ((long) Block.getIdFromBlock(block) << 16) | (meta & 65535);
+            Integer index = indices.get(key);
+            if (index == null) {
+                NBTTagCompound entry = LitematicExport.paletteEntry(block, meta);
+                String state = entry == null ? "minecraft:air" : LegacyBlockStates.state(entry);
+                if (entry != null && entry.hasKey(LitematicExport.META_KEY)) state += "[schematica_meta=" + meta + "]";
+                index = palette.hasKey(state) ? palette.getInteger(state) : palette.func_150296_c().size();
+                palette.setInteger(state, index);
+                indices.put(key, index);
+            }
+            int value = index;
+            while (value >= 128) {
+                data.write((value & 127) | 128);
+                value >>>= 7;
+            }
+            data.write(value);
+        }
+        tag.setTag("Palette", palette);
+        tag.setInteger("PaletteMax", palette.func_150296_c().size());
+        tag.setByteArray("BlockData", data.toByteArray());
+        NBTTagList tiles = LitematicExport.tiles(schematic, schematic, null, backupWorld, includeNBT);
+        for (int i = 0; i < tiles.tagCount(); i++) {
+            NBTTagCompound tile = tiles.getCompoundTagAt(i);
+            tile.setIntArray("Pos", new int[] {tile.getInteger("x"), tile.getInteger("y"), tile.getInteger("z")});
+            for (String axis : new String[] {"x", "y", "z"}) tile.removeTag(axis);
+            renameId(tile);
+        }
+        tag.setTag("BlockEntities", tiles);
+        NBTTagList entities = LitematicExport.entities(schematic, schematic, null, null, includeEntities);
+        for (int i = 0; i < entities.tagCount(); i++) renameId(entities.getCompoundTagAt(i));
+        tag.setTag("Entities", entities);
+        SchematicFluids.write(tag, schematic);
+    }
+
+    private static void renameId(NBTTagCompound data) {
+        data.setString("Id", data.getString("id"));
+        data.removeTag("id");
+    }
 }

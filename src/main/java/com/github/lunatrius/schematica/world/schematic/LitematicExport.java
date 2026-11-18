@@ -159,7 +159,7 @@ public final class LitematicExport {
         return count;
     }
 
-    private static NBTTagList tiles(ISchematic schematic, ISchematic part, SchematicRegion box, World backupWorld, boolean includeNBT) {
+    static NBTTagList tiles(ISchematic schematic, ISchematic part, SchematicRegion box, World backupWorld, boolean includeNBT) {
         NBTTagList list = new NBTTagList();
         if (!includeNBT) return list;
         List<TileEntity> source = part != null ? part.getTileEntities() : schematic.getTileEntities();
@@ -184,7 +184,7 @@ public final class LitematicExport {
         return list;
     }
 
-    private static NBTTagList entities(ISchematic schematic, ISchematic part, SchematicRegion box, Map<Entity, SchematicRegion> owners,
+    static NBTTagList entities(ISchematic schematic, ISchematic part, SchematicRegion box, Map<Entity, SchematicRegion> owners,
         boolean includeEntities) {
         NBTTagList list = new NBTTagList();
         if (!includeEntities) return list;

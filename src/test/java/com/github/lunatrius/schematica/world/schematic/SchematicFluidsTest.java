@@ -83,6 +83,17 @@ public class SchematicFluidsTest {
         assertFalse(empty.hasKey(SchematicFluids.NBT));
     }
 
+    @Test public void spongeExportPreservesBlocksMetadataAndFluids() {
+        Schematic source = sample();
+        source.setBlockMetadata(1, 2, 0, 31);
+        NBTTagCompound tag = new NBTTagCompound();
+        SpongeSchematic.encode(tag, source, null, false, false);
+        ISchematic read = new SpongeSchematic().readFromNBT(tag);
+        assertEquals(source.getStoredFluids(), read.getStoredFluids());
+        assertEquals(glass, read.getBlock(1, 2, 0));
+        assertEquals(31, read.getBlockMetadata(1, 2, 0));
+    }
+
     @Test public void vanillaStructurePreservesStoredFluids() {
         Schematic source = sample();
         NBTTagCompound tag = VanillaStructure.encode(source, null, false, false, "");

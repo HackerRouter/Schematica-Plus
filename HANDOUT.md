@@ -77,7 +77,7 @@ mod. Original Schematica conflicts with Plus and must be removed from the instan
   is available. Creative retains its native behavior without tool wear. The legacy
   `destroyInstantly` option only controls the unassisted creative printing path.
 - `.schematic`, `.schemplus`, `.litematic` and structure `.nbt` support reading and
-  writing. Sponge `.schem` v1-v3 is **import-only**; biomes are ignored and modern
+  writing. Sponge `.schem` imports v1-v3 and exports v2; biomes are ignored and modern
   block/NBT conversion is partial. Automated Sponge fixtures cover v1/v2/v3 and reject malformed block streams.
 - Modern vanilla `.litematic` import uses the file's data version for item
   components, text, equipment and native block-state conversion. The container

@@ -93,7 +93,7 @@ verified in a native game session.
 | RemoteIO `c90e11eb` | The remote interface's `position` target follows moves and pastes when it is in the source dimension; targets in other dimensions are kept. `axisY` is kept on rotations and vertical mirrors and reversed on X/Z mirrors, which matches a target moved with the interface. New captures keep external targets fixed and compensate the integer face mapping on Y rotations. RemoteIO stores only yaw; arbitrary tilts and reflections of a fixed target cannot be expressed with its four settings. |
 | Galaxia `08bdb410` | Multiblock `facing` is a StructureLib `ExtendedFacing` index and is turned through StructureLib when it is installed, avoiding vertical flips; `placedFacing` is turned as a side. Station `airlocks`, `plugs` and `attachments` and airlock `stationControllers` follow moves, turns and pastes. A pasted station discards its source asset ID and controller role, resolves the pasting player's team, and uses native formation to register its own station in a valid orbit. World moves retain the existing identity. The StructureLib path has no unit coverage because StructureLib is not on the test classpath. |
 | UtilitiesInExcess `5b698325` | The void quarry's `area`, `nextAreas`, Y bounds and `dx/dy/dz` cursor follow moves and pastes, including offsets off the chunk grid. On rotations and X/Z mirrors the areas turn and the cursor restarts at the turned area's first column, since the saved scan order cannot be turned; vertical mirrors flip the Y bounds. Tilting rotates each work volume in three dimensions. Queued areas with different resulting height ranges are retained in the schematic. Pasting that quarry is refused before replacing its block because the native tile has only one height range. The smart pump restarts its chunk scan (`currentY`, `xInChunk`, `zInChunk`, `currentChunk`, `finished`) whenever it is pasted, moved or turned, so it scans around its new chunk instead of the old one. Dyed blocks rely on the existing 16-bit metadata storage and still need a game check. |
-| LiquidLogged `d1d5a695` | Fluids stored inside blocks are captured on save through `LiquidLoggedAPI`, kept per block in the schematic, saved in `.schematic`/`.schemplus` files as `SchematicaPlusStoredFluids`, carried through region copies, rotations, mirrors, downloads and edit uploads, shown in the placement preview and restored on server pastes and world moves after the blocks are written. A pasted block without a stored fluid clears any fluid the target held. LiquidLogged only stores fluids from Y 0 to 255; pasting a stored fluid outside that range is reported as a failed block. A world move checks the destination height during capture and stops before clearing the source if its fluid would be lost. Litematic regions and vanilla structures preserve stored fluids in a Plus extension when reopened by Plus. Sponge imports also read that extension. |
+| LiquidLogged `d1d5a695` | Fluids stored inside blocks are captured on save through `LiquidLoggedAPI`, kept per block in the schematic, saved in `.schematic`/`.schemplus` files as `SchematicaPlusStoredFluids`, carried through region copies, rotations, mirrors, downloads and edit uploads, shown in the placement preview and restored on server pastes and world moves after the blocks are written. A pasted block without a stored fluid clears any fluid the target held. LiquidLogged only stores fluids from Y 0 to 255; pasting a stored fluid outside that range is reported as a failed block. A world move checks the destination height during capture and stops before clearing the source if its fluid would be lost. Litematic regions and vanilla structures preserve stored fluids in a Plus extension when reopened by Plus. Sponge v2 exports and imports also carry that extension. Command fallback uses the operator /liquidlogged command and waits for its reply. The printer and Easy Place use a native filled bucket on a matching empty holder within reach. |
 
 ## Native NBT and standard tile updates
 
@@ -206,7 +206,7 @@ accepted merely because they contain or interact with fluid.
 
 ## File behavior and limits
 
-Sponge `.schem` v1-v3 is import-only; biomes are ignored. The other supported
+Sponge `.schem` imports v1-v3 and exports v2; biomes are ignored. The other supported
 formats are `.schematic`, `.schemplus`, `.litematic` and structure `.nbt`. Modern
 block/NBT conversion is partial; inspect import warnings and test converted copies.
 
@@ -348,7 +348,7 @@ Litematic uses its native Metadata fields. The other formats carry optional data
 under `ExtendedMetadata.SchematicaPlus`; `.nbt` also writes native `author`.
 This does not modify their block encodings or trigger a format upgrade by itself.
 It is not a standard author/thumbnail extension understood by every external editor;
-other tools may ignore or discard those fields. Sponge `.schem` stays import-only.
+other tools may ignore or discard those fields. Sponge v2 exports include the Plus stored-fluid extension.
 
 Pure metadata editing retains the original data version, block arrays/palettes and
 unknown tags, and refuses files whose NBT cannot be rewritten safely. Conversion

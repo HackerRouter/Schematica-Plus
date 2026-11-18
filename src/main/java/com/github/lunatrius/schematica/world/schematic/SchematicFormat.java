@@ -136,6 +136,14 @@ public abstract class SchematicFormat {
                 fileName.substring(0, fileName.length() - ".litematic".length()), author, System.currentTimeMillis());
             return document;
         }
+        if (fileName.toLowerCase(Locale.ROOT).endsWith(".schem")) {
+            NBTTagCompound tag = new NBTTagCompound();
+            SpongeSchematic.encode(tag, schematic, backupWorld, includeNBT, includeEntities);
+            NBTTagCompound metadata = SchematicMetadata.forSave(schematic, SchematicMetadata.stem(fileName), author, System.currentTimeMillis());
+            SchematicMetadata.size(metadata, schematic, -1);
+            SchematicMetadata.write(tag, metadata, false);
+            return new LitematicExport.Document(tag, Collections.emptyMap());
+        }
         if (fileName.toLowerCase(Locale.ROOT).endsWith(".nbt")) {
             NBTTagCompound tag = VanillaStructure.encode(schematic, backupWorld, includeNBT, includeEntities, author);
             NBTTagCompound metadata = SchematicMetadata.forSave(schematic, SchematicMetadata.stem(fileName), author, System.currentTimeMillis());

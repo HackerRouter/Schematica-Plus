@@ -534,3 +534,4 @@ schematica.config.printerMaxPlacementsPerTick=Maximum printer placements per tic
 schematica.config.printerMaxPlacementsPerTick.tooltip=Server limit per player for printer placement targets per game tick (1-64, default 64). Requests execute in order; double slabs and multi-block structures count as one target.
 schematica.config.printerMaxBreaksPerTick=Maximum printer breaks per tick
 schematica.config.printerMaxBreaksPerTick.tooltip=Server limit per player for fast printer breaks per game tick (0-64, default 64). Native tool wear, drops and protection checks apply. 0 disables fast breaking and retains normal mining.
+schematica.ui.files.export_type.sponge=Sponge Schematic v2

@@ -259,7 +259,7 @@ worlds used for large edits.
 | `.schemplus` | Read/write extended IDs, Plus metadata, visual payloads and independent overlapping regions |
 | `.litematic` | Import and export; newly written files use the version 4 / Minecraft 1.12.2 layout |
 | `.nbt` | Read/write vanilla structures; export uses the Minecraft 1.12 layout |
-| Sponge `.schem` | Import v1–v3; no export; biomes are ignored |
+| Sponge `.schem` | Import v1–v3 and export v2; biomes are ignored |
 
 Saving as `.schematic` automatically upgrades to `.schemplus` when extended block
 IDs or Plus region/origin data require it. The actual filename is reported in the
