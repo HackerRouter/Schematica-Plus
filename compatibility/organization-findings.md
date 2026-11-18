@@ -2112,3 +2112,9 @@ Source [24c7d54c57](https://github.com/GTNewHorizons/TX-Loader/tree/24c7d54c5792
 Source [56a008ce92](https://github.com/GTNewHorizons/UniMixins/tree/56a008ce92dd1314a498a588835500236cdf299c) · 87 tracked Java, Scala or Kotlin files outside test/example directories.
 
 - No direct match in the listed checks. Mod entry point: [AllModule](https://github.com/GTNewHorizons/UniMixins/blob/56a008ce92dd1314a498a588835500236cdf299c/module-all/src/main/java/io/github/legacymoddingmc/unimixins/all/AllModule.java#L8). Indirect effects from dependencies, injection, configuration and server rules remain open.
+
+### Universal-Singularities
+
+Source [72af7d1a6e](https://github.com/GTNewHorizons/Universal-Singularities/tree/72af7d1a6e87e24a54e26386b4338400d6fb52d1) · 8 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- No direct match in the listed checks. Mod entry point: [UniversalSingularityMod](https://github.com/GTNewHorizons/Universal-Singularities/blob/72af7d1a6e87e24a54e26386b4338400d6fb52d1/src/main/java/wealthyturtle/uiesingularities/UniversalSingularityMod.java#L18). Indirect effects from dependencies, injection, configuration and server rules remain open.
