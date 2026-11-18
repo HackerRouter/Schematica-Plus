@@ -2299,6 +2299,7 @@ Source [7afd08377a](https://github.com/GTNewHorizons/worldedit-gtnh/tree/7afd083
 Source [83c0a8b8d8](https://github.com/GTNewHorizons/Yamcl/tree/83c0a8b8d89add9efa04c59d70df563b86973185) · 80 tracked Java, Scala or Kotlin files outside test/example directories.
 
 - No direct match in the listed checks. Mod entry point: [YAMCore](https://github.com/GTNewHorizons/Yamcl/blob/83c0a8b8d89add9efa04c59d70df563b86973185/src/main/java/eu/usrv/yamcore/YAMCore.java#L25). Indirect effects from dependencies, injection, configuration and server rules remain open.
+- [ModBlockManager](https://github.com/GTNewHorizons/Yamcl/blob/83c0a8b8d89add9efa04c59d70df563b86973185/src/main/java/eu/usrv/yamcore/blocks/ModBlockManager.java#L72) calls `GameRegistry.registerBlock`. Include the registered block variants in capture, preview and material comparisons.
 
 ### Ztones-Unofficial
 
