@@ -3,6 +3,8 @@ package com.github.lunatrius.schematica.nbt;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.github.lunatrius.schematica.api.ISchematic;
+
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityHanging;
 import net.minecraft.entity.EntityList;
@@ -106,13 +108,15 @@ public class NBTHelper {
     /** A copy moved by -offset; a tile from the world (fromWorld) gets its links to other blocks in the new coordinates. */
     public static TileEntity reloadTileEntity(TileEntity tileEntity, int offsetX, int offsetY, int offsetZ, boolean fromWorld)
         throws NBTConversionException {
-        if (tileEntity == null) {
-            return null;
-        }
+        return reloadTileEntity(tileEntity, offsetX, offsetY, offsetZ, fromWorld, null);
+    }
 
+    public static TileEntity reloadTileEntity(TileEntity tileEntity, int offsetX, int offsetY, int offsetZ, boolean fromWorld,
+        ISchematic selection) throws NBTConversionException {
+        if (tileEntity == null) return null;
         try {
             NBTTagCompound tileEntityCompound = writeTileEntityToCompound(tileEntity);
-            if (fromWorld) CoordinateLinks.capture(tileEntity, tileEntityCompound, offsetX, offsetY, offsetZ);
+            if (fromWorld) CoordinateLinks.capture(tileEntity, tileEntityCompound, offsetX, offsetY, offsetZ, selection);
             else CoordinateLinks.shift(tileEntity, tileEntityCompound, -offsetX, -offsetY, -offsetZ);
             TileEntitySnapshots.capture(tileEntity, tileEntityCompound);
             tileEntity = readTileEntityFromCompound(tileEntityCompound);

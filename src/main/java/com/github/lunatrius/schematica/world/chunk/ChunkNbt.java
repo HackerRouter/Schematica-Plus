@@ -29,7 +29,7 @@ public final class ChunkNbt {
                 TileEntity tile = NBTHelper.readTileEntityFromCompound(tag);
                 if (tile == null) continue;
                 tile.setWorldObj(container.world);
-                TileEntity copy = NBTHelper.reloadTileEntity(tile, container.minX, container.minY, container.minZ, true);
+                TileEntity copy = NBTHelper.reloadTileEntity(tile, container.minX, container.minY, container.minZ, true, schematic);
                 if (copy != null) schematic.setTileEntity(x, y, z, copy);
             } catch (Exception e) {
                 Reference.logger.warn("Could not use the server data of the block entity at {} {} {}", x, y, z, e);

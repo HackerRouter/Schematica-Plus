@@ -412,6 +412,18 @@ public class CoordinateLinksTest {
         assertEquals(-1, foreign.getCompoundTag("position").getInteger("dimension"));
     }
 
+    @Test public void remoteInterfaceKeepsAnExternalTargetFixed() {
+        List<CoordinateLinks.Spec> rules = CoordinateLinks.rulesFor("remoteio.common.tile.TileRemoteInterface");
+        NBTTagCompound tag = remoteInterface(0, 1);
+        tag.setBoolean("SchematicaRemoteTargetFixed", true);
+        NBTTagCompound target = (NBTTagCompound) tag.getCompoundTag("position").copy();
+        CoordinateLinks.transform(rules, tag, 'Y', 4, 3, 2);
+        CoordinateLinks.paste(rules, tag, 101, 65, 201, 7);
+        assertEquals(target, tag.getCompoundTag("position"));
+        assertEquals(0, tag.getInteger("axisY"));
+        assertFalse(tag.hasKey("SchematicaRemoteTargetFixed"));
+    }
+
     @Test public void remoteInterfaceTurnsAreKeptOnRotationsAndReversedOnHorizontalMirrors() {
         List<CoordinateLinks.Spec> rules = CoordinateLinks.rulesFor("remoteio.common.tile.TileRemoteInterface");
         NBTTagCompound turned = remoteInterface(0, 1);

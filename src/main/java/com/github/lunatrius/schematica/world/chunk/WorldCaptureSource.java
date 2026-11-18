@@ -5,6 +5,8 @@ package com.github.lunatrius.schematica.world.chunk;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.github.lunatrius.schematica.api.ISchematic;
+
 import net.minecraft.block.Block;
 import net.minecraft.entity.Entity;
 import net.minecraft.tileentity.TileEntity;
@@ -21,7 +23,14 @@ import com.github.lunatrius.schematica.compat.LiquidLogged;
 public final class WorldCaptureSource implements CaptureSource {
     private final World world, serverWorld;
 
+    private final ISchematic selection;
+
     public WorldCaptureSource(World world, World serverWorld) {
+        this(world, serverWorld, null);
+    }
+
+    public WorldCaptureSource(World world, World serverWorld, ISchematic selection) {
+        this.selection = selection;
         this.world = world;
         this.serverWorld = serverWorld;
     }
@@ -38,7 +47,7 @@ public final class WorldCaptureSource implements CaptureSource {
     public TileEntity tile(int x, int y, int z, int offsetX, int offsetY, int offsetZ) throws Exception {
         TileEntity tile = serverWorld.getTileEntity(x, y, z);
         if (tile == null) tile = world.getTileEntity(x, y, z);
-        return tile == null ? null : NBTHelper.reloadTileEntity(tile, offsetX, offsetY, offsetZ, true);
+        return tile == null ? null : NBTHelper.reloadTileEntity(tile, offsetX, offsetY, offsetZ, true, selection);
     }
 
     @Override

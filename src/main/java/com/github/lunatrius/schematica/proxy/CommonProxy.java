@@ -198,7 +198,7 @@ public abstract class CommonProxy {
         final int minZ = container.minZ, maxZ = container.maxZ;
         // Block entities come from the server world when possible, since client-side ones often lack full NBT.
         final CaptureSource source = container.source != null ? container.source
-            : new WorldCaptureSource(container.world, getServerWorld(container.world));
+            : new WorldCaptureSource(container.world, getServerWorld(container.world), schematic);
 
         if (container.source == null && container.world.isRemote && CubicChunks.enabled(container.world)) {
             for (int section = minY >> 4; section <= (maxY >> 4); section++) {

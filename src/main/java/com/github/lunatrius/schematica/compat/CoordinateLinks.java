@@ -7,6 +7,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.github.lunatrius.schematica.api.ISchematic;
+
 import net.minecraft.nbt.NBTBase;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTTagDouble;
@@ -26,6 +28,8 @@ import cpw.mods.fml.relauncher.ReflectionHelper;
  */
 public final class CoordinateLinks {
     public static final String MARKER = "SchematicaLinkDim";
+
+    private static final String EXTERNAL_REMOTE = "SchematicaRemoteTargetFixed";
 
     static final class Spec {
         /** Compound holding the keys ("" for the tile's own tag). */
@@ -223,10 +227,19 @@ public final class CoordinateLinks {
 
     /** The links of a tile captured from the world, in the coordinates of a schematic whose origin is at (ox, oy, oz). */
     public static void capture(TileEntity tile, NBTTagCompound tag, int ox, int oy, int oz) {
+        capture(tile, tag, ox, oy, oz, null);
+    }
+
+    public static void capture(TileEntity tile, NBTTagCompound tag, int ox, int oy, int oz, ISchematic selection) {
         List<Spec> specs = specs(tile.getClass());
         if (specs.isEmpty()) return;
         int dimension = tile.hasWorldObj() && tile.getWorldObj().provider != null ? tile.getWorldObj().provider.dimensionId : 0;
         tag.setInteger(MARKER, dimension);
+        if (selection != null && Reflect.is(tile, "remoteio.common.tile.TileRemoteInterface") && tag.hasKey("position", 10)) {
+            NBTTagCompound pos = tag.getCompoundTag("position");
+            if (pos.getInteger("dimension") != dimension || !selection.containsBlock(pos.getInteger("x") - ox,
+                pos.getInteger("y") - oy, pos.getInteger("z") - oz)) tag.setBoolean(EXTERNAL_REMOTE, true);
+        }
         List<Spec> captured = new ArrayList<>();
         for (Spec spec : specs) if (spec.machine != 'p') captured.add(spec);
         apply(captured, tag, p -> new double[] {p[0] - ox, p[1] - oy, p[2] - oz}, (char) 0);
@@ -271,6 +284,7 @@ public final class CoordinateLinks {
                 }
             }
         }
+        tag.removeTag(EXTERNAL_REMOTE);
         tag.removeTag(MARKER);
         return tag;
     }
@@ -339,8 +353,11 @@ public final class CoordinateLinks {
                 restartPump(root);
                 continue;
             }
+            if (root.getBoolean(EXTERNAL_REMOTE) && "position".equals(spec.path)) continue;
             if (spec.turns) {
-                if ((operation == 'x' || operation == 'z') && root.hasKey(spec.y)) root.setInteger(spec.y, (4 - (root.getInteger(spec.y) & 3)) & 3);
+                if (root.getBoolean(EXTERNAL_REMOTE)) {
+                    if (operation == 'Y' && root.hasKey(spec.y)) root.setInteger(spec.y, (root.getInteger(spec.y) + 3) & 3);
+                } else if ((operation == 'x' || operation == 'z') && root.hasKey(spec.y)) root.setInteger(spec.y, (4 - (root.getInteger(spec.y) & 3)) & 3);
                 continue;
             }
             if (spec.relative) {
