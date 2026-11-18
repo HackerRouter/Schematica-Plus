@@ -1354,6 +1354,7 @@ Source [87a13c2884](https://github.com/GTNewHorizons/nei-custom-diagram/tree/87a
 Source [1e88b70767](https://github.com/GTNewHorizons/NEI-Integration/tree/1e88b70767d8eef8330d9f16d57ad7ca02de9505) · 63 tracked Java, Scala or Kotlin files outside test/example directories.
 
 - No direct match in the listed checks. Mod entry point: [NEIIntegration](https://github.com/GTNewHorizons/NEI-Integration/blob/1e88b70767d8eef8330d9f16d57ad7ca02de9505/src/main/java/tonius/neiintegration/NEIIntegration.java#L15). Indirect effects from dependencies, injection, configuration and server rules remain open.
+- [NEIConfig](https://github.com/GTNewHorizons/NEI-Integration/blob/1e88b70767d8eef8330d9f16d57ad7ca02de9505/src/main/java/tonius/neiintegration/NEIConfig.java#L5) uses `IConfigureNEI`. The identified integration concerns the item or information UI.
 
 ### Nei-Recipe-Panels
 
