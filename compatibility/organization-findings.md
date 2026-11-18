@@ -1786,3 +1786,13 @@ Source [a23cfc1dc8](https://github.com/GTNewHorizons/SpecialMobs/tree/a23cfc1dc8
 Source [65037b2a15](https://github.com/GTNewHorizons/SpiceOfLife/tree/65037b2a1590146862e374969fb9620ff1a66b23) · 67 tracked Java, Scala or Kotlin files outside test/example directories.
 
 - No direct match in the listed checks. Mod entry point: [ModSpiceOfLife](https://github.com/GTNewHorizons/SpiceOfLife/blob/65037b2a1590146862e374969fb9620ff1a66b23/src/main/java/squeek/spiceoflife/ModSpiceOfLife.java#L31). Indirect effects from dependencies, injection, configuration and server rules remain open.
+
+### StargateNH
+
+Source [52dec95c0c](https://github.com/GTNewHorizons/StargateNH/tree/52dec95c0c9fe1a271fd41da95ab824aea2456ef) · 18 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- Check tile serialization against `TileNBTCompat`. 2 source file(s) contain matching declarations, including [TileStargateController.writeToNBT](https://github.com/GTNewHorizons/StargateNH/blob/52dec95c0c9fe1a271fd41da95ab824aea2456ef/src/main/java/com/gtnewhorizons/stargatenh/common/tileentity/TileStargateController.java#L180).
+- Check preview rendering against `RendererSchematicChunk`. 1 source file(s) contain matching declarations, including [RenderStargateTESR.renderTileEntityAt](https://github.com/GTNewHorizons/StargateNH/blob/52dec95c0c9fe1a271fd41da95ab824aea2456ef/src/main/java/com/gtnewhorizons/stargatenh/client/render/RenderStargateTESR.java#L29).
+- Check printer placement against `SchematicPrinter`. 1 source file(s) contain matching declarations, including [BlockStargateController.onBlockPlacedBy](https://github.com/GTNewHorizons/StargateNH/blob/52dec95c0c9fe1a271fd41da95ab824aea2456ef/src/main/java/com/gtnewhorizons/stargatenh/common/block/BlockStargateController.java#L68).
+- [BlockStargateController.onBlockPlacedBy](https://github.com/GTNewHorizons/StargateNH/blob/52dec95c0c9fe1a271fd41da95ab824aea2456ef/src/main/java/com/gtnewhorizons/stargatenh/common/block/BlockStargateController.java#L68) depends on placement orientation. Exercise the printer with a rotated schematic.
+- [TileStargateController.writeToNBT](https://github.com/GTNewHorizons/StargateNH/blob/52dec95c0c9fe1a271fd41da95ab824aea2456ef/src/main/java/com/gtnewhorizons/stargatenh/common/tileentity/TileStargateController.java#L180) accesses `hasAddress`. Compare those fields after capture, transform and restore.
