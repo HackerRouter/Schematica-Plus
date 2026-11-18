@@ -778,3 +778,9 @@ Source [a17580e04d](https://github.com/GTNewHorizons/ForestryMC/tree/a17580e04d4
 - Check material picking against `BlockToItemStack`. 9 source file(s) contain matching declarations, including [BlockCandle.getPickBlock](https://github.com/GTNewHorizons/ForestryMC/blob/a17580e04d4e833b24cc114b93b0b816ffc0a6b5/src/main/java/forestry/apiculture/blocks/BlockCandle.java#L251).
 - Check printer placement against `SchematicPrinter`. 15 source file(s) contain matching declarations, including [BlockCandle.onBlockPlacedBy](https://github.com/GTNewHorizons/ForestryMC/blob/a17580e04d4e833b24cc114b93b0b816ffc0a6b5/src/main/java/forestry/apiculture/blocks/BlockCandle.java#L276).
 - [BeekeepingLogic.readFromNBT](https://github.com/GTNewHorizons/ForestryMC/blob/a17580e04d4e833b24cc114b93b0b816ffc0a6b5/src/main/java/forestry/apiculture/BeekeepingLogic.java#L83) accesses `BreedingTime`, `Throttle`, `queen`, `Active`. Compare those fields after capture, transform and restore.
+
+### Forgelin
+
+Source [97e3937690](https://github.com/GTNewHorizons/Forgelin/tree/97e3937690bf1ee71786e587b988ac4195fc3f2d) · 7 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- No direct match in the listed checks. Mod entry point: [Forgelin](https://github.com/GTNewHorizons/Forgelin/blob/97e3937690bf1ee71786e587b988ac4195fc3f2d/src/main/kotlin/net/shadowfacts/forgelin/Forgelin.kt#L11). Indirect effects from dependencies, injection, configuration and server rules remain open.
