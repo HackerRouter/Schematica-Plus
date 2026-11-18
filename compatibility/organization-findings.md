@@ -384,3 +384,17 @@ Source [1be8dbf860](https://github.com/GTNewHorizons/BQ3-Thermos-patch/tree/1be8
 Source [a0fd8d779f](https://github.com/GTNewHorizons/BugTorch/tree/a0fd8d779f443d439300e32f5ad76c79ff37f8dd) · 108 tracked Java, Scala or Kotlin files outside test/example directories.
 
 - Check world or renderer transformation alongside the schematic world and render pipeline. 3 source file(s) contain matching declarations, including [MixinWorld.World](https://github.com/GTNewHorizons/BugTorch/blob/a0fd8d779f443d439300e32f5ad76c79ff37f8dd/src/main/java/jss/bugtorch/mixins/early/minecraft/fastrandom/MixinWorld.java#L10).
+
+### BuildCraft
+
+Source [898116026e](https://github.com/GTNewHorizons/BuildCraft/tree/898116026e949887dca4024cde080cc6851a1503) · 1025 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- Existing Plus lookup in `BuildCraftPipeAdapter` names [buildcraft.api.core.ISerializable](https://github.com/GTNewHorizons/BuildCraft/blob/898116026e949887dca4024cde080cc6851a1503/src/main/java/buildcraft/api/core/ISerializable.java#L1) (16 matching upstream source names). Check reflected members and client state with the deployed versions.
+- Check tile serialization against `TileNBTCompat`. 98 source file(s) contain matching declarations, including [INBTStoreable.readFromNBT](https://github.com/GTNewHorizons/BuildCraft/blob/898116026e949887dca4024cde080cc6851a1503/src/main/java/buildcraft/api/core/INBTStoreable.java#L7).
+- Check preview rendering against `RendererSchematicChunk`. 23 source file(s) contain matching declarations, including [RenderArchitect.renderTileEntityAt](https://github.com/GTNewHorizons/BuildCraft/blob/898116026e949887dca4024cde080cc6851a1503/src/main/java/buildcraft/builders/render/RenderArchitect.java#L23).
+- Check material picking against `BlockToItemStack`. 1 source file(s) contain matching declarations, including [BlockGenericPipe.getPickBlock](https://github.com/GTNewHorizons/BuildCraft/blob/898116026e949887dca4024cde080cc6851a1503/src/main/java/buildcraft/transport/BlockGenericPipe.java#L539).
+- Check printer placement against `SchematicPrinter`. 18 source file(s) contain matching declarations, including [BlockConstructionMarker.onBlockPlacedBy](https://github.com/GTNewHorizons/BuildCraft/blob/898116026e949887dca4024cde080cc6851a1503/src/main/java/buildcraft/builders/BlockConstructionMarker.java#L55).
+- Check interaction events against `SchematicPrinter`. 2 source file(s) contain matching declarations, including [BlockTankPlacementHandler.onTankPlace](https://github.com/GTNewHorizons/BuildCraft/blob/898116026e949887dca4024cde080cc6851a1503/src/main/java/buildcraft/factory/BlockTankPlacementHandler.java#L13).
+- [Position.writeToNBT](https://github.com/GTNewHorizons/BuildCraft/blob/898116026e949887dca4024cde080cc6851a1503/src/main/java/buildcraft/api/core/Position.java#L136) accesses `i`, `j`, `k`, `orientation`. Compare those fields after capture, transform and restore.
+- [BlockTankPlacementHandler.onTankPlace](https://github.com/GTNewHorizons/BuildCraft/blob/898116026e949887dca4024cde080cc6851a1503/src/main/java/buildcraft/factory/BlockTankPlacementHandler.java#L13) can cancel the interaction. Verify the printer on a server with the handler enabled.
+- [PipeRendererWorld.renderWorldBlock](https://github.com/GTNewHorizons/BuildCraft/blob/898116026e949887dca4024cde080cc6851a1503/src/main/java/buildcraft/transport/render/PipeRendererWorld.java#L233) queries tile data while rendering. Preview a populated tile after saving and reopening its schematic.
