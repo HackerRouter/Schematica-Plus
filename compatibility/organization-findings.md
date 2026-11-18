@@ -39,3 +39,11 @@ Source [a950c8f23b](https://github.com/GTNewHorizons/AE2FluidCraft-Rework/tree/a
 - Check printer placement against `SchematicPrinter`. 10 source file(s) contain matching declarations, including [BlockWalrus.onBlockPlacedBy](https://github.com/GTNewHorizons/AE2FluidCraft-Rework/blob/a950c8f23b0f10151744cb582432cfc80a6ceabd/src/main/java/com/glodblock/github/common/block/BlockWalrus.java#L54).
 - [BlockWalrus.onBlockPlacedBy](https://github.com/GTNewHorizons/AE2FluidCraft-Rework/blob/a950c8f23b0f10151744cb582432cfc80a6ceabd/src/main/java/com/glodblock/github/common/block/BlockWalrus.java#L54) depends on placement orientation. Exercise the printer with a rotated schematic.
 - [PartFluidConversionMonitor.readFromNBT](https://github.com/GTNewHorizons/AE2FluidCraft-Rework/blob/a950c8f23b0f10151744cb582432cfc80a6ceabd/src/main/java/com/glodblock/github/common/parts/PartFluidConversionMonitor.java#L17) accesses `configuredItem`, `StackType`. Compare those fields after capture, transform and restore.
+
+### AFSU
+
+Source [4e734bb6ab](https://github.com/GTNewHorizons/AFSU/tree/4e734bb6ab4cd3dc12bf86806f10513abd35f5ff) · 9 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- Check printer placement against `SchematicPrinter`. 1 source file(s) contain matching declarations, including [AFSUBlock.onBlockPlacedBy](https://github.com/GTNewHorizons/AFSU/blob/4e734bb6ab4cd3dc12bf86806f10513abd35f5ff/src/main/java/xbony2/afsu/blocks/AFSUBlock.java#L184).
+- [AFSUBlock.onBlockPlacedBy](https://github.com/GTNewHorizons/AFSU/blob/4e734bb6ab4cd3dc12bf86806f10513abd35f5ff/src/main/java/xbony2/afsu/blocks/AFSUBlock.java#L184) depends on placement orientation. Exercise the printer with a rotated schematic.
+- AFSUBlock.onBlockPlacedBy restores energy from the held stack and chooses facing from the placing entity. A matching item alone cannot establish that the printed facing matches the schematic.
