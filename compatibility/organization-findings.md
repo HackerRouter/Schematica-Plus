@@ -268,3 +268,9 @@ Source [fb6f8d5734](https://github.com/GTNewHorizons/BetterCrashes/tree/fb6f8d57
 Source [1d8747fed6](https://github.com/GTNewHorizons/BetterLoadingScreen/tree/1d8747fed604724f968796bc4d645a3bf9e5e28b) · 35 tracked Java, Scala or Kotlin files outside test/example directories.
 
 - No direct match in the listed checks. Mod entry point: [BetterLoadingScreen](https://github.com/GTNewHorizons/BetterLoadingScreen/blob/1d8747fed604724f968796bc4d645a3bf9e5e28b/src/main/java/alexiil/mods/load/BetterLoadingScreen.java#L28). Indirect effects from dependencies, injection, configuration and server rules remain open.
+
+### BetterP2P
+
+Source [4950a4700a](https://github.com/GTNewHorizons/BetterP2P/tree/4950a4700aa1d9f804f34d6daf584219e7656778) · 45 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- Check printer placement against `SchematicPrinter`. 1 source file(s) contain matching declarations, including [ItemAdvancedMemoryCard.onItemUse](https://github.com/GTNewHorizons/BetterP2P/blob/4950a4700aa1d9f804f34d6daf584219e7656778/src/main/java/com/projecturanus/betterp2p/item/ItemAdvancedMemoryCard.kt#L58).
