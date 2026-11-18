@@ -1206,3 +1206,9 @@ Source [21f2e4f33c](https://github.com/GTNewHorizons/MaterialLib/tree/21f2e4f33c
 
 - Check preview rendering against `RendererSchematicChunk`. 1 source file(s) contain matching declarations, including [ShapeBlockRenderingHandler.renderWorldBlock](https://github.com/GTNewHorizons/MaterialLib/blob/21f2e4f33cc3e5e358c69771cda6db30410108c6/src/main/java/com/ruling_0/materiallib/api/ShapeBlockRenderingHandler.java#L122).
 - Check printer placement against `SchematicPrinter`. 2 source file(s) contain matching declarations, including [ItemUseCallback.onItemUse](https://github.com/GTNewHorizons/MaterialLib/blob/21f2e4f33cc3e5e358c69771cda6db30410108c6/src/main/java/com/ruling_0/materiallib/api/ItemUseCallback.java#L13).
+
+### MatterManipulator
+
+Source [9b3c113ff7](https://github.com/GTNewHorizons/MatterManipulator/tree/9b3c113ff7a418ce2d3ad5d7c728c26bdaf3949f) · 133 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- Check world or renderer transformation alongside the schematic world and render pipeline. 1 source file(s) contain matching declarations, including [MixinWorldDropCapturing.World](https://github.com/GTNewHorizons/MatterManipulator/blob/9b3c113ff7a418ce2d3ad5d7c728c26bdaf3949f/src/mixin/java/com/recursive_pineapple/matter_manipulator/mixin/mixins/early/MixinWorldDropCapturing.java#L19).
