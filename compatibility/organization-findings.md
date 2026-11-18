@@ -1419,6 +1419,7 @@ Source [5c15126bf5](https://github.com/GTNewHorizons/NotEnoughCharacters/tree/5c
 Source [130483def6](https://github.com/GTNewHorizons/NotEnoughEnergistics/tree/130483def6d297ff51062968777f9f568a4a65cf) · 64 tracked Java, Scala or Kotlin files outside test/example directories.
 
 - No direct match in the listed checks. Mod entry point: [NotEnoughEnergistics](https://github.com/GTNewHorizons/NotEnoughEnergistics/blob/130483def6d297ff51062968777f9f568a4a65cf/src/main/java/com/github/vfyjxf/nee/NotEnoughEnergistics.java#L24). Indirect effects from dependencies, injection, configuration and server rules remain open.
+- [CommonProxy](https://github.com/GTNewHorizons/NotEnoughEnergistics/blob/130483def6d297ff51062968777f9f568a4a65cf/src/main/java/com/github/vfyjxf/nee/proxy/CommonProxy.java#L51) calls `GameRegistry.registerBlock`. Include the registered block variants in capture, preview and material comparisons.
 
 ### NotEnoughIds
 
