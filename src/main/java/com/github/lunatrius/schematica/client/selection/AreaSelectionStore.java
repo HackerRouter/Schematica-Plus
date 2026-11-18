@@ -14,6 +14,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import com.github.lunatrius.schematica.client.selection.AreaSelectionLibrary.Area;
 import com.github.lunatrius.schematica.internal.lunatriuscore.util.vector.Vector3i;
@@ -101,22 +102,35 @@ public final class AreaSelectionStore {
         return new GsonBuilder().setPrettyPrinting().create().toJson(json);
     }
 
-    /** The file of each selection: its folder and safe name, with a number when two names map to one file. */
+    /**
+     * The file of each selection: its folder and safe name, with a number when two names map to one file. A selection
+     * keeps its current file while that is still a valid name for it, so removing another one renames nothing.
+     */
     private Map<Area, String> targets() {
         Map<Area, String> targets = new IdentityHashMap<>();
         Set<String> used = new HashSet<>();
         for (Area area : library.areas()) {
             String current = paths.get(area);
-            String base = AreaSelectionLibrary.safeFileName(area.name());
-            if (base.isEmpty()) base = "selection";
-            String prefix = area.folder().isEmpty() ? "" : area.folder() + "/";
+            if (current == null || !current.toLowerCase(Locale.ROOT).matches(Pattern.quote(prefix(area).toLowerCase(Locale.ROOT)
+                + base(area).toLowerCase(Locale.ROOT)) + "( [0-9]+)?\\.json")) continue;
+            if (used.add(current.toLowerCase(Locale.ROOT))) targets.put(area, current);
+        }
+        for (Area area : library.areas()) {
+            if (targets.containsKey(area)) continue;
+            String prefix = prefix(area), base = base(area);
             String target = prefix + base + ".json";
-            if (current != null && current.equalsIgnoreCase(target)) target = current;
             for (int i = 1; used.contains(target.toLowerCase(Locale.ROOT)); i++) target = prefix + base + " " + i + ".json";
             used.add(target.toLowerCase(Locale.ROOT));
             targets.put(area, target);
         }
         return targets;
+    }
+
+    private static String prefix(Area area) { return area.folder().isEmpty() ? "" : area.folder() + "/"; }
+
+    private static String base(Area area) {
+        String base = AreaSelectionLibrary.safeFileName(area.name());
+        return base.isEmpty() ? "selection" : base;
     }
 
     private void unchangedOnDisk(String path, String expected) throws IOException {

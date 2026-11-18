@@ -37,6 +37,23 @@ public class AreaSelectionStoreTest {
     private File settings() { return new File(temporary.getRoot(), "AreaSelection.json"); }
     private File areas(String world) { return new File(temporary.getRoot(), world); }
 
+    @Test public void removingOneOfTwoNamesSharingAFileSavesAndKeepsTheOther() throws Exception {
+        AreaSelectionStore store = new AreaSelectionStore(settings(), areas("names"), "names|0");
+        Area first = store.library().create("A:B", new Vector3i(), new Vector3i());
+        store.library().create("A?B", new Vector3i(1, 0, 0), new Vector3i(1, 0, 0));
+        store.save();
+        assertTrue(new File(areas("names"), "A_B.json").isFile());
+        assertTrue(new File(areas("names"), "A_B 1.json").isFile());
+        store.library().remove(first);
+        store.save();
+        assertFalse(new File(areas("names"), "A_B.json").exists());
+        int named = 0;
+        for (Area area : new AreaSelectionStore(settings(), areas("names"), "names|0").library().areas()) {
+            if (area.name().startsWith("A")) named++;
+        }
+        assertEquals(1, named);
+    }
+
     @Test public void selectionFilesChangedOutsideTheGameAreNotOverwritten() throws Exception {
         AreaSelectionStore store = new AreaSelectionStore(settings(), areas("sync"), "sync|0");
         store.save();
