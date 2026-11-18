@@ -111,16 +111,17 @@ public class ToolHandler {
             InfoUtils.showGuiOrInGameMessage(MessageType.WARNING, "schematica.message.grid_paste.grid_disabled");
         }
         List<WorldEditJob> jobs = new ArrayList<>();
-        MessageException outside = null;
+        RuntimeException first = null;
         for (SchematicWorld placement : placements) {
             try {
                 jobs.add(pasteJob(player, placement));
-            } catch (MessageException e) {
-                if (!ConfigurationHandler.pasteRenderLayersOnly || !"schematica.message.paste.outside_layers".equals(e.key())) throw e;
-                outside = e;
+            } catch (IllegalArgumentException | ArithmeticException e) {
+                if (first == null) first = e;
             }
         }
-        if (jobs.isEmpty() && outside != null) throw outside;
+        if (jobs.isEmpty() && first != null) throw first;
+        int skipped = placements.size() - jobs.size();
+        if (skipped > 0) InfoUtils.showGuiOrInGameMessage(MessageType.WARNING, "schematica.message.grid_paste.skipped", skipped);
         submitAll(player, jobs, 0);
     }
 
