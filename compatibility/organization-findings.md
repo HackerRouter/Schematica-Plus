@@ -837,6 +837,7 @@ Source [977b0f87cb](https://github.com/GTNewHorizons/Freecam/tree/977b0f87cbcf2d
 Source [56ab7787a2](https://github.com/GTNewHorizons/Fullscreen-Windowed-Minecraft/tree/56ab7787a2b499789165fc3263234c8cb9cf2a90) · 12 tracked Java, Scala or Kotlin files outside test/example directories.
 
 - No direct match in the listed checks. Mod entry point: [FullscreenWindowed](https://github.com/GTNewHorizons/Fullscreen-Windowed-Minecraft/blob/56ab7787a2b499789165fc3263234c8cb9cf2a90/src/main/java/com/hancinworld/fw/FullscreenWindowed.java#L33). Indirect effects from dependencies, injection, configuration and server rules remain open.
+- [KeyInputEventHandler](https://github.com/GTNewHorizons/Fullscreen-Windowed-Minecraft/blob/56ab7787a2b499789165fc3263234c8cb9cf2a90/src/main/java/com/hancinworld/fw/handler/KeyInputEventHandler.java#L38) accepts `KeyInputEvent`. Exercise the schematic overlay and hotkeys while the corresponding client feature is enabled.
 
 ### Gadomancy
 
