@@ -593,3 +593,9 @@ Source [2c6b8d49a6](https://github.com/GTNewHorizons/Default-Configs/tree/2c6b8d
 Source [70c9c88b0c](https://github.com/GTNewHorizons/DefaultServerList/tree/70c9c88b0c7faa20633ffec10fec340626e36e76) · 4 tracked Java, Scala or Kotlin files outside test/example directories.
 
 - No direct match in the listed checks. Indirect effects from dependencies, injection, configuration and server rules remain open.
+
+### DefaultWorldGenerator
+
+Source [d9e5e36d95](https://github.com/GTNewHorizons/DefaultWorldGenerator/tree/d9e5e36d95fbfc0e82dbad20b85453a38ad1ca8e) · 8 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- No direct match in the listed checks. Mod entry point: [DefaultWorldGenerator](https://github.com/GTNewHorizons/DefaultWorldGenerator/blob/d9e5e36d95fbfc0e82dbad20b85453a38ad1ca8e/src/main/java/com/fireball1725/defaultworldgenerator/DefaultWorldGenerator.java#L16). Indirect effects from dependencies, injection, configuration and server rules remain open.
