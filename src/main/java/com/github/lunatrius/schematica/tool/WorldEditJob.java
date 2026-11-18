@@ -8,6 +8,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 
@@ -655,7 +656,14 @@ public final class WorldEditJob extends WorldEditTask {
         if (kind == Kind.DELETE_PLACEMENT && !deletes(index, world, wx, wy, wz)) return false;
         if (!pastes(block, world.isAirBlock(wx, wy, wz))) return false;
         if (!block.hasTileEntity(meta) && world.getBlock(wx, wy, wz) == block
-            && world.getBlockMetadata(wx, wy, wz) == meta) return false;
+            && world.getBlockMetadata(wx, wy, wz) == meta) {
+            if (kind == Kind.PASTE && LiquidLogged.present()
+                && !Objects.equals(fluids.get(index), LiquidLogged.fluid(world, wx, wy, wz))) {
+                pendingFluids.add(index);
+                if (silentPlacement == null) storeFluids(world);
+            }
+            return false;
+        }
         boolean written = false;
         if (silentPlacement != null) {
             silentPlacement.setBlock(world, wx, wy, wz, block, meta);
