@@ -644,3 +644,14 @@ Source [3d699ff99f](https://github.com/GTNewHorizons/DummyCore/tree/3d699ff99f95
 Source [58d45414b6](https://github.com/GTNewHorizons/DuraDisplay/tree/58d45414b65b74cc370bd5cd9cd707ca960586f3) · 31 tracked Java, Scala or Kotlin files outside test/example directories.
 
 - No direct match in the listed checks. Mod entry point: [DuraDisplay](https://github.com/GTNewHorizons/DuraDisplay/blob/58d45414b65b74cc370bd5cd9cd707ca960586f3/src/main/java/com/caedis/duradisplay/DuraDisplay.java#L15). Indirect effects from dependencies, injection, configuration and server rules remain open.
+
+### Electro-Magic-Tools
+
+Source [3d90755aea](https://github.com/GTNewHorizons/Electro-Magic-Tools/tree/3d90755aea0cf5bb32e500d0d36726590f38258f) · 96 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- Existing Plus lookup in `TileFacingAdapter` names [emt.tile.TileEntityEMT](https://github.com/GTNewHorizons/Electro-Magic-Tools/blob/3d90755aea0cf5bb32e500d0d36726590f38258f/src/main/java/emt/tile/TileEntityEMT.java#L1) (1 matching upstream source names). Check reflected members and client state with the deployed versions.
+- Check tile serialization against `TileNBTCompat`. 5 source file(s) contain matching declarations, including [TileEntityEMT.readFromNBT](https://github.com/GTNewHorizons/Electro-Magic-Tools/blob/3d90755aea0cf5bb32e500d0d36726590f38258f/src/main/java/emt/tile/TileEntityEMT.java#L14).
+- Check printer placement against `SchematicPrinter`. 6 source file(s) contain matching declarations, including [BlockBaseContainer.onBlockPlacedBy](https://github.com/GTNewHorizons/Electro-Magic-Tools/blob/3d90755aea0cf5bb32e500d0d36726590f38258f/src/main/java/emt/block/BlockBaseContainer.java#L123).
+- Check interaction events against `SchematicPrinter`. 1 source file(s) contain matching declarations, including [EMTEventHandler.createCloud](https://github.com/GTNewHorizons/Electro-Magic-Tools/blob/3d90755aea0cf5bb32e500d0d36726590f38258f/src/main/java/emt/util/EMTEventHandler.java#L81).
+- [BlockBaseContainer.onBlockPlacedBy](https://github.com/GTNewHorizons/Electro-Magic-Tools/blob/3d90755aea0cf5bb32e500d0d36726590f38258f/src/main/java/emt/block/BlockBaseContainer.java#L123) depends on placement orientation. Exercise the printer with a rotated schematic.
+- [TileEntityEMT.readFromNBT](https://github.com/GTNewHorizons/Electro-Magic-Tools/blob/3d90755aea0cf5bb32e500d0d36726590f38258f/src/main/java/emt/tile/TileEntityEMT.java#L14) accesses `facing`, `isOn`. Compare those fields after capture, transform and restore.
