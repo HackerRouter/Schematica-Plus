@@ -632,3 +632,9 @@ Source [04c232f7cf](https://github.com/GTNewHorizons/Draconic-Evolution/tree/04c
 - [DraconiumChest.onBlockPlacedBy](https://github.com/GTNewHorizons/Draconic-Evolution/blob/04c232f7cf9616f800d9efde95137655d2924771/src/main/java/com/brandon3055/draconicevolution/common/blocks/DraconiumChest.java#L209) depends on placement orientation. Exercise the printer with a rotated schematic.
 - [MultiblockHelper.writeToNBT](https://github.com/GTNewHorizons/Draconic-Evolution/blob/04c232f7cf9616f800d9efde95137655d2924771/src/main/java/com/brandon3055/draconicevolution/common/blocks/multiblock/MultiblockHelper.java#L76) accesses `X_`, `Y_`, `Z_`, `Init_`. Compare those fields after capture, transform and restore.
 - [MinecraftForgeEventHandler.playerInteract](https://github.com/GTNewHorizons/Draconic-Evolution/blob/04c232f7cf9616f800d9efde95137655d2924771/src/main/java/com/brandon3055/draconicevolution/common/handler/MinecraftForgeEventHandler.java#L405) can cancel the interaction. Verify the printer on a server with the handler enabled.
+
+### DummyCore
+
+Source [3d699ff99f](https://github.com/GTNewHorizons/DummyCore/tree/3d699ff99f956f4cef56055d800a216343e82d79) · 58 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- No direct match in the listed checks. Mod entry point: [CoreInitialiser](https://github.com/GTNewHorizons/DummyCore/blob/3d699ff99f956f4cef56055d800a216343e82d79/src/main/java/DummyCore/Core/CoreInitialiser.java#L36). Indirect effects from dependencies, injection, configuration and server rules remain open.
