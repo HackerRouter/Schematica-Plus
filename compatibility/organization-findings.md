@@ -2330,3 +2330,7 @@ The library manages player cape resources. No schematic block-state exchange was
 ### FoamFix17
 
 A core optimization mod can change the runtime independently of placed block types. Check the installed transformer configuration when investigating rendering or loading differences. [FoamFixMod.java at 4db865617b](https://github.com/GTNewHorizons/FoamFix17/blob/4db865617beae6d95ca9ab191874ee3bfff7bbce/src/main/java/pl/asie/foamfix/FoamFixMod.java)
+
+### gtnh-nightly-updater
+
+External pack updater. Changes to the selected pack can change dependency versions. The updater itself runs outside the Forge client. [Main.java at ef5cd20a6f](https://github.com/GTNewHorizons/gtnh-nightly-updater/blob/ef5cd20a6f53e857f48e8479ab100cd350479bcf/src/main/java/GTNHNightlyUpdater/Main.java)
