@@ -211,3 +211,14 @@ Source [9cda711b4d](https://github.com/GTNewHorizons/Avaritiaddons/tree/9cda711b
 Source [c332a5053b](https://github.com/GTNewHorizons/Backhand/tree/c332a5053b655975f803e53928de26f5b613b4a0) · 72 tracked Java, Scala or Kotlin files outside test/example directories.
 
 - Check world or renderer transformation alongside the schematic world and render pipeline. 3 source file(s) contain matching declarations, including [MixinEntityRenderer.EntityRenderer](https://github.com/GTNewHorizons/Backhand/blob/c332a5053b655975f803e53928de26f5b613b4a0/src/main/java/xonin/backhand/mixins/early/minecraft/MixinEntityRenderer.java#L14).
+
+### Battlegear2-for-Backhand
+
+Source [d5bab15bfa](https://github.com/GTNewHorizons/Battlegear2-for-Backhand/tree/d5bab15bfa8a467afb751cdfe2e0d2ada119429a) · 176 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- Check tile serialization against `TileNBTCompat`. 1 source file(s) contain matching declarations, including [TileEntityFlagPole.readFromNBT](https://github.com/GTNewHorizons/Battlegear2-for-Backhand/blob/d5bab15bfa8a467afb751cdfe2e0d2ada119429a/src/main/java/mods/battlegear2/heraldry/TileEntityFlagPole.java#L67).
+- Check preview rendering against `RendererSchematicChunk`. 1 source file(s) contain matching declarations, including [FlagPoleTileRenderer.renderTileEntityAt](https://github.com/GTNewHorizons/Battlegear2-for-Backhand/blob/d5bab15bfa8a467afb751cdfe2e0d2ada119429a/src/main/java/mods/battlegear2/client/renderer/FlagPoleTileRenderer.java#L35).
+- Check printer placement against `SchematicPrinter`. 1 source file(s) contain matching declarations, including [ItemBlockFlagPole.placeBlockAt](https://github.com/GTNewHorizons/Battlegear2-for-Backhand/blob/d5bab15bfa8a467afb751cdfe2e0d2ada119429a/src/main/java/mods/battlegear2/heraldry/ItemBlockFlagPole.java#L20).
+- Check interaction events against `SchematicPrinter`. 1 source file(s) contain matching declarations, including [BattlemodeHookContainerClass.playerInteract](https://github.com/GTNewHorizons/Battlegear2-for-Backhand/blob/d5bab15bfa8a467afb751cdfe2e0d2ada119429a/src/main/java/mods/battlegear2/BattlemodeHookContainerClass.java#L80).
+- [BattlemodeHookContainerClass.playerInteract](https://github.com/GTNewHorizons/Battlegear2-for-Backhand/blob/d5bab15bfa8a467afb751cdfe2e0d2ada119429a/src/main/java/mods/battlegear2/BattlemodeHookContainerClass.java#L80) can cancel the interaction. Verify the printer on a server with the handler enabled.
+- [TileEntityFlagPole.readFromNBT](https://github.com/GTNewHorizons/Battlegear2-for-Backhand/blob/d5bab15bfa8a467afb751cdfe2e0d2ada119429a/src/main/java/mods/battlegear2/heraldry/TileEntityFlagPole.java#L67) accesses `orientation`, `flag`, `hasUpdate`. Compare those fields after capture, transform and restore.
