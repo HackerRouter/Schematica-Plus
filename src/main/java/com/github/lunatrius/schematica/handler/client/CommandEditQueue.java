@@ -3,6 +3,8 @@ package com.github.lunatrius.schematica.handler.client;
 import java.util.ArrayDeque;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Set;
 
 import net.minecraft.client.Minecraft;
@@ -44,6 +46,9 @@ public final class CommandEditQueue {
     private int cursor, sent, delay, pending, waiting;
     private final ArrayDeque<Integer> pendingCells = new ArrayDeque<>();
 
+    private final Map<Integer, String> fluidCommands = new LinkedHashMap<>();
+    private int fluidCell = -1;
+
     public CommandEditQueue() {
         this(new Client() {
             public boolean valid(WorldEditJob job, World world) {
@@ -71,6 +76,8 @@ public final class CommandEditQueue {
         job = null;
         world = null;
         pendingCells.clear();
+        fluidCommands.clear();
+        fluidCell = -1;
         finished.completion.accept(outcome);
         return true;
     }
@@ -92,6 +99,23 @@ public final class CommandEditQueue {
     public synchronized void onChat(ClientChatReceivedEvent event) {
         if (job == null || pending == 0) return;
         String key = reply(event.message);
+        if (fluidCell >= 0) {
+            String response = event.message instanceof net.minecraft.util.ChatComponentText
+                ? event.message.getUnformattedText() : "";
+            if (JOB_ERRORS.contains(key)) {
+                client.message(job.finishedMessage(false));
+                cancel();
+                return;
+            }
+            if (!response.equals("set") && !response.equals("cleared")) {
+                if (!response.equals("not allowed") && !response.equals("failed") && !response.startsWith("unknown fluid ")) return;
+                job.recordBlockFailure(fluidCell, new IllegalStateException("Stored fluid command failed: " + response));
+            }
+            fluidCell = -1;
+            pending = 0;
+            waiting = 0;
+            return;
+        }
         if ("commands.setblock.success".equals(key) || "commands.summon.success".equals(key)) {
             pending--;
             if (pendingCells.removeFirst() < job.volume) job.blockCount++;
@@ -100,6 +124,7 @@ public final class CommandEditQueue {
         } else if (key != null && job.kind == WorldEditJob.Kind.PASTE && !JOB_ERRORS.contains(key)) {
             pending--;
             int index = pendingCells.removeFirst();
+            fluidCommands.remove(index);
             if (index >= job.volume) {
                 job.recordEntityFailure(new MessageException("schematica.message.edit.entity_failed", job.entityId(index - job.volume)));
             } else {
@@ -143,6 +168,17 @@ public final class CommandEditQueue {
         }
         if (delay-- > 0) return;
         try {
+            if (!fluidCommands.isEmpty()) {
+                Map.Entry<Integer, String> entry = fluidCommands.entrySet().iterator().next();
+                fluidCell = entry.getKey();
+                String command = entry.getValue();
+                fluidCommands.remove(fluidCell);
+                pending = 1;
+                client.send(command);
+                sent++;
+                delay = ConfigurationHandler.commandTaskInterval - 1;
+                return;
+            }
             // commandLimitPerTick commands every commandTaskInterval ticks
             int limit = sent == 0 ? 1 : ConfigurationHandler.commandLimitPerTick, issued = 0;
             for (int scanned = 0; scanned < 65536 && cursor < job.commandCount() && issued < limit; scanned++) {
@@ -150,6 +186,8 @@ public final class CommandEditQueue {
                 boolean queued = false;
                 try {
                     String command = client.command(job, index, world);
+                    String fluid = job.followupFluidCommand(index, world, command != null);
+                    if (fluid != null) fluidCommands.put(index, fluid);
                     if (command != null) {
                         pending++; pendingCells.addLast(index); queued = true;
                         issued++;
@@ -158,6 +196,7 @@ public final class CommandEditQueue {
                     }
                 } catch (RuntimeException | LinkageError error) {
                     if (job.kind != WorldEditJob.Kind.PASTE) throw error;
+                    fluidCommands.remove(index);
                     if (queued) { pending--; pendingCells.removeLast(); }
                     else issued++;
                     if (index >= job.volume) job.recordEntityFailure(error);
@@ -166,7 +205,7 @@ public final class CommandEditQueue {
             }
             delay = ConfigurationHandler.commandTaskInterval - 1;
             task.update(TaskRegistry.Stage.COMMANDS, cursor, job.commandCount(), job.blockCount, job.entityCount);
-            if (cursor == job.commandCount() && pending == 0) {
+            if (cursor == job.commandCount() && pending == 0 && fluidCommands.isEmpty()) {
                 job.completedTraversal = true;
                 WorldEditTask.Outcome outcome = job.outcome();
                 boolean success = outcome == WorldEditTask.Outcome.FINISHED;

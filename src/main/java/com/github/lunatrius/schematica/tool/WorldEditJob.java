@@ -203,6 +203,9 @@ public final class WorldEditJob extends WorldEditTask {
         if (!blocksOnly && !tiles.isEmpty()) {
             throw new MessageException("schematica.message.edit.nbt_requires_singleplayer");
         }
+        for (Map.Entry<Integer, String> entry : fluids.entrySet()) {
+            if (selected == null || selected.get(entry.getKey())) fluidCommand(entry.getKey(), entry.getValue());
+        }
         Set<Block> checked = new HashSet<>();
         if (kind == Kind.DELETE_PLACEMENT) checked.add(replacement);
         for (int i = 0; i < (kind == Kind.PASTE ? volume : 1); i++) {
@@ -215,6 +218,29 @@ public final class WorldEditJob extends WorldEditTask {
                 }
             }
         }
+    }
+
+    private String fluidCommand(int index, String fluid) {
+        int wx = x + index % width, wz = z + index / width % length, wy = y + index / width / length;
+        if (fluid != null && (!fluid.matches("[a-zA-Z0-9_.:-]+") || !LiquidLogged.storable(wx, wy, wz))) {
+            throw new MessageException("schematica.message.edit.fluid_failed", wx, wy, wz, fluid);
+        }
+        String command = "/liquidlogged " + (fluid == null ? "clear" : "set") + " " + wx + " " + wy + " " + wz
+            + (fluid == null ? "" : " " + fluid);
+        if (command.length() > 100) throw new MessageException("schematica.message.edit.command_too_long");
+        return command;
+    }
+
+    public String followupFluidCommand(int index, World world, boolean replacing) {
+        if (world == null || kind != Kind.PASTE || index >= volume || selected != null && !selected.get(index)) return null;
+        String desired = fluids.get(index);
+        if (desired == null && !LiquidLogged.present()) return null;
+        int wx = x + index % width, wz = z + index / width % length, wy = y + index / width / length;
+        Block block = GameData.getBlockRegistry().getObjectById(blocks[index] & 0xffff);
+        if (block == null || !pastes(block, world.isAirBlock(wx, wy, wz))) return null;
+        String current = LiquidLogged.fluid(world, wx, wy, wz);
+        if (Objects.equals(current, desired) && (!replacing || desired == null)) return null;
+        return fluidCommand(index, desired);
     }
 
     public String command(int index, World world) {
