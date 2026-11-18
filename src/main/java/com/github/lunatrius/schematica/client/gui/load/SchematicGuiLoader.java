@@ -39,9 +39,10 @@ public final class SchematicGuiLoader {
         if (minecraft.theWorld == null || minecraft.thePlayer == null || !SchematicaPlus.proxy.isLoadEnabled) {
             throw new IOException("Schematic loading is unavailable in this world");
         }
+        boolean disabled = GuiScreen.isShiftKeyDown();
         return Placements.loadSourceAsync(file, source -> {
             try {
-                if (createPlacement) createPlacement(minecraft, source, true);
+                if (createPlacement) createPlacement(minecraft, source, true, disabled);
                 WorldHandler.INSTANCE.saveSession();
                 done.accept(source);
             } catch (IOException | RuntimeException e) {
@@ -52,6 +53,11 @@ public final class SchematicGuiLoader {
 
     public static SchematicWorld createPlacement(Minecraft minecraft, SchematicLibrary.Source<SchematicSourceData> source,
         boolean atLookTarget) throws IOException {
+        return createPlacement(minecraft, source, atLookTarget, GuiScreen.isShiftKeyDown());
+    }
+
+    public static SchematicWorld createPlacement(Minecraft minecraft, SchematicLibrary.Source<SchematicSourceData> source,
+        boolean atLookTarget, boolean disabled) throws IOException {
         if (minecraft.theWorld == null || minecraft.thePlayer == null || !SchematicaPlus.proxy.isLoadEnabled) {
             throw new IOException("Schematic loading is unavailable in this world");
         }
@@ -63,7 +69,7 @@ public final class SchematicGuiLoader {
             } else {
                 Placements.moveToPlayer(schematic);
             }
-            if (GuiScreen.isShiftKeyDown()) schematic.setPlacementSettings(schematic.placementSettings().enabled(false));
+            if (disabled) schematic.setPlacementSettings(schematic.placementSettings().enabled(false));
             Placements.select(schematic);
             SchematicPrinter.INSTANCE.refresh();
             WorldHandler.INSTANCE.saveSession();
