@@ -22,6 +22,18 @@ Use the exact official RC-2 distribution for that runtime.
 The source investigation followed tile persistence, client synchronization,
 render-state writers/readers and fluid-container placement paths.
 
+## Organization-wide source screen
+
+The [inventory](organization-screen.md) covers 338 public repositories at the 2026-11-18 snapshot. The [entry-point index](organization-mods.md) identifies individual mod declarations in the 276 active candidate repositories. The [findings](organization-findings.md) record static checks for these candidates and remote inspection of 12 additional candidates outside the three-month window.
+
+- [GTNH Schematica](organization-findings.md#schematica) triggers the explicit legacy-mod startup guard in Plus.
+- [BlockLimiter](organization-findings.md#blocklimiter) can reject printer placements according to the server's block and dimension rules.
+- [Pseudo](organization-findings.md#pseudo) can substitute block IDs and metadata delivered to the client. Compare client and server captures with a transformer enabled.
+- [LiquidLogged](organization-findings.md#liquidlogged) exposes both fluid accessors used by Plus. Plus bounds fluid capture to Y 0–255.
+- [AstralSorcery](organization-findings.md#astralsorcery) targets Forge 1.16.5 on the inspected branch.
+
+The 807 Plus tests passed on JDK 21. The suite exercises the project and its fixtures. Runtime coexistence for the inspected upstream revisions remains unverified.
+
 ## Implemented adapters
 
 All implementations are optional, under
