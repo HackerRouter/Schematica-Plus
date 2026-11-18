@@ -1374,3 +1374,9 @@ Source [240cd0b1aa](https://github.com/GTNewHorizons/NewHorizonsCoreMod/tree/240
 - Check printer placement against `SchematicPrinter`. 1 source file(s) contain matching declarations, including [BlockBabyChest.onBlockPlacedBy](https://github.com/GTNewHorizons/NewHorizonsCoreMod/blob/240cd0b1aadfd8020e68f5fb987083096083e6f1/src/main/java/com/dreammaster/modbabychest/BlockBabyChest.java#L151).
 - [BlockBabyChest.onBlockPlacedBy](https://github.com/GTNewHorizons/NewHorizonsCoreMod/blob/240cd0b1aadfd8020e68f5fb987083096083e6f1/src/main/java/com/dreammaster/modbabychest/BlockBabyChest.java#L151) depends on placement orientation. Exercise the printer with a rotated schematic.
 - [TileEntityBabyChest.readFromNBT](https://github.com/GTNewHorizons/NewHorizonsCoreMod/blob/240cd0b1aadfd8020e68f5fb987083096083e6f1/src/main/java/com/dreammaster/modbabychest/TileEntityBabyChest.java#L91) accesses `Items`, `Slot`, `facing`. Compare those fields after capture, transform and restore.
+
+### Nodal-Mechanics
+
+Source [298f678ad9](https://github.com/GTNewHorizons/Nodal-Mechanics/tree/298f678ad946329fa9f22b0a12d51654a3522792) · 11 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- No direct match in the listed checks. Mod entry point: [NodalMechanics](https://github.com/GTNewHorizons/Nodal-Mechanics/blob/298f678ad946329fa9f22b0a12d51654a3522792/src/main/java/shukaro/nodalmechanics/NodalMechanics.java#L19). Indirect effects from dependencies, injection, configuration and server rules remain open.
