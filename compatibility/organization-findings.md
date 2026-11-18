@@ -2210,6 +2210,7 @@ Source [3a1590536e](https://github.com/GTNewHorizons/VisualProspecting/tree/3a15
 Source [3604bc53cb](https://github.com/GTNewHorizons/waila/tree/3604bc53cb5835f8a00df1ecefd10c43ec5542da) · 179 tracked Java, Scala or Kotlin files outside test/example directories.
 
 - No direct match in the listed checks. Mod entry point: [Waila](https://github.com/GTNewHorizons/waila/blob/3604bc53cb5835f8a00df1ecefd10c43ec5542da/src/main/java/mcp/mobius/waila/Waila.java#L38). Indirect effects from dependencies, injection, configuration and server rules remain open.
+- [ButtonBase](https://github.com/GTNewHorizons/waila/blob/3604bc53cb5835f8a00df1ecefd10c43ec5542da/src/main/java/mcp/mobius/waila/gui/widgets/buttons/ButtonBase.java#L159) accepts `MouseEvent`. Exercise the schematic overlay and hotkeys while the corresponding client feature is enabled.
 
 ### WailaHarvestability
 
