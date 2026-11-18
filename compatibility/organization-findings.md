@@ -1357,3 +1357,9 @@ Source [cd4b95fc9a](https://github.com/GTNewHorizons/neiaddons/tree/cd4b95fc9a8f
 Source [dba624e097](https://github.com/GTNewHorizons/nesql-exporter/tree/dba624e097daee0ef16fde94c3c997e43a0dc59c) · 132 tracked Java, Scala or Kotlin files outside test/example directories.
 
 - No direct match in the listed checks. Mod entry point: [Main](https://github.com/GTNewHorizons/nesql-exporter/blob/dba624e097daee0ef16fde94c3c997e43a0dc59c/src/main/java/com/github/dcysteine/nesql/exporter/main/Main.java#L19). Indirect effects from dependencies, injection, configuration and server rules remain open.
+
+### NetherPortalFix
+
+Source [836a60dc6b](https://github.com/GTNewHorizons/NetherPortalFix/tree/836a60dc6bd6e61463f4c986b2901914f57ded4a) · 2 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- No direct match in the listed checks. Mod entry point: [NetherPortalFix](https://github.com/GTNewHorizons/NetherPortalFix/blob/836a60dc6bd6e61463f4c986b2901914f57ded4a/src/main/java/net/blay09/mods/netherportalfix/NetherPortalFix.java#L11). Indirect effects from dependencies, injection, configuration and server rules remain open.
