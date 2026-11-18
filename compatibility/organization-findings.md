@@ -1422,3 +1422,10 @@ Source [1c706582ac](https://github.com/GTNewHorizons/Nuclear-Control/tree/1c7065
 - Check printer placement against `SchematicPrinter`. 2 source file(s) contain matching declarations, including [BlockNuclearControlMain.onBlockPlaced](https://github.com/GTNewHorizons/Nuclear-Control/blob/1c706582ac5f3a3f3cc7db89f55c4c2da15a5dd9/src/main/java/shedar/mods/ic2/nuclearcontrol/blocks/BlockNuclearControlMain.java#L135).
 - [InventoryItem.readFromNBT](https://github.com/GTNewHorizons/Nuclear-Control/blob/1c706582ac5f3a3f3cc7db89f55c4c2da15a5dd9/src/main/java/shedar/mods/ic2/nuclearcontrol/InventoryItem.java#L121) accesses `ItemInventory`, `Slot`. Compare those fields after capture, transform and restore.
 - [MainBlockRenderer.renderWorldBlock](https://github.com/GTNewHorizons/Nuclear-Control/blob/1c706582ac5f3a3f3cc7db89f55c4c2da15a5dd9/src/main/java/shedar/mods/ic2/nuclearcontrol/renderers/MainBlockRenderer.java#L137) queries tile data while rendering. Preview a populated tile after saving and reopening its schematic.
+
+### NuclearHorizons
+
+Source [0229c627f1](https://github.com/GTNewHorizons/NuclearHorizons/tree/0229c627f1ba6bd48ead0f2c09e3ae1b1c73d45d) · 97 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- Check tile serialization against `TileNBTCompat`. 7 source file(s) contain matching declarations, including [TileAccessHatch.writeToNBT](https://github.com/GTNewHorizons/NuclearHorizons/blob/0229c627f1ba6bd48ead0f2c09e3ae1b1c73d45d/src/main/java/com/recursive_pineapple/nuclear_horizons/reactors/tile/TileAccessHatch.java#L67).
+- [TileAccessHatch.writeToNBT](https://github.com/GTNewHorizons/NuclearHorizons/blob/0229c627f1ba6bd48ead0f2c09e3ae1b1c73d45d/src/main/java/com/recursive_pineapple/nuclear_horizons/reactors/tile/TileAccessHatch.java#L67) accesses `version`, `reactorRelX`, `reactorRelY`, `reactorRelZ`. Compare those fields after capture, transform and restore.
