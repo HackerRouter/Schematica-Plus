@@ -1654,3 +1654,9 @@ Source [3daa59d2ce](https://github.com/GTNewHorizons/Realistic-World-Gen-2/tree/
 - Check tile serialization against `TileNBTCompat`. 1 source file(s) contain matching declarations, including [RwgWorldSavedData.readFromNBT](https://github.com/GTNewHorizons/Realistic-World-Gen-2/blob/3daa59d2ce719dc59a470f7a3ac730dfca211edf/src/main/java/rwg2/world/RwgWorldSavedData.java#L35).
 - Check world or renderer transformation alongside the schematic world and render pipeline. 1 source file(s) contain matching declarations, including [MixinWorld.World](https://github.com/GTNewHorizons/Realistic-World-Gen-2/blob/3daa59d2ce719dc59a470f7a3ac730dfca211edf/src/main/java/rwg2/mixin/MixinWorld.java#L14).
 - [RwgWorldSavedData.readFromNBT](https://github.com/GTNewHorizons/Realistic-World-Gen-2/blob/3daa59d2ce719dc59a470f7a3ac730dfca211edf/src/main/java/rwg2/world/RwgWorldSavedData.java#L35) accesses `noiseImplementation`. Compare those fields after capture, transform and restore.
+
+### RecEx
+
+Source [1a9919e335](https://github.com/GTNewHorizons/RecEx/tree/1a9919e33554927ad0c318c44071df7e9053320f) · 21 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- No direct match in the listed checks. Mod entry point: [RecipeExporterMod](https://github.com/GTNewHorizons/RecEx/blob/1a9919e33554927ad0c318c44071df7e9053320f/src/main/java/com/bigbass/recex/RecipeExporterMod.java#L15). Indirect effects from dependencies, injection, configuration and server rules remain open.
