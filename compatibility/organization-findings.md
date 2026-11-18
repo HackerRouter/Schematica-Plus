@@ -1943,3 +1943,10 @@ Source [8c8bb51ac5](https://github.com/GTNewHorizons/ThaumicBases/tree/8c8bb51ac
 - [BrazierRenderer.renderWorldBlock](https://github.com/GTNewHorizons/ThaumicBases/blob/8c8bb51ac523fce11c50c8a225a23e1f6579afc7/src/main/java/tb/client/render/block/BrazierRenderer.java#L62) queries tile data while rendering. Preview a populated tile after saving and reopening its schematic.
 - [BlockAdvAlchemicalFurnace.onBlockPlacedBy](https://github.com/GTNewHorizons/ThaumicBases/blob/8c8bb51ac523fce11c50c8a225a23e1f6579afc7/src/main/java/tb/common/block/BlockAdvAlchemicalFurnace.java#L147) depends on placement orientation. Exercise the printer with a rotated schematic.
 - [TileAdvAlchemicalFurnace.readFromNBT](https://github.com/GTNewHorizons/ThaumicBases/blob/8c8bb51ac523fce11c50c8a225a23e1f6579afc7/src/main/java/tb/common/tile/TileAdvAlchemicalFurnace.java#L28) accesses `isAlumentium`. Compare those fields after capture, transform and restore.
+
+### ThaumicBoots
+
+Source [ea26776841](https://github.com/GTNewHorizons/ThaumicBoots/tree/ea26776841c8f27f72c1e1b9247e43cd91e3c18c) · 79 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- Check tile serialization against `TileNBTCompat`. 1 source file(s) contain matching declarations, including [ChunkCoords.writeToNBT](https://github.com/GTNewHorizons/ThaumicBoots/blob/ea26776841c8f27f72c1e1b9247e43cd91e3c18c/src/main/java/thaumicboots/main/utils/ChunkCoords.java#L65).
+- [ChunkCoords.writeToNBT](https://github.com/GTNewHorizons/ThaumicBoots/blob/ea26776841c8f27f72c1e1b9247e43cd91e3c18c/src/main/java/thaumicboots/main/utils/ChunkCoords.java#L65) accesses `dim`, `xPos`, `yPos`, `zPos`. Compare those fields after capture, transform and restore.
