@@ -1448,3 +1448,9 @@ Source [35a455fd0c](https://github.com/GTNewHorizons/OCGlasses/tree/35a455fd0cee
 
 - Check tile serialization against `TileNBTCompat`. 2 source file(s) contain matching declarations, including [Widget.writeToNBT](https://github.com/GTNewHorizons/OCGlasses/blob/35a455fd0ceed1f9e1b9573a32c4e0caf5525633/src/main/java/com/bymarcin/openglasses/surface/Widget.java#L34).
 - [OpenGlassesTerminalTileEntity.writeToNBT](https://github.com/GTNewHorizons/OCGlasses/blob/35a455fd0ceed1f9e1b9573a32c4e0caf5525633/src/main/java/com/bymarcin/openglasses/tileentity/OpenGlassesTerminalTileEntity.java#L330) accesses `currID`, `listSize`, `widgetType`, `ID`. Compare those fields after capture, transform and restore.
+
+### Offscreen
+
+Source [1a4b448e83](https://github.com/GTNewHorizons/Offscreen/tree/1a4b448e83ad1947d59bbfa2957f958c3dac59ae) · 62 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- Check world or renderer transformation alongside the schematic world and render pipeline. 1 source file(s) contain matching declarations, including [EntityRendererFocus.EntityRenderer](https://github.com/GTNewHorizons/Offscreen/blob/1a4b448e83ad1947d59bbfa2957f958c3dac59ae/src/main/java/com/sbancuz/offscreen/mixins/early/EntityRendererFocus.java#L12).
