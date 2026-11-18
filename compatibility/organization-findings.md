@@ -2217,6 +2217,7 @@ Source [3604bc53cb](https://github.com/GTNewHorizons/waila/tree/3604bc53cb5835f8
 Source [49880886a8](https://github.com/GTNewHorizons/WailaHarvestability/tree/49880886a8837bd20eb34b45c381ffa3a6e17e93) · 14 tracked Java, Scala or Kotlin files outside test/example directories.
 
 - No direct match in the listed checks. Mod entry point: [ModWailaHarvestability](https://github.com/GTNewHorizons/WailaHarvestability/blob/49880886a8837bd20eb34b45c381ffa3a6e17e93/src/main/java/squeek/wailaharvestability/ModWailaHarvestability.java#L16). Indirect effects from dependencies, injection, configuration and server rules remain open.
+- [WailaHandler](https://github.com/GTNewHorizons/WailaHarvestability/blob/49880886a8837bd20eb34b45c381ffa3a6e17e93/src/main/java/squeek/wailaharvestability/WailaHandler.java#L41) uses `IWailaDataProvider`. The identified integration concerns the item or information UI.
 
 ### WAILAPlugins
 
