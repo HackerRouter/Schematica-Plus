@@ -2314,3 +2314,7 @@ These entries use remote default-branch source inspection. The activity cutoff a
 ### AngelicaCompat
 
 An Extra Utilities connected-texture renderer is patched. Compare a joined surface and an exposed edge in the preview with Angelica active. [MixinRenderBlockConnectedTextures.java at 8a7ef890e3](https://github.com/GTNewHorizons/AngelicaCompat/blob/8a7ef890e3c8131acfcd21493e14fc7b88033903/src/main/java/com/gtnewhorizons/angelicacompat/mixins/late/client/extrautils/MixinRenderBlockConnectedTextures.java)
+
+### AstralSorcery
+
+The build depends on Forge 1.16.5-36.2.22. This revision is outside the Minecraft 1.7.10 target. [build.gradle at fb4fb12fcc](https://github.com/GTNewHorizons/AstralSorcery/blob/fb4fb12fccf9bd68d22434dda4efd0b319265bbe/build.gradle)
