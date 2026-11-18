@@ -1834,3 +1834,9 @@ Source [b7113542a9](https://github.com/GTNewHorizons/StorageDrawers/tree/b711354
 - [TileEntityController.readFromNBT](https://github.com/GTNewHorizons/StorageDrawers/blob/b7113542a9145e4000e6feebf5fa552c4921c79f/src/main/java/com/jaquadro/minecraft/storagedrawers/block/tile/TileEntityController.java#L660) accesses `Dir`, `Rot`, `CustomName`. Compare those fields after capture, transform and restore.
 - [ForgeEventHandler.playerInteracts](https://github.com/GTNewHorizons/StorageDrawers/blob/b7113542a9145e4000e6feebf5fa552c4921c79f/src/main/java/com/jaquadro/minecraft/storagedrawers/core/ForgeEventHandler.java#L12) can cancel the interaction. Verify the printer on a server with the handler enabled.
 - [ItemFramingTable.placeBlockAt](https://github.com/GTNewHorizons/StorageDrawers/blob/b7113542a9145e4000e6feebf5fa552c4921c79f/src/main/java/com/jaquadro/minecraft/storagedrawers/item/ItemFramingTable.java#L18) depends on placement orientation. Exercise the printer with a rotated schematic.
+
+### StructureCompat
+
+Source [9cf56091e6](https://github.com/GTNewHorizons/StructureCompat/tree/9cf56091e681c8b80b7683ea72c6d12d84eeceef) · 18 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- No direct match in the listed checks. Mod entry point: [StructureCompat](https://github.com/GTNewHorizons/StructureCompat/blob/9cf56091e681c8b80b7683ea72c6d12d84eeceef/src/main/java/net/glease/structurecompat/StructureCompat.java#L21). Indirect effects from dependencies, injection, configuration and server rules remain open.
