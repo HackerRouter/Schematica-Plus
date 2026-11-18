@@ -1646,3 +1646,11 @@ Source [66b92f3805](https://github.com/GTNewHorizons/Realistic-World-Gen/tree/66
 
 - Check tile serialization against `TileNBTCompat`. 1 source file(s) contain matching declarations, including [RwgWorldSavedData.readFromNBT](https://github.com/GTNewHorizons/Realistic-World-Gen/blob/66b92f380597f16cb3cf75d418786e823a0fc13f/src/main/java/rwg/world/RwgWorldSavedData.java#L33).
 - [RwgWorldSavedData.readFromNBT](https://github.com/GTNewHorizons/Realistic-World-Gen/blob/66b92f380597f16cb3cf75d418786e823a0fc13f/src/main/java/rwg/world/RwgWorldSavedData.java#L33) accesses `noiseImplementation`, `biomeListVersion`. Compare those fields after capture, transform and restore.
+
+### Realistic-World-Gen-2
+
+Source [3daa59d2ce](https://github.com/GTNewHorizons/Realistic-World-Gen-2/tree/3daa59d2ce719dc59a470f7a3ac730dfca211edf) · 223 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- Check tile serialization against `TileNBTCompat`. 1 source file(s) contain matching declarations, including [RwgWorldSavedData.readFromNBT](https://github.com/GTNewHorizons/Realistic-World-Gen-2/blob/3daa59d2ce719dc59a470f7a3ac730dfca211edf/src/main/java/rwg2/world/RwgWorldSavedData.java#L35).
+- Check world or renderer transformation alongside the schematic world and render pipeline. 1 source file(s) contain matching declarations, including [MixinWorld.World](https://github.com/GTNewHorizons/Realistic-World-Gen-2/blob/3daa59d2ce719dc59a470f7a3ac730dfca211edf/src/main/java/rwg2/mixin/MixinWorld.java#L14).
+- [RwgWorldSavedData.readFromNBT](https://github.com/GTNewHorizons/Realistic-World-Gen-2/blob/3daa59d2ce719dc59a470f7a3ac730dfca211edf/src/main/java/rwg2/world/RwgWorldSavedData.java#L35) accesses `noiseImplementation`. Compare those fields after capture, transform and restore.
