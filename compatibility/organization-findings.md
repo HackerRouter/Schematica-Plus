@@ -638,3 +638,9 @@ Source [04c232f7cf](https://github.com/GTNewHorizons/Draconic-Evolution/tree/04c
 Source [3d699ff99f](https://github.com/GTNewHorizons/DummyCore/tree/3d699ff99f956f4cef56055d800a216343e82d79) · 58 tracked Java, Scala or Kotlin files outside test/example directories.
 
 - No direct match in the listed checks. Mod entry point: [CoreInitialiser](https://github.com/GTNewHorizons/DummyCore/blob/3d699ff99f956f4cef56055d800a216343e82d79/src/main/java/DummyCore/Core/CoreInitialiser.java#L36). Indirect effects from dependencies, injection, configuration and server rules remain open.
+
+### DuraDisplay
+
+Source [58d45414b6](https://github.com/GTNewHorizons/DuraDisplay/tree/58d45414b65b74cc370bd5cd9cd707ca960586f3) · 31 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- No direct match in the listed checks. Mod entry point: [DuraDisplay](https://github.com/GTNewHorizons/DuraDisplay/blob/58d45414b65b74cc370bd5cd9cd707ca960586f3/src/main/java/com/caedis/duradisplay/DuraDisplay.java#L15). Indirect effects from dependencies, injection, configuration and server rules remain open.
