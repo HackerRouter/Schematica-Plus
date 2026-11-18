@@ -1582,3 +1582,11 @@ Source [50ae9866a9](https://github.com/GTNewHorizons/ProjectRed/tree/50ae9866a93
 Source [4a9b7b7a01](https://github.com/GTNewHorizons/Pseudo/tree/4a9b7b7a012f923d5595ab07bdcb30123b6dfd1b) · 4 tracked Java, Scala or Kotlin files outside test/example directories.
 
 - No direct match in the listed checks. Mod entry point: [Pseudo](https://github.com/GTNewHorizons/Pseudo/blob/4a9b7b7a012f923d5595ab07bdcb30123b6dfd1b/src/main/java/com/gtnewhorizons/pseudo/Pseudo.java#L12). Indirect effects from dependencies, injection, configuration and server rules remain open.
+
+### pVnRT
+
+Source [e6fcb92786](https://github.com/GTNewHorizons/pVnRT/tree/e6fcb92786e8f6028833ae2b7b3cec5fafedc555) · 58 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- Check printer placement against `SchematicPrinter`. 1 source file(s) contain matching declarations, including [BlockFan.onBlockPlacedBy](https://github.com/GTNewHorizons/pVnRT/blob/e6fcb92786e8f6028833ae2b7b3cec5fafedc555/src/main/java/pvnrt/block/BlockFan.java#L58).
+- Check world or renderer transformation alongside the schematic world and render pipeline. 1 source file(s) contain matching declarations, including [MixinWorld.World](https://github.com/GTNewHorizons/pVnRT/blob/e6fcb92786e8f6028833ae2b7b3cec5fafedc555/src/mixin/java/pvnrt/mixin/mixins/early/MixinWorld.java#L19).
+- [BlockFan.onBlockPlacedBy](https://github.com/GTNewHorizons/pVnRT/blob/e6fcb92786e8f6028833ae2b7b3cec5fafedc555/src/main/java/pvnrt/block/BlockFan.java#L58) depends on placement orientation. Exercise the printer with a rotated schematic.
