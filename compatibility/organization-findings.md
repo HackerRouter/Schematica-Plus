@@ -1571,6 +1571,7 @@ Source [e3c3a2e1a4](https://github.com/GTNewHorizons/PersonalSpace/tree/e3c3a2e1
 Source [45a0d1efca](https://github.com/GTNewHorizons/PlanNH/tree/45a0d1efca52b946ae1cc1139f8b2e852fb44e6c) · 273 tracked Java, Scala or Kotlin files outside test/example directories.
 
 - No direct match in the listed checks. Mod entry point: [PlanNH](https://github.com/GTNewHorizons/PlanNH/blob/45a0d1efca52b946ae1cc1139f8b2e852fb44e6c/src/main/java/com/sbancuz/plannh/PlanNH.java#L14). Indirect effects from dependencies, injection, configuration and server rules remain open.
+- [ClientProxy](https://github.com/GTNewHorizons/PlanNH/blob/45a0d1efca52b946ae1cc1139f8b2e852fb44e6c/src/main/java/com/sbancuz/plannh/ClientProxy.java#L89) accepts `KeyInputEvent`. Exercise the schematic overlay and hotkeys while the corresponding client feature is enabled.
 
 ### Player-API
 
