@@ -2235,3 +2235,16 @@ Source [b7b3fe7588](https://github.com/GTNewHorizons/WirelessRedstone-CBE/tree/b
 Source [b603920182](https://github.com/GTNewHorizons/WitcheryExtras/tree/b603920182323cf2be389bd62dbdff1fd39bb8ac) · 59 tracked Java, Scala or Kotlin files outside test/example directories.
 
 - Check world or renderer transformation alongside the schematic world and render pipeline. 1 source file(s) contain matching declarations, including [EntityRendererMixin.EntityRenderer](https://github.com/GTNewHorizons/WitcheryExtras/blob/b603920182323cf2be389bd62dbdff1fd39bb8ac/src/main/java/alkalus/main/mixins/early/minecraft/EntityRendererMixin.java#L14).
+
+### WitchingGadgets
+
+Source [148ca08ec6](https://github.com/GTNewHorizons/WitchingGadgets/tree/148ca08ec600a07cac72459a44f596a5e28f9bc2) · 229 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- Check tile serialization against `TileNBTCompat`. 1 source file(s) contain matching declarations, including [TileEntityWGBase.readFromNBT](https://github.com/GTNewHorizons/WitchingGadgets/blob/148ca08ec600a07cac72459a44f596a5e28f9bc2/src/main/java/witchinggadgets/common/blocks/tiles/TileEntityWGBase.java#L12).
+- Check preview rendering against `RendererSchematicChunk`. 15 source file(s) contain matching declarations, including [BlockRenderMetalDevice.renderWorldBlock](https://github.com/GTNewHorizons/WitchingGadgets/blob/148ca08ec600a07cac72459a44f596a5e28f9bc2/src/main/java/witchinggadgets/client/render/BlockRenderMetalDevice.java#L67).
+- Check material picking against `BlockToItemStack`. 1 source file(s) contain matching declarations, including [BlockVoidWalkway.getPickBlock](https://github.com/GTNewHorizons/WitchingGadgets/blob/148ca08ec600a07cac72459a44f596a5e28f9bc2/src/main/java/witchinggadgets/common/blocks/BlockVoidWalkway.java#L72).
+- Check printer placement against `SchematicPrinter`. 6 source file(s) contain matching declarations, including [BlockModifiedAiry.onBlockPlacedBy](https://github.com/GTNewHorizons/WitchingGadgets/blob/148ca08ec600a07cac72459a44f596a5e28f9bc2/src/main/java/witchinggadgets/common/blocks/BlockModifiedAiry.java#L129).
+- Check interaction events against `SchematicPrinter`. 1 source file(s) contain matching declarations, including [EventHandler.onPlayerInteract](https://github.com/GTNewHorizons/WitchingGadgets/blob/148ca08ec600a07cac72459a44f596a5e28f9bc2/src/main/java/witchinggadgets/common/util/handler/EventHandler.java#L166).
+- [BlockRenderStoneDevice.renderWorldBlock](https://github.com/GTNewHorizons/WitchingGadgets/blob/148ca08ec600a07cac72459a44f596a5e28f9bc2/src/main/java/witchinggadgets/client/render/BlockRenderStoneDevice.java#L46) queries tile data while rendering. Preview a populated tile after saving and reopening its schematic.
+- [BlockWGMetalDevice.onBlockPlacedBy](https://github.com/GTNewHorizons/WitchingGadgets/blob/148ca08ec600a07cac72459a44f596a5e28f9bc2/src/main/java/witchinggadgets/common/blocks/BlockWGMetalDevice.java#L153) depends on placement orientation. Exercise the printer with a rotated schematic.
+- [EventHandler.onPlayerInteract](https://github.com/GTNewHorizons/WitchingGadgets/blob/148ca08ec600a07cac72459a44f596a5e28f9bc2/src/main/java/witchinggadgets/common/util/handler/EventHandler.java#L166) can cancel the interaction. Verify the printer on a server with the handler enabled.
