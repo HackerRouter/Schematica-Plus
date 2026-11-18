@@ -327,6 +327,7 @@ Source [83a52ccb9c](https://github.com/GTNewHorizons/BiomeBridge/tree/83a52ccb9c
 Source [9af0e3a4d5](https://github.com/GTNewHorizons/BlockLimiter/tree/9af0e3a4d51b3c1f4b61945da13203541bc17178) · 8 tracked Java, Scala or Kotlin files outside test/example directories.
 
 - No direct match in the listed checks. Mod entry point: [BlockLimiter](https://github.com/GTNewHorizons/BlockLimiter/blob/9af0e3a4d51b3c1f4b61945da13203541bc17178/src/main/java/com/github/namikon/blocklimiter/BlockLimiter.java#L19). Indirect effects from dependencies, injection, configuration and server rules remain open.
+- [BlockPlaceEvent](https://github.com/GTNewHorizons/BlockLimiter/blob/9af0e3a4d51b3c1f4b61945da13203541bc17178/src/main/java/com/github/namikon/blocklimiter/events/BlockPlaceEvent.java#L42) — The placement handler cancels configured block and dimension combinations. Creative placement is exempt unless DenyCreativeMode is enabled. This applies to normal printer placements that reach this Forge event.
 
 ### BlockRenderer6343
 
