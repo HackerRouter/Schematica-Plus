@@ -79,3 +79,9 @@ Source [2ecec40599](https://github.com/GTNewHorizons/AMDIForge/tree/2ecec405991e
 
 - Check tile serialization against `TileNBTCompat`. 1 source file(s) contain matching declarations, including [GraveNBT.readFromNBT](https://github.com/GTNewHorizons/AMDIForge/blob/2ecec405991ed72a6676e35b1c9fdbf67151d00a/src/main/java/eu/usrv/amdiforge/core/graveIO/GraveNBT.java#L108).
 - [GraveNBT.readFromNBT](https://github.com/GTNewHorizons/AMDIForge/blob/2ecec405991ed72a6676e35b1c9fdbf67151d00a/src/main/java/eu/usrv/amdiforge/core/graveIO/GraveNBT.java#L108) accesses `size`, `Items`, `id`, `Count`. Compare those fields after capture, transform and restore.
+
+### AmidstGTNH
+
+Source [94f014b667](https://github.com/GTNewHorizons/AmidstGTNH/tree/94f014b66777fb228c8eef329759f35495da9760) · 89 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- No direct match in the listed checks. Mod entry point: [ForgeAmidst](https://github.com/GTNewHorizons/AmidstGTNH/blob/94f014b66777fb228c8eef329759f35495da9760/src/main/java/sedridor/forgeamidst/ForgeAmidst.java#L44). Indirect effects from dependencies, injection, configuration and server rules remain open.
