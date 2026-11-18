@@ -1062,3 +1062,9 @@ Source [b3c67de096](https://github.com/GTNewHorizons/ironchest/tree/b3c67de09677
 - Check printer placement against `SchematicPrinter`. 1 source file(s) contain matching declarations, including [BlockIronChest.onBlockPlacedBy](https://github.com/GTNewHorizons/ironchest/blob/b3c67de09677979c491be2caeaea8ce31c327ea5/src/main/java/cpw/mods/ironchest/BlockIronChest.java#L141).
 - [BlockIronChest.onBlockPlacedBy](https://github.com/GTNewHorizons/ironchest/blob/b3c67de09677979c491be2caeaea8ce31c327ea5/src/main/java/cpw/mods/ironchest/BlockIronChest.java#L141) depends on placement orientation. Exercise the printer with a rotated schematic.
 - [TileEntityIronChest.readFromNBT](https://github.com/GTNewHorizons/ironchest/blob/b3c67de09677979c491be2caeaea8ce31c327ea5/src/main/java/cpw/mods/ironchest/TileEntityIronChest.java#L176) accesses `Items`, `Slot`, `facing`. Compare those fields after capture, transform and restore.
+
+### IronChestMinecarts
+
+Source [7d8dd0389e](https://github.com/GTNewHorizons/IronChestMinecarts/tree/7d8dd0389ed639ff3179901e754a0b1793437bde) · 15 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- Check printer placement against `SchematicPrinter`. 1 source file(s) contain matching declarations, including [ItemMinecartIronChest.onItemUse](https://github.com/GTNewHorizons/IronChestMinecarts/blob/7d8dd0389ed639ff3179901e754a0b1793437bde/src/main/java/ganymedes01/ironchestminecarts/minecarts/ItemMinecartIronChest.java#L23).
