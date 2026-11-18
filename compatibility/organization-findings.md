@@ -1287,3 +1287,9 @@ Source [cc00bddde0](https://github.com/GTNewHorizons/MyEssentials-Core/tree/cc00
 - Check tile serialization against `TileNBTCompat`. 1 source file(s) contain matching declarations, including [SignClassTransformer.writeToNBT](https://github.com/GTNewHorizons/MyEssentials-Core/blob/cc00bddde0fe3bff315e9fca89d35721feca3e7b/src/main/java/myessentials/classtransformers/SignClassTransformer.java#L28).
 - Check printer placement against `SchematicPrinter`. 1 source file(s) contain matching declarations, including [Tool.onItemUse](https://github.com/GTNewHorizons/MyEssentials-Core/blob/cc00bddde0fe3bff315e9fca89d35721feca3e7b/src/main/java/myessentials/entities/api/tool/Tool.java#L35).
 - Check interaction events against `SchematicPrinter`. 2 source file(s) contain matching declarations, including [SignManager.onPlayerInteract](https://github.com/GTNewHorizons/MyEssentials-Core/blob/cc00bddde0fe3bff315e9fca89d35721feca3e7b/src/main/java/myessentials/entities/api/sign/SignManager.java#L38).
+
+### MyPermissions
+
+Source [6318dd9912](https://github.com/GTNewHorizons/MyPermissions/tree/6318dd99129ad429d22bb66588cb3ac3ff6db370) · 33 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- No direct match in the listed checks. Mod entry point: [MyPermissions](https://github.com/GTNewHorizons/MyPermissions/blob/6318dd99129ad429d22bb66588cb3ac3ff6db370/src/main/java/mypermissions/MyPermissions.java#L23). Indirect effects from dependencies, injection, configuration and server rules remain open.
