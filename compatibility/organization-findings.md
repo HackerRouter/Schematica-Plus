@@ -1279,3 +1279,11 @@ Source [6cbdbe819c](https://github.com/GTNewHorizons/MrTJPCore/tree/6cbdbe819c08
 - Check preview rendering against `RendererSchematicChunk`. 2 source file(s) contain matching declarations, including [tileblock.renderWorldBlock](https://github.com/GTNewHorizons/MrTJPCore/blob/6cbdbe819c08fbdc537a08f5640e89af3f89e73b/src/main/scala/mrtjp/core/block/tileblock.scala#L93).
 - Check material picking against `BlockToItemStack`. 1 source file(s) contain matching declarations, including [tileblock.getPickBlock](https://github.com/GTNewHorizons/MrTJPCore/blob/6cbdbe819c08fbdc537a08f5640e89af3f89e73b/src/main/scala/mrtjp/core/block/tileblock.scala#L269).
 - Check printer placement against `SchematicPrinter`. 4 source file(s) contain matching declarations, including [coreblock.placeBlockAt](https://github.com/GTNewHorizons/MrTJPCore/blob/6cbdbe819c08fbdc537a08f5640e89af3f89e73b/src/main/scala/mrtjp/core/block/coreblock.scala#L38).
+
+### MyEssentials-Core
+
+Source [cc00bddde0](https://github.com/GTNewHorizons/MyEssentials-Core/tree/cc00bddde0fe3bff315e9fca89d35721feca3e7b) · 78 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- Check tile serialization against `TileNBTCompat`. 1 source file(s) contain matching declarations, including [SignClassTransformer.writeToNBT](https://github.com/GTNewHorizons/MyEssentials-Core/blob/cc00bddde0fe3bff315e9fca89d35721feca3e7b/src/main/java/myessentials/classtransformers/SignClassTransformer.java#L28).
+- Check printer placement against `SchematicPrinter`. 1 source file(s) contain matching declarations, including [Tool.onItemUse](https://github.com/GTNewHorizons/MyEssentials-Core/blob/cc00bddde0fe3bff315e9fca89d35721feca3e7b/src/main/java/myessentials/entities/api/tool/Tool.java#L35).
+- Check interaction events against `SchematicPrinter`. 2 source file(s) contain matching declarations, including [SignManager.onPlayerInteract](https://github.com/GTNewHorizons/MyEssentials-Core/blob/cc00bddde0fe3bff315e9fca89d35721feca3e7b/src/main/java/myessentials/entities/api/sign/SignManager.java#L38).
