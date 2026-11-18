@@ -1742,6 +1742,7 @@ Source [35ee9d60b3](https://github.com/GTNewHorizons/Schematica/tree/35ee9d60b30
 - Class-path overlap candidate in 68 source files, including [com.github.lunatrius.schematica.FileFilterSchematic](https://github.com/GTNewHorizons/Schematica/blob/35ee9d60b30aef58a5fda9e1f3cc442e94b95a98/src/main/java/com/github/lunatrius/schematica/FileFilterSchematic.java#L1). Check which classes each release JAR actually ships before installing both.
 - Existing Plus lookup in `Reference` names [com.github.lunatrius.schematica.client.gui.GuiFactory](https://github.com/GTNewHorizons/Schematica/blob/35ee9d60b30aef58a5fda9e1f3cc442e94b95a98/src/main/java/com/github/lunatrius/schematica/client/gui/GuiFactory.java#L1) (4 matching upstream source names). Check reflected members and client state with the deployed versions.
 - Both projects use the com.github.lunatrius.schematica namespace. Their distinct mod IDs do not isolate classes in the Forge class loader. Plus documents a startup rejection for simultaneous installation in its installation guide.
+- Plus checks loaded mod IDs case-insensitively in SchematicaPlus.findLegacyMod and rejects Schematica in its constructor on both sides.
 
 ### ServerUtilities
 
