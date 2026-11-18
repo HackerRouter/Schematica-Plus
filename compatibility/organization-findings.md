@@ -1576,3 +1576,9 @@ Source [50ae9866a9](https://github.com/GTNewHorizons/ProjectRed/tree/50ae9866a93
 - Check tile serialization against `TileNBTCompat`. 1 source file(s) contain matching declarations, including [blocks.readFromNBT](https://github.com/GTNewHorizons/ProjectRed/blob/50ae9866a93557366bb42cfa4a36bf8863076dae/src/main/scala/mrtjp/projectred/illumination/blocks.scala#L537).
 - Check preview rendering against `RendererSchematicChunk`. 4 source file(s) contain matching declarations, including [TileBarrel.renderTileEntityAt](https://github.com/GTNewHorizons/ProjectRed/blob/50ae9866a93557366bb42cfa4a36bf8863076dae/src/main/scala/mrtjp/projectred/exploration/TileBarrel.scala#L345).
 - Check printer placement against `SchematicPrinter`. 9 source file(s) contain matching declarations, including [connectabletiles.onBlockPlaced](https://github.com/GTNewHorizons/ProjectRed/blob/50ae9866a93557366bb42cfa4a36bf8863076dae/src/main/scala/mrtjp/projectred/core/connectabletiles.scala#L224).
+
+### Pseudo
+
+Source [4a9b7b7a01](https://github.com/GTNewHorizons/Pseudo/tree/4a9b7b7a012f923d5595ab07bdcb30123b6dfd1b) · 4 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- No direct match in the listed checks. Mod entry point: [Pseudo](https://github.com/GTNewHorizons/Pseudo/blob/4a9b7b7a012f923d5595ab07bdcb30123b6dfd1b/src/main/java/com/gtnewhorizons/pseudo/Pseudo.java#L12). Indirect effects from dependencies, injection, configuration and server rules remain open.
