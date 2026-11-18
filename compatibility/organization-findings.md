@@ -2052,3 +2052,15 @@ Source [356f6eea7e](https://github.com/GTNewHorizons/TinkersConstruct/tree/356f6
 Source [a2bd1bd2ad](https://github.com/GTNewHorizons/TinkersGregworks/tree/a2bd1bd2ad040b945ecf7b088be26dc75ef7f925) · 48 tracked Java, Scala or Kotlin files outside test/example directories.
 
 - Check printer placement against `SchematicPrinter`. 1 source file(s) contain matching declarations, including [Mattock.onItemUse](https://github.com/GTNewHorizons/TinkersGregworks/blob/a2bd1bd2ad040b945ecf7b088be26dc75ef7f925/unused/tools/Mattock.java#L116).
+
+### TinkersMechworks
+
+Source [e6164aef1a](https://github.com/GTNewHorizons/TinkersMechworks/tree/e6164aef1a7bbe084285e8909a1d936aed2a8595) · 66 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- Existing Plus lookup in `TileFacingAdapter` names [tmechworks.blocks.logic.SignalBusLogic](https://github.com/GTNewHorizons/TinkersMechworks/blob/e6164aef1a7bbe084285e8909a1d936aed2a8595/src/main/java/tmechworks/blocks/logic/SignalBusLogic.java#L1) (2 matching upstream source names). Check reflected members and client state with the deployed versions.
+- Check tile serialization against `TileNBTCompat`. 8 source file(s) contain matching declarations, including [SignalBusMasterLogic.writeToNBT](https://github.com/GTNewHorizons/TinkersMechworks/blob/e6164aef1a7bbe084285e8909a1d936aed2a8595/src/main/java/tmechworks/blocks/component/SignalBusMasterLogic.java#L122).
+- Check preview rendering against `RendererSchematicChunk`. 5 source file(s) contain matching declarations, including [DynamoSpecialRender.renderTileEntityAt](https://github.com/GTNewHorizons/TinkersMechworks/blob/e6164aef1a7bbe084285e8909a1d936aed2a8595/src/main/java/tmechworks/client/block/DynamoSpecialRender.java#L53).
+- Check material picking against `BlockToItemStack`. 1 source file(s) contain matching declarations, including [RedstoneMachine.getPickBlock](https://github.com/GTNewHorizons/TinkersMechworks/blob/e6164aef1a7bbe084285e8909a1d936aed2a8595/src/main/java/tmechworks/blocks/RedstoneMachine.java#L365).
+- Check printer placement against `SchematicPrinter`. 9 source file(s) contain matching declarations, including [FilterBlock.onBlockPlaced](https://github.com/GTNewHorizons/TinkersMechworks/blob/e6164aef1a7bbe084285e8909a1d936aed2a8595/src/main/java/tmechworks/blocks/FilterBlock.java#L159).
+- [AdvancedDrawbridgeLogic.readFromNBT](https://github.com/GTNewHorizons/TinkersMechworks/blob/e6164aef1a7bbe084285e8909a1d936aed2a8595/src/main/java/tmechworks/blocks/logic/AdvancedDrawbridgeLogic.java#L511) accesses `Active`, `Working`, `Extension`, `Camo`. Compare those fields after capture, transform and restore.
+- [SignalBusRender.renderWorldBlock](https://github.com/GTNewHorizons/TinkersMechworks/blob/e6164aef1a7bbe084285e8909a1d936aed2a8595/src/main/java/tmechworks/client/block/SignalBusRender.java#L34) queries tile data while rendering. Preview a populated tile after saving and reopening its schematic.
