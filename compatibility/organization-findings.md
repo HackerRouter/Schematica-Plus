@@ -53,3 +53,11 @@ Source [4e734bb6ab](https://github.com/GTNewHorizons/AFSU/tree/4e734bb6ab4cd3dc1
 Source [da141abd9a](https://github.com/GTNewHorizons/AkashicTome/tree/da141abd9a385dad3a8608b15cd020c2685b76cd) · 20 tracked Java, Scala or Kotlin files outside test/example directories.
 
 - Check printer placement against `SchematicPrinter`. 1 source file(s) contain matching declarations, including [ItemTome.onItemUse](https://github.com/GTNewHorizons/AkashicTome/blob/da141abd9a385dad3a8608b15cd020c2685b76cd/src/main/java/vazkii/akashictome/ItemTome.java#L31).
+
+### AlchemyGrate
+
+Source [221d8f97fb](https://github.com/GTNewHorizons/AlchemyGrate/tree/221d8f97fbc8a0b5a77148b6bea6634c0a5deccb) · 6 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- Check tile serialization against `TileNBTCompat`. 1 source file(s) contain matching declarations, including [TileChestGrate.writeToNBT](https://github.com/GTNewHorizons/AlchemyGrate/blob/221d8f97fbc8a0b5a77148b6bea6634c0a5deccb/src/main/java/com/technicianlp/chestgrate/TileChestGrate.java#L130).
+- Check printer placement against `SchematicPrinter`. 1 source file(s) contain matching declarations, including [BlockChestGrate.onBlockPlacedBy](https://github.com/GTNewHorizons/AlchemyGrate/blob/221d8f97fbc8a0b5a77148b6bea6634c0a5deccb/src/main/java/com/technicianlp/chestgrate/BlockChestGrate.java#L133).
+- [TileChestGrate.writeToNBT](https://github.com/GTNewHorizons/AlchemyGrate/blob/221d8f97fbc8a0b5a77148b6bea6634c0a5deccb/src/main/java/com/technicianlp/chestgrate/TileChestGrate.java#L130) accesses `Slot`, `Items`, `CustomName`. Compare those fields after capture, transform and restore.
