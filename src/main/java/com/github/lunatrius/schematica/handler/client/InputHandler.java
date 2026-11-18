@@ -104,7 +104,7 @@ public class InputHandler {
             case "layerPrevious": moveLayer(-1); break;
             case "layerModeNext": cycleLayer(1); break;
             case "layerModePrevious": cycleLayer(-1); break;
-            case "layerSetHere": RenderLayerSettings.RANGE.setValue(false, MathHelper.floor_double(layerCoordinate())); break;
+            case "layerSetHere": RenderLayerSettings.RANGE.setHere(MathHelper.floor_double(layerCoordinate())); break;
             case "rerenderSchematic": RendererSchematicGlobal.INSTANCE.refresh(); break;
             case "unloadCurrentSchematic": if (Placements.selected != null) Placements.remove(Placements.selected); break;
             case "pickBlockFirst": return pickBlock(true);
