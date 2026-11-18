@@ -1270,3 +1270,12 @@ Source [7e777df4a4](https://github.com/GTNewHorizons/ModularUI2/tree/7e777df4a4f
 Source [1a2e3b95e4](https://github.com/GTNewHorizons/MouseTweaks/tree/1a2e3b95e4d2b83d22791e17c40a225df16f61cb) · 17 tracked Java, Scala or Kotlin files outside test/example directories.
 
 - No direct match in the listed checks. Mod entry point: [MouseTweaksForge](https://github.com/GTNewHorizons/MouseTweaks/blob/1a2e3b95e4d2b83d22791e17c40a225df16f61cb/src/main/java/yalter/mousetweaks/loaders/MouseTweaksForge.java#L17). Indirect effects from dependencies, injection, configuration and server rules remain open.
+
+### MrTJPCore
+
+Source [6cbdbe819c](https://github.com/GTNewHorizons/MrTJPCore/tree/6cbdbe819c08fbdc537a08f5640e89af3f89e73b) · 83 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- Check tile serialization against `TileNBTCompat`. 1 source file(s) contain matching declarations, including [tileblock.readFromNBT](https://github.com/GTNewHorizons/MrTJPCore/blob/6cbdbe819c08fbdc537a08f5640e89af3f89e73b/src/main/scala/mrtjp/core/block/tileblock.scala#L620).
+- Check preview rendering against `RendererSchematicChunk`. 2 source file(s) contain matching declarations, including [tileblock.renderWorldBlock](https://github.com/GTNewHorizons/MrTJPCore/blob/6cbdbe819c08fbdc537a08f5640e89af3f89e73b/src/main/scala/mrtjp/core/block/tileblock.scala#L93).
+- Check material picking against `BlockToItemStack`. 1 source file(s) contain matching declarations, including [tileblock.getPickBlock](https://github.com/GTNewHorizons/MrTJPCore/blob/6cbdbe819c08fbdc537a08f5640e89af3f89e73b/src/main/scala/mrtjp/core/block/tileblock.scala#L269).
+- Check printer placement against `SchematicPrinter`. 4 source file(s) contain matching declarations, including [coreblock.placeBlockAt](https://github.com/GTNewHorizons/MrTJPCore/blob/6cbdbe819c08fbdc537a08f5640e89af3f89e73b/src/main/scala/mrtjp/core/block/coreblock.scala#L38).
