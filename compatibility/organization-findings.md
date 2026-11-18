@@ -1159,3 +1159,9 @@ Source [e657b5fe45](https://github.com/GTNewHorizons/LootGames/tree/e657b5fe45b7
 Source [a4f311761f](https://github.com/GTNewHorizons/LunatriusCore/tree/a4f311761f219f0de3d2cdb73abf18419a02e3ca) · 28 tracked Java, Scala or Kotlin files outside test/example directories.
 
 - No direct match in the listed checks. Mod entry point: [LunatriusCore](https://github.com/GTNewHorizons/LunatriusCore/blob/a4f311761f219f0de3d2cdb73abf18419a02e3ca/src/main/java/com/github/lunatrius/core/LunatriusCore.java#L18). Indirect effects from dependencies, injection, configuration and server rules remain open.
+
+### lwjgl3ify
+
+Source [b2545808e6](https://github.com/GTNewHorizons/lwjgl3ify/tree/b2545808e6e6a50f8b7f84a0388532a9d4076f61) · 676 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- Check world or renderer transformation alongside the schematic world and render pipeline. 1 source file(s) contain matching declarations, including [MixinEntityRenderer.EntityRenderer](https://github.com/GTNewHorizons/lwjgl3ify/blob/b2545808e6e6a50f8b7f84a0388532a9d4076f61/src/main/java/me/eigenraven/lwjgl3ify/mixins/early/game/MixinEntityRenderer.java#L16).
