@@ -2131,3 +2131,11 @@ Source [f65f6d9bfc](https://github.com/GTNewHorizons/UtilitiesInExcess/tree/f65f
 - [BlockColored.getPickBlock](https://github.com/GTNewHorizons/UtilitiesInExcess/blob/f65f6d9bfcb1cce71deec5f24f0919abdcaee51c/src/main/java/com/fouristhenumber/utilitiesinexcess/common/blocks/BlockColored.java#L461) queries world state when selecting an item. Compare the materials list against the placed variant.
 - [BlockMarginallyMaximisedChest.onBlockPlacedBy](https://github.com/GTNewHorizons/UtilitiesInExcess/blob/f65f6d9bfcb1cce71deec5f24f0919abdcaee51c/src/main/java/com/fouristhenumber/utilitiesinexcess/common/blocks/BlockMarginallyMaximisedChest.java#L42) depends on placement orientation. Exercise the printer with a rotated schematic.
 - [PlatformAnchorData.readFromNBT](https://github.com/GTNewHorizons/UtilitiesInExcess/blob/f65f6d9bfcb1cce71deec5f24f0919abdcaee51c/src/main/java/com/fouristhenumber/utilitiesinexcess/common/dimensions/endoftime/PlatformAnchorData.java#L50) accesses `X`, `Y`, `Z`. Compare those fields after capture, transform and restore.
+
+### Variable-Horizons
+
+Source [af4128b5b9](https://github.com/GTNewHorizons/Variable-Horizons/tree/af4128b5b9ab11b68c5a4a98b6c73ae2186a2947) · 68 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- Check tile serialization against `TileNBTCompat`. 1 source file(s) contain matching declarations, including [IslandControlSaveData.readFromNBT](https://github.com/GTNewHorizons/Variable-Horizons/blob/af4128b5b9ab11b68c5a4a98b6c73ae2186a2947/src/main/java/com/LazyFlesh/variablehorizons/util/islands/IslandControlSaveData.java#L29).
+- Check world or renderer transformation alongside the schematic world and render pipeline. 1 source file(s) contain matching declarations, including [MixinChunk_ReplaceGeneratedBlocks.Chunk](https://github.com/GTNewHorizons/Variable-Horizons/blob/af4128b5b9ab11b68c5a4a98b6c73ae2186a2947/src/main/java/com/LazyFlesh/variablehorizons/mixin/mixins/early/MixinChunk_ReplaceGeneratedBlocks.java#L15).
+- [IslandControlSaveData.readFromNBT](https://github.com/GTNewHorizons/Variable-Horizons/blob/af4128b5b9ab11b68c5a4a98b6c73ae2186a2947/src/main/java/com/LazyFlesh/variablehorizons/util/islands/IslandControlSaveData.java#L29) accesses `islands`, `islandList`, `LastIsland`, `players`. Compare those fields after capture, transform and restore.
