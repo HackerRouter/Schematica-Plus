@@ -1411,3 +1411,14 @@ Source [6b7e465306](https://github.com/GTNewHorizons/NotEnoughItems/tree/6b7e465
 
 - Existing Plus lookup in `NeiBridge` names [codechicken.nei.bookmark.BookmarkGrid](https://github.com/GTNewHorizons/NotEnoughItems/blob/6b7e465306810ad11d2413214077237798be13a7/src/main/java/codechicken/nei/bookmark/BookmarkGrid.java#L1) (1 matching upstream source names). Check reflected members and client state with the deployed versions.
 - Check printer placement against `SchematicPrinter`. 1 source file(s) contain matching declarations, including [ItemMobSpawner.onItemUse](https://github.com/GTNewHorizons/NotEnoughItems/blob/6b7e465306810ad11d2413214077237798be13a7/src/main/java/codechicken/nei/ItemMobSpawner.java#L67).
+
+### Nuclear-Control
+
+Source [1c706582ac](https://github.com/GTNewHorizons/Nuclear-Control/tree/1c706582ac5f3a3f3cc7db89f55c4c2da15a5dd9) · 214 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- Existing Plus lookup in `CoordinateLinks` names [shedar.mods.ic2.nuclearcontrol.tileentities.TileEntityInfoPanel](https://github.com/GTNewHorizons/Nuclear-Control/blob/1c706582ac5f3a3f3cc7db89f55c4c2da15a5dd9/src/main/java/shedar/mods/ic2/nuclearcontrol/tileentities/TileEntityInfoPanel.java#L1) (4 matching upstream source names). Check reflected members and client state with the deployed versions.
+- Check tile serialization against `TileNBTCompat`. 13 source file(s) contain matching declarations, including [InventoryItem.readFromNBT](https://github.com/GTNewHorizons/Nuclear-Control/blob/1c706582ac5f3a3f3cc7db89f55c4c2da15a5dd9/src/main/java/shedar/mods/ic2/nuclearcontrol/InventoryItem.java#L121).
+- Check preview rendering against `RendererSchematicChunk`. 4 source file(s) contain matching declarations, including [MainBlockRenderer.renderWorldBlock](https://github.com/GTNewHorizons/Nuclear-Control/blob/1c706582ac5f3a3f3cc7db89f55c4c2da15a5dd9/src/main/java/shedar/mods/ic2/nuclearcontrol/renderers/MainBlockRenderer.java#L137).
+- Check printer placement against `SchematicPrinter`. 2 source file(s) contain matching declarations, including [BlockNuclearControlMain.onBlockPlaced](https://github.com/GTNewHorizons/Nuclear-Control/blob/1c706582ac5f3a3f3cc7db89f55c4c2da15a5dd9/src/main/java/shedar/mods/ic2/nuclearcontrol/blocks/BlockNuclearControlMain.java#L135).
+- [InventoryItem.readFromNBT](https://github.com/GTNewHorizons/Nuclear-Control/blob/1c706582ac5f3a3f3cc7db89f55c4c2da15a5dd9/src/main/java/shedar/mods/ic2/nuclearcontrol/InventoryItem.java#L121) accesses `ItemInventory`, `Slot`. Compare those fields after capture, transform and restore.
+- [MainBlockRenderer.renderWorldBlock](https://github.com/GTNewHorizons/Nuclear-Control/blob/1c706582ac5f3a3f3cc7db89f55c4c2da15a5dd9/src/main/java/shedar/mods/ic2/nuclearcontrol/renderers/MainBlockRenderer.java#L137) queries tile data while rendering. Preview a populated tile after saving and reopening its schematic.
