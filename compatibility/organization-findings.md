@@ -262,3 +262,9 @@ Source [975080753b](https://github.com/GTNewHorizons/BetterBuildersWands/tree/97
 Source [fb6f8d5734](https://github.com/GTNewHorizons/BetterCrashes/tree/fb6f8d5734f45d4ce338948c23f49fe38b66d80b) · 18 tracked Java, Scala or Kotlin files outside test/example directories.
 
 - No direct match in the listed checks. Mod entry point: [BetterCrashes](https://github.com/GTNewHorizons/BetterCrashes/blob/fb6f8d5734f45d4ce338948c23f49fe38b66d80b/src/main/java/vfyjxf/bettercrashes/BetterCrashes.java#L11). Indirect effects from dependencies, injection, configuration and server rules remain open.
+
+### BetterLoadingScreen
+
+Source [1d8747fed6](https://github.com/GTNewHorizons/BetterLoadingScreen/tree/1d8747fed604724f968796bc4d645a3bf9e5e28b) · 35 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- No direct match in the listed checks. Mod entry point: [BetterLoadingScreen](https://github.com/GTNewHorizons/BetterLoadingScreen/blob/1d8747fed604724f968796bc4d645a3bf9e5e28b/src/main/java/alexiil/mods/load/BetterLoadingScreen.java#L28). Indirect effects from dependencies, injection, configuration and server rules remain open.
