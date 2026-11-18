@@ -325,7 +325,9 @@ public abstract class GuiSchematicBrowser extends UiScreen {
         confirm(UiTranslations.format("litematica.gui.title.confirm_file_deletion"),
             UiTranslations.format("litematica.message.delete_confirm", entry.name()), () -> {
                 try {
+                    File deleted = entry.file.getCanonicalFile();
                     browser.delete(entry);
+                    UiState.deleted(deleted);
                     refreshFiles();
                     addMessage(MessageType.SUCCESS, "malilib.message.file_or_directory_deleted", entry.name());
                 } catch (IOException e) {

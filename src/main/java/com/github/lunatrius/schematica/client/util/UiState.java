@@ -140,6 +140,15 @@ public final class UiState {
         }
     }
 
+    /** Drops favorites and recent entries of a deleted file. */
+    public static synchronized void deleted(File file) {
+        String path = canonical(file);
+        for (String key : new String[] {"favorite_schematics", "recent_schematics"}) {
+            List<String> paths = paths(key);
+            if (paths.remove(path)) setPaths(key, paths);
+        }
+    }
+
     public static String toolMode(String world) { return world == null ? null : entry("operation_mode", world); }
 
     public static void setToolMode(String world, String mode) { setEntry("operation_mode", world, mode); }

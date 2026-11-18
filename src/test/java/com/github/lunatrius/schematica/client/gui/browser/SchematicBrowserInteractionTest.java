@@ -145,6 +145,8 @@ public class SchematicBrowserInteractionTest {
         assertTrue(renamed.renameTo(schematic));
         UiState.renamed(renamed, schematic);
         assertTrue(UiState.favorite(schematic));
+        UiState.deleted(schematic);
+        assertFalse(UiState.favorite(schematic));
     }
 
     @Test public void removingFavoriteUpdatesTheCollectionImmediately() throws Exception {
