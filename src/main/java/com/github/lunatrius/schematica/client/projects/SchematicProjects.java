@@ -17,6 +17,7 @@ import net.minecraft.util.MathHelper;
 
 import com.github.lunatrius.schematica.SchematicaPlus;
 import com.github.lunatrius.schematica.api.SchematicRegion;
+import com.github.lunatrius.schematica.client.gui.browser.SchematicBrowserModel;
 import com.github.lunatrius.schematica.client.gui.projects.GuiSchematicProjectManager;
 import com.github.lunatrius.schematica.client.gui.projects.GuiSchematicProjectsBrowser;
 import com.github.lunatrius.schematica.client.printer.SchematicPrinter;
@@ -203,7 +204,10 @@ public final class SchematicProjects {
         return true;
     }
 
-    /** pasteToWorld: ENTIRE_VOLUME first clears the version's area; other modes paste over the world directly. */
+    /**
+     * pasteToWorld: ENTIRE_VOLUME first clears the area last pasted or saved; other modes first remove the last pasted
+     * version's blocks by placement with the configured mode.
+     */
     public static boolean pasteCurrentVersionToWorld() {
         SchematicProject project = current();
         if (project == null || project.currentPlacement() == null) return false;
@@ -211,17 +215,38 @@ public final class SchematicProjects {
             InfoUtils.showGuiOrInGameMessage(MessageType.ERROR, "litematica.error.generic.creative_mode_only");
             return true;
         }
-        project.cacheCurrentAreaFromPlacement();
         SchematicVersion version = project.currentVersion();
-        if (ConfigurationHandler.schematicVcsDeleteMode == PlacementDeletionMode.ENTIRE_VOLUME) {
+        PlacementDeletionMode mode = ConfigurationHandler.schematicVcsDeleteMode;
+        if (mode == PlacementDeletionMode.ENTIRE_VOLUME && !project.lastSeenArea().isEmpty()) {
             ToolHandler.pasteAfterClearing(mc().thePlayer, project.currentPlacement(), project.lastSeenArea(), () -> pasted(project, version));
-        } else {
-            if (project.lastPastedVersion() < 0 || project.lastPastedVersion() >= project.versionCount()) {
-                InfoUtils.showGuiOrInGameMessage(MessageType.ERROR, "schematica.message.projects.no_previous_paste");
-            }
+            return true;
+        }
+        SchematicWorld previous = mode == PlacementDeletionMode.ENTIRE_VOLUME ? null : previousPlacement(project);
+        if (previous == null) {
+            InfoUtils.showGuiOrInGameMessage(MessageType.ERROR, "schematica.message.projects.no_previous_paste");
             pasteCurrentPlacement(project);
+        } else {
+            ToolHandler.deleteByPlacement(mc().thePlayer, previous, mode, () -> pasteCurrentPlacement(project));
         }
         return true;
+    }
+
+    private static SchematicWorld previousPlacement(SchematicProject project) {
+        int index = project.lastPastedVersion();
+        if (index < 0 || index >= project.versionCount()) return null;
+        SchematicVersion version = project.versions().get(index);
+        String fileName = version.fileName;
+        if (!SchematicBrowserModel.supported(fileName)) fileName += SchematicProject.FILE_EXTENSION;
+        File file = new File(project.directory(), fileName);
+        try {
+            SchematicWorld world = new SchematicWorld(SchematicSourceData.read(file).instantiate());
+            Vector3i origin = project.placementOrigin(version);
+            world.moveOriginTo(origin.x, origin.y, origin.z);
+            return world;
+        } catch (IOException | RuntimeException e) {
+            Reference.logger.warn("Could not load the previously pasted schematic project version {}", file, e);
+            return null;
+        }
     }
 
     private static void pasteCurrentPlacement(SchematicProject project) {
@@ -232,6 +257,7 @@ public final class SchematicProjects {
 
     private static void pasted(SchematicProject project, SchematicVersion version) {
         if (project != current || project.currentVersion() != version) return;
+        project.cacheCurrentAreaFromPlacement();
         project.pasted();
         project.saveToFile();
     }

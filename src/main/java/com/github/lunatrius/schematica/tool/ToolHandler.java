@@ -284,6 +284,10 @@ public class ToolHandler {
 
     /** Removes world blocks inside a placement by mode, within the render layer range (deleteBlocksByPlacement). */
     public static boolean deleteByPlacement(EntityPlayer player, SchematicWorld placement, PlacementDeletionMode mode) {
+        return deleteByPlacement(player, placement, mode, null);
+    }
+
+    public static boolean deleteByPlacement(EntityPlayer player, SchematicWorld placement, PlacementDeletionMode mode, Runnable onSuccess) {
         return request(player, TaskRegistry.Kind.DELETE, p -> {
             if (placement == null) throw new MessageException("litematica.message.error.no_placement_selected");
             WorldEditJob job = new WorldEditJob(p.getUniqueID(), p.dimension, WorldEditJob.Kind.DELETE_PLACEMENT,
@@ -293,7 +297,7 @@ public class ToolHandler {
             job.deletion = mode;
             job.restrict((x, y, z) -> CubicChunks.containsY(p.worldObj, y) && RenderLayerSettings.RANGE.contains(x, y, z));
             job.removeEntitiesIn(clampToLayers(placement.enabledRegionBounds()));
-            submit(p, job, null);
+            submit(p, job, onSuccess);
         });
     }
 

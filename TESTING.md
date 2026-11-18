@@ -1581,9 +1581,12 @@ once to establish the new keys. Ordered transforms apply to newly saved sessions
   timestamp and description. schematicVersionCycleNext/Previous and the cycle modifier +
   scroll switch versions; the Tool HUD shows project, version, date and origin.
 - Move to player moves the origin outline, both selections and the current placement.
-- Place to world / Execute (creative): with schematicVcsDeleteMode Entire Volume the
-  current version's area is cleared first and then pasted; other modes paste directly and
-  print the upstream "No previous pasted version known" note on the first paste.
+- Place to world / Execute (creative): paste a large version, switch to a smaller or
+  offset version and place again. With schematicVcsDeleteMode Entire Volume the area last
+  pasted or saved is cleared first, so nothing of the old version remains and blocks in the
+  new area outside the old one survive until the paste. Other modes first delete the last
+  pasted version's blocks by placement with that mode; without a known previous paste they
+  paste directly and print the upstream "No previous pasted version known" note.
 - Delete Area clears the last seen area. schematicVCSDeleteBlockByPlacement removes
   matching / non-matching / any / no-schematic / all world blocks inside the current version
   placement within the render layer range and reports "Deleted N blocks". Test both
