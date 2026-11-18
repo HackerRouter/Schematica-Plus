@@ -1027,3 +1027,9 @@ Source [3e94b249d4](https://github.com/GTNewHorizons/IguanaTweaksTConstruct/tree
 - Check printer placement against `SchematicPrinter`. 1 source file(s) contain matching declarations, including [IguanaSkull.onItemUse](https://github.com/GTNewHorizons/IguanaTweaksTConstruct/blob/3e94b249d40a9cbbde90436d203ec206cc3cb663/src/main/java/iguanaman/iguanatweakstconstruct/mobheads/items/IguanaSkull.java#L118).
 - Check interaction events against `SchematicPrinter`. 1 source file(s) contain matching declarations, including [ClayBucketHandler.onRightClickBlock](https://github.com/GTNewHorizons/IguanaTweaksTConstruct/blob/3e94b249d40a9cbbde90436d203ec206cc3cb663/src/main/java/iguanaman/iguanatweakstconstruct/claybuckets/ClayBucketHandler.java#L45).
 - [IguanaSkull.onItemUse](https://github.com/GTNewHorizons/IguanaTweaksTConstruct/blob/3e94b249d40a9cbbde90436d203ec206cc3cb663/src/main/java/iguanaman/iguanatweakstconstruct/mobheads/items/IguanaSkull.java#L118) depends on placement orientation. Exercise the printer with a rotated schematic.
+
+### Infernal-Mobs
+
+Source [b52b7bd473](https://github.com/GTNewHorizons/Infernal-Mobs/tree/b52b7bd47311f640bca30ec117a4c32d26641c64) · 44 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- No direct match in the listed checks. Mod entry point: [InfernalMobsCore](https://github.com/GTNewHorizons/Infernal-Mobs/blob/b52b7bd47311f640bca30ec117a4c32d26641c64/src/main/java/atomicstryker/infernalmobs/common/InfernalMobsCore.java#L93). Indirect effects from dependencies, injection, configuration and server rules remain open.
