@@ -1606,6 +1606,7 @@ Source [50ae9866a9](https://github.com/GTNewHorizons/ProjectRed/tree/50ae9866a93
 Source [4a9b7b7a01](https://github.com/GTNewHorizons/Pseudo/tree/4a9b7b7a012f923d5595ab07bdcb30123b6dfd1b) · 4 tracked Java, Scala or Kotlin files outside test/example directories.
 
 - No direct match in the listed checks. Mod entry point: [Pseudo](https://github.com/GTNewHorizons/Pseudo/blob/4a9b7b7a012f923d5595ab07bdcb30123b6dfd1b/src/main/java/com/gtnewhorizons/pseudo/Pseudo.java#L12). Indirect effects from dependencies, injection, configuration and server rules remain open.
+- [PseudoBlockManager](https://github.com/GTNewHorizons/Pseudo/blob/4a9b7b7a012f923d5595ab07bdcb30123b6dfd1b/src/main/java/com/gtnewhorizons/pseudo/managers/PseudoBlockManager.java#L110) — An active client block transformer can replace IDs and metadata during chunk receipt. A schematic captured from that client can therefore differ from server-side capture at the same coordinates.
 
 ### pVnRT
 
