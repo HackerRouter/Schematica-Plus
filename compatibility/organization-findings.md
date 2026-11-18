@@ -231,6 +231,7 @@ Source [d5bab15bfa](https://github.com/GTNewHorizons/Battlegear2-for-Backhand/tr
 Source [2a49984830](https://github.com/GTNewHorizons/Baubles-Expanded/tree/2a499848304d6df9222c8b642d38ecd2a2affaae) · 33 tracked Java, Scala or Kotlin files outside test/example directories.
 
 - No direct match in the listed checks. Mod entry point: [Baubles](https://github.com/GTNewHorizons/Baubles-Expanded/blob/2a499848304d6df9222c8b642d38ecd2a2affaae/src/main/java/baubles/common/Baubles.java#L29). Indirect effects from dependencies, injection, configuration and server rules remain open.
+- [KeyHandler](https://github.com/GTNewHorizons/Baubles-Expanded/blob/2a499848304d6df9222c8b642d38ecd2a2affaae/src/main/java/baubles/common/event/KeyHandler.java#L23) accepts `KeyInputEvent`. Exercise the schematic overlay and hotkeys while the corresponding client feature is enabled.
 
 ### bdlib
 
