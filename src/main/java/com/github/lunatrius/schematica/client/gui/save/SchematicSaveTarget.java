@@ -58,13 +58,15 @@ public final class SchematicSaveTarget {
     }
 
     public static File sourceCopy(File root, File directory, String input, String extension) throws IOException {
-        if (!extension.equals(".schematic") && !extension.equals(".schemplus") && !extension.equals(".litematic") && !extension.equals(".nbt")) {
+        if (!extension.equals(".schematic") && !extension.equals(".schemplus") && !extension.equals(".litematic") && !extension.equals(".nbt")
+            && !extension.equals(".schem")) {
             throw new IllegalArgumentException("Invalid source format");
         }
         String name = input.trim();
         String lower = name.toLowerCase(Locale.ROOT);
         if (lower.endsWith(extension)) name = name.substring(0, name.length() - extension.length());
-        else if (lower.endsWith(".schematic") || lower.endsWith(".schemplus") || lower.endsWith(".litematic") || lower.endsWith(".nbt")) {
+        else if (lower.endsWith(".schematic") || lower.endsWith(".schemplus") || lower.endsWith(".litematic") || lower.endsWith(".nbt")
+            || lower.endsWith(".schem")) {
             throw new IllegalArgumentException("Keep the original source extension");
         }
         filename(name, true);
