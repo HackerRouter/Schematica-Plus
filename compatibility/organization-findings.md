@@ -555,3 +555,9 @@ Source [9d2c673e72](https://github.com/GTNewHorizons/CubicChunks1710/tree/9d2c67
 - Check world or renderer transformation alongside the schematic world and render pipeline. 13 source file(s) contain matching declarations, including [MixinChunk_Cubes.Chunk](https://github.com/GTNewHorizons/CubicChunks1710/blob/9d2c673e72d42c6fadd54146989246fca169c16c/src/main/java/com/cardinalstar/cubicchunks/mixin/early/client/MixinChunk_Cubes.java#L44).
 - [CubicChunksSavedData.readFromNBT](https://github.com/GTNewHorizons/CubicChunks1710/blob/9d2c673e72d42c6fadd54146989246fca169c16c/src/main/java/com/cardinalstar/cubicchunks/world/CubicChunksSavedData.java#L96) accesses `minHeight`, `maxHeight`, `fillerBlocks`, `topId`. Compare those fields after capture, transform and restore.
 - MixinChunk exposes getLoadedCube(int), getTopYWithStaging(int, int) and getPrecipitationIndex(). These names and arities match the modern column path in Plus. The lighting update additionally depends on ILightingManager.doOnBlockSetLightUpdates and the cube lighting state.
+
+### Custom-Main-Menu
+
+Source [327b7f886d](https://github.com/GTNewHorizons/Custom-Main-Menu/tree/327b7f886d97d82f8f102fddfd61e408f68efd23) · 52 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- No direct match in the listed checks. Mod entry point: [CustomMainMenu](https://github.com/GTNewHorizons/Custom-Main-Menu/blob/327b7f886d97d82f8f102fddfd61e408f68efd23/src/main/java/lumien/custommainmenu/CustomMainMenu.java#L22). Indirect effects from dependencies, injection, configuration and server rules remain open.
