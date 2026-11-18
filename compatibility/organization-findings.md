@@ -925,3 +925,9 @@ Source [0d7c8efad8](https://github.com/GTNewHorizons/GTNH-TC-Wands/tree/0d7c8efa
 Source [a989a30670](https://github.com/GTNewHorizons/GTNH-Web-Map/tree/a989a30670d8763b8975df6e1cd215333a6e1e75) · 342 tracked Java, Scala or Kotlin files outside test/example directories.
 
 - No direct match in the listed checks. Mod entry point: [DynmapMod](https://github.com/GTNewHorizons/GTNH-Web-Map/blob/a989a30670d8763b8975df6e1cd215333a6e1e75/src/main/java/org/dynmap/forge/DynmapMod.java#L34). Indirect effects from dependencies, injection, configuration and server rules remain open.
+
+### GTNH-Web-Map-Client
+
+Source [ff9ec54231](https://github.com/GTNewHorizons/GTNH-Web-Map-Client/tree/ff9ec54231781e4f1caa5b32481ee81a3106f640) · 17 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- No direct match in the listed checks. Mod entry point: [GwmClientMod](https://github.com/GTNewHorizons/GTNH-Web-Map-Client/blob/ff9ec54231781e4f1caa5b32481ee81a3106f640/src/main/java/com/gtnewhorizons/gwmclient/GwmClientMod.java#L17). Indirect effects from dependencies, injection, configuration and server rules remain open.
