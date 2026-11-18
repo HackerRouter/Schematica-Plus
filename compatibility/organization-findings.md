@@ -756,6 +756,7 @@ Source [e43ace4e05](https://github.com/GTNewHorizons/Fether/tree/e43ace4e05fc254
 Source [296f29ae76](https://github.com/GTNewHorizons/FindIt/tree/296f29ae764cfcb56ae87338766b4d7f65bda21e) · 32 tracked Java, Scala or Kotlin files outside test/example directories.
 
 - No direct match in the listed checks. Mod entry point: [FindIt](https://github.com/GTNewHorizons/FindIt/blob/296f29ae764cfcb56ae87338766b4d7f65bda21e/src/main/java/com/gtnh/findit/FindIt.java#L29). Indirect effects from dependencies, injection, configuration and server rules remain open.
+- [BlockHighlighter](https://github.com/GTNewHorizons/FindIt/blob/296f29ae764cfcb56ae87338766b4d7f65bda21e/src/main/java/com/gtnh/findit/fx/BlockHighlighter.java#L31) accepts `RenderWorldLastEvent`. Exercise the schematic overlay and hotkeys while the corresponding client feature is enabled.
 
 ### FloodLights
 
