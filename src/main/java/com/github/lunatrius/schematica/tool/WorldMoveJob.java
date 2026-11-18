@@ -23,6 +23,8 @@ import com.github.lunatrius.schematica.nbt.ForgeMultipart;
 import com.github.lunatrius.schematica.nbt.NBTHelper;
 import com.github.lunatrius.schematica.reference.Reference;
 import com.github.lunatrius.schematica.task.TaskRegistry;
+import com.github.lunatrius.schematica.util.MessageType;
+import com.github.lunatrius.schematica.util.PlayerMessage;
 import com.github.lunatrius.schematica.util.SchematicLimits;
 import com.github.lunatrius.schematica.world.storage.RegionMask;
 import com.github.lunatrius.schematica.world.storage.RegionSelection;
@@ -36,6 +38,7 @@ public final class WorldMoveJob extends WorldEditTask {
     private final List<Entity> entities = new ArrayList<>();
     private final List<Object[]> pendingFluids = new ArrayList<>();
     private boolean capturedEntities;
+    private int droppedFluids;
     private boolean worldValidated;
 
     public WorldMoveJob(UUID player, int dimension, List<SchematicRegion> regions, int dx, int dy, int dz) {
@@ -58,14 +61,12 @@ public final class WorldMoveJob extends WorldEditTask {
                 TileEntity tile = world.getTileEntity(x, y, z);
                 if (block.hasTileEntity(meta) && tile == null) throw new IllegalArgumentException("Missing tile entity at " + x + ", " + y + ", " + z);
                 String fluid = LiquidLogged.fluid(world, x, y, z);
-                if (fluid != null && inSource(x, y, z) && !LiquidLogged.storable(x + dx, y + dy, z + dz)) {
-                    throw new IllegalArgumentException("Cannot store the fluid " + fluid + " moved from " + x + ", " + y + ", " + z);
-                }
+                if (fluid != null && inSource(x, y, z) && !LiquidLogged.storable(x + dx, y + dy, z + dz)) droppedFluids++;
                 return new Cell(block, meta, tile == null ? null : NBTHelper.writeTileEntityToCompound(tile), tile, fluid);
             }
             @Override public void write(int x, int y, int z, Cell cell) {
                 writer.setBlock(world, x, y, z, cell.block, cell.meta);
-                if (LiquidLogged.present()) pendingFluids.add(new Object[] {x, y, z, cell.fluid});
+                if (LiquidLogged.present()) pendingFluids.add(new Object[] {x, y, z, LiquidLogged.storable(x, y, z) ? cell.fluid : null});
                 if (cell.tag != null) {
                     NBTTagCompound tag = (NBTTagCompound) cell.tag.copy();
                     boolean restoring = transaction.phase() == BlockMoveTransaction.Phase.RESTORE_SOURCE || transaction.phase() == BlockMoveTransaction.Phase.RESTORE_TARGET;
@@ -127,6 +128,10 @@ public final class WorldMoveJob extends WorldEditTask {
             }
         }
         pendingFluids.clear();
+    }
+    @Override public PlayerMessage finishedMessage(boolean success) {
+        if (!success || droppedFluids == 0) return super.finishedMessage(success);
+        return new PlayerMessage(MessageType.WARNING, "schematica.message.move.fluids_dropped", droppedFluids);
     }
     @Override public TaskRegistry.Kind taskKind() { return TaskRegistry.Kind.MOVE; }
     @Override public boolean needsRollback() { return transaction.mutated() && transaction.phase() != BlockMoveTransaction.Phase.DONE; }

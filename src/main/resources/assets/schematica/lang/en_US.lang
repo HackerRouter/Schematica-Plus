@@ -373,6 +373,7 @@ schematica.message.edit.tile_failed=Cannot restore the tile entity at %s, %s, %s
 schematica.message.edit.tile_factory_failed=The block at %s, %s, %s (%s) could not create its default tile entity.
 schematica.message.edit.block_failed=The block at %s, %s, %s (%s) could not be placed. Check the target area and the block's placement requirements.
 schematica.message.edit.fluid_failed=Could not restore the stored fluid at %s, %s, %s (%s). LiquidLogged stores fluids only from Y 0 to 255 and only in blocks that can hold them.
+schematica.message.move.fluids_dropped=Move finished, but %s stored fluids were dropped: LiquidLogged stores fluids only from Y 0 to 255.
 schematica.message.edit.cell_failed=Error at %s, %s, %s: %s. See the log for details.
 schematica.message.edit.command_failed=Command failed at %s, %s, %s: %s
 schematica.message.edit.entity_failed=Cannot paste entity with NBT ID: %s.
