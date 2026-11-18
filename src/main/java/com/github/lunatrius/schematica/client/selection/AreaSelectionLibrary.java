@@ -89,7 +89,7 @@ public final class AreaSelectionLibrary {
         return slash < 0 ? "" : folder.substring(0, slash);
     }
 
-    public static final int MAX_FOLDER_DEPTH = 8;
+    public static final int MAX_FOLDER_DEPTH = 64;
 
     /** A folder path of file-name-safe segments, without '.' or '..'. */
     public static String validFolder(String folder) {
