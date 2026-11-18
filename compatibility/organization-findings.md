@@ -1081,3 +1081,14 @@ Source [4f0ff12f01](https://github.com/GTNewHorizons/Irontanks/tree/4f0ff12f0168
 
 - Check tile serialization against `TileNBTCompat`. 1 source file(s) contain matching declarations, including [TileIronTank.readFromNBT](https://github.com/GTNewHorizons/Irontanks/blob/4f0ff12f01689ca2dd3bca7c0d7bf0ce01f27b3f/src/main/java/com/indemnity83/irontank/tile/TileIronTank.java#L24).
 - [TileIronTank.readFromNBT](https://github.com/GTNewHorizons/Irontanks/blob/4f0ff12f01689ca2dd3bca7c0d7bf0ce01f27b3f/src/main/java/com/indemnity83/irontank/tile/TileIronTank.java#L24) accesses `type`. Compare those fields after capture, transform and restore.
+
+### Jabba
+
+Source [14c9a4351e](https://github.com/GTNewHorizons/Jabba/tree/14c9a4351e240b57b99862031820e5ae186695d4) · 55 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- Existing Plus lookup in `TileFacingAdapter` names [mcp.mobius.betterbarrels.common.blocks.TileEntityBarrel](https://github.com/GTNewHorizons/Jabba/blob/14c9a4351e240b57b99862031820e5ae186695d4/src/main/java/mcp/mobius/betterbarrels/common/blocks/TileEntityBarrel.java#L1) (1 matching upstream source names). Check reflected members and client state with the deployed versions.
+- Check tile serialization against `TileNBTCompat`. 3 source file(s) contain matching declarations, including [BSpaceStorageHandler.writeToNBT](https://github.com/GTNewHorizons/Jabba/blob/14c9a4351e240b57b99862031820e5ae186695d4/src/main/java/mcp/mobius/betterbarrels/bspace/BSpaceStorageHandler.java#L235).
+- Check preview rendering against `RendererSchematicChunk`. 2 source file(s) contain matching declarations, including [BlockBarrelRenderer.renderWorldBlock](https://github.com/GTNewHorizons/Jabba/blob/14c9a4351e240b57b99862031820e5ae186695d4/src/main/java/mcp/mobius/betterbarrels/client/render/BlockBarrelRenderer.java#L50).
+- Check printer placement against `SchematicPrinter`. 1 source file(s) contain matching declarations, including [BlockBarrel.onBlockPlacedBy](https://github.com/GTNewHorizons/Jabba/blob/14c9a4351e240b57b99862031820e5ae186695d4/src/main/java/mcp/mobius/betterbarrels/common/blocks/BlockBarrel.java#L82).
+- [BSpaceStorageHandler.writeToNBT](https://github.com/GTNewHorizons/Jabba/blob/14c9a4351e240b57b99862031820e5ae186695d4/src/main/java/mcp/mobius/betterbarrels/bspace/BSpaceStorageHandler.java#L235) accesses `version`, `maxBarrelID`, `barrelCoords`, `storages`. Compare those fields after capture, transform and restore.
+- [BlockBarrelRenderer.renderWorldBlock](https://github.com/GTNewHorizons/Jabba/blob/14c9a4351e240b57b99862031820e5ae186695d4/src/main/java/mcp/mobius/betterbarrels/client/render/BlockBarrelRenderer.java#L50) queries tile data while rendering. Preview a populated tile after saving and reopening its schematic.
