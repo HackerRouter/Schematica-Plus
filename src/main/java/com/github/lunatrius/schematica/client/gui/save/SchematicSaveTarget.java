@@ -65,9 +65,10 @@ public final class SchematicSaveTarget {
         String name = input.trim();
         String lower = name.toLowerCase(Locale.ROOT);
         if (lower.endsWith(extension)) name = name.substring(0, name.length() - extension.length());
-        else if (lower.endsWith(".schematic") || lower.endsWith(".schemplus") || lower.endsWith(".litematic") || lower.endsWith(".nbt")
-            || lower.endsWith(".schem")) {
-            throw new IllegalArgumentException("Keep the original source extension");
+        else {
+            for (String other : new String[] {".schematic", ".schemplus", ".litematic", ".nbt", ".schem"}) {
+                if (lower.endsWith(other)) { name = name.substring(0, name.length() - other.length()); break; }
+            }
         }
         filename(name, true);
         File parent = directory.getCanonicalFile();

@@ -64,7 +64,8 @@ public class SchematicSaveTargetTest {
         assertEquals("Factory.schemplus", SchematicSaveTarget.sourceCopy(root, root, "Factory", ".schemplus").getName());
         assertEquals("Tower.schem", SchematicSaveTarget.sourceCopy(root, root, "Tower", ".schem").getName());
         assertEquals("Tower.schem", SchematicSaveTarget.sourceCopy(root, root, "Tower.schem", ".schem").getName());
-        assertThrows(IllegalArgumentException.class, () -> SchematicSaveTarget.sourceCopy(root, root, "Factory.schematic", ".litematic"));
+        assertEquals("Factory.litematic", SchematicSaveTarget.sourceCopy(root, root, "Factory.schematic", ".litematic").getName());
+        assertEquals("Tower.schemplus", SchematicSaveTarget.sourceCopy(root, root, "Tower.nbt", ".schemplus").getName());
         for (String name : new String[] {"", "../a", "sub/a", "CON", "a?b", ".litematic"}) {
             assertThrows(IllegalArgumentException.class, () -> SchematicSaveTarget.sourceCopy(root, root, name, ".litematic"));
         }
