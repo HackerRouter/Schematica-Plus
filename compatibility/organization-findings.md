@@ -2342,3 +2342,7 @@ TileEntityGTSU defines energy, tier, redstoneMode and active NBT fields. Compare
 ### HeadlessNH
 
 The headless client patches rendering. Use a rendering-enabled client for visual acceptance. [EntityRendererMixin.java at 4eea6e6cfc](https://github.com/GTNewHorizons/HeadlessNH/blob/4eea6e6cfc095f690d18b1ef5aaf2bbe6f3ab07d/src/main/java/net/sxmaa/headlessnh/mixins/early/EntityRendererMixin.java)
+
+### MyTown2-Client
+
+This client companion registers a town interface. Placement permissions require a separate check on a server running MyTown2. [MyTownClient.java at 771d0baab5](https://github.com/GTNewHorizons/MyTown2-Client/blob/771d0baab5871981d5ca086727f7ce07e05cd403/src/main/java/mytown/client/MyTownClient.java)
