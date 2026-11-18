@@ -1687,3 +1687,12 @@ Source [c90e11eb0e](https://github.com/GTNewHorizons/RemoteIO/tree/c90e11eb0eafa
 Source [d842737a6f](https://github.com/GTNewHorizons/Roguelike-Dungeons/tree/d842737a6f57c2eb3dbf72f6f8edff303af32c7e) · 296 tracked Java, Scala or Kotlin files outside test/example directories.
 
 - No direct match in the listed checks. Mod entry point: [Roguelike](https://github.com/GTNewHorizons/Roguelike-Dungeons/blob/d842737a6f57c2eb3dbf72f6f8edff303af32c7e/src/main/java/greymerk/roguelike/Roguelike.java#L18). Indirect effects from dependencies, injection, configuration and server rules remain open.
+
+### Salis-Arcana
+
+Source [ddc69f4421](https://github.com/GTNewHorizons/Salis-Arcana/tree/ddc69f442147e68a6e7bd6fea024c29f4c3538ba) · 372 tracked Java, Scala or Kotlin files outside test/example directories.
+
+- Check tile serialization against `TileNBTCompat`. 3 source file(s) contain matching declarations, including [NullAspectList.readFromNBT](https://github.com/GTNewHorizons/Salis-Arcana/blob/ddc69f442147e68a6e7bd6fea024c29f4c3538ba/src/main/java/dev/rndmorris/salisarcana/lib/NullAspectList.java#L91).
+- Check material picking against `BlockToItemStack`. 2 source file(s) contain matching declarations, including [MixinBlockJar_PickBlock.getPickBlock](https://github.com/GTNewHorizons/Salis-Arcana/blob/ddc69f442147e68a6e7bd6fea024c29f4c3538ba/src/main/java/dev/rndmorris/salisarcana/mixins/late/thaumcraft/common/blocks/MixinBlockJar_PickBlock.java#L28).
+- Check printer placement against `SchematicPrinter`. 1 source file(s) contain matching declarations, including [MixinBlockCosmeticSolid_ActivateFetterOnPlace.onBlockPlaced](https://github.com/GTNewHorizons/Salis-Arcana/blob/ddc69f442147e68a6e7bd6fea024c29f4c3538ba/src/main/java/dev/rndmorris/salisarcana/mixins/late/thaumcraft/common/blocks/MixinBlockCosmeticSolid_ActivateFetterOnPlace.java#L19).
+- [MixinBlockJar_PickBlock.getPickBlock](https://github.com/GTNewHorizons/Salis-Arcana/blob/ddc69f442147e68a6e7bd6fea024c29f4c3538ba/src/main/java/dev/rndmorris/salisarcana/mixins/late/thaumcraft/common/blocks/MixinBlockJar_PickBlock.java#L28) queries world state when selecting an item. Compare the materials list against the placed variant.
