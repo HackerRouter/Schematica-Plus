@@ -93,7 +93,6 @@ public final class SchematicInfoPanel extends UiPanel {
     private void expand() {
         SchematicPreviewPane.Content content = preview.content();
         if (content == null || !content.canModel()) return;
-        content.modelSelected = true;
         SchematicPreviewPane fullscreen = new SchematicPreviewPane(input, true, () -> input.popModal());
         fullscreen.setContent(content);
         fullscreen.layout(screen.bounds());

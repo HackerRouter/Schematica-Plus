@@ -138,6 +138,15 @@ public final class UiState {
             paths.set(paths.indexOf(source), target);
             setPaths(key, paths);
         }
+        JsonElement map = root().get("preview_mode");
+        if (map != null && map.isJsonObject()) {
+            JsonObject modes = map.getAsJsonObject();
+            if (modes.has(source)) {
+                JsonElement value = modes.remove(source);
+                modes.add(target, value);
+                save();
+            }
+        }
     }
 
     /** Drops favorites and recent entries of a deleted file. */
@@ -147,6 +156,23 @@ public final class UiState {
             List<String> paths = paths(key);
             if (paths.remove(path)) setPaths(key, paths);
         }
+        JsonElement map = root().get("preview_mode");
+        if (map != null && map.isJsonObject() && map.getAsJsonObject().remove(path) != null) {
+            save();
+        }
+    }
+
+    public static synchronized Boolean previewModel(File file) {
+        if (file == null) return null;
+        String value = entry("preview_mode", canonical(file));
+        if ("3d".equals(value)) return Boolean.TRUE;
+        if ("image".equals(value)) return Boolean.FALSE;
+        return null;
+    }
+
+    public static synchronized void setPreviewModel(File file, boolean model) {
+        if (file == null) return;
+        setEntry("preview_mode", canonical(file), model ? "3d" : "image");
     }
 
     public static String toolMode(String world) { return world == null ? null : entry("operation_mode", world); }

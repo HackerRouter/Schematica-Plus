@@ -21,6 +21,7 @@ import com.github.lunatrius.schematica.client.gui.framework.UiSlideSwitch;
 import com.github.lunatrius.schematica.client.gui.framework.UiSprite;
 import com.github.lunatrius.schematica.client.gui.framework.UiTranslations;
 import com.github.lunatrius.schematica.client.gui.framework.UiWidget;
+import com.github.lunatrius.schematica.client.util.UiState;
 import com.github.lunatrius.schematica.handler.ConfigurationHandler;
 import com.github.lunatrius.schematica.world.schematic.SchematicFiles;
 
@@ -34,6 +35,7 @@ final class SchematicPreviewPane extends UiPanel {
     private final UiButton expand, rotate, reset;
     final Viewport viewport;
     private Content content;
+    private boolean forceModel;
 
     SchematicPreviewPane(UiInput input, boolean expanded, Runnable expandOrClose) {
         this(input, expanded, expandOrClose, System::nanoTime);
@@ -42,12 +44,14 @@ final class SchematicPreviewPane extends UiPanel {
     SchematicPreviewPane(UiInput input, boolean expanded, Runnable expandOrClose, LongSupplier clock) {
         this.input = input;
         this.expanded = expanded;
+        this.forceModel = expanded;
         this.clock = clock;
         viewport = add(new Viewport());
-        mode = add(expanded ? new UiSlideSwitch(() -> tr("image"), () -> "3D", () -> content != null && content.showModel(), value -> {
-            if (content != null) content.modelSelected = value;
+        mode = add(expanded ? new UiSlideSwitch(() -> tr("image"), () -> "3D", this::showModel, value -> {
+            forceModel = false;
+            if (content != null) content.selectModel(value);
         }) : new UiButton(() -> "", button -> {
-            if (button == 0 && content != null) content.modelSelected = !content.showModel();
+            if (button == 0 && content != null) content.selectModel(!content.showModel());
         }).setSprite(UiSprite.ENCLOSING_BOX_ENABLED).setBackground(false));
         expand = add(expanded ? new UiButton(() -> UiTranslations.format("gui.back"), button -> { if (button == 0) expandOrClose.run(); })
             : new UiButton(() -> "", button -> { if (button == 0) expandOrClose.run(); }).setSprite(UiSprite.EXPAND).setBackground(false));
@@ -82,7 +86,11 @@ final class SchematicPreviewPane extends UiPanel {
 
     Content content() { return content; }
 
-    private SchematicPreview3D model() { return content != null && content.showModel() && content.canModel() ? content.cache.preview3D(content.file) : null; }
+    private boolean showModel() {
+        return content != null && (forceModel ? content.canModel() : content.showModel());
+    }
+
+    private SchematicPreview3D model() { return showModel() ? content.cache.preview3D(content.file) : null; }
 
     @Override public void layout(UiBounds screen) {
         if (expanded) setBounds(screen.x + 6, screen.y + 6, screen.width - 12, screen.height - 12);
@@ -129,10 +137,17 @@ final class SchematicPreviewPane extends UiPanel {
         final File file;
         final long size;
         final SchematicInfoCache cache;
-        boolean modelSelected = ConfigurationHandler.schematicPreview3DReplacesImage;
+        boolean modelSelected;
 
         Content(File file, long size, SchematicInfoCache cache) {
             this.file = file; this.size = size; this.cache = cache;
+            Boolean saved = UiState.previewModel(file);
+            modelSelected = saved != null ? saved : ConfigurationHandler.schematicPreview3DReplacesImage;
+        }
+
+        void selectModel(boolean value) {
+            modelSelected = value;
+            UiState.setPreviewModel(file, value);
         }
 
         boolean canModel() {
@@ -159,7 +174,7 @@ final class SchematicPreviewPane extends UiPanel {
         private long suppressTooltipUntil;
         private boolean keyboardActive;
 
-        @Override public boolean isFocusable() { return content != null && content.showModel(); }
+        @Override public boolean isFocusable() { return showModel(); }
 
         @Override protected void focusChanged(boolean focused) {
             keysArmed = false;
@@ -194,7 +209,7 @@ final class SchematicPreviewPane extends UiPanel {
         }
 
         @Override public List<String> tooltip(int mouseX, int mouseY) {
-            if (content == null || !content.showModel()) return Collections.emptyList();
+            if (!showModel()) return Collections.emptyList();
             SchematicPreview3D model = model();
             if (model != null && model.failed()) return Collections.emptyList();
             if (model == null && content.cache.modelDone(content.file)) return Collections.emptyList();
@@ -225,7 +240,7 @@ final class SchematicPreviewPane extends UiPanel {
             trackMouse(mouseX, mouseY, now);
             if (dragButton >= 0) noteInput(now);
             SchematicPreview3D model = model();
-            if (content.showModel()) {
+            if (showModel()) {
                 if (model != null && !model.failed()) {
                     float elapsed = lastFrame == 0 ? 0 : (now - lastFrame) / 1_000_000_000f;
                     lastFrame = now;
