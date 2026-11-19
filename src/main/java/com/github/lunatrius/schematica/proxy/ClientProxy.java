@@ -115,6 +115,8 @@ public class ClientProxy extends CommonProxy {
         FMLCommonHandler.instance().bus().register(CloudClient.INSTANCE);
         FMLCommonHandler.instance().bus().register(
             SchematicPreview.INSTANCE);
+        MinecraftForge.EVENT_BUS.register(
+            SchematicPreview.INSTANCE);
 
         FMLCommonHandler.instance()
             .bus()

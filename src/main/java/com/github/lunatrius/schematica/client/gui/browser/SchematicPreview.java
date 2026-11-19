@@ -16,6 +16,7 @@ import net.minecraft.client.gui.ScaledResolution;
 import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.renderer.texture.TextureUtil;
 import net.minecraft.client.shader.Framebuffer;
+import net.minecraftforge.client.event.GuiOpenEvent;
 
 import com.github.lunatrius.schematica.client.util.InfoUtils;
 import com.github.lunatrius.schematica.client.gui.framework.UiBounds;
@@ -24,6 +25,7 @@ import com.github.lunatrius.schematica.util.MessageType;
 import com.github.lunatrius.schematica.world.schematic.SchematicMetadata;
 
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
+import cpw.mods.fml.common.gameevent.InputEvent;
 import cpw.mods.fml.common.gameevent.TickEvent;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.input.Keyboard;
@@ -37,6 +39,7 @@ public final class SchematicPreview {
 
     private File pending;
     private boolean keyWasDown;
+    private boolean resumeSounds;
 
     private SchematicPreview() {}
 
@@ -48,6 +51,41 @@ public final class SchematicPreview {
         boolean had = pending != null;
         pending = null;
         return had;
+    }
+
+    private static boolean isEscapePress() {
+        return Keyboard.isCreated() && Keyboard.getEventKey() == Keyboard.KEY_ESCAPE && Keyboard.getEventKeyState();
+    }
+
+    boolean handleEscapeGuiOpen(Minecraft mc, GuiOpenEvent event, boolean escapePressed) {
+        if (pending == null || event == null || event.gui == null || !escapePressed) return false;
+        if (mc == null || mc.currentScreen != null || mc.thePlayer == null) return false;
+        pending = null;
+        if (event.isCancelable()) event.setCanceled(true);
+        resumeSounds = true;
+        InfoUtils.showGuiOrInGameMessage(MessageType.SUCCESS, "litematica.message.schematic_preview_cancelled");
+        return true;
+    }
+
+    boolean handleEscapeKey(Minecraft mc, boolean escapePressed) {
+        if (resumeSounds) {
+            resumeSounds = false;
+            if (mc != null && mc.getSoundHandler() != null) mc.getSoundHandler().resumeSounds();
+        }
+        if (pending == null || !escapePressed || mc == null || mc.currentScreen != null || mc.thePlayer == null) return false;
+        pending = null;
+        InfoUtils.showGuiOrInGameMessage(MessageType.SUCCESS, "litematica.message.schematic_preview_cancelled");
+        return true;
+    }
+
+    @SubscribeEvent
+    public void onGuiOpen(GuiOpenEvent event) {
+        handleEscapeGuiOpen(Minecraft.getMinecraft(), event, isEscapePress());
+    }
+
+    @SubscribeEvent
+    public void onKeyInput(InputEvent.KeyInputEvent event) {
+        handleEscapeKey(Minecraft.getMinecraft(), isEscapePress());
     }
 
     /** The centered square of an image scaled to size x size, as opaque ARGB pixels. */
@@ -112,6 +150,10 @@ public final class SchematicPreview {
     public void onRenderTick(TickEvent.RenderTickEvent event) {
         if (event.phase != TickEvent.Phase.END) return;
         Minecraft mc = Minecraft.getMinecraft();
+        if (resumeSounds) {
+            resumeSounds = false;
+            if (mc.getSoundHandler() != null) mc.getSoundHandler().resumeSounds();
+        }
         int key = mc.gameSettings.keyBindScreenshot.getKeyCode();
         boolean down = key > 0 && key < Keyboard.KEYBOARD_SIZE && Keyboard.isKeyDown(key);
         boolean pressed = down && !keyWasDown;
