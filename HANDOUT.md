@@ -117,8 +117,12 @@ mod. Original Schematica conflicts with Plus and must be removed from the instan
   which does not change their block encoding. External tools may discard it.
 - File previews offer an Image/3D slider, an expanded view, rotation controls and
   reset. A selected model accepts WASD, Space/Shift and right-drag navigation;
-  these affect only its camera. The lightweight browser renderer still excludes
-  blocks drawn only by tile entity renderers.
+  these affect only its camera. The 3D browser preview renders both compiled
+  blocks and tile entity special renderers (full bright, unlit) in both render
+  passes, hides the controls tooltip for 2 seconds after keyboard or mouse input
+  (including mouse movement), and Schematic Manager also offers an Edit Preview
+  screen to load local image files with square crop, mirror, fixed/free rotation,
+  output size and border color/width controls.
 - NEI integration sends a material-demand book to native bookmarks/recipe planning.
   GTNH 2.8.4 has crafting chains; 2.9.0-RC-2 also has a graphical crafting tree.
   The demand book is a plan, not existing inventory or a craftable recipe.
@@ -357,6 +361,7 @@ steps and limitations are in TESTING; the full implementation history is in Git.
 
 | Status | Date | Work and location |
 | --- | --- | --- |
+| IMPLEMENTED_HEADLESS | 2026-11-19 | Render full-bright unlit tile entities in `client/gui/browser/SchematicPreview3D` (with double-chest linking, fallback vanilla tile entities and dispatcher context restoration), delay the 3D preview controls tooltip with a 2-second keyboard/mouse input buffer in `client/gui/browser/SchematicPreviewPane` (hidden in image mode), and add the Edit Preview screen (`GuiSchematicPreviewEditor`, `PreviewImageEditor`, `NativeImagePicker`) to `GuiSchematicManager` with local image picking, crop, mirror, fixed/free rotation, output size and border controls. Build, Checkstyle and 852 tests pass; no game client was started. |
 | DONE | 2026-10-25 | Prepare the `1.0.0-beta.4` release metadata in README and the tag-driven build workflow. The release tag supplies the generated mod version, `mcmod.info` value and runtime JAR name; privacy review found no local paths, credentials, world identifiers or actual player names in tracked documentation. |
 | DONE | 2026-10-25 | Prefer an available mining tool over an empty hand when printer mining speeds tie or a pack reduces a regular tool's client break speed, while still choosing the fastest tool among tools in `client/printer/SchematicPrinter`. Build, 749 tests and the native 64-block stone, wrong-block, sand and glass printer fixture pass. The GTNH instance audit found `bruh.schematic` at a 3x11x49 placement within its configured 45-block range; remaining saved mismatches are concentrated in higher layers after an incomplete run, with no printer exception in the log. |
 | DONE | 2026-10-25 | Enable `destroyBlocks` for normal and server-assisted survival printing in `client/printer/SchematicPrinter`, excluding survival-unbreakable blocks and fluids while retaining creative behavior. Update six language catalogs and configuration descriptions, including the scope of `destroyInstantly`. Build, Checkstyle and 749 tests pass. Native client dispatch checks and dedicated-server survival/creative harvesting checks pass; creative tool damage is unchanged after 64 breaks. See TESTING and the headless fixture guides. |
