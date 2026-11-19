@@ -108,6 +108,7 @@ public class GuiModConfig extends UiScreen implements HotkeyHooks.Capture {
     private UiRowList<Entry> rows;
     private RenderLayerPanel layers;
     private UiButton searchButton;
+    private UiButton update;
     private UiButton report;
     private UiButton keySearch;
     private UiTextField search;
@@ -137,8 +138,22 @@ public class GuiModConfig extends UiScreen implements HotkeyHooks.Capture {
         return new GuiModConfig(parent, Tab.GENERIC, "update");
     }
 
+    public void focusUpdateSettings() {
+        input.focus(null);
+        tab = Tab.GENERIC;
+        capturingButton = null;
+        keyFilter = 0;
+        searchOpen = true;
+        search.setText("update");
+        model.setOffset(0);
+        refreshEntries();
+        layoutWidgets();
+        input.focus(search);
+    }
+
     @Override
     protected void createWidgets() {
+        update = addUpdateButton();
         report = addIssueReportButton();
         for (String categoryName : ConfigurationHandler.configuration.getCategoryNames()) {
             ConfigCategory category = ConfigurationHandler.configuration.getCategory(categoryName);
@@ -204,13 +219,13 @@ public class GuiModConfig extends UiScreen implements HotkeyHooks.Capture {
 
     @Override
     protected void layoutWidgets() {
-        report.setBounds(width - 32, 10, 20, 20);
+        int headerLeft = layoutHeaderButtons(width, update, report);
         int x = 10;
         int y = 26;
         for (Tab value : Tab.values()) {
             UiButton button = tabs.get(value);
             int w = fontRendererObj.getStringWidth(button.label()) + 10;
-            if (x > 10 && x + w > (y == 26 ? report.bounds().x - 4 : width - 10)) { x = 10; y += 22; }
+            if (x > 10 && x + w > (y == 26 ? headerLeft - 4 : width - 10)) { x = 10; y += 22; }
             button.setBounds(x, y, w, 20);
             button.setEnabled(value != tab);
             x += w + 2;
@@ -236,10 +251,11 @@ public class GuiModConfig extends UiScreen implements HotkeyHooks.Capture {
     }
 
     @Override
-    protected int titleRightMargin() { return 62; }
+    protected int titleRightMargin() { return headerTitleRightMargin(update, report); }
 
     @Override
     protected void tickScreen() {
+        syncHeaderButtons(update, report);
         if (capturingButton != null && (input.focused() != capturingButton || !Display.isActive())) capturingButton = null;
     }
 

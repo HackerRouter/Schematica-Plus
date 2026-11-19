@@ -22,6 +22,7 @@ import com.github.lunatrius.schematica.client.projects.SchematicProjects;
 import com.github.lunatrius.schematica.client.renderer.RendererSchematicGlobal;
 import com.github.lunatrius.schematica.client.renderer.hud.BlockInfoHud;
 import com.github.lunatrius.schematica.client.selection.AreaSelections;
+import com.github.lunatrius.schematica.client.update.UpdateManager;
 import com.github.lunatrius.schematica.client.util.InfoUtils;
 import com.github.lunatrius.schematica.client.verifier.VerificationManager;
 import com.github.lunatrius.schematica.client.world.Placements;
@@ -153,6 +154,7 @@ public class ClientProxy extends CommonProxy {
             Reference.logger.warn("Failed to create lotr proxy in the normal way");
             lotrProxy = new NoLOTRProxy();
         }
+        UpdateManager.INSTANCE.onClientStartup();
     }
 
     @Override

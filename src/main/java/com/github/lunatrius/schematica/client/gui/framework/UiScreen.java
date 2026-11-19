@@ -11,8 +11,13 @@ import net.minecraft.client.audio.PositionedSoundRecord;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.util.ResourceLocation;
 
+import com.github.lunatrius.schematica.client.gui.GuiModConfig;
 import com.github.lunatrius.schematica.client.gui.GuiSchematicMainMenu;
+import com.github.lunatrius.schematica.client.gui.UpdatePromptPanel;
+import com.github.lunatrius.schematica.client.update.UpdateManager;
+import com.github.lunatrius.schematica.client.update.UpdateRelease;
 import com.github.lunatrius.schematica.client.util.IssueReport;
+import com.github.lunatrius.schematica.handler.ConfigurationHandler;
 import com.github.lunatrius.schematica.util.MessageType;
 
 import org.lwjgl.input.Keyboard;
@@ -252,6 +257,89 @@ public abstract class UiScreen extends GuiScreen {
         })).setSprite(UiSprite.REPORT_ISSUE);
         button.setTooltip(UiTranslations.format("schematica.ui.report.tooltip"));
         return button;
+    }
+
+    protected final UiButton addUpdateButton() {
+        UiButton button = root.add(new UiButton(() -> "", mouseButton -> {
+            if (mouseButton != 0) return;
+            if (UpdateManager.INSTANCE.state() == UpdateManager.State.IDLE) {
+                UpdateManager.INSTANCE.checkForUpdates(true);
+            }
+            showUpdatePrompt();
+        })).setSprite(UiSprite.UPDATE);
+        syncUpdateButton(button);
+        return button;
+    }
+
+    protected final void showUpdatePrompt() {
+        List<UiPanel> modals = input.modalPanels();
+        if (!modals.isEmpty() && modals.get(modals.size() - 1) instanceof UpdatePromptPanel) return;
+        UiPanel panel = new UpdatePromptPanel(fontRendererObj, UpdateManager.INSTANCE, input::popModal, this::openUpdateSettings);
+        panel.layout(root.bounds());
+        input.pushModal(panel);
+    }
+
+    private void openUpdateSettings() {
+        if (this instanceof GuiModConfig) {
+            ((GuiModConfig) this).focusUpdateSettings();
+            return;
+        }
+        mc.displayGuiScreen(GuiModConfig.openUpdateSettings(this));
+    }
+
+    protected final void syncHeaderButtons(UiButton update, UiButton report) {
+        if (report != null) report.setVisible(ConfigurationHandler.showIssueReportButton);
+        if (update != null) {
+            update.setVisible(ConfigurationHandler.showUpdateButton);
+            syncUpdateButton(update);
+        }
+    }
+
+    private static void syncUpdateButton(UiButton button) {
+        UpdateManager manager = UpdateManager.INSTANCE;
+        button.setSprite(manager.hasBadge() ? UiSprite.UPDATE_AVAILABLE : UiSprite.UPDATE);
+        UpdateRelease release = manager.availableRelease();
+        switch (manager.state()) {
+            case READY_TO_APPLY:
+                button.setTooltip(UiTranslations.format("schematica.ui.update.tooltip.ready", release == null ? "" : release.tag));
+                break;
+            case DOWNLOADING:
+                button.setTooltip(UiTranslations.format("schematica.ui.update.tooltip.downloading"));
+                break;
+            case UPDATE_AVAILABLE:
+                if (manager.hasBadge() && release != null) {
+                    button.setTooltip(UiTranslations.format("schematica.ui.update.tooltip.available", release.tag));
+                    break;
+                }
+                button.setTooltip(UiTranslations.format("schematica.ui.update.tooltip"));
+                break;
+            default:
+                button.setTooltip(UiTranslations.format("schematica.ui.update.tooltip"));
+                break;
+        }
+    }
+
+    public static int layoutHeaderButtons(int screenWidth, UiButton update, UiButton report) {
+        int right = screenWidth - 12;
+        int leftEdge = screenWidth - 6;
+        if (report != null && report.isVisible()) {
+            report.setBounds(right - 20, 10, 20, 20);
+            leftEdge = right - 20;
+            right -= 24;
+        }
+        if (update != null && update.isVisible()) {
+            update.setBounds(right - 20, 10, 20, 20);
+            leftEdge = right - 20;
+        }
+        return leftEdge;
+    }
+
+    public static int headerTitleRightMargin(UiButton update, UiButton report) {
+        int visible = 0;
+        if (report != null && report.isVisible()) visible++;
+        if (update != null && update.isVisible()) visible++;
+        if (visible == 0) return 30;
+        return visible == 1 ? 62 : 86;
     }
 
     private void openIssueTracker() {

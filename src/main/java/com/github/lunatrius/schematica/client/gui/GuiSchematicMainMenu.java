@@ -19,6 +19,7 @@ import com.github.lunatrius.schematica.client.gui.save.GuiAreaSelectionEditor;
 import com.github.lunatrius.schematica.client.gui.save.GuiAreaSelectionManager;
 import com.github.lunatrius.schematica.client.projects.SchematicProjects;
 import com.github.lunatrius.schematica.client.selection.AreaSelections;
+import com.github.lunatrius.schematica.client.update.UpdateManager;
 import com.github.lunatrius.schematica.handler.ConfigurationHandler;
 import com.github.lunatrius.schematica.handler.client.CloudClient;
 import com.github.lunatrius.schematica.handler.client.SharedPlacementsClient;
@@ -37,9 +38,11 @@ public final class GuiSchematicMainMenu extends UiScreen {
     private UiButton tasks;
     private UiButton projects;
     private UiButton mode;
+    private UiButton update;
     private UiButton report;
     private UiButton cloud;
     private UiButton shared;
+    private boolean updatePromptShown;
 
     public GuiSchematicMainMenu(GuiScreen parent) {
         super(parent, Reference.NAME + " v" + Reference.VERSION);
@@ -51,6 +54,7 @@ public final class GuiSchematicMainMenu extends UiScreen {
 
     @Override
     protected void createWidgets() {
+        update = addUpdateButton();
         report = addIssueReportButton();
         placements = menu("show_schematic_placements", UiSprite.SCHEMATIC_PLACEMENTS,
             () -> mc.displayGuiScreen(new GuiSchematicPlacementsList(this)));
@@ -77,7 +81,21 @@ public final class GuiSchematicMainMenu extends UiScreen {
     }
 
     @Override
+    protected void opened() {
+        updatePromptShown = false;
+        if (UpdateManager.INSTANCE.shouldAutoPrompt()) {
+            updatePromptShown = true;
+            showUpdatePrompt();
+        }
+    }
+
+    @Override
     protected void tickScreen() {
+        syncHeaderButtons(update, report);
+        if (!updatePromptShown && input.modalPanels().isEmpty() && UpdateManager.INSTANCE.shouldAutoPrompt()) {
+            updatePromptShown = true;
+            showUpdatePrompt();
+        }
         boolean world = mc.theWorld != null && mc.thePlayer != null;
         load.setEnabled(world && SchematicaPlus.proxy.isLoadEnabled);
         area.setEnabled(world && SchematicaPlus.proxy.isSaveEnabled && AreaSelections.library().selected() != null);
@@ -99,7 +117,7 @@ public final class GuiSchematicMainMenu extends UiScreen {
 
     @Override
     protected void layoutWidgets() {
-        report.setBounds(width - 32, 10, 20, 20);
+        layoutHeaderButtons(width, update, report);
         int column = 0;
         UiButton[] buttons = {placements, loaded, load, area, selections, config, manager, tasks, cloud, shared};
         for (UiButton button : buttons) column = Math.max(column, fontRendererObj.getStringWidth(button.label()) + 30);
@@ -123,5 +141,5 @@ public final class GuiSchematicMainMenu extends UiScreen {
     }
 
     @Override
-    protected int titleRightMargin() { return 62; }
+    protected int titleRightMargin() { return headerTitleRightMargin(update, report); }
 }
