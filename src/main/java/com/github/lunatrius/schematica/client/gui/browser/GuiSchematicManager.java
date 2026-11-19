@@ -23,7 +23,7 @@ public final class GuiSchematicManager extends GuiSchematicBrowser {
     private final List<UiButton[]> groups = new ArrayList<>();
     private final int[] choices = {0, 1, 0};
     private static final String[][] OPTIONS = {
-        {"edit_type.rename_schematic", "edit_type.change_author", "edit_type.set_preview", "edit_type.change_description", "edit_type.remove_preview"},
+        {"edit_type.rename_schematic", "edit_type.change_author", "edit_type.set_preview", "edit_type.edit_preview", "edit_type.change_description", "edit_type.remove_preview"},
         {"export_type.schematic", "export_type.litematic_v4", "export_type.vanilla", "export_type.schemplus", "export_type.sponge"},
         {"file_op_type.rename", "file_op_type.copy", "file_op_type.delete"}
     };
@@ -71,7 +71,8 @@ public final class GuiSchematicManager extends GuiSchematicBrowser {
 
     /** Schematic Edit: rename or change the author in the metadata, or set the preview image. */
     private void edit(int mouse) {
-        if (choices[0] == 2 && mouse == 1) {
+        String option = OPTIONS[0][choices[0]];
+        if ("edit_type.set_preview".equals(option) && mouse == 1) {
             if (SchematicPreview.INSTANCE.cancel()) addMessage(MessageType.SUCCESS, "litematica.message.schematic_preview_cancelled");
             return;
         }
@@ -82,7 +83,7 @@ public final class GuiSchematicManager extends GuiSchematicBrowser {
             addMessage(MessageType.WARNING, "schematica.ui.files.metadata_unsupported");
             return;
         }
-        if (choices[0] == 4) {
+        if ("edit_type.remove_preview".equals(option)) {
             try {
                 SchematicFileEdits.edit(file, metadata -> metadata.removeTag("PreviewImageData"));
                 refreshFiles();
@@ -92,7 +93,7 @@ public final class GuiSchematicManager extends GuiSchematicBrowser {
             }
             return;
         }
-        if (choices[0] == 2) {
+        if ("edit_type.set_preview".equals(option)) {
             if (isShiftKeyDown() && isCtrlKeyDown() && Keyboard.isKeyDown(Keyboard.KEY_LMENU)
                 || isShiftKeyDown() && isCtrlKeyDown() && Keyboard.isKeyDown(Keyboard.KEY_RMENU)) {
                 try {
@@ -109,7 +110,7 @@ public final class GuiSchematicManager extends GuiSchematicBrowser {
             InfoUtils.showGuiAndInGameMessage(MessageType.INFO, "litematica.info.schematic_manager.preview.set_preview_by_taking_a_screenshot");
             return;
         }
-        boolean author = choices[0] == 1;
+        boolean author = "edit_type.change_author".equals(option);
         SchematicFiles.Info info;
         try {
             info = SchematicFiles.info(file);
@@ -117,7 +118,11 @@ public final class GuiSchematicManager extends GuiSchematicBrowser {
             fail("litematica.error.schematic_load.cant_read_file", e, file.getName());
             return;
         }
-        if (choices[0] == 3) {
+        if ("edit_type.edit_preview".equals(option)) {
+            mc.displayGuiScreen(new GuiSchematicPreviewEditor(this, file, info == null ? null : info.preview));
+            return;
+        }
+        if ("edit_type.change_description".equals(option)) {
             mc.displayGuiScreen(new GuiSchematicDescription(this, file, info == null ? "" : info.description));
             return;
         }
@@ -164,7 +169,8 @@ public final class GuiSchematicManager extends GuiSchematicBrowser {
     private String optionKey(int type) {
         String option = OPTIONS[type][choices[type]];
         return (option.equals("export_type.litematic_v4") || option.equals("export_type.schemplus")
-            || option.equals("export_type.sponge") || option.equals("edit_type.change_description") || option.equals("edit_type.remove_preview") ? "schematica.ui.files." : "litematica.gui.label.schematic_manager.") + option;
+            || option.equals("export_type.sponge") || option.equals("edit_type.edit_preview")
+            || option.equals("edit_type.change_description") || option.equals("edit_type.remove_preview") ? "schematica.ui.files." : "litematica.gui.label.schematic_manager.") + option;
     }
 
     private void updateVisibility() {
@@ -186,8 +192,11 @@ public final class GuiSchematicManager extends GuiSchematicBrowser {
             }
         }
         String editHover = UiTranslations.format("schematica.ui.files.edit_schematic.hover");
-        if (choices[0] == 2) groups.get(0)[0].setTooltip((editHover + "\n" + UiTranslations.format("litematica.info.schematic_manager.preview.right_click_to_cancel")).split("\n"));
-        else groups.get(0)[0].setTooltip(editHover.split("\n"));
+        if ("edit_type.set_preview".equals(OPTIONS[0][choices[0]])) {
+            groups.get(0)[0].setTooltip((editHover + "\n" + UiTranslations.format("litematica.info.schematic_manager.preview.right_click_to_cancel")).split("\n"));
+        } else {
+            groups.get(0)[0].setTooltip(editHover.split("\n"));
+        }
     }
 
     @Override
