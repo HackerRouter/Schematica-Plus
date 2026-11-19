@@ -1,7 +1,9 @@
 package com.github.lunatrius.schematica.client.gui.browser;
 
 import java.io.File;
+import java.util.Collections;
 import java.util.List;
+import java.util.function.LongSupplier;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
@@ -23,16 +25,24 @@ import com.github.lunatrius.schematica.handler.ConfigurationHandler;
 import com.github.lunatrius.schematica.world.schematic.SchematicFiles;
 
 final class SchematicPreviewPane extends UiPanel {
+    static final long TOOLTIP_BUFFER_NANOS = 2_000_000_000L;
+
     private final UiInput input;
     private final boolean expanded;
+    private final LongSupplier clock;
     private final UiWidget mode;
     private final UiButton expand, rotate, reset;
     final Viewport viewport;
     private Content content;
 
     SchematicPreviewPane(UiInput input, boolean expanded, Runnable expandOrClose) {
+        this(input, expanded, expandOrClose, System::nanoTime);
+    }
+
+    SchematicPreviewPane(UiInput input, boolean expanded, Runnable expandOrClose, LongSupplier clock) {
         this.input = input;
         this.expanded = expanded;
+        this.clock = clock;
         viewport = add(new Viewport());
         mode = add(expanded ? new UiSlideSwitch(() -> tr("image"), () -> "3D", () -> content != null && content.showModel(), value -> {
             if (content != null) content.modelSelected = value;
@@ -65,6 +75,7 @@ final class SchematicPreviewPane extends UiPanel {
             viewport.cancelMouse();
             viewport.keysArmed = false;
             viewport.lastFrame = 0;
+            viewport.resetTooltipInput();
         }
         this.content = content;
     }
@@ -143,10 +154,59 @@ final class SchematicPreviewPane extends UiPanel {
         private int dragButton = -1, dragX, dragY;
         private long lastFrame;
         private boolean keysArmed;
+        private int lastMouseX = Integer.MIN_VALUE, lastMouseY = Integer.MIN_VALUE;
+        private boolean tooltipSuppressed;
+        private long suppressTooltipUntil;
+        private boolean keyboardActive;
 
         @Override public boolean isFocusable() { return content != null && content.showModel(); }
 
-        @Override protected void focusChanged(boolean focused) { keysArmed = false; if (!focused) cancelMouse(); }
+        @Override protected void focusChanged(boolean focused) {
+            keysArmed = false;
+            keyboardActive = false;
+            if (!focused) cancelMouse();
+        }
+
+        private void resetTooltipInput() {
+            lastMouseX = Integer.MIN_VALUE;
+            lastMouseY = Integer.MIN_VALUE;
+            tooltipSuppressed = false;
+            suppressTooltipUntil = 0;
+            keyboardActive = false;
+        }
+
+        private void noteInput(long now) {
+            tooltipSuppressed = true;
+            suppressTooltipUntil = now + TOOLTIP_BUFFER_NANOS;
+        }
+
+        private void trackMouse(int mouseX, int mouseY, long now) {
+            if (containsVisible(mouseX, mouseY)) {
+                if (mouseX != lastMouseX || mouseY != lastMouseY) {
+                    lastMouseX = mouseX;
+                    lastMouseY = mouseY;
+                    noteInput(now);
+                }
+            } else {
+                lastMouseX = Integer.MIN_VALUE;
+                lastMouseY = Integer.MIN_VALUE;
+            }
+        }
+
+        @Override public List<String> tooltip(int mouseX, int mouseY) {
+            if (content == null || !content.showModel()) return Collections.emptyList();
+            SchematicPreview3D model = model();
+            if (model != null && model.failed()) return Collections.emptyList();
+            if (model == null && content.cache.modelDone(content.file)) return Collections.emptyList();
+            long now = clock.getAsLong();
+            trackMouse(mouseX, mouseY, now);
+            if (dragButton >= 0 || keyboardActive) return Collections.emptyList();
+            if (tooltipSuppressed) {
+                if (suppressTooltipUntil - now > 0) return Collections.emptyList();
+                tooltipSuppressed = false;
+            }
+            return super.tooltip(mouseX, mouseY);
+        }
 
         @Override public void draw(UiDraw draw, int mouseX, int mouseY) {
             UiBounds b = bounds();
@@ -154,30 +214,50 @@ final class SchematicPreviewPane extends UiPanel {
             draw.border(b, isFocused() ? 0xFF9CC9FF : 0xFF777777);
             List<UiPanel> modals = input.modalPanels();
             boolean active = modals.isEmpty() || modals.get(modals.size() - 1) == SchematicPreviewPane.this;
-            if (!active) { lastFrame = 0; return; }
+            if (!active) {
+                lastFrame = 0;
+                keyboardActive = false;
+                lastMouseX = Integer.MIN_VALUE;
+                lastMouseY = Integer.MIN_VALUE;
+                return;
+            }
+            long now = clock.getAsLong();
+            trackMouse(mouseX, mouseY, now);
+            if (dragButton >= 0) noteInput(now);
             SchematicPreview3D model = model();
             if (content.showModel()) {
                 if (model != null && !model.failed()) {
-                    long now = System.nanoTime();
                     float elapsed = lastFrame == 0 ? 0 : (now - lastFrame) / 1_000_000_000f;
                     lastFrame = now;
                     model.camera.viewport(b.width - 2, b.height - 2);
                     int right = 0, up = 0, forward = 0;
                     if (isFocused() && Display.isActive() && mouseX >= 0) {
-                        right = down(Keyboard.KEY_D) - down(Keyboard.KEY_A);
-                        up = down(Keyboard.KEY_SPACE) - Math.max(down(Keyboard.KEY_LSHIFT), down(Keyboard.KEY_RSHIFT));
-                        forward = down(Keyboard.KEY_W) - down(Keyboard.KEY_S);
+                        int keyW = down(Keyboard.KEY_W), keyS = down(Keyboard.KEY_S);
+                        int keyD = down(Keyboard.KEY_D), keyA = down(Keyboard.KEY_A);
+                        int keySpace = down(Keyboard.KEY_SPACE);
+                        int keyShift = Math.max(down(Keyboard.KEY_LSHIFT), down(Keyboard.KEY_RSHIFT));
+                        boolean anyKey = keyW != 0 || keyS != 0 || keyD != 0 || keyA != 0 || keySpace != 0 || keyShift != 0;
+                        keyboardActive = anyKey;
+                        if (anyKey) noteInput(now);
+                        right = keyD - keyA;
+                        up = keySpace - keyShift;
+                        forward = keyW - keyS;
                         if (right == 0 && up == 0 && forward == 0) keysArmed = true;
                         if (!keysArmed) right = up = forward = 0;
-                    } else keysArmed = false;
+                    } else {
+                        keysArmed = false;
+                        keyboardActive = false;
+                    }
                     model.camera.advance(elapsed, right, up, forward);
                     model.draw(Minecraft.getMinecraft(), b.x + 1, b.y + 1, Math.max(1, b.width - 2), Math.max(1, b.height - 2));
                 } else {
+                    keyboardActive = false;
                     String text = tr(content.cache.modelDone(content.file) ? "unavailable" : "loading");
                     draw.text(draw.trim(text, b.width - 8), b.x + 4, b.y + 4, 0xFFAAAAAA);
                 }
             } else {
                 lastFrame = 0;
+                keyboardActive = false;
                 ResourceLocation image = content.image();
                 if (image != null) {
                     int side = Math.min(b.width, b.height) - 2;
@@ -193,6 +273,7 @@ final class SchematicPreviewPane extends UiPanel {
         private int down(int key) { return Keyboard.isKeyDown(key) ? 1 : 0; }
 
         @Override public boolean mouseDown(int x, int y, int button) {
+            noteInput(clock.getAsLong());
             SchematicPreview3D model = model();
             if (model == null || button < 0 || button > 1) return false;
             model.camera.rotating = false;
@@ -201,6 +282,7 @@ final class SchematicPreviewPane extends UiPanel {
         }
 
         @Override public void mouseDrag(int x, int y, int button) {
+            noteInput(clock.getAsLong());
             SchematicPreview3D model = model();
             if (model == null || dragButton != button) return;
             if (button == 0) model.camera.turn(x - dragX, y - dragY);
@@ -208,16 +290,25 @@ final class SchematicPreviewPane extends UiPanel {
             dragX = x; dragY = y;
         }
 
-        @Override public void mouseUp(int x, int y, int button) { cancelMouse(); }
-        @Override public void cancelMouse() { dragButton = -1; }
+        @Override public void mouseUp(int x, int y, int button) {
+            noteInput(clock.getAsLong());
+            cancelMouse();
+        }
+
+        @Override public void cancelMouse() {
+            if (dragButton >= 0) noteInput(clock.getAsLong());
+            dragButton = -1;
+        }
 
         @Override public boolean scroll(int x, int y, int amount) {
+            if (amount != 0) noteInput(clock.getAsLong());
             if (model() == null) return false;
             model().camera.zoom(amount);
             return true;
         }
 
         @Override public boolean keyTyped(char character, int keyCode) {
+            noteInput(clock.getAsLong());
             return keyCode == Keyboard.KEY_W || keyCode == Keyboard.KEY_A || keyCode == Keyboard.KEY_S || keyCode == Keyboard.KEY_D
                 || keyCode == Keyboard.KEY_SPACE || keyCode == Keyboard.KEY_LSHIFT || keyCode == Keyboard.KEY_RSHIFT;
         }
