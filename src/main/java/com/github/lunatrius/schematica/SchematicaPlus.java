@@ -12,6 +12,7 @@ import com.github.lunatrius.schematica.handler.SharedPlacements;
 import com.github.lunatrius.schematica.handler.WorldEditQueue;
 import com.github.lunatrius.schematica.proxy.CommonProxy;
 import com.github.lunatrius.schematica.reference.Reference;
+import com.github.lunatrius.schematica.util.ModVersion;
 
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.Loader;
@@ -71,12 +72,16 @@ public class SchematicaPlus {
     @SuppressWarnings("unused")
     @NetworkCheckHandler
     public boolean checkModList(Map<String, String> versions, Side side) {
-        return acceptsRemoteMods(Reference.VERSION, versions);
+        return acceptsRemoteMods(Reference.VERSION, versions, side);
     }
 
-    static boolean acceptsRemoteMods(String localVersion, Map<String, String> versions) {
+    static boolean acceptsRemoteMods(String localVersion, Map<String, String> versions, Side remoteSide) {
         String remoteVersion = versions.get(Reference.MODID);
-        return remoteVersion == null || localVersion.equals(remoteVersion);
+        if (remoteVersion == null || localVersion.equals(remoteVersion)) return true;
+        ModVersion local = ModVersion.parse(localVersion);
+        ModVersion remote = ModVersion.parse(remoteVersion);
+        if (local == null || remote == null) return false;
+        return remoteSide == Side.CLIENT ? remote.compareTo(local) >= 0 : local.compareTo(remote) >= 0;
     }
 
     @EventHandler
