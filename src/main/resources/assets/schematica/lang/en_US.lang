@@ -601,3 +601,6 @@ schematica.ui.preview_editor.save=Save Preview
 schematica.ui.preview_editor.picker_unavailable=System file dialog unavailable; enter or paste an image path above.
 schematica.ui.preview_editor.load_failed=Could not load image: %s
 schematica.ui.preview_editor.slider_reset=Drag or scroll to adjust. Right-click to reset.
+schematica.ui.update.server_version=Server version: %s
+schematica.ui.update.server_not_installed=Server version: Not installed
+schematica.ui.update.server_mismatch=Notice: Client version (%s) does not match server version (%s).

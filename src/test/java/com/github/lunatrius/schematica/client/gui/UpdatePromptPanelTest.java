@@ -15,6 +15,7 @@ import com.github.lunatrius.schematica.client.update.UpdateHttpClient;
 import com.github.lunatrius.schematica.client.update.UpdateManager;
 import com.github.lunatrius.schematica.client.update.UpdateManagerTestHelper;
 import com.github.lunatrius.schematica.client.update.UpdateRelease;
+import com.github.lunatrius.schematica.util.ServerModVersion;
 
 import org.junit.Rule;
 import org.junit.Test;
@@ -75,6 +76,7 @@ public class UpdatePromptPanelTest {
         AtomicInteger settingsOpened = new AtomicInteger();
 
         UpdatePromptPanel panel = new UpdatePromptPanel(text -> text.length() * 6, 9, (key, args) -> key, manager,
+            new ServerModVersion(),
             () -> { closed.incrementAndGet(); input.popModal(); },
             settingsOpened::incrementAndGet);
         panel.layout(root.bounds());
@@ -119,6 +121,7 @@ public class UpdatePromptPanelTest {
         root.setBounds(0, 0, 480, 320);
         UiInput input = new UiInput(root);
         UpdatePromptPanel panel = new UpdatePromptPanel(text -> text.length() * 6, 9, (key, args) -> key, manager,
+            new ServerModVersion(),
             input::popModal, () -> {});
         panel.layout(new UiBounds(0, 0, 480, 320));
         input.pushModal(panel);
@@ -131,6 +134,28 @@ public class UpdatePromptPanelTest {
         click(input, panel.ignoreVersionButton());
         assertEquals("1.0.0-beta.6", ignored.get());
         assertFalse(manager.hasBadge());
+    }
+
+    @Test public void displaysServerVersionAndMismatchNoticeWhenConnectedToRemoteServer() throws Exception {
+        File modsDir = temporary.newFolder("mods");
+        File updatesDir = temporary.newFolder("updates");
+        UpdateManager manager = createManager(modsDir, updatesDir, new AtomicReference<>(""), new AtomicBoolean(false));
+        ServerModVersion serverVersion = new ServerModVersion();
+        serverVersion.recordHandshake("1.0.0-beta.4");
+        serverVersion.onClientConnect(false);
+        serverVersion.applyPending();
+
+        UpdatePromptPanel panel = new UpdatePromptPanel(text -> text.length() * 6, 9,
+            (key, args) -> args.length == 0 ? key : key + ":" + java.util.Arrays.toString(args),
+            manager, serverVersion, () -> {}, () -> {});
+        panel.layout(new UiBounds(0, 0, 480, 320));
+        assertTrue(panel.message(), panel.message().contains("schematica.ui.update.server_version:[1.0.0-beta.4]"));
+        assertTrue(panel.message(), panel.message().contains("schematica.ui.update.server_mismatch:[1.0.0-beta.5, 1.0.0-beta.4]"));
+
+        serverVersion.onCapabilitiesReceived("1.0.0-beta.5");
+        panel.tick();
+        assertTrue(panel.message(), panel.message().contains("schematica.ui.update.server_version:[1.0.0-beta.5]"));
+        assertFalse(panel.message(), panel.message().contains("schematica.ui.update.server_mismatch"));
     }
 
     private static void waitUntil(java.util.function.BooleanSupplier condition) throws InterruptedException {

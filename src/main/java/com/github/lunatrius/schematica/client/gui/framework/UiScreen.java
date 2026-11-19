@@ -19,6 +19,7 @@ import com.github.lunatrius.schematica.client.update.UpdateRelease;
 import com.github.lunatrius.schematica.client.util.IssueReport;
 import com.github.lunatrius.schematica.handler.ConfigurationHandler;
 import com.github.lunatrius.schematica.util.MessageType;
+import com.github.lunatrius.schematica.util.ServerModVersion;
 
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
@@ -299,24 +300,38 @@ public abstract class UiScreen extends GuiScreen {
         UpdateManager manager = UpdateManager.INSTANCE;
         button.setSprite(manager.hasBadge() ? UiSprite.UPDATE_AVAILABLE : UiSprite.UPDATE);
         UpdateRelease release = manager.availableRelease();
+        String primary;
         switch (manager.state()) {
             case READY_TO_APPLY:
-                button.setTooltip(UiTranslations.format("schematica.ui.update.tooltip.ready", release == null ? "" : release.tag));
+                primary = UiTranslations.format("schematica.ui.update.tooltip.ready", release == null ? "" : release.tag);
                 break;
             case DOWNLOADING:
-                button.setTooltip(UiTranslations.format("schematica.ui.update.tooltip.downloading"));
+                primary = UiTranslations.format("schematica.ui.update.tooltip.downloading");
                 break;
             case UPDATE_AVAILABLE:
-                if (manager.hasBadge() && release != null) {
-                    button.setTooltip(UiTranslations.format("schematica.ui.update.tooltip.available", release.tag));
-                    break;
-                }
-                button.setTooltip(UiTranslations.format("schematica.ui.update.tooltip"));
+                primary = manager.hasBadge() && release != null
+                    ? UiTranslations.format("schematica.ui.update.tooltip.available", release.tag)
+                    : UiTranslations.format("schematica.ui.update.tooltip");
                 break;
             default:
-                button.setTooltip(UiTranslations.format("schematica.ui.update.tooltip"));
+                primary = UiTranslations.format("schematica.ui.update.tooltip");
                 break;
         }
+        if (ServerModVersion.INSTANCE.isConnectedToRemoteServer()) {
+            String remote = ServerModVersion.INSTANCE.serverVersion();
+            if (remote == null) {
+                button.setTooltip(primary, UiTranslations.format("schematica.ui.update.server_not_installed"));
+                return;
+            }
+            if (ServerModVersion.INSTANCE.isMismatch(manager.currentVersion())) {
+                button.setTooltip(primary, UiTranslations.format("schematica.ui.update.server_version", remote),
+                    "\u00a7e" + UiTranslations.format("schematica.ui.update.server_mismatch", manager.currentVersion(), remote) + "\u00a7r");
+                return;
+            }
+            button.setTooltip(primary, UiTranslations.format("schematica.ui.update.server_version", remote));
+            return;
+        }
+        button.setTooltip(primary);
     }
 
     public static int layoutHeaderButtons(int screenWidth, UiButton update, UiButton report) {

@@ -4,7 +4,9 @@ import com.github.lunatrius.schematica.SchematicaPlus;
 import com.github.lunatrius.schematica.client.printer.SchematicPrinter;
 import com.github.lunatrius.schematica.handler.PrinterRange;
 import com.github.lunatrius.schematica.reference.Reference;
+import com.github.lunatrius.schematica.util.ServerModVersion;
 
+import cpw.mods.fml.common.network.ByteBufUtils;
 import cpw.mods.fml.common.network.simpleimpl.IMessage;
 import cpw.mods.fml.common.network.simpleimpl.IMessageHandler;
 import cpw.mods.fml.common.network.simpleimpl.MessageContext;
@@ -18,6 +20,7 @@ public class MessageCapabilities implements IMessage, IMessageHandler<MessageCap
     public boolean supportsAccuratePlacement, supportsNbtRequests, supportsCloud, supportsSharedPlacements;
     public double printerMaxRange;
     public int printerMaxPlacementsPerTick, printerMaxBreaksPerTick;
+    public String serverVersion;
 
     public MessageCapabilities() {
         this(false, false, false);
@@ -41,6 +44,7 @@ public class MessageCapabilities implements IMessage, IMessageHandler<MessageCap
         printerMaxRange = PrinterRange.clamp(buf.readDouble());
         printerMaxPlacementsPerTick = Math.min(64, buf.readUnsignedByte());
         printerMaxBreaksPerTick = Math.min(64, buf.readUnsignedByte());
+        serverVersion = buf.isReadable() ? ByteBufUtils.readUTF8String(buf) : null;
     }
 
     @Override
@@ -55,6 +59,7 @@ public class MessageCapabilities implements IMessage, IMessageHandler<MessageCap
         buf.writeDouble(printerMaxRange);
         buf.writeByte(printerMaxPlacementsPerTick);
         buf.writeByte(printerMaxBreaksPerTick);
+        ByteBufUtils.writeUTF8String(buf, serverVersion == null ? "" : serverVersion);
     }
 
     private static volatile MessageCapabilities pending;
@@ -85,6 +90,7 @@ public class MessageCapabilities implements IMessage, IMessageHandler<MessageCap
         SchematicaPlus.proxy.printerMaxRange = message.printerMaxRange;
         SchematicaPlus.proxy.printerMaxPlacementsPerTick = message.printerMaxPlacementsPerTick;
         SchematicaPlus.proxy.printerMaxBreaksPerTick = message.printerMaxBreaksPerTick;
+        ServerModVersion.INSTANCE.onCapabilitiesReceived(message.serverVersion);
 
         Reference.logger.info(
             "Server capabilities{printer={}, save={}, load={}, accuratePlacement={}}",

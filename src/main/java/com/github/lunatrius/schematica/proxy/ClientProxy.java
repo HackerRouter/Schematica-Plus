@@ -46,6 +46,7 @@ import com.github.lunatrius.schematica.network.message.MessageEditStatus;
 import com.github.lunatrius.schematica.reference.Reference;
 import com.github.lunatrius.schematica.tool.WorldMoveController;
 import com.github.lunatrius.schematica.util.PlayerMessage;
+import com.github.lunatrius.schematica.util.ServerModVersion;
 import com.github.lunatrius.schematica.world.chunk.ChunkNbt;
 import com.github.lunatrius.schematica.world.chunk.SchematicContainer;
 
@@ -184,6 +185,7 @@ public class ClientProxy extends CommonProxy {
         NbtRequestClient.INSTANCE.clear();
         CloudClient.INSTANCE.clear();
         SharedPlacementsClient.INSTANCE.clear();
+        ServerModVersion.INSTANCE.clear();
         clearWorldState();
     }
 

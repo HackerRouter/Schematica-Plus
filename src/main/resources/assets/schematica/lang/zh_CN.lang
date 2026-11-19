@@ -600,3 +600,6 @@ schematica.ui.preview_editor.save=保存预览图
 schematica.ui.preview_editor.picker_unavailable=无法打开系统文件选择框，请在上方输入或粘贴图片路径。
 schematica.ui.preview_editor.load_failed=无法加载图片：%s
 schematica.ui.preview_editor.slider_reset=拖动或滚动滚轮调整，右键重置。
+schematica.ui.update.server_version=服务器版本：%s
+schematica.ui.update.server_not_installed=服务器版本：未安装
+schematica.ui.update.server_mismatch=提示：客户端版本（%s）与服务器版本（%s）不一致。

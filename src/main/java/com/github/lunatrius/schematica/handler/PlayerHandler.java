@@ -30,6 +30,7 @@ public class PlayerHandler {
         capabilities.supportsNbtRequests = ConfigurationHandler.nbtRequestsEnabled;
         capabilities.supportsCloud = ConfigurationHandler.cloudEnabled;
         capabilities.supportsSharedPlacements = ConfigurationHandler.sharedPlacementsEnabled;
+        capabilities.serverVersion = Reference.VERSION;
         return capabilities;
     }
 

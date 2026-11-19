@@ -19,12 +19,14 @@ import com.github.lunatrius.schematica.client.gui.framework.UiTheme;
 import com.github.lunatrius.schematica.client.gui.framework.UiTranslations;
 import com.github.lunatrius.schematica.client.update.UpdateManager;
 import com.github.lunatrius.schematica.client.update.UpdateRelease;
+import com.github.lunatrius.schematica.util.ServerModVersion;
 
 import org.lwjgl.input.Keyboard;
 
 public final class UpdatePromptPanel extends UiPanel {
 
     private final UpdateManager manager;
+    private final ServerModVersion serverModVersion;
     private final ToIntFunction<String> textWidth;
     private final int fontHeight;
     private final BiFunction<String, Object[], String> translator;
@@ -55,20 +57,23 @@ public final class UpdatePromptPanel extends UiPanel {
     private long lastTotal = -2L;
     private boolean lastVerifying;
     private String lastError;
+    private boolean lastConnectedRemote;
+    private String lastServerVersion;
     private int scroll;
     private boolean dragging;
     private int dragOffset;
 
     public UpdatePromptPanel(FontRenderer font, UpdateManager manager, Runnable closeModal, Runnable openSettings) {
-        this(font::getStringWidth, font.FONT_HEIGHT, UiTranslations::format, manager, closeModal, openSettings);
+        this(font::getStringWidth, font.FONT_HEIGHT, UiTranslations::format, manager, ServerModVersion.INSTANCE, closeModal, openSettings);
     }
 
     UpdatePromptPanel(ToIntFunction<String> textWidth, int fontHeight, BiFunction<String, Object[], String> translator,
-        UpdateManager manager, Runnable closeModal, Runnable openSettings) {
+        UpdateManager manager, ServerModVersion serverModVersion, Runnable closeModal, Runnable openSettings) {
         this.textWidth = textWidth;
         this.fontHeight = fontHeight;
         this.translator = translator;
         this.manager = manager;
+        this.serverModVersion = serverModVersion;
         this.closeModal = closeModal;
         this.openSettings = openSettings;
 
@@ -142,9 +147,12 @@ public final class UpdatePromptPanel extends UiPanel {
         long total = manager.totalBytes();
         boolean checking = manager.verifying();
         String error = manager.errorMessage();
+        boolean connectedRemote = serverModVersion != null && serverModVersion.isConnectedToRemoteServer();
+        String remoteVersion = connectedRemote ? serverModVersion.serverVersion() : null;
         boolean stateChanged = state != lastState || !equalsNullable(tag, lastReleaseTag);
         boolean dataChanged = force || stateChanged || done != lastDownloaded || total != lastTotal
-            || checking != lastVerifying || !equalsNullable(error, lastError);
+            || checking != lastVerifying || !equalsNullable(error, lastError)
+            || connectedRemote != lastConnectedRemote || !equalsNullable(remoteVersion, lastServerVersion);
         if (!dataChanged) return;
 
         lastState = state;
@@ -153,14 +161,17 @@ public final class UpdatePromptPanel extends UiPanel {
         lastTotal = total;
         lastVerifying = checking;
         lastError = error;
+        lastConnectedRemote = connectedRemote;
+        lastServerVersion = remoteVersion;
 
         if (stateChanged) scroll = 0;
 
         for (UiButton button : allButtons) button.setVisible(false);
+        String serverBlock = buildServerStatusBlock(connectedRemote, remoteVersion);
         switch (state) {
             case UPDATE_AVAILABLE:
                 dialogTitle = tr("schematica.ui.update.title.available");
-                message = buildAvailableMessage(release);
+                message = buildAvailableMessage(release, serverBlock);
                 downloadButton.setVisible(true);
                 dismissSessionButton.setVisible(true);
                 ignoreVersionButton.setVisible(true);
@@ -168,25 +179,25 @@ public final class UpdatePromptPanel extends UiPanel {
                 break;
             case DOWNLOADING:
                 dialogTitle = tr("schematica.ui.update.title.downloading");
-                message = buildDownloadingMessage(release, done, total, checking);
+                message = appendServerBlock(buildDownloadingMessage(release, done, total, checking), serverBlock);
                 cancelDownloadButton.setVisible(true);
                 backgroundButton.setVisible(true);
                 break;
             case READY_TO_APPLY:
                 dialogTitle = tr("schematica.ui.update.title.ready");
-                message = tr("schematica.ui.update.ready", release == null ? "" : release.tag);
+                message = appendServerBlock(tr("schematica.ui.update.ready", release == null ? "" : release.tag), serverBlock);
                 closeGameNowButton.setVisible(true);
                 laterButton.setVisible(true);
                 break;
             case CHECKING:
                 dialogTitle = tr("schematica.ui.update.title.checking");
-                message = tr("schematica.ui.update.checking", manager.currentVersion());
+                message = appendServerBlock(tr("schematica.ui.update.checking", manager.currentVersion()), serverBlock);
                 settingsButton.setVisible(true);
                 closeButton.setVisible(true);
                 break;
             case FAILED:
                 dialogTitle = tr("schematica.ui.update.title.failed");
-                message = tr("schematica.ui.update.failed", error == null ? "Unknown error" : error);
+                message = appendServerBlock(tr("schematica.ui.update.failed", error == null ? "Unknown error" : error), serverBlock);
                 if (release != null) downloadButton.setVisible(true);
                 else checkAgainButton.setVisible(true);
                 settingsButton.setVisible(true);
@@ -196,7 +207,7 @@ public final class UpdatePromptPanel extends UiPanel {
             case UP_TO_DATE:
             default:
                 dialogTitle = tr("schematica.ui.update.title.up_to_date");
-                message = tr("schematica.ui.update.up_to_date", manager.currentVersion());
+                message = appendServerBlock(tr("schematica.ui.update.up_to_date", manager.currentVersion()), serverBlock);
                 checkAgainButton.setVisible(true);
                 settingsButton.setVisible(true);
                 closeButton.setVisible(true);
@@ -207,10 +218,29 @@ public final class UpdatePromptPanel extends UiPanel {
         }
     }
 
-    private String buildAvailableMessage(UpdateRelease release) {
-        if (release == null) return "";
+    private String buildServerStatusBlock(boolean connectedRemote, String remoteVersion) {
+        if (!connectedRemote) return "";
+        if (remoteVersion == null) return tr("schematica.ui.update.server_not_installed");
+        String line = tr("schematica.ui.update.server_version", remoteVersion);
+        if (!ServerModVersion.versionsMatch(manager.currentVersion(), remoteVersion)) {
+            line += "\n\u00a7e" + tr("schematica.ui.update.server_mismatch", manager.currentVersion(), remoteVersion) + "\u00a7r";
+        }
+        return line;
+    }
+
+    private static String appendServerBlock(String base, String serverBlock) {
+        if (serverBlock == null || serverBlock.isEmpty()) return base;
+        if (base == null || base.isEmpty()) return serverBlock;
+        return base + "\n\n" + serverBlock;
+    }
+
+    private String buildAvailableMessage(UpdateRelease release, String serverBlock) {
+        if (release == null) return serverBlock;
         StringBuilder builder = new StringBuilder();
         builder.append(tr("schematica.ui.update.version_change", manager.currentVersion(), release.tag));
+        if (!serverBlock.isEmpty()) {
+            builder.append("\n").append(serverBlock);
+        }
         if (release.assetName != null && !release.assetName.isEmpty()) {
             builder.append("\n").append(tr("schematica.ui.update.asset_info",
                 release.assetName, UpdateRelease.formatBytes(release.assetSize)));
@@ -390,6 +420,7 @@ public final class UpdatePromptPanel extends UiPanel {
     UiButton settingsButton() { return settingsButton; }
     UiButton closeGameNowButton() { return closeGameNowButton; }
     UiButton laterButton() { return laterButton; }
+    String message() { return message; }
 
     private static boolean equalsNullable(Object a, Object b) {
         return a == null ? b == null : a.equals(b);

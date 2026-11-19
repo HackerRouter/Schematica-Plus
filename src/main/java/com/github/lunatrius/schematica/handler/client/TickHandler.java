@@ -27,6 +27,7 @@ import com.github.lunatrius.schematica.network.message.MessageCapabilities;
 import com.github.lunatrius.schematica.reference.Reference;
 import com.github.lunatrius.schematica.tool.RebuildJobs;
 import com.github.lunatrius.schematica.tool.ToolManager;
+import com.github.lunatrius.schematica.util.ServerModVersion;
 
 import cpw.mods.fml.common.eventhandler.SubscribeEvent;
 import cpw.mods.fml.common.gameevent.TickEvent;
@@ -47,6 +48,7 @@ public class TickHandler {
     public void onClientConnect(FMLNetworkEvent.ClientConnectedToServerEvent event) {
         Reference.logger.info("Scheduling client settings reset.");
         this.isPendingReset = true;
+        ServerModVersion.INSTANCE.onClientConnect(event.isLocal);
         LagMonitor.install(event.manager);
     }
 
@@ -56,6 +58,7 @@ public class TickHandler {
         this.minecraft.func_152344_a(CommandEditQueue.INSTANCE::cancel);
         MessageCapabilities.clearPending();
         SharedPlacementsClient.INSTANCE.clearPending();
+        ServerModVersion.INSTANCE.onClientDisconnect();
         Reference.logger.info("Scheduling client settings reset.");
         this.isPendingReset = true;
     }
@@ -71,6 +74,7 @@ public class TickHandler {
                 SchematicaPlus.proxy.resetSettings();
                 this.isPendingReset = false;
             }
+            ServerModVersion.INSTANCE.applyPending();
             MessageCapabilities.applyPending();
             WorldHandler.INSTANCE.updateWorld(this.minecraft);
             SharedPlacementsClient.INSTANCE.applyPending();

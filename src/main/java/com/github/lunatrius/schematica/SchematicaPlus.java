@@ -13,6 +13,7 @@ import com.github.lunatrius.schematica.handler.WorldEditQueue;
 import com.github.lunatrius.schematica.proxy.CommonProxy;
 import com.github.lunatrius.schematica.reference.Reference;
 import com.github.lunatrius.schematica.util.ModVersion;
+import com.github.lunatrius.schematica.util.ServerModVersion;
 
 import cpw.mods.fml.common.FMLCommonHandler;
 import cpw.mods.fml.common.Loader;
@@ -72,7 +73,17 @@ public class SchematicaPlus {
     @SuppressWarnings("unused")
     @NetworkCheckHandler
     public boolean checkModList(Map<String, String> versions, Side side) {
+        if (side == Side.SERVER && isClientHandshake()) {
+            ServerModVersion.INSTANCE.recordHandshake(versions.get(Reference.MODID));
+        }
         return acceptsRemoteMods(Reference.VERSION, versions, side);
+    }
+
+    private static boolean isClientHandshake() {
+        for (StackTraceElement frame : Thread.currentThread().getStackTrace()) {
+            if (frame.getClassName().contains(".FMLHandshakeClientState")) return true;
+        }
+        return false;
     }
 
     static boolean acceptsRemoteMods(String localVersion, Map<String, String> versions, Side remoteSide) {

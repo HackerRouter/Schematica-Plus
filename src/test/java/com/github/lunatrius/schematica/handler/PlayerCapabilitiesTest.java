@@ -8,6 +8,7 @@ import com.github.lunatrius.schematica.SchematicaPlus;
 import com.github.lunatrius.schematica.network.message.MessageCapabilities;
 import com.github.lunatrius.schematica.proxy.CommonProxy;
 import com.github.lunatrius.schematica.proxy.ServerProxy;
+import com.github.lunatrius.schematica.reference.Reference;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -18,6 +19,7 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 public class PlayerCapabilitiesTest {
     @Rule public TemporaryFolder temporary = new TemporaryFolder();
@@ -78,6 +80,33 @@ public class PlayerCapabilitiesTest {
             ConfigurationHandler.printerMaxPlacementsPerTick = places;
             ConfigurationHandler.printerMaxBreaksPerTick = breaks;
             ConfigurationHandler.printerEnabled = enabled;
+        }
+    }
+
+    @Test public void serverVersionTravelsWithCapabilitiesAndStaysCompatibleWithLegacyPayloads() throws Exception {
+        assertEquals(Reference.VERSION, advertised().serverVersion);
+
+        ByteBuf legacy = Unpooled.buffer();
+        try {
+            legacy.writeBoolean(true);
+            legacy.writeBoolean(true);
+            legacy.writeBoolean(true);
+            legacy.writeBoolean(true);
+            legacy.writeBoolean(true);
+            legacy.writeBoolean(true);
+            legacy.writeBoolean(true);
+            legacy.writeDouble(64.0);
+            legacy.writeByte(32);
+            legacy.writeByte(16);
+            MessageCapabilities received = new MessageCapabilities();
+            received.fromBytes(legacy);
+            assertEquals(0, legacy.readableBytes());
+            assertEquals(64.0, received.printerMaxRange, 0);
+            assertEquals(32, received.printerMaxPlacementsPerTick);
+            assertEquals(16, received.printerMaxBreaksPerTick);
+            assertNull(received.serverVersion);
+        } finally {
+            legacy.release();
         }
     }
 }
