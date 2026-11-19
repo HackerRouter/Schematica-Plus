@@ -535,3 +535,17 @@ schematica.config.printerMaxPlacementsPerTick.tooltip=Server limit per player fo
 schematica.config.printerMaxBreaksPerTick=Maximum printer breaks per tick
 schematica.config.printerMaxBreaksPerTick.tooltip=Server limit per player for fast printer breaks per game tick (0-64, default 64). Native tool wear, drops and protection checks apply. 0 disables fast breaking and retains normal mining.
 schematica.ui.files.export_type.sponge=Sponge Schematic v2
+
+schematica.config.checkForUpdatesOnStartup=Check for updates on startup
+schematica.config.checkForUpdatesOnStartup.tooltip=Automatically check GitHub Releases for a newer Schematica Plus version when Minecraft starts.
+schematica.config.updateChannel=Update channel
+schematica.config.updateChannel.tooltip=Which GitHub releases to consider for updates. Auto follows prereleases while running a prerelease build, and stable releases otherwise.
+schematica.config.updateChannel.auto=Auto
+schematica.config.updateChannel.stable=Stable
+schematica.config.updateChannel.prerelease=Prerelease
+schematica.config.ignoredUpdateVersion=Ignored update version
+schematica.config.ignoredUpdateVersion.tooltip=Release tag skipped by the automatic update popup. Clear this value to receive prompts for that version again.
+schematica.config.showUpdateButton=Show update button
+schematica.config.showUpdateButton.tooltip=Show the update button in the top-right corner of the main menu and configuration screen.
+schematica.config.showIssueReportButton=Show issue report button
+schematica.config.showIssueReportButton.tooltip=Show the bug report button in the top-right corner of the main menu and configuration screen.

@@ -534,3 +534,17 @@ schematica.config.printerMaxPlacementsPerTick=每刻打印放置上限
 schematica.config.printerMaxPlacementsPerTick.tooltip=服务端允许每名玩家每游戏刻处理的打印放置目标数（1-64，默认 64）。请求按顺序执行，双台阶和多方块结构各计为一个目标。
 schematica.config.printerMaxBreaksPerTick=每刻打印破坏上限
 schematica.config.printerMaxBreaksPerTick.tooltip=服务端允许每名玩家每游戏刻快速破坏的打印目标数（0-64，默认 64）。保留原版工具损耗、掉落和保护检查。0 关闭快速破坏，恢复正常挖掘。
+
+schematica.config.checkForUpdatesOnStartup=启动时检测更新
+schematica.config.checkForUpdatesOnStartup.tooltip=游戏启动时自动从 GitHub Releases 检测 Schematica Plus 是否有新版本。
+schematica.config.updateChannel=更新通道
+schematica.config.updateChannel.tooltip=检测更新时包含的 GitHub 发布类型。自动：当前为预发布版时跟随预发布版，当前为正式版时仅跟随正式版。
+schematica.config.updateChannel.auto=自动
+schematica.config.updateChannel.stable=稳定版
+schematica.config.updateChannel.prerelease=预发布版
+schematica.config.ignoredUpdateVersion=已忽略的更新版本
+schematica.config.ignoredUpdateVersion.tooltip=自动更新弹窗跳过的版本标签。清空该项后将重新提示该版本。
+schematica.config.showUpdateButton=显示更新按钮
+schematica.config.showUpdateButton.tooltip=在主菜单和配置界面右上角显示更新按钮。
+schematica.config.showIssueReportButton=显示问题反馈按钮
+schematica.config.showIssueReportButton.tooltip=在主菜单和配置界面右上角显示问题反馈（虫子）按钮。

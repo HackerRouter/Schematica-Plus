@@ -33,6 +33,7 @@ public final class ConfigTranslations {
             case "printerIteratorShape": return "schematica.printer.shape." + value;
             case "printerIteratorMode": return "schematica.printer.order." + value;
             case "printSelectionType": return "schematica.printer.selection." + value;
+            case "updateChannel": return "schematica.config.updateChannel." + value;
             default: return null;
         }
     }

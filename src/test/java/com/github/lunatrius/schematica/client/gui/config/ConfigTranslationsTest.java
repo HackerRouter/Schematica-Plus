@@ -76,6 +76,12 @@ public class ConfigTranslationsTest {
                     String key = property.getLanguageKey();
                     assertTrue(language + ": " + key, translations.containsKey(ConfigTranslations.label(key)));
                     assertTrue(language + ": " + key, translations.containsKey(ConfigTranslations.comment(key)));
+                    if (ConfigTranslations.optionKey(property.getName(), "") != null && property.getValidValues() != null) {
+                        for (String value : property.getValidValues()) {
+                            String optionKey = ConfigTranslations.optionKey(property.getName(), value);
+                            assertTrue(language + ": " + optionKey, translations.containsKey(optionKey));
+                        }
+                    }
                 }
             }
         }

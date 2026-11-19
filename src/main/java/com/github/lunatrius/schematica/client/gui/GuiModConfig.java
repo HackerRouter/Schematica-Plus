@@ -117,12 +117,24 @@ public class GuiModConfig extends UiScreen implements HotkeyHooks.Capture {
     private int keyFilter;
     private int labelWidth;
     private Tab tab = lastTab;
+    private final String initialQuery;
     private UiButton capturingButton;
     private Hotkey capturingKey;
     private boolean captureFirst;
 
     public GuiModConfig(GuiScreen parent) {
+        this(parent, lastTab, null);
+    }
+
+    private GuiModConfig(GuiScreen parent, Tab initialTab, String initialQuery) {
         super(parent, Reference.NAME + " v" + Reference.VERSION + " - " + UiTranslations.format("litematica.gui.button.change_menu.configuration_menu"));
+        this.tab = initialTab;
+        this.initialQuery = initialQuery;
+        this.searchOpen = initialQuery != null && !initialQuery.isEmpty();
+    }
+
+    public static GuiModConfig openUpdateSettings(GuiScreen parent) {
+        return new GuiModConfig(parent, Tab.GENERIC, "update");
     }
 
     @Override
@@ -151,6 +163,7 @@ public class GuiModConfig extends UiScreen implements HotkeyHooks.Capture {
         }).setSprite(UiSprite.CONFIG_SEARCH).setBackground(false));
         search = root.add(new UiTextField(fontRendererObj, 256, text -> refreshEntries()));
         search.setTooltip(UiTranslations.format("malilib.gui.button.hover.search_bar_hotkey"));
+        if (initialQuery != null && !initialQuery.isEmpty()) search.setText(initialQuery);
         keySearch = root.add(new UiButton(() -> capturingButton == keySearch ? captureLabel() : keyLabel(keyFilter),
             button -> beginCapture(null, keySearch)));
         rows = root.add(new UiRowList<>(model, (entry, index) -> new ConfigRow(entry), 12));

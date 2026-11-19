@@ -74,6 +74,8 @@ public class ConfigurationHandler {
     public static boolean printMissingMaterialHud = true, printAutoTool = true, printerPlacementSolver = true, destroyAssist, highlightNextBlock, printUseTools = true, easyPlacePrerequisites = true;
     public static int printAutoToolDurability = 10;
     public static boolean schematicPreview3D = true, schematicPreview3DReplacesImage;
+    public static boolean checkForUpdatesOnStartup = true, showUpdateButton = true, showIssueReportButton = true;
+    public static String updateChannel = "auto", ignoredUpdateVersion = "";
     public static boolean printBreakWrongBlock, printBreakExtraBlock, printBreakWrongStateBlock, printHighlight, printHighlightThroughWalls;
     public static int printHighlightFade = 5;
     public static boolean destroyBlocks = false;
@@ -186,6 +188,11 @@ public class ConfigurationHandler {
         worldFingerprinting = legacyTool.flag("worldFingerprinting", true);
         schematicPreview3D = legacyTool.flag("schematicPreview3D", true);
         schematicPreview3DReplacesImage = legacyTool.flag("schematicPreview3DReplacesImage", false);
+        checkForUpdatesOnStartup = legacyTool.flag("checkForUpdatesOnStartup", true);
+        updateChannel = legacyTool.choice("updateChannel", "auto", "auto", "stable", "prerelease");
+        ignoredUpdateVersion = legacyTool.text("ignoredUpdateVersion", "").trim();
+        showUpdateButton = legacyTool.flag("showUpdateButton", true);
+        showIssueReportButton = legacyTool.flag("showIssueReportButton", true);
 
         ConfigReader swap = debug.in(Names.Config.Category.PRINTER_SWAPSLOTS, ConfigReader.LEGACY);
         swapSlotsQueue.clear();
@@ -385,6 +392,14 @@ public class ConfigurationHandler {
     public static void setPasteReplaceBehavior(ReplaceBehavior behavior) {
         configuration.getCategory(Names.Config.Category.TOOL).get("pasteReplaceBehavior").set(behavior.value);
         loadConfiguration();
+        configuration.save();
+    }
+
+    public static void setIgnoredUpdateVersion(String version) {
+        String value = version == null ? "" : version.trim();
+        ignoredUpdateVersion = value;
+        if (configuration == null) return;
+        configuration.get(Names.Config.Category.TOOL, "ignoredUpdateVersion", "").set(value);
         configuration.save();
     }
 
