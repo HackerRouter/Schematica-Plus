@@ -23,6 +23,8 @@ public enum UiSprite {
     VANILLA(144, 36, 12, 12, false),
     SCHEMPLUS("schemplus", 12, 12),
     REPORT_ISSUE("bug", 13, 13),
+    UPDATE("update", 13, 13),
+    UPDATE_AVAILABLE("update_available", 13, 13),
     SERVER("sync_server_icon", 11, 11),
     DOWNLOADED("sync_download_icon", 11, 11),
     SHARED_PLACEMENTS("shared_placements", 14, 14, true),
