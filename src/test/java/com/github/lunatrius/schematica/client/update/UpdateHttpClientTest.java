@@ -63,6 +63,32 @@ public class UpdateHttpClientTest {
                 body.write(bad);
             }
         });
+        server.createContext("/etag", exchange -> {
+            String etag = "\"v1\"";
+            if (etag.equals(exchange.getRequestHeaders().getFirst("If-None-Match"))) {
+                exchange.getResponseHeaders().add("ETag", etag);
+                exchange.sendResponseHeaders(304, -1);
+                exchange.close();
+                return;
+            }
+            byte[] payload = "{\"releases\":[]}".getBytes(StandardCharsets.UTF_8);
+            exchange.getResponseHeaders().add("ETag", etag);
+            exchange.sendResponseHeaders(200, payload.length);
+            try (OutputStream body = exchange.getResponseBody()) {
+                body.write(payload);
+            }
+        });
+        server.createContext("/ratelimit", exchange -> {
+            long reset = System.currentTimeMillis() / 1000L + 600L;
+            exchange.getResponseHeaders().add("X-RateLimit-Remaining", "0");
+            exchange.getResponseHeaders().add("X-RateLimit-Reset", Long.toString(reset));
+            exchange.sendResponseHeaders(403, -1);
+            exchange.close();
+        });
+        server.createContext("/missing", exchange -> {
+            exchange.sendResponseHeaders(404, -1);
+            exchange.close();
+        });
         server.start();
     }
 
@@ -132,6 +158,32 @@ public class UpdateHttpClientTest {
         } catch (CancellationException expected) {
             assertFalse(destination.exists());
             assertFalse(new File(temporary.getRoot(), "cancelled.jar.part").exists());
+        }
+    }
+
+    @Test public void reusesCachedBodyOnEtagNotModifiedAndFallsBackWhenManifestMissing() throws Exception {
+        UpdateHttpClient.CachedResponse first = UpdateHttpClient.fetchTextCached(url("/etag"), "application/json", null, null);
+        assertFalse(first.notModified);
+        assertEquals("\"v1\"", first.etag);
+        assertEquals("{\"releases\":[]}", first.body);
+
+        UpdateHttpClient.CachedResponse second = UpdateHttpClient.fetchTextCached(url("/etag"), "application/json", first.etag, first.body);
+        assertTrue(second.notModified);
+        assertEquals("{\"releases\":[]}", second.body);
+
+        UpdateManager.ManifestWithFallbackTransport transport =
+            new UpdateManager.ManifestWithFallbackTransport(url("/missing"), url("/etag"));
+        assertEquals("{\"releases\":[]}", transport.fetchReleasesJson());
+        assertEquals("{\"releases\":[]}", transport.fetchReleasesJson());
+    }
+
+    @Test public void formatsGitHubRateLimitErrorMessage() {
+        try {
+            UpdateHttpClient.fetchText(url("/ratelimit"));
+            fail("Expected rate limit IOException");
+        } catch (IOException expected) {
+            assertTrue(expected.getMessage(), expected.getMessage().contains("rate limit exceeded"));
+            assertTrue(expected.getMessage(), expected.getMessage().contains("minute"));
         }
     }
 }

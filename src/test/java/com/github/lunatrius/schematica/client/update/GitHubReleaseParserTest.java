@@ -104,4 +104,12 @@ public class GitHubReleaseParserTest {
         assertEquals(false, GitHubReleaseParser.isMainModAssetName("Schematica-2.0.0-alpha.5.jar"));
         assertEquals(true, GitHubReleaseParser.isMainModAssetName("schematica_plus-1.0.0-beta.5.jar"));
     }
+
+    @Test public void parsesStaticUpdatesManifestObject() {
+        String manifest = "{\"schemaVersion\":1,\"generatedAt\":\"2026-11-19T00:00:00Z\",\"releases\":" + SAMPLE_RELEASES + "}";
+        UpdateRelease release = GitHubReleaseParser.findLatestUpdate(manifest, "1.0.0-beta.4", "stable");
+        assertNotNull(release);
+        assertEquals("1.0.0-beta.5", release.tag);
+        assertEquals(SHA_BETA5, release.sha256);
+    }
 }

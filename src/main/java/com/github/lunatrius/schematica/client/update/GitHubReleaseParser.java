@@ -10,6 +10,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
 public final class GitHubReleaseParser {
+    public static final String MANIFEST_URL = "https://raw.githubusercontent.com/HackerRouter/Schematica-Plus/update-manifest/updates.json";
     public static final String RELEASES_API_URL = "https://api.github.com/repos/HackerRouter/Schematica-Plus/releases?per_page=20";
     private static final String ASSET_PREFIX = "schematica_plus-";
 
@@ -26,16 +27,27 @@ public final class GitHubReleaseParser {
     public static UpdateRelease findLatestEligibleRelease(String json, ModVersion current, String channel) {
         if (json == null || json.trim().isEmpty()) return null;
         JsonElement root = new JsonParser().parse(json);
-        if (!root.isJsonArray()) return null;
+        JsonArray releases = extractReleasesArray(root);
+        if (releases == null) return null;
         boolean includePrereleases = shouldIncludePrereleases(current, channel);
         UpdateRelease best = null;
-        for (JsonElement element : root.getAsJsonArray()) {
+        for (JsonElement element : releases) {
             if (!element.isJsonObject()) continue;
             UpdateRelease candidate = parseRelease(element.getAsJsonObject(), includePrereleases);
             if (candidate == null) continue;
             if (best == null || candidate.version.compareTo(best.version) > 0) best = candidate;
         }
         return best;
+    }
+
+    private static JsonArray extractReleasesArray(JsonElement root) {
+        if (root == null) return null;
+        if (root.isJsonArray()) return root.getAsJsonArray();
+        if (root.isJsonObject()) {
+            JsonElement releases = root.getAsJsonObject().get("releases");
+            if (releases != null && releases.isJsonArray()) return releases.getAsJsonArray();
+        }
+        return null;
     }
 
     static boolean shouldIncludePrereleases(ModVersion current, String channel) {

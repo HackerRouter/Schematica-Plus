@@ -36,19 +36,7 @@ public final class UpdateManager {
     }
 
     public static final UpdateManager INSTANCE = new UpdateManager(
-        new Transport() {
-            @Override
-            public String fetchReleasesJson() throws IOException {
-                return UpdateHttpClient.fetchText(GitHubReleaseParser.RELEASES_API_URL);
-            }
-
-            @Override
-            public void download(UpdateRelease release, File destination, AtomicBoolean cancelled,
-                UpdateHttpClient.ProgressListener listener) throws IOException {
-                UpdateHttpClient.downloadVerifiedJar(release.downloadUrl, destination, release.assetSize,
-                    release.sha256, cancelled, listener);
-            }
-        },
+        new ManifestWithFallbackTransport(GitHubReleaseParser.MANIFEST_URL, GitHubReleaseParser.RELEASES_API_URL),
         ModJarLocator::locateCurrentModJar,
         (updatesDir, oldJar, stagedJar, targetJar) -> UpdateApplicatorLauncher.launch(updatesDir, oldJar, stagedJar, targetJar, 60000L),
         () -> Reference.VERSION,
@@ -58,6 +46,46 @@ public final class UpdateManager {
         () -> PlusDataFiles.file("updates"),
         () -> Minecraft.getMinecraft().func_152344_a(() -> Minecraft.getMinecraft().shutdown()),
         true);
+
+    static final class ManifestWithFallbackTransport implements Transport {
+        private final String manifestUrl;
+        private final String apiUrl;
+        private String manifestEtag;
+        private String manifestBody;
+        private String apiEtag;
+        private String apiBody;
+
+        ManifestWithFallbackTransport(String manifestUrl, String apiUrl) {
+            this.manifestUrl = manifestUrl;
+            this.apiUrl = apiUrl;
+        }
+
+        @Override
+        public synchronized String fetchReleasesJson() throws IOException {
+            try {
+                UpdateHttpClient.CachedResponse response = UpdateHttpClient.fetchTextCached(
+                    manifestUrl, "application/json", manifestEtag, manifestBody);
+                manifestEtag = response.etag;
+                manifestBody = response.body;
+                return response.body;
+            } catch (IOException manifestError) {
+                Reference.logger.debug("Could not fetch update manifest, falling back to GitHub Releases API: {}",
+                    manifestError.getMessage());
+            }
+            UpdateHttpClient.CachedResponse fallback = UpdateHttpClient.fetchTextCached(
+                apiUrl, "application/vnd.github+json", apiEtag, apiBody);
+            apiEtag = fallback.etag;
+            apiBody = fallback.body;
+            return fallback.body;
+        }
+
+        @Override
+        public void download(UpdateRelease release, File destination, AtomicBoolean cancelled,
+            UpdateHttpClient.ProgressListener listener) throws IOException {
+            UpdateHttpClient.downloadVerifiedJar(release.downloadUrl, destination, release.assetSize,
+                release.sha256, cancelled, listener);
+        }
+    }
 
     private final Transport transport;
     private final Supplier<File> jarLocator;

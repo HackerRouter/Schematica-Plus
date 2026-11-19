@@ -29,6 +29,18 @@ public final class UpdateHttpClient {
         void onProgress(long downloadedBytes, long totalBytes, boolean verifying);
     }
 
+    public static final class CachedResponse {
+        public final String body;
+        public final String etag;
+        public final boolean notModified;
+
+        public CachedResponse(String body, String etag, boolean notModified) {
+            this.body = body;
+            this.etag = etag;
+            this.notModified = notModified;
+        }
+    }
+
     private static final int CONNECT_TIMEOUT_MS = 10000;
     private static final int API_READ_TIMEOUT_MS = 20000;
     private static final int DOWNLOAD_READ_TIMEOUT_MS = 30000;
@@ -39,11 +51,19 @@ public final class UpdateHttpClient {
     private UpdateHttpClient() {}
 
     public static String fetchText(String url) throws IOException {
-        HttpURLConnection connection = openFollowingRedirects(url, "application/vnd.github+json", API_READ_TIMEOUT_MS);
+        return fetchTextCached(url, "application/vnd.github+json", null, null).body;
+    }
+
+    public static CachedResponse fetchTextCached(String url, String accept, String cachedEtag, String cachedBody) throws IOException {
+        HttpURLConnection connection = openFollowingRedirects(url, accept, cachedEtag, API_READ_TIMEOUT_MS);
         try {
             int code = connection.getResponseCode();
+            String responseEtag = connection.getHeaderField("ETag");
+            if (code == HttpURLConnection.HTTP_NOT_MODIFIED && cachedBody != null) {
+                return new CachedResponse(cachedBody, responseEtag != null ? responseEtag : cachedEtag, true);
+            }
             if (code < 200 || code >= 300) {
-                throw new IOException("HTTP " + code + " while fetching update metadata");
+                throw new IOException(describeHttpError(code, connection));
             }
             try (InputStream stream = connection.getInputStream()) {
                 ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -58,10 +78,38 @@ public final class UpdateHttpClient {
                     }
                     out.write(buffer, 0, read);
                 }
-                return new String(out.toByteArray(), StandardCharsets.UTF_8);
+                return new CachedResponse(new String(out.toByteArray(), StandardCharsets.UTF_8), responseEtag, false);
             }
         } finally {
             connection.disconnect();
+        }
+    }
+
+    private static String describeHttpError(int code, HttpURLConnection connection) {
+        if (code == 403 || code == 429) {
+            String remaining = connection.getHeaderField("X-RateLimit-Remaining");
+            String resetHeader = connection.getHeaderField("X-RateLimit-Reset");
+            if ("0".equals(remaining) || code == 429) {
+                long waitMinutes = parseResetWaitMinutes(resetHeader);
+                if (waitMinutes > 0L) {
+                    return "GitHub API rate limit exceeded; retry in about " + waitMinutes + " minute(s)";
+                }
+                return "GitHub API rate limit exceeded; please try again later";
+            }
+        }
+        return "HTTP " + code + " while fetching update metadata";
+    }
+
+    static long parseResetWaitMinutes(String resetEpochSeconds) {
+        if (resetEpochSeconds == null || resetEpochSeconds.trim().isEmpty()) return -1L;
+        try {
+            long resetSec = Long.parseLong(resetEpochSeconds.trim());
+            long nowSec = System.currentTimeMillis() / 1000L;
+            long diff = resetSec - nowSec;
+            if (diff <= 0L) return 1L;
+            return (diff + 59L) / 60L;
+        } catch (NumberFormatException error) {
+            return -1L;
         }
     }
 
@@ -70,7 +118,7 @@ public final class UpdateHttpClient {
         File parent = destination.getAbsoluteFile().getParentFile();
         if (parent != null) Files.createDirectories(parent.toPath());
         File partFile = new File(parent, destination.getName() + ".part");
-        HttpURLConnection connection = openFollowingRedirects(url, "application/octet-stream", DOWNLOAD_READ_TIMEOUT_MS);
+        HttpURLConnection connection = openFollowingRedirects(url, "application/octet-stream", null, DOWNLOAD_READ_TIMEOUT_MS);
         try {
             int code = connection.getResponseCode();
             if (code < 200 || code >= 300) {
@@ -124,7 +172,8 @@ public final class UpdateHttpClient {
         }
     }
 
-    private static HttpURLConnection openFollowingRedirects(String initialUrl, String accept, int readTimeoutMs) throws IOException {
+    private static HttpURLConnection openFollowingRedirects(String initialUrl, String accept, String ifNoneMatch,
+        int readTimeoutMs) throws IOException {
         URL current = new URL(initialUrl);
         for (int hops = 0; hops <= MAX_REDIRECTS; hops++) {
             String protocol = current.getProtocol().toLowerCase(Locale.ROOT);
@@ -140,6 +189,9 @@ public final class UpdateHttpClient {
             connection.setReadTimeout(readTimeoutMs);
             connection.setRequestProperty("User-Agent", "Schematica-Plus/" + Reference.VERSION);
             if (accept != null) connection.setRequestProperty("Accept", accept);
+            if (ifNoneMatch != null && !ifNoneMatch.trim().isEmpty()) {
+                connection.setRequestProperty("If-None-Match", ifNoneMatch);
+            }
             int code = connection.getResponseCode();
             if (code == 301 || code == 302 || code == 303 || code == 307 || code == 308) {
                 String location = connection.getHeaderField("Location");
