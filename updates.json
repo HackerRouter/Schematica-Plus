@@ -1,0 +1,91 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-11-19T12:05:51Z",
+  "releases": [
+    {
+      "tag_name": "1.0.0-beta.5",
+      "name": "1.0.0-beta.5 (18/11/2026 13:14:02)",
+      "body": "## Schematica-Plus 1.0.0-beta.5\r\n\r\nBuild Time: 18/11/2026 13:14:02 (UTC+8)\r\n\r\n---\r\n\r\n\r\n**Full Changelog**: https://github.com/HackerRouter/Schematica-Plus/compare/1.0.0-beta.4...1.0.0-beta.5",
+      "html_url": "https://github.com/HackerRouter/Schematica-Plus/releases/tag/1.0.0-beta.5",
+      "draft": false,
+      "prerelease": false,
+      "published_at": "2026-11-18T05:14:04Z",
+      "assets": [
+        {
+          "name": "schematica_plus-1.0.0-beta.5.jar",
+          "size": 2653089,
+          "browser_download_url": "https://github.com/HackerRouter/Schematica-Plus/releases/download/1.0.0-beta.5/schematica_plus-1.0.0-beta.5.jar",
+          "digest": "sha256:ec81bef46d2452b88889446acbe3dc1d8f6ca812a1b8e135b621edd71805dee4"
+        }
+      ]
+    },
+    {
+      "tag_name": "1.0.0-beta.4",
+      "name": "1.0.0-beta.4 (25/10/2026 22:43:13)",
+      "body": "## Schematica-Plus 1.0.0-beta.4\r\n\r\nBuild Time: 25/10/2026 22:43:13 (UTC+8)\r\n\r\n---\r\n\r\n\r\n**Full Changelog**: https://github.com/HackerRouter/Schematica-Plus/compare/1.0.0-beta.3...1.0.0-beta.4",
+      "html_url": "https://github.com/HackerRouter/Schematica-Plus/releases/tag/1.0.0-beta.4",
+      "draft": false,
+      "prerelease": true,
+      "published_at": "2026-10-25T14:43:14Z",
+      "assets": [
+        {
+          "name": "schematica_plus-1.0.0-beta.4.jar",
+          "size": 2616166,
+          "browser_download_url": "https://github.com/HackerRouter/Schematica-Plus/releases/download/1.0.0-beta.4/schematica_plus-1.0.0-beta.4.jar",
+          "digest": "sha256:b0f644641eb565209abb592b5fb80c0614955b7d5d865cb716fcd51a7323c1e8"
+        }
+      ]
+    },
+    {
+      "tag_name": "1.0.0-beta.3",
+      "name": "1.0.0-beta.3 (13/10/2026 22:59:20)",
+      "body": "## Schematica-Plus 1.0.0-beta.3\r\n\r\nBuild Time: 13/10/2026 22:59:20 (UTC+8)\r\n\r\n---\r\n\r\n\r\n**Full Changelog**: https://github.com/HackerRouter/Schematica-Plus/compare/1.0.0.beta.2...1.0.0-beta.3",
+      "html_url": "https://github.com/HackerRouter/Schematica-Plus/releases/tag/1.0.0-beta.3",
+      "draft": false,
+      "prerelease": true,
+      "published_at": "2026-10-13T14:59:21Z",
+      "assets": [
+        {
+          "name": "schematica_plus-1.0.0-beta.3.jar",
+          "size": 2332217,
+          "browser_download_url": "https://github.com/HackerRouter/Schematica-Plus/releases/download/1.0.0-beta.3/schematica_plus-1.0.0-beta.3.jar",
+          "digest": "sha256:9ca7a6202953a6a37d18dd17d0eaaa6adc194b18e6ad742d754270f6c30920c9"
+        }
+      ]
+    },
+    {
+      "tag_name": "1.0.0.beta.2",
+      "name": "1.0.0-beta.2 (09/10/2026 18:29:49)",
+      "body": "## Schematica-Plus 1.0.0.beta.2\r\n\r\nBuild Time: 09/10/2026 18:29:49 (UTC+8)\r\n\r\n---\r\n\r\n\r\n**Full Changelog**: https://github.com/HackerRouter/Schematica-Plus/compare/1.0.0-beta.1...1.0.0.beta.2",
+      "html_url": "https://github.com/HackerRouter/Schematica-Plus/releases/tag/1.0.0.beta.2",
+      "draft": false,
+      "prerelease": true,
+      "published_at": "2026-10-09T10:29:50Z",
+      "assets": [
+        {
+          "name": "schematica_plus-1.0.0.beta.2.jar",
+          "size": 2295704,
+          "browser_download_url": "https://github.com/HackerRouter/Schematica-Plus/releases/download/1.0.0.beta.2/schematica_plus-1.0.0.beta.2.jar",
+          "digest": "sha256:80e04d7de58158cc2083c798036a3a9665513b05680b16c70bad7f3ea2425e3f"
+        }
+      ]
+    },
+    {
+      "tag_name": "1.0.0-beta.1",
+      "name": "1.0.0-beta.1 (01/10/2026 20:12:55)",
+      "body": "## Schematica-Plus 1.0.0-beta.1\r\n\r\nBuild Time: 01/10/2026 20:12:55 (UTC+8)\r\n\r\n---\r\n\r\n\r\n**Full Changelog**: https://github.com/HackerRouter/Schematica-Plus/compare/2.0.0-alpha.5...1.0.0-beta.1",
+      "html_url": "https://github.com/HackerRouter/Schematica-Plus/releases/tag/1.0.0-beta.1",
+      "draft": false,
+      "prerelease": true,
+      "published_at": "2026-10-01T12:12:57Z",
+      "assets": [
+        {
+          "name": "schematica_plus-1.0.0-beta.1.jar",
+          "size": 1896157,
+          "browser_download_url": "https://github.com/HackerRouter/Schematica-Plus/releases/download/1.0.0-beta.1/schematica_plus-1.0.0-beta.1.jar",
+          "digest": "sha256:160636c5024d7493b7989cfc3055bf6916f49ef3dc36ff2200fe86b9bbef9d58"
+        }
+      ]
+    }
+  ]
+}
