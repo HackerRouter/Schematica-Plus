@@ -54,6 +54,20 @@ final class PreviewCamera {
         } else if (rotating) yaw = (yaw + dt * 20) % 360;
     }
 
+    double[] eye(float centerX, float centerY, float centerZ) {
+        double tx = -x, ty = -y, tz = distance() - z;
+        double pitchRad = Math.toRadians(pitch), yawRad = Math.toRadians(yaw);
+        double cp = Math.cos(pitchRad), sp = Math.sin(pitchRad);
+        double cy = Math.cos(yawRad), sy = Math.sin(yawRad);
+        double y1 = ty * cp + tz * sp;
+        double z1 = -ty * sp + tz * cp;
+        return new double[] {
+            centerX + tx * cy - z1 * sy,
+            centerY + y1,
+            centerZ + tx * sy + z1 * cy
+        };
+    }
+
     private void clampPosition() {
         float limit = extent * 100;
         x = Math.max(-limit, Math.min(limit, x));

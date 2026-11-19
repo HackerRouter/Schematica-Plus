@@ -90,4 +90,28 @@ public class PreviewCameraTest {
         camera.reset();
         assertEquals(0, camera.z, 0);
     }
+
+    @Test public void eyePositionMatchesInverseOfCameraTransform() {
+        PreviewCamera camera = new PreviewCamera(10);
+        camera.yaw = 0;
+        camera.pitch = 0;
+        double d = camera.distance();
+        double[] front = camera.eye(2f, 3f, 4f);
+        assertEquals(2.0, front[0], 0.001);
+        assertEquals(3.0, front[1], 0.001);
+        assertEquals(4.0 + d, front[2], 0.001);
+
+        camera.pitch = 90;
+        double[] top = camera.eye(2f, 3f, 4f);
+        assertEquals(2.0, top[0], 0.001);
+        assertEquals(3.0 + d, top[1], 0.001);
+        assertEquals(4.0, top[2], 0.001);
+
+        camera.pitch = 0;
+        camera.yaw = 90;
+        double[] side = camera.eye(2f, 3f, 4f);
+        assertEquals(2.0 - d, side[0], 0.001);
+        assertEquals(3.0, side[1], 0.001);
+        assertEquals(4.0, side[2], 0.001);
+    }
 }
