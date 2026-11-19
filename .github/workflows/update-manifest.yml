@@ -1,0 +1,109 @@
+name: Update release manifest
+
+on:
+  release:
+    types: [published, edited, deleted, prereleased, released, unpublished]
+  workflow_call:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: update-manifest
+  cancel-in-progress: false
+
+jobs:
+  publish-manifest:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Generate updates.json
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: |
+          mkdir -p manifest_out
+          python3 - <<'PY'
+          import datetime
+          import json
+          import os
+          import urllib.request
+
+          repo = os.environ["GITHUB_REPOSITORY"]
+          token = os.environ["GITHUB_TOKEN"]
+          headers = {
+              "Accept": "application/vnd.github+json",
+              "Authorization": f"Bearer {token}",
+              "User-Agent": "Schematica-Plus-Manifest-Generator",
+              "X-GitHub-Api-Version": "2022-11-28",
+          }
+
+          def is_main_asset(name):
+              lower = (name or "").lower()
+              if not lower.startswith("schematica_plus-") or not lower.endswith(".jar"):
+                  return False
+              return not lower.endswith(("-sources.jar", "-dev.jar", "-api.jar", "-javadoc.jar"))
+
+          releases = []
+          for page in range(1, 6):
+              url = f"https://api.github.com/repos/{repo}/releases?per_page=100&page={page}"
+              req = urllib.request.Request(url, headers=headers)
+              with urllib.request.urlopen(req, timeout=30) as resp:
+                  batch = json.loads(resp.read().decode("utf-8"))
+              if not batch:
+                  break
+              for rel in batch:
+                  if rel.get("draft"):
+                      continue
+                  assets = []
+                  for asset in rel.get("assets", []):
+                      if not is_main_asset(asset.get("name")):
+                          continue
+                      entry = {
+                          "name": asset.get("name"),
+                          "size": asset.get("size", -1),
+                          "browser_download_url": asset.get("browser_download_url"),
+                      }
+                      if asset.get("digest"):
+                          entry["digest"] = asset["digest"]
+                      assets.append(entry)
+                  if not assets:
+                      continue
+                  releases.append({
+                      "tag_name": rel.get("tag_name"),
+                      "name": rel.get("name") or "",
+                      "body": rel.get("body") or "",
+                      "html_url": rel.get("html_url") or "",
+                      "draft": False,
+                      "prerelease": bool(rel.get("prerelease")),
+                      "published_at": rel.get("published_at") or "",
+                      "assets": assets,
+                  })
+              if len(batch) < 100:
+                  break
+
+          manifest = {
+              "schemaVersion": 1,
+              "generatedAt": datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+              "releases": releases,
+          }
+          with open("manifest_out/updates.json", "w", encoding="utf-8") as handle:
+              json.dump(manifest, handle, ensure_ascii=False, indent=2)
+              handle.write("\n")
+          print(f"Wrote {len(releases)} release(s) to manifest_out/updates.json")
+          PY
+
+      - name: Publish update-manifest branch
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: |
+          cd manifest_out
+          git init
+          git checkout -b update-manifest
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add updates.json
+          git commit -m "Update release manifest"
+          git push --force "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" HEAD:refs/heads/update-manifest

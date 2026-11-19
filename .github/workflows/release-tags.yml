@@ -77,3 +77,7 @@ jobs:
             ---
           prerelease: ${{ contains(github.ref_name, 'alpha') || contains(github.ref_name, 'beta') || contains(github.ref_name, 'rc') }}
           generate_release_notes: true
+
+  update-manifest:
+    needs: build-and-release
+    uses: ./.github/workflows/update-manifest.yml
