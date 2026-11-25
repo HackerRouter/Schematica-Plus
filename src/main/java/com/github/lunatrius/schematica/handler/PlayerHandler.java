@@ -22,6 +22,7 @@ public class PlayerHandler {
 
     private String sent;
     private final Queue<PendingHello> pendingHellos = new ConcurrentLinkedQueue<>();
+    private final Queue<Runnable> serverTasks = new ConcurrentLinkedQueue<>();
 
     private static final class PendingHello {
         final EntityPlayerMP player;
@@ -38,8 +39,19 @@ public class PlayerHandler {
         pendingHellos.add(new PendingHello(player, clientVersion));
     }
 
+    public void runOnServerThread(Runnable task) {
+        if (task == null) return;
+        MinecraftServer server = MinecraftServer.getServer();
+        if (server == null || !server.isServerRunning()) {
+            task.run();
+            return;
+        }
+        serverTasks.add(task);
+    }
+
     public void clear() {
         pendingHellos.clear();
+        serverTasks.clear();
         sent = null;
     }
 
@@ -71,6 +83,13 @@ public class PlayerHandler {
     @SubscribeEvent
     public void onServerTick(TickEvent.ServerTickEvent event) {
         if (event.phase != TickEvent.Phase.END) return;
+        for (Runnable task; (task = serverTasks.poll()) != null;) {
+            try {
+                task.run();
+            } catch (Exception ex) {
+                Reference.logger.error("Failed to run scheduled server task", ex);
+            }
+        }
         MinecraftServer server = MinecraftServer.getServer();
         for (PendingHello hello; (hello = pendingHellos.poll()) != null;) {
             if (server == null || !server.getConfigurationManager().playerEntityList.contains(hello.player)) continue;

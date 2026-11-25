@@ -124,6 +124,8 @@ public class ConfigurationHandler {
     public static int cloudUploadPermissionLevel, cloudPublicPermissionLevel, cloudManagePermissionLevel = 2;
     public static int cloudMaxUploadKilobytes = 8192;
     public static int sharedPlacementPermissionLevel, sharedPlacementManagePermissionLevel = 2, sharedPlacementsPerPlayer = 64;
+    public static boolean serverCheckForUpdatesOnStartup = true, serverSelfUpdateEnabled = true, serverUpdateConsoleOnly;
+    public static String serverUpdateChannel = "auto";
 
     public static Property propAlpha = null;
     public static Property propBlockDelta = null;
@@ -256,6 +258,10 @@ public class ConfigurationHandler {
         sharedPlacementManagePermissionLevel = server.integer(Names.Config.SHARED_PLACEMENT_MANAGE_PERMISSION_LEVEL, 2, 0, 4,
             Names.Config.SHARED_PLACEMENT_MANAGE_PERMISSION_LEVEL_DESC);
         sharedPlacementsPerPlayer = server.integer(Names.Config.SHARED_PLACEMENTS_PER_PLAYER, 64, 0, 4096, Names.Config.SHARED_PLACEMENTS_PER_PLAYER_DESC);
+        serverCheckForUpdatesOnStartup = server.flag("serverCheckForUpdatesOnStartup", true);
+        serverUpdateChannel = server.choice("serverUpdateChannel", "auto", "auto", "stable", "prerelease");
+        serverSelfUpdateEnabled = server.flag("serverSelfUpdateEnabled", true);
+        serverUpdateConsoleOnly = server.flag("serverUpdateConsoleOnly", false);
 
         SchematicaPlus.proxy.createFolders();
 

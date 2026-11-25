@@ -1,9 +1,13 @@
 package com.github.lunatrius.schematica.command;
 
 import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Field;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
@@ -17,6 +21,10 @@ import net.minecraftforge.common.config.Configuration;
 import com.github.lunatrius.schematica.SchematicaPlus;
 import com.github.lunatrius.schematica.handler.ConfigurationHandler;
 import com.github.lunatrius.schematica.proxy.CommonProxy;
+import com.github.lunatrius.schematica.update.UpdateHttpClient;
+import com.github.lunatrius.schematica.update.UpdateManager;
+import com.github.lunatrius.schematica.update.UpdateManagerTestHelper;
+import com.github.lunatrius.schematica.update.UpdateRelease;
 
 import cpw.mods.fml.relauncher.FMLInjectionData;
 import org.junit.After;
@@ -126,5 +134,76 @@ public class CommandSchematicaPlusTest {
         command.processCommand(moderator, new String[0]);
         assertEquals("schematica.command.config.about", key(moderator.messages.get(0)));
         assertThrows(CommandException.class, () -> command.processCommand(moderator, new String[] {"list"}));
+    }
+
+    @Test public void runsServerUpdateCheckDownloadAndStopWorkflow() throws Exception {
+        File data = temporary.getRoot();
+        File modsDir = temporary.newFolder("mods_cmd");
+        File updatesDir = temporary.newFolder("updates_cmd");
+        File currentJar = new File(modsDir, "schematica_plus-1.0.0-beta.5.jar");
+        Files.write(currentJar.toPath(), new byte[] {1});
+
+        String json = "[{\"tag_name\":\"1.0.0\",\"name\":\"1.0.0\",\"body\":\"Release\",\"html_url\":\"https://example.invalid/r\","
+            + "\"draft\":false,\"prerelease\":false,\"assets\":[{\"name\":\"schematica_plus-1.0.0.jar\",\"size\":12,\"browser_download_url\":\"https://example.invalid/100.jar\"}]}]";
+        AtomicBoolean shutdownCalled = new AtomicBoolean(false);
+        UpdateManager manager = UpdateManagerTestHelper.create(
+            new UpdateManager.Transport() {
+                @Override public String fetchReleasesJson() { return json; }
+                @Override public void download(UpdateRelease release, File destination, AtomicBoolean cancelled,
+                    UpdateHttpClient.ProgressListener listener) throws IOException {
+                    Files.createDirectories(destination.toPath().getParent());
+                    Files.write(destination.toPath(), new byte[] {1, 2, 3});
+                    if (listener != null) listener.onProgress(3L, 3L, false);
+                }
+            },
+            currentJar,
+            updatesDir,
+            new AtomicReference<>(""),
+            shutdownCalled);
+
+        CommandSchematicaPlus updateCommand = new CommandSchematicaPlus(manager);
+        Sender admin = new Sender(4);
+
+        assertTrue(updateCommand.addTabCompletionOptions(admin, new String[] {"u"}).contains("update"));
+        assertTrue(updateCommand.addTabCompletionOptions(admin, new String[] {"update", "d"}).contains("download"));
+        assertTrue(updateCommand.addTabCompletionOptions(admin, new String[] {"update", "s"}).contains("stop"));
+
+        assertThrows(CommandException.class, () -> updateCommand.processCommand(admin, new String[] {"update", "download"}));
+
+        SchematicaPlus.proxy = new CommonProxy() {
+            @Override public boolean dedicatedServer() { return true; }
+            @Override public File getDataDirectory() { return data; }
+            @Override public boolean isPlayerQuotaExceeded(EntityPlayer player) { return false; }
+            @Override public File getPlayerSchematicDirectory(EntityPlayer player, boolean privateDirectory) { return data; }
+        };
+
+        assertThrows(CommandException.class, () -> updateCommand.processCommand(admin, new String[] {"update", "stop"}));
+
+        updateCommand.processCommand(admin, new String[] {"update", "check"});
+        waitUntil(() -> manager.state() == UpdateManager.State.UPDATE_AVAILABLE && admin.messages.size() >= 2);
+        assertEquals("schematica.command.update.available", key(admin.messages.get(admin.messages.size() - 1)));
+
+        ConfigurationHandler.serverSelfUpdateEnabled = false;
+        assertThrows(CommandException.class, () -> updateCommand.processCommand(admin, new String[] {"update", "download"}));
+        ConfigurationHandler.serverSelfUpdateEnabled = true;
+
+        admin.messages.clear();
+        updateCommand.processCommand(admin, new String[] {"update", "download"});
+        waitUntil(() -> manager.state() == UpdateManager.State.READY_TO_APPLY && admin.messages.size() >= 3);
+        assertEquals("schematica.command.update.ready", key(admin.messages.get(1)));
+        assertEquals("schematica.command.update.client_compat_note", key(admin.messages.get(2)));
+
+        admin.messages.clear();
+        updateCommand.processCommand(admin, new String[] {"update", "stop"});
+        assertTrue(shutdownCalled.get());
+        assertEquals("schematica.command.update.stopping", key(admin.messages.get(0)));
+    }
+
+    private static void waitUntil(java.util.function.BooleanSupplier condition) throws InterruptedException {
+        long deadline = System.nanoTime() + 5000000000L;
+        while (!condition.getAsBoolean()) {
+            if (System.nanoTime() > deadline) throw new AssertionError("Timed out waiting for condition");
+            Thread.sleep(20L);
+        }
     }
 }

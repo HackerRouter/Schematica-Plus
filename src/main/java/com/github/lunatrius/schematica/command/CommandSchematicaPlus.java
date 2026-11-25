@@ -14,8 +14,11 @@ import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.command.WrongUsageException;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.event.ClickEvent;
 import net.minecraft.event.HoverEvent;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.ChatComponentTranslation;
 import net.minecraft.util.EnumChatFormatting;
@@ -23,14 +26,29 @@ import net.minecraft.util.IChatComponent;
 import net.minecraft.util.StatCollector;
 import net.minecraftforge.common.config.Property;
 
+import com.github.lunatrius.schematica.SchematicaPlus;
 import com.github.lunatrius.schematica.client.gui.config.ConfigTranslations;
 import com.github.lunatrius.schematica.handler.ConfigurationHandler;
+import com.github.lunatrius.schematica.handler.PlayerHandler;
 import com.github.lunatrius.schematica.reference.Names;
 import com.github.lunatrius.schematica.reference.Reference;
+import com.github.lunatrius.schematica.update.UpdateManager;
+import com.github.lunatrius.schematica.update.UpdateRelease;
 
 public class CommandSchematicaPlus extends CommandBase {
     public static final String NAME = "schematicaplus";
     private static final String PREFIX = "schematica.command.config.";
+    private static final String UPDATE_PREFIX = "schematica.command.update.";
+
+    private final UpdateManager updates;
+
+    public CommandSchematicaPlus() {
+        this(UpdateManager.INSTANCE);
+    }
+
+    CommandSchematicaPlus(UpdateManager updates) {
+        this.updates = updates;
+    }
 
     @Override
     public String getCommandName() {
@@ -84,6 +102,9 @@ public class CommandSchematicaPlus extends CommandBase {
             case "search":
                 if (args.length < 2) break;
                 search(sender, func_82360_a(sender, args, 1));
+                return;
+            case "update":
+                update(sender, Arrays.copyOfRange(args, 1, args.length));
                 return;
             default:
                 break;
@@ -234,10 +255,213 @@ public class CommandSchematicaPlus extends CommandBase {
         list(sender, found);
     }
 
+    private void update(ICommandSender sender, String[] args) {
+        if (args.length == 0 || (args.length == 1 && "status".equalsIgnoreCase(args[0]))) {
+            sendUpdateStatus(sender);
+            return;
+        }
+        if (args.length != 1) throw new WrongUsageException(UPDATE_PREFIX + "usage");
+        switch (args[0].toLowerCase(Locale.ROOT)) {
+            case "check":
+                updateCheck(sender);
+                return;
+            case "download":
+                updateDownload(sender);
+                return;
+            case "cancel":
+                updateCancel(sender);
+                return;
+            case "stop":
+                updateStop(sender);
+                return;
+            default:
+                throw new WrongUsageException(UPDATE_PREFIX + "usage");
+        }
+    }
+
+    private void updateCheck(ICommandSender sender) {
+        UpdateManager.State current = updates.state();
+        if (current == UpdateManager.State.CHECKING || current == UpdateManager.State.DOWNLOADING
+            || current == UpdateManager.State.READY_TO_APPLY) {
+            sendUpdateStatus(sender);
+            return;
+        }
+        sender.addChatMessage(new ChatComponentTranslation(UPDATE_PREFIX + "checking"));
+        updates.checkForUpdates(true, () -> PlayerHandler.INSTANCE.runOnServerThread(() -> {
+            if (!isSenderOnline(sender)) return;
+            sendUpdateStatus(sender);
+        }));
+    }
+
+    private void updateDownload(ICommandSender sender) {
+        requireServerSelfUpdatePermission(sender);
+        UpdateManager.State current = updates.state();
+        if (current == UpdateManager.State.READY_TO_APPLY || current == UpdateManager.State.DOWNLOADING
+            || current == UpdateManager.State.CHECKING) {
+            sendUpdateStatus(sender);
+            return;
+        }
+        UpdateRelease release = updates.availableRelease();
+        if (release == null) {
+            if (current == UpdateManager.State.UP_TO_DATE) {
+                sender.addChatMessage(new ChatComponentTranslation(UPDATE_PREFIX + "up_to_date", updates.currentVersion()));
+            } else {
+                sender.addChatMessage(new ChatComponentTranslation(UPDATE_PREFIX + "check_first"));
+            }
+            return;
+        }
+        if (!updates.startDownload(() -> PlayerHandler.INSTANCE.runOnServerThread(() -> {
+            if (!isSenderOnline(sender)) return;
+            UpdateManager.State result = updates.state();
+            if (result == UpdateManager.State.READY_TO_APPLY) {
+                sendReadyStatus(sender);
+            } else if (result == UpdateManager.State.FAILED) {
+                sender.addChatMessage(new ChatComponentTranslation(UPDATE_PREFIX + "failed",
+                    updates.errorMessage() == null ? "Unknown error" : updates.errorMessage()));
+            } else if (result == UpdateManager.State.UPDATE_AVAILABLE) {
+                sender.addChatMessage(new ChatComponentTranslation(UPDATE_PREFIX + "cancelled"));
+            }
+        }))) {
+            if (updates.state() == UpdateManager.State.FAILED) {
+                sender.addChatMessage(new ChatComponentTranslation(UPDATE_PREFIX + "failed",
+                    updates.errorMessage() == null ? "Unknown error" : updates.errorMessage()));
+            }
+            return;
+        }
+        sender.addChatMessage(new ChatComponentTranslation(UPDATE_PREFIX + "downloading_started",
+            release.tag, UpdateRelease.formatBytes(release.assetSize)));
+    }
+
+    private void updateCancel(ICommandSender sender) {
+        requireServerSelfUpdatePermission(sender);
+        if (updates.state() != UpdateManager.State.DOWNLOADING) {
+            sender.addChatMessage(new ChatComponentTranslation(UPDATE_PREFIX + "no_download"));
+            return;
+        }
+        updates.cancelDownload();
+        sender.addChatMessage(new ChatComponentTranslation(UPDATE_PREFIX + "cancelling"));
+    }
+
+    private void updateStop(ICommandSender sender) {
+        requireServerSelfUpdatePermission(sender);
+        if (updates.state() != UpdateManager.State.READY_TO_APPLY) {
+            throw new CommandException(UPDATE_PREFIX + "error.not_ready");
+        }
+        UpdateRelease release = updates.availableRelease();
+        String tag = release == null ? "" : release.tag;
+        Reference.logger.info("Stopping server to apply Schematica Plus update {}", tag);
+        IChatComponent notice = new ChatComponentTranslation(UPDATE_PREFIX + "stopping", tag);
+        sender.addChatMessage(notice);
+        MinecraftServer server = MinecraftServer.getServer();
+        if (server != null) {
+            for (Object candidate : server.getConfigurationManager().playerEntityList) {
+                EntityPlayerMP player = (EntityPlayerMP) candidate;
+                if (player != sender) player.addChatMessage(notice);
+            }
+        }
+        updates.applyNowAndShutdown();
+    }
+
+    private static void requireServerSelfUpdatePermission(ICommandSender sender) {
+        if (!SchematicaPlus.proxy.dedicatedServer()) {
+            throw new CommandException(UPDATE_PREFIX + "error.client_gui");
+        }
+        if (!ConfigurationHandler.serverSelfUpdateEnabled) {
+            throw new CommandException(UPDATE_PREFIX + "error.disabled");
+        }
+        if (ConfigurationHandler.serverUpdateConsoleOnly && sender instanceof EntityPlayer) {
+            throw new CommandException(UPDATE_PREFIX + "error.console_only");
+        }
+    }
+
+    private void sendUpdateStatus(ICommandSender sender) {
+        UpdateManager.State state = updates.state();
+        UpdateRelease release = updates.availableRelease();
+        switch (state) {
+            case CHECKING:
+                sender.addChatMessage(new ChatComponentTranslation(UPDATE_PREFIX + "checking"));
+                return;
+            case UPDATE_AVAILABLE:
+                if (release != null) {
+                    IChatComponent line = new ChatComponentTranslation(UPDATE_PREFIX + "available",
+                        updates.currentVersion(), release.tag, UpdateRelease.formatBytes(release.assetSize));
+                    if (SchematicaPlus.proxy.dedicatedServer() && ConfigurationHandler.serverSelfUpdateEnabled
+                        && !(ConfigurationHandler.serverUpdateConsoleOnly && sender instanceof EntityPlayer)) {
+                        line.appendText(" ").appendSibling(actionLink(UPDATE_PREFIX + "action.download",
+                            "/" + NAME + " update download", EnumChatFormatting.GREEN));
+                    }
+                    sender.addChatMessage(line);
+                    return;
+                }
+                break;
+            case DOWNLOADING: {
+                long done = updates.downloadedBytes();
+                long total = updates.totalBytes();
+                if (updates.verifying()) {
+                    sender.addChatMessage(new ChatComponentTranslation(UPDATE_PREFIX + "verifying",
+                        release == null ? "" : release.assetName));
+                } else if (total > 0L) {
+                    int percent = (int) Math.max(0L, Math.min(100L, done * 100L / total));
+                    sender.addChatMessage(new ChatComponentTranslation(UPDATE_PREFIX + "downloading_progress",
+                        UpdateRelease.formatBytes(done), UpdateRelease.formatBytes(total), percent));
+                } else {
+                    sender.addChatMessage(new ChatComponentTranslation(UPDATE_PREFIX + "downloading_unknown",
+                        UpdateRelease.formatBytes(done)));
+                }
+                return;
+            }
+            case READY_TO_APPLY:
+                sendReadyStatus(sender);
+                return;
+            case FAILED:
+                sender.addChatMessage(new ChatComponentTranslation(UPDATE_PREFIX + "failed",
+                    updates.errorMessage() == null ? "Unknown error" : updates.errorMessage()));
+                return;
+            case IDLE:
+            case UP_TO_DATE:
+            default:
+                break;
+        }
+        IChatComponent line = new ChatComponentTranslation(UPDATE_PREFIX + "up_to_date", updates.currentVersion());
+        line.appendText(" ").appendSibling(actionLink(UPDATE_PREFIX + "action.check",
+            "/" + NAME + " update check", EnumChatFormatting.AQUA));
+        sender.addChatMessage(line);
+    }
+
+    private void sendReadyStatus(ICommandSender sender) {
+        UpdateRelease release = updates.availableRelease();
+        String tag = release == null ? "" : release.tag;
+        IChatComponent line = new ChatComponentTranslation(UPDATE_PREFIX + "ready", tag);
+        if (SchematicaPlus.proxy.dedicatedServer() && ConfigurationHandler.serverSelfUpdateEnabled
+            && !(ConfigurationHandler.serverUpdateConsoleOnly && sender instanceof EntityPlayer)) {
+            line.appendText(" ").appendSibling(actionLink(UPDATE_PREFIX + "action.stop",
+                "/" + NAME + " update stop", EnumChatFormatting.GOLD));
+        }
+        sender.addChatMessage(line);
+        sender.addChatMessage(new ChatComponentTranslation(UPDATE_PREFIX + "client_compat_note", tag));
+    }
+
+    private static IChatComponent actionLink(String key, String command, EnumChatFormatting color) {
+        IChatComponent link = new ChatComponentText("[").appendSibling(new ChatComponentTranslation(key)).appendText("]");
+        link.getChatStyle().setColor(color)
+            .setChatClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, command))
+            .setChatHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ChatComponentText(command)));
+        return link;
+    }
+
+    private static boolean isSenderOnline(ICommandSender sender) {
+        if (!(sender instanceof EntityPlayerMP)) return true;
+        MinecraftServer server = MinecraftServer.getServer();
+        return server != null && server.getConfigurationManager().playerEntityList.contains(sender);
+    }
+
     @Override
     @SuppressWarnings("rawtypes")
     public List addTabCompletionOptions(ICommandSender sender, String[] args) {
-        if (args.length == 1) return getListOfStringsMatchingLastWord(args, "list", "info", "set", "reset", "search", "reload", "save");
+        if (args.length == 1) return getListOfStringsMatchingLastWord(args, "list", "info", "set", "reset", "search", "reload", "save", "update");
+        if (args.length == 2 && "update".equalsIgnoreCase(args[0])) {
+            return getListOfStringsMatchingLastWord(args, "status", "check", "download", "cancel", "stop");
+        }
         if (args.length == 2 && ("info".equalsIgnoreCase(args[0]) || "set".equalsIgnoreCase(args[0]))) {
             return getListOfStringsFromIterableMatchingLastWord(args, settings().keySet());
         }

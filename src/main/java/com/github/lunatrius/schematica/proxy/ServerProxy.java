@@ -9,12 +9,25 @@ import net.minecraft.server.MinecraftServer;
 
 import com.github.lunatrius.schematica.handler.ConfigurationHandler;
 import com.github.lunatrius.schematica.reference.Reference;
+import com.github.lunatrius.schematica.update.UpdateManager;
+
+import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 
 public class ServerProxy extends CommonProxy {
 
     @Override
     public boolean dedicatedServer() {
         return true;
+    }
+
+    @Override
+    public void postInit(FMLPostInitializationEvent event) {
+        super.postInit(event);
+        UpdateManager.INSTANCE.configureRuntime(() -> {
+            MinecraftServer server = MinecraftServer.getServer();
+            if (server != null) server.initiateShutdown();
+        }, () -> ConfigurationHandler.serverUpdateChannel);
+        UpdateManager.INSTANCE.onServerStartup(ConfigurationHandler.serverCheckForUpdatesOnStartup);
     }
 
     @Override
