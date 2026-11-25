@@ -1,4 +1,4 @@
-package com.github.lunatrius.schematica.client.update;
+package com.github.lunatrius.schematica.update;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;

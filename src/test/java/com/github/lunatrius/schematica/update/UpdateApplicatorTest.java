@@ -1,4 +1,4 @@
-package com.github.lunatrius.schematica.client.update;
+package com.github.lunatrius.schematica.update;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -82,5 +82,23 @@ public class UpdateApplicatorTest {
         assertFalse(helper.exists());
         assertFalse(partial.exists());
         assertTrue(active.isFile());
+    }
+
+    @Test public void appliesUpdateInlineOnUnixWithoutRaceCondition() throws Exception {
+        if (System.getProperty("os.name", "").toLowerCase(java.util.Locale.ROOT).contains("win")) return;
+        File modsDir = temporary.newFolder("mods_inline");
+        File updatesDir = temporary.newFolder("updates_inline");
+        File oldJar = new File(modsDir, "schematica_plus-1.0.0-beta.5.jar");
+        File stagedJar = new File(updatesDir, "schematica_plus-1.0.0.jar");
+        File targetJar = new File(modsDir, "schematica_plus-1.0.0.jar");
+        writeValidJar(oldJar, "old");
+        writeValidJar(stagedJar, "inline-new");
+        byte[] expectedBytes = Files.readAllBytes(stagedJar.toPath());
+
+        UpdateApplicatorLauncher.applyOnExit(updatesDir, oldJar, stagedJar, targetJar, 5000L);
+        assertFalse(oldJar.exists());
+        assertFalse(stagedJar.exists());
+        assertTrue(targetJar.isFile());
+        assertArrayEquals(expectedBytes, Files.readAllBytes(targetJar.toPath()));
     }
 }

@@ -1,4 +1,4 @@
-package com.github.lunatrius.schematica.client.update;
+package com.github.lunatrius.schematica.update;
 
 import java.io.File;
 import java.io.IOException;
@@ -6,8 +6,6 @@ import java.util.concurrent.CancellationException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
-
-import net.minecraft.client.Minecraft;
 
 import com.github.lunatrius.schematica.handler.ConfigurationHandler;
 import com.github.lunatrius.schematica.reference.Reference;
@@ -38,13 +36,13 @@ public final class UpdateManager {
     public static final UpdateManager INSTANCE = new UpdateManager(
         new ManifestWithFallbackTransport(GitHubReleaseParser.MANIFEST_URL, GitHubReleaseParser.RELEASES_API_URL),
         ModJarLocator::locateCurrentModJar,
-        (updatesDir, oldJar, stagedJar, targetJar) -> UpdateApplicatorLauncher.launch(updatesDir, oldJar, stagedJar, targetJar, 60000L),
+        (updatesDir, oldJar, stagedJar, targetJar) -> UpdateApplicatorLauncher.applyOnExit(updatesDir, oldJar, stagedJar, targetJar, 60000L),
         () -> Reference.VERSION,
         () -> ConfigurationHandler.updateChannel,
         () -> ConfigurationHandler.ignoredUpdateVersion,
         ConfigurationHandler::setIgnoredUpdateVersion,
         () -> PlusDataFiles.file("updates"),
-        () -> Minecraft.getMinecraft().func_152344_a(() -> Minecraft.getMinecraft().shutdown()),
+        () -> {},
         true);
 
     static final class ManifestWithFallbackTransport implements Transport {
@@ -91,11 +89,11 @@ public final class UpdateManager {
     private final Supplier<File> jarLocator;
     private final ApplicatorStarter applicatorStarter;
     private final Supplier<String> currentVersionSupplier;
-    private final Supplier<String> channelSupplier;
+    private volatile Supplier<String> channelSupplier;
     private final Supplier<String> ignoredVersionSupplier;
     private final Consumer<String> ignoredVersionSaver;
     private final Supplier<File> updatesDirSupplier;
-    private final Runnable shutdownAction;
+    private volatile Runnable shutdownAction;
     private final boolean registerJvmShutdownHook;
 
     private final Object lock = new Object();
@@ -130,26 +128,56 @@ public final class UpdateManager {
         this.registerJvmShutdownHook = registerJvmShutdownHook;
     }
 
+    public void configureRuntime(Runnable shutdownAction, Supplier<String> channelSupplier) {
+        if (shutdownAction != null) this.shutdownAction = shutdownAction;
+        if (channelSupplier != null) this.channelSupplier = channelSupplier;
+    }
+
     public void onClientStartup() {
-        Thread cleanup = new Thread(() -> UpdateApplicatorLauncher.cleanupStaleFiles(updatesDirSupplier.get(), stagedFile),
-            "Schematica Plus update cleanup");
-        cleanup.setDaemon(true);
-        cleanup.start();
+        startCleanupThread();
         if (ConfigurationHandler.checkForUpdatesOnStartup) {
             checkForUpdates(false);
         }
     }
 
+    public void onServerStartup(boolean checkOnStartup) {
+        startCleanupThread();
+        if (checkOnStartup) {
+            checkForUpdates(false, () -> {
+                UpdateRelease release = availableRelease();
+                if (state() == State.UPDATE_AVAILABLE && release != null) {
+                    Reference.logger.info("A newer version of Schematica Plus ({}) is available (current: {}). Run '/schematicaplus update download' to stage it.",
+                        release.tag, currentVersion());
+                }
+            });
+        }
+    }
+
+    private void startCleanupThread() {
+        Thread cleanup = new Thread(() -> UpdateApplicatorLauncher.cleanupStaleFiles(updatesDirSupplier.get(), stagedFile),
+            "Schematica Plus update cleanup");
+        cleanup.setDaemon(true);
+        cleanup.start();
+    }
+
     public void checkForUpdates(boolean manual) {
+        checkForUpdates(manual, null);
+    }
+
+    public boolean checkForUpdates(boolean manual, Runnable onFinished) {
         synchronized (lock) {
-            if (state == State.CHECKING || state == State.DOWNLOADING || state == State.READY_TO_APPLY) return;
+            if (state == State.CHECKING || state == State.DOWNLOADING || state == State.READY_TO_APPLY) return false;
             state = State.CHECKING;
             errorMessage = null;
             if (manual) dismissedTagThisSession = null;
         }
-        Thread thread = new Thread(this::runCheck, "Schematica Plus update check");
+        Thread thread = new Thread(() -> {
+            runCheck();
+            if (onFinished != null) onFinished.run();
+        }, "Schematica Plus update check");
         thread.setDaemon(true);
         thread.start();
+        return true;
     }
 
     void runCheck() {
@@ -178,25 +206,31 @@ public final class UpdateManager {
     }
 
     public void startDownload() {
+        startDownload(null);
+    }
+
+    public boolean startDownload(Runnable onFinished) {
         UpdateRelease release;
         File currentJar;
         File targetJar;
         File destination;
         synchronized (lock) {
-            if (state != State.UPDATE_AVAILABLE && state != State.FAILED) return;
+            if (state != State.UPDATE_AVAILABLE && state != State.FAILED) return false;
             release = availableRelease;
-            if (release == null) return;
+            if (release == null) return false;
             currentJar = jarLocator.get();
             if (currentJar == null) {
                 errorMessage = "Automatic update requires running from a packaged mod JAR file.";
                 state = State.FAILED;
-                return;
+                if (onFinished != null) onFinished.run();
+                return false;
             }
             targetJar = ModJarLocator.resolveTargetJar(currentJar, release.assetName);
             if (targetJar == null) {
                 errorMessage = "Invalid update filename received from release metadata.";
                 state = State.FAILED;
-                return;
+                if (onFinished != null) onFinished.run();
+                return false;
             }
             destination = new File(updatesDirSupplier.get(), targetJar.getName());
             downloadCancelled.set(false);
@@ -206,9 +240,13 @@ public final class UpdateManager {
             errorMessage = null;
             state = State.DOWNLOADING;
         }
-        Thread thread = new Thread(() -> runDownload(release, currentJar, targetJar, destination), "Schematica Plus update download");
+        Thread thread = new Thread(() -> {
+            runDownload(release, currentJar, targetJar, destination);
+            if (onFinished != null) onFinished.run();
+        }, "Schematica Plus update download");
         thread.setDaemon(true);
         thread.start();
+        return true;
     }
 
     void runDownload(UpdateRelease release, File currentJar, File targetJar, File destination) {
@@ -330,6 +368,10 @@ public final class UpdateManager {
 
     public String currentVersion() {
         return currentVersionSupplier.get();
+    }
+
+    public String currentChannel() {
+        return channelSupplier.get();
     }
 
     public boolean canReplaceInPlace() {

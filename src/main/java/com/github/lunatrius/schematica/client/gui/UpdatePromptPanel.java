@@ -17,8 +17,8 @@ import com.github.lunatrius.schematica.client.gui.framework.UiScrollBar;
 import com.github.lunatrius.schematica.client.gui.framework.UiTextWrap;
 import com.github.lunatrius.schematica.client.gui.framework.UiTheme;
 import com.github.lunatrius.schematica.client.gui.framework.UiTranslations;
-import com.github.lunatrius.schematica.client.update.UpdateManager;
-import com.github.lunatrius.schematica.client.update.UpdateRelease;
+import com.github.lunatrius.schematica.update.UpdateManager;
+import com.github.lunatrius.schematica.update.UpdateRelease;
 import com.github.lunatrius.schematica.util.ServerModVersion;
 
 import org.lwjgl.input.Keyboard;

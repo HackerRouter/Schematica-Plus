@@ -11,10 +11,10 @@ import com.github.lunatrius.schematica.client.gui.framework.UiBounds;
 import com.github.lunatrius.schematica.client.gui.framework.UiButton;
 import com.github.lunatrius.schematica.client.gui.framework.UiInput;
 import com.github.lunatrius.schematica.client.gui.framework.UiPanel;
-import com.github.lunatrius.schematica.client.update.UpdateHttpClient;
-import com.github.lunatrius.schematica.client.update.UpdateManager;
-import com.github.lunatrius.schematica.client.update.UpdateManagerTestHelper;
-import com.github.lunatrius.schematica.client.update.UpdateRelease;
+import com.github.lunatrius.schematica.update.UpdateHttpClient;
+import com.github.lunatrius.schematica.update.UpdateManager;
+import com.github.lunatrius.schematica.update.UpdateManagerTestHelper;
+import com.github.lunatrius.schematica.update.UpdateRelease;
 import com.github.lunatrius.schematica.util.ServerModVersion;
 
 import org.junit.Rule;

@@ -19,7 +19,7 @@ import com.github.lunatrius.schematica.client.gui.save.GuiAreaSelectionEditor;
 import com.github.lunatrius.schematica.client.gui.save.GuiAreaSelectionManager;
 import com.github.lunatrius.schematica.client.projects.SchematicProjects;
 import com.github.lunatrius.schematica.client.selection.AreaSelections;
-import com.github.lunatrius.schematica.client.update.UpdateManager;
+import com.github.lunatrius.schematica.update.UpdateManager;
 import com.github.lunatrius.schematica.handler.ConfigurationHandler;
 import com.github.lunatrius.schematica.handler.client.CloudClient;
 import com.github.lunatrius.schematica.handler.client.SharedPlacementsClient;

@@ -1,4 +1,4 @@
-package com.github.lunatrius.schematica.client.update;
+package com.github.lunatrius.schematica.update;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -19,6 +19,20 @@ public final class UpdateApplicatorLauncher {
     private static final String LOG_NAME = "last_update.log";
 
     private UpdateApplicatorLauncher() {}
+
+    public static void applyOnExit(File updatesDir, File oldJar, File stagedJar, File targetJar, long timeoutMs) throws IOException {
+        if (updatesDir == null || oldJar == null || stagedJar == null || targetJar == null) {
+            throw new IllegalArgumentException("Update paths must not be null");
+        }
+        Files.createDirectories(updatesDir.toPath());
+        if (!isWindows()) {
+            File logFile = new File(updatesDir, LOG_NAME);
+            int inlineResult = UpdateApplicatorMain.apply(oldJar.toPath(), stagedJar.toPath(), targetJar.toPath(),
+                logFile.toPath(), Math.min(timeoutMs, 5000L));
+            if (inlineResult == 0) return;
+        }
+        launch(updatesDir, oldJar, stagedJar, targetJar, timeoutMs);
+    }
 
     public static Process launch(File updatesDir, File oldJar, File stagedJar, File targetJar, long timeoutMs) throws IOException {
         if (updatesDir == null || oldJar == null || stagedJar == null || targetJar == null) {
