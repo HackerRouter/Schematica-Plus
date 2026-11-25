@@ -323,6 +323,11 @@ public abstract class UiScreen extends GuiScreen {
                 button.setTooltip(primary, UiTranslations.format("schematica.ui.update.server_not_installed"));
                 return;
             }
+            if (ServerModVersion.INSTANCE.isClientOlderThanServer(manager.currentVersion())) {
+                button.setTooltip(primary, UiTranslations.format("schematica.ui.update.server_version", remote),
+                    "\u00a7e" + UiTranslations.format("schematica.ui.update.server_client_older", manager.currentVersion(), remote) + "\u00a7r");
+                return;
+            }
             if (ServerModVersion.INSTANCE.isMismatch(manager.currentVersion())) {
                 button.setTooltip(primary, UiTranslations.format("schematica.ui.update.server_version", remote),
                     "\u00a7e" + UiTranslations.format("schematica.ui.update.server_mismatch", manager.currentVersion(), remote) + "\u00a7r");

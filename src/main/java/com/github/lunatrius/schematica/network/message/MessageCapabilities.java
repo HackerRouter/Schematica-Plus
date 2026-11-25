@@ -78,6 +78,12 @@ public class MessageCapabilities implements IMessage, IMessageHandler<MessageCap
         MessageCapabilities message = pending;
         if (message == null) return;
         pending = null;
+        ServerModVersion.INSTANCE.onCapabilitiesReceived(message.serverVersion);
+        if (!ServerModVersion.INSTANCE.isServerProtocolCompatible(Reference.VERSION)) {
+            Reference.logger.info("Ignoring server capabilities because client {} is older than server {}",
+                Reference.VERSION, ServerModVersion.INSTANCE.serverVersion());
+            return;
+        }
         SchematicPrinter.INSTANCE.setEnabled(message.isPrinterEnabled);
         SchematicaPlus.proxy.isSaveEnabled = message.isSaveEnabled;
         SchematicaPlus.proxy.isLoadEnabled = message.isLoadEnabled;
@@ -90,7 +96,6 @@ public class MessageCapabilities implements IMessage, IMessageHandler<MessageCap
         SchematicaPlus.proxy.printerMaxRange = message.printerMaxRange;
         SchematicaPlus.proxy.printerMaxPlacementsPerTick = message.printerMaxPlacementsPerTick;
         SchematicaPlus.proxy.printerMaxBreaksPerTick = message.printerMaxBreaksPerTick;
-        ServerModVersion.INSTANCE.onCapabilitiesReceived(message.serverVersion);
 
         Reference.logger.info(
             "Server capabilities{printer={}, save={}, load={}, accuratePlacement={}}",

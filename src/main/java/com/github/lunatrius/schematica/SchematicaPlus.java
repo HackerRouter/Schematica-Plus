@@ -6,8 +6,10 @@ import net.minecraft.server.MinecraftServer;
 
 import com.github.lunatrius.schematica.client.gui.SchematicaPlusConflictException;
 import com.github.lunatrius.schematica.handler.DownloadHandler;
+import com.github.lunatrius.schematica.handler.PlayerHandler;
 import com.github.lunatrius.schematica.handler.QueueTickHandler;
 import com.github.lunatrius.schematica.handler.RemoteEdits;
+import com.github.lunatrius.schematica.handler.ServerClients;
 import com.github.lunatrius.schematica.handler.SharedPlacements;
 import com.github.lunatrius.schematica.handler.WorldEditQueue;
 import com.github.lunatrius.schematica.proxy.CommonProxy;
@@ -87,12 +89,19 @@ public class SchematicaPlus {
     }
 
     static boolean acceptsRemoteMods(String localVersion, Map<String, String> versions, Side remoteSide) {
-        String remoteVersion = versions.get(Reference.MODID);
-        if (remoteVersion == null || localVersion.equals(remoteVersion)) return true;
-        ModVersion local = ModVersion.parse(localVersion);
-        ModVersion remote = ModVersion.parse(remoteVersion);
-        if (local == null || remote == null) return false;
-        return remoteSide == Side.CLIENT ? remote.compareTo(local) >= 0 : local.compareTo(remote) >= 0;
+        return true;
+    }
+
+    public static boolean isClientCompatibleWithServer(String serverVersion, String clientVersion) {
+        if (serverVersion == null || clientVersion == null) return false;
+        String server = serverVersion.trim();
+        String client = clientVersion.trim();
+        if (server.isEmpty() || client.isEmpty()) return false;
+        if (server.equals(client)) return true;
+        ModVersion parsedServer = ModVersion.parse(server);
+        ModVersion parsedClient = ModVersion.parse(client);
+        if (parsedServer == null || parsedClient == null) return false;
+        return parsedClient.compareTo(parsedServer) >= 0;
     }
 
     @EventHandler
@@ -127,5 +136,7 @@ public class SchematicaPlus {
         QueueTickHandler.INSTANCE.clear();
         DownloadHandler.INSTANCE.stopAll();
         SharedPlacements.INSTANCE.clear();
+        ServerClients.INSTANCE.clear();
+        PlayerHandler.INSTANCE.clear();
     }
 }

@@ -149,16 +149,20 @@ public final class SharedPlacements {
     private static void broadcast(MessageSharedUpdate update) {
         MinecraftServer server = MinecraftServer.getServer();
         if (server == null) return;
-        for (Object player : server.getConfigurationManager().playerEntityList) PacketHandler.INSTANCE.sendTo(update, (EntityPlayerMP) player);
+        for (Object player : server.getConfigurationManager().playerEntityList) {
+            EntityPlayerMP target = (EntityPlayerMP) player;
+            if (ServerClients.INSTANCE.isCompatible(target)) PacketHandler.INSTANCE.sendTo(update, target);
+        }
     }
 
     public void request(EntityPlayerMP player, MessageSharedRequest message) {
+        if (!ServerClients.INSTANCE.isCompatible(player)) return;
         tasks.add(() -> handle(player, message));
     }
 
     public void joined(EntityPlayerMP player) {
         tasks.add(() -> {
-            if (!ConfigurationHandler.sharedPlacementsEnabled) return;
+            if (!ConfigurationHandler.sharedPlacementsEnabled || !ServerClients.INSTANCE.isCompatible(player)) return;
             PacketHandler.INSTANCE.sendTo(new MessageSharedUpdate(MessageSharedUpdate.Operation.CLEAR, new UUID(0, 0), null), player);
             for (SharedPlacement placement : placements()) {
                 PacketHandler.INSTANCE.sendTo(new MessageSharedUpdate(MessageSharedUpdate.Operation.ADD, placement.id, placement.write()), player);

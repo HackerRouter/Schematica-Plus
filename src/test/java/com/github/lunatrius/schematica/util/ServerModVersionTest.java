@@ -17,19 +17,25 @@ public class ServerModVersionTest {
         state.recordHandshake("1.0.0-beta.4");
         state.onClientConnect(false);
         state.clear();
-        state.applyPending();
+        assertTrue(state.applyPending());
         assertTrue(state.isConnectedToRemoteServer());
         assertEquals("1.0.0-beta.4", state.serverVersion());
         assertTrue(state.isMismatch("1.0.0-beta.5"));
-        assertFalse(state.isMismatch("1.0.0-beta.4"));
+        assertTrue(state.isServerProtocolCompatible("1.0.0-beta.5"));
+        assertFalse(state.isClientOlderThanServer("1.0.0-beta.5"));
+        assertFalse(state.shouldSendClientHello("1.0.0-beta.5"));
 
-        state.onCapabilitiesReceived("1.0.0-beta.5");
-        assertEquals("1.0.0-beta.5", state.serverVersion());
-        assertFalse(state.isMismatch("1.0.0-beta.5"));
+        state.onCapabilitiesReceived("1.0.0-beta.6");
+        assertEquals("1.0.0-beta.6", state.serverVersion());
+        assertFalse(state.isServerProtocolCompatible("1.0.0-beta.5"));
+        assertTrue(state.isClientOlderThanServer("1.0.0-beta.5"));
+        assertFalse(state.shouldSendClientHello("1.0.0-beta.5"));
+        assertTrue(state.shouldSendClientHello("1.0.0-beta.6"));
+        assertTrue(state.shouldSendClientHello("1.0.0"));
 
         state.onClientDisconnect();
         state.clear();
-        state.applyPending();
+        assertFalse(state.applyPending());
         assertFalse(state.isConnectedToRemoteServer());
         assertNull(state.serverVersion());
         assertFalse(state.isMismatch("1.0.0-beta.5"));
@@ -41,17 +47,21 @@ public class ServerModVersionTest {
         state.recordHandshake("1.0.0-beta.5");
         state.onClientConnect(true);
         state.clear();
-        state.applyPending();
+        assertTrue(state.applyPending());
         assertFalse(state.isConnectedToRemoteServer());
         assertNull(state.serverVersion());
+        assertTrue(state.isServerProtocolCompatible("1.0.0-beta.5"));
+        assertTrue(state.shouldSendClientHello("1.0.0-beta.5"));
 
         state.recordHandshake(null);
         state.onClientConnect(false);
         state.clear();
-        state.applyPending();
+        assertTrue(state.applyPending());
         assertTrue(state.isConnectedToRemoteServer());
         assertNull(state.serverVersion());
         assertFalse(state.isMismatch("1.0.0-beta.5"));
+        assertFalse(state.isServerProtocolCompatible("1.0.0-beta.5"));
+        assertFalse(state.shouldSendClientHello("1.0.0-beta.5"));
     }
 
     @Test public void comparesSemanticAndRawVersionsForEquality() {

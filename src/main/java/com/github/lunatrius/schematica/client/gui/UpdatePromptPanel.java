@@ -222,7 +222,9 @@ public final class UpdatePromptPanel extends UiPanel {
         if (!connectedRemote) return "";
         if (remoteVersion == null) return tr("schematica.ui.update.server_not_installed");
         String line = tr("schematica.ui.update.server_version", remoteVersion);
-        if (!ServerModVersion.versionsMatch(manager.currentVersion(), remoteVersion)) {
+        if (serverModVersion.isClientOlderThanServer(manager.currentVersion())) {
+            line += "\n\u00a7e" + tr("schematica.ui.update.server_client_older", manager.currentVersion(), remoteVersion) + "\u00a7r";
+        } else if (!ServerModVersion.versionsMatch(manager.currentVersion(), remoteVersion)) {
             line += "\n\u00a7e" + tr("schematica.ui.update.server_mismatch", manager.currentVersion(), remoteVersion) + "\u00a7r";
         }
         return line;

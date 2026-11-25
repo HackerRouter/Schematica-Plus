@@ -3,6 +3,7 @@
 package com.github.lunatrius.schematica.network.message;
 
 import com.github.lunatrius.schematica.handler.RemoteEdits;
+import com.github.lunatrius.schematica.handler.ServerClients;
 
 import cpw.mods.fml.common.network.simpleimpl.IMessage;
 import cpw.mods.fml.common.network.simpleimpl.IMessageHandler;
@@ -37,6 +38,7 @@ public final class MessageEditUpload implements IMessage, IMessageHandler<Messag
     }
 
     @Override public IMessage onMessage(MessageEditUpload message, MessageContext context) {
+        if (!ServerClients.INSTANCE.isCompatible(context.getServerHandler().playerEntity)) return null;
         RemoteEdits.INSTANCE.receive(context.getServerHandler().playerEntity, message);
         return null;
     }

@@ -3,6 +3,7 @@
 package com.github.lunatrius.schematica.network.message;
 
 import com.github.lunatrius.schematica.handler.RemoteEdits;
+import com.github.lunatrius.schematica.handler.ServerClients;
 
 import cpw.mods.fml.common.network.simpleimpl.IMessage;
 import cpw.mods.fml.common.network.simpleimpl.IMessageHandler;
@@ -19,6 +20,7 @@ public final class MessageEditCancel implements IMessage, IMessageHandler<Messag
     @Override public void toBytes(ByteBuf buffer) { buffer.writeLong(id); }
 
     @Override public IMessage onMessage(MessageEditCancel message, MessageContext context) {
+        if (!ServerClients.INSTANCE.isCompatible(context.getServerHandler().playerEntity)) return null;
         RemoteEdits.INSTANCE.cancel(context.getServerHandler().playerEntity, message.id);
         return null;
     }

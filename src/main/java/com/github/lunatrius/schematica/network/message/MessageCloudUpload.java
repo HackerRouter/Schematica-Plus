@@ -1,5 +1,6 @@
 package com.github.lunatrius.schematica.network.message;
 
+import com.github.lunatrius.schematica.handler.ServerClients;
 import com.github.lunatrius.schematica.handler.ServerCloud;
 
 import cpw.mods.fml.common.network.ByteBufUtils;
@@ -40,6 +41,7 @@ public final class MessageCloudUpload implements IMessage, IMessageHandler<Messa
     }
 
     @Override public IMessage onMessage(MessageCloudUpload message, MessageContext context) {
+        if (!ServerClients.INSTANCE.isCompatible(context.getServerHandler().playerEntity)) return null;
         ServerCloud.INSTANCE.upload(context.getServerHandler().playerEntity, message);
         return null;
     }

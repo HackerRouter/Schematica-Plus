@@ -117,12 +117,16 @@ public final class ServerCloud {
         MinecraftServer server = MinecraftServer.getServer();
         if (CloudPath.PUBLIC.equals(path.scope) && server != null) {
             for (Object other : server.getConfigurationManager().playerEntityList) {
-                PacketHandler.INSTANCE.sendTo(MessageCloudResult.changed(), (EntityPlayerMP) other);
+                EntityPlayerMP target = (EntityPlayerMP) other;
+                if (ServerClients.INSTANCE.isCompatible(target)) PacketHandler.INSTANCE.sendTo(MessageCloudResult.changed(), target);
             }
-        } else PacketHandler.INSTANCE.sendTo(MessageCloudResult.changed(), player);
+        } else if (ServerClients.INSTANCE.isCompatible(player)) {
+            PacketHandler.INSTANCE.sendTo(MessageCloudResult.changed(), player);
+        }
     }
 
     public void request(EntityPlayerMP player, MessageCloudRequest message) {
+        if (!ServerClients.INSTANCE.isCompatible(player)) return;
         AtomicInteger count = pending.computeIfAbsent(player.getUniqueID(), id -> new AtomicInteger());
         if (count.incrementAndGet() > MAX_PENDING) {
             count.decrementAndGet();

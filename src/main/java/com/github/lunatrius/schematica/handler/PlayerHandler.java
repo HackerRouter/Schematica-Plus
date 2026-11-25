@@ -1,6 +1,10 @@
 package com.github.lunatrius.schematica.handler;
 
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
+
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.server.MinecraftServer;
 
 import com.github.lunatrius.schematica.network.PacketHandler;
 import com.github.lunatrius.schematica.network.message.MessageCapabilities;
@@ -17,6 +21,27 @@ public class PlayerHandler {
     private PlayerHandler() {}
 
     private String sent;
+    private final Queue<PendingHello> pendingHellos = new ConcurrentLinkedQueue<>();
+
+    private static final class PendingHello {
+        final EntityPlayerMP player;
+        final String version;
+
+        PendingHello(EntityPlayerMP player, String version) {
+            this.player = player;
+            this.version = version;
+        }
+    }
+
+    public void onClientHello(EntityPlayerMP player, String clientVersion) {
+        if (player == null) return;
+        pendingHellos.add(new PendingHello(player, clientVersion));
+    }
+
+    public void clear() {
+        pendingHellos.clear();
+        sent = null;
+    }
 
     private static MessageCapabilities capabilities() {
         MessageCapabilities capabilities = new MessageCapabilities(
@@ -40,28 +65,37 @@ public class PlayerHandler {
 
     @SubscribeEvent
     public void onPlayerLoggedIn(PlayerEvent.PlayerLoggedInEvent event) {
-        if (event.player instanceof EntityPlayerMP) {
-            try {
-                MessageCapabilities capabilities = capabilities();
-                if (sent == null) sent = key(capabilities);
-                PacketHandler.INSTANCE.sendTo(capabilities, (EntityPlayerMP) event.player);
-                SharedPlacements.INSTANCE.joined((EntityPlayerMP) event.player);
-            } catch (Exception ex) {
-                Reference.logger.error("Failed to send capabilities!", ex);
-            }
-        }
     }
 
     /** Server options changed at runtime (the single player config screen): tell the connected clients, so turning off printerEnabled stops their printers. */
     @SubscribeEvent
     public void onServerTick(TickEvent.ServerTickEvent event) {
-        if (event.phase != TickEvent.Phase.END || sent == null) return;
+        if (event.phase != TickEvent.Phase.END) return;
+        MinecraftServer server = MinecraftServer.getServer();
+        for (PendingHello hello; (hello = pendingHellos.poll()) != null;) {
+            if (server == null || !server.getConfigurationManager().playerEntityList.contains(hello.player)) continue;
+            if (!ServerClients.INSTANCE.register(hello.player, hello.version)) continue;
+            try {
+                MessageCapabilities capabilities = capabilities();
+                if (sent == null) sent = key(capabilities);
+                PacketHandler.INSTANCE.sendTo(capabilities, hello.player);
+                SharedPlacements.INSTANCE.joined(hello.player);
+            } catch (Exception ex) {
+                Reference.logger.error("Failed to send capabilities!", ex);
+            }
+        }
+        if (sent == null || server == null) return;
         MessageCapabilities capabilities = capabilities();
         String current = key(capabilities);
         if (current.equals(sent)) return;
         sent = current;
         try {
-            PacketHandler.INSTANCE.sendToAll(capabilities);
+            for (Object candidate : server.getConfigurationManager().playerEntityList) {
+                EntityPlayerMP player = (EntityPlayerMP) candidate;
+                if (ServerClients.INSTANCE.isCompatible(player)) {
+                    PacketHandler.INSTANCE.sendTo(capabilities, player);
+                }
+            }
         } catch (Exception ex) {
             Reference.logger.error("Failed to send capabilities!", ex);
         }
@@ -83,6 +117,7 @@ public class PlayerHandler {
             SelectionSaves.INSTANCE.forget(event.player);
             ServerCloud.INSTANCE.forget(event.player);
             SharedPlacements.INSTANCE.forget(event.player);
+            ServerClients.INSTANCE.forget(event.player);
         }
     }
 }

@@ -1,6 +1,7 @@
 package com.github.lunatrius.schematica.network;
 
 import com.github.lunatrius.schematica.network.message.MessageCapabilities;
+import com.github.lunatrius.schematica.network.message.MessageClientHello;
 import com.github.lunatrius.schematica.network.message.MessageCloudData;
 import com.github.lunatrius.schematica.network.message.MessageCloudRequest;
 import com.github.lunatrius.schematica.network.message.MessageCloudResult;
@@ -69,5 +70,6 @@ public class PacketHandler {
         INSTANCE.registerMessage(MessageCloudResult.class, MessageCloudResult.class, 21, Side.CLIENT);
         INSTANCE.registerMessage(MessageSharedRequest.class, MessageSharedRequest.class, 22, Side.SERVER);
         INSTANCE.registerMessage(MessageSharedUpdate.class, MessageSharedUpdate.class, 23, Side.CLIENT);
+        INSTANCE.registerMessage(MessageClientHello.class, MessageClientHello.class, 24, Side.SERVER);
     }
 }

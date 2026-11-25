@@ -7,6 +7,7 @@ import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.server.MinecraftServer;
 
 import com.github.lunatrius.schematica.api.SchematicRegion;
+import com.github.lunatrius.schematica.handler.ServerClients;
 import com.github.lunatrius.schematica.handler.WorldEditQueue;
 import com.github.lunatrius.schematica.network.PacketHandler;
 import com.github.lunatrius.schematica.reference.Reference;
@@ -43,6 +44,7 @@ public final class MessageMoveRequest implements IMessage, IMessageHandler<Messa
     }
     @Override public IMessage onMessage(MessageMoveRequest message, MessageContext context) {
         EntityPlayerMP player = context.getServerHandler().playerEntity;
+        if (!ServerClients.INSTANCE.isCompatible(player)) return null;
         boolean queued = WorldEditQueue.INSTANCE.enqueue(() -> {
             MinecraftServer server = MinecraftServer.getServer();
             boolean submitted = false;

@@ -5,6 +5,7 @@ package com.github.lunatrius.schematica.network.message;
 import java.nio.charset.StandardCharsets;
 
 import com.github.lunatrius.schematica.handler.AccuratePlacement;
+import com.github.lunatrius.schematica.handler.ServerClients;
 
 import cpw.mods.fml.common.network.simpleimpl.IMessage;
 import cpw.mods.fml.common.network.simpleimpl.IMessageHandler;
@@ -39,6 +40,7 @@ public final class MessagePlacementIntent implements IMessage, IMessageHandler<M
     }
 
     @Override public IMessage onMessage(MessagePlacementIntent message, MessageContext context) {
+        if (!ServerClients.INSTANCE.isCompatible(context.getServerHandler().playerEntity)) return null;
         AccuratePlacement.INSTANCE.intent(context.getServerHandler().playerEntity, message);
         return null;
     }

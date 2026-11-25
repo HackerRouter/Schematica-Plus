@@ -23,7 +23,9 @@ import com.github.lunatrius.schematica.client.world.WorldFingerprints;
 import com.github.lunatrius.schematica.handler.ConfigurationHandler;
 import com.github.lunatrius.schematica.handler.DownloadHandler;
 import com.github.lunatrius.schematica.handler.QueueTickHandler;
+import com.github.lunatrius.schematica.network.PacketHandler;
 import com.github.lunatrius.schematica.network.message.MessageCapabilities;
+import com.github.lunatrius.schematica.network.message.MessageClientHello;
 import com.github.lunatrius.schematica.reference.Reference;
 import com.github.lunatrius.schematica.tool.RebuildJobs;
 import com.github.lunatrius.schematica.tool.ToolManager;
@@ -41,6 +43,7 @@ public class TickHandler {
 
     private int ticks;
     private boolean isPendingReset;
+    private boolean pendingClientHello;
 
     private TickHandler() {}
 
@@ -59,6 +62,7 @@ public class TickHandler {
         MessageCapabilities.clearPending();
         SharedPlacementsClient.INSTANCE.clearPending();
         ServerModVersion.INSTANCE.onClientDisconnect();
+        this.pendingClientHello = false;
         Reference.logger.info("Scheduling client settings reset.");
         this.isPendingReset = true;
     }
@@ -73,8 +77,15 @@ public class TickHandler {
             if (this.isPendingReset) {
                 SchematicaPlus.proxy.resetSettings();
                 this.isPendingReset = false;
+                this.pendingClientHello = false;
             }
-            ServerModVersion.INSTANCE.applyPending();
+            if (ServerModVersion.INSTANCE.applyPending()) {
+                this.pendingClientHello = ServerModVersion.INSTANCE.shouldSendClientHello(Reference.VERSION);
+            }
+            if (this.pendingClientHello && this.minecraft.thePlayer != null) {
+                this.pendingClientHello = false;
+                PacketHandler.INSTANCE.sendToServer(new MessageClientHello(Reference.VERSION));
+            }
             MessageCapabilities.applyPending();
             WorldHandler.INSTANCE.updateWorld(this.minecraft);
             SharedPlacementsClient.INSTANCE.applyPending();

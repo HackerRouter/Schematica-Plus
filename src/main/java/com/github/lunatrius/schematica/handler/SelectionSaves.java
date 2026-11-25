@@ -42,11 +42,13 @@ public final class SelectionSaves {
     }
 
     public void request(EntityPlayerMP player, String name) {
+        if (!ServerClients.INSTANCE.isCompatible(player)) return;
         requested.put(player.getUniqueID(), name);
         PacketHandler.INSTANCE.sendTo(new MessageSaveSelectionRequest(name), player);
     }
 
     public void received(EntityPlayerMP player, MessageSaveSelection message) {
+        if (!ServerClients.INSTANCE.isCompatible(player)) return;
         if (requested.remove(player.getUniqueID(), message.name)) received.add(new Received(player, message));
     }
 

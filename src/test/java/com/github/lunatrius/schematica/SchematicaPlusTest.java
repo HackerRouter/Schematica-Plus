@@ -21,29 +21,23 @@ public class SchematicaPlusTest {
         assertNull(SchematicaPlus.findLegacyMod(Collections.emptyList()));
     }
 
-    @Test public void serverRequiresClientVersionAtLeastServerVersion() {
-        assertTrue(SchematicaPlus.acceptsRemoteMods("db05cb5", Collections.singletonMap(Reference.MODID, "db05cb5"), Side.CLIENT));
-        assertTrue(SchematicaPlus.acceptsRemoteMods("1.0.0-beta.4", Collections.singletonMap(Reference.MODID, "1.0.0-beta.4"), Side.CLIENT));
-        assertTrue(SchematicaPlus.acceptsRemoteMods("1.0.0-beta.4", Collections.singletonMap(Reference.MODID, "1.0.0-beta.5"), Side.CLIENT));
-        assertTrue(SchematicaPlus.acceptsRemoteMods("1.0.0-beta.4", Collections.singletonMap(Reference.MODID, "1.0.0"), Side.CLIENT));
-        assertTrue(SchematicaPlus.acceptsRemoteMods("1.0.0-beta.5", Collections.singletonMap(Reference.MODID, "1.0.0-beta.5-master.10+abc"), Side.CLIENT));
-        for (String version : Arrays.asList("1.0.0-beta.3", "1.0.0.beta.2", "db05cb5-dirty", "different-build")) {
-            assertFalse(version, SchematicaPlus.acceptsRemoteMods("1.0.0-beta.4", Collections.singletonMap(Reference.MODID, version), Side.CLIENT));
+    @Test public void handshakeAllowsAnyRemoteVersionIncludingOlderClients() {
+        for (String version : Arrays.asList("1.0.0-beta.3", "1.0.0-beta.5", "1.0.0", "db05cb5-dirty", "different-build")) {
+            assertTrue(version, SchematicaPlus.acceptsRemoteMods("1.0.0-beta.5", Collections.singletonMap(Reference.MODID, version), Side.CLIENT));
+            assertTrue(version, SchematicaPlus.acceptsRemoteMods("1.0.0-beta.5", Collections.singletonMap(Reference.MODID, version), Side.SERVER));
         }
-    }
-
-    @Test public void clientAcceptsServerVersionAtMostClientVersion() {
-        assertTrue(SchematicaPlus.acceptsRemoteMods("1.0.0-beta.5", Collections.singletonMap(Reference.MODID, "1.0.0-beta.5"), Side.SERVER));
-        assertTrue(SchematicaPlus.acceptsRemoteMods("1.0.0-beta.5", Collections.singletonMap(Reference.MODID, "1.0.0-beta.4"), Side.SERVER));
-        assertTrue(SchematicaPlus.acceptsRemoteMods("1.0.0", Collections.singletonMap(Reference.MODID, "1.0.0-beta.5"), Side.SERVER));
-        assertTrue(SchematicaPlus.acceptsRemoteMods("1.0.0-beta.5-master.10+abc", Collections.singletonMap(Reference.MODID, "1.0.0-beta.5"), Side.SERVER));
-        for (String version : Arrays.asList("1.0.0-beta.6", "1.0.0", "1.1.0", "db05cb5-dirty", "different-build")) {
-            assertFalse(version, SchematicaPlus.acceptsRemoteMods("1.0.0-beta.5", Collections.singletonMap(Reference.MODID, version), Side.SERVER));
-        }
-    }
-
-    @Test public void allowsPeersWithoutPlus() {
         assertTrue(SchematicaPlus.acceptsRemoteMods("db05cb5", Collections.emptyMap(), Side.CLIENT));
         assertTrue(SchematicaPlus.acceptsRemoteMods("db05cb5", Collections.singletonMap("other_mod", "0.1.0"), Side.SERVER));
+    }
+
+    @Test public void protocolCompatibilityRequiresClientVersionAtLeastServerVersion() {
+        assertTrue(SchematicaPlus.isClientCompatibleWithServer("db05cb5", "db05cb5"));
+        assertTrue(SchematicaPlus.isClientCompatibleWithServer("1.0.0-beta.4", "1.0.0-beta.4"));
+        assertTrue(SchematicaPlus.isClientCompatibleWithServer("1.0.0-beta.4", "1.0.0-beta.5"));
+        assertTrue(SchematicaPlus.isClientCompatibleWithServer("1.0.0-beta.4", "1.0.0"));
+        assertTrue(SchematicaPlus.isClientCompatibleWithServer("1.0.0-beta.5", "1.0.0-beta.5-master.10+abc"));
+        for (String version : Arrays.asList("1.0.0-beta.3", "1.0.0.beta.2", "db05cb5-dirty", "different-build", "", null)) {
+            assertFalse(String.valueOf(version), SchematicaPlus.isClientCompatibleWithServer("1.0.0-beta.4", version));
+        }
     }
 }

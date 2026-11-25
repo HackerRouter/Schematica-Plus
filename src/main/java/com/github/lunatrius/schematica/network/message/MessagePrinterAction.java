@@ -9,6 +9,7 @@ import net.minecraft.world.World;
 import net.minecraft.block.Block;
 
 import com.github.lunatrius.schematica.handler.PrinterActions;
+import com.github.lunatrius.schematica.handler.ServerClients;
 
 import cpw.mods.fml.common.network.ByteBufUtils;
 import cpw.mods.fml.common.network.simpleimpl.IMessage;
@@ -101,6 +102,7 @@ public final class MessagePrinterAction implements IMessage, IMessageHandler<Mes
     }
 
     @Override public IMessage onMessage(MessagePrinterAction message, MessageContext context) {
+        if (!ServerClients.INSTANCE.isCompatible(context.getServerHandler().playerEntity)) return null;
         PrinterActions.INSTANCE.enqueue(context.getServerHandler().playerEntity, message);
         return null;
     }

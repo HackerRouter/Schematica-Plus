@@ -1,6 +1,7 @@
 package com.github.lunatrius.schematica.network.message;
 
 import com.github.lunatrius.schematica.handler.NbtRequests;
+import com.github.lunatrius.schematica.handler.ServerClients;
 
 import cpw.mods.fml.common.network.simpleimpl.IMessage;
 import cpw.mods.fml.common.network.simpleimpl.IMessageHandler;
@@ -26,6 +27,7 @@ public final class MessageNbtRequest implements IMessage, IMessageHandler<Messag
     }
 
     @Override public IMessage onMessage(MessageNbtRequest message, MessageContext context) {
+        if (!ServerClients.INSTANCE.isCompatible(context.getServerHandler().playerEntity)) return null;
         NbtRequests.INSTANCE.enqueue(context.getServerHandler().playerEntity, message);
         return null;
     }

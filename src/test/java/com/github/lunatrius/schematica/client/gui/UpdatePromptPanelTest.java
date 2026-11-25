@@ -156,6 +156,11 @@ public class UpdatePromptPanelTest {
         panel.tick();
         assertTrue(panel.message(), panel.message().contains("schematica.ui.update.server_version:[1.0.0-beta.5]"));
         assertFalse(panel.message(), panel.message().contains("schematica.ui.update.server_mismatch"));
+        assertFalse(panel.message(), panel.message().contains("schematica.ui.update.server_client_older"));
+
+        serverVersion.onCapabilitiesReceived("1.0.0");
+        panel.tick();
+        assertTrue(panel.message(), panel.message().contains("schematica.ui.update.server_client_older:[1.0.0-beta.5, 1.0.0]"));
     }
 
     private static void waitUntil(java.util.function.BooleanSupplier condition) throws InterruptedException {

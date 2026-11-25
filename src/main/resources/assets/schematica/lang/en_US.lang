@@ -604,3 +604,4 @@ schematica.ui.preview_editor.slider_reset=Drag or scroll to adjust. Right-click 
 schematica.ui.update.server_version=Server version: %s
 schematica.ui.update.server_not_installed=Server version: Not installed
 schematica.ui.update.server_mismatch=Notice: Client version (%s) does not match server version (%s).
+schematica.ui.update.server_client_older=Notice: Client version (%s) is older than server version (%s); server-side features are disabled until you update.

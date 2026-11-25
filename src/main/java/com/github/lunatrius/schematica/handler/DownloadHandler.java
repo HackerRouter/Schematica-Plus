@@ -185,7 +185,7 @@ public class DownloadHandler {
             .next();
         final SchematicTransfer transfer = this.transferMap.remove(player);
 
-        if (transfer == null || transfer.cancelled) {
+        if (transfer == null || transfer.cancelled || !ServerClients.INSTANCE.isCompatible(player)) {
             return;
         }
 
